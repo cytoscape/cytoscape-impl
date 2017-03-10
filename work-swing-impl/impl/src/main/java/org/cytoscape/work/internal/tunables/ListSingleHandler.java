@@ -1,12 +1,34 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,31 +46,6 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
-
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.UIManager;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.util.ListChangeListener;
-import org.cytoscape.work.util.ListSelection;
-import org.cytoscape.work.util.ListSingleSelection;
-
-
 /**
  * Handler for the type <i>ListSingleSelection</i> of <code>Tunable</code>
  *
@@ -60,19 +57,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
 	
 	private JComboBox<T> combobox;
+	private boolean isUpdating = false;
 
 	/**
-	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type
-	 *
-	 * creates a ComboBox to collect all the <code>T</code> items and displays it in the GUI
+	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type.
+	 * Creates a ComboBox to collect all the <code>T</code> items and displays it in the GUI.
 	 * Informations about the list and its contents are also displayed
 	 *
-	 * @param f field that has been annotated
-	 * @param o object contained in <code>f</code>
-	 * @param t tunable associated to <code>f</code>
+	 * @param field field that has been annotated
+	 * @param instance An object instance that contains the <code>field</code>
+	 * @param tunable tunable associated to <code>field</code>
 	 */
-	public ListSingleHandler(Field f, Object o, Tunable t) {
-		super(f, o, t);
+	public ListSingleHandler(final Field field, final Object instance, final Tunable tunable) {
+		super(field, instance, tunable);
 		init();
 	}
 
@@ -98,24 +95,45 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 
 		//add list's items to the combobox
 		combobox = new JComboBox<>((T[])getSingleSelection().getPossibleValues().toArray());
-		combobox.addActionListener(this);
 		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+		combobox.addActionListener(this);
 		
 		updateFieldPanel(panel, label, combobox, horizontal);
 		setTooltip(getTooltip(), label, combobox);
 		
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		panel.setVisible(combobox.getModel().getSize() > 0);
+		
+		final ListSingleSelection<T> singleSelection = getSingleSelection();
+		
+		if (singleSelection != null) {
+			// Make sure we're the only handler for this Tunable that's listening
+			// for changes.  If we're in the middle of a refresh, we can sometimes
+			// be in a state where there are two...
+			ListChangeListener<T> found = null;
+			for (ListChangeListener<T> listener: singleSelection.getListeners()) {
+				if (listener instanceof AbstractGUITunableHandler &&
+						((AbstractGUITunableHandler)listener).getQualifiedName().equals(this.getQualifiedName())) {
+					found = listener;
+				}
+			}
+			if (found != null) {
+				singleSelection.removeListener(found);
+			}
+			singleSelection.addListener(this);
+		}
 	}
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public void update() {
+		isUpdating = true;
 		if (combobox == null) return;
 		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		panel.setVisible(combobox.getModel().getSize() > 0);
+		isUpdating = false;
 	}
 
 	/**
@@ -124,7 +142,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	@Override
 	@SuppressWarnings("unchecked")
 	public void handle() {
-		if (combobox == null)
+		if (combobox == null || isUpdating)
 			return;
 		
 		final T selectedItem = (T) combobox.getSelectedItem();

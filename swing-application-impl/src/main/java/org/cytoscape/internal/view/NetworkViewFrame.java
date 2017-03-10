@@ -2,8 +2,6 @@ package org.cytoscape.internal.view;
 
 import java.awt.BorderLayout;
 import java.awt.GraphicsConfiguration;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.Properties;
@@ -91,12 +89,6 @@ public class NetworkViewFrame extends JFrame {
 				networkViewContainer.update();
 				networkViewContainer.updateViewSize();
 			}
-		});
-		addComponentListener(new ComponentAdapter() {
-			@Override
-			public void componentResized(ComponentEvent e) {
-				networkViewContainer.updateViewSize();
-			};
 		});
 		
 		update();

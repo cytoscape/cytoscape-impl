@@ -1,12 +1,19 @@
 package org.cytoscape.ding.impl;
 
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +31,17 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-
-
 public class AddEdgeNodeViewTaskFactoryImpl implements NodeViewTaskFactory {
 
-	private final VisualMappingManager vmm;
-	private final CyEventHelper eh;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public AddEdgeNodeViewTaskFactoryImpl(final VisualMappingManager vmm, final CyEventHelper eh) {
-		this.vmm = vmm;
-		this.eh = eh;
+	public AddEdgeNodeViewTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new AddEdgeTask(nodeView, networkView, vmm, eh));
+		return new TaskIterator(new AddEdgeTask(nodeView, networkView, serviceRegistrar));
 	}
 
 	@Override

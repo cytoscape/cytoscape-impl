@@ -1,12 +1,22 @@
 package org.cytoscape.internal.task;
 
+import java.awt.event.ActionEvent;
+import java.util.Map;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,50 +34,34 @@ package org.cytoscape.internal.task;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@SuppressWarnings("serial")
 public class TaskFactoryTunableAction extends AbstractCyAction {
-
-	private static final long serialVersionUID = 8009915597814265396L;
 
 	private final static Logger logger = LoggerFactory.getLogger(TaskFactoryTunableAction.class);
 
-	final protected TaskFactory factory;
-	final protected DialogTaskManager manager;
+	private final TaskFactory factory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * This constructor forces the action to use the TaskFactory.isReady() method
 	 * to determine whether the action should be enabled.
 	 */
-	public TaskFactoryTunableAction(final DialogTaskManager manager, 
-	                                final TaskFactory factory,
-	                                final Map<String, String> serviceProps) {
+	public TaskFactoryTunableAction(final CyServiceRegistrar serviceRegistrar, final TaskFactory factory,
+			final Map<String, String> serviceProps) {
 		super(serviceProps, factory);
-		this.manager = manager;
 		this.factory = factory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
 	 * This constructor forces the action to use the "enableFor" property in serviceProps 
 	 * to determine whether the action should be enabled.
 	 */
-	public TaskFactoryTunableAction(final DialogTaskManager manager, 
-	                                final TaskFactory factory,
-	                                final Map<String, String> serviceProps, 
-	                                final CyApplicationManager applicationManager, 
-	                                final CyNetworkViewManager networkViewManager) {
-		super(serviceProps, applicationManager, networkViewManager, factory);
-		this.manager = manager;
+	public TaskFactoryTunableAction(final TaskFactory factory, final Map<String, String> serviceProps,
+			final CyServiceRegistrar serviceRegistrar) {
+		super(serviceProps, factory);
 		this.factory = factory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -75,6 +69,7 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		logger.debug("About to execute task from factory: " + factory.toString());
 
 		// execute the task(s) in a separate thread
-		manager.execute(factory.createTaskIterator());
+		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+		taskManager.execute(factory.createTaskIterator());
 	}
 }

@@ -1,13 +1,25 @@
 
 package org.cytoscape.ding.impl.visualproperty;
 
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
+import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
+import org.cytoscape.ding.customgraphics.NullCustomGraphics;
+import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.view.model.AbstractVisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,17 +36,6 @@ package org.cytoscape.ding.impl.visualproperty;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
-import org.cytoscape.ding.customgraphics.CyCustomGraphics2ManagerImpl;
-import org.cytoscape.ding.customgraphics.NullCustomGraphics;
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.AbstractVisualProperty;
-import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
 
 @SuppressWarnings("rawtypes")
 public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCustomGraphics> {
@@ -90,7 +91,7 @@ public class CustomGraphicsVisualProperty extends AbstractVisualProperty<CyCusto
 				// -------------------------------------------------
 				// This is hack, but we've got no other way to get our hands on the
 				// CyCustomGraphicsManager since the DVisualLexicon is created statically
-				final CustomGraphicsManagerImpl cgMgr = CustomGraphicsManagerImpl.getInstance();
+				final CustomGraphicsManager cgMgr = CustomGraphicsManagerImpl.getInstance();
 				
 				parts = value.split(",");
 				final CyCustomGraphicsFactory factory = cgMgr.getCustomGraphicsFactory(parts[0]);

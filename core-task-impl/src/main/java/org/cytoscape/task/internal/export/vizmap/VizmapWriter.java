@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.VizmapWriterFactory;
@@ -57,14 +58,15 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	@Tunable(description = "Select Styles:")
 	public ListMultipleSelection<VisualStyle> styles;
 	
-	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false")
+	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false", gravity = 1.1)
 	@Override
 	public File getOutputFile() {
 		return outputFile;
 	}
 	
-	public VizmapWriter(final VizmapWriterManager writerManager, final CyServiceRegistrar serviceRegistrar) {
-		super(writerManager);
+	public VizmapWriter(final VizmapWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final CyServiceRegistrar serviceRegistrar) {
+		super(writerManager, cyApplicationManager);
 		
 		// Initialize Visual Style selector
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
@@ -82,6 +84,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		styles = new ListMultipleSelection<>(allStyles);
 		// Select the current style by default
 		styles.setSelectedValues(Collections.singletonList(vmMgr.getCurrentVisualStyle()));
+		this.outputFile = getSuggestedFile();
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {
@@ -98,13 +101,10 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	}
 
 	@Override
-	protected CyWriter getWriter(final CyFileFilter filter, File file) throws Exception {
-		if (!fileExtensionIsOk(file))
-			file = addOrReplaceExtension(outputFile);
-
+	protected CyWriter getWriter(final CyFileFilter filter) throws Exception {
 		final Set<VisualStyle> selectedStyles = new LinkedHashSet<>(styles.getSelectedValues());
 
-		return writerManager.getWriter(selectedStyles, filter, file);
+		return writerManager.getWriter(selectedStyles, filter, outputStream);
 	}
 	
 	@Override
@@ -120,5 +120,10 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		}
 		
 		return super.getValidationState(msg);
+	}
+
+	@Override
+	protected String getExportName() {
+		return "styles";
 	}
 }

@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.write.session;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.io.internal.util.session.SessionUtil.APPS_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.BOOKMARKS_FILE;
 import static org.cytoscape.io.internal.util.session.SessionUtil.CYS_VERSION;
@@ -68,6 +44,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -75,6 +52,30 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Write session states into files and zip them into one session file "*.cys".
@@ -99,7 +100,6 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private final CyPropertyWriterManager propertyWriterMgr;
 	private final CyTableWriterManager tableWriterMgr;
 	private final VizmapWriterManager vizmapWriterMgr;
-	private final CyRootNetworkManager rootNetworkManager;
 	private final CyNetworkViewWriterFactory networkViewWriterFactory;
 	private final CyFileFilter bookmarksFilter;
 	private final CyFileFilter propertiesFilter;
@@ -109,9 +109,10 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private Map<Long, String> tableFilenamesBySUID;
 	private Map<String, VisualStyle> tableVisualStylesByName;
 
+	private final CyServiceRegistrar serviceRegistrar;
+
 	public SessionWriterImpl(final OutputStream outputStream, 
 	                         final CySession session, 
-	                         final CyRootNetworkManager rootNetworkMgr,
 	                         final CyPropertyWriterManager propertyWriterMgr,
 	                         final CyTableWriterManager tableWriterMgr,
 	                         final VizmapWriterManager vizmapWriterMgr,
@@ -120,10 +121,10 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	                         final CyFileFilter propertiesFilter,
 	                         final CyFileFilter tableFilter,
 	                         final CyFileFilter vizmapFilter,
-	                         final GroupUtil groupUtils) {
+	                         final GroupUtil groupUtils,
+	                         final CyServiceRegistrar serviceRegistrar) {
 		this.outputStream = outputStream;
 		this.session = session;
-		this.rootNetworkManager = rootNetworkMgr;
 		this.propertyWriterMgr = propertyWriterMgr;
 		this.tableWriterMgr = tableWriterMgr;
 		this.vizmapWriterMgr = vizmapWriterMgr;
@@ -133,6 +134,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		this.tableFilter = tableFilter;
 		this.vizmapFilter = vizmapFilter;
 		this.groupUtils = groupUtils;
+		this.serviceRegistrar = serviceRegistrar;
 
 		// For now, session ID is time and date
 		final DateFormat df = new SimpleDateFormat("yyyy_MM_dd-HH_mm");
@@ -141,7 +143,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		cysessionDocId = "CytoscapeSession-" + now;
 		sessionDir = cysessionDocId + "/";
 		
-		tableVisualStylesByName = new HashMap<String, VisualStyle>();
+		tableVisualStylesByName = new HashMap<>();
 		
 		for (final VisualStyle vs : session.getVisualStyles())
 			tableVisualStylesByName.put(vs.getTitle(), vs);
@@ -298,8 +300,9 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	 * @throws Exception
 	 */
 	private void zipNetworks() throws Exception {
+		final CyRootNetworkManager rootNetworkManager = serviceRegistrar.getService(CyRootNetworkManager.class);
 		final Set<CyNetwork> networks = session.getNetworks();
-		final Set<CyRootNetwork> rootNetworks = new HashSet<CyRootNetwork>();
+		final Set<CyRootNetwork> rootNetworks = new HashSet<>();
 
 		// Zip only root-networks, because sub-networks should be automatically saved with them.
 		for (final CyNetwork n : networks) {
@@ -312,7 +315,8 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		for (CyRootNetwork rn : rootNetworks) {
 			if (cancelled) return;
 			
-			String xgmmlFile = SessionUtil.getXGMMLFilename(rn);if (xgmmlFile.contains("_ERROR")) throw new Exception("Simulating exception...");
+			String xgmmlFile = SessionUtil.getXGMMLFilename(rn);
+			if (xgmmlFile.contains("_ERROR")) throw new Exception("Simulating exception...");
 			zos.putNextEntry(new ZipEntry(sessionDir + NETWORKS_FOLDER + xgmmlFile) );
 			
 			CyWriter writer = networkViewWriterFactory.createWriter(zos, rn);
@@ -387,7 +391,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	}
 
 	private void zipTables() throws Exception {
-		tableFilenamesBySUID = new HashMap<Long, String>();
+		tableFilenamesBySUID = new HashMap<>();
 		Set<CyTableMetadata> tableData = session.getTables();
 		
 		for (CyTableMetadata metadata : tableData) {

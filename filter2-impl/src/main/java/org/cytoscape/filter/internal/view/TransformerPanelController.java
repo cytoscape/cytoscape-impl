@@ -22,6 +22,7 @@ import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.TransformerWorker;
+import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -29,18 +30,49 @@ import org.cytoscape.filter.model.SubFilterTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class TransformerPanelController extends AbstractPanelController<TransformerElement, TransformerPanel> {
+	
 	private TransformerManager transformerManager;
 	private TransformerViewManager transformerViewManager;
 	private DynamicComboBoxModel<FilterElement> startWithComboBoxModel;
 	
-	public TransformerPanelController(TransformerManager transformerManager, 
-			TransformerViewManager transformerViewManager, FilterPanelController filterPanelController, 
-			TransformerWorker worker, FilterIO filterIo, TaskManager<?, ?> taskManager, FilterPanelStyle style, IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
+	public TransformerPanelController(
+			TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager,
+			ValidationManager validationManager,
+			FilterPanelController filterPanelController, 
+			TransformerWorker worker, 
+			FilterIO filterIo, 
+			FilterPanelStyle style, 
+			final CyServiceRegistrar serviceRegistrar) 
+	{
+		super(worker, transformerManager, transformerViewManager, validationManager, filterIo, style, serviceRegistrar);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;
@@ -69,7 +101,8 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	
 	@Override
 	protected void handleElementSelected(TransformerElement selected, TransformerPanel panel) {
-		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.getChain(), getIconManager());
+		CompositeTransformerPanel root = new CompositeTransformerPanel(panel, this, selected.getChain(),
+				serviceRegistrar);
 		panel.setRootPanel(root);
 	}
 

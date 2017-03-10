@@ -1,5 +1,19 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.geom.Point2D;
+import java.util.Map;
+
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ImageAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,19 +38,6 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.ImageAnnotation;
-
 public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageAnnotation> {
 	
 	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
@@ -60,7 +61,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 
 		if (ImageAnnotation.class.equals(clazz)) {
 			final CustomGraphicsManager customGraphicsManager = serviceRegistrar
-					.getService(CustomGraphicsManager.class);
+					.getService(CustomGraphicsManagerImpl.class);
 			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
 					customGraphicsManager, getActiveWindow());
 			a.update();

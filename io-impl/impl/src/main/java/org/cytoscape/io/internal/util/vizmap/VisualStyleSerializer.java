@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.util.vizmap;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
@@ -46,6 +22,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.Visualizable;
@@ -64,6 +41,30 @@ import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * This is a utility interface used for converting collections of 
  * VisualStyle objects into serializable Vizmap objects and vice versa. 
@@ -71,28 +72,16 @@ import org.slf4j.LoggerFactory;
 public class VisualStyleSerializer {
 
 	private final CalculatorConverterFactory calculatorConverterFactory;
-	private final VisualStyleFactory visualStyleFactory;
-	private final RenderingEngineManager renderingEngineManager;
-	private final VisualMappingFunctionFactory discreteMappingFactory;
-	private final VisualMappingFunctionFactory continuousMappingFactory;
-	private final VisualMappingFunctionFactory passthroughMappingFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private VisualLexicon lexicon;
 
 	private static final Logger logger = LoggerFactory.getLogger(VisualStyleSerializer.class);
 
 	public VisualStyleSerializer(final CalculatorConverterFactory calculatorConverterFactory,
-								 final VisualStyleFactory visualStyleFactory,
-								 final RenderingEngineManager renderingEngineManager,
-								 final VisualMappingFunctionFactory discreteMappingFactory,
-								 final VisualMappingFunctionFactory continuousMappingFactory,
-								 final VisualMappingFunctionFactory passthroughMappingFactory) {
+								 final CyServiceRegistrar serviceRegistrar) {
 		this.calculatorConverterFactory = calculatorConverterFactory;
-		this.visualStyleFactory = visualStyleFactory;
-		this.renderingEngineManager = renderingEngineManager;
-		this.discreteMappingFactory = discreteMappingFactory;
-		this.continuousMappingFactory = continuousMappingFactory;
-		this.passthroughMappingFactory = passthroughMappingFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
@@ -101,7 +90,9 @@ public class VisualStyleSerializer {
 	 * @return A Vizmap object that contains a representation of the collection of visual styles.
 	 */
 	public Vizmap createVizmap(final Collection<VisualStyle> styles) {
-		Vizmap vizmap = new Vizmap();
+		final Vizmap vizmap = new Vizmap();
+		
+		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		lexicon = renderingEngineManager.getDefaultVisualLexicon();
 
 		if (styles != null) {
@@ -133,7 +124,9 @@ public class VisualStyleSerializer {
 	 * @return A collection of VisualStyle objects.
 	 */
 	public Set<VisualStyle> createVisualStyles(final Vizmap vizmap) {
-		final Set<VisualStyle> styles = new HashSet<VisualStyle>();
+		final Set<VisualStyle> styles = new HashSet<>();
+		
+		final RenderingEngineManager renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		lexicon = renderingEngineManager.getDefaultVisualLexicon();
 
 		if (lexicon == null) {
@@ -142,6 +135,7 @@ public class VisualStyleSerializer {
 		}
 
 		if (vizmap != null) {
+			final VisualStyleFactory visualStyleFactory = serviceRegistrar.getService(VisualStyleFactory.class);
 			final List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vsModelList = vizmap.getVisualStyle();
 
 			for (org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel : vsModelList) {
@@ -178,7 +172,7 @@ public class VisualStyleSerializer {
 		List<org.cytoscape.io.internal.util.vizmap.model.VisualStyle> vizmapStyles = vizmap.getVisualStyle();
 
 		// Group properties keys/values by visual style name:
-		Map<String, Map<String, String>> styleNamesMap = new HashMap<String, Map<String, String>>();
+		Map<String, Map<String, String>> styleNamesMap = new HashMap<>();
 		Set<String> propNames = props.stringPropertyNames();
 
 		for (String key : propNames) {
@@ -375,7 +369,9 @@ public class VisualStyleSerializer {
 						columnDataType = String.class;
 					
 					try {
-						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) passthroughMappingFactory
+						VisualMappingFunctionFactory pmFactory = serviceRegistrar
+								.getService(VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+						PassthroughMapping<K, V> pm = (PassthroughMapping<K, V>) pmFactory
 								.createVisualMappingFunction(attrName, columnDataType, vp);
 
 						vs.addVisualMappingFunction(pm);
@@ -411,7 +407,9 @@ public class VisualStyleSerializer {
 								break;
 						}
 
-						DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) discreteMappingFactory
+						VisualMappingFunctionFactory dmFactory = serviceRegistrar
+								.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+						DiscreteMapping<K, V> dm = (DiscreteMapping<K, V>) dmFactory
 								.createVisualMappingFunction(attrName, attrClass, vp);
 
 						for (DiscreteMappingEntry entryModel : dmModel.getDiscreteMappingEntry()) {
@@ -459,7 +457,9 @@ public class VisualStyleSerializer {
 					String attrName = cmModel.getAttributeName();
 
 					try {
-						ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) continuousMappingFactory
+						VisualMappingFunctionFactory cmFactory = serviceRegistrar
+								.getService(VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+						ContinuousMapping<K, V> cm = (ContinuousMapping<K, V>) cmFactory
 								.createVisualMappingFunction(attrName, Number.class, vp);
 
 						for (org.cytoscape.io.internal.util.vizmap.model.ContinuousMappingPoint pModel : cmModel
@@ -523,7 +523,7 @@ public class VisualStyleSerializer {
 		final Edge edgeSection = vsModel.getEdge();
 		final Network networkSection = vsModel.getNetwork();
 
-		final Set<Dependency> dependencyStates = new HashSet<Dependency>();
+		final Set<Dependency> dependencyStates = new HashSet<>();
 
 		if (nodeSection != null)
 			dependencyStates.addAll(nodeSection.getDependency());

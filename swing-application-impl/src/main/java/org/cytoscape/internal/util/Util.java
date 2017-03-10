@@ -37,6 +37,13 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 public final class Util {
 
 	/**
+	 * @return true if both objects are null or obj1 equals obj2.
+	 */
+	public static boolean same(final Object obj1, final Object obj2) {
+		return (obj1 == null && obj2 == null) || (obj1 != null && obj1.equals(obj2));
+	}
+	
+	/**
 	 * @return true if both lists are empty or contain the same elements (the order of the elements is not important).
 	 */
 	public static boolean equalSets(final Collection<?> list1, final Collection<?> list2) {

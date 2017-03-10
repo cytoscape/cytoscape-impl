@@ -39,11 +39,11 @@ import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -64,6 +64,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -74,14 +75,18 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
@@ -498,11 +503,14 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		private Map<VisualStyle, JPanel> vsPanelMap;
 		private Map<String, RenderingEngine<CyNetwork>> engineMap;
 		
+		private CloseDialogMenuListener closeDialogMenuListener;
+		
 		public VisualStyleDropDownButton() {
 			super(true);
 			styles = new LinkedList<>();
 			vsPanelMap = new HashMap<>();
 			engineMap = new HashMap<>();
+			closeDialogMenuListener = new CloseDialogMenuListener();
 			
 			setHorizontalAlignment(LEFT);
 			
@@ -570,17 +578,31 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		}
 		
 		private void showDialog() {
+			setEnabled(false); // Disable the button to prevent accidental repeated clicks
+			disposeDialog(); // Just to make sure there will never be more than one dialog
+				
 			dialog = new JDialog(SwingUtilities.getWindowAncestor(VisualStyleDropDownButton.this),
 					ModalityType.MODELESS);
 			dialog.setUndecorated(true);
 			dialog.setBackground(BG_COLOR);
 			
-			dialog.addFocusListener(new FocusAdapter() {
+			dialog.addWindowListener(new WindowAdapter() {
 				@Override
-				public void focusLost(final FocusEvent e) {
-					closeDialog();
+				public void windowDeactivated(WindowEvent e) {
+					disposeDialog();
+				}
+				@Override
+				public void windowClosed(WindowEvent e) {
+					onDialogDisposed();
+				
+					if (LookAndFeelUtil.isAquaLAF())
+						removeMenuListeners();
 				}
 			});
+			
+			// Opening a Mac/Aqua menu does not trigger a Window Deactivated event on the Style dialog!
+			if (LookAndFeelUtil.isAquaLAF())
+				addMenuListeners();
 			
 			cols = MAX_COLUMNS;
 			
@@ -621,7 +643,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			dialog.setVisible(true);
 			dialog.requestFocus();
 		}
-		
+
 		private JPanel createItem(final VisualStyle vs) {
 			final JPanel panel = new JPanel(new BorderLayout());
 			panel.setBackground(BG_COLOR);
@@ -651,7 +673,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 				@Override
 				public void mouseClicked(final MouseEvent e) {
 					setSelectedItem(focusedItem);
-					closeDialog();
+					disposeDialog();
 				}
 			});
 			
@@ -730,12 +752,36 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 				}
 			}
 		}
+		
+		private void disposeDialog() {
+			if (dialog != null)
+				dialog.dispose();
+		}
 
-		private void closeDialog() {
+		private void onDialogDisposed() {
 			if (dialog != null) {
 				vsPanelMap.clear();
-				dialog.dispose();
 				dialog = null;
+			}
+			
+			setEnabled(!styles.isEmpty()); // Re-enable the Styles button
+		}
+		
+		private void addMenuListeners() {
+			final JMenuBar menuBar = servicesUtil.get(CySwingApplication.class).getJMenuBar();
+			
+			if (menuBar != null) {
+				for (int i = 0; i < menuBar.getMenuCount(); i++)
+					menuBar.getMenu(i).addMenuListener(closeDialogMenuListener);
+			}
+		}
+		
+		private void removeMenuListeners() {
+			final JMenuBar menuBar = servicesUtil.get(CySwingApplication.class).getJMenuBar();
+			
+			if (menuBar != null) {
+				for (int i = 0; i < menuBar.getMenuCount(); i++)
+					menuBar.getMenu(i).removeMenuListener(closeDialogMenuListener);
 			}
 		}
 		
@@ -779,10 +825,10 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 				final String cmd = e.getActionCommand();
 				
 				if (cmd.equals(VK_ESCAPE)) {
-					closeDialog();
+					disposeDialog();
 				} else if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE)) {
 					setSelectedItem(focusedItem);
-					closeDialog();
+					disposeDialog();
 				} else if (!styles.isEmpty()) {
 					final VisualStyle vs = focusedItem != null ? focusedItem : styles.getFirst();
 					final int size = styles.size();
@@ -803,6 +849,24 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 					if (newIdx != idx)
 						setFocus(newIdx);
 				}
+			}
+		}
+		
+		private class CloseDialogMenuListener implements MenuListener {
+
+			@Override
+			public void menuSelected(MenuEvent e) {
+				disposeDialog();
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent e) {
+				// Ignore...
+			}
+
+			@Override
+			public void menuCanceled(MenuEvent e) {
+				// Ignore...
 			}
 		}
 	}

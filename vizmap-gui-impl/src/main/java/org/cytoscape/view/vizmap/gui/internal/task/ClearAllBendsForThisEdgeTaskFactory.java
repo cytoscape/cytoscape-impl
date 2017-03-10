@@ -1,12 +1,19 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.task.AbstractEdgeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +31,16 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * #L%
  */
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.task.AbstractEdgeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.values.BendFactory;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.work.TaskIterator;
-
 public class ClearAllBendsForThisEdgeTaskFactory extends AbstractEdgeViewTaskFactory {
 
-	private final BendFactory bendFactory;
 	private final ServicesUtil servicesUtil;
 
-	public ClearAllBendsForThisEdgeTaskFactory(final BendFactory bendFactory, final ServicesUtil servicesUtil) {
-		this.bendFactory = bendFactory;
+	public ClearAllBendsForThisEdgeTaskFactory(final ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyEdge> edgeView, CyNetworkView netView) {
-		return new TaskIterator(new ClearAllBendsForThisEdgeTask(edgeView, netView, bendFactory, servicesUtil));
+		return new TaskIterator(new ClearAllBendsForThisEdgeTask(edgeView, netView, servicesUtil));
 	}
 }

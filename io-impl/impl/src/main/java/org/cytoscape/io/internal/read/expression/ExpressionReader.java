@@ -1,30 +1,5 @@
 package org.cytoscape.io.internal.read.expression;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,10 +18,32 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 
-
-//--------------------------------------------------------------------
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This class provides a reader for the common file format for expression data
@@ -133,7 +130,6 @@ public class ExpressionReader extends AbstractTableReader {
 	public static final int UNKNOWN = 3;
 	protected int significanceType = 3;
 
-	private boolean mappingByAttribute = false;
 	int numGenes;
 	int numConds;
 	int extraTokens;
@@ -151,9 +147,8 @@ public class ExpressionReader extends AbstractTableReader {
 	private boolean isCancelled;
 	private CyTable table;
 
-	public ExpressionReader(final InputStream stream, final CyTableFactory tableFactory)
-	{
-		super(stream, tableFactory);
+	public ExpressionReader(final InputStream stream, final CyServiceRegistrar serviceRegistrar) {
+		super(stream, serviceRegistrar);
 		
 		isCancelled = false;
 		table = null;
@@ -694,6 +689,7 @@ public class ExpressionReader extends AbstractTableReader {
 	private void copyToAttribs(TaskMonitor taskMonitor) {
 		String[] condNames = getConditionNames();
 
+		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
 		table = tableFactory.createTable("Expression Matrix", "geneName", String.class,
 						 /* public = */ true, /* mutable = */ true);
 

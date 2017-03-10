@@ -1,12 +1,27 @@
 package org.cytoscape.internal.undo;
 
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.Action;
+import javax.swing.KeyStroke;
+import javax.swing.event.MenuEvent;
+import javax.swing.undo.CannotUndoException;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.swing.undo.SwingUndoSupport;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,56 +39,37 @@ package org.cytoscape.internal.undo;
  * #L%
  */
 
-
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.Action;
-import javax.swing.KeyStroke;
-import javax.swing.event.MenuEvent;
-import javax.swing.undo.CannotUndoException;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.work.swing.undo.SwingUndoSupport;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
- * An action that calls undo for the most recent edit in the
- * undoable edit stack.
+ * An action that calls undo for the most recent edit in the undoable edit stack.
  */
+@SuppressWarnings("serial")
 public class UndoAction extends AbstractCyAction {
-	private final static long serialVersionUID = 1202339875212525L;
 
 	private final static Logger logger = LoggerFactory.getLogger(UndoAction.class);
 
-	private SwingUndoSupport undo;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * Constructs the action.
-	 */
-	public UndoAction(SwingUndoSupport undo) {
+	public UndoAction(final CyServiceRegistrar serviceRegistrar) {
 		super("Undo");
+		this.serviceRegistrar = serviceRegistrar;
+		
 		setAcceleratorKeyStroke(
-			KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit()
-				.getMenuShortcutKeyMask()));
+				KeyStroke.getKeyStroke(KeyEvent.VK_Z, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 		setPreferredMenu("Edit");
 		setEnabled(true);
 		setMenuGravity(1.0f);
-		this.undo = undo;
 	}
 
 	/**
 	 * Tries to run undo() on the top edit of the edit stack.
 	 * @param e The action event that triggers this method call.
 	 */
+	@Override
 	public void actionPerformed(ActionEvent e) {
 		try {
-			if ( undo.getUndoManager().canUndo() )
+			final SwingUndoSupport undo = serviceRegistrar.getService(SwingUndoSupport.class);
+			
+			if (undo.getUndoManager().canUndo())
 				undo.getUndoManager().undo();
 		} catch (CannotUndoException ex) {
 			logger.warn("Unable to undo: " + ex);
@@ -85,7 +81,10 @@ public class UndoAction extends AbstractCyAction {
 	 * Called when the menu that contains this action is clicked on.
 	 * @param e The menu event that triggers this method call.
 	 */
+	@Override
 	public void menuSelected(MenuEvent e) {
+		final SwingUndoSupport undo = serviceRegistrar.getService(SwingUndoSupport.class);
+		
 		if (undo.getUndoManager().canUndo()) {
 			setEnabled(true);
 			putValue(Action.NAME, undo.getUndoManager().getUndoPresentationName());

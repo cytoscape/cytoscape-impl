@@ -1,12 +1,30 @@
 package org.cytoscape.webservice.internal;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.Properties;
+
+import javax.swing.KeyStroke;
+
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
+import org.cytoscape.io.webservice.TableImportWebServiceClient;
+import org.cytoscape.io.webservice.WebServiceClient;
+import org.cytoscape.io.webservice.swing.WebServiceGUI;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.webservice.internal.task.ShowImportDialogAction;
+import org.cytoscape.webservice.internal.ui.WebServiceGUIImpl;
+import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Webservice Impl (webservice-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,31 +42,11 @@ package org.cytoscape.webservice.internal;
  * #L%
  */
 
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-import java.util.Properties;
-
-import javax.swing.KeyStroke;
-
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
-import org.cytoscape.io.webservice.TableImportWebServiceClient;
-import org.cytoscape.io.webservice.WebServiceClient;
-import org.cytoscape.io.webservice.swing.WebServiceGUI;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.webservice.internal.task.ShowImportDialogAction;
-import org.cytoscape.webservice.internal.ui.WebServiceGUIImpl;
-import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
 
 	@Override
 	public void start(BundleContext bc) {
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
 		
 		// UI for Network Import Clients
 		WebServiceImportDialog<NetworkImportWebServiceClient> unifiedNetworkImportDialog = new WebServiceImportDialog<NetworkImportWebServiceClient>(
@@ -67,22 +65,35 @@ public class CyActivator extends AbstractCyActivator {
 		final KeyStroke tableImportShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_DOWN_MASK);
 		
 		ShowImportDialogAction showImportNetworkFromWebServiceDialogAction = new ShowImportDialogAction(
-				cySwingApplicationServiceRef, unifiedNetworkImportDialog, "File.Import.Network", "Public Databases...", networkImportShortcut);
+				unifiedNetworkImportDialog,
+				"File.Import.Network",
+				3.0f,
+				"Public Databases...",
+				networkImportShortcut,
+				2.1f,
+				getClass().getResource("/images/icons/import-net-db-32.png"),
+				"Import Network From Database...",
+				serviceRegistrar
+		);
 		ShowImportDialogAction showImportTableFromWebServiceDialogAction = new ShowImportDialogAction(
-				cySwingApplicationServiceRef, unifiedTableImportDialog, "File.Import.Table", "Public Databases...", tableImportShortcut);
-
-		Properties showImportNetworkFromWebServiceDialogActionProps = new Properties();
-		showImportNetworkFromWebServiceDialogActionProps.setProperty("id",
-				"showImportNetworkFromWebServiceDialogAction");
-		registerService(bc, showImportNetworkFromWebServiceDialogAction, CyAction.class,
-				showImportNetworkFromWebServiceDialogActionProps);
-		registerService(bc, showImportTableFromWebServiceDialogAction, CyAction.class,
-				new Properties());
+				unifiedTableImportDialog,
+				"File.Import.Table",
+				3.0f,
+				"Public Databases...",
+				tableImportShortcut,
+				serviceRegistrar
+		);
+		
+		{
+			Properties props = new Properties();
+			props.setProperty("id", "showImportNetworkFromWebServiceDialogAction");
+			registerService(bc, showImportNetworkFromWebServiceDialogAction, CyAction.class, props);
+		}
+		
+		registerService(bc, showImportTableFromWebServiceDialogAction, CyAction.class, new Properties());
 		registerService(bc, webServiceGui, WebServiceGUI.class, new Properties());
 
-		registerServiceListener(bc, unifiedNetworkImportDialog, "addClient", "removeClient",
-				WebServiceClient.class);
-		registerServiceListener(bc, unifiedTableImportDialog, "addClient", "removeClient",
-				WebServiceClient.class);
+		registerServiceListener(bc, unifiedNetworkImportDialog, "addClient", "removeClient", WebServiceClient.class);
+		registerServiceListener(bc, unifiedTableImportDialog, "addClient", "removeClient", WebServiceClient.class);
 	}
 }

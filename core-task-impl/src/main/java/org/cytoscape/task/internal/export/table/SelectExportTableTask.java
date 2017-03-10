@@ -31,38 +31,53 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 
-public class SelectExportTableTask extends AbstractTask {
+public class SelectExportTableTask extends AbstractTask implements RequestsUIHelper, TunableValidator{
 
-	@Tunable(description = "Select a table to export:")
+	@Tunable(description = "Select a table to export:", gravity = 1.05)
 	public ListSingleSelection<String> selectTable;
+	
+	@ContainsTunables
+	public CyTableWriter writer = null;
+	
+	private TunableUIHelper helper;
 	
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyApplicationManager cyApplicationManagerServiceRef;
 
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
 	private HashMap<String, CyTable> titleTableMap = new HashMap<>();
 	
-	public SelectExportTableTask(final CyTableWriterManager writerManager,
-			final CyTableManager cyTableManagerServiceRef, final CyNetworkManager cyNetworkManagerServiceRef) {
+	public SelectExportTableTask(final CyTableWriterManager writerManager, final CyTableManager cyTableManagerServiceRef, 
+			final CyNetworkManager cyNetworkManagerServiceRef, final CyApplicationManager cyApplicationManagerServiceRef) {
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.writerManager = writerManager;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 
 		populateNetworkTableMap();
 		populateSelectTable();
+		updateWriter();
 	}
 
 	private void populateSelectTable() {
@@ -76,6 +91,17 @@ public class SelectExportTableTask extends AbstractTask {
 		
 		Collections.sort(options);
 		selectTable =  new ListSingleSelection<String>(options);
+		selectTable.addListener(new ListChangeListener<String>(){
+			@Override
+			public void selectionChanged(ListSelection<String> source) {
+				updateWriter();
+				if(helper != null)
+					helper.refresh(SelectExportTableTask.this);
+			}
+
+			@Override
+			public void listChanged(ListSelection<String> source) {
+			}});
 	}
 	
 	private void populateNetworkTableMap() {
@@ -85,19 +111,40 @@ public class SelectExportTableTask extends AbstractTask {
 			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);
 		}
 	}
+	
+	private void updateWriter() {
+		final String selectedTitle = selectTable.getSelectedValue();		
+		CyTable tbl = titleTableMap.get(selectedTitle);
+		if(tbl != null)
+			writer = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);
+		else
+			writer = null;
+	}
 
 	@Override
 	public void run(final TaskMonitor tm) throws IOException {
-		//Get the selected table
-		final String selectedTitle = selectTable.getSelectedValue();		
-		CyTable tbl = this.titleTableMap.get(selectedTitle);
-
-		// Export the selected table
-		this.insertTasksAfterCurrentTask(new CyTableWriter(writerManager, tbl));		
+		this.insertTasksAfterCurrentTask(writer);		
 	}
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export Table";
+	}
+
+	@Override
+	public void setUIHelper(TunableUIHelper helper) {
+		this.helper = helper;
+	}
+
+	@Override
+	public ValidationState getValidationState(Appendable errMsg) {
+		if(selectTable.getPossibleValues().isEmpty()) {
+			try {
+				errMsg.append("No tables exist.");
+			} catch (IOException e) {
+			}
+			return ValidationState.INVALID;
+		}
+		else return writer.getValidationState(errMsg);
 	}
 }

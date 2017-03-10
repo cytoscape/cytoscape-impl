@@ -6,7 +6,7 @@ package org.cytoscape.ding.impl;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -59,37 +59,36 @@ public class DNodeDetails extends NodeDetails {
 
 	// Parent Network View
 	protected final DGraphView dGraphView;
-	private final Object m_deletedEntry = new Object();
 	
 	private final Map<VisualProperty<?>, Object> defaultValues;
 
 	// Mapped Values
-	Map<CyNode, Object> m_colorsLowDetail = new ConcurrentHashMap<CyNode, Object>(16, 0.75f, 2);
-	Map<CyNode, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<CyNode, Object>(16, 0.75f, 2);
-	Map<CyNode, NodeShape> m_shapes = new ConcurrentHashMap<CyNode, NodeShape>(16, 0.75f, 2);
-	Map<CyNode, Paint> m_unselectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-	Map<CyNode, Paint> m_selectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-	Map<CyNode, Float> m_borderWidths = new ConcurrentHashMap<CyNode, Float>(16, 0.75f, 2);
-	Map<CyNode, Stroke> m_borderStrokes = new ConcurrentHashMap<CyNode, Stroke>(16, 0.75f, 2);
-	Map<CyNode, Paint> m_borderPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelCounts = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, String> m_labelTexts = new ConcurrentHashMap<CyNode, String>(16, 0.75f, 2);
-	Map<CyNode, String> m_tooltipTexts = new ConcurrentHashMap<CyNode, String>(16, 0.75f, 2);
-	Map<CyNode, Font> m_labelFonts = new ConcurrentHashMap<CyNode, Font>(16, 0.75f, 2);
-	Map<CyNode, Paint> m_labelPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-	Map<CyNode, Double> m_labelWidths = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelTextAnchors = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelNodeAnchors = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-	Map<CyNode, Double> m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-	Map<CyNode, Boolean> m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
+	Map<CyNode, Object> m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, NodeShape> m_shapes = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Paint> m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Paint> m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Float> m_borderWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Stroke> m_borderStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Paint> m_borderPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, String> m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, String> m_tooltipTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Paint> m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Double> m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Double> m_nodeZ = new ConcurrentHashMap<>(16, 0.75f, 2);
+	Map<CyNode, Boolean> m_nestedNetworkImgVisible = new ConcurrentHashMap<>(16, 0.75f, 2);
 
-	private final Set<CyNode> selected = new HashSet<CyNode>();
+	private final Set<CyNode> selected = new HashSet<>();
 	
 	private final Object lock = new Object();
 
@@ -120,50 +119,45 @@ public class DNodeDetails extends NodeDetails {
 
 	DNodeDetails(final DGraphView view) {
 		this.dGraphView = view;
-		defaultValues = new HashMap<VisualProperty<?>, Object>();
+		defaultValues = new HashMap<>();
 	}
 
 	void clear() {
 		if (isCleared)
 			return;
 
-		m_colorsLowDetail = new ConcurrentHashMap<CyNode, Object>(16, 0.75f, 2);
-		m_selectedColorsLowDetail = new ConcurrentHashMap<CyNode, Object>(16, 0.75f, 2);
-		m_shapes = new ConcurrentHashMap<CyNode, NodeShape>(16, 0.75f, 2);
-		m_unselectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		m_borderWidths = new ConcurrentHashMap<CyNode, Float>(16, 0.75f, 2);
-		m_borderStrokes = new ConcurrentHashMap<CyNode, Stroke>(16, 0.75f, 2);
-		m_borderPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		m_labelCounts = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		m_labelTexts = new ConcurrentHashMap<CyNode, String>(16, 0.75f, 2);
-		m_tooltipTexts = new ConcurrentHashMap<CyNode, String>(16, 0.75f, 2);
-		m_labelFonts = new ConcurrentHashMap<CyNode, Font>(16, 0.75f, 2);
-		m_labelPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		m_labelWidths = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_labelTextAnchors = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		m_labelNodeAnchors = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		m_labelJustifys = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		m_labelOffsetXs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_labelOffsetYs = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_selectedPaints = new ConcurrentHashMap<CyNode, Paint>(16, 0.75f, 2);
-		this.m_nodeTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		this.m_nodeBorderTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		this.m_nodeLabelTansparencies = new ConcurrentHashMap<CyNode, Integer>(16, 0.75f, 2);
-		m_nodeZ = new ConcurrentHashMap<CyNode, Double>(16, 0.75f, 2);
-		m_nestedNetworkImgVisible = new ConcurrentHashMap<CyNode, Boolean>(16, 0.75f, 2);
+		m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_shapes = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_borderWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_borderStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_borderPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_tooltipTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
+		this.m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		this.m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		this.m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nodeZ = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nestedNetworkImgVisible = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 		isCleared = true;
 	}
 
 	void unregisterNode(final CyNode nodeIdx) {
-		final Object o = m_colorsLowDetail.get(nodeIdx);
-		if ((o != null) && (o != m_deletedEntry))
-			m_colorsLowDetail.put(nodeIdx, m_deletedEntry);
-
-		final Object os = m_selectedColorsLowDetail.get(nodeIdx);
-		if ((os != null) && (os != m_deletedEntry))
-			m_selectedColorsLowDetail.put(nodeIdx, m_deletedEntry);
-
+		// To avoid a memory leak its important to permanently remove the node from all the maps.
+		m_colorsLowDetail.remove(nodeIdx);
+		m_selectedColorsLowDetail.remove(nodeIdx);
 		m_shapes.remove(nodeIdx);
 		m_unselectedPaints.remove(nodeIdx);
 		m_borderWidths.remove(nodeIdx);
@@ -219,7 +213,7 @@ public class DNodeDetails extends NodeDetails {
 
 		final Object o = m_colorsLowDetail.get(node);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_colorLowDetailDefault == null)
 				return super.getColorLowDetail(node);
 			else
@@ -242,7 +236,7 @@ public class DNodeDetails extends NodeDetails {
 
 		final Object o = m_selectedColorsLowDetail.get(node);
 
-		if ((o == null) || (o == m_deletedEntry))
+		if (o == null)
 			if (m_selectedColorLowDetailDefault == null)
 				return (Color) DNodeView.DEFAULT_NODE_SELECTED_PAINT;
 			else
@@ -434,12 +428,12 @@ public class DNodeDetails extends NodeDetails {
 	}
 
 	/**
-	 * A negative width value has the special meaning to remove overridden width.
+	 * A null or negative width value has the special meaning to remove overridden width.
 	 */
-	void overrideBorderWidth(final CyNode node, final float width) {
-		if ((width < 0.0f) || (width == super.getBorderWidth(node)))
+	void overrideBorderWidth(final CyNode node, final Float width) {
+		if (width == null || width < 0.0f) {
 			m_borderWidths.remove(node);
-		else {
+		} else {
 			m_borderWidths.put(node, width);
 			isCleared = false;
 		}
@@ -1198,6 +1192,7 @@ public class DNodeDetails extends NodeDetails {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
 	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
 		return (V) defaultValues.get(vp);
 	}

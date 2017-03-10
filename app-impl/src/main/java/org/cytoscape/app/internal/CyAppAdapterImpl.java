@@ -38,6 +38,8 @@ import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.command.util.RowList;
 import org.cytoscape.equations.AbstractFunction;
+import org.cytoscape.equations.event.EquationFunctionAddedEvent;
+import org.cytoscape.equations.event.EquationFunctionRemovedEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.Transformer;
@@ -109,6 +111,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
+import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
 
@@ -221,6 +224,8 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Transformers transformers;
 	private TransformerViewFactory transformerViewFactory;
 	private CyJobManager cyjobManager;
+	private EquationFunctionAddedEvent equationFunctionAddedEvent;
+	private EquationFunctionRemovedEvent equationFunctionRemovedEvent;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
@@ -294,6 +299,9 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private RowList rowList;
 	private CommandExecutorTaskFactory commandExecutorTaskFactory;
 	private AvailableCommands availableCommands;
+
+	// From work-swing-api
+	private UserAction userAction;
 
 	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
 	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;

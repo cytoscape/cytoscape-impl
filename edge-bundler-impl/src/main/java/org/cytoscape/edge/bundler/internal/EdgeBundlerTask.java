@@ -1,30 +1,5 @@
 package org.cytoscape.edge.bundler.internal;
 
-/*
- * #%L
- * Cytoscape Edge Bundler Impl (edge-bundler-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
@@ -44,6 +19,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -60,6 +36,30 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Edge Bundler Impl (edge-bundler-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Based on Holten and Wijk. Force-directed edge bundling for graph
@@ -96,30 +96,20 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 	private double[] edgeLength;
 	private int[][] edgeMatcher;
 
-	private final HandleFactory hf;
-	private final BendFactory bf;
-	private final VisualMappingManager vmm;
-	private final VisualMappingFunctionFactory discreteFactory;
-
 	private int numEdges;
 	private int selection;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
+	EdgeBundlerTask(final CyNetworkView view, final int selection, final CyServiceRegistrar serviceRegistrar) { 
+		super(view);
 
-	EdgeBundlerTask(CyNetworkView v, HandleFactory hf, BendFactory bf, VisualMappingManager vmm,
-			VisualMappingFunctionFactory discreteFactory, int selection) {
-		super(v);
-
-		this.hf = hf;
-		this.bf = bf;
-		this.vmm = vmm;
-		this.discreteFactory = discreteFactory;
-		this.selection = selection;		
+		this.selection = selection;
+		this.serviceRegistrar = serviceRegistrar;
 	}
-
 	
 	@Override
 	public void run(TaskMonitor tm) {
-
 		// Check tunables
 		if (numNubs < 1)
 			numNubs = 1;
@@ -220,6 +210,12 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		final double maxItrDouble = Double.valueOf(maxIterations);
 		final double[][][] forces = new double[numNubs][2][numEdges]; // Nub, X/Y, edgeIndex
 		
+		final HandleFactory handleFactory = serviceRegistrar.getService(HandleFactory.class);
+		final BendFactory bendFactory = serviceRegistrar.getService(BendFactory.class);
+		final VisualMappingManager visualMappingManager = serviceRegistrar.getService(VisualMappingManager.class);
+		final VisualMappingFunctionFactory discreteFactory = serviceRegistrar
+				.getService(VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+
 		// Repeat the simulation [maxIterations] times.
 		for (int iteri = 0; iteri < maxIterations; iteri++) {
 			if (this.cancelled) {
@@ -244,14 +240,13 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 			}
 
 			if (animate && System.nanoTime() - time > 3) {
-				render(edges);
+				render(edges, handleFactory, bendFactory, visualMappingManager, discreteFactory);
 				time = System.nanoTime();
 			}
 		}
 
-		render(edges);
+		render(edges, handleFactory, bendFactory, visualMappingManager, discreteFactory);
 	}
-
 
 	private boolean isConverged(double[][][] forces, double threshold) {
 		for (int ei = 0; ei < edgeLength.length; ei++)
@@ -265,8 +260,8 @@ public class EdgeBundlerTask extends AbstractNetworkViewTask {
 		return true;
 	}
 
-	private final void render(final Collection<View<CyEdge>> edges) {
-		
+	private final void render(final Collection<View<CyEdge>> edges, final HandleFactory hf, final BendFactory bf,
+			final VisualMappingManager vmm, final VisualMappingFunctionFactory discreteFactory) {
 		final VisualStyle style = vmm.getVisualStyle(view);
 		// Check existing mapping
 		VisualMappingFunction<?, Bend> bendMapping = style.getVisualMappingFunction(EDGE_BEND);

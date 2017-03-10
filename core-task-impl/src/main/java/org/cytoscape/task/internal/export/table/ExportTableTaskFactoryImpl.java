@@ -28,6 +28,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableTaskFactory;
@@ -38,16 +39,19 @@ import org.cytoscape.work.TunableSetter;
 public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory implements ExportTableTaskFactory {
 	
 	private final CyTableWriterManager writerManager;
+	private final CyApplicationManager cyApplicationManager;
 	private final TunableSetter tunableSetter;
 	
-	public ExportTableTaskFactoryImpl(final CyTableWriterManager writerManager, final TunableSetter tunableSetter) {
+	public ExportTableTaskFactoryImpl(final CyTableWriterManager writerManager, final CyApplicationManager cyApplicationManager,
+			final TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
+		this.cyApplicationManager = cyApplicationManager;
 		this.tunableSetter = tunableSetter;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final CyTable table) {
-		return new TaskIterator(2, new CyTableWriter(writerManager, table));
+		return new TaskIterator(2, new CyTableWriter(writerManager, cyApplicationManager, table));
 	}
 
 	@Override
@@ -55,7 +59,7 @@ public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory impleme
 		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 		
-		final CyTableWriter writer = new CyTableWriter(writerManager, table);
+		final CyTableWriter writer = new CyTableWriter(writerManager, cyApplicationManager, table);
 		writer.setDefaultFileFormatUsingFileExt(file);
 		
 		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);

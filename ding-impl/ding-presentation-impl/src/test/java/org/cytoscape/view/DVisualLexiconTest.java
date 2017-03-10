@@ -1,12 +1,26 @@
 package org.cytoscape.view;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.view.model.NullDataType;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.property.AbstractVisualLexiconTest;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,20 +37,6 @@ package org.cytoscape.view;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.view.model.NullDataType;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.property.AbstractVisualLexiconTest;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 public class DVisualLexiconTest extends AbstractVisualLexiconTest {
 

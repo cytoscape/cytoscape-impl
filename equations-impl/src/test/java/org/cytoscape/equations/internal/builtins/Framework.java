@@ -1,12 +1,30 @@
 package org.cytoscape.equations.internal.builtins;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Function;
+import org.cytoscape.equations.IdentDescriptor;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Equations Impl (equations-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +42,29 @@ package org.cytoscape.equations.internal.builtins;
  * #L%
  */
 
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.equations.EquationCompiler;
-import org.cytoscape.equations.Function;
-import org.cytoscape.equations.EquationParser;
-import org.cytoscape.equations.IdentDescriptor;
-import org.cytoscape.equations.Interpreter;
-
-import org.cytoscape.equations.internal.EquationCompilerImpl;
-import org.cytoscape.equations.internal.EquationParserImpl;
-import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
-
-
 class Framework {
+	
 	static private class BadReturnFunction implements Function {
 		public String getName() { return "BAD"; }
 		public String getFunctionSummary() { return "Returns an invalid type at runtime."; }
 		public String getUsageDescription() { return "Call this with \"BAD()\"."; }
-		public Class getReturnType() { return Double.class; }
-		public Class validateArgTypes(final Class[] argTypes) { return argTypes.length == 0 ? Double.class : null; }
+		public Class<?> getReturnType() { return Double.class; }
+		public Class<?> validateArgTypes(final Class<?>[] argTypes) { return argTypes.length == 0 ? Double.class : null; }
 		public Object evaluateFunction(final Object[] args) { return new Integer(1); }
-		public List<Class<?>> getPossibleArgTypes(final Class[] leadingArgs) { return null; }
+		public List<Class<?>> getPossibleArgTypes(final Class<?>[] leadingArgs) { return null; }
 	}
 
 	private static final EquationCompiler compiler;
 
 	static {
-		compiler = new EquationCompilerImpl(new EquationParserImpl());
-		compiler.getParser().registerFunction(new BadReturnFunction());
+		final CyEventHelper eventHelper = new DummyCyEventHelper();
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		EquationParserImpl parser = new EquationParserImpl(serviceRegistrar);
+		compiler = new EquationCompilerImpl(parser);
+		parser.registerFunctionInternal(new BadReturnFunction());
 	}
 
 	/**

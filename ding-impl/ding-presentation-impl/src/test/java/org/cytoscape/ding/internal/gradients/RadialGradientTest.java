@@ -1,12 +1,14 @@
 package org.cytoscape.ding.internal.gradients;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.*;
+import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_COLORS;
+import static org.cytoscape.ding.internal.gradients.AbstractGradient.GRADIENT_FRACTIONS;
+import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.CENTER;
+import static org.cytoscape.ding.internal.gradients.radial.RadialGradient.RADIUS;
+import static org.junit.Assert.assertEquals;
 
 import java.awt.Color;
 import java.awt.geom.Point2D;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
@@ -14,11 +16,36 @@ import org.cytoscape.ding.internal.gradients.radial.RadialGradient;
 import org.junit.Before;
 import org.junit.Test;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class RadialGradientTest extends AbstractCustomGraphics2Test {
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
-		props1 = new HashMap<String, Object>();
+		super.setUp();
 		props1.put(GRADIENT_COLORS, asList(Color.WHITE, Color.RED, Color.BLUE, Color.GREEN));
 		props1.put(GRADIENT_FRACTIONS, asList(0.0f, 0.25f, 0.75f, 1.0f));
 		props1.put(CENTER, new Point2D.Float(0.25f, 0.5f));

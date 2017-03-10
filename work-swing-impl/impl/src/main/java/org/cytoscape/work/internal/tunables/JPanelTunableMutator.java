@@ -92,7 +92,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	/** A reference to the parent <code>JPanel</code>, if any. */
 	private JPanel tunablePanel;
-	private JPanel providedGUI;
 
 	/** Provides an initialised logger. */
 	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
@@ -102,7 +101,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	
 	private boolean updatingMargins;
 	private final ComponentListener controlComponentListener;
-	private List<GUITunableHandler> handlers;
+	protected List<GUITunableHandler> handlers;
 	
 	private final Object lock = new Object();
 
@@ -191,21 +190,8 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				}
 			}
 	
-			if (providedGUI != null) {
-				//if no tunablePanel is defined, then create a new JDialog to display the Tunables' panels
-				if (tunablePanel == null) {
-					return providedGUI;
-				} else { // add them to the "tunablePanel" JPanel
-					tunablePanel.removeAll();
-					tunablePanel.add(providedGUI);
-					final JPanel retVal = tunablePanel;
-					tunablePanel = null;
-					
-					return retVal;
-				}
-			} 
-	
 			if (handlers.isEmpty()) {
+				System.out.println("Handlers are empty!");
 				if (tunablePanel != null) {
 					tunablePanel.removeAll();
 					

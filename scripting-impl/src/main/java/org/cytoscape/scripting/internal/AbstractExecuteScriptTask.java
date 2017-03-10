@@ -1,12 +1,23 @@
 package org.cytoscape.scripting.internal;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape Scripting Impl (scripting-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +35,23 @@ package org.cytoscape.scripting.internal;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.work.AbstractTask;
-
 public abstract class AbstractExecuteScriptTask extends AbstractTask {
 
 	protected final Map<String, ScriptEngineFactory> name2engineMap;
-	protected final CyAppAdapter cyAppAdapter;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
 	protected final List<String> engineNameList;
 	
 	protected final ScriptEngineManager manager;
 
-	AbstractExecuteScriptTask(final ScriptEngineManager manager, final CyAppAdapter cyAppAdapter) {
-		this.cyAppAdapter = cyAppAdapter;
+	AbstractExecuteScriptTask(final ScriptEngineManager manager, final CyServiceRegistrar serviceRegistrar) {
 		this.manager = manager;
+		this.serviceRegistrar = serviceRegistrar;
 
-		this.name2engineMap = new HashMap<String, ScriptEngineFactory>();
+		this.name2engineMap = new HashMap<>();
 
 		final List<ScriptEngineFactory> engines = manager.getEngineFactories();
-		engineNameList = new ArrayList<String>();
+		engineNameList = new ArrayList<>();
 
 		for (final ScriptEngineFactory engine : engines) {
 			final String langName = engine.getLanguageName();

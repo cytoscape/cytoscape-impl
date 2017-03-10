@@ -1,12 +1,24 @@
 package org.cytoscape.io.internal.write.xgmml;
 
+import java.io.OutputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.GroupUtil;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,55 +36,29 @@ package org.cytoscape.io.internal.write.xgmml;
  * #L%
  */
 
-import java.io.OutputStream;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.util.GroupUtil;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-
 public class GenericXGMMLWriterFactory extends AbstractCyWriterFactory implements CyNetworkViewWriterFactory {
 
-	protected final RenderingEngineManager renderingEngineMgr;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropMgr;
-	protected final CyNetworkManager netMgr;
-	protected final CyRootNetworkManager rootNetMgr;
-	protected final VisualMappingManager vmMgr;
 	protected final GroupUtil groupUtil;
+	protected final CyServiceRegistrar serviceRegistrar;
 
 	public GenericXGMMLWriterFactory(final CyFileFilter filter,
-									 final RenderingEngineManager renderingEngineMgr,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropMgr,
-									 final CyNetworkManager netMgr,
-									 final CyRootNetworkManager rootNetMgr,
-									 final VisualMappingManager vmMgr,
-									 final GroupUtil groupUtil) {
+									 final GroupUtil groupUtil,
+									 final CyServiceRegistrar serviceRegistrar) {
 		super(filter);
-		this.renderingEngineMgr = renderingEngineMgr;
 		this.unrecognizedVisualPropMgr = unrecognizedVisualPropMgr;
-		this.netMgr = netMgr;
-		this.rootNetMgr = rootNetMgr;
-		this.vmMgr = vmMgr;
 		this.groupUtil = groupUtil;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
     public CyWriter createWriter(OutputStream os, CyNetworkView view) {
-		return new GenericXGMMLWriter(os, renderingEngineMgr, view, unrecognizedVisualPropMgr, netMgr, rootNetMgr,
-				vmMgr, groupUtil);
+		return new GenericXGMMLWriter(os, view, unrecognizedVisualPropMgr, groupUtil, serviceRegistrar);
     }
 
 	@Override
     public CyWriter createWriter(OutputStream os, CyNetwork network) {
-		return new GenericXGMMLWriter(os, renderingEngineMgr, network, unrecognizedVisualPropMgr, netMgr, rootNetMgr,
-				groupUtil);
+		return new GenericXGMMLWriter(os, network, unrecognizedVisualPropMgr, groupUtil, serviceRegistrar);
     }
 }

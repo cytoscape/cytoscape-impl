@@ -1,12 +1,22 @@
 package org.cytoscape.editor.internal;
 
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +34,17 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.task.AbstractNodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-
 public class AddNestedNetworkTaskFactory extends AbstractNodeViewTaskFactory {
-	final CyNetworkManager netMgr;
-	final VisualMappingManager vmMgr;
-	final CyGroupManager grMgr;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public AddNestedNetworkTaskFactory(final CyNetworkManager netMgr,
-									   final VisualMappingManager vmMgr,
-									   final CyGroupManager grMgr) {
-		this.netMgr = netMgr;
-		this.vmMgr = vmMgr;
-		this.grMgr = grMgr;
+	public AddNestedNetworkTaskFactory(final CyServiceRegistrar serviceRegistrar) { 
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new AddNestedNetworkTask(nodeView, networkView, netMgr, vmMgr, grMgr));
+		return new TaskIterator(new AddNestedNetworkTask(nodeView, networkView, serviceRegistrar));
 	}
 
 	@Override
@@ -64,6 +59,9 @@ public class AddNestedNetworkTaskFactory extends AbstractNodeViewTaskFactory {
 		final CyNetwork net = networkView.getModel();
 		final CyNetwork netPointer = node.getNetworkPointer();
 		
-		return ( netPointer == null ) || ( netMgr.networkExists(netPointer.getSUID()) && !grMgr.isGroup(node, net) );
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyGroupManager grMgr = serviceRegistrar.getService(CyGroupManager.class);
+		
+		return (netPointer == null) || (netMgr.networkExists(netPointer.getSUID()) && !grMgr.isGroup(node, net));
 	}
 }

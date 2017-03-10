@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.write.xgmml;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -59,6 +35,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
@@ -72,6 +49,30 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This writer serializes CyNetworks and CyNetworkViews as standard XGMML files.
@@ -105,16 +106,14 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     protected Set<CySubNetwork> subNetworks;
     protected CyNetworkView networkView;
     protected VisualStyle visualStyle;
-    protected final VisualLexicon visualLexicon;
     protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-    protected final CyNetworkManager networkMgr;
-    protected final CyRootNetworkManager rootNetworkMgr;
-    protected final RenderingEngineManager renderingEngineMgr;
     private final GroupUtil groupUtil;
+    private VisualLexicon visualLexicon;
+    protected CyServiceRegistrar serviceRegistrar;
 
-    protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<CyNode, CyNode>();
-    protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
-    protected final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<CyNetwork, CyNetwork>();
+    protected final Map<CyNode, CyNode> writtenNodeMap = new WeakHashMap<>();
+    protected final Map<CyEdge, CyEdge> writtenEdgeMap = new WeakHashMap<>();
+    protected final Map<CyNetwork, CyNetwork> writtenNetMap = new WeakHashMap<>();
 
     protected int depth = 0;
     private String indentString = "";
@@ -125,41 +124,32 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     final static private Logger logger = LoggerFactory.getLogger(GenericXGMMLWriter.class);
 
     public GenericXGMMLWriter(final OutputStream outputStream,
-                              final RenderingEngineManager renderingEngineMgr,
                               final CyNetworkView networkView,
                               final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                              final CyNetworkManager networkMgr,
-                              final CyRootNetworkManager rootNetworkMgr,
-                              final VisualMappingManager vmMgr,
-                              final GroupUtil groupUtil) {
-        this(outputStream, renderingEngineMgr, networkView.getModel(), unrecognizedVisualPropertyMgr, networkMgr,
-                rootNetworkMgr, groupUtil);
+                              final GroupUtil groupUtil,
+                              final CyServiceRegistrar serviceRegistrar) {
+        this(outputStream, networkView.getModel(), unrecognizedVisualPropertyMgr, groupUtil, serviceRegistrar);
         this.networkView = networkView;
         
-        setVisualStyle(vmMgr.getVisualStyle(networkView));
+        setVisualStyle(serviceRegistrar.getService(VisualMappingManager.class).getVisualStyle(networkView));
     }
     
     public GenericXGMMLWriter(final OutputStream outputStream,
-                              final RenderingEngineManager renderingEngineMgr,
                               final CyNetwork network,
                               final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-                              final CyNetworkManager networkMgr,
-                              final CyRootNetworkManager rootNetworkMgr,
-                              final GroupUtil groupUtil) {
+                              final GroupUtil groupUtil,
+                              final CyServiceRegistrar serviceRegistrar) {
         this.outputStream = outputStream;
         this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
-        this.networkMgr = networkMgr;
-        this.rootNetworkMgr = rootNetworkMgr;
-        this.renderingEngineMgr = renderingEngineMgr;
-        this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
         this.groupUtil = groupUtil;
+        this.serviceRegistrar = serviceRegistrar;
         
         if (network instanceof CyRootNetwork) {
             this.network = this.rootNetwork = (CyRootNetwork) network;
             this.subNetworks = getSerializableSubNetworks(rootNetwork);
         } else {
             this.network = network;
-            this.rootNetwork = rootNetworkMgr.getRootNetwork(network);
+            this.rootNetwork = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(network);
             this.subNetworks = new HashSet<CySubNetwork>();
         }
         
@@ -304,7 +294,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             writeSubGraphReference(net);
         } else {
             // Check if this network is from the same root network as the base network
-            final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
+            final CyRootNetwork otherRoot = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(net);
             boolean sameRoot = rootNetwork.equals(otherRoot);
             
             if (sameRoot) {
@@ -343,7 +333,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             return;
         
         String href = "#" + net.getSUID();
-        final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
+        final CyRootNetwork otherRoot = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(net);
         final boolean sameRoot = rootNetwork.equals(otherRoot);
         
         if (!sameRoot) {
@@ -534,6 +524,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         else
             root = BasicVisualLexicon.NETWORK;
         
+        final VisualLexicon visualLexicon = getVisualLexicon();
         final Collection<VisualProperty<?>> visualProperties = visualLexicon.getAllDescendants(root);
         final List<VisualProperty<?>> attProperties = new ArrayList<VisualProperty<?>>(); // To be written as att tags
         final List<VisualProperty<?>> lockedProperties = new ArrayList<VisualProperty<?>>();
@@ -868,6 +859,13 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
         writer.write(indentString, 0, depth * 2);
         writer.write(line);
     }
+    
+    protected VisualLexicon getVisualLexicon() {
+    	if (visualLexicon == null)
+    		visualLexicon = serviceRegistrar.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
+    	
+		return visualLexicon;
+	}
 
     /**
      * Return the type of an attribute value.
@@ -1025,6 +1023,6 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     }
     
 	protected boolean isRegistered(final CyNetwork net) {
-        return networkMgr.networkExists(net.getSUID());
+        return serviceRegistrar.getService(CyNetworkManager.class).networkExists(net.getSUID());
     }
 }

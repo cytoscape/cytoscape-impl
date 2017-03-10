@@ -30,6 +30,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadCancelledEvent;
@@ -356,7 +357,15 @@ public class VizMapperProxy extends Proxy
 	@Override
 	public void handleEvent(final CyStartEvent e) {
 		cytoscapeStarted = true;
-		getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
+		
+		// Don't load the default styles if a session has already been loaded,
+		// because that would add the default style list to the current session (which could even duplicate some styles)
+		// and change the style of the current network view.
+		// This can happen when Cytoscape is started with a command-line argument to open a session.
+		if (servicesUtil.get(CySessionManager.class).getCurrentSessionFileName() == null)
+			sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
+		else
+			loadVisualStyles();
 	}
 	
 	@Override
@@ -374,7 +383,7 @@ public class VizMapperProxy extends Proxy
 		loadingSession = false;
 		
 		if (e.getLoadedFileName() == null) // New empty session
-			getFacade().sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
+			sendNotification(LOAD_DEFAULT_VISUAL_STYLES);
 		else
 			sendNotification(VISUAL_STYLE_SET_CHANGED, getVisualStyles());
 	}

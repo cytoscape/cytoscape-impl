@@ -1,33 +1,10 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -36,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -43,11 +21,8 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.TableTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -70,28 +45,46 @@ import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class DNodeViewTest {
 	
-	private static final int IDX = 1;
-
-	private VisualLexicon lexicon;
+	private VisualLexicon dingLexicon;
 
 	@Mock
 	private DGraphView graphView;
 
 	private CyNetwork network;
 	
-	
-	private CyTableFactory dataFactory;
-	private CyRootNetworkManager cyRoot;
+	private CyRootNetworkManager rootNetworkManager;
 	private SpacialIndex2DFactory spacialFactory;
-
 	
 	@Mock
-	private UndoSupport undo;
-
+	private UndoSupport undoSupport;
 	@Mock
-	private ViewTaskFactoryListener vtfl;
+	private ViewTaskFactoryListener vtfListener;
 	@Mock
 	private Map<NodeViewTaskFactory, Map> nodeViewTFs;
 	@Mock
@@ -99,31 +92,26 @@ public class DNodeViewTest {
 	@Mock
 	private Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
 	@Mock
-	private DialogTaskManager manager;
+	private DialogTaskManager dialogTaskManager;
 	@Mock
 	private CyEventHelper eventHelper;
 	@Mock
 	private IconManager iconManager;
 	@Mock
-	private CyNetworkTableManager tableMgr;
-	@Mock
-	private AnnotationFactoryManager annMgr;
+	private AnnotationFactoryManager annotationFactoryManager;
 	@Mock
 	private DingGraphLOD dingGraphLOD;
-	
 	@Mock
-	private CyNetworkViewManager netViewMgr; 
-
+	private CyNetworkViewManager networkViewManager; 
 	@Mock
-	private VisualMappingManager vmm;
-	
+	private VisualMappingManager visualMappingManager;
 	@Mock
-	private CyServiceRegistrar registrar;
-	
+	private CyApplicationConfiguration applicationConfiguration;
+	@Mock
+	private CyServiceRegistrar serviceRegistrar;
 	@Mock
 	private HandleFactory handleFactory;
 	
-	private final TableTestSupport tableSupport = new TableTestSupport();
 	private final NetworkTestSupport netSupport = new NetworkTestSupport();
 
 	private DGraphView networkView;
@@ -136,23 +124,30 @@ public class DNodeViewTest {
 	
 	private DNodeView dnv1;
 	private DNodeView dnv2;
-	
-	
 
 	@Before
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
-		lexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
 		
-		dataFactory = tableSupport.getTableFactory();
-		cyRoot = netSupport.getRootNetworkFactory();
+		rootNetworkManager = netSupport.getRootNetworkFactory();
 		spacialFactory = new RTreeFactory();
 		
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetworkManager);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(spacialFactory);
+		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(dialogTaskManager);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
+		when(serviceRegistrar.getService(CyApplicationConfiguration.class)).thenReturn(applicationConfiguration);
+		
+		dingLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
+		
 		buildNetwork();
-		networkView = new DGraphView(network, cyRoot, undo, spacialFactory, lexicon,
-				vtfl,
-				/*nodeViewTFs, edgeViewTFs, emptySpaceTFs, dropNodeViewTFs, 
-				dropEmptySpaceTFs,*/ manager, eventHelper, annMgr, dingGraphLOD, vmm, netViewMgr, handleFactory, iconManager, registrar);
+		
+		networkView = new DGraphView(network, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory,
+				serviceRegistrar);
 		
 		dnv1 = (DNodeView) networkView.getDNodeView(node1);
 		dnv2 = (DNodeView) networkView.getDNodeView(node2);
@@ -161,7 +156,6 @@ public class DNodeViewTest {
 	@After
 	public void tearDown() throws Exception {
 	}
-	
 	
 	public void buildNetwork() {
 		network = netSupport.getNetwork();
@@ -178,8 +172,6 @@ public class DNodeViewTest {
 		List<CyEdge> el = new ArrayList<CyEdge>();
 		el.add(edge1);
 	}
-	
-	
 
 	@Test
 	public void testDNodeView() {
@@ -201,7 +193,6 @@ public class DNodeViewTest {
 		// assertEquals(1, index2);
 	}
 
-
 	@Test
 	public void testSetSelectedPaint() {
 		Paint paint = Color.BLUE;
@@ -211,13 +202,11 @@ public class DNodeViewTest {
 		assertEquals(paint, selectedPaint);
 	}
 
-
 	@Test
 	public void testSetUnselectedPaint() {
 		dnv1.setUnselectedPaint(Color.PINK);
 		assertEquals(Color.PINK, ((DGraphView)dnv1.getGraphView()).m_nodeDetails.getUnselectedPaint(dnv1.getCyNode()));
 	}
-
 
 	@Test
 	public void testSetBorderPaint() {
@@ -241,7 +230,6 @@ public class DNodeViewTest {
 //		BasicStroke bs = (BasicStroke) stroke;
 //		assertEquals(width, Float.valueOf(bs.getLineWidth()));
 	}
-
 
 	@Test
 	public void testSetBorder() {
@@ -464,5 +452,4 @@ public class DNodeViewTest {
 //		assertEquals(width, Double.valueOf(dnv1.getWidth()));
 //		assertEquals(height, Double.valueOf(dnv1.getHeight()));
 	}
-
 }

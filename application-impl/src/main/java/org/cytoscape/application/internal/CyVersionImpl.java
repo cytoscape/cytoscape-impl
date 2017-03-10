@@ -1,12 +1,22 @@
 package org.cytoscape.application.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Application Impl (application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,15 +33,6 @@ package org.cytoscape.application.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.property.CyProperty;
 
 /** 
  * Identify the version of cytoscape. 
@@ -51,9 +52,10 @@ public class CyVersionImpl implements CyVersion {
 	private final String version;
 
 	@SuppressWarnings("deprecation")
-	public CyVersionImpl(final CyProperty<Properties> props) {
+	public CyVersionImpl(final CyServiceRegistrar serviceRegistrar) {
 		InputStream stream = getClass().getResourceAsStream(PROPERTY_FILE);
-		if ( stream == null )
+		
+		if (stream == null)
 			throw new NullPointerException("Application properties are missing");
 		
 		Properties properties = new Properties();
@@ -65,15 +67,18 @@ public class CyVersionImpl implements CyVersion {
 		
 		version = properties.getProperty(APPLICATION_VERSION_PROPERTY); 
 
-		if ( version == null )
+		if (version == null)
 			throw new NullPointerException("No version number found in the provided properties");
 
 		Matcher m = p.matcher(version);
 
-		if ( !m.matches() )
-			throw new IllegalArgumentException("Malformed version number: " + version + "  The version number must match this regular expression: " + CyVersion.VERSION_REGEX);
+		if (!m.matches())
+			throw new IllegalArgumentException("Malformed version number: " + version
+					+ "  The version number must match this regular expression: " + CyVersion.VERSION_REGEX);
 
-		props.getProperties().setProperty(CyVersion.VERSION_PROPERTY_NAME, version);
+		final Properties props = (Properties) serviceRegistrar
+				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		props.setProperty(CyVersion.VERSION_PROPERTY_NAME, version);
 
 		major = Integer.parseInt(m.group(1));
 		minor = Integer.parseInt(m.group(2));
@@ -81,37 +86,27 @@ public class CyVersionImpl implements CyVersion {
 		qualifier = m.group(4);
 	}
 
-	/**
-	 * @inheritdoc
-	 */
+	@Override
 	public String getVersion() {
 		return version;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
+	@Override
 	public int getMajorVersion() {
 		return major;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
+	@Override
 	public int getMinorVersion() {
 		return minor;
 	}
 
-	/**
-	 * @inheritDoc
-	 */
+	@Override
 	public int getBugFixVersion() {
 		return bugfix;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
+	@Override
 	public String getQualifier() {
 		return qualifier;
 	}

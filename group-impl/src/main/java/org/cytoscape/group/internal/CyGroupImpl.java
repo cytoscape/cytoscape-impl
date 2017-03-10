@@ -37,7 +37,6 @@ import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.events.GroupAboutToBeRemovedEvent;
 import org.cytoscape.group.events.GroupAboutToCollapseEvent;
 import org.cytoscape.group.events.GroupAddedToNetworkEvent;
@@ -55,7 +54,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.slf4j.Logger;
@@ -700,7 +698,13 @@ public class CyGroupImpl implements CyGroup {
 			}
 		}
 
+		
+		// causes external edges to be removed as well
 		subnet.removeNodes(nodes);
+		// Make sure the external edges don't get auto-deleted
+		for(CyEdge edge : externalEdges) {
+			subnet.getRootNetwork().restoreEdge(edge);
+		}
 
 		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
 

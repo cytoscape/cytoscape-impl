@@ -1,12 +1,25 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import java.io.InputStream;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
+import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,42 +37,21 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import java.io.InputStream;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractNetworkReaderFactory;
-import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.TaskIterator;
-
 /**
  * This factory creates readers which can handle standard XGMML files.
  */
 public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 
-	private final RenderingEngineManager renderingEngineMgr;
 	private final XGMMLParser parser;
 	private final ReadDataManager readDataMgr;
 	private final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
 	
 	public GenericXGMMLReaderFactory(final CyFileFilter filter,
-			                         final CyNetworkViewFactory cyNetworkViewFactory,
-									 final CyNetworkFactory cyNetworkFactory,
-									 final RenderingEngineManager renderingEngineMgr,
 									 final ReadDataManager readDataMgr,
 									 final XGMMLParser parser,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-									 final CyNetworkManager cyNetworkManager, 
-									 final CyRootNetworkManager cyRootNetworkManager,
-									 final CyApplicationManager cyApplicationManager) {
-		super(filter, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
-		this.renderingEngineMgr = renderingEngineMgr;
+									 final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
@@ -67,7 +59,12 @@ public class GenericXGMMLReaderFactory extends AbstractNetworkReaderFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new GenericXGMMLReader(inputStream, cyNetworkFactory, renderingEngineMgr, readDataMgr,
-				parser, unrecognizedVisualPropertyMgr, cyNetworkManager, cyRootNetworkManager, cyApplicationManager));
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkFactory netFactory = serviceRegistrar.getService(CyNetworkFactory.class);
+		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyRootNetworkManager rootNetManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		
+		return new TaskIterator(new GenericXGMMLReader(inputStream, readDataMgr, parser, unrecognizedVisualPropertyMgr,
+				applicationManager, netFactory, netManager, rootNetManager, serviceRegistrar));
 	}
 }

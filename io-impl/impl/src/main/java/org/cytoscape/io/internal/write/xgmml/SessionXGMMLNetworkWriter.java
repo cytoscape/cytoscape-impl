@@ -1,12 +1,28 @@
 package org.cytoscape.io.internal.write.xgmml;
 
+import java.io.IOException;
+import java.io.OutputStream;
+
+import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +40,6 @@ package org.cytoscape.io.internal.write.xgmml;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.OutputStream;
-
-import org.cytoscape.io.internal.read.xgmml.ObjectTypeMap;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-
 /**
  * This writer serializes CyNetworks as XGMML files which are customized for session serialization.
  * It should not be used to export to standard XGMML files.
@@ -48,13 +47,10 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 
 	public SessionXGMMLNetworkWriter(final OutputStream outputStream,
-									 final RenderingEngineManager renderingEngineMgr,
 									 final CyNetwork network,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-									 final CyNetworkManager networkMgr,
-									 final CyRootNetworkManager rootNetworkMgr) {
-		super(outputStream, renderingEngineMgr, network, unrecognizedVisualPropertyMgr, networkMgr, rootNetworkMgr, 
-				null);
+									 final CyServiceRegistrar serviceRegistrar) {
+		super(outputStream, network, unrecognizedVisualPropertyMgr, null, serviceRegistrar);
 
 		if (rootNetwork.getSavePolicy() != SavePolicy.SESSION_FILE)
 			throw new IllegalArgumentException(
@@ -174,7 +170,7 @@ public class SessionXGMMLNetworkWriter extends GenericXGMMLWriter {
 		if (net == null)
 			return;
 		
-		final CyRootNetwork otherRoot = rootNetworkMgr.getRootNetwork(net);
+		final CyRootNetwork otherRoot = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(net);
 		final boolean sameRoot = rootNetwork.equals(otherRoot);
 		
 		if (!sameRoot) {

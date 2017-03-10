@@ -28,6 +28,7 @@ import java.awt.Paint;
 import java.awt.Stroke;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 
 public interface EdgeView extends GraphViewObject {
@@ -124,12 +125,12 @@ public interface EdgeView extends GraphViewObject {
 	/**
 	 * Sets the Drawing style for the edge end.
 	 */
-	void setSourceEdgeEnd(int type);
+	void setSourceEdgeEnd(ArrowShape type);
 
 	/**
 	 * Sets the Drawing style for the edge end.
 	 */
-	void setTargetEdgeEnd(int type);
+	void setTargetEdgeEnd(ArrowShape type);
 
 	/**
 	 * @return the Bend used

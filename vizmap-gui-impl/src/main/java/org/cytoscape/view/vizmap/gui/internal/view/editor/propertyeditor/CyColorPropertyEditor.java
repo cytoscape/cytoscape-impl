@@ -27,7 +27,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.AbstractAction;
@@ -45,7 +44,6 @@ import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.CyColorCellRende
 import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
 
 import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.beans.editor.ColorPropertyEditor;
 import com.l2fprod.common.swing.ComponentFactory;
 import com.l2fprod.common.swing.PercentLayout;
 
@@ -63,39 +61,31 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 	public CyColorPropertyEditor(final CyColorChooser chooser, final ServicesUtil servicesUtil) {
 		this.chooser = chooser;
 
-		SwingUtilities.invokeLater(new Runnable() {
-
-			@Override
-			public void run() {
-				final IconManager iconManager = servicesUtil.get(IconManager.class);
-				
-				editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
-				((JPanel) editor).add("*", label = new CyColorCellRenderer());
-				label.setOpaque(false);
-				
-				((JPanel) editor).add(editBtn = ComponentFactory.Helper.getFactory().createMiniButton());
-				editBtn.setText(IconManager.ICON_ELLIPSIS_H);
-				editBtn.setToolTipText("Edit color");
-				editBtn.setFont(iconManager.getIconFont(14.0f));
-				editBtn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						selectColor();
-					}
-				});
-				
-				((JPanel) editor).add(removeBtn = ComponentFactory.Helper.getFactory().createMiniButton());
-				removeBtn.setText(IconManager.ICON_TRASH_O);
-				removeBtn.setToolTipText("Remove color");
-				removeBtn.setFont(iconManager.getIconFont(14.0f));
-				removeBtn.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent e) {
-						selectNull();
-					}
-				});
-				((JPanel) editor).setOpaque(false);
-				
-				setKeyBindings((JPanel) editor);
-			}
+		SwingUtilities.invokeLater(() -> {
+			final IconManager iconManager = servicesUtil.get(IconManager.class);
+			
+			editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
+			((JPanel) editor).add("*", label = new CyColorCellRenderer());
+			label.setOpaque(false);
+			
+			((JPanel) editor).add(editBtn = ComponentFactory.Helper.getFactory().createMiniButton());
+			editBtn.setText(IconManager.ICON_ELLIPSIS_H);
+			editBtn.setToolTipText("Edit color");
+			editBtn.setFont(iconManager.getIconFont(14.0f));
+			editBtn.addActionListener((ActionEvent e) -> {
+				selectColor();
+			});
+			
+			((JPanel) editor).add(removeBtn = ComponentFactory.Helper.getFactory().createMiniButton());
+			removeBtn.setText(IconManager.ICON_TRASH_O);
+			removeBtn.setToolTipText("Remove color");
+			removeBtn.setFont(iconManager.getIconFont(14.0f));
+			removeBtn.addActionListener((ActionEvent e) -> {
+				selectNull();
+			});
+			((JPanel) editor).setOpaque(false);
+			
+			setKeyBindings((JPanel) editor);
 		});
 	}
 
@@ -161,35 +151,6 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 			} else if (cmd.equals(VK_DELETE)) {
 				selectNull();
 			}
-		}
-	}
-	
-	public static class AsInt extends ColorPropertyEditor {
-		public void setValue(Object arg0) {
-			if (arg0 instanceof Integer)
-				super.setValue(new Color(((Integer) arg0).intValue()));
-			else
-				super.setValue(arg0);
-		}
-
-		public Object getValue() {
-			Object value = super.getValue();
-
-			if (value == null)
-				return null;
-			else
-
-				return Integer.valueOf(((Color) value).getRGB());
-		}
-
-		protected void firePropertyChange(Object oldValue, Object newValue) {
-			if (oldValue instanceof Color)
-				oldValue = Integer.valueOf(((Color) oldValue).getRGB());
-
-			if (newValue instanceof Color)
-				newValue = Integer.valueOf(((Color) newValue).getRGB());
-
-			super.firePropertyChange(oldValue, newValue);
 		}
 	}
 }

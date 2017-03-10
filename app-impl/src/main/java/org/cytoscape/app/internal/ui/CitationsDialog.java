@@ -207,7 +207,7 @@ class Article {
  * Retrieves article summaries from PubMed and stores them in {@code Article} instances.
  */
 class PubMedParser {
-  static final String REQUEST_URL_BASE = "http://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=";
+  static final String REQUEST_URL_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=";
 
   /**
    * Takes a sequence of PubMed IDs and returns a URL for requesting article summaries from PubMed.

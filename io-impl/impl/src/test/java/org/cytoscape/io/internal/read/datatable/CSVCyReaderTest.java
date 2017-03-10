@@ -1,12 +1,35 @@
 package org.cytoscape.io.internal.read.datatable;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTable.Mutability;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.TableTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,39 +47,20 @@ package org.cytoscape.io.internal.read.datatable;
  * #L%
  */
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.List;
-
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTable.Mutability;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.TableTestSupport;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
-
 public class CSVCyReaderTest {
+	
+	@Mock CyServiceRegistrar serviceRegistrar;
 	@Mock TaskMonitor taskMonitor;
 
 	private CyTableFactory tableFactory;
 
 	@Before
 	public void setUp() {
+		MockitoAnnotations.initMocks(this);
 		TableTestSupport tableTestSupport = new TableTestSupport();
 		tableFactory = tableTestSupport.getTableFactory();
-		MockitoAnnotations.initMocks(this);
+		
+		when(serviceRegistrar.getService(CyTableFactory.class)).thenReturn(tableFactory);
 	}
 
 	InputStream createStream(String data) throws UnsupportedEncodingException {
@@ -67,7 +71,7 @@ public class CSVCyReaderTest {
 	public void testReadSimple() throws Exception {
 		String data = "SUID\r\njava.lang.Long\r\ntest table,\"public,mutable\"\r\n5\r\n6";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
+				/* handleEquations = */ false, "UTF-8", serviceRegistrar);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		assertNotNull(tables);
@@ -88,7 +92,7 @@ public class CSVCyReaderTest {
 	public void testReadString() throws Exception {
 		String data = "SUID,name\r\njava.lang.Long,java.lang.String\r\ntest table,\"public,mutable\"\r\n1,Alice\r\n2,Bob\r\n3,Carol";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
+				/* handleEquations = */ false, "UTF-8", serviceRegistrar);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -100,7 +104,7 @@ public class CSVCyReaderTest {
 	public void testReadDouble() throws Exception {
 		String data = "SUID,weight\r\njava.lang.Long,java.lang.Double\r\ntest table,\"public,mutable\"\r\n0,0.56\r\n-5,-1.234";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
+				/* handleEquations = */ false, "UTF-8", serviceRegistrar);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -112,7 +116,7 @@ public class CSVCyReaderTest {
 	public void testReadBoolean() throws Exception {
 		String data = "SUID,hidden\r\njava.lang.Long,java.lang.Boolean\r\ntest table,\"public,mutable\"\r\n30,true\r\n40,false\r\n50,true";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
+				/* handleEquations = */ false, "UTF-8", serviceRegistrar);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];
@@ -124,7 +128,7 @@ public class CSVCyReaderTest {
 	public void testReadList() throws Exception {
 		String data = "SUID,list\r\njava.lang.Long,java.util.List<java.lang.String>\r\ntest table,\"public,mutable\"\r\n1,\"a\rb\rc\"";
 		CSVCyReader reader = new CSVCyReader(createStream(data), true,
-						     /* handleEquations = */ false, tableFactory, null, "UTF-8");
+				/* handleEquations = */ false, "UTF-8", serviceRegistrar);
 		reader.run(taskMonitor);
 		CyTable[] tables = reader.getTables();
 		CyTable table = tables[0];

@@ -1,12 +1,28 @@
 package org.cytoscape.scripting.internal;
 
+import java.io.File;
+import java.io.FileReader;
+
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+
+import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Scripting Impl (scripting-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +40,8 @@ package org.cytoscape.scripting.internal;
  * #L%
  */
 
-import java.io.File;
-import java.io.FileReader;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.command.CommandExecutorTaskFactory;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
-
 /**
  * Use standard Java scripting mechanism to run script.
- * 
  */
 public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 
@@ -58,17 +58,11 @@ public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 		return "Run Script File";
 	}
 	
-	// For CyCommands
-	final CommandExecutorTaskFactory commandExecutorTaskFactoryService;
-
-	ExecuteScriptTask(final ScriptEngineManager manager, final CyAppAdapter cyAppAdapter,
-			final CommandExecutorTaskFactory commandExecutorTaskFactoryService) {
-		super(manager, cyAppAdapter);
+	ExecuteScriptTask(final ScriptEngineManager manager, final CyServiceRegistrar serviceRegistrar) {
+		super(manager, serviceRegistrar);
 		
-		this.commandExecutorTaskFactoryService = commandExecutorTaskFactoryService;
-
 		engineNameList.add(CYCOMMAND_TITLE);
-		engineNames = new ListSingleSelection<String>(engineNameList);
+		engineNames = new ListSingleSelection<>(engineNameList);
 		engineNames.setSelectedValue(engineNameList.get(0));
 	}
 
@@ -77,7 +71,7 @@ public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 		final String selected = engineNames.getSelectedValue();
 		
 		// Special case: CyCommand
-		if(selected == CYCOMMAND_TITLE) {
+		if (selected == CYCOMMAND_TITLE) {
 			executeCyCommandFile();
 			return;
 		}
@@ -85,8 +79,8 @@ public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 		final ScriptEngineFactory engineFactory = name2engineMap.get(engineNames.getSelectedValue());
 		final ScriptEngine engine = engineFactory.getScriptEngine();
 
-		// Provide access to CyAppAdapter.
-		engine.put("cyAppAdapter", cyAppAdapter);
+		// This object should be injected to all scripts to access manager objects from scripts.
+		engine.put("cyAppAdapter", serviceRegistrar.getService(CyAppAdapter.class));
 
 		// Execute
 		FileReader reader = null;
@@ -102,7 +96,8 @@ public class ExecuteScriptTask extends AbstractExecuteScriptTask {
 	}
 	
 	private void executeCyCommandFile() throws Exception {
-		final TaskIterator cyCommandTasks = commandExecutorTaskFactoryService.createTaskIterator(file, null);
+		final CommandExecutorTaskFactory taskFactory = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+		final TaskIterator cyCommandTasks = taskFactory.createTaskIterator(file, null);
 		this.insertTasksAfterCurrentTask(cyCommandTasks);
 	}
 }

@@ -25,17 +25,43 @@ import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.filter.view.TransformerViewFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 
-	private final IconManager iconManager;
 	private final FilterPanelStyle style;
 	
-	public AdjacencyTransformerViewFactory(FilterPanelStyle style, IconManager iconManager) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public AdjacencyTransformerViewFactory(final FilterPanelStyle style, final CyServiceRegistrar serviceRegistrar) {
 		this.style = style;
-		this.iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	public static Properties getServiceProperties() {
@@ -76,6 +102,8 @@ public class AdjacencyTransformerViewFactory implements TransformerViewFactory {
 		public View(AdjacencyTransformer model) {
 			this.model = model;
 			ViewUtil.configureFilterView(this);
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			
 			// Create UI controls
 			label1 = style.createLabel("Take nodes and");

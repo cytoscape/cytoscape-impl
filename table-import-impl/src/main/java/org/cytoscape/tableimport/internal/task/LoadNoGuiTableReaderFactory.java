@@ -34,7 +34,11 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 
+// replaced by ImportNoGuiTableReaderFactory
+// tableimport.internal.CyActivator
+// deprecated:  Adam.Treister@gladstone.ucsf.edu
 
+@Deprecated
 public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
 	
 	private final boolean fromURL;
@@ -43,7 +47,7 @@ public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public LoadNoGuiTableReaderFactory(boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
+	@Deprecated	public LoadNoGuiTableReaderFactory(boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
 		this.fromURL = fromURL;
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -61,7 +65,7 @@ public class LoadNoGuiTableReaderFactory extends AbstractTaskFactory {
 		}
 	}
 	
-	class AddLoadedTableTask extends AbstractTask {
+	@Deprecated	class AddLoadedTableTask extends AbstractTask {
 		
 		private final CyTableReader reader;
 		

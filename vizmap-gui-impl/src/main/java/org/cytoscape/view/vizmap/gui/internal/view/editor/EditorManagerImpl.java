@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.util.ArrayList;
@@ -75,9 +51,30 @@ import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.DiscreteVa
 
 import com.l2fprod.common.propertysheet.PropertyEditorRegistry;
 
-/**
- *
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 public class EditorManagerImpl implements EditorManager {
 
 	private static final PropertyEditorRegistry REGISTRY = new PropertyEditorRegistry();
@@ -99,7 +96,6 @@ public class EditorManagerImpl implements EditorManager {
 	private final Map<Class<?>, VisualPropertyValueEditor<?>> vizPropValueEditors;
 
 	private final PropertyEditor mappingTypeEditor;
-	private final ContinuousMappingCellRendererFactory cellRendererFactory;
 	private final ServicesUtil servicesUtil;
 	
 	private final Object mutex = new Object();
@@ -110,15 +106,13 @@ public class EditorManagerImpl implements EditorManager {
 	 */
 	public EditorManagerImpl(final AttributeSetProxy attrProxy,
 							 final MappingFunctionFactoryProxy mappingFactoryProxy,
-							 final ContinuousMappingCellRendererFactory cellRendererFactory,
 							 final ServicesUtil servicesUtil) {
-		this.cellRendererFactory = cellRendererFactory; 
 		this.servicesUtil = servicesUtil;
 
-		editors = new HashMap<Class<?>, VisualPropertyEditor<?>>();
-		comboBoxEditors = new HashMap<String, PropertyEditor>();
-		valueEditors = new HashMap<Class<?>, ValueEditor<?>>();
-		vizPropValueEditors = new HashMap<Class<?>, VisualPropertyValueEditor<?>>();
+		editors = new HashMap<>();
+		comboBoxEditors = new HashMap<>();
+		valueEditors = new HashMap<>();
+		vizPropValueEditors = new HashMap<>();
 		
 		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 		final CyNetworkManager netMgr = servicesUtil.get(CyNetworkManager.class);
@@ -130,7 +124,7 @@ public class EditorManagerImpl implements EditorManager {
 				attrProxy, appMgr, netMgr);
 		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
 				attrProxy, appMgr, netMgr);
-		attrComboBoxEditors = new HashMap<Class<?>, ListEditor>();
+		attrComboBoxEditors = new HashMap<>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
 		attrComboBoxEditors.put(networkAttrEditor.getTargetObjectType(), networkAttrEditor);
@@ -346,6 +340,8 @@ public class EditorManagerImpl implements EditorManager {
 					if (width == null)
 						width = ICON_W;
 					
+					final ContinuousMappingCellRendererFactory cellRendererFactory =
+							servicesUtil.get(ContinuousMappingCellRendererFactory.class);
 					final VisualPropertyEditor<?> vpEditor = new DiscreteValueVisualPropertyEditor(range.getType(),
 							discretePropEditor, cellRendererFactory, values, width, ICON_H);
 					

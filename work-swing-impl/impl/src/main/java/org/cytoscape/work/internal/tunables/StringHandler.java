@@ -25,19 +25,17 @@ package org.cytoscape.work.internal.tunables;
  */
 
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.TEXT_BOX_WIDTH;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.text.DefaultFormatter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
@@ -50,11 +48,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author pasteur
  */
-public class StringHandler extends AbstractGUITunableHandler implements ActionListener {
+public class StringHandler extends AbstractGUITunableHandler implements DocumentListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
 	
-	private JFormattedTextField textField;
+	private JTextField textField;
+	private boolean readOnly = false;
+	private boolean isUpdating = false;
 
 	/**
 	 * It creates the Swing component for this Object (JTextField) that contains the initial string,
@@ -75,6 +75,7 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	}
 
 	private void init() {
+		readOnly = getParams().getProperty("readOnly", "false").equalsIgnoreCase("true");
 		String s = null;
 		
 		try {
@@ -84,29 +85,30 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 			s = "";
 		}
 
-		final DefaultFormatter formatter = new DefaultFormatter();
-		formatter.setOverwriteMode(false);
-		textField = new JFormattedTextField(formatter);
-		textField.setValue(s);
-		textField.setPreferredSize(new Dimension(TEXT_BOX_WIDTH, textField.getPreferredSize().height));
+		textField = new JTextField(s);
+		textField.setPreferredSize(new Dimension(2 * TEXT_BOX_WIDTH, textField.getPreferredSize().height));
 		textField.setHorizontalAlignment(JTextField.LEFT);
-		textField.addActionListener(this);
+		textField.getDocument().addDocumentListener(this);
 
 		final JLabel label = new JLabel(getDescription());
 		
 		updateFieldPanel(panel, label, textField, horizontal);
 		setTooltip(getTooltip(), label, textField);
+		if (readOnly)
+			textField.setEditable(false);
 	}
 	
 	@Override
 	public void update(){
+		isUpdating = true;
 		String s = null;
 		try {
 			s = (String)getValue();
-			textField.setValue(s);
+			textField.setText(s);
 		} catch (final Exception e) {
 			logger.error("Could not set String Tunable.", e);
 		}
+		isUpdating = false;
 	}
 	
 	/**
@@ -115,6 +117,9 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 	 */
 	@Override
 	public void handle() {
+		if(isUpdating)
+			return;
+		
 		final String string = textField.getText();
 		try {
 			if (string != null)
@@ -144,9 +149,19 @@ public class StringHandler extends AbstractGUITunableHandler implements ActionLi
 		}
 		
 	}
-	
+
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void insertUpdate(DocumentEvent e) {
+		handle();
+	}
+
+	@Override
+	public void removeUpdate(DocumentEvent e) {
+		handle();
+	}
+
+	@Override
+	public void changedUpdate(DocumentEvent e) {
 		handle();
 	}
 }

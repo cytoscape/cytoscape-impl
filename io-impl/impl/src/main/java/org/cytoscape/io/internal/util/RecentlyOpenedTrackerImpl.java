@@ -1,12 +1,29 @@
 package org.cytoscape.io.internal.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +41,6 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.URL;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	
 	private static final int MAX_TRACK_COUNT = 10;
@@ -57,9 +57,9 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	 *            the name of the file in the Cytoscape config directory to read
 	 *            saved file names from.
 	 */
-	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyApplicationConfiguration config) {
+	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyServiceRegistrar serviceRegistrar) {
 		this.trackerFileName = trackerFileName;
-		this.propDir = config.getConfigurationDirectoryLocation();
+		this.propDir = serviceRegistrar.getService(CyApplicationConfiguration.class).getConfigurationDirectoryLocation();
 		this.trackerURLs = new LinkedList<URL>();
 
 		BufferedReader reader = null;

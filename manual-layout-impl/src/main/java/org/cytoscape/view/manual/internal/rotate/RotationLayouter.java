@@ -1,12 +1,19 @@
 package org.cytoscape.view.manual.internal.rotate;
 
+import org.cytoscape.math.xform.AffineTransform3D;
+import org.cytoscape.math.xform.AxisRotation3D;
+import org.cytoscape.math.xform.Translation3D;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +31,11 @@ package org.cytoscape.view.manual.internal.rotate;
  * #L%
  */
 
-import org.cytoscape.math.xform.AffineTransform3D;
-import org.cytoscape.math.xform.AxisRotation3D;
-import org.cytoscape.math.xform.Translation3D;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-
-
-
-/**
- *
- */
 public final class RotationLayouter {
+	
 	private final MutablePolyEdgeGraphLayout m_graph;
-	private final Translation3D m_translationToOrig;
-	private final Translation3D m_translationFromOrig;
+	private Translation3D m_translationToOrig;
+	private Translation3D m_translationFromOrig;
 
 	/**
 	 * This operation does not affect edge anchor points which belong to edges
@@ -61,7 +56,6 @@ public final class RotationLayouter {
 		double yMax = Double.MIN_VALUE;
 
 		for ( CyEdge edge : m_graph.edges() ) {
-
 			if (!(m_graph.isMovableNode(edge.getSource())
 			    && m_graph.isMovableNode(edge.getTarget())))
 				continue;
@@ -92,36 +86,27 @@ public final class RotationLayouter {
 		}
 
 		if (xMax < 0) // Nothing is movable.
-		 {
-			m_translationToOrig = null;
-			m_translationFromOrig = null;
-		} else {
-			final double xRectCenter = (xMin + xMax) / 2.0d;
-			final double yRectCenter = (yMin + yMax) / 2.0d;
-			double rectWidth = xMax - xMin;
-			double rectHeight = yMax - yMin;
-			double hypotenuse = 0.5d * Math.sqrt((rectWidth * rectWidth)
-			                                     + (rectHeight * rectHeight));
+			return;
+		
+		final double xRectCenter = (xMin + xMax) / 2.0d;
+		final double yRectCenter = (yMin + yMax) / 2.0d;
+		double rectWidth = xMax - xMin;
+		double rectHeight = yMax - yMin;
+		double hypotenuse = 0.5d * Math.sqrt((rectWidth * rectWidth)
+		                                     + (rectHeight * rectHeight));
 
-			if (((xRectCenter - hypotenuse) < 0.0d)
-			    || ((xRectCenter + hypotenuse) > m_graph.getMaxWidth())
-			    || ((yRectCenter - hypotenuse) < 0.0d)
-			    || ((yRectCenter + hypotenuse) > m_graph.getMaxHeight()))
-				throw new IllegalStateException("minimum bounding rectangle of movable nodes and edge anchors "
-				                                + "not free to rotate within MutableGraphLayout boundaries");
+		if (((xRectCenter - hypotenuse) < 0.0d)
+		    || ((xRectCenter + hypotenuse) > m_graph.getMaxWidth())
+		    || ((yRectCenter - hypotenuse) < 0.0d)
+		    || ((yRectCenter + hypotenuse) > m_graph.getMaxHeight()))
+			return;
 
-			m_translationToOrig = new Translation3D(-xRectCenter, -yRectCenter, 0.0d);
-			m_translationFromOrig = new Translation3D(xRectCenter, yRectCenter, 0.0d);
-		}
+		m_translationToOrig = new Translation3D(-xRectCenter, -yRectCenter, 0.0d);
+		m_translationFromOrig = new Translation3D(xRectCenter, yRectCenter, 0.0d);
 	}
 
 	private final double[] m_pointBuff = new double[3];
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param radians DOCUMENT ME!
-	 */
 	public void rotateGraph(double radians) {
 		if (m_translationToOrig == null)
 			return;
@@ -129,7 +114,6 @@ public final class RotationLayouter {
 		final AffineTransform3D xform = m_translationToOrig.concatenatePost( (new AxisRotation3D(AxisRotation3D.Z_AXIS, radians)) .concatenatePost(m_translationFromOrig));
 	
 		for ( CyNode node : m_graph.nodes() ) {
-
 			if (!m_graph.isMovableNode(node))
 				continue;
 
@@ -141,7 +125,6 @@ public final class RotationLayouter {
 		}
 
 		for ( CyEdge edge : m_graph.edges() ) {
-
 			if (!(m_graph.isMovableNode(edge.getSource())
 			    && m_graph.isMovableNode(edge.getTarget())))
 				continue;

@@ -1,12 +1,21 @@
 package org.cytoscape.work.internal.tunables;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.net.URL;
+
+import org.cytoscape.io.datasource.DataSourceManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +33,12 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.net.URL;
-
-import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.GUITunableHandlerFactory;
-
 public class URLHandlerFactory implements GUITunableHandlerFactory<URLHandler> {
 	
-	private final DataSourceManager manager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public URLHandlerFactory(final DataSourceManager manager) {
-		this.manager = manager;
+	public URLHandlerFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -45,7 +46,7 @@ public class URLHandlerFactory implements GUITunableHandlerFactory<URLHandler> {
 		if (field.getType() != URL.class)
 			return null;
 
-		return new URLHandler(field, instance, tunable, manager);
+		return new URLHandler(field, instance, tunable, serviceRegistrar.getService(DataSourceManager.class));
 	}
 
 	@Override
@@ -53,6 +54,6 @@ public class URLHandlerFactory implements GUITunableHandlerFactory<URLHandler> {
 		if (getter.getReturnType() != URL.class)
 			return null;
 
-		return new URLHandler(getter, setter, instance, tunable, manager);
+		return new URLHandler(getter, setter, instance, tunable, serviceRegistrar.getService(DataSourceManager.class));
 	}
 }

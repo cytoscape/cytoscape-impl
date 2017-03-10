@@ -1,12 +1,21 @@
 package org.cytoscape.ding.customgraphics.bitmap;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +33,7 @@ package org.cytoscape.ding.customgraphics.bitmap;
  * #L%
  */
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
-import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * Create instance of URLImageCustomGraphics object from String.
- * 
- */
+@SuppressWarnings("rawtypes")
 public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 
 	private static final Class<? extends CyCustomGraphics> TARGET_CLASS = URLImageCustomGraphics.class;
@@ -51,7 +48,9 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	}
 
 	@Override
-	public String getPrefix() { return "image"; }
+	public String getPrefix() {
+		return "image";
+	}
 
 	@Override
 	public boolean supportsMime(String mimeType) {
@@ -72,16 +71,15 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 	
 	/**
 	 * Generate Custom Graphics object from a string.
-	 * 
 	 * <p>
 	 * There are two types of valid string:
 	 * <ul>
 	 * <li>Image URL only - This will be used in Passthrough mapper.
 	 * <li>Output of toSerializableString method of URLImageCustomGraphics
 	 * </ul>
-	 * 
 	 */
-	public CyCustomGraphics parseSerializableString(String entryStr) {
+	@Override
+	public CyCustomGraphics<?> parseSerializableString(String entryStr) {
 		// Check this is URL or not
 		if (entryStr == null) return null;
 		if (!validate(entryStr)) return null;
@@ -93,7 +91,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		if (sourceURL != null) {
 			try {
 				URL url = new URL(sourceURL);
-				CyCustomGraphics cg = manager.getCustomGraphicsBySourceURL(url);
+				CyCustomGraphics<?> cg = manager.getCustomGraphicsBySourceURL(url);
 				cg.setDisplayName(entry[1]);
 				return cg;
 			} catch (Exception e) {
@@ -102,7 +100,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		}
 		
 		final Long imageId = Long.parseLong(imageName);
-		CyCustomGraphics cg = manager.getCustomGraphicsByID(imageId);
+		CyCustomGraphics<?> cg = manager.getCustomGraphicsByID(imageId);
 		
 		if (cg == null) {
 			// Can't find image, maybe because it has not been added to the manager yet,
@@ -121,32 +119,39 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 		return cg;
 	}
 
-	public CyCustomGraphics getInstance(URL url) {
+	@Override
+	public CyCustomGraphics<?> getInstance(URL url) {
 		return getInstance(url.toString());
 	}
 
-	public CyCustomGraphics getInstance(String input) {
+	@Override
+	public CyCustomGraphics<?> getInstance(String input) {
 		try {
 			URL url = new URL(input);
-			CyCustomGraphics cg = manager.getCustomGraphicsBySourceURL(url);
-			if(cg == null) {
+			CyCustomGraphics<?> cg = manager.getCustomGraphicsBySourceURL(url);
+
+			if (cg == null) {
 				Long id = manager.getNextAvailableID();
-				cg = new URLImageCustomGraphics(id, input);
+				cg = new URLImageCustomGraphics<>(id, input);
 				manager.addCustomGraphics(cg, url);
 			}
+
 			return cg;
-		} catch(IOException e) {
+		} catch (IOException e) {
 			return null;
 		}
 	}
 
-	public Class<? extends CyCustomGraphics> getSupportedClass() { return TARGET_CLASS; }
+	public Class<? extends CyCustomGraphics> getSupportedClass() {
+		return TARGET_CLASS;
+	}
 
 	private boolean validate(final String entryStr) {
 		entry = entryStr.split(",");
-		if (entry == null || entry.length < 2) {
+		
+		if (entry == null || entry.length < 2)
 			return false;
-		}
+		
 		return true;
 	}
 }

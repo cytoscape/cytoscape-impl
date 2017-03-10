@@ -32,8 +32,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -47,20 +49,23 @@ public class CyNetworkViewWriterTest extends AbstractCyWriterTest {
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	
 	private CyNetworkViewWriterManager writerManager;
+	private CyApplicationManager cyApplicationManager;
 	private CyNetworkView view;
 
 	@Before
 	public void setUp() throws Exception {
 		writerManager = mock(CyNetworkViewWriterManager.class);
+		cyApplicationManager = mock(CyApplicationManager.class);
 		view = viewSupport.getNetworkView();
 		
 		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
 		filters.add(dummyFilter);
 		when(dummyFilter.getDescription()).thenReturn("dummy description");
+		when(dummyFilter.getExtensions()).thenReturn(Collections.singleton("dummy"));
 		when(writerManager.getAvailableWriterFilters()).thenReturn(filters);
 
-		final CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, view);
+		final CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, cyApplicationManager, view);
 		this.cyWriter = writer;
 		
 		when(writerManager.getWriter(eq(view), eq(dummyFilter), any(File.class))).thenReturn(writer, writer);

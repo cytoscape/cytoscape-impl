@@ -1,6 +1,29 @@
 package org.cytoscape.model;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.junit.Before;
+import org.junit.Test;
 
 /*
  * #%L
@@ -8,7 +31,7 @@ import static org.junit.Assert.*;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,29 +49,23 @@ import static org.junit.Assert.*;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.internal.EquationCompilerImpl;
-import org.cytoscape.equations.internal.EquationParserImpl;
-import org.junit.Before;
-import org.junit.Test;
-
 public class EquationTest {
+	
 	private TableTestSupport support;
+	private CyEventHelper eventHelper;
+	private CyServiceRegistrar serviceRegistrar;
 	private EquationParserImpl parser;
 
 	@Before
 	public void setUp() {
 		support = new TableTestSupport();
-		parser = new EquationParserImpl();
+		
+		eventHelper = new DummyCyEventHelper();
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		parser = new EquationParserImpl(serviceRegistrar);
 	}
 
 	Equation parseEquation(String equation, CyTable context) {

@@ -1,5 +1,8 @@
 package org.cytoscape.filter.internal.filters.column;
 
+import static org.cytoscape.filter.model.ValidationWarning.warn;
+
+import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.filter.internal.predicates.NumericPredicateDelegate;
@@ -7,6 +10,8 @@ import org.cytoscape.filter.internal.predicates.PredicateDelegates;
 import org.cytoscape.filter.internal.predicates.StringPredicateDelegate;
 import org.cytoscape.filter.model.AbstractTransformer;
 import org.cytoscape.filter.model.Filter;
+import org.cytoscape.filter.model.ValidatableTransformer;
+import org.cytoscape.filter.model.ValidationWarning;
 import org.cytoscape.filter.predicates.Predicate;
 import org.cytoscape.filter.transformers.Transformers;
 import org.cytoscape.model.CyColumn;
@@ -21,15 +26,16 @@ import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
-public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> implements Filter<CyNetwork, CyIdentifiable> {
+public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable> 
+	implements 	Filter<CyNetwork, CyIdentifiable>, 
+				ValidatableTransformer<CyNetwork, CyIdentifiable> {
+	
 	public static final String NODES = "nodes";
 	public static final String EDGES = "edges";
 	public static final String NODES_AND_EDGES = "nodes+edges";
 	
 	@Tunable
 	public final ListSingleSelection<String> type;
-	
-	Class<? extends CyIdentifiable> elementType;
 	
 	private Predicate predicate;
 	private NumericPredicateDelegate numericDelegate;
@@ -50,17 +56,8 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		type.addListener(new ListChangeListener<String>() {
 			@Override
 			public void selectionChanged(ListSelection<String> source) {
-				String value = ((ListSingleSelection<String>) source).getSelectedValue();
-				if (NODES.equals(value)) {
-					elementType = CyNode.class;
-				} else if (EDGES.equals(value)) {
-					elementType = CyEdge.class;
-				} else {
-					elementType = null;
-				}
 				notifyListeners();
 			}
-			
 			@Override
 			public void listChanged(ListSelection<String> source) {
 			}
@@ -102,7 +99,11 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	
 	@SuppressWarnings("unchecked")
 	private void setCriterionImpl(Object criterion) {
-		rawCriterion = criterion;
+		rawCriterion = null;
+		lowerBound = null;
+		upperBound = null;
+		stringCriterion = null;
+		lowerCaseCriterion = null;
 		
 		if (isListOfNumber(criterion)) {
 			List<Number> list = (List<Number>) criterion;
@@ -113,20 +114,18 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			Number[] range = (Number[]) criterion;
 			lowerBound = range[0];
 			upperBound = range[1];
+			rawCriterion = criterion;
 		} else if (criterion instanceof Number) {
 			lowerBound = (Number) criterion;
 			upperBound = lowerBound;
+			rawCriterion = criterion;
 		} else if (criterion instanceof String) {
 			stringCriterion = criterion.toString();
 			lowerCaseCriterion = stringCriterion.toLowerCase();
+			rawCriterion = criterion;
 		} else if (criterion instanceof Boolean) {
 			booleanCriterion = (Boolean)criterion;
-		} else {
-			rawCriterion = null;
-			lowerBound = null;
-			upperBound = null;
-			stringCriterion = null;
-			lowerCaseCriterion = null;
+			rawCriterion = criterion;
 		}
 	}
 	
@@ -166,8 +165,14 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		}
 	}
 
-	public Class<? extends CyIdentifiable> getColumnType() {
-		return elementType;
+	public Class<? extends CyIdentifiable> getTableType() {
+		String typeString = type.getSelectedValue();
+		if(NODES.equals(typeString))
+			return CyNode.class;
+		if(EDGES.equals(typeString))
+			return CyEdge.class;
+		else
+			return null;
 	}
 	
 	@Override
@@ -190,6 +195,53 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return "Column Filter";
 	}
 	
+	@Override
+	public List<ValidationWarning> validate(CyNetwork context) {
+		CyTable table;
+		String tableType;
+		Class<?> type = getTableType();
+		if(CyNode.class.equals(type)) {
+			table = context.getDefaultNodeTable();
+			tableType = "Node";
+		} else if(CyEdge.class.equals(type)) {
+			table = context.getDefaultEdgeTable();
+			tableType = "Edge";
+		} else {
+			return Collections.emptyList();
+		}
+		
+		if(columnName != null) {
+			CyColumn column = table.getColumn(columnName);
+			if(column == null) {
+				return warn(tableType + " table does not have column <b>\"" + columnName + "\"</b>");
+			}
+		}
+		
+		if (rawCriterion == null || predicate == null) {
+			// This filter is incomplete. 
+			return Collections.emptyList();
+		}
+		
+		CyColumn column = table.getColumn(columnName);
+		Class<?> columnType = column.getType();
+		if (columnType.equals(List.class)) {
+			columnType = column.getListElementType();
+		}
+		
+		if(String.class.equals(columnType) && stringCriterion == null) {
+			return warn("Column <b>\"" + columnName + "\"</b> in " + tableType + " table is not a String column");
+		}
+		else if(Number.class.isAssignableFrom(columnType) && (lowerBound == null || upperBound == null)) {
+			return warn("Column <b>\"" + columnName + "\"</b> in " + tableType + " table is not a Numeric column");
+		}
+		else if(Boolean.class.equals(columnType) && booleanCriterion == null) {
+			return warn("Column <b>\"" + columnName + "\"</b> in " + tableType + " table is not a Boolean column");
+		}
+		
+		return Collections.emptyList();
+	}
+	
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean accepts(CyNetwork context, CyIdentifiable element) {
@@ -198,7 +250,8 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			return false;
 		}
 		
-		if (elementType != null && !elementType.isAssignableFrom(element.getClass())) {
+		Class<?> tableType = getTableType();
+		if (tableType != null && !tableType.isAssignableFrom(element.getClass())) {
 			return false;
 		}
 		
@@ -256,8 +309,9 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 
 	@Override
 	public String toString() {
+		Class<?> tableType = getTableType();
 		return "ColumnFilter [type=" + (type == null ? null : type.getSelectedValue())
-				+ ", elementType=" + (elementType == null ? null : elementType.getSimpleName()) 
+				+ ", elementType=" + (tableType == null ? null : tableType.getSimpleName()) 
 				+ ", predicate=" + predicate
 				+ ", caseSensitive="
 				+ caseSensitive + ", columnName=" + columnName + ", rawCriterion=" + rawCriterion + ", lowerBound="

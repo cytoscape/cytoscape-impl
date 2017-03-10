@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +33,8 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.task.AbstractTableColumnTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public final class RenameColumnTask extends AbstractTableColumnTask implements TunableValidator {
+	
 	private final UndoSupport undoSupport;
 
 	@ProvidesTitle
@@ -43,7 +42,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 		return "Rename Column";
 	}
 	
-	@Tunable(description="New column name:")
+	@Tunable(description="New Column Name:")
 	public String newColumnName;
 
 	RenameColumnTask(final UndoSupport undoSupport, final CyColumn column) {
@@ -64,16 +63,28 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-		if (newColumnName == null || newColumnName.isEmpty()) {
+		if (newColumnName == null) {
 			try {
 				errMsg.append("You must provide a new column name.");
 			} catch (Exception e) {
 			}
 			return ValidationState.INVALID;
 		}
-
+		
+		newColumnName = newColumnName.trim();
+		
+		if (newColumnName.isEmpty()) {
+			try {
+				errMsg.append("Column name must not be blank.");
+			} catch (Exception e) {
+			}
+			return ValidationState.INVALID;
+		}
+		
 		final CyTable table = column.getTable();
-		if (table.getColumn(newColumnName) != null) {
+		final CyColumn foundColumn = table.getColumn(newColumnName);
+		
+		if (foundColumn != null && !foundColumn.equals(column)) {
 			try {
 				errMsg.append("Column name is a duplicate.");
 			} catch (Exception e) {

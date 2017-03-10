@@ -41,9 +41,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,10 +64,6 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	final protected void doLayout(final TaskMonitor taskMonitor) {
 		this.taskMonitor = taskMonitor;
 		this.network = networkView.getModel();
-
-		if (layoutAttribute == null || layoutAttribute.equals("(none)"))
-			throw new NullPointerException("Attribute is null.  This is required for this layout.");
-
 		construct(); 
 	}
 
@@ -94,19 +88,19 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	        reset offsetx and maxheight; update offsety so that
 	    it will store the y-axis location of the next row.
 	*/
-	private void construct() {
-		
-		if (layoutAttribute == null){
-			logger.warn("Attribute name is not defined.");
-			return;
-		}
-		
+	private void construct() {		
 		taskMonitor.setStatusMessage("Initializing");
 
 		CyTable dataTable = network.getDefaultNodeTable();
-		Class<?> klass = dataTable.getColumn(layoutAttribute).getType();
 		
-		if (Comparable.class.isAssignableFrom(klass)){
+		Class<?> klass;
+		if(layoutAttribute == null || layoutAttribute.isEmpty()) {
+			klass = null;
+		} else {
+			klass = dataTable.getColumn(layoutAttribute).getType();
+		}
+		
+		if (klass == null || Comparable.class.isAssignableFrom(klass)){
 			Class<Comparable>kasted = (Class<Comparable>) klass;
 			doConstruct(kasted);
 		} else {
@@ -149,32 +143,33 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	}
 	
 	private <T extends Comparable<T>> void makeDiscrete(Map<T, List<CyNode>> map, List<CyNode> invalidNodes, Class<T> klass) {
-		if (map == null)
-			return;
-		
-		for (View<CyNode> nv: nodesToLayOut) {
-			CyNode node = nv.getModel();
-			// TODO: support namespace
-			T key = network.getRow(node).get(layoutAttribute, klass);
-
-			if (key == null) {
-				if (invalidNodes != null)
-					invalidNodes.add(node);
-			} else {
-				List<CyNode> list = map.get(key);
-				if (list == null) {
-					list = new ArrayList<CyNode>();
-					map.put(key, list);
+		if (klass == null) {
+			for (View<CyNode> nv: nodesToLayOut) {
+				CyNode node = nv.getModel();
+				invalidNodes.add(node);
+			}
+		} else {
+			for (View<CyNode> nv: nodesToLayOut) {
+				CyNode node = nv.getModel();
+				// TODO: support namespace
+				T key = network.getRow(node).get(layoutAttribute, klass);
+	
+				if (key == null) {
+					if (invalidNodes != null)
+						invalidNodes.add(node);
+				} else {
+					List<CyNode> list = map.get(key);
+					if (list == null) {
+						list = new ArrayList<CyNode>();
+						map.put(key, list);
+					}
+					list.add(node);
 				}
-				list.add(node);
 			}
 		}
 	}
 
 	private <T extends Comparable<T>> List<List<CyNode>> sort(final Map<T, List<CyNode>> map) {
-		if (map == null)
-			return null;
-
 		List<T> keys = new ArrayList<T>(map.keySet());
 		Collections.sort(keys);
 

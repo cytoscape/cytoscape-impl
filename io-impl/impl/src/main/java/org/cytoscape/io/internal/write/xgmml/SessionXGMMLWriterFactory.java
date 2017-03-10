@@ -1,12 +1,21 @@
 package org.cytoscape.io.internal.write.xgmml;
 
+import java.io.OutputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +33,21 @@ package org.cytoscape.io.internal.write.xgmml;
  * #L%
  */
 
-import java.io.OutputStream;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-
 public class SessionXGMMLWriterFactory extends GenericXGMMLWriterFactory {
 
 	public SessionXGMMLWriterFactory(final CyFileFilter filter,
-									 final RenderingEngineManager renderingEngineMgr,
 									 final UnrecognizedVisualPropertyManager unrecognizedVisualPropMgr,
-									 final CyNetworkManager netMgr,
-									 final CyRootNetworkManager rootNetMgr,
-									 final VisualMappingManager vmMgr) {
-		super(filter, renderingEngineMgr, unrecognizedVisualPropMgr, netMgr, rootNetMgr, vmMgr, null);
+									 final CyServiceRegistrar serviceRegistrar) {
+		super(filter, unrecognizedVisualPropMgr, null, serviceRegistrar);
 	}
 
 	@Override
 	public CyWriter createWriter(OutputStream os, CyNetworkView view) {
-		return new SessionXGMMLNetworkViewWriter(os, renderingEngineMgr, view, unrecognizedVisualPropMgr, netMgr,
-				rootNetMgr, vmMgr);
+		return new SessionXGMMLNetworkViewWriter(os, view, unrecognizedVisualPropMgr, serviceRegistrar);
 	}
 
 	@Override
 	public CyWriter createWriter(OutputStream os, CyNetwork network) {
-		return new SessionXGMMLNetworkWriter(os, renderingEngineMgr, network, unrecognizedVisualPropMgr, netMgr,
-				rootNetMgr);
+		return new SessionXGMMLNetworkWriter(os, network, unrecognizedVisualPropMgr, serviceRegistrar);
 	}
 }

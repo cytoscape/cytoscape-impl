@@ -1,29 +1,5 @@
 package org.cytoscape.ding.internal.charts;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.ORIENTATION;
@@ -52,6 +28,30 @@ import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
 import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_ZERO_BASELINE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -121,6 +121,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
@@ -195,12 +196,11 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected final Map<CyColumnIdentifier, CyColumn> labelColumns;
 	protected final T chart;
 	protected final Class<?> dataType;
-	protected final CyApplicationManager appMgr;
-	protected final IconManager iconMgr;
-	protected final CyColumnIdentifierFactory colIdFactory;
+	
+	protected final CyServiceRegistrar serviceRegistrar;
 
 	protected boolean initializing;
-	
+
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
 	protected AbstractChartEditor(final T chart,
@@ -213,19 +213,13 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 								  final boolean setRangeLabels,
 								  final boolean hasAxes,
 								  final boolean hasZeroBaseline,
-								  final CyApplicationManager appMgr,
-								  final IconManager iconMgr,
-								  final CyColumnIdentifierFactory colIdFactory) {
+								  final CyServiceRegistrar serviceRegistrar) {
 		if (chart == null)
 			throw new IllegalArgumentException("'chart' argument must not be null.");
 		if (dataType == null)
 			throw new IllegalArgumentException("'dataType' argument must not be null.");
-		if (appMgr == null)
-			throw new IllegalArgumentException("'appMgr' argument must not be null.");
-		if (iconMgr == null)
-			throw new IllegalArgumentException("'iconMgr' argument must not be null.");
-		if (colIdFactory == null)
-			throw new IllegalArgumentException("'colIdFactory' argument must not be null.");
+		if (serviceRegistrar == null)
+			throw new IllegalArgumentException("'serviceRegistrar' argument must not be null.");
 		
 		this.chart = chart;
 		this.columnIsSeries = columnIsSeries;
@@ -237,20 +231,19 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		this.setRangeLabels = setRangeLabels;
 		this.hasAxes = hasAxes;
 		this.hasZeroBaseline = hasZeroBaseline;
-		this.appMgr = appMgr;
-		this.iconMgr = iconMgr;
-		this.colIdFactory = colIdFactory;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		final Comparator<CyColumnIdentifier> columnComparator = new ColumnComparator();
-		columns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
-		labelColumns = new TreeMap<CyColumnIdentifier, CyColumn>(columnComparator);
+		columns = new TreeMap<>(columnComparator);
+		labelColumns = new TreeMap<>(columnComparator);
 		
 		// TODO Move it to a shared "Chart Column Manager"
-		final CyNetwork net = appMgr.getCurrentNetwork();
+		final CyNetwork net = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
 		if (net != null) {
 			final CyTable table = net.getDefaultNodeTable(); // TODO only node table for now, but may get edge table in the future
 			final Collection<CyColumn> cols = table.getColumns();
+			final CyColumnIdentifierFactory colIdFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
 			
 			for (final CyColumn c : cols) {
 				if (c.getName() != CyIdentifiable.SUID) {
@@ -649,8 +642,13 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	
 	protected ColorSchemeEditor<T> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new ColorSchemeEditor<T>(chart, getColorSchemes(), columnIsSeries,
-					appMgr.getCurrentNetwork(), iconMgr);
+			colorSchemeEditor = new ColorSchemeEditor<>(
+					chart,
+					getColorSchemes(),
+					columnIsSeries,
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
+					serviceRegistrar.getService(IconManager.class)
+			);
 		}
 		
 		return colorSchemeEditor;
@@ -820,7 +818,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	protected JButton getRefreshRangeBtn() {
 		if (refreshRangeBtn == null) {
 			refreshRangeBtn = new JButton(IconManager.ICON_REFRESH);
-			refreshRangeBtn.setFont(iconMgr.getIconFont(12.0f));
+			refreshRangeBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
 			refreshRangeBtn.setToolTipText("Refresh automatic range values");
 			
 			refreshRangeBtn.addActionListener(new ActionListener() {
@@ -1127,7 +1125,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 	@SuppressWarnings("unchecked")
 	protected List<Double> calculateAutoRange() {
 		final List<Double> range = new ArrayList<>(2);
-		final CyNetwork net = appMgr.getCurrentNetwork();
+		final CyNetwork net = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
 		if (net != null) {
 			final List<CyNode> nodes = net.getNodeList();
@@ -1498,7 +1496,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getAddBtn() {
 			if (addBtn == null) {
 				addBtn = new JButton(IconManager.ICON_ANGLE_RIGHT);
-				addBtn.setFont(iconMgr.getIconFont(14.0f));
+				addBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 				addBtn.setToolTipText("Add Selected");
 				
 				addBtn.addActionListener(new ActionListener() {
@@ -1515,7 +1513,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getAddAllBtn() {
 			if (addAllBtn == null) {
 				addAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_RIGHT);
-				addAllBtn.setFont(iconMgr.getIconFont(14.0f));
+				addAllBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 				addAllBtn.setToolTipText("Add All");
 				
 				addAllBtn.addActionListener(new ActionListener() {
@@ -1532,7 +1530,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getRemoveBtn() {
 			if (removeBtn == null) {
 				removeBtn = new JButton(IconManager.ICON_ANGLE_LEFT);
-				removeBtn.setFont(iconMgr.getIconFont(14.0f));
+				removeBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 				removeBtn.setToolTipText("Remove Selected");
 				
 				removeBtn.addActionListener(new ActionListener() {
@@ -1549,7 +1547,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getRemoveAllBtn() {
 			if (removeAllBtn == null) {
 				removeAllBtn = new JButton(IconManager.ICON_ANGLE_DOUBLE_LEFT);
-				removeAllBtn.setFont(iconMgr.getIconFont(14.0f));
+				removeAllBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
 				removeAllBtn.setToolTipText("Remove All");
 				
 				removeAllBtn.addActionListener(new ActionListener() {
@@ -1566,7 +1564,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getMoveUpBtn() {
 			if (moveUpBtn == null) {
 				moveUpBtn = new JButton(IconManager.ICON_CARET_UP);
-				moveUpBtn.setFont(iconMgr.getIconFont(17.0f));
+				moveUpBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(17.0f));
 				moveUpBtn.setToolTipText("Move Selected Up");
 				moveUpBtn.setBorderPainted(false);
 				moveUpBtn.setContentAreaFilled(false);
@@ -1588,7 +1586,7 @@ public abstract class AbstractChartEditor<T extends AbstractCustomGraphics2<?>> 
 		private JButton getMoveDownBtn() {
 			if (moveDownBtn == null) {
 				moveDownBtn = new JButton(IconManager.ICON_CARET_DOWN);
-				moveDownBtn.setFont(iconMgr.getIconFont(17.0f));
+				moveDownBtn.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(17.0f));
 				moveDownBtn.setToolTipText("Move Selected Down");
 				moveDownBtn.setBorderPainted(false);
 				moveDownBtn.setContentAreaFilled(false);

@@ -52,7 +52,7 @@ public class SimpleRootPaneContainer extends JComponent implements RootPaneConta
     private boolean rootPaneCheckingEnabled;
 	
     public SimpleRootPaneContainer() {
-    	setRootPane(new JRootPane());
+    	setRootPane(createDefaultRootPane());
     	setLayout(new BorderLayout());
 		add(getRootPane(), BorderLayout.CENTER);
 	}
@@ -97,6 +97,10 @@ public class SimpleRootPaneContainer extends JComponent implements RootPaneConta
 	public JRootPane getRootPane() {
         return rootPane;
     }
+	
+	protected JRootPane createDefaultRootPane() {
+		return new JRootPane();
+	}
 	
 	protected void setRootPane(JRootPane root) {
 		if (rootPane != null)

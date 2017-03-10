@@ -1,30 +1,5 @@
 package org.cytoscape.ding;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Color;
 import java.awt.Paint;
 import java.util.HashMap;
@@ -37,15 +12,12 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
 import org.cytoscape.ding.impl.ObjectPositionImpl;
-import org.cytoscape.ding.impl.strokes.AnimatedLongDashStroke;
 import org.cytoscape.ding.impl.strokes.AnimatedDashDotStroke;
 import org.cytoscape.ding.impl.strokes.AnimatedEqualDashStroke;
+import org.cytoscape.ding.impl.strokes.AnimatedLongDashStroke;
 import org.cytoscape.ding.impl.strokes.BackwardSlashStroke;
 import org.cytoscape.ding.impl.strokes.ContiguousArrowStroke;
-import org.cytoscape.ding.impl.strokes.DashDotStroke;
-import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.impl.strokes.ForwardSlashStroke;
-import org.cytoscape.ding.impl.strokes.LongDashStroke;
 import org.cytoscape.ding.impl.strokes.ParallelStroke;
 import org.cytoscape.ding.impl.strokes.PipeStroke;
 import org.cytoscape.ding.impl.strokes.SeparateArrowStroke;
@@ -72,6 +44,29 @@ import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class DVisualLexicon extends BasicVisualLexicon {
 	

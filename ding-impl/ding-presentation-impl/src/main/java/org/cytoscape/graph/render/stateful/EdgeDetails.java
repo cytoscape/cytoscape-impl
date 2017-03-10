@@ -1,12 +1,23 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.Paint;
+import java.awt.Stroke;
+
+import org.cytoscape.graph.render.immed.EdgeAnchors;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,18 +34,6 @@ package org.cytoscape.graph.render.stateful;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import org.cytoscape.graph.render.immed.EdgeAnchors;
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.model.CyEdge;
-
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.Stroke;
-import java.awt.BasicStroke;
-
 
 /**
  * Defines the visual properties of an edge.  Even though this class is not
@@ -84,8 +83,8 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public byte getSourceArrowShape(final CyEdge edge) {
-		return GraphGraphics.ARROW_NONE;
+	public ArrowShape getSourceArrowShape(final CyEdge edge) {
+		return ArrowShapeVisualProperty.NONE;
 	}
 
 	/**
@@ -116,8 +115,8 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public byte getTargetArrowShape(final CyEdge edge) {
-		return GraphGraphics.ARROW_NONE;
+	public ArrowShape getTargetArrowShape(final CyEdge edge) {
+		return ArrowShapeVisualProperty.NONE;
 	}
 
 	/**

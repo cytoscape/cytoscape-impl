@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.util;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,9 +16,34 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ReadCache {
 	
@@ -63,26 +64,26 @@ public class ReadCache {
 	private Map<CySubNetwork, Set<CyNode>> unresolvedNodeMap;
 	private Map<CyNode, Object/*network's id*/> networkPointerMap;
 	
-	private final CyNetworkTableManager netTblMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
 	
 	
-	public ReadCache(final CyNetworkTableManager netTblMgr) {
-		this.netTblMgr = netTblMgr;
+	public ReadCache(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public void init() {
-		oldIdMap = new HashMap<Long, Object>();
-		nodeByIdMap = new HashMap<Object, CyNode>();
-		edgeByIdMap = new HashMap<Object, CyEdge>();
-		networkByIdMap = new HashMap<Object, CyNetwork>();
-		networkViewByIdMap = new HashMap<Object, CyNetworkView>();
-		nodeByNameMap = new HashMap<Object, CyNode>();
-		nodeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
-		edgeLinkMap = new WeakHashMap<CyNetwork, Set<Long>>();
-		unresolvedNodeMap = new WeakHashMap<CySubNetwork, Set<CyNode>>();
-		networkPointerMap = new WeakHashMap<CyNode, Object>();
+		oldIdMap = new HashMap<>();
+		nodeByIdMap = new HashMap<>();
+		edgeByIdMap = new HashMap<>();
+		networkByIdMap = new HashMap<>();
+		networkViewByIdMap = new HashMap<>();
+		nodeByNameMap = new HashMap<>();
+		nodeLinkMap = new WeakHashMap<>();
+		edgeLinkMap = new WeakHashMap<>();
+		unresolvedNodeMap = new WeakHashMap<>();
+		networkPointerMap = new WeakHashMap<>();
 	}
 	
 	public void dispose() {
@@ -191,7 +192,7 @@ public class ReadCache {
 		Set<CyNode> nodes = unresolvedNodeMap.get(net);
 		
 		if (nodes == null) {
-			nodes = new HashSet<CyNode>();
+			nodes = new HashSet<>();
 			unresolvedNodeMap.put(net, nodes);
 		}
 		
@@ -271,16 +272,18 @@ public class ReadCache {
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Set<CyTable> getNetworkTables() {
-		final Set<CyTable> tables = new HashSet<CyTable>();
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyTable> tables = new HashSet<>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		final Class<?>[] types = new Class[] { CyNetwork.class, CyNode.class, CyEdge.class };
 		
 		if (networkByIdMap.values() != null)
 			networks.addAll(networkByIdMap.values());
 		
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		
 		for (final CyNetwork n : networks) {
 			for (final Class t : types) {
-				Map<String, CyTable> tblMap = new HashMap<String, CyTable>(netTblMgr.getTables(n, t));
+				Map<String, CyTable> tblMap = new HashMap<>(netTblMgr.getTables(n, t));
 				tblMap.remove(CyNetwork.DEFAULT_ATTRS);
 				
 				if (tblMap != null)

@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +31,25 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-
-
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.work.AbstractTask;
-
-
-public abstract class AbstractTableReader extends AbstractTask 
-	implements CyTableReader {
+public abstract class AbstractTableReader extends AbstractTask implements CyTableReader {
 
 	protected CyTable[] cyTables;
-	protected InputStream inputStream;
-
-	protected final CyTableFactory tableFactory;
-	                      
-	public AbstractTableReader(InputStream inputStream, CyTableFactory tableFactory) {
-		if ( inputStream == null )
-			throw new NullPointerException("InputStream is null");
-		this.inputStream = inputStream;
-		if ( tableFactory == null )
-			throw new NullPointerException("tableFactory is null");
-		this.tableFactory = tableFactory;
-	}
 	
-	public CyTable[] getTables(){
+	protected final InputStream inputStream;
+	protected final CyServiceRegistrar serviceRegistrar;
+
+	public AbstractTableReader(final InputStream inputStream, final CyServiceRegistrar serviceRegistrar) {
+		if (inputStream == null)
+			throw new NullPointerException("InputStream is null");
+		if (serviceRegistrar == null)
+			throw new NullPointerException("CyServiceRegistrar is null");
+		
+		this.inputStream = inputStream;
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
+	@Override
+	public CyTable[] getTables() {
 		return cyTables;
 	}
 }

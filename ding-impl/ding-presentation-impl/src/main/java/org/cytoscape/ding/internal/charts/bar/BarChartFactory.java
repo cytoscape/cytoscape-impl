@@ -5,39 +5,56 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.internal.charts.ViewUtils;
-import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class BarChartFactory implements CyCustomGraphics2Factory<BarLayer> {
 	
-	private final CyApplicationManager appMgr;
-	private final IconManager iconMgr;
-	private final CyColumnIdentifierFactory colIdFactory;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public BarChartFactory(final CyApplicationManager appMgr, final IconManager iconMgr,
-			final CyColumnIdentifierFactory colIdFactory) {
-		this.appMgr = appMgr;
-		this.iconMgr = iconMgr;
-		this.colIdFactory = colIdFactory;
+	public BarChartFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public CyCustomGraphics2<BarLayer> getInstance(final String input) {
-		return new BarChart(input, colIdFactory);
+		return new BarChart(input, serviceRegistrar);
 	}
 
 	@Override
 	public CyCustomGraphics2<BarLayer> getInstance(final CyCustomGraphics2<BarLayer> chart) {
-		return new BarChart((BarChart)chart, colIdFactory);
+		return new BarChart((BarChart)chart, serviceRegistrar);
 	}
 	
 	@Override
 	public CyCustomGraphics2<BarLayer> getInstance(final Map<String, Object> properties) {
-		return new BarChart(properties, colIdFactory);
+		return new BarChart(properties, serviceRegistrar);
 	}
 
 	@Override
@@ -62,7 +79,7 @@ public class BarChartFactory implements CyCustomGraphics2Factory<BarLayer> {
 	
 	@Override
 	public JComponent createEditor(final CyCustomGraphics2<BarLayer> chart) {
-		return new BarChartEditor((BarChart)chart, appMgr, iconMgr, colIdFactory);
+		return new BarChartEditor((BarChart)chart, serviceRegistrar);
 	}
 	
 	@Override

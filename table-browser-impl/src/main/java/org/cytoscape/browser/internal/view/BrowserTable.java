@@ -1,29 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -105,13 +81,39 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+@SuppressWarnings("serial")
 public class BrowserTable extends JTable implements MouseListener, ActionListener, MouseMotionListener,
 													 ColumnCreatedListener, ColumnDeletedListener,
 													 ColumnNameChangedListener, RowsSetListener {
 
-	private static final long serialVersionUID = 4415856756184765301L;
-
 	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
+	
+	private static final String LINE_BREAK = "\n";
+	private static final String CELL_BREAK = "\t";
 
 	private static final Font BORDER_FONT = UIManager.getFont("Label.font").deriveFont(11f);
 
@@ -588,7 +590,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private void setKeyStroke() {
-		final KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.CTRL_MASK, false);
+		final int modifiers = LookAndFeelUtil.isMac() ? ActionEvent.META_MASK : ActionEvent.CTRL_MASK;
+		final KeyStroke copy = KeyStroke.getKeyStroke(KeyEvent.VK_C, modifiers, false);
 		// Identifying the copy KeyStroke user can modify this to copy on some other Key combination.
 		this.registerKeyboardAction(this, "Copy", copy, JComponent.WHEN_FOCUSED);
 		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -629,7 +632,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				public void actionPerformed(ActionEvent e) {
 					final StringBuilder builder = new StringBuilder();
 					for (Object oneEntry : listItems)
-						builder.append(oneEntry.toString() + "\t");
+						builder.append(oneEntry.toString() + CELL_BREAK);
 
 					final StringSelection selection = new StringSelection(builder.toString());
 					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -755,24 +758,27 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		for (int i = 0; i < numrows; i++) {
 			for (int j = 0; j < numcols; j++) {
 				final Object cellValue = this.getValueAt(rowsselected[i], colsselected[j]);
-				if (cellValue == null)
-					continue;
+				final String cellText = cellValue instanceof ValidatedObjectAndEditString ?
+						((ValidatedObjectAndEditString) cellValue).getEditString() : null;
+				
+				sbf.append(cellText != null ? escape(cellText) : "");
 
-				final String cellText = ((ValidatedObjectAndEditString) cellValue).getEditString();
-				sbf.append(cellText);
-
-				if (j < (numcols - 1))
-					sbf.append("\t");
+				if (j < numcols - 1)
+					sbf.append(CELL_BREAK);
 			}
 
-			sbf.append("\n");
+			sbf.append(LINE_BREAK);
 		}
-
+		
 		final StringSelection selection = new StringSelection(sbf.toString());
 		systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 		systemClipboard.setContents(selection, selection);
 
 		return sbf.toString();
+	}
+	
+	private String escape(final String cellValue) {
+		return cellValue.replace(LINE_BREAK, " ").replace(CELL_BREAK, " ");
 	}
 	
 	private void renameColumnName(final String oldName, final String newName) {
@@ -1050,7 +1056,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				
 				for (int columnIndex : table.getSelectedColumns()) {
 					if (!firstColumn) {
-						builder.append("\t");
+						builder.append(CELL_BREAK);
 					} else {
 						firstColumn = false;
 					}
@@ -1083,7 +1089,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 						}
 					}
 				}
-				builder.append("\n");
+				builder.append(LINE_BREAK);
 			}
 			
 			return new StringSelection(builder.toString());

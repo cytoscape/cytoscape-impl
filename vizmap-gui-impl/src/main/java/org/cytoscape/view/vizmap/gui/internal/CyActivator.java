@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -34,7 +10,6 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.values.BendFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
@@ -93,6 +68,29 @@ import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CyActivator extends AbstractCyActivator {
 
@@ -104,9 +102,7 @@ public class CyActivator extends AbstractCyActivator {
 		final AttributeSetProxy attributeSetProxy = new AttributeSetProxy(servicesUtil);
 		final MappingFunctionFactoryProxy mappingFactoryProxy = new MappingFunctionFactoryProxy(servicesUtil);
 		
-		final ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
-		
-		final EditorManagerImpl editorManager = new EditorManagerImpl(attributeSetProxy, mappingFactoryProxy, continuousMappingCellRendererFactory, servicesUtil);
+		final EditorManagerImpl editorManager = new EditorManagerImpl(attributeSetProxy, mappingFactoryProxy, servicesUtil);
 		// These listeners must be registered before the ValueEditors and VisualPropertyEditors:
 		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
 		registerServiceListener(bc, editorManager, "addVisualPropertyValueEditor", "removeVisualPropertyValueEditor", VisualPropertyValueEditor.class);
@@ -118,9 +114,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
 		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
 		
-		final NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<Double>(Double.class);
-		final NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<Integer>(Integer.class);
-		final NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<Float>(Float.class);
+		final NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<>(Double.class);
+		final NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<>(Integer.class);
+		final NumericValueEditor<Float> floatValueEditor = new NumericValueEditor<>(Float.class);
 		final StringValueEditor stringValueEditor = new StringValueEditor();
 		final BooleanValueEditor booleanValueEditor = new BooleanValueEditor();
 		final FontValueEditor fontValueEditor = new FontValueEditor(servicesUtil);
@@ -129,26 +125,26 @@ public class CyActivator extends AbstractCyActivator {
 		final CyColorPropertyEditor cyColorPropertyEditor = new CyColorPropertyEditor(colorChooser, servicesUtil);
 		final CyFontPropertyEditor cyFontPropertyEditor = new CyFontPropertyEditor();
 		
-		final ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class, editorManager, cyColorPropertyEditor, continuousMappingCellRendererFactory);
-		final NumberVisualPropertyEditor<Double> doublePropertyEditor = new NumberVisualPropertyEditor<Double>(Double.class, continuousMappingCellRendererFactory);
-		final NumberVisualPropertyEditor<Integer> integerPropertyEditor = new NumberVisualPropertyEditor<Integer>(Integer.class, continuousMappingCellRendererFactory);
-		final NumberVisualPropertyEditor<Float> floatPropertyEditor = new NumberVisualPropertyEditor<Float>(Float.class, continuousMappingCellRendererFactory);
+		final ContinuousMappingCellRendererFactory cmCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
 		
-		final FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, cyFontPropertyEditor, continuousMappingCellRendererFactory);
-		final StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(continuousMappingCellRendererFactory);
+		final ColorVisualPropertyEditor colorPropertyEditor = new ColorVisualPropertyEditor(Paint.class, editorManager, cyColorPropertyEditor, cmCellRendererFactory);
+		final NumberVisualPropertyEditor<Double> doublePropertyEditor = new NumberVisualPropertyEditor<>(Double.class, cmCellRendererFactory);
+		final NumberVisualPropertyEditor<Integer> integerPropertyEditor = new NumberVisualPropertyEditor<>(Integer.class, cmCellRendererFactory);
+		final NumberVisualPropertyEditor<Float> floatPropertyEditor = new NumberVisualPropertyEditor<>(Float.class, cmCellRendererFactory);
+		
+		final FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, cyFontPropertyEditor, cmCellRendererFactory);
+		final StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(cmCellRendererFactory);
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
-		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, continuousMappingCellRendererFactory);
+		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, cmCellRendererFactory);
 		
 		// Context menu for edge bend
-		final BendFactory bf = getService(bc, BendFactory.class);
-
 		final Properties clearAllBendsForThisEdgeProps = new Properties();
 		clearAllBendsForThisEdgeProps.put(ServiceProperties.PREFERRED_MENU, ServiceProperties.EDGE_EDIT_MENU);
 		clearAllBendsForThisEdgeProps.put(ServiceProperties.TITLE, "Clear All Bends For This Edge");
 		clearAllBendsForThisEdgeProps.put(ServiceProperties.MENU_GRAVITY, "5.0");
 		clearAllBendsForThisEdgeProps.put(ServiceProperties.INSERT_SEPARATOR_BEFORE, "true");
-		final ClearAllBendsForThisEdgeTaskFactory clearAllBendsForThisEdgeTaskFactory = new ClearAllBendsForThisEdgeTaskFactory(bf, servicesUtil);
+		final ClearAllBendsForThisEdgeTaskFactory clearAllBendsForThisEdgeTaskFactory = new ClearAllBendsForThisEdgeTaskFactory(servicesUtil);
 		registerService(bc, clearAllBendsForThisEdgeTaskFactory, EdgeViewTaskFactory.class, clearAllBendsForThisEdgeProps);
 
 		// Register ValueEditors and VisualPropertyEditors

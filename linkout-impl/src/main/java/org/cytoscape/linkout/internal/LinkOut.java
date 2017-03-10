@@ -1,29 +1,5 @@
 package org.cytoscape.linkout.internal;
 
-/*
- * #%L
- * Cytoscape Linkout Impl (linkout-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
 import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
@@ -47,10 +23,32 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Linkout Impl (linkout-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Generates links to external web pages specified in the cytoscape.props file.
@@ -67,9 +65,8 @@ import org.slf4j.LoggerFactory;
  *    url.SGD=http\://db.yeastgenome.org/cgi-bin/locus.pl?locus\=%ID%
  *    url.E\!Ensamble=http\://www.ensembl.org/Homo_sapiens/textview?species\=all&amp;idx\=All&amp;q\=%ID%
  *    url.Pubmed=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&amp;db\=PubMed&amp;term\=%ID%
- *
  */
-public class LinkOut implements PropertyUpdatedListener{
+public class LinkOut implements PropertyUpdatedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(LinkOut.class);
 
@@ -77,11 +74,8 @@ public class LinkOut implements PropertyUpdatedListener{
 	public static final String NODEMARKER = "nodelinkouturl.";
 	public static final String EDGEMARKER = "edgelinkouturl.";
 
-	private final Properties props;
+	private final CyProperty<Properties> linkoutProps;
 	private final CyServiceRegistrar registrar;
-	private final OpenBrowser browser;
-	private final CyApplicationConfiguration config;
-	private final SynchronousTaskManager synTaskManager;
 	
 	private final Map<String, NodeLinkoutTaskFactory> propKey2NodeVTF;
 	private final Map<String, EdgeLinkoutTaskFactory> propKey2EdgeVTF;
@@ -90,19 +84,15 @@ public class LinkOut implements PropertyUpdatedListener{
 	private final Map<String, EdgeLinkoutTaskFactory> cpropKey2EdgeVTF;
 	
 	
-	public LinkOut(CyProperty<Properties> propService, CyServiceRegistrar registrar, OpenBrowser browser,
-			final CyApplicationConfiguration config, final SynchronousTaskManager synTaskManager) {
-		this.props = propService.getProperties();
+	public LinkOut(final CyProperty<Properties> linkoutProps, final CyServiceRegistrar registrar) {
+		this.linkoutProps = linkoutProps;
 		this.registrar = registrar;
-		this.browser = browser;
-		this.config = config;
-		this.synTaskManager = synTaskManager;
 
-		propKey2EdgeVTF = new HashMap<String, EdgeLinkoutTaskFactory>();
-		propKey2NodeVTF = new HashMap<String, NodeLinkoutTaskFactory>();
+		propKey2EdgeVTF = new HashMap<>();
+		propKey2NodeVTF = new HashMap<>();
 
-		cpropKey2EdgeVTF = new HashMap<String, EdgeLinkoutTaskFactory>();
-		cpropKey2NodeVTF = new HashMap<String, NodeLinkoutTaskFactory>();
+		cpropKey2EdgeVTF = new HashMap<>();
+		cpropKey2NodeVTF = new HashMap<>();
 
 		readLocalProperties();
 
@@ -121,20 +111,25 @@ public class LinkOut implements PropertyUpdatedListener{
 	 * linkout.jar file and apply those properties to the base Cytoscape
 	 * properties. Only apply the properties from the jar file if NO linkout
 	 * properties already exist. This allows linkout properties to be specified
-	 * on the command line, editted in the preferences dialog, and to be saved
+	 * on the command line, edited in the preferences dialog, and to be saved
 	 * with other properties.
 	 */
 	private void readLocalProperties() {
-		File propertyFile= new File(config.getConfigurationDirectoryLocation(), File.separator + "linkout.props");
+		final CyApplicationConfiguration config = registrar.getService(CyApplicationConfiguration.class);
+		final File propertyFile = new File(config.getConfigurationDirectoryLocation(), File.separator + "linkout.props");
+		
 		try {
 			if (propertyFile.canRead())
-				props.load(new FileInputStream(propertyFile));
+				linkoutProps.getProperties().load(new FileInputStream(propertyFile));
 		} catch (Exception e) {
 			logger.warn("Couldn't load linkout props from \'" + propertyFile.getAbsolutePath() + "\'.", e);
 		}
 	}
 
 	private void addStaticNodeLinks() {
+		final Properties props = linkoutProps.getProperties();
+		final OpenBrowser browser = registrar.getService(OpenBrowser.class);
+		
 		try {
 			for (Object pk : props.keySet()) {
 				String propKey = pk.toString();
@@ -144,7 +139,7 @@ public class LinkOut implements PropertyUpdatedListener{
 					logger.debug("Bad URL for propKey: " + propKey);
 					continue;
 				}
-				NodeViewTaskFactory evtf = new NodeLinkoutTaskFactory(browser,url);
+				NodeViewTaskFactory evtf = new NodeLinkoutTaskFactory(browser, url);
 				registrar.registerService(evtf, NodeViewTaskFactory.class, dict);
 				propKey2NodeVTF.put(propKey, (NodeLinkoutTaskFactory) evtf);
 			}
@@ -154,6 +149,9 @@ public class LinkOut implements PropertyUpdatedListener{
 	}
 
 	private void addStaticEdgeLinks() {
+		final Properties props = linkoutProps.getProperties();
+		final OpenBrowser browser = registrar.getService(OpenBrowser.class);
+		
 		try {
 			for (Object pk : props.keySet()) {
 				String propKey = pk.toString();
@@ -163,7 +161,7 @@ public class LinkOut implements PropertyUpdatedListener{
 					logger.debug("Bad URL for propKey: " + propKey);
 					continue;
 				}
-				final EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
+				final EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser, url);
 				registrar.registerService(evtf, EdgeViewTaskFactory.class, dict);
 				propKey2EdgeVTF.put(propKey, (EdgeLinkoutTaskFactory) evtf);
 			}
@@ -191,10 +189,13 @@ public class LinkOut implements PropertyUpdatedListener{
 		return dict;
 	}
 
-	public void addCommanLineLinkOut (CyProperty<Properties> commandline, Map p ){
+	public void addCommanLineLinkOut(CyProperty<Properties> commandline, Map<?, ?> p ){
 		if (!p.get("cyPropertyName").equals("commandline.props"))
 			return;
+		
 		Properties props = commandline.getProperties();
+		final OpenBrowser browser = registrar.getService(OpenBrowser.class);
+		
 		try {
 			for (Object pk : props.keySet()) {
 				String propKey = pk.toString();
@@ -204,14 +205,13 @@ public class LinkOut implements PropertyUpdatedListener{
 					logger.debug("Bad URL for propKey: " + propKey);
 					continue;
 				}
-				EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
+				EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser, url);
 				registrar.registerService(evtf, EdgeViewTaskFactory.class, dict);
 				cpropKey2EdgeVTF.put(propKey, (EdgeLinkoutTaskFactory) evtf);
 			}
 		} catch (Exception e) {
 			logger.warn("Problem processing edge URLs", e);
 		}
-		
 		
 		try {
 			for (Object pk : props.keySet()) {
@@ -222,7 +222,7 @@ public class LinkOut implements PropertyUpdatedListener{
 					logger.debug("Bad URL for propKey: " + propKey);
 					continue;
 				}
-				NodeViewTaskFactory evtf = new NodeLinkoutTaskFactory(browser,url);
+				NodeViewTaskFactory evtf = new NodeLinkoutTaskFactory(browser, url);
 				registrar.registerService(evtf, NodeViewTaskFactory.class, dict);
 				cpropKey2NodeVTF.put(propKey, (NodeLinkoutTaskFactory) evtf);
 			}
@@ -231,24 +231,24 @@ public class LinkOut implements PropertyUpdatedListener{
 		}
 	}
 
-	public void  removeCommanLineLinkOut (CyProperty<Properties> commandline, Map p ){
+	public void  removeCommanLineLinkOut (CyProperty<Properties> commandline, Map<?, ?> p ){
 		//do nothing
 	}
 
 	@Override
 	public void handleEvent(final PropertyUpdatedEvent e) {
-
-		if(e.getSource() == null || e.getSource().getName() == null)
+		if (e.getSource() == null || e.getSource().getName() == null)
 			return;
 		
 		SwingUtilities.invokeLater(new Runnable() {
-
 			@Override
 			public void run() {
+				final OpenBrowser browser = registrar.getService(OpenBrowser.class);
+				
 				if  (e.getSource().getName().equals("linkout")  ) //when linkout prop is changed
 				{
 					final Properties props = (Properties) e.getSource().getProperties();
-					List<String> removedLinks = new ArrayList<String>();
+					List<String> removedLinks = new ArrayList<>();
 
 					for(String propKey: propKey2EdgeVTF.keySet()){
 						if (props.keySet().contains(propKey)){
@@ -287,7 +287,6 @@ public class LinkOut implements PropertyUpdatedListener{
 					}
 
 					try{
-
 						for(Object pk: props.keySet()){ //added edge linkouts
 							String propKey = pk.toString();			
 							if(propKey2EdgeVTF.containsKey(propKey))
@@ -298,7 +297,7 @@ public class LinkOut implements PropertyUpdatedListener{
 								logger.debug("Bad URL for propKey: " + propKey);
 								continue;
 							}
-							EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
+							EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser, url);
 							registrar.registerService(evtf, EdgeViewTaskFactory.class, dict);
 							propKey2EdgeVTF.put(propKey, (EdgeLinkoutTaskFactory) evtf);
 						}
@@ -313,7 +312,7 @@ public class LinkOut implements PropertyUpdatedListener{
 								logger.debug("Bad URL for propKey: " + propKey);
 								continue;
 							}
-							NodeViewTaskFactory nvtf = new NodeLinkoutTaskFactory(browser,url);
+							NodeViewTaskFactory nvtf = new NodeLinkoutTaskFactory(browser, url);
 							registrar.registerService(nvtf, NodeViewTaskFactory.class, dict);
 							propKey2NodeVTF.put(propKey, (NodeLinkoutTaskFactory) nvtf);
 						}
@@ -325,7 +324,7 @@ public class LinkOut implements PropertyUpdatedListener{
 
 				}else if (e.getSource().getName().equals("commandline")){ //when commandline linkout prop is changed
 					final Properties props = (Properties) e.getSource().getProperties();
-					List<String> removedLinks = new ArrayList<String>();
+					List<String> removedLinks = new ArrayList<>();
 
 					for(String propKey: cpropKey2EdgeVTF.keySet()){
 						if (props.keySet().contains(propKey)){
@@ -364,7 +363,6 @@ public class LinkOut implements PropertyUpdatedListener{
 					}
 
 					try{
-
 						for(Object pk: props.keySet()){ //added edge linkouts
 							String propKey = pk.toString();			
 							if(cpropKey2EdgeVTF.containsKey(propKey))
@@ -375,7 +373,7 @@ public class LinkOut implements PropertyUpdatedListener{
 								logger.debug("Bad URL for propKey: " + propKey);
 								continue;
 							}
-							EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser,url);
+							EdgeViewTaskFactory evtf = new EdgeLinkoutTaskFactory(browser, url);
 							registrar.registerService(evtf, EdgeViewTaskFactory.class, dict);
 							cpropKey2EdgeVTF.put(propKey, (EdgeLinkoutTaskFactory) evtf);
 						}
@@ -390,18 +388,15 @@ public class LinkOut implements PropertyUpdatedListener{
 								logger.debug("Bad URL for propKey: " + propKey);
 								continue;
 							}
-							NodeViewTaskFactory nvtf = new NodeLinkoutTaskFactory(browser,url);
+							NodeViewTaskFactory nvtf = new NodeLinkoutTaskFactory(browser, url);
 							registrar.registerService(nvtf, NodeViewTaskFactory.class, dict);
 							cpropKey2NodeVTF.put(propKey, (NodeLinkoutTaskFactory) nvtf);
 						}
 					}catch(Exception ex){
 						logger.warn("Problem processing node URLs", ex);
-
 					}
 				}
 			}
 		});
-
 	}
-
 }

@@ -40,6 +40,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
 
 import java.util.Iterator;
@@ -58,20 +59,23 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
+	private final CyApplicationManager cyApplicationManagerServiceRef;
 
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<CyTable, CyNetwork>();
 	private HashMap<String, CyTable> titleTableMap = new HashMap<String, CyTable>();
 	
-	public NoGuiSelectExportTableTask (CyTableWriterManager writerManager,CyTableManager cyTableManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef){
+	public NoGuiSelectExportTableTask (CyTableWriterManager writerManager,CyTableManager cyTableManagerServiceRef, 
+			CyNetworkManager cyNetworkManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef){
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.writerManager = writerManager;
 		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
+		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 
 		populateNetworkTableMap();
 		populateSelectTable();
 		
 		
-		tableWriter = new CyTableWriter(writerManager, titleTableMap.get(selectTable.getSelectedValue()));
+		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, titleTableMap.get(selectTable.getSelectedValue()));
 		
 		
 	}
@@ -106,7 +110,7 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 		//Get the selected table
 		final String selectedTitle = selectTable.getSelectedValue();		
 		CyTable tbl = this.titleTableMap.get(selectedTitle);
-		tableWriter = new CyTableWriter(writerManager, tbl);
+		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);
 
 		// Export the selected table
 		this.insertTasksAfterCurrentTask(tableWriter);		

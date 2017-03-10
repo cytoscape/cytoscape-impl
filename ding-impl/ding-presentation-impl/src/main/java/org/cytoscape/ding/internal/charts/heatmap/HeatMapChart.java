@@ -16,14 +16,35 @@ import org.cytoscape.ding.internal.charts.AbstractChart;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 
-/**
- *
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 	
 	public static final String FACTORY_ID = "org.cytoscape.HeatMapChart";
@@ -40,16 +61,16 @@ public class HeatMapChart extends AbstractChart<HeatMapLayer> {
 		}
 	}
 
-	public HeatMapChart(final Map<String, Object> properties, final CyColumnIdentifierFactory colIdFactory) {
-		super(DISPLAY_NAME, properties, colIdFactory);
+	public HeatMapChart(final Map<String, Object> properties, final CyServiceRegistrar serviceRegistrar) {
+		super(DISPLAY_NAME, properties, serviceRegistrar);
 	}
 	
-	public HeatMapChart(final HeatMapChart chart, final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, colIdFactory);
+	public HeatMapChart(final HeatMapChart chart, final CyServiceRegistrar serviceRegistrar) {
+		super(chart, serviceRegistrar);
 	}
 	
-	public HeatMapChart(final String input, final CyColumnIdentifierFactory colIdFactory) {
-		super(DISPLAY_NAME, input, colIdFactory);
+	public HeatMapChart(final String input, final CyServiceRegistrar serviceRegistrar) {
+		super(DISPLAY_NAME, input, serviceRegistrar);
 	}
 
 	@Override 

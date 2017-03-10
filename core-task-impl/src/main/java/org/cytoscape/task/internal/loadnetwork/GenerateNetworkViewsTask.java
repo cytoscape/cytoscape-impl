@@ -103,9 +103,9 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 				
 				if (networkName == null)
 					networkName = "? (Name is missing)";
-				
-				net.getRow(net).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
 			}
+			
+			net.getRow(net).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
 			
 			networkManager.addNetwork(net, false);
 			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();

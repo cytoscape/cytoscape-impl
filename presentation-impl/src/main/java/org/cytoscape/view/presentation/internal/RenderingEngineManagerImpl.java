@@ -1,12 +1,33 @@
 package org.cytoscape.view.presentation.internal;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Presentation Impl (presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +45,6 @@ package org.cytoscape.view.presentation.internal;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.WeakHashMap;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.events.RenderingEngineAboutToBeRemovedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class RenderingEngineManagerImpl implements RenderingEngineManager, NetworkViewAboutToBeDestroyedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(RenderingEngineManagerImpl.class);
@@ -57,7 +58,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	private final Map<String, RenderingEngineFactory<?>> factoryMap;
 	
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 	
@@ -65,13 +66,13 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	 * Create an instance of rendering engine manager. This implementation
 	 * listens to Presentation events and update its map based on them.
 	 */
-	public RenderingEngineManagerImpl(final CyEventHelper eventHelper) {
-		if(eventHelper == null)
-			throw new IllegalArgumentException("CyEventHelper cannot be null.");
+	public RenderingEngineManagerImpl(final CyServiceRegistrar serviceRegistrar) {
+		if (serviceRegistrar == null)
+			throw new IllegalArgumentException("'serviceRegistrar' must not be null.");
 		
-		this.eventHelper = eventHelper;
-		this.renderingEngineMap = new WeakHashMap<View<?>, Collection<RenderingEngine<?>>>();
-		this.factoryMap = new HashMap<String, RenderingEngineFactory<?>>();
+		this.serviceRegistrar = serviceRegistrar;
+		this.renderingEngineMap = new WeakHashMap<>();
+		this.factoryMap = new HashMap<>();
 	}
 
 	/**
@@ -80,7 +81,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	@Override
 	public Collection<RenderingEngine<?>> getRenderingEngines(final View<?> viewModel) {
 		synchronized (lock) {
-			if(renderingEngineMap.containsKey(viewModel) == false)
+			if (renderingEngineMap.containsKey(viewModel) == false)
 				return Collections.emptySet();
 			else
 				return renderingEngineMap.get(viewModel);
@@ -89,7 +90,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 
 	@Override
 	public Collection<RenderingEngine<?>> getAllRenderingEngines() {
-		final Set<RenderingEngine<?>> allEngines = new HashSet<RenderingEngine<?>>();
+		final Set<RenderingEngine<?>> allEngines = new HashSet<>();
 		
 		synchronized (lock) {
 			for(Collection<RenderingEngine<?>> engines: renderingEngineMap.values())
@@ -98,7 +99,6 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		
 		return allEngines;
 	}
-	
 
 	@Override
 	public void addRenderingEngine(final RenderingEngine<?> renderingEngine) {
@@ -106,8 +106,8 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		synchronized (lock) {
 			Collection<RenderingEngine<?>> currentVals = renderingEngineMap.get(viewModel);
 			
-			if(currentVals == null)
-				currentVals = new HashSet<RenderingEngine<?>>();
+			if (currentVals == null)
+				currentVals = new HashSet<>();
 			
 			currentVals.add(renderingEngine);
 			
@@ -115,9 +115,9 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		}
 	}
 	
-
 	@Override
 	public void removeRenderingEngine(final RenderingEngine<?> renderingEngine) {
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new RenderingEngineAboutToBeRemovedEvent(this, renderingEngine));
 		
 		synchronized (lock) {
@@ -131,7 +131,6 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		renderingEngine.dispose();
 	}
 	
-
 	@Override
 	public VisualLexicon getDefaultVisualLexicon() {
 		synchronized (lock) {
@@ -142,9 +141,7 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 		}
 	}
 	
-	
-	public void addRenderingEngineFactory(
-			final RenderingEngineFactory<?> factory, Map metadata) {
+	public void addRenderingEngineFactory(final RenderingEngineFactory<?> factory, Map<?, ?> metadata) {
 		final Object idObject = metadata.get(FACTORY_ID_TAG);
 
 		if (idObject == null)
@@ -157,15 +154,14 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 			this.factoryMap.put(id, factory);
 			
 			// Register default lexicon
-			if(id.equals(DEFAULT_FACTORY_ID))
+			if (id.equals(DEFAULT_FACTORY_ID))
 				defaultLexicon = factory.getVisualLexicon();
 		}
 		
 		logger.debug("New engine registered: " + factory.getClass());
 	}
 
-	public void removeRenderingEngineFactory(
-			final RenderingEngineFactory<?> factory, Map metadata) {
+	public void removeRenderingEngineFactory(final RenderingEngineFactory<?> factory, Map<?, ?> metadata) {
 		final Object idObject = metadata.get(FACTORY_ID_TAG);
 
 		if (idObject == null)
@@ -182,11 +178,14 @@ public class RenderingEngineManagerImpl implements RenderingEngineManager, Netwo
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		Collection<RenderingEngine<?>> engines;
+		
 		synchronized (lock) {
 			engines = renderingEngineMap.remove(e.getNetworkView());
 		}
+		
 		if (engines == null)
 			return;
+		
 		for (RenderingEngine<?> engine : engines)
 			engine.dispose();
 	}

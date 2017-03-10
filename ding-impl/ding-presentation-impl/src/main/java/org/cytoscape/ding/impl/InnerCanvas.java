@@ -41,6 +41,7 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -54,16 +55,21 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.TaskManager;
 
 /*
  * #%L
@@ -136,9 +142,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	private boolean enablePopupMenu = true;
 
-	private UndoSupport m_undo;
-	private IconManager m_iconManager;
-
 	private int m_currMouseButton;
 	private int m_lastXMousePos;
 	private int m_lastYMousePos;
@@ -153,12 +156,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private Timer hideEdgesTimer;
 	private Cursor moveCursor;
 	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	InnerCanvas(Object lock, DGraphView view, UndoSupport undo, IconManager iconManager) {
+	InnerCanvas(Object lock, DGraphView view, CyServiceRegistrar serviceRegistrar) {
 		m_lock = lock;
 		m_view = view;
-		m_undo = undo;
-		m_iconManager = iconManager;
+		this.serviceRegistrar = serviceRegistrar;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;
 		m_isOpaque = false;
@@ -168,7 +171,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_hash = new LongHash();
 		
 		addEdgeMode = new AddEdgeStateMonitor(this, m_view);
-		popup = new PopupMenuHelper(m_view, this);
+		popup = new PopupMenuHelper(m_view, this, serviceRegistrar);
 		
 		mousePressedDelegator = new MousePressedDelegator();
 		mouseReleasedDelegator = new MouseReleasedDelegator();
@@ -185,14 +188,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		setFocusable(true);
 
 		// Timer to reset edge drawing
-		ActionListener taskPerformer = new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				// System.out.println("hideEdgesTimer expired");
-				hideEdgesTimer.stop();
-				m_lod[0].setDrawEdges(true);
-				m_view.setViewportChanged();
-				repaint();
-			}
+		ActionListener taskPerformer = (ActionEvent evt) -> {
+			hideEdgesTimer.stop();
+			m_lod[0].setDrawEdges(true);
+			m_view.setViewportChanged();
+			repaint();
 		};
 		hideEdgesTimer = new Timer(600, taskPerformer);
 	}
@@ -395,20 +395,29 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		} else if ( code == KeyEvent.VK_ESCAPE ) {
 			handleEscapeKey();
 		}
+		else if ( code == KeyEvent.VK_BACK_SPACE ) 		//#1993
+			handleBackspaceKey();
+	}
+
+	private void handleBackspaceKey() {		//#1993
+		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
+		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
+		taskManager.execute(taskFactory.createTaskIterator(m_view.getNetwork()));
 	}
 
 	/**
 	 * Currently not used.
 	 * @param k The key event that we're listening for.
 	 */
+	@Override
 	public void keyReleased(KeyEvent k) { }
 
 	/**
 	 * Currently not used.
 	 * @param k The key event that we're listening for.
 	 */
+	@Override
 	public void keyTyped(KeyEvent k) { }
-
 
 	private long getChosenNode() {
 		m_ptBuff[0] = m_lastXMousePos;
@@ -496,7 +505,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return chosenNodeSelected;
 	}
 	
-	
 	private void toggleChosenAnchor(long chosenAnchor, MouseEvent e) {
 		final long edge = chosenAnchor >>> 6;
 		DEdgeView ev = m_view.getDEdgeView(edge);
@@ -505,7 +513,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// Remove handle
 			final int anchorInx = (int)(chosenAnchor & 0x000000000000003f);
 			// Save remove handle
-			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.SELECTED_EDGES,"Remove Edge Handle",m_undo);
+			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle",
+					serviceRegistrar);
 
 			if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
 				Bend defaultBend = ev.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
@@ -546,26 +555,27 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		// Add new Handle for Edge Bend.
 		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
 		if ((e.isAltDown()) && ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
-			
 			m_view.m_selectedAnchors.empty();
 			m_ptBuff[0] = m_lastXMousePos;
 			m_ptBuff[1] = m_lastYMousePos;
 			m_view.xformComponentToNodeCoords(m_ptBuff);
 			// Store current handle list
-			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", m_undo);
+			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle",
+					serviceRegistrar);
 			final Point2D newHandlePoint = new Point2D.Float((float) m_ptBuff[0], (float) m_ptBuff[1]);
 			DEdgeView edgeView = m_view.getDEdgeView(chosenEdge);
 			Bend defaultBend = edgeView.getDefaultValue(BasicVisualLexicon.EDGE_BEND);
-			if( edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend )
-			{
-				if( defaultBend instanceof BendImpl )
-					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl( (BendImpl)defaultBend));
+			
+			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
+				if (defaultBend instanceof BendImpl)
+					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
 				else
 					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
 			}
+			
 			DEdgeView ev = m_view.getDEdgeView(chosenEdge);
 			final int chosenInx = ev.addHandlePoint(newHandlePoint);
-			
+
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
 		}
 
@@ -828,21 +838,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							trgExtents = m_view.m_extentsBuff;
 						}
 
-						final byte srcArrow;
-						final byte trgArrow;
+						final ArrowShape srcArrow;
+						final ArrowShape trgArrow;
 						final float srcArrowSize;
 						final float trgArrowSize;
 
 						if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ARROWS) == 0) {
-							srcArrow = trgArrow = GraphGraphics.ARROW_NONE;
+							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
 							srcArrow = m_view.m_edgeDetails.getSourceArrowShape(edge);
 							trgArrow = m_view.m_edgeDetails.getTargetArrowShape(edge);
-							srcArrowSize = ((srcArrow == GraphGraphics.ARROW_NONE) 
+							srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) 
 							                ? 0.0f
 							                : m_view.m_edgeDetails.getSourceArrowSize(edge));
-							trgArrowSize = ((trgArrow == GraphGraphics.ARROW_NONE) 
+							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) 
 							                ? 0.0f
 							                : m_view.m_edgeDetails.getTargetArrowSize(edge));
 						}
@@ -1244,7 +1254,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 			if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor < 0) {
 				// Save all node positions for panning
-				m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.NODES, "Move", m_undo);
+				m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.NODES, "Move", serviceRegistrar);
 				m_lastXMousePos = e.getX();
 				m_lastYMousePos = e.getY();
 				m_lod[0].setDrawEdges(false);
@@ -1300,7 +1310,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		void singleRightClick(MouseEvent e) {
 			// System.out.println("MousePressed ----> singleRightClick");
 			// Save all node positions
-			m_undoable_edit = new ViewChangeEdit(m_view,ViewChangeEdit.SavedObjs.NODES,"Move",m_undo);
+			m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.NODES, "Move", serviceRegistrar);
 			m_currMouseButton = 3;
 			m_lastXMousePos = e.getX();
 			m_lastYMousePos = e.getY();
@@ -1492,31 +1502,34 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	private Cursor getMoveCursor() {
-		if(moveCursor == null) {
-			Cursor cursor;
-			if(LookAndFeelUtil.isMac()) {
+		if (moveCursor == null) {
+			Cursor cursor = null;
+			
+			if (LookAndFeelUtil.isMac()) {
 				Dimension size = Toolkit.getDefaultToolkit().getBestCursorSize(24, 24);
 				Image image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
 				Graphics graphics = image.getGraphics();
-				
+
 				String icon = IconManager.ICON_ARROWS;
 				JLabel label = new JLabel();
-				label.setBounds(0 , 0, size.width, size.height);
+				label.setBounds(0, 0, size.width, size.height);
 				label.setText(icon);
-				label.setFont(m_iconManager.getIconFont(14));
+				label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14));
 				label.paint(graphics);
 				graphics.dispose();
-				
-				cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0,0), "custom:" + (int)icon.charAt(0));
-			}
-			else {
+
+				cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0),
+						"custom:" + (int) icon.charAt(0));
+			} else {
 				cursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-				if(cursor == null) {
+				
+				if (cursor == null)
 					cursor = new Cursor(Cursor.MOVE_CURSOR);
-				}
 			}
+			
 			moveCursor = cursor;
 		}
+		
 		return moveCursor;
 	}
 	
@@ -1542,7 +1555,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			if (m_button1NodeDrag) {
 				// save selected node and edge positions
 				if (m_undoable_edit == null)
-					m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED, "Move",m_undo);
+					m_undoable_edit = new ViewChangeEdit(m_view, ViewChangeEdit.SavedObjs.SELECTED, "Move",
+							serviceRegistrar);
 				
 				synchronized (m_lock) {
 					m_ptBuff[0] = m_lastXMousePos;
@@ -1714,7 +1728,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				: m_view.getModel().getDefaultEdgeTable();
 
 		// Disable events
-		m_view.cyEventHelper.silenceEventSource(table);
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.silenceEventSource(table);
 
 		// Create RowsSetEvent
 		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
@@ -1727,10 +1742,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
 		}
 
-		m_view.cyEventHelper.unsilenceEventSource(table);
+		eventHelper.unsilenceEventSource(table);
 
 		// Fire event
 		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
-		m_view.cyEventHelper.fireEvent(event);
+		eventHelper.fireEvent(event);
 	}
 }

@@ -79,8 +79,15 @@ final class CyColumnImpl implements CyColumn {
 			throw new IllegalArgumentException("can't rename an immutable column.");
 
 		final String oldName = columnName;
-		table.updateColumnName(oldName, newName);
-		columnName = newName;
+		final CyColumn anotherColumn = table.getColumn(newName);
+		
+		if (anotherColumn == null || this == anotherColumn) {
+			table.updateColumnName(oldName, newName);
+			columnName = newName;
+		} else {
+			throw new IllegalArgumentException("Column already exists with name '"
+					   + newName + "' and type '" + anotherColumn.getType() + "'");
+		}
 	}
 
 	/** @return the data type of the column. */

@@ -1,12 +1,21 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+
+import org.cytoscape.graph.render.immed.EdgeAnchors;
+import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+
+import junit.framework.TestCase;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,16 +33,6 @@ package org.cytoscape.graph.render.stateful;
  * #L%
  */
 
-
-import junit.framework.*;
-
-import java.awt.image.BufferedImage;
-import java.awt.Image;
-
-import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.graph.render.immed.EdgeAnchors;
-
-
 public class GraphRendererTest extends TestCase {
 	private GraphGraphics grafx;
 
@@ -50,10 +49,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_ELLIPSE,
-                                          GraphGraphics.ARROW_DISC,5.0f,
+		                                  ArrowShapeVisualProperty.CIRCLE,5.0f,
 										  null /*anchors*/,
 										  trgNodeExtents,GraphGraphics.SHAPE_RECTANGLE,
-										  GraphGraphics.ARROW_DELTA,7.0f,
+										  ArrowShapeVisualProperty.DELTA,7.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("1 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -74,10 +73,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
-                                          GraphGraphics.ARROW_NONE,5.0f,
+		                                  ArrowShapeVisualProperty.NONE,5.0f,
 										  new SingleEdgeAnchor(new float[]{100.0f,100.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_VEE,
-										  GraphGraphics.ARROW_TEE,7.0f,
+										  ArrowShapeVisualProperty.T,7.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("2 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -99,10 +98,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
-                                          GraphGraphics.ARROW_NONE,5.0f,
+                                          ArrowShapeVisualProperty.NONE,5.0f,
 										  null /*anchors*/,
 										  trgNodeExtents,GraphGraphics.SHAPE_VEE,
-										  GraphGraphics.ARROW_TEE,0.0f,
+										  ArrowShapeVisualProperty.T,0.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("3 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -123,10 +122,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
-                                          GraphGraphics.ARROW_NONE,5.0f,
+                                          ArrowShapeVisualProperty.NONE,5.0f,
 										  new SingleEdgeAnchor(new float[]{75.0f,150.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_VEE,
-										  GraphGraphics.ARROW_TEE,7.0f,
+										  ArrowShapeVisualProperty.T,7.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("4 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -147,10 +146,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_HEXAGON,
-                                          GraphGraphics.ARROW_DIAMOND,8.0f,
+                                          ArrowShapeVisualProperty.DIAMOND,8.0f,
 										  null /*anchors*/,
 										  trgNodeExtents,GraphGraphics.SHAPE_OCTAGON,
-										  GraphGraphics.ARROW_ARROWHEAD,57.0f,
+										  ArrowShapeVisualProperty.ARROW,57.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("5 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -172,10 +171,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
-                                          GraphGraphics.ARROW_HALF_BOTTOM,1.0f,
+                                          ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_ROUNDED_RECTANGLE,
-										  GraphGraphics.ARROW_HALF_TOP,17.0f,
+										  ArrowShapeVisualProperty.HALF_TOP,17.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("6 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -196,10 +195,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
-                                          GraphGraphics.ARROW_HALF_BOTTOM,1.0f,
+                                          ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_ROUNDED_RECTANGLE,
-										  GraphGraphics.ARROW_HALF_TOP,17.0f,
+										  ArrowShapeVisualProperty.HALF_TOP,17.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("7 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -220,10 +219,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
-                                          GraphGraphics.ARROW_HALF_BOTTOM,1.0f,
+                                          ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_ROUNDED_RECTANGLE,
-										  GraphGraphics.ARROW_HALF_TOP,17.0f,
+										  ArrowShapeVisualProperty.HALF_TOP,17.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("8 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);
@@ -244,10 +243,10 @@ public class GraphRendererTest extends TestCase {
 		float[] rtnValTrg = new float[2];
 		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
-                                          GraphGraphics.ARROW_HALF_BOTTOM,1.0f,
+                                          ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
 										  trgNodeExtents,GraphGraphics.SHAPE_ROUNDED_RECTANGLE,
-										  GraphGraphics.ARROW_HALF_TOP,17.0f,
+										  ArrowShapeVisualProperty.HALF_TOP,17.0f,
 										  rtnValSrc,rtnValTrg);
 
 		System.out.println("9 source X: " + rtnValSrc[0] + "  Y: " + rtnValSrc[1]);

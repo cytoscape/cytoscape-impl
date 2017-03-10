@@ -106,10 +106,7 @@ public class OpenSessionTask extends AbstractTask {
 			insertTasksAfterCurrentTask(new OpenSessionWithWarningTask());
 	}
 	
-	CySession getCySession() {
-		return reader.getSession();
-	}
-	
+
 	public final class OpenSessionWithoutWarningTask extends AbstractTask {
 		
 		@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
@@ -123,40 +120,46 @@ public class OpenSessionTask extends AbstractTask {
 			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
 			
 			try {
-				taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
-				taskMonitor.setProgress(0.0);
-	
-				if (file == null)
-					throw new NullPointerException("No file specified.");
-				
-				reader = readerMgr.getReader(file.toURI(), file.getName());
-				
-				if (reader == null)
-					throw new NullPointerException("Failed to find appropriate reader for file: " + file);
-				
-				// Save the current network and group set, in case loading the new session is cancelled later
-				currentNetworkSet.addAll(netTableManager.getNetworkSet());
-				
-				for (final CyNetwork n : currentNetworkSet)
-					currentGroupSet.addAll(grManager.getGroupSet(n));
-				
-				taskMonitor.setProgress(0.2);
-				reader.run(taskMonitor);
-				taskMonitor.setProgress(0.8);
-			} catch (Exception e) {
-				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
-				throw e;
-			}
-			
-			if (cancelled) {
-				disposeCancelledSession();
-			} else {
 				try {
-					changeCurrentSession(taskMonitor);
+					taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
+					taskMonitor.setProgress(0.0);
+		
+					if (file == null)
+						throw new NullPointerException("No file specified.");
+					
+					reader = readerMgr.getReader(file.toURI(), file.getName());
+					
+					if (reader == null)
+						throw new NullPointerException("Failed to find appropriate reader for file: " + file);
+					
+					// Save the current network and group set, in case loading the new session is cancelled later
+					currentNetworkSet.addAll(netTableManager.getNetworkSet());
+					
+					for (final CyNetwork n : currentNetworkSet)
+						currentGroupSet.addAll(grManager.getGroupSet(n));
+					
+					taskMonitor.setProgress(0.2);
+					reader.run(taskMonitor);
+					taskMonitor.setProgress(0.8);
 				} catch (Exception e) {
+					reader = null;
 					eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
 					throw e;
 				}
+				
+				if (cancelled) {
+					disposeCancelledSession();
+				} else {
+					try {
+						changeCurrentSession(taskMonitor);
+					} catch (Exception e) {
+						eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+						throw e;
+					}
+				}
+			} finally {
+				// plug big memory leak
+				reader = null;
 			}
 		}
 		

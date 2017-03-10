@@ -1,29 +1,5 @@
 package org.cytoscape.ding.customgraphicsmgr.internal.ui;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Dimension;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -43,13 +19,35 @@ import org.cytoscape.ding.customgraphicsmgr.internal.event.CustomGraphicsLibrary
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.jdesktop.swingx.JXList;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Display list of images available as custom graphics
- * 
  */
+@SuppressWarnings("serial")
 public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibraryUpdatedListener {
-
-	private static final long serialVersionUID = -8342056297304400824L;
 
 	private CustomGraphicsListModel model;
 	private final CustomGraphicsManager pool;
@@ -65,9 +63,6 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		}
 	}
 
-	/**
-	 * Creates new form CustomGraphicsBrowserPanel
-	 */
 	public CustomGraphicsBrowser(final CustomGraphicsManager manager) {
 		pool = manager;
 
@@ -81,10 +76,9 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		this.setModel(model);
 		this.setCellRenderer(new CustomGraphicsCellRenderer());
 		this.setDropTarget(new URLDropTarget());
-
 	}
 
-	public void removeCustomGraphics(final CyCustomGraphics cg) {
+	public void removeCustomGraphics(final CyCustomGraphics<?> cg) {
 		model.removeElement(cg);
 	}
 
@@ -94,16 +88,17 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 	private void addAllImages() {
 		final Collection<CyCustomGraphics> graphics = pool.getAllCustomGraphics();
 
-		for (CyCustomGraphics cg : graphics) {
+		for (CyCustomGraphics<?> cg : graphics) {
 			if (cg instanceof NullCustomGraphics == false)
 				model.addElement(cg);
 		}
 	}
 
 	private void addCustomGraphics(final String urlStr) {
-		CyCustomGraphics cg = null;
+		CyCustomGraphics<?> cg = null;
+		
 		try {
-			cg = new URLImageCustomGraphics(pool.getNextAvailableID(), urlStr);
+			cg = new URLImageCustomGraphics<>(pool.getNextAvailableID(), urlStr);
 			if (cg != null) {
 				pool.addCustomGraphics(cg, new URL(urlStr));
 				model.addElement(cg);
@@ -113,15 +108,7 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 		}
 	}
 
-	/**
-	 * D & D
-	 * 
-	 * @author kono
-	 * 
-	 */
 	private class URLDropTarget extends DropTarget {
-
-		private static final long serialVersionUID = -7007999535331084109L;
 
 		@Override
 		public void drop(DropTargetDropEvent dtde) {
@@ -131,7 +118,6 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 			boolean gotData = false;
 			
 			try {
-
 				if (trans.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 
 					final List<File> fileList = (List<File>) trans.getTransferData(DataFlavor.javaFileListFlavor);
@@ -166,7 +152,6 @@ public class CustomGraphicsBrowser extends JXList implements CustomGraphicsLibra
 				System.out.println("*** " + i + ": " + flavors[i]);
 			}
 		}
-
 	}
 	
 	@Override

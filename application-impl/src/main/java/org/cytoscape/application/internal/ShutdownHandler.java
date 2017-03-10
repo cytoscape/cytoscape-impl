@@ -1,12 +1,21 @@
 package org.cytoscape.application.internal;
 
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Application Impl (application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +33,36 @@ package org.cytoscape.application.internal;
  * #L%
  */
 
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.events.CyShutdownEvent;
-import org.cytoscape.event.CyEventHelper;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- * 
- */
 public class ShutdownHandler implements CyShutdown {
 
 	private static final Logger logger = LoggerFactory.getLogger(ShutdownHandler.class);
 	
-	private final CyEventHelper eh;
+	private final Bundle rootBundle;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private Bundle rootBundle;
-
-	public ShutdownHandler(CyEventHelper eh, Bundle rootBundle) {
-		this.eh = eh;
+	public ShutdownHandler(final Bundle rootBundle, final CyServiceRegistrar serviceRegistrar) {
 		this.rootBundle = rootBundle;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void exit(int retVal) {
 		exit(retVal, false);
 	}
 
+	@Override
 	public void exit(int retVal, boolean force) {
-		CyShutdownEvent ev =  new CyShutdownEvent(ShutdownHandler.this, force);
-		eh.fireEvent( ev );
+		CyShutdownEvent ev = new CyShutdownEvent(ShutdownHandler.this, force);
+		serviceRegistrar.getService(CyEventHelper.class).fireEvent(ev);
 
-		if ( ev.actuallyShutdown() )
+		if (ev.actuallyShutdown()) {
 			try {
 				rootBundle.stop();
 			} catch (BundleException e) {
 				logger.error("Error while shutting down", e);
 			}
-		else
-			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason() );
+		} else {
+			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason());
+		}
 	}
 }

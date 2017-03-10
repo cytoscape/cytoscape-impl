@@ -19,12 +19,37 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.cytoscape.view.presentation.property.values.MappableVisualPropertyValue;
 
 import com.fasterxml.jackson.databind.module.SimpleModule;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public abstract class AbstractChart<T extends CustomGraphicLayer> extends AbstractCustomGraphics2<T>
 		implements MappableVisualPropertyValue {
@@ -50,37 +75,36 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	public static final String BORDER_WIDTH = "cy_borderWidth";
 	public static final String BORDER_COLOR = "cy_borderColor";
 	
-	private final CyColumnIdentifierFactory colIdFactory;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
-	protected AbstractChart(final String displayName, final CyColumnIdentifierFactory colIdFactory) {
+	protected AbstractChart(final String displayName, final CyServiceRegistrar serviceRegistrar) {
 		super(displayName);
 		
-		if (colIdFactory == null)
-			throw new IllegalArgumentException("'colIdFactory' must not be null.");
+		if (serviceRegistrar == null)
+			throw new IllegalArgumentException("'serviceRegistrar' must not be null.");
 		
-		this.colIdFactory = colIdFactory;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	protected AbstractChart(final String displayName, final String input,
-			final CyColumnIdentifierFactory colIdFactory) {
-		this(displayName, colIdFactory);
+	protected AbstractChart(final String displayName, final String input, final CyServiceRegistrar serviceRegistrar) {
+		this(displayName, serviceRegistrar);
 		addProperties(parseInput(input));
 	}
 	
-	protected AbstractChart(final AbstractChart<T> chart, final CyColumnIdentifierFactory colIdFactory) {
-		this(chart.getDisplayName(), colIdFactory);
+	protected AbstractChart(final AbstractChart<T> chart, final CyServiceRegistrar serviceRegistrar) {
+		this(chart.getDisplayName(), serviceRegistrar);
 		addProperties(chart.getProperties());
 	}
 	
 	protected AbstractChart(final String displayName, final Map<String, Object> properties,
-			final CyColumnIdentifierFactory colIdFactory) {
-		this(displayName, colIdFactory);
+			final CyServiceRegistrar serviceRegistrar) {
+		this(displayName, serviceRegistrar);
 		addProperties(properties);
 	}
 	
 	@Override
 	public Set<CyColumnIdentifier> getMappedColumns() {
-		final Set<CyColumnIdentifier> set = new HashSet<CyColumnIdentifier>();
+		final Set<CyColumnIdentifier> set = new HashSet<>();
 		set.addAll(getList(DATA_COLUMNS, CyColumnIdentifier.class));
 		
 		if (get(SHOW_ITEM_LABELS, Boolean.class, Boolean.FALSE))
@@ -114,7 +138,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 			return data;
 
 		final CyTable table = row.getTable();
-		final List<Double> singleSeriesValues = new ArrayList<Double>();
+		final List<Double> singleSeriesValues = new ArrayList<>();
 		final StringBuilder singleSeriesKey = new StringBuilder();
 		int singleSeriesIndex = -1;
 		int count = 0;
@@ -363,6 +387,7 @@ public abstract class AbstractChart<T extends CustomGraphicLayer> extends Abstra
 	@Override
 	protected void addJsonDeserializers(final SimpleModule module) {
 		super.addJsonDeserializers(module);
+		final CyColumnIdentifierFactory colIdFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
 		module.addDeserializer(CyColumnIdentifier.class, new CyColumnIdentifierJsonDeserializer(colIdFactory));
 	}
 	

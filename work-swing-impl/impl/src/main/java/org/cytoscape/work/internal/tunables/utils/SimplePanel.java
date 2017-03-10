@@ -2,6 +2,7 @@ package org.cytoscape.work.internal.tunables.utils;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 
@@ -37,6 +38,14 @@ public class SimplePanel extends JPanel implements HierarchyListener {
 	
 	protected void initComponents() {
 		addToRoot(getContentPane());
+	}
+	
+	@Override
+	public Dimension getMaximumSize() {
+		final Dimension d = super.getMaximumSize();
+		d.width = Integer.MAX_VALUE;
+		
+		return d;
 	}
 	
 	@Override

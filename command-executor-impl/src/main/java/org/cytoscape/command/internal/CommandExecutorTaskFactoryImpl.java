@@ -1,12 +1,25 @@
 package org.cytoscape.command.internal;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.TunableSetter; 
+
 /*
  * #%L
  * Cytoscape Command Executor Impl (command-executor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,52 +37,47 @@ package org.cytoscape.command.internal;
  * #L%
  */
 
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableSetter;
-import org.cytoscape.command.CommandExecutorTaskFactory;
-import java.io.File;
-import java.util.List; 
-import java.util.Map; 
-import java.util.HashMap; 
-import java.util.Arrays; 
-
-
 public class CommandExecutorTaskFactoryImpl extends AbstractTaskFactory implements CommandExecutorTaskFactory {
 
-	private final CommandExecutorImpl cei;
-	private final TunableSetter tunableSetter;
+	private final CommandExecutorImpl commandExecutor;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CommandExecutorTaskFactoryImpl(CommandExecutorImpl cei, TunableSetter tunableSetter) {
-		this.cei = cei;
-		this.tunableSetter = tunableSetter;
+	public CommandExecutorTaskFactoryImpl(final CommandExecutorImpl cei, final CyServiceRegistrar serviceRegistrar) {
+		this.commandExecutor = cei;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return this.createTaskIterator(null);
 	}
 
 	public TaskIterator createTaskIterator(TaskObserver observer) {
-		return new TaskIterator(new CommandFileExecutorTask(cei, observer));
+		return new TaskIterator(new CommandFileExecutorTask(commandExecutor, observer));
 	} 
 
+	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-        final Map<String, Object> m = new HashMap<String, Object>();
-        m.put("file", file);
-        return tunableSetter.createTaskIterator(this.createTaskIterator(observer), m, observer);
-	} 
+		final Map<String, Object> m = new HashMap<>();
+		m.put("file", file);
+		
+		return serviceRegistrar.getService(TunableSetter.class)
+				.createTaskIterator(this.createTaskIterator(observer), m, observer);
+	}
 
-	public TaskIterator createTaskIterator(TaskObserver observer, String ... commands) {
+	@Override
+	public TaskIterator createTaskIterator(TaskObserver observer, String... commands) {
 		return createTaskIterator(Arrays.asList(commands), observer);
-	} 
+	}
 
+	@Override
 	public TaskIterator createTaskIterator(List<String> commands, TaskObserver observer) {
-		return new TaskIterator(new CommandStringsExecutorTask(commands,cei,observer));
-	} 
+		return new TaskIterator(new CommandStringsExecutorTask(commands, commandExecutor, observer));
+	}
 
-	public TaskIterator createTaskIterator(String namespace, String command, 
-	                                       Map<String,Object> args, TaskObserver observer) {
-		return new TaskIterator(new CommandExecutorTask(namespace, command, args, cei, observer));
+	@Override
+	public TaskIterator createTaskIterator(String namespace, String command, Map<String, Object> args,
+			TaskObserver observer) {
+		return new TaskIterator(new CommandExecutorTask(namespace, command, args, commandExecutor, observer));
 	} 
 }

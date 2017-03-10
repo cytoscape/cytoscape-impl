@@ -1,12 +1,32 @@
 package org.cytoscape.model;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
+
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.internal.CyNetworkFactoryImpl;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
+import org.cytoscape.model.internal.CyTableFactoryImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +44,6 @@ package org.cytoscape.model;
  * #L%
  */
 
-
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.model.internal.CyNetworkFactoryImpl;
-import org.cytoscape.model.internal.CyNetworkManagerImpl;
-import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
-import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-
-import static org.mockito.Mockito.*;
-
-
 /**
  * Provides utility methods to create actual network instances for testing.
  */
@@ -54,20 +55,24 @@ public class NetworkTestSupport {
 	protected CyNetworkTableManagerImpl networkTableMgr;
 	protected CyRootNetworkManager rootNetworkManager;
 	protected CyNetworkManager networkMgr;
+	protected CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class, withSettings().stubOnly());
 	
-	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
-	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class, withSettings().stubOnly());
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+	private Interpreter interpreter = mock(Interpreter.class);
 	
 	public NetworkTestSupport() {
 		// Mock objects.
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		networkTableMgr = new CyNetworkTableManagerImpl();
 		networkMgr = new CyNetworkManagerImpl(serviceRegistrar);
-		tableMgr = new CyTableManagerImpl(eventHelper, networkTableMgr, networkMgr); 
+		tableMgr = new CyTableManagerImpl(networkTableMgr, networkMgr, serviceRegistrar); 
 		
-		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, mock(Interpreter.class), serviceRegistrar);
+		final CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(eventHelper, serviceRegistrar);
 		networkFactory = new CyNetworkFactoryImpl(eventHelper, tableMgr, networkTableMgr, tableFactory, serviceRegistrar);
 		rootNetworkManager = new CyRootNetworkManagerImpl();
 	}

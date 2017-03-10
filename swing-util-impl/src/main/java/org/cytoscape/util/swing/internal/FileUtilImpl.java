@@ -1,12 +1,33 @@
 package org.cytoscape.util.swing.internal;
 
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.FileChooserFilter;
+import org.cytoscape.util.swing.FileUtil;
+
 /*
  * #%L
  * Cytoscape Swing Utility Impl (swing-util-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,95 +45,55 @@ package org.cytoscape.util.swing.internal;
  * #L%
  */
 
-
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.FileDialog;
-import java.awt.Frame;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.*;
-
-import javax.swing.JComponent;
-import javax.swing.JFileChooser;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
-
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.FileChooserFilter;
-import org.cytoscape.util.swing.FileUtil;
-
-
 class FileUtilImpl implements FileUtil {
 	
-	private final Properties coreProperties;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	FileUtilImpl(final CyProperty<Properties> cyCoreProperty) {
-		coreProperties = cyCoreProperty.getProperties();
+	FileUtilImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File getFile(final Component parent, final String title, final int loadSaveCustom,
 			final Collection<FileChooserFilter> filters) {
 		return getFile(parent, title, loadSaveCustom, null, null, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File getFile(final Component parent, final String title, final int loadSaveCustom,
 	                    final String startDir, final String customApproveText,
-	                    final Collection<FileChooserFilter> filters)
-	{
+	                    final Collection<FileChooserFilter> filters) {
 		File[] result = getFiles(parent, title, loadSaveCustom, startDir,
 					 customApproveText, false, filters);
 
 		return ((result == null) || (result.length <= 0)) ? null : result[0];
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
 	                       final int loadSaveCustom,
-	                       final Collection<FileChooserFilter> filters)
-	{
+	                       final Collection<FileChooserFilter> filters) {
 		return getFiles(parent, title, loadSaveCustom, null, null, true, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title,
 	                       final int loadSaveCustom, final String startDir,
 	                       final String customApproveText,
-	                       final Collection<FileChooserFilter> filters)
-	{
+	                       final Collection<FileChooserFilter> filters) {
 		return getFiles(parent, title, loadSaveCustom, startDir,
 				customApproveText, true, filters);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public File[] getFiles(final Component parent, final String title, final int loadSaveCustom, String startDir,
 			final String customApproveText, final boolean multiselect, final Collection<FileChooserFilter> filters) {
 		
 		if (parent == null)
 			throw new NullPointerException("\"parent\" must not be null.");
-
-		if (startDir == null)
-			startDir = coreProperties.getProperty(FileUtil.LAST_DIRECTORY, System.getProperty("user.dir"));
 		
 		final String osName = System.getProperty("os.name");
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
 		if (osName.startsWith("Mac")) {
 			// This is a Macintosh, use the AWT style file dialog
@@ -136,19 +117,19 @@ class FileUtilImpl implements FileUtil {
 
 				if (startDir != null)
 					chooser.setDirectory(startDir);
+				else
+					chooser.setDirectory(applicationManager.getCurrentDirectory().getAbsolutePath());
 				
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
 				chooser.setLocationRelativeTo(parent);
+				chooser.setMultipleMode(multiselect);
 				chooser.setVisible(true);
 
 				if (chooser.getFile() != null) {
-					//TODO: how can we select multiple files on Mac?
-					final File[] results = new File[1];
-					String newFileName = chooser.getFile();
-					
+					final File[] results;
 					if (loadSaveCustom == SAVE) {
-						// Is the filename missing an extension?
+						String newFileName = chooser.getFile();
 						final String fileNameWithExt = addFileExt(filters, newFileName);
 						
 						if (!fileNameWithExt.equals(newFileName)) {
@@ -167,16 +148,17 @@ class FileUtilImpl implements FileUtil {
 								if (answer == JOptionPane.NO_OPTION) // Try again
 									return getFiles(parent, title, loadSaveCustom, file.getParent(), customApproveText,
 											multiselect, filters);
-								
-								newFileName = fileNameWithExt;
 							}
+							newFileName = fileNameWithExt;
 						}
+						results = new File[1];
+						results[0] = new File(chooser.getDirectory() + File.separator + newFileName);
 					}
-					
-					results[0] = new File(chooser.getDirectory() + File.separator + newFileName);
+					else
+						 results = chooser.getFiles();
 
 					if (chooser.getDirectory() != null)
-						coreProperties.setProperty(FileUtil.LAST_DIRECTORY, chooser.getDirectory());
+						applicationManager.setCurrentDirectory(new File(chooser.getDirectory()));
 
 					return results;
 				}
@@ -188,8 +170,11 @@ class FileUtilImpl implements FileUtil {
 			return null;
 		} else {
 			// this is not a Mac, use the Swing based file dialog
-			final File start = new File(startDir);
-			final JFileChooser chooser = new JFileChooser(start);
+			final JFileChooser chooser;
+			if(startDir != null)
+				chooser = new JFileChooser(new File(startDir));
+			else
+				chooser = new JFileChooser(applicationManager.getCurrentDirectory());
 			
 			// set multiple selection, if applicable
 			chooser.setMultiSelectionEnabled(multiselect);
@@ -301,15 +286,14 @@ class FileUtilImpl implements FileUtil {
 			}
 
 			if (results != null && chooser.getCurrentDirectory().getPath() != null)
-				coreProperties.setProperty(FileUtil.LAST_DIRECTORY,
-				                           chooser.getCurrentDirectory().getPath());
+				applicationManager.setCurrentDirectory(chooser.getCurrentDirectory());
 
 			return results;
 		}
 	}
 	
 	private String addFileExt(final Collection<FileChooserFilter> filters, String fileName) {
-		final Set<String> extSet = new LinkedHashSet<String>();
+		final Set<String> extSet = new LinkedHashSet<>();
 		
 		for (final FileChooserFilter filter : filters) {
 			final String[] exts = filter.getExtensions();
@@ -333,6 +317,7 @@ class FileUtilImpl implements FileUtil {
 	}
 
 	private static final class CombinedFilenameFilter implements FilenameFilter {
+		
 		private final Collection<FileChooserFilter> filters;
 
 		CombinedFilenameFilter(final Collection<FileChooserFilter> filters) {

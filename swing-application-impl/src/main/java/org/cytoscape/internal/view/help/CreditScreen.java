@@ -54,6 +54,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,9 +75,10 @@ public class CreditScreen {
 	private final JFrame parent;
 
 
-	public CreditScreen(CyVersion vers, CySwingApplication cySwingApp) {
-		version = vers.getVersion();
-		parent = cySwingApp.getJFrame();
+	public CreditScreen(final CyServiceRegistrar serviceRegistrar) {
+		version = serviceRegistrar.getService(CyVersion.class).getVersion();
+		parent = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
+		
 		try {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(

@@ -1,12 +1,18 @@
 package org.cytoscape.internal.view.help;
 
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +30,25 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+public class HelpReportABugTask extends AbstractTask {
 
-public class HelpReportABugTask extends AbstractTask{
+	private static final String BUG_REPORT_URL = "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
 
-	private String bugReportURL = "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
-	private OpenBrowser openBrowser;
-	private final CyVersion cyVersion;
-	
-	public HelpReportABugTask(OpenBrowser openBrowser,  CyVersion cyVersion) {
-		this.openBrowser = openBrowser;
-		this.cyVersion = cyVersion;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public HelpReportABugTask(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) {
 		// get OS string
-		String os_str = System.getProperty("os.name")+ "_"+ System.getProperty("os.version");
+		String os_str = System.getProperty("os.name") + "_" + System.getProperty("os.version");
 		os_str = os_str.replace(" ", "_");
 		
-		bugReportURL = "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php?cyversion="+cyVersion.getVersion()+"&os="+os_str;
-		openBrowser.openURL(bugReportURL);
-	}
+		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
 
+		openBrowser.openURL(BUG_REPORT_URL + "?cyversion=" + cyVersion.getVersion() + "&os=" + os_str);
+	}
 }

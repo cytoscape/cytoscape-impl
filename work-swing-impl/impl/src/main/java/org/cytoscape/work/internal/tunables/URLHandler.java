@@ -130,7 +130,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 		final String selectedString = selected.toString();
 		final String urlString;
 		
-		if (selectedString.startsWith("http:") == false)
+		if ((selectedString.startsWith("http:") == false) && (selectedString.startsWith("https:") == false))
 			urlString = dataSourceMap.get(selectedString);
 		else
 			urlString = selectedString;

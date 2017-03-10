@@ -1,12 +1,24 @@
 package org.cytoscape.view.vizmap.internal;
 
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.VisualStyleFactory;
+import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
+import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
+import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingFactory;
+import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,57 +36,42 @@ package org.cytoscape.view.vizmap.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.VisualStyleFactory;
-import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
-import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
-import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingFactory;
-import org.cytoscape.view.vizmap.mappings.ValueTranslator;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
 	
-	public CyActivator() {
-		super();
-	}
-
 	@Override
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		final CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
 
-		// Mapping Factories
-		final DiscreteMappingFactory discreteMappingFactory = new DiscreteMappingFactory(eventHelper);
-		final ContinuousMappingFactory continuousMappingFactory = new ContinuousMappingFactory(eventHelper);
-		final PassthroughMappingFactory passthroughMappingFactory = new PassthroughMappingFactory(eventHelper);
+		// Mapping Factories:
+		final DiscreteMappingFactory dmFactory = new DiscreteMappingFactory(serviceRegistrar);
+		{
+			final Properties props = new Properties();
+			props.setProperty("service.type", "factory");
+			props.setProperty("mapping.type", "discrete");
+			registerService(bc, dmFactory, VisualMappingFunctionFactory.class, props);
+		}
 		
-		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, passthroughMappingFactory);
-		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
+		final ContinuousMappingFactory cmFactory = new ContinuousMappingFactory(serviceRegistrar);
+		{
+			final Properties props = new Properties();
+			props.setProperty("service.type", "factory");
+			props.setProperty("mapping.type", "continuous");
+			registerService(bc, cmFactory, VisualMappingFunctionFactory.class, props);
+		}
 		
-		registerAllServices(bc, visualMappingManager, new Properties());
+		final PassthroughMappingFactory pmFactory = new PassthroughMappingFactory(serviceRegistrar);
+		{
+			final Properties props = new Properties();
+			props.setProperty("service.type", "factory");
+			props.setProperty("mapping.type", "passthrough");
+			registerService(bc, pmFactory, VisualMappingFunctionFactory.class, props);
+			registerServiceListener(bc, pmFactory, "addValueTranslator", "removeValueTranslator", ValueTranslator.class);
+		}
+		
+		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
 		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());
-
-		final Properties discreteMappingFactoryProps = new Properties();
-		discreteMappingFactoryProps.setProperty("service.type", "factory");
-		discreteMappingFactoryProps.setProperty("mapping.type", "discrete");
-		registerService(bc, discreteMappingFactory, VisualMappingFunctionFactory.class, discreteMappingFactoryProps);
-
-		final Properties continuousMappingFactoryProps = new Properties();
-		continuousMappingFactoryProps.setProperty("service.type", "factory");
-		continuousMappingFactoryProps.setProperty("mapping.type", "continuous");
-		registerService(bc, continuousMappingFactory, VisualMappingFunctionFactory.class, continuousMappingFactoryProps);
-
-		final Properties passthroughMappingFactoryProps = new Properties();
-		passthroughMappingFactoryProps.setProperty("service.type", "factory");
-		passthroughMappingFactoryProps.setProperty("mapping.type", "passthrough");
-		registerService(bc, passthroughMappingFactory, VisualMappingFunctionFactory.class,
-				passthroughMappingFactoryProps);
-
-		registerServiceListener(bc, passthroughMappingFactory, "addValueTranslator", "removeValueTranslator", ValueTranslator.class);
+		
+		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
+		registerAllServices(bc, visualMappingManager, new Properties());
 	}
 }

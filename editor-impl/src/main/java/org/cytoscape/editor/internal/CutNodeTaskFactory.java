@@ -1,12 +1,19 @@
 package org.cytoscape.editor.internal;
 
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +31,18 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.task.AbstractNodeViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
 public class CutNodeTaskFactory extends AbstractNodeViewTaskFactory {
 	
 	private final ClipboardManagerImpl clipMgr;
-	private final VisualMappingManager vmMgr;
-	private final UndoSupport undoSupport;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CutNodeTaskFactory(final ClipboardManagerImpl clipboardMgr,
-							  final VisualMappingManager vmMgr,
-							  final UndoSupport undoSupport,
-	                          final CyEventHelper eventHelper) {
+	public CutNodeTaskFactory(final ClipboardManagerImpl clipboardMgr, final CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = clipboardMgr;
-		this.vmMgr = vmMgr;
-		this.undoSupport = undoSupport;
-		this.eventHelper = eventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new CutTask(networkView, nodeView, clipMgr, vmMgr, undoSupport, eventHelper));
+		return new TaskIterator(new CutTask(networkView, nodeView, clipMgr, serviceRegistrar));
 	}
 }

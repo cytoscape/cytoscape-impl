@@ -1,12 +1,25 @@
 package org.cytoscape.view.layout.internal;
 
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.util.Properties;
+
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
+import org.cytoscape.work.undo.UndoSupport;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Layout Impl (layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +37,27 @@ package org.cytoscape.view.layout.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.layout.internal.algorithms.GridNodeLayout;
-import org.cytoscape.work.undo.UndoSupport;
-import org.osgi.framework.BundleContext;
-
-import static org.cytoscape.work.ServiceProperties.*;
-
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
-
-
+	
+	@Override
 	public void start(BundleContext bc) {
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		final UndoSupport undoSupport = getService(bc, UndoSupport.class);
 
-		CyProperty cyPropertyServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
-		UndoSupport undoSupportServiceRef = getService(bc,UndoSupport.class);
-		CyServiceRegistrar cyServiceRegistrar = getService(bc,CyServiceRegistrar.class);
+		GridNodeLayout gridNodeLayout = new GridNodeLayout(undoSupport);
 		
-		GridNodeLayout gridNodeLayout = new GridNodeLayout(undoSupportServiceRef);
-		CyLayoutAlgorithmManagerImpl cyLayouts = new CyLayoutAlgorithmManagerImpl(cyServiceRegistrar, cyPropertyServiceRef, gridNodeLayout);
-		
-		registerService(bc,cyLayouts,CyLayoutAlgorithmManager.class, new Properties());
+		CyLayoutAlgorithmManagerImpl layoutManager = new CyLayoutAlgorithmManagerImpl(gridNodeLayout, serviceRegistrar);
+		registerService(bc, layoutManager, CyLayoutAlgorithmManager.class, new Properties());
 
-		Properties gridNodeLayoutProps = new Properties();
-		// gridNodeLayoutProps.setProperty(PREFERRED_MENU,"Layout.Cytoscape Layouts");
-		gridNodeLayoutProps.setProperty("preferredTaskManager","menu");
-		gridNodeLayoutProps.setProperty(TITLE,gridNodeLayout.toString());
-		gridNodeLayoutProps.setProperty(MENU_GRAVITY,"10.0");
-		registerService(bc,gridNodeLayout,CyLayoutAlgorithm.class, gridNodeLayoutProps);
+		{
+			Properties props = new Properties();
+			// gridNodeLayoutProps.setProperty(PREFERRED_MENU, "Layout.Cytoscape Layouts");
+			props.setProperty("preferredTaskManager", "menu");
+			props.setProperty(TITLE, gridNodeLayout.toString());
+			props.setProperty(MENU_GRAVITY, "10.0");
+			registerService(bc, gridNodeLayout, CyLayoutAlgorithm.class, props);
+		}
 
-		registerServiceListener(bc,cyLayouts,"addLayout","removeLayout",CyLayoutAlgorithm.class);
+		registerServiceListener(bc, layoutManager, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 	}
 }
-

@@ -1,30 +1,5 @@
 package org.cytoscape.internal.task;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -50,6 +25,29 @@ import org.cytoscape.work.swing.PanelTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  *  This class is used to provide actions for task factories that have been annotated with tunables and therefore
@@ -64,14 +62,14 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	 */
 	private static class ExecuteButtonListener implements ActionListener {
 		
-		final private TaskFactory factory;
-		final private PanelTaskManager manager;
-		final private Object context;
+		private final TaskFactory factory;
+		private final Object context;
+		private CyServiceRegistrar serviceRegistrar;
 
-		ExecuteButtonListener(final TaskFactory factory, Object context, final PanelTaskManager manager) {
+		ExecuteButtonListener(final TaskFactory factory, Object context, final CyServiceRegistrar serviceRegistrar) {
 			this.factory = factory;
-			this.manager = manager;
 			this.context = context;
+			this.serviceRegistrar = serviceRegistrar;
 		}
 
 		@Override
@@ -100,33 +98,31 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 				}
 			}
 
-			manager.execute(factory.createTaskIterator());
+			final PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
+			taskManager.execute(factory.createTaskIterator());
 		}
 	}
 
 
-	final private static CytoPanelName DEFAULT_CYTOPANEL = CytoPanelName.WEST;
 	final private TaskFactory factory;
 	final private Object context;
-	final private PanelTaskManager manager;
 	final private Map<String, String> serviceProps;
 	final private CytoPanelName cytoPanelName;
-	final private CyServiceRegistrar registrar;
+	final private CyServiceRegistrar serviceRegistrar;
 	final private static Logger logger = LoggerFactory.getLogger(CytoPanelTaskFactoryTunableAction.class);
 
-	public CytoPanelTaskFactoryTunableAction(final TaskFactory factory,
-											 final Object context,
-	                                         final PanelTaskManager manager,
-	                                         final Map<String, String> serviceProps, 
-	                                         final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
-											 final CyServiceRegistrar registrar)
-	{
-		super(serviceProps, appMgr, networkViewManager);
+	public CytoPanelTaskFactoryTunableAction(
+			final TaskFactory factory,
+			final Object context,
+	        final Map<String, String> serviceProps,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(serviceProps, serviceRegistrar.getService(CyApplicationManager.class),
+				serviceRegistrar.getService(CyNetworkViewManager.class));
 
 		this.factory = factory;
-		this.manager = manager;
 		this.serviceProps = serviceProps;
-		this.registrar = registrar;
+		this.serviceRegistrar = serviceRegistrar;
 		this.cytoPanelName = getCytoPanelName();
 		this.context = context;
 	}
@@ -149,14 +145,17 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	/**
 	 *  Creates a new CytoPanel component and adds it to a CytoPanel.
 	 */
+	@Override
 	public void actionPerformed(final ActionEvent a) {
-		final JPanel innerPanel = manager.getConfiguration(factory, context);
+		final PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
+		final JPanel innerPanel = taskManager.getConfiguration(factory, context);
+		
 		if (innerPanel == null)
 			return;
 
 		CytoPanelComponentImp imp = new CytoPanelComponentImp(innerPanel,
 		                                                      getCytoPanelComponentTitle());
-		registrar.registerService(imp,CytoPanelComponent.class,new Properties());
+		serviceRegistrar.registerService(imp,CytoPanelComponent.class,new Properties());
 	}
 
 	/**
@@ -188,32 +187,41 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	}
 
 	private class CytoPanelComponentImp implements CytoPanelComponent {
+		
 		private final Component innerPanel;
 		private final Component comp;
 		private final String title;
+		
 		CytoPanelComponentImp(Component innerPanel, String title) {
 			this.innerPanel = innerPanel;
 			this.title = title;
 			this.comp = createComponent();
 		}
+		
+		@Override
 		public String getTitle() { return title; }
+		
+		@Override
 		public CytoPanelName getCytoPanelName() { return cytoPanelName; }
+		
+		@Override
 		public Icon getIcon() { return null; }
+		
+		@Override
 		public Component getComponent() { return comp; }
+		
 		private Component createComponent() { 
 			final JPanel outerPanel = new JPanel();
 			outerPanel.add(innerPanel);
 
 			final JButton executeButton = new JButton("Execute");
-			executeButton.addActionListener(new ExecuteButtonListener(factory, context, manager));
+			executeButton.addActionListener(new ExecuteButtonListener(factory, context, serviceRegistrar));
 			outerPanel.add(executeButton);
 	
 			final JButton closeButton = new JButton("Close");
-			closeButton.addActionListener(new ActionListener() {
-					public void actionPerformed(final ActionEvent event) {
-						registrar.unregisterService(this,CytoPanelComponent.class);	
-					}
-				});
+			closeButton.addActionListener((final ActionEvent event) -> {
+				serviceRegistrar.unregisterService(this,CytoPanelComponent.class);	
+			});
 			outerPanel.add(closeButton);
 		
 			return outerPanel;

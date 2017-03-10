@@ -50,28 +50,30 @@ public abstract class AbstractLineParser {
 	public Object parse(final String s, final AttributeDataType type, final String delimiter) {
 		Object value = null;
 		
-		try {
-			switch (type) {
-				case TYPE_BOOLEAN:  return Boolean.valueOf(s.trim());
-				case TYPE_INTEGER:  return Integer.valueOf(s.trim());
-				case TYPE_LONG:     return Long.valueOf(s.trim());
-				case TYPE_FLOATING: return Double.valueOf(s.trim());
-				case TYPE_STRING:   return s.trim();
-
-				case TYPE_BOOLEAN_LIST:
-				case TYPE_INTEGER_LIST:
-				case TYPE_LONG_LIST:
-				case TYPE_FLOATING_LIST:
-				case TYPE_STRING_LIST:
-					value = parseList(s, type, delimiter);
-					
-					if (value instanceof List)
-						value = new ArrayList<>((List)value);
-					
-					break;
+		if (s != null && !s.isEmpty() && !"null".equals(s)) {
+			try {
+				switch (type) {
+					case TYPE_BOOLEAN:  return Boolean.valueOf(s.trim());
+					case TYPE_INTEGER:  return Integer.valueOf(s.trim());
+					case TYPE_LONG:     return Long.valueOf(s.trim());
+					case TYPE_FLOATING: return Double.valueOf(s.trim());
+					case TYPE_STRING:   return s.trim();
+	
+					case TYPE_BOOLEAN_LIST:
+					case TYPE_INTEGER_LIST:
+					case TYPE_LONG_LIST:
+					case TYPE_FLOATING_LIST:
+					case TYPE_STRING_LIST:
+						value = parseList(s, type, delimiter);
+						
+						if (value instanceof List)
+							value = new ArrayList<>((List)value);
+						
+						break;
+				}
+			} catch (NumberFormatException e) {
+				value = createInvalidNumberEquation(s.trim(), type);
 			}
-		} catch (NumberFormatException e) {
-			value = createInvalidNumberEquation(s.trim(), type);
 		}
 		
 		return value;

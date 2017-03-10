@@ -1,12 +1,19 @@
 package org.cytoscape.io.internal.read.datatable;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,39 +31,13 @@ package org.cytoscape.io.internal.read.datatable;
  * #L%
  */
 
-
-
-import java.io.InputStream;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.read.AbstractTableReaderFactory;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class CyAttributesReaderFactory extends AbstractTableReaderFactory {
-	private final CyApplicationManager appMgr;
-	private final CyNetworkManager netMgr;
-	private final CyRootNetworkManager rootNetFact;
 
-	public CyAttributesReaderFactory(final CyFileFilter filter, final CyTableFactory factory,
-					 final CyApplicationManager appMgr,
-					 final CyNetworkManager netMgr,
-					 final CyRootNetworkManager rootNetFact)
-	{
-		super(filter, factory);
-		this.appMgr = appMgr;
-		this.netMgr = netMgr;
-		this.rootNetFact = rootNetFact;
+	public CyAttributesReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+		super(filter, serviceRegistrar);
 	}
 
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
-		return new TaskIterator(new CyAttributesReader(inputStream, tableFactory, appMgr,
-		                                               netMgr,rootNetFact));
+		return new TaskIterator(new CyAttributesReader(inputStream, serviceRegistrar));
 	}
 }

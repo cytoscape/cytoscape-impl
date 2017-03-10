@@ -6,7 +6,7 @@ package org.cytoscape.graph.render.immed;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -80,9 +80,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
+import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.PaintedShape;
+import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
+import org.cytoscape.view.presentation.property.values.ArrowShape;
 
 
 /**
@@ -147,25 +149,8 @@ public final class GraphGraphics {
 	 */
 	public static final int CUSTOM_SHAPE_MAX_VERTICES = 100;
 
-	//
-	// Arrow shape constants. 
-	//
-	public static final byte ARROW_NONE = -1;
-	public static final byte ARROW_DELTA = -2;
-	public static final byte ARROW_DIAMOND = -3;
-	public static final byte ARROW_DISC = -4;
-	public static final byte ARROW_TEE = -5;
-	public static final byte ARROW_HALF_TOP = -6;
-	public static final byte ARROW_HALF_BOTTOM = -7;
-	public static final byte ARROW_ARROWHEAD = -8;
-	public static final byte ARROW_DELTA_SHORT_1 = -9;
-	public static final byte ARROW_DELTA_SHORT_2 = -10;
-	public static final byte ARROW_ARROWHEAD_SHORT = -11;
-	public static final byte ARROW_DIAMOND_SHORT_1 = -12;
-	public static final byte ARROW_DIAMOND_SHORT_2 = -13;
-
 	// The way to access all Arrow objects.
-	private static final Map<Byte,Arrow> arrows;
+	private static final Map<ArrowShape, Arrow> arrows;
 
 	/**
 	 * This value is currently 64.
@@ -182,7 +167,7 @@ public final class GraphGraphics {
 	private static final Map<Float,Stroke> borderStrokes = new HashMap<Float,Stroke>();
 
 	static {		
-		nodeShapes = new HashMap<Byte,NodeShape>();
+		nodeShapes = new HashMap<>();
 
 		nodeShapes.put(SHAPE_RECTANGLE, new RectangleNodeShape()); 
 		nodeShapes.put(SHAPE_ELLIPSE, new EllipseNodeShape()); 
@@ -194,21 +179,21 @@ public final class GraphGraphics {
 		nodeShapes.put(SHAPE_TRIANGLE, new TriangleNodeShape()); 
 		nodeShapes.put(SHAPE_VEE, new VeeNodeShape());
 
-		arrows = new HashMap<Byte,Arrow>();
+		arrows = new HashMap<>();
 
-		arrows.put(ARROW_NONE, new NoArrow() );
-		arrows.put(ARROW_DELTA, new DeltaArrow() );
-		arrows.put(ARROW_DISC, new DiscArrow() );
-		arrows.put(ARROW_DIAMOND, new DiamondArrow() );
-		arrows.put(ARROW_TEE, new TeeArrow() );
-		arrows.put(ARROW_ARROWHEAD, new ArrowheadArrow() );
-		arrows.put(ARROW_HALF_TOP, new HalfTopArrow() );
-		arrows.put(ARROW_HALF_BOTTOM, new HalfBottomArrow() );
-		arrows.put(ARROW_DELTA_SHORT_1, new DeltaArrowShort1() );
-		arrows.put(ARROW_DELTA_SHORT_2, new DeltaArrowShort2() );
-		arrows.put(ARROW_ARROWHEAD_SHORT, new ArrowheadArrowShort() );
-		arrows.put(ARROW_DIAMOND_SHORT_1, new DiamondArrowShort1() );
-		arrows.put(ARROW_DIAMOND_SHORT_2, new DiamondArrowShort2() );
+		arrows.put(ArrowShapeVisualProperty.NONE, new NoArrow());
+		arrows.put(ArrowShapeVisualProperty.DELTA, new DeltaArrow());
+		arrows.put(ArrowShapeVisualProperty.CIRCLE, new DiscArrow());
+		arrows.put(ArrowShapeVisualProperty.DIAMOND, new DiamondArrow());
+		arrows.put(ArrowShapeVisualProperty.T, new TeeArrow());
+		arrows.put(ArrowShapeVisualProperty.ARROW, new ArrowheadArrow());
+		arrows.put(ArrowShapeVisualProperty.HALF_TOP, new HalfTopArrow());
+		arrows.put(ArrowShapeVisualProperty.HALF_BOTTOM, new HalfBottomArrow());
+		arrows.put(ArrowShapeVisualProperty.DELTA_SHORT_1, new DeltaArrowShort1());
+		arrows.put(ArrowShapeVisualProperty.DELTA_SHORT_2, new DeltaArrowShort2());
+		arrows.put(ArrowShapeVisualProperty.ARROW_SHORT, new ArrowheadArrowShort());
+		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_1, new DiamondArrowShort1());
+		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_2, new DiamondArrowShort2());
 	}
 
 	private static final float DEF_SHAPE_SIZE = 32;
@@ -939,15 +924,14 @@ public final class GraphGraphics {
 	}
 
 	/**
-	 * Get list of arrow heads.
-	 * 
-	 * @return A map of arrow shape bytes to Shape objects.
+	 * Get map that contains the AWT shape of each arrow head.
 	 */
-	public static Map<Byte, Shape> getArrowShapes() {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
-		for (final Byte key : arrows.keySet()) {
-			shapeMap.put(key, arrows.get(key).getArrowShape() );
-		}
+	public static Map<ArrowShape, Shape> getArrowShapes() {
+		final Map<ArrowShape, Shape> shapeMap = new HashMap<>();
+
+		for (final ArrowShape key : arrows.keySet())
+			shapeMap.put(key, arrows.get(key).getArrowShape());
+
 		return shapeMap;
 	}
 
@@ -1024,7 +1008,7 @@ public final class GraphGraphics {
 	 * endpoint 1 is always "on top of" the arrow at endpoint 0 if they overlap
 	 * because the arrow at endpoint 0 gets rendered first.
 	 * <p>
-	 * If an arrow other than ARROW_NONE is rendered, its size must be greater
+	 * If an arrow other than NONE is rendered, its size must be greater
 	 * than or equal to edge thickness specified. The table below describes, to
 	 * some extent, the nature of each arrow type. <blockquote><table
 	 * border="1" cellpadding="5" cellspacing="0">
@@ -1033,40 +1017,40 @@ public final class GraphGraphics {
 	 * <th>description</th>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_NONE</td>
+	 * <td>NONE</td>
 	 * <td>the edge line segment has endpoint specified, and the line segment
 	 * has a round end (center of round semicircle end exactly equal to endpoint
 	 * specified); arrow size and arrow paint are ignored</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_DELTA</td>
+	 * <td>DELTA</td>
 	 * <td>the sharp tip of the arrowhead is exactly at the endpint specified;
 	 * the delta is as wide as the arrow size specified and twice that in length</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_DIAMOND</td>
+	 * <td>DIAMOND</td>
 	 * <td>the sharp tip of the arrowhead is exactly at the endpoint specified;
 	 * the diamond is as wide as the arrow size specified and twice that in
 	 * length</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_DISC</td>
+	 * <td>CIRCLE</td>
 	 * <td>the disc arrowhead is placed such that its center is at the
 	 * specified endpoint; the diameter of the disk is the arrow size specified</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_TEE</td>
+	 * <td>T</td>
 	 * <td>the center of the tee intersection lies at the specified endpoint;
 	 * the width of the top of the tee is one quarter of the arrow size
 	 * specified, and the span of the top of the tee is two times the arrow size</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_HALF_TOP</td>
+	 * <td>HALF_TOP</td>
 	 * <td>Draws a line the width of the stroke away from the node at the midpoint 
 	 * between the edge and the node on the "top" of the edge.</td>
 	 * </tr>
 	 * <tr>
-	 * <td>ARROW_HALF_BOTTOM</td>
+	 * <td>HALF_BOTTOM</td>
 	 * <td>Draws a line the width of the stroke away from the node at the midpoint 
 	 * between the edge and the node on the "bottom" of the edge.</td>
 	 * </tr>
@@ -1140,9 +1124,9 @@ public final class GraphGraphics {
 	 *                configurations does not meet specified criteria, or if more 
 	 *                than MAX_EDGE_ANCHORS anchors are specified.
 	 */
-	public final void drawEdgeFull(final byte arrow0Type,
+	public final void drawEdgeFull(final ArrowShape arrow0Type,
 			final float arrow0Size, final Paint arrow0Paint,
-			final byte arrow1Type, final float arrow1Size,
+			final ArrowShape arrow1Type, final float arrow1Size,
 			final Paint arrow1Paint, final float x0, final float y0,
 			EdgeAnchors anchors, final float x1, final float y1,
 			final float edgeThickness, final Stroke edgeStroke, final Paint edgePaint) {
@@ -1158,8 +1142,8 @@ public final class GraphGraphics {
 		}
 
 		if (!computeCubicPolyEdgePath(arrow0Type,
-				(arrow0Type == ARROW_NONE) ? 0.0f : arrow0Size, arrow1Type,
-				(arrow1Type == ARROW_NONE) ? 0.0f : arrow1Size, x0, y0,
+				(arrow0Type == ArrowShapeVisualProperty.NONE) ? 0.0f : arrow0Size, arrow1Type,
+				(arrow1Type == ArrowShapeVisualProperty.NONE) ? 0.0f : arrow1Size, x0, y0,
 				anchors, x1, y1, curveFactor)) {
 			// After filtering duplicate start and end points, there are less
 			// than 3 total.
@@ -1175,7 +1159,7 @@ public final class GraphGraphics {
 		}
 
 		// Render the edge polypath.
-		final boolean simpleSegment = arrow0Type == ARROW_NONE && arrow1Type == ARROW_NONE;
+		final boolean simpleSegment = arrow0Type == ArrowShapeVisualProperty.NONE && arrow1Type == ArrowShapeVisualProperty.NONE;
 		m_g2d.setStroke(edgeStroke);
 
 		// Set m_path2d to contain the cubic curves computed in
@@ -1290,8 +1274,8 @@ public final class GraphGraphics {
 	}
 
 	@SuppressWarnings("fallthrough")
-	private final void edgeFullDebug(final byte arrow0Type,
-			final float arrow0Size, final byte arrow1Type, float arrow1Size,
+	private final void edgeFullDebug(final ArrowShape arrow0Type,
+			final float arrow0Size, final ArrowShape arrow1Type, float arrow1Size,
 			final Stroke edgeStroke,
 			final float edgeThickness, 
 			final EdgeAnchors anchors) {
@@ -1304,7 +1288,7 @@ public final class GraphGraphics {
 		if ( !arrows.containsKey( arrow0Type ) )
 			throw new IllegalArgumentException("arrow0Type is not recognized");
 
-		if ( arrow0Type != ARROW_NONE )
+		if ( arrow0Type != ArrowShapeVisualProperty.NONE )
 			if (!(arrow0Size >= edgeThickness)) 
 				throw new IllegalArgumentException(
 						"arrow size must be at least as large as edge thickness");
@@ -1312,7 +1296,7 @@ public final class GraphGraphics {
 		if ( !arrows.containsKey( arrow1Type ) )
 			throw new IllegalArgumentException("arrow1Type is not recognized");
 
-		if ( arrow1Type != ARROW_NONE )
+		if ( arrow1Type != ArrowShapeVisualProperty.NONE )
 			if (!(arrow1Size >= edgeThickness)) 
 				throw new IllegalArgumentException(
 						"arrow size must be at least as large as edge thickness");
@@ -1323,9 +1307,9 @@ public final class GraphGraphics {
 		}
 	}
 
-	private final void drawSimpleEdgeFull(final byte arrow0Type,
+	private final void drawSimpleEdgeFull(final ArrowShape arrow0Type,
 			final float arrow0Size, final Paint arrow0Paint,
-			final byte arrow1Type, final float arrow1Size,
+			final ArrowShape arrow1Type, final float arrow1Size,
 			final Paint arrow1Paint, final float x0, final float y0,
 			final float x1, final float y1, final float edgeThickness,
 			final Stroke edgeStroke,
@@ -1361,7 +1345,7 @@ public final class GraphGraphics {
 		if ((((((double) x1) - x0) * (x1Adj - x0Adj)) + 
 		     ((((double) y1) - y0) * (y1Adj - y0Adj))) > 0.0d) {
 				                
-			if (arrow0Type == ARROW_NONE && arrow1Type == ARROW_NONE) {
+			if (arrow0Type == ArrowShapeVisualProperty.NONE && arrow1Type == ArrowShapeVisualProperty.NONE) {
 				simpleSegment = 1; 
 			} else { 
 				simpleSegment = -1; 
@@ -1487,8 +1471,8 @@ public final class GraphGraphics {
 	 *                if any one of the edge arrow criteria specified in
 	 *                drawEdgeFull() is not satisfied.
 	 */
-	public final boolean getEdgePath(final byte arrow0Type,
-			final float arrow0Size, final byte arrow1Type,
+	public final boolean getEdgePath(final ArrowShape arrow0Type,
+			final float arrow0Size, final ArrowShape arrow1Type,
 			final float arrow1Size, final float x0, final float y0,
 			EdgeAnchors anchors, final float x1, final float y1,
 			final GeneralPath path) {
@@ -1513,11 +1497,11 @@ public final class GraphGraphics {
 			}
 		}
 
-		byte arrow0 = arrow0Type;
-		byte arrow1 = arrow1Type;
+		ArrowShape arrow0 = arrow0Type;
+		ArrowShape arrow1 = arrow1Type;
 
-		if (!computeCubicPolyEdgePath(arrow0, (arrow0 == ARROW_NONE) ? 0.0f
-				: arrow0Size, arrow1, (arrow1 == ARROW_NONE) ? 0.0f
+		if (!computeCubicPolyEdgePath(arrow0, (arrow0 == ArrowShapeVisualProperty.NONE) ? 0.0f
+				: arrow0Size, arrow1, (arrow1 == ArrowShapeVisualProperty.NONE) ? 0.0f
 				: arrow1Size, x0, y0, anchors, x1, y1, curveFactor)) {
 			// After filtering duplicate start and end points, there are less
 			// then
@@ -1557,7 +1541,7 @@ public final class GraphGraphics {
 	 * Returns non-null if and only if an arrow is necessary for the arrow type
 	 * specified. 
 	 */
-	private final Shape computeUntransformedArrow(final byte arrowType) {
+	private final Shape computeUntransformedArrow(final ArrowShape arrowType) {
 		Arrow a = arrows.get(arrowType);
 		if ( a != null )
 			return a.getArrowShape();
@@ -1570,7 +1554,7 @@ public final class GraphGraphics {
 	 * edge thickness (only used for some arrow types). Returns non-null if and
 	 * only if a cap is necessary for the arrow type specified. 
 	 */
-	private final Shape computeUntransformedArrowCap(final byte arrowType, final double ratio) {
+	private final Shape computeUntransformedArrowCap(final ArrowShape arrowType, final double ratio) {
 		Arrow a = arrows.get(arrowType);
 		if ( a != null )
 			return a.getCapShape(ratio);
@@ -1581,7 +1565,7 @@ public final class GraphGraphics {
 	/*
 	 * 
 	 */
-	private final static double getT(final byte arrowType) { 
+	private final static double getT(final ArrowShape arrowType) { 
 		Arrow a = arrows.get(arrowType);
 		if ( a != null )
 			return a.getTOffset();
@@ -1590,11 +1574,11 @@ public final class GraphGraphics {
 	}
 
 	/*
-	 * If arrow0Type is ARROW_NONE, arrow0Size should be zero. If arrow1Type is
-	 * ARROW_NONE, arrow1Size should be zero.
+	 * If arrow0Type is NONE, arrow0Size should be zero. If arrow1Type is
+	 * NONE, arrow1Size should be zero.
 	 */
-	private final boolean computeCubicPolyEdgePath(final byte arrow0Type,
-			final float arrow0Size, final byte arrow1Type,
+	private final boolean computeCubicPolyEdgePath(final ArrowShape arrow0Type,
+			final float arrow0Size, final ArrowShape arrow1Type,
 			final float arrow1Size, final float x0, final float y0,
 			final EdgeAnchors anchors, final float x1, final float y1,
 			final double curveFactor) {

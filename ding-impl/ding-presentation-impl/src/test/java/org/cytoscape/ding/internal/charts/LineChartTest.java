@@ -1,11 +1,32 @@
 package org.cytoscape.ding.internal.charts;
 
 import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
-import static org.cytoscape.ding.internal.charts.line.LineChart.*;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLORS;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.COLOR_SCHEME;
+import static org.cytoscape.ding.customgraphics.AbstractCustomGraphics2.ORIENTATION;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AUTO_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_COLOR;
+import static org.cytoscape.ding.internal.charts.AbstractChart.AXIS_WIDTH;
+import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_COLOR;
+import static org.cytoscape.ding.internal.charts.AbstractChart.BORDER_WIDTH;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DATA_COLUMNS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.DOMAIN_LABEL_POSITION;
+import static org.cytoscape.ding.internal.charts.AbstractChart.GLOBAL_RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.ITEM_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE;
+import static org.cytoscape.ding.internal.charts.AbstractChart.RANGE_LABELS_COLUMN;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_DOMAIN_AXIS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_ITEM_LABELS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.SHOW_RANGE_AXIS;
+import static org.cytoscape.ding.internal.charts.AbstractChart.VALUES;
+import static org.cytoscape.ding.internal.charts.line.LineChart.LINE_WIDTH;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.awt.Color;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2Test;
@@ -13,19 +34,41 @@ import org.cytoscape.ding.customgraphics.ColorScheme;
 import org.cytoscape.ding.customgraphics.Orientation;
 import org.cytoscape.ding.internal.charts.line.LineChart;
 import org.cytoscape.view.presentation.property.values.CyColumnIdentifier;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
 import org.junit.Before;
 import org.junit.Test;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class LineChartTest extends AbstractCustomGraphics2Test {
 
-	private CyColumnIdentifierFactory colIdFactory = new DummyCyColumnIdentifierFactory();
-	
 	private static final String ITEM_LABELS_NAME = "labels1(:[]{}<>?/.~!@#$%^&*+=,'aáüã;)"; // To test special chars
 	
 	@Before
+	@Override
 	public void setUp() throws Exception {
-		props1 = new HashMap<String, Object>();
+		super.setUp();
 		props1.put(DATA_COLUMNS, asList(colIdFactory.createColumnIdentifier("data")));
 		props1.put(AUTO_RANGE, true);
 		props1.put(GLOBAL_RANGE, false);
@@ -49,7 +92,7 @@ public class LineChartTest extends AbstractCustomGraphics2Test {
 
 	@Test
 	public void testChartProperties() {
-		final LineChart chart = new LineChart(props1, colIdFactory);
+		final LineChart chart = new LineChart(props1, serviceRegistrar);
 		
 		// The chart properties has to return exactly the same values,
 		// except column names, which are converted to CyColumIdentifier when set as String

@@ -35,6 +35,7 @@ import java.awt.event.FocusEvent;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.DecimalFormat;
+import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
@@ -86,6 +87,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 	DecimalFormat df = new java.text.DecimalFormat("##.###");
 	// Scientific notation
 	DecimalFormat sdf = new java.text.DecimalFormat("#.###E0");
+	private boolean isUpdating = false;
 
 	/**
 	 * Construction of the <code>GUIHandler</code> for the <code>Bounded</code> type
@@ -140,7 +142,8 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			slider.addChangeListener(new ChangeListener() {
 				@Override
 				public void stateChanged(ChangeEvent e) {
-					handle();
+					if(!isUpdating)
+						handle();
 				}
 			});
 			
@@ -161,13 +164,15 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			boundedField.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					handle();
+					if(!isUpdating)
+						handle();
 				}
 			});
 			boundedField.addFocusListener(new FocusAdapter() {
 				@Override
 				public void focusLost(FocusEvent e) {
-					handle();
+					if(!isUpdating)
+						handle();
 				}
 			});
 			
@@ -189,10 +194,25 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 
 	@Override
 	public void update(){
+		isUpdating = true;
 		try {
 			final T bounded = getBounded();
 			if (lastBounded != bounded) {
 				lastBounded = bounded;
+
+				// Make sure we're the only handler for this Tunable that's listening
+				// for changes.  If we're in the middle of a refresh, we can sometimes
+				// be in a state where there are two...
+				BoundedChangeListener<N> found = null;
+				List<BoundedChangeListener<N>> listeners = ((AbstractBounded)lastBounded).getListeners();
+				for (BoundedChangeListener<N> listener: listeners) {
+					if (listener instanceof AbstractGUITunableHandler &&
+							((AbstractGUITunableHandler)listener).getQualifiedName().equals(this.getQualifiedName()))
+						found = listener;
+				}
+				if (found != null)
+					lastBounded.removeListener(found);
+
 				lastBounded.addListener(this);
 				panel.removeAll();
 				initPanel(bounded);
@@ -209,6 +229,7 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 		} catch (Exception e){
 			e.printStackTrace();
 		}
+		isUpdating = false;
 	}
 	
 	

@@ -18,6 +18,7 @@ import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
@@ -52,17 +53,17 @@ public class LayoutMenuPopulator implements MenuListener {
 	private Map<CyLayoutAlgorithm, Map> algorithmMap;
 	private Map<CyLayoutAlgorithm, JMenuItem> menuMap;
 	private Map<CyLayoutAlgorithm, Boolean> separatorMap;
-	private CyApplicationManager appMgr;
-	private DialogTaskManager tm;
 	private GravityTracker gravityTracker;
 	private JMenu layoutMenu;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-    public LayoutMenuPopulator(CytoscapeMenuBar menuBar, CyApplicationManager appMgr, DialogTaskManager tm) {
+    public LayoutMenuPopulator(CytoscapeMenuBar menuBar, final CyServiceRegistrar serviceRegistrar) {
         algorithmMap = new HashMap<>();
         menuMap = new HashMap<>();
         separatorMap = new HashMap<>();
-        this.appMgr = appMgr;
-        this.tm = tm;
+        this.serviceRegistrar = serviceRegistrar;
+        
         this.gravityTracker = menuBar.getMenuTracker().getGravityTracker("Layout");
         this.layoutMenu = (JMenu)gravityTracker.getMenu();
         this.layoutMenu.addMenuListener(this);
@@ -74,9 +75,9 @@ public class LayoutMenuPopulator implements MenuListener {
 
     public void removeLayout(CyLayoutAlgorithm layout, Map props) {
         algorithmMap.remove(layout);
-        if (menuMap.containsKey(layout)) {
+        
+        if (menuMap.containsKey(layout))
             layoutMenu.remove(menuMap.remove(layout));
-        }
     }
 
     @Override
@@ -87,6 +88,9 @@ public class LayoutMenuPopulator implements MenuListener {
 
     @Override
     public void menuSelected(MenuEvent e) {
+    	final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+    	final DialogTaskManager tm = serviceRegistrar.getService(DialogTaskManager.class);
+    	
         CyNetworkView view = appMgr.getCurrentNetworkView();
         CyNetwork network = appMgr.getCurrentNetwork();
 
@@ -153,6 +157,8 @@ public class LayoutMenuPopulator implements MenuListener {
     }
 
     private boolean checkEnabled() {
+    	CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+    	
         CyNetwork network = appMgr.getCurrentNetwork();
         if ( network == null )
             return false;

@@ -1,12 +1,19 @@
 package org.cytoscape.editor.internal;
 
+import java.awt.geom.Point2D;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewLocationTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Editor Impl (editor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +31,14 @@ package org.cytoscape.editor.internal;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.task.AbstractNetworkViewLocationTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
 public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory {
 
-	private final CyEventHelper eh;
-	private final VisualMappingManager vmm;
 	private final ClipboardManagerImpl clipMgr;
-	private final UndoSupport undoSupport;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public PasteTaskFactory(final ClipboardManagerImpl mgr, CyEventHelper eh, 
-	                        UndoSupport undoSupport, VisualMappingManager vmm) {
+	public PasteTaskFactory(final ClipboardManagerImpl mgr, final CyServiceRegistrar serviceRegistrar) {
 		this.clipMgr = mgr;
-		this.eh = eh;
-		this.vmm = vmm;
-		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -57,9 +50,7 @@ public class PasteTaskFactory extends AbstractNetworkViewLocationTaskFactory {
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetworkView networkView, 
-	                                       Point2D javaPt, Point2D xformPt) {
-		return new TaskIterator(new PasteTask(vmm, networkView, xformPt, clipMgr, undoSupport));
+	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
+		return new TaskIterator(new PasteTask(networkView, xformPt, clipMgr, serviceRegistrar));
 	}
-
 }

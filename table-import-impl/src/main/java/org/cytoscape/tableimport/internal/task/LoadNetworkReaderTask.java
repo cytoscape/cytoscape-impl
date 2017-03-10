@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -43,7 +44,10 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.property.AbstractConfigDirPropsReader;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.ExcelNetworkSheetReader;
 import org.cytoscape.tableimport.internal.reader.GraphReader;
@@ -68,6 +72,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 
@@ -415,4 +420,102 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	public void setNetworkViewFactory(CyNetworkViewFactory networkViewFactory) {
 		this.networkViewFactory = networkViewFactory;
 	}
+	
+	//-----------------------------------------------------------------------------
+	// temporary implementation  AT -- 27 June 2016
+	
+	private String getString()
+	{
+		StringBuilder str = new StringBuilder("LoadNetworkReaderTask\n");
+		str.append("delimiters=").append(listToString(delimiters)).append("\n");
+		str.append("delimitersForDataList=").append(listToString(delimitersForDataList)).append("\n");
+		str.append("startLoadRow=" + startLoadRow + "\n");
+		str.append("firstRowAsColumnNames=").append(firstRowAsColumnNames ? "TRUE" : "FALSE").append("\n");
+		str.append("indexColumnSourceInteraction=" + indexColumnSourceInteraction + "\n");
+		str.append("indexColumnTargetInteraction=" + indexColumnTargetInteraction + "\n");
+		str.append("indexColumnTypeInteraction=" + indexColumnTypeInteraction + "\n");
+		str.append("defaultInteraction=").append(defaultInteraction).append("\n");
+		str.append("dataTypeList=").append(dataTypeList).append("\n");
+		return str.toString();
+	}
+
+	private void setString(String state)
+	{
+		loadList(delimiters, fieldFromString(state, "delimiters"));
+		loadList(delimitersForDataList, fieldFromString(state, "delimitersForDataList"));
+		startLoadRow = Integer.parseInt(fieldFromString(state, "startLoadRow"));
+		firstRowAsColumnNames = "TRUE".equals(fieldFromString(state, "firstRowAsColumnNames"));
+		indexColumnSourceInteraction = intFromString(state, "indexColumnSourceInteraction");
+		indexColumnTypeInteraction = intFromString(state, "indexColumnTypeInteraction");
+		defaultInteraction = fieldFromString(state, "defaultInteraction");
+		dataTypeList = fieldFromString(state, "dataTypeList");
+	}
+	
+	private int intFromString(String s, String fieldName)
+	{
+		String fld = fieldFromString(s, fieldName);
+		try {
+			return Integer.parseInt(fld);
+		}
+		catch (NumberFormatException e) {}
+		return 0;
+	}
+	
+	static String DELIM = "\b";
+	private String listToString(ListSelection<String> set)
+	{
+		StringBuilder builder = new StringBuilder();
+		for (String s : set.getPossibleValues())
+			builder.append(s).append(DELIM);
+		return builder.toString();
+	}
+	
+	private void loadList(ListSelection<String> set, String input)
+	{
+		ArrayList<String> delims = new ArrayList<String>();
+		String[] parsed = input.split(DELIM);
+		delims.addAll(Arrays.asList(parsed));
+		set.setPossibleValues(delims);
+	}
+
+	private String fieldFromString(String s, String field)
+	{
+		int start = s.indexOf(field + "=");
+		if (start > 0)
+		{
+			start += field.length() + 1;
+			int end = s.indexOf( "\n", start );
+			if (end > 0)
+				return s.substring(start, end);
+		}
+		return null;
+	}
+	//-----------------------------------------------------------------------------
+	private String getProperty()
+	{
+		CyProperty<Properties> cyProperties = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=myApp.props)");
+		String propertyValue = "";  /// cyProperties.getProperty("network.load.config");
+		if (propertyValue != null && !propertyValue.isEmpty())
+			setString(propertyValue);
+		return null;
+	}
+	
+	private void saveProperty()
+	{
+		Properties stateProps = new Properties();
+		stateProps.setProperty("network.load.config", getString());
+		// TODO put it into the session or config file
+	}
+	//-----------------------------------------------------------------------------
+	
+	private static class PropsReader extends AbstractConfigDirPropsReader {
+        public PropsReader(String name, String fileName) {
+            super(name, fileName, SavePolicy.SESSION_FILE);
+        }
+        public static PropsReader makeReader(String props) {
+        	return new PropsReader("network.load.props", props);
+        }
+    }
+	//-----------------------------------------------------------------------------
+
 }

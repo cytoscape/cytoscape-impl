@@ -1,12 +1,34 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
+import java.awt.Paint;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualLexiconNode;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +46,14 @@ package org.cytoscape.ding.impl;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.ViewChangeRecord;
-import org.cytoscape.view.model.events.ViewChangedEvent;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-
 public abstract class AbstractDViewModel<M extends CyIdentifiable> implements View<M> {
 
 	// Both of them are immutable.
 	protected final M model;
 	protected final Long suid;
 	protected final VisualLexicon lexicon;
-	protected final CyEventHelper eventHelper;
+	protected final CyServiceRegistrar serviceRegistrar;
+	private CyEventHelper eventHelper;
 
 	protected final Map<VisualProperty<?>, Object> visualProperties;
 	protected final Map<VisualProperty<?>, Object> directLocks;
@@ -62,19 +64,19 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 	 * 
 	 * @param model
 	 */
-	public AbstractDViewModel(final M model, final VisualLexicon lexicon, final CyEventHelper eventHelper) {
+	public AbstractDViewModel(final M model, final VisualLexicon lexicon, final CyServiceRegistrar serviceRegistrar) {
 		if (model == null)
 			throw new IllegalArgumentException("Data model cannot be null.");
 
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.model = model;
 		this.lexicon = lexicon;
-		this.eventHelper = eventHelper;
+		this.serviceRegistrar = serviceRegistrar;
 
 		// All access to these maps should go through "lock" field
-		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
-		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
-		allLocks = Collections.synchronizedMap(new IdentityHashMap<VisualProperty<?>, Object>());
+		this.visualProperties = Collections.synchronizedMap(new IdentityHashMap<>());
+		this.directLocks = Collections.synchronizedMap(new IdentityHashMap<>());
+		allLocks = Collections.synchronizedMap(new IdentityHashMap<>());
 	}
 
 	@Override
@@ -113,7 +115,7 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void propagateLockedVisualProperty(final VisualProperty parent, final Collection<VisualLexiconNode> roots, 
 			final Object value) {
-		final LinkedList<VisualLexiconNode> nodes = new LinkedList<VisualLexiconNode>();
+		final LinkedList<VisualLexiconNode> nodes = new LinkedList<>();
 		nodes.addAll(roots);
 		
 		while (!nodes.isEmpty()) {
@@ -263,9 +265,17 @@ public abstract class AbstractDViewModel<M extends CyIdentifiable> implements Vi
 	
 	protected abstract DGraphView getDGraphView();
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected <T, V extends T> void fireViewChangedEvent(final VisualProperty<? extends T> vp, final V value,
 			final boolean lockedValue) {
 		final ViewChangeRecord record = new ViewChangeRecord(this, vp, value, lockedValue);
-		eventHelper.addEventPayload(getDGraphView(), record, ViewChangedEvent.class);
+		getEventHelper().addEventPayload(getDGraphView(), record, ViewChangedEvent.class);
+	}
+	
+	protected CyEventHelper getEventHelper() {
+		if (eventHelper == null)
+			eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		
+		return eventHelper;
 	}
 }

@@ -1,12 +1,19 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +31,19 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-
 public class DiscreteMappingFactory implements VisualMappingFunctionFactory {
 	
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public DiscreteMappingFactory(final CyEventHelper eventHelper) {
-		this.eventHelper = eventHelper;
+	public DiscreteMappingFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName,
 			Class<K> attrValueType, final VisualProperty<V> vp) {
-		return new DiscreteMappingImpl<K, V>(attributeName, attrValueType, vp, eventHelper);
+		return new DiscreteMappingImpl<K, V>(attributeName, attrValueType, vp,
+				serviceRegistrar.getService(CyEventHelper.class));
 	}
 
 	@Override

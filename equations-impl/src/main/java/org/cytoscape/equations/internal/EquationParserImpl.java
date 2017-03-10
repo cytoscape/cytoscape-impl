@@ -1,30 +1,5 @@
 package org.cytoscape.equations.internal;
 
-/*
- * #%L
- * Cytoscape Equations Impl (equations-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +13,8 @@ import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.FunctionUtil;
 import org.cytoscape.equations.TreeNode;
+import org.cytoscape.equations.event.EquationFunctionAddedEvent;
+import org.cytoscape.equations.event.EquationFunctionRemovedEvent;
 import org.cytoscape.equations.internal.builtins.ACos;
 import org.cytoscape.equations.internal.builtins.ASin;
 import org.cytoscape.equations.internal.builtins.ATan2;
@@ -108,9 +85,34 @@ import org.cytoscape.equations.internal.parse_tree.IdentNode;
 import org.cytoscape.equations.internal.parse_tree.SConvNode;
 import org.cytoscape.equations.internal.parse_tree.StringConstantNode;
 import org.cytoscape.equations.internal.parse_tree.UnaryOpNode;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Equations Impl (equations-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class EquationParserImpl implements EquationParser {
 	
@@ -124,16 +126,28 @@ public class EquationParserImpl implements EquationParser {
 	private Set<String> variableReferences;
 	private Map<String, Object> defaultVariableValues;
 	private Set<Function> registeredFunctions;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public EquationParserImpl() {
-		this.nameToFunctionMap = new HashMap<String, Function>();
-		this.registeredFunctions = new HashSet<Function>();
+	public EquationParserImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		this.nameToFunctionMap = new HashMap<>();
+		this.registeredFunctions = new HashSet<>();
 		this.parseTree = null;
 
 		registerBuiltins();
 	}
+	
+	@Deprecated
+	@Override
+	public void registerFunction(Function func) throws IllegalArgumentException {
+		registerFunctionInternal(func);
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.addEventPayload(this, func, EquationFunctionAddedEvent.class);
+	}
 
-	public void registerFunction(final Function func) throws IllegalArgumentException {
+	public void registerFunctionInternal(final Function func) throws IllegalArgumentException {
 		// Sanity check for the name of the function.
 		final String funcName = func.getName().toUpperCase();
 		if (funcName == null || funcName.equals(""))
@@ -147,20 +161,17 @@ public class EquationParserImpl implements EquationParser {
 		registeredFunctions.add(func);
 	}
 
-	/**
-	 *  @return the function associated with the name "functionName" or null if no such function exists
-	 */
+	@Override
 	public Function getFunction(final String functionName) {
 		return nameToFunctionMap.get(functionName);
 	}
 
-	public Set<Function> getRegisteredFunctions() { return registeredFunctions; }
+	@Override
+	public Set<Function> getRegisteredFunctions() {
+		return registeredFunctions;
+	}
 
-	/**
-	 *  @param formula                a valid formula which must start with an equal sign
-	 *  @param variableNameToTypeMap  a list of existing variable names and their types
-	 *  @return true if the parse succeeded otherwise false
-	 */
+	@Override
 	public boolean parse(final String formula, final Map<String, Class<?>> variableNameToTypeMap) {
 		if (formula == null)
 			throw new NullPointerException("formula string must not be null.");
@@ -196,25 +207,30 @@ public class EquationParserImpl implements EquationParser {
 		return true;
 	}
 
-	/**
-	 *  @return the result type of the parsed formula if the parse succeeded, otherwise null
-	 */
-	public Class<?> getType() { return parseTree == null ? null : parseTree.getType(); }
+	@Override
+	public Class<?> getType() {
+		return parseTree == null ? null : parseTree.getType();
+	}
 
-	/**
-	 *  If parse() failed, this will return the last error messages.
-	 *  @return the last error message of null
-	 */
-	public String getErrorMsg() { return lastErrorMessage; }
+	@Override
+	public String getErrorMsg() {
+		return lastErrorMessage;
+	}
 
-	public Set<String> getVariableReferences() { return variableReferences; }
+	@Override
+	public Set<String> getVariableReferences() {
+		return variableReferences;
+	}
 
-	public Map<String, Object> getDefaultVariableValues() { return defaultVariableValues; }
+	@Override
+	public Map<String, Object> getDefaultVariableValues() {
+		return defaultVariableValues;
+	}
 
-	/**
-	 *  @return the parse tree.  Must only be called if parse() returns true!
-	 */
-	public TreeNode getParseTree() { return parseTree; }
+	@Override
+	public TreeNode getParseTree() {
+		return parseTree;
+	}
 
 	//
 	// The actual parsing takes place here.
@@ -589,81 +605,88 @@ public class EquationParserImpl implements EquationParser {
 	}
 
 	private void registerBuiltins() {
-		registerFunction(new Abs());
-		registerFunction(new ACos());
-		registerFunction(new ASin());
-		registerFunction(new And());
-		registerFunction(new ATan2());
-		registerFunction(new Average());
-		registerFunction(new BList());
-		registerFunction(new Combin());
-		registerFunction(new Concatenate());
-		registerFunction(new Cos());
-		registerFunction(new Cosh());
-		registerFunction(new Count());
-		registerFunction(new Degrees());
-		registerFunction(new org.cytoscape.equations.internal.builtins.Error());
-		registerFunction(new Exp());
-		registerFunction(new First());
-		registerFunction(new FList());
-		registerFunction(new GeoMean());
-		registerFunction(new HarMean());
-		registerFunction(new If());
-		registerFunction(new IList());
-		registerFunction(new Largest());
-		registerFunction(new Last());
-		registerFunction(new Left());
-		registerFunction(new Len());
-		registerFunction(new ListToString());
-		registerFunction(new Ln());
-		registerFunction(new Log());
-		registerFunction(new Lower());
-		registerFunction(new Max());
-		registerFunction(new Median());
-		registerFunction(new Mid());
-		registerFunction(new Min());
-		registerFunction(new Mod());
-		registerFunction(new Mode());
-		registerFunction(new Not());
-		registerFunction(new NormDist());
-		registerFunction(new Now());
-		registerFunction(new Nth());
-		registerFunction(new Or());
-		registerFunction(new Permut());
-		registerFunction(new Pi());
-		registerFunction(new Product());
-		registerFunction(new Radians());
-		registerFunction(new Right());
-		registerFunction(new Round());
-		registerFunction(new Sign());
-		registerFunction(new Sin());
-		registerFunction(new Sinh());
-		registerFunction(new SList());
-		registerFunction(new StDev());
-		registerFunction(new Sqrt());
-		registerFunction(new Substitute());
-		registerFunction(new Sum());
-		registerFunction(new Tan());
-		registerFunction(new Tanh());
-		registerFunction(new Text());
-		registerFunction(new Today());
-		registerFunction(new Trunc());
-		registerFunction(new Upper());
-		registerFunction(new Value());
-		registerFunction(new Var());
+		registerFunctionInternal(new Abs());
+		registerFunctionInternal(new ACos());
+		registerFunctionInternal(new ASin());
+		registerFunctionInternal(new And());
+		registerFunctionInternal(new ATan2());
+		registerFunctionInternal(new Average());
+		registerFunctionInternal(new BList());
+		registerFunctionInternal(new Combin());
+		registerFunctionInternal(new Concatenate());
+		registerFunctionInternal(new Cos());
+		registerFunctionInternal(new Cosh());
+		registerFunctionInternal(new Count());
+		registerFunctionInternal(new Degrees());
+		registerFunctionInternal(new org.cytoscape.equations.internal.builtins.Error());
+		registerFunctionInternal(new Exp());
+		registerFunctionInternal(new First());
+		registerFunctionInternal(new FList());
+		registerFunctionInternal(new GeoMean());
+		registerFunctionInternal(new HarMean());
+		registerFunctionInternal(new If());
+		registerFunctionInternal(new IList());
+		registerFunctionInternal(new Largest());
+		registerFunctionInternal(new Last());
+		registerFunctionInternal(new Left());
+		registerFunctionInternal(new Len());
+		registerFunctionInternal(new ListToString());
+		registerFunctionInternal(new Ln());
+		registerFunctionInternal(new Log());
+		registerFunctionInternal(new Lower());
+		registerFunctionInternal(new Max());
+		registerFunctionInternal(new Median());
+		registerFunctionInternal(new Mid());
+		registerFunctionInternal(new Min());
+		registerFunctionInternal(new Mod());
+		registerFunctionInternal(new Mode());
+		registerFunctionInternal(new Not());
+		registerFunctionInternal(new NormDist());
+		registerFunctionInternal(new Now());
+		registerFunctionInternal(new Nth());
+		registerFunctionInternal(new Or());
+		registerFunctionInternal(new Permut());
+		registerFunctionInternal(new Pi());
+		registerFunctionInternal(new Product());
+		registerFunctionInternal(new Radians());
+		registerFunctionInternal(new Right());
+		registerFunctionInternal(new Round());
+		registerFunctionInternal(new Sign());
+		registerFunctionInternal(new Sin());
+		registerFunctionInternal(new Sinh());
+		registerFunctionInternal(new SList());
+		registerFunctionInternal(new StDev());
+		registerFunctionInternal(new Sqrt());
+		registerFunctionInternal(new Substitute());
+		registerFunctionInternal(new Sum());
+		registerFunctionInternal(new Tan());
+		registerFunctionInternal(new Tanh());
+		registerFunctionInternal(new Text());
+		registerFunctionInternal(new Today());
+		registerFunctionInternal(new Trunc());
+		registerFunctionInternal(new Upper());
+		registerFunctionInternal(new Value());
+		registerFunctionInternal(new Var());
 	}
 	
 	// Listeners for function services
 	public void registerFunctionService(final Function function, final Map<?, ?> props) {
-		if(function != null) {
-			this.registerFunction(function);
+		if (function != null) {
+			registerFunctionInternal(function);
+
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.addEventPayload(this, function, EquationFunctionAddedEvent.class);
 			logger.info("New Function Registered: " + function.getName());
 		}
 	}
 	
 	public void unregisterFunctionService(final Function function, final Map<?, ?> props) {
-		if(function != null) {
+		if (function != null) {
 			registeredFunctions.remove(function);
+			nameToFunctionMap.remove(function.getName().toUpperCase(), function);
+			
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.addEventPayload(this, function, EquationFunctionRemovedEvent.class);
 		}
 	}
 }

@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.table;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -39,6 +15,10 @@ import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DummyCyEventHelper;
@@ -48,7 +28,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.TableTestSupport;
@@ -79,6 +58,29 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class MergeDataTableTaskTest {
 
@@ -92,13 +94,14 @@ public class MergeDataTableTaskTest {
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);	
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
-	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(eventHelper,new CyNetworkTableManagerImpl(),netMgr);
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+	private Interpreter interpreter = new InterpreterImpl();
+	private final CyTableManagerImpl tableMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
 	
 	private SyncTunableMutator stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	CyTableManager tabMgr = new CyTableManagerImpl(eventHelper, new CyNetworkTableManagerImpl(), netMgr);
 	Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
@@ -108,6 +111,8 @@ public class MergeDataTableTaskTest {
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+        when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
@@ -169,7 +174,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table1.createColumn(table1sCol, String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);
@@ -216,7 +221,7 @@ public class MergeDataTableTaskTest {
 				
 		//creating another table to map to the net1 only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table2.createColumn(table2sCol, String.class, false);
 		
 		CyRow row3 = table2.getRow(node1Name);
@@ -267,7 +272,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating another table to map to the net1 only
 		table3 = new CyTableImpl("dummy table 3", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table3.createColumn(table2sCol, String.class, false);
 		table3.createColumn(table3sCol, String.class, false);
 		CyRow rowTemp;
@@ -280,7 +285,7 @@ public class MergeDataTableTaskTest {
 		
 		
 		table4 = new CyTableImpl("dummy table 4", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, new InterpreterImpl(), 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
 		table4.createColumn(table2sCol, String.class, false);
 		table4.createColumn(table4sCol, String.class, false);
 		

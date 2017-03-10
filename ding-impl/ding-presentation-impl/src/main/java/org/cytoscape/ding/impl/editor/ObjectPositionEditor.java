@@ -1,12 +1,21 @@
 package org.cytoscape.ding.impl.editor;
 
+import org.cytoscape.ding.CyObjectPositionPropertyEditor;
+import org.cytoscape.ding.ObjectPosition;
+import org.cytoscape.ding.ObjectPositionCellRenderer;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +33,14 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-import org.cytoscape.ding.CyObjectPositionPropertyEditor;
-import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.ObjectPositionCellRenderer;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-
 public class ObjectPositionEditor extends AbstractVisualPropertyEditor<ObjectPosition> {
 	
-	public ObjectPositionEditor(final ValueEditor<ObjectPosition> valueEditor,
-								final ContinuousMappingCellRendererFactory cellRendererFactory,
-								final IconManager iconManager) {
-		super(ObjectPosition.class, new CyObjectPositionPropertyEditor(valueEditor, iconManager),
+	public ObjectPositionEditor(
+			final ValueEditor<ObjectPosition> valueEditor,
+			final ContinuousMappingCellRendererFactory cellRendererFactory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(ObjectPosition.class, new CyObjectPositionPropertyEditor(valueEditor, serviceRegistrar),
 				ContinuousEditorType.DISCRETE, cellRendererFactory);
 
 		discreteTableCellRenderer = new ObjectPositionCellRenderer();

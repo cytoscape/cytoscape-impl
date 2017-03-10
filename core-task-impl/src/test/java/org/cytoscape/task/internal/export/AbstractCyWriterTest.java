@@ -41,14 +41,13 @@ public abstract class AbstractCyWriterTest {
 
 	@Test
 	public void testOutputFile() {
-		final File outputFile = new File("dummy");
+		final File outputFile = new File("dummy.dummy");
 		cyWriter.setOutputFile(outputFile);
 		assertEquals(outputFile, cyWriter.getOutputFile());
 	}
 
 	@Test
 	public void testGetWriter() throws Exception {
-		final File outputFile = new File("dummy");
-		assertNotNull(cyWriter.getWriter(fileFilter, outputFile));
+		assertNotNull(cyWriter.getWriter(fileFilter));
 	}
 }

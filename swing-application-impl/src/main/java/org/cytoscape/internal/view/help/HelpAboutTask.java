@@ -1,12 +1,18 @@
 package org.cytoscape.internal.view.help;
 
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +30,18 @@ package org.cytoscape.internal.view.help;
  * #L%
  */
 
-
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
 public class HelpAboutTask extends AbstractTask {
-	private final CyVersion vers;
-	private final CySwingApplication cySwingApp;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	HelpAboutTask(CyVersion vers, CySwingApplication cySwingApp) {
-		this.vers = vers;
-		this.cySwingApp = cySwingApp;
+	HelpAboutTask(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) {
-		SwingUtilities.invokeLater(new Runnable() {
-		    public void run() {
-		    	new CreditScreen(vers, cySwingApp).showCredits();
-		    }
+		SwingUtilities.invokeLater(() -> {
+			new CreditScreen(serviceRegistrar).showCredits();
 		});
 	}
 }

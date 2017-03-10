@@ -1,12 +1,37 @@
 package org.cytoscape.view.manual.internal.scale;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.util.Hashtable;
+
+import javax.swing.AbstractAction;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
+import org.cytoscape.view.manual.internal.common.GraphConverter2;
+import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
+import org.cytoscape.view.manual.internal.common.SliderStateTracker;
+import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,50 +48,18 @@ package org.cytoscape.view.manual.internal.scale;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.awt.event.ActionEvent;
-import java.util.Hashtable;
-
-import javax.swing.AbstractAction;
-import javax.swing.ButtonGroup;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
-import javax.swing.JRadioButton;
-import javax.swing.JSlider;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
-import org.cytoscape.view.manual.internal.common.GraphConverter2;
-import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
-import org.cytoscape.view.manual.internal.common.SliderStateTracker;
-import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
-import org.cytoscape.view.model.CyNetworkView;
-
-
 /**
- *
  * GUI for scale of manualLayout
- *
- *      Rewrite based on the class ScaleAction       9/13/2006        Peng-Liang Wang
  */
 @SuppressWarnings("serial")
 public class ScalePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
 	
 	private JCheckBox jCheckBox;
 	private JSlider jSlider;
-	private JRadioButton alongXAxisOnlyRadioButton;
-	private JRadioButton alongYAxisOnlyRadioButton;
-	private JRadioButton alongBothAxesRadioButton;
-	private ButtonGroup radioButtonGroup;
+	private JCheckBox alongXAxis;
+	private JCheckBox alongYAxis;
+	private JButton clearButton;
+	
 	private int prevValue; 
 
 	private boolean startAdjusting = true;
@@ -76,10 +69,6 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 	public ScalePanel(CyApplicationManager appMgr) {
 		super("Scale");
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-		
 		this.appMgr = appMgr;
 
 		jSlider = new JSlider();
@@ -103,19 +92,17 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		labels.put(new Integer(300), new JLabel("8"));
 
 		jSlider.setLabelTable(labels);
+		jSlider.setPreferredSize(new Dimension(300, 60));
 
-		jCheckBox = new JCheckBox("Scale Selected Nodes Only", /* selected = */true);
+		jCheckBox = new JCheckBox("Selected Only", /* selected = */true);
 		new CheckBoxTracker( jCheckBox );
 
-		alongXAxisOnlyRadioButton = new JRadioButton("along x-axis only");
-		alongYAxisOnlyRadioButton = new JRadioButton("along y-axis only");
-		alongBothAxesRadioButton = new JRadioButton("along both axes", /* selected = */true);
-		radioButtonGroup = new ButtonGroup();
-		radioButtonGroup.add(alongXAxisOnlyRadioButton);
-		radioButtonGroup.add(alongYAxisOnlyRadioButton);
-		radioButtonGroup.add(alongBothAxesRadioButton);
+		alongXAxis = new JCheckBox("Width");
+		alongYAxis = new JCheckBox("Height");
+		alongXAxis.setSelected(true);
+		alongYAxis.setSelected(true);
 
-		JButton clearButton = new JButton("Reset Scale Bar");
+		clearButton = new JButton("Reset Scale");
 		clearButton.addActionListener(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -125,34 +112,60 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 		new SliderStateTracker(this);
 
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
+//		final GroupLayout layout = new GroupLayout(this);
+//		this.setLayout(layout);
+//		layout.setAutoCreateContainerGaps(true);
+//		layout.setAutoCreateGaps(true);
 		
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-				.addComponent(jSlider)
-				.addGroup(layout.createSequentialGroup()
-						.addComponent(jCheckBox)
-						.addGap(10, 10, Short.MAX_VALUE)
-						.addComponent(clearButton)
-				)
-				.addComponent(alongXAxisOnlyRadioButton)
-				.addComponent(alongYAxisOnlyRadioButton)
-				.addComponent(alongBothAxesRadioButton)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(jSlider)
-				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
-						.addComponent(jCheckBox)
-						.addComponent(clearButton)
-				)
-				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addComponent(alongXAxisOnlyRadioButton)
-				.addComponent(alongYAxisOnlyRadioButton)
-				.addComponent(alongBothAxesRadioButton)
-		);
+//		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+//				.addComponent(jSlider)
+//				.addGroup(layout.createSequentialGroup()
+//						.addComponent(jCheckBox)
+//						.addGap(10, 10, Short.MAX_VALUE)
+//						.addComponent(clearButton)
+//				)
+//				.addComponent(alongXAxis)
+//				.addComponent(alongYAxis)
+//		);
+//		layout.setVerticalGroup(layout.createSequentialGroup()
+//				.addComponent(jSlider)
+//				.addPreferredGap(ComponentPlacement.UNRELATED)
+//				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+//						.addComponent(jCheckBox)
+//						.addComponent(clearButton)
+//				)
+//				.addPreferredGap(ComponentPlacement.UNRELATED)
+//				.addComponent(alongXAxis)
+//				.addComponent(alongYAxis)
+//		);
+		
+		JPanel top = new JPanel();
+		top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
+		top.add(new JLabel("Scale"));
+		top.add(Box.createHorizontalGlue()); 
+		top.add(jCheckBox);
+
+		JPanel row1 = new JPanel();
+		row1.setLayout(new BoxLayout(row1, BoxLayout.LINE_AXIS));
+
+		row1.add(alongXAxis);
+		row1.add(alongYAxis);
+		row1.add(Box.createHorizontalGlue()); 
+		row1.add(clearButton);
+		
+		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+		add(top);
+		add(jSlider);
+		add(row1);
+		setMinimumSize(new Dimension(100,100));
+		setPreferredSize(new Dimension(300,120));
+		setMaximumSize(new Dimension(300,120));
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			setOpaque(false);
+			top.setOpaque(false);
+			row1.setOpaque(false);
+		}
 	} 
 
 	@Override
@@ -172,6 +185,9 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 			return;
 
 		CyNetworkView currentView = appMgr.getCurrentNetworkView();
+		
+		if (currentView == null)
+			return;
 
 		// TODO support undo events
 		// only create the edit when we're beginning to adjust
@@ -191,13 +207,13 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 		double neededIncrementalScaleFactor = currentAbsoluteScaleFactor / prevAbsoluteScaleFactor;
 
-		final ScaleLayouter.Direction direction;
-		if (alongXAxisOnlyRadioButton.isSelected())
-			direction = ScaleLayouter.Direction.X_AXIS_ONLY;
-		else if (alongYAxisOnlyRadioButton.isSelected())
-			direction = ScaleLayouter.Direction.Y_AXIS_ONLY;
-		else
+		ScaleLayouter.Direction direction = ScaleLayouter.Direction.BOTH_AXES;
+		if (alongXAxis.isSelected() && alongYAxis.isSelected())
 			direction = ScaleLayouter.Direction.BOTH_AXES;
+		else if (alongXAxis.isSelected())
+			direction = ScaleLayouter.Direction.X_AXIS_ONLY;
+		else if (alongYAxis.isSelected())
+			direction = ScaleLayouter.Direction.Y_AXIS_ONLY;
 		
 		scale.scaleGraph(neededIncrementalScaleFactor, direction);
 		currentView.updateView();
@@ -209,5 +225,16 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 			//currentEdit.post();
 			startAdjusting = true;
 		} 
+	}
+
+	@Override
+	public void setEnabled(final boolean enabled) {
+		jCheckBox.setEnabled(enabled);
+		jSlider.setEnabled(enabled);
+		alongXAxis.setEnabled(enabled);
+		alongYAxis.setEnabled(enabled);
+		clearButton.setEnabled(enabled);
+		
+		super.setEnabled(enabled);
 	}
 }

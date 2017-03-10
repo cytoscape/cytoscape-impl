@@ -1,12 +1,20 @@
 package org.cytoscape.view.presentation;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.presentation.internal.RenderingEngineManagerImpl;
+import org.junit.Before;
+
 /*
  * #%L
  * Cytoscape Presentation Impl (presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,17 +32,15 @@ package org.cytoscape.view.presentation;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.presentation.internal.RenderingEngineManagerImpl;
-import org.junit.Before;
-
 public class RenderingEngineManagerTest extends AbstractRenderingEngineManagerTest {
 	
 	@Before
 	public void setUp() throws Exception {
 		final CyEventHelper eventHelper = mock(CyEventHelper.class);
-		manager = new RenderingEngineManagerImpl(eventHelper);
+		
+		final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		
+		manager = new RenderingEngineManagerImpl(serviceRegistrar);
 	}
 }

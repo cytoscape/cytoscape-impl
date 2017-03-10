@@ -51,10 +51,32 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics2Factory;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<CyCustomGraphics> {
-
-	private static final long serialVersionUID = 3276556808025021859L;
 
 	private boolean editCancelled;
 	
@@ -289,13 +311,11 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	
 	// ==[ CLASSES ]====================================================================================================
 	
+	@SuppressWarnings("serial")
 	private class GraphicsPanel extends JPanel {
 		
-		private static final long serialVersionUID = 1157288441507073705L;
+		private DiscreteValueList<CyCustomGraphics<?>> graphicsList;
 		
-		private DiscreteValueList<CyCustomGraphics> graphicsList;
-		
-		@SuppressWarnings("serial")
 		public GraphicsPanel() {
 			final JScrollPane scrollPane = new JScrollPane();
 			scrollPane.setViewportView(getGraphicsList());
@@ -336,11 +356,11 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 			return (CyCustomGraphics) getGraphicsList().getSelectedValue();
 		}
 		
-		private DiscreteValueList<CyCustomGraphics> getGraphicsList() {
+		private DiscreteValueList getGraphicsList() {
 			if (graphicsList == null) {
 				DefaultViewPanel defViewPanel = serviceRegistrar.getService(DefaultViewPanel.class);
 				
-				graphicsList = new DiscreteValueList<CyCustomGraphics>(CyCustomGraphics.class, null, defViewPanel);
+				graphicsList = new DiscreteValueList(CyCustomGraphics.class, null, defViewPanel);
 				graphicsList.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(final MouseEvent evt) {
@@ -358,10 +378,9 @@ public class CyCustomGraphicsValueEditor implements VisualPropertyValueEditor<Cy
 	/**
 	 * Panel that contains all CyCustomGraphics2 editors that belong to the same group
 	 */
+	@SuppressWarnings("serial")
 	private class CustomGraphics2Panel extends JPanel {
 		
-		private static final long serialVersionUID = 6669567626195325838L;
-
 		static final int ICON_SIZE = 18;
 		
 		private final String group;

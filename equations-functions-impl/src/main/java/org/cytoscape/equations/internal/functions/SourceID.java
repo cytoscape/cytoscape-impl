@@ -1,12 +1,21 @@
 package org.cytoscape.equations.internal.functions;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.equations.AbstractFunction;
+import org.cytoscape.equations.ArgDescriptor;
+import org.cytoscape.equations.ArgType;
+import org.cytoscape.equations.FunctionUtil;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Equation Functions Impl (equations-functions-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,56 +33,43 @@ package org.cytoscape.equations.internal.functions;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.equations.AbstractFunction;
-import org.cytoscape.equations.ArgDescriptor;
-import org.cytoscape.equations.ArgType;
-import org.cytoscape.equations.FunctionUtil;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-
-
-
 public class SourceID extends AbstractFunction {
 
-	private CyApplicationManager applicationManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SourceID(CyApplicationManager applicationManager) {
+	public SourceID(final CyServiceRegistrar serviceRegistrar) {
 		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.INT, "edge_ID", "An ID identifying an edge.") });
-		this.applicationManager = applicationManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**
-	 *  Used to parse the function string.  This name is treated in a case-insensitive manner!
-	 *  @return the name by which you must call the function when used in an attribute equation.
-	 */
-	public String getName() { return "SOURCEID"; }
+	@Override
+	public String getName() {
+		return "SOURCEID";
+	}
 
-	/**
-	 *  Used to provide help for users.
-	 *  @return a description of what this function does
-	 */
-	public String getFunctionSummary() { return "Returns source ID of an edge."; }
+	@Override
+	public String getFunctionSummary() {
+		return "Returns source ID of an edge.";
+	}
 
-	public Class<?> getReturnType() { return Long.class; }
+	@Override
+	public Class<?> getReturnType() {
+		return Long.class;
+	}
 
-	/**
-	 *  @param args the function arguments which must be either one object of type Double or Long
-	 *  @return the result of the function evaluation which is the natural logarithm of the first argument
-	 */
+	@Override
 	public Object evaluateFunction(final Object[] args) {
 		final Long edgeID = FunctionUtil.getArgAsLong(args[0]);
+		final CyNetwork currentNetwork = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
-		final CyNetwork currentNetwork = applicationManager.getCurrentNetwork();
 		if (currentNetwork == null)
-			return (Long)(-1L);
+			return (Long) (-1L);
 
 		final CyEdge edge = currentNetwork.getEdge(edgeID);
+		
 		if (edge == null)
 			throw new IllegalArgumentException("\"" + edgeID + "\" is not a valid edge identifier.");
-		
+
 		return edge.getSource().getSUID();
 	}
 }

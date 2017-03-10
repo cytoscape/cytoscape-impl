@@ -1,12 +1,24 @@
 package org.cytoscape.scripting.internal.command;
 
+import java.util.List;
+
+import javax.script.ScriptEngineManager;
+
+import org.apache.felix.gogo.commands.Argument;
+import org.apache.felix.gogo.commands.Command;
+import org.apache.karaf.shell.console.OsgiCommandSupport;
+import org.cytoscape.scripting.internal.ExecuteScriptCommandTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+
 /*
  * #%L
  * Cytoscape Scripting Impl (scripting-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +36,6 @@ package org.cytoscape.scripting.internal.command;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.script.ScriptEngineManager;
-
-import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Command;
-import org.apache.karaf.shell.console.OsgiCommandSupport;
-import org.cytoscape.app.CyAppAdapter;
-import org.cytoscape.scripting.internal.ExecuteScriptCommandTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-
 @Command(scope = "cytoscape", name = "script", description = "Execute scripts", detailedDescription = "Execute script in the file.")
 public class ExecuteScriptCommand extends OsgiCommandSupport {
 
@@ -51,21 +50,20 @@ public class ExecuteScriptCommand extends OsgiCommandSupport {
 
 	private ScriptEngineManager manager = new ScriptEngineManager();
 	private TaskManager<?, ?> taskManager;
-	private CyAppAdapter cyAppAdapter;
+	private CyServiceRegistrar serviceRegistrar;
 
-	public void setCyAppAdapter(CyAppAdapter cyAppAdapter) {
-		this.cyAppAdapter = cyAppAdapter;
+	public void setServiceRegistrar(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public void setTaskManager(TaskManager taskManager) {
+	public void setTaskManager(TaskManager<?, ?> taskManager) {
 		this.taskManager = taskManager;
 	}
 
 	@Override
 	protected Object doExecute() throws Exception {
-		final TaskIterator taskItr = new TaskIterator(new ExecuteScriptCommandTask(manager, cyAppAdapter, engine,
-				filename, args));
-
+		final TaskIterator taskItr = new TaskIterator(
+				new ExecuteScriptCommandTask(manager, engine, filename, args, serviceRegistrar));
 		taskManager.execute(taskItr);
 
 		return null;

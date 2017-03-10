@@ -1,12 +1,23 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +35,38 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
-import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import org.cytoscape.view.vizmap.mappings.ValueTranslator;
-
 public class PassthroughMappingFactory implements VisualMappingFunctionFactory {
 	
-	private static final Map<Class<?>, ValueTranslator<?, ?>> TRANSLATORS = new HashMap<Class<?>, ValueTranslator<?,?>>();
+	private static final Map<Class<?>, ValueTranslator<?, ?>> TRANSLATORS = new HashMap<>();
 	private static final ValueTranslator<Object, String> DEFAULT_TRANSLATOR = new StringTranslator();
 	
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public PassthroughMappingFactory(final CyEventHelper eventHelper) {
-		this.eventHelper = eventHelper;
+	public PassthroughMappingFactory(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	public void addValueTranslator(ValueTranslator<?, ?> translator, Map props) {
-		// System.out.println("==========Translator called: " + translator);
+	public void addValueTranslator(ValueTranslator<?, ?> translator, Map<?, ?> props) {
 		if (translator != null)
 			TRANSLATORS.put(translator.getTranslatedValueType(), translator);
 	}
-	
-	public void removeValueTranslator(ValueTranslator<?, ?> translator, Map props) {
+
+	public void removeValueTranslator(ValueTranslator<?, ?> translator, Map<?, ?> props) {
 	}
-	
+
 	@Override
+	@SuppressWarnings("unchecked")
 	public <K, V> VisualMappingFunction<K, V> createVisualMappingFunction(final String attributeName,
 			final Class<K> attrValueType, final VisualProperty<V> vp) {
 
 		final ValueTranslator<?, ?> translator = TRANSLATORS.get(vp.getRange().getType());
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
 		if (translator != null)
-			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
-					(ValueTranslator<K, V>) translator, eventHelper);
+			return new PassthroughMappingImpl<>(attributeName, attrValueType, vp, (ValueTranslator<K, V>) translator,
+					eventHelper);
 		else
-			return new PassthroughMappingImpl<K, V>(attributeName, attrValueType, vp,
+			return new PassthroughMappingImpl<>(attributeName, attrValueType, vp,
 					(ValueTranslator<K, V>) DEFAULT_TRANSLATOR, eventHelper);
 	}
 

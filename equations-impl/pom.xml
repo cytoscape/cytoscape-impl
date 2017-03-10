@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.4.0</version>
+		<version>3.5.0</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,6 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>equations-impl</artifactId>
-  <version>3.4.0</version>
 
 	<name>Cytoscape Equations Impl (${project.artifactId})</name>
 
@@ -86,8 +85,23 @@
 			<artifactId>equations-api</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>event-api</artifactId>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-all</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

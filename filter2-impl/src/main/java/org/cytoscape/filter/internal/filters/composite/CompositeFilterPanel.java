@@ -38,6 +38,7 @@ import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.CompositeFilter.Type;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.Transformer;
+import org.cytoscape.filter.model.ValidatableTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
@@ -95,11 +96,22 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		
 		for (int i = 0; i < model.getLength(); i++) {
 			Filter<CyNetwork, CyIdentifiable> filter = model.get(i);
-			JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-			TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<>(component, filterPanelController, parent);
+			TransformerElementViewModel<P> viewModel = createViewModel(filter);
 			viewModels.put(filter, viewModel);
 		}
 	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private TransformerElementViewModel<P> createViewModel(Filter<CyNetwork, CyIdentifiable> filter) {
+		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
+		TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<P>(component, filterPanelController, parent);
+		if(filter instanceof ValidatableTransformer) {
+			filterPanelController.getValidationManager().register((ValidatableTransformer<CyNetwork,CyIdentifiable>)filter, viewModel);
+		}
+		return viewModel;
+	}
+	
 	
 	@Override
 	public void setBackground(Color bg) {
@@ -120,13 +132,8 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 
 	@Override
 	public void updateLayout() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					updateLayout();
-				}
-			});
+		if(!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(this::updateLayout);
 			return;
 		}
 		removeAll();
@@ -159,19 +166,29 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 				panel.updateLayout();
 			}
 
-			checkBoxGroup.addGroup(layout.createSequentialGroup()
-				.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
-				.addGap(4)
-			    .addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE));
+			checkBoxGroup.addGroup(
+					layout.createParallelGroup()
+					.addGroup(
+							layout.createSequentialGroup()
+							.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+							.addGap(4)
+							.addComponent(viewModel.handle, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE))
+					.addGap(4)
+					.addComponent(viewModel.warnIcon, Alignment.CENTER));
+			
 			viewGroup.addComponent(viewModel.view, 0, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
 					 .addComponent(viewModel.separator);
 			
 			rows.addGroup(layout.createParallelGroup(Alignment.LEADING)
 								.addGroup(layout.createSequentialGroup()
 										.addGap(ViewUtil.INTERNAL_VERTICAL_PADDING)
-										.addGroup(layout.createParallelGroup()
-											.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
-											.addComponent(viewModel.handle, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE)))
+										.addGroup(
+											layout.createSequentialGroup().addGroup(
+												layout.createParallelGroup()
+												.addComponent(viewModel.deleteButton, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE)
+												.addComponent(viewModel.handle, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
+											.addGap(4)
+											.addComponent(viewModel.warnIcon)))
 								.addComponent(viewModel.view, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE));
 			rows.addComponent(viewModel.separator, separatorHeight, separatorHeight, separatorHeight);
 		}
@@ -257,8 +274,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 	}
 
 	public void addFilter(Filter<CyNetwork, CyIdentifiable> filter) {
-		JComponent component = filterPanelController.createView(parent, filter, depth + 1);
-		final TransformerElementViewModel<P> viewModel = new TransformerElementViewModel<P>(component, filterPanelController, parent);
+		TransformerElementViewModel<P> viewModel = createViewModel(filter);
 		addViewModel(filter, viewModel);
 	}
 
@@ -285,6 +301,7 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void removeTransformer(int index, boolean unregister) {
 		Filter<CyNetwork, CyIdentifiable> filter = model.remove(index);
@@ -295,6 +312,10 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 			if (model.view instanceof CompositeFilterPanel) {
 				((CompositeFilterPanel<?>) model.view).removeAllFilters();
 			}
+		}
+		
+		if(filter instanceof ValidatableTransformer) {
+			filterPanelController.getValidationManager().unregister((ValidatableTransformer<CyNetwork,CyIdentifiable>)filter);
 		}
 	}
 

@@ -1,12 +1,35 @@
 package org.cytoscape.model;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.equations.EquationCompiler;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.equations.internal.EquationCompilerImpl;
+import org.cytoscape.equations.internal.EquationParserImpl;
+import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DummyCyEventHelper;
+import org.cytoscape.model.internal.CyNetworkFactoryImpl;
+import org.cytoscape.model.internal.CyNetworkManagerImpl;
+import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
+import org.cytoscape.model.internal.CyTableFactoryImpl;
+import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +47,6 @@ package org.cytoscape.model;
  * #L%
  */
 
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.event.DummyCyEventHelper;
-import org.cytoscape.model.internal.CyNetworkFactoryImpl;
-import org.cytoscape.model.internal.CyNetworkManagerImpl;
-import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
-import org.cytoscape.model.internal.CyTableFactoryImpl;
-import org.cytoscape.model.internal.CyTableManagerImpl;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-
 public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest {
 		
 	private CyNetworkFactory networkFactory;
@@ -57,19 +58,24 @@ public class CyNetworkTableManagerTest extends AbstractCyNetworkTableManagerTest
 	private CyEventHelper eh = new DummyCyEventHelper();
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
+
 
 	@Before
 	public void setUp() {
 		super.setUp();
 		
+		final Interpreter interpreter = new InterpreterImpl();
+		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eh);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
+		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
-		final Interpreter interpreter = new InterpreterImpl();
 		this.mgr = new CyNetworkTableManagerImpl();
 		this.networkManager = new CyNetworkManagerImpl(serviceRegistrar);
-		this.tableManager = new CyTableManagerImpl(eh, mgr, networkManager);
-		this.tableFactory = new CyTableFactoryImpl(eh, interpreter, serviceRegistrar);
+		this.tableManager = new CyTableManagerImpl(mgr, networkManager, serviceRegistrar);
+		this.tableFactory = new CyTableFactoryImpl(eh, serviceRegistrar);
 		
 		this.networkFactory = new CyNetworkFactoryImpl(eh, tableManager, mgr, tableFactory, serviceRegistrar);
 

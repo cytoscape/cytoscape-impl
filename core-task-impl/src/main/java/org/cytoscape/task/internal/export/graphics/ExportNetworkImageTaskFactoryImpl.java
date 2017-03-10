@@ -47,6 +47,7 @@ public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFa
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, view, applicationManager.getCurrentRenderingEngine() ) );
+		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, applicationManager,
+				view, applicationManager.getCurrentRenderingEngine() ) );
 	}
 }

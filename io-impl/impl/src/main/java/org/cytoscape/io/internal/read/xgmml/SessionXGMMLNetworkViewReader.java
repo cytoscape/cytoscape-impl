@@ -1,12 +1,28 @@
 package org.cytoscape.io.internal.read.xgmml;
 
+import java.io.InputStream;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
+import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +40,6 @@ package org.cytoscape.io.internal.read.xgmml;
  * #L%
  */
 
-import java.io.InputStream;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
-import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.TaskMonitor;
-
 /**
  * This reader handles XGMML files that serialize CyNetworkViews in Cy3 session files.
  */
@@ -48,15 +48,21 @@ public class SessionXGMMLNetworkViewReader extends GenericXGMMLReader {
 	private boolean settingLockedVisualProperties;
 	
 	public SessionXGMMLNetworkViewReader(final InputStream inputStream,
-										 final CyNetworkFactory cyNetworkFactory,
-										 final RenderingEngineManager renderingEngineMgr,
 										 final ReadDataManager readDataMgr,
 										 final XGMMLParser parser,
 										 final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-										 final CyRootNetworkManager cyRootNetworkManager,
-										 final CyApplicationManager cyApplicationManager) {
-		super(inputStream, cyNetworkFactory, renderingEngineMgr, readDataMgr, parser, unrecognizedVisualPropertyMgr,
-				null, cyRootNetworkManager, cyApplicationManager);
+										 final CyServiceRegistrar serviceRegistrar) {
+		super(
+				inputStream,
+				readDataMgr,
+				parser,
+				unrecognizedVisualPropertyMgr,
+				serviceRegistrar.getService(CyApplicationManager.class),
+				serviceRegistrar.getService(CyNetworkFactory.class),
+				null, // The CyNetworkManager has to be null when reading XGMML from session files!
+				serviceRegistrar.getService(CyRootNetworkManager.class),
+				serviceRegistrar
+		);
 	}
 
 	public String getVisualStyleName() {

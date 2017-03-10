@@ -1,12 +1,16 @@
 package org.cytoscape.io.internal.read;
 
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +28,18 @@ package org.cytoscape.io.internal.read;
  * #L%
  */
 
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-
-
 public abstract class AbstractTableReaderFactory extends AbstractInputStreamTaskFactory {
-	protected final CyTableFactory tableFactory;
 
-	public AbstractTableReaderFactory(final CyFileFilter filter,
-	                                  final CyTableFactory tableFactory)
-	{
+	protected final CyServiceRegistrar serviceRegistrar;
+
+	public AbstractTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
 		super(filter);
+		
 		if (filter == null)
 			throw new NullPointerException("filter is null.");
-
-		if (tableFactory == null)
-			throw new NullPointerException("tableFactory is null.");
-		this.tableFactory = tableFactory;
-
+		if (serviceRegistrar == null)
+			throw new NullPointerException("serviceRegistrar is null.");
+		
+		this.serviceRegistrar = serviceRegistrar;
 	}
 }

@@ -14,8 +14,32 @@ import org.cytoscape.ding.internal.charts.ColorSchemeEditor;
 import org.cytoscape.ding.internal.charts.LabelPosition;
 import org.cytoscape.ding.internal.charts.util.ColorGradient;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.presentation.property.values.CyColumnIdentifierFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 
@@ -24,7 +48,7 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	private static final ColorScheme[] UP_ZERO_DOWN_COLOR_SCHEMES;
 	
 	static {
-		final List<ColorScheme> upZeroDownSchemeList = new ArrayList<ColorScheme>();
+		final List<ColorScheme> upZeroDownSchemeList = new ArrayList<>();
 		
 		for (final ColorGradient cg : ColorGradient.values()) {
 			if (cg.getColors().size() == 3)
@@ -38,9 +62,8 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public HeatMapChartEditor(final HeatMapChart chart, final CyApplicationManager appMgr, final IconManager iconMgr,
-			final CyColumnIdentifierFactory colIdFactory) {
-		super(chart, Number.class, false, true, true, false, true, true, true, false, appMgr, iconMgr, colIdFactory);
+	public HeatMapChartEditor(final HeatMapChart chart, final CyServiceRegistrar serviceRegistrar) {
+		super(chart, Number.class, false, true, true, false, true, true, true, false, serviceRegistrar);
 		
 		getBorderPnl().setVisible(false);
 	}
@@ -65,8 +88,12 @@ public class HeatMapChartEditor extends AbstractChartEditor<HeatMapChart> {
 	@Override
 	protected ColorSchemeEditor<HeatMapChart> getColorSchemeEditor() {
 		if (colorSchemeEditor == null) {
-			colorSchemeEditor = new HeatMapColorSchemeEditor(chart, getColorSchemes(), appMgr.getCurrentNetwork(),
-					iconMgr);
+			colorSchemeEditor = new HeatMapColorSchemeEditor(
+					chart,
+					getColorSchemes(),
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork(),
+					serviceRegistrar.getService(IconManager.class)
+			);
 		}
 		
 		return colorSchemeEditor;

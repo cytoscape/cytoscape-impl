@@ -1,12 +1,24 @@
 package org.cytoscape.io.internal.util;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +36,6 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-
-
 /**
  * This class stores an old-to-new SUID map and is responsible for updating the values in SUID-typed CyColumns.
  */
@@ -53,9 +52,9 @@ public class SUIDUpdater {
 	}
 	
 	public void init() {
-		suidMap = new HashMap<Long, Long>();
-		tables = new HashSet<CyTable>();
-		ignoredColumns = new HashMap<CyTable, Set<String>>();
+		suidMap = new HashMap<>();
+		tables = new HashSet<>();
+		ignoredColumns = new HashMap<>();
 	}
 	
 	public void addSUIDMapping(final Long oldSUID, final Long newSUID) {
@@ -81,7 +80,7 @@ public class SUIDUpdater {
 			Set<String> names = ignoredColumns.get(table);
 		
 			if (names == null) {
-				names = new HashSet<String>();
+				names = new HashSet<>();
 				ignoredColumns.put(table, names);
 			}
 			
@@ -146,7 +145,7 @@ public class SUIDUpdater {
 				final List<Long> oldList = row.getList(columnName, Long.class);
 				
 				if (oldList != null && !oldList.isEmpty()) {
-					final List<Long> newList = new ArrayList<Long>(oldList.size());
+					final List<Long> newList = new ArrayList<>(oldList.size());
 					
 					for (final Long oldSUID : oldList) {
 						final Long newSUID = getNewSUID(oldSUID);

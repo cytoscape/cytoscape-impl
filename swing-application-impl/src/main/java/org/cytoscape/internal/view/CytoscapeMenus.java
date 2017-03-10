@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 
@@ -165,24 +166,28 @@ public class CytoscapeMenus {
 	}
 
 	public void removeAction(CyAction action) {
-		if (action.isInMenuBar())
-			menuBar.removeAction(action);
-
-		if (action.isInToolBar())
-			toolBar.removeAction(action);
+		invokeOnEDT(() -> {
+			if (action.isInMenuBar())
+				menuBar.removeAction(action);
+	
+			if (action.isInToolBar())
+				toolBar.removeAction(action);
+		});
 	}
 
 	public void addAction(CyAction action, Map<?, ?> props) {
-		if (action.isInMenuBar())
-			menuBar.addAction(action);
-
-		if (action.isInToolBar())
-			toolBar.addAction(action);
-		
-		if ("true".equals(props.get(IN_TOOL_BAR)) && 
-				(ENABLE_FOR_NETWORK_AND_VIEW.equals(props.get(ENABLE_FOR)) ||
-						ENABLE_FOR_SELECTED_NODES_OR_EDGES.equals(props.get(ENABLE_FOR))))
-			viewFrameActions.add(action);
+		invokeOnEDT(() -> {
+			if (action.isInMenuBar())
+				menuBar.addAction(action);
+	
+			if (action.isInToolBar())
+				toolBar.addAction(action);
+			
+			if ("true".equals(props.get(IN_TOOL_BAR)) && 
+					(ENABLE_FOR_NETWORK_AND_VIEW.equals(props.get(ENABLE_FOR)) ||
+							ENABLE_FOR_SELECTED_NODES_OR_EDGES.equals(props.get(ENABLE_FOR))))
+				viewFrameActions.add(action);
+		});
 	}
 
 	public void setMenuBarVisible(final boolean b) {

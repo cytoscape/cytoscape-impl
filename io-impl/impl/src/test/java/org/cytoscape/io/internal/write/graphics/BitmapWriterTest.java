@@ -115,7 +115,10 @@ public class BitmapWriterTest {
 	public void updateWP(){
 		
 		int newWP = 1100;
-		bw.setWidthInPixels(newWP);
+		ListSingleSelection<String> units = bw.getUnits();
+		units.setSelectedValue("pixels");
+		bw.setUnits(units);
+		bw.setWidth(new Double(newWP));
 
 		assertEquals(newWP, bw.widthInPixels);
 		assertTrue(bw.zoom.getValue() /100 == (newWP/initWP));
@@ -131,7 +134,10 @@ public class BitmapWriterTest {
 	public void updateHP(){
 		
 		int newHP = 200;
-		bw.setHeightInPixels(newHP);
+		ListSingleSelection<String> units = bw.getUnits();
+		units.setSelectedValue("pixels");
+		bw.setUnits(units);
+		bw.setHeight(new Double(newHP));
 		
 		assertEquals(newHP, bw.heightInPixels);
 		assertEquals(((double)newHP)/initHP, bw.zoom.getValue() /100, 0.0);
@@ -148,7 +154,10 @@ public class BitmapWriterTest {
 	public void updateWI(){
 		
 		double newWI = (initWP*3)/72.0;
-		bw.setWidthInInches(newWI);
+		ListSingleSelection<String> units = bw.getUnits();
+		units.setSelectedValue("inches");
+		bw.setUnits(units);
+		bw.setWidth(newWI);
 		
 		assertEquals(newWI, bw.widthInInches, 0.0);
 		assertTrue(bw.zoom.getValue() /100  == (bw.heightInPixels/initHP));
@@ -164,7 +173,10 @@ public class BitmapWriterTest {
 	public void updateHI(){
 		
 		double newHI = (initHP*3)/72.0;
-		bw.setHeightInInches(newHI);
+		ListSingleSelection<String> units = bw.getUnits();
+		units.setSelectedValue("inches");
+		bw.setUnits(units);
+		bw.setHeight(newHI);
 		
 		assertEquals(newHI, bw.heightInInches, 0.0);
 		
@@ -190,10 +202,8 @@ public class BitmapWriterTest {
 		assertTrue(bw.zoom.getValue() /100  == (bw.heightInPixels/initHP));
 		assertTrue(bw.zoom.getValue() /100 == (bw.widthInPixels/initWP));
 
-
 		assertTrue(newDpi == bw.heightInPixels/bw.heightInInches);
 		assertTrue(newDpi == bw.widthInPixels/bw.widthInInches);
-		
 	}
 	
 }

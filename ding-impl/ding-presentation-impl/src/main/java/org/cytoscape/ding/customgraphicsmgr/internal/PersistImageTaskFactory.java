@@ -1,5 +1,11 @@
 package org.cytoscape.ding.customgraphicsmgr.internal;
 
+import java.io.File;
+
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -24,19 +30,12 @@ package org.cytoscape.ding.customgraphicsmgr.internal;
  * #L%
  */
 
-import java.io.File;
-
-import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class PersistImageTaskFactory extends AbstractTaskFactory {
 
 	private final File location;
 	private final CustomGraphicsManager manager;
 
-	PersistImageTaskFactory(final File location,
-			final CustomGraphicsManager manager) {
+	PersistImageTaskFactory(final File location, final CustomGraphicsManager manager) {
 		this.manager = manager;
 		this.location = location;
 	}
@@ -45,5 +44,4 @@ public class PersistImageTaskFactory extends AbstractTaskFactory {
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new PersistImageTask(location, manager));
 	}
-
 }

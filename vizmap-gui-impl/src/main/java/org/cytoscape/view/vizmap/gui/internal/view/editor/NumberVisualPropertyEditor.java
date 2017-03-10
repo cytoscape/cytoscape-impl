@@ -1,5 +1,9 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor;
 
+import java.beans.PropertyEditor;
+
+import javax.swing.JLabel;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -26,14 +30,13 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
 
 import javax.swing.table.TableCellRenderer;
 
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
+import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
 import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.NumberContinuousCellRenderer;
 import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyNumberPropertyEditor;
-import org.cytoscape.view.vizmap.gui.editor.VisualPropertyEditor2;
-import org.cytoscape.view.model.VisualProperty;
-import java.beans.PropertyEditor;
 
 public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPropertyEditor<T> implements VisualPropertyEditor2<T> {
 
@@ -45,6 +48,9 @@ public class NumberVisualPropertyEditor<T extends Number> extends BasicVisualPro
 									  final ContinuousMappingCellRendererFactory cellRendererFactory) {
 		super(type, new CyNumberPropertyEditor<T>(type), ContinuousEditorType.CONTINUOUS, cellRendererFactory);
 		discreteTableCellRenderer = REG.getRenderer(type);
+		
+		if (discreteTableCellRenderer instanceof JLabel)
+			((JLabel) discreteTableCellRenderer).setHorizontalAlignment(JLabel.RIGHT);
 	}
 
 	@Override

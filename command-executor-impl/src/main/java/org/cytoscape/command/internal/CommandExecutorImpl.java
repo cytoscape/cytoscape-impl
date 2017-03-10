@@ -1,12 +1,31 @@
 package org.cytoscape.command.internal;
 
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.DynamicTaskFactoryProvisioner;
+import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewCollectionTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TaskObserver;
+
 /*
  * #%L
  * Cytoscape Command Executor Impl (command-executor-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,93 +43,71 @@ package org.cytoscape.command.internal;
  * #L%
  */
 
-
-import java.io.StreamTokenizer;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.AvailableCommands;
-import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.cytoscape.task.DynamicTaskFactoryProvisioner;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.NetworkViewCollectionTaskFactory;
-import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskObserver;
-
 public class CommandExecutorImpl {
 
-	private final static Logger logger = LoggerFactory.getLogger(CommandExecutorImpl.class);
-
-	private final Map<String, Map<String,Executor>> commandExecutorMap = 
-	                                             new HashMap<String,Map<String,Executor>>();
+	private final Map<String, Map<String, Executor>> commandExecutorMap = new HashMap<>();
 
 	private final CommandTunableInterceptorImpl interceptor; 
-	private final CyApplicationManager appMgr;
 	private final AvailableCommands availableCommands;
-
-	private final DynamicTaskFactoryProvisioner factoryProvisioner;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 	
-	public CommandExecutorImpl(CyApplicationManager appMgr, CommandTunableInterceptorImpl interceptor, 
-	                           AvailableCommands avc, DynamicTaskFactoryProvisioner factoryProvisioner) {
-		this.appMgr = appMgr;
-		this.factoryProvisioner = factoryProvisioner;
+	public CommandExecutorImpl(
+			final CommandTunableInterceptorImpl interceptor,
+			final AvailableCommands availableCommands,
+			final CyServiceRegistrar serviceRegistrar
+	) { 
 		this.interceptor = interceptor;
-		this.availableCommands = avc;
+		this.availableCommands = availableCommands;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public void addTaskFactory(TaskFactory tf, Map props) {
+	public void addTaskFactory(TaskFactory tf, Map<?, ?> props) {
 		addTF(new TFExecutor(tf,interceptor), props);
 	}
 
-	public void removeTaskFactory(TaskFactory tf, Map props) {
+	public void removeTaskFactory(TaskFactory tf, Map<?, ?> props) {
 		removeTF(props);
 	}
 
-	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
-		addTF(new TFExecutor(factoryProvisioner.createFor(tf), interceptor), props);
+	public void addNetworkTaskFactory(NetworkTaskFactory tf, Map<?, ?> props) {
+		DynamicTaskFactoryProvisioner provisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		addTF(new TFExecutor(provisioner.createFor(tf), interceptor), props);
 	}
 
-	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map props) {
+	public void removeNetworkTaskFactory(NetworkTaskFactory tf, Map<?, ?> props) {
 		removeTF(props);
 	}
 
-	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
-		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map<?, ?> props) {
+		DynamicTaskFactoryProvisioner provisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		addTF(new TFExecutor(provisioner.createFor(tf),interceptor), props);
 	}
 
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map props) {
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory tf, Map<?, ?> props) {
 		removeTF(props);
 	}
 
-	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
-		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
+	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map<?, ?> props) {
+		DynamicTaskFactoryProvisioner provisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		addTF(new TFExecutor(provisioner.createFor(tf),interceptor), props);
 	}
 
-	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map props) {
+	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory tf, Map<?, ?> props) {
 		removeTF(props);
 	}
 
-	public void addTableTaskFactory(TableTaskFactory tf, Map props) {
-		addTF(new TFExecutor(factoryProvisioner.createFor(tf),interceptor), props);
+	public void addTableTaskFactory(TableTaskFactory tf, Map<?, ?> props) {
+		DynamicTaskFactoryProvisioner provisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
+		addTF(new TFExecutor(provisioner.createFor(tf),interceptor), props);
 	}
 
-	public void removeTableTaskFactory(TableTaskFactory tf, Map props) {
+	public void removeTableTaskFactory(TableTaskFactory tf, Map<?, ?> props) {
 		removeTF(props);
 	}
 
-	private void addTF(Executor ex, Map props) {
+	private void addTF(Executor ex, Map<?, ?> props) {
 		String namespace = (String)props.get("commandNamespace");
 		String command = (String)props.get("command");
 		if ( command == null && namespace == null ) 
@@ -126,7 +123,7 @@ public class CommandExecutorImpl {
 		}
 	}
 
-	private void removeTF(Map props) {
+	private void removeTF(Map<?, ?> props) {
 		String namespace = (String)props.get("commandNamespace");
 		String command = (String)props.get("command");
 		if ( command == null && namespace == null ) 
@@ -143,7 +140,6 @@ public class CommandExecutorImpl {
 	}
 
 	public void executeList(List<String> commandLines, TaskMonitor tm, TaskObserver observer) throws Exception {
-
 		double size = (double)commandLines.size();
 		double count = 1.0;
 
@@ -164,7 +160,6 @@ public class CommandExecutorImpl {
 
 	public void executeCommand(String namespace, String command, Map<String, Object> args, 
 	                           TaskMonitor tm, TaskObserver observer) throws Exception {
-			
 		Executor ex;
 		synchronized (lock) {
 			Map<String,Executor> commandMap = commandExecutorMap.get(namespace);

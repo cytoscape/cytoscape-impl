@@ -15,6 +15,7 @@ import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.FilterWorker;
+import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.NamedTransformer;
@@ -22,8 +23,31 @@ import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.view.InteractivityChangedListener;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class FilterPanelController extends AbstractPanelController<FilterElement, FilterPanel> {
 	private TransformerManager transformerManager;
@@ -32,10 +56,17 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	private boolean isInteractive;
 
-	public FilterPanelController(TransformerManager transformerManager, TransformerViewManager transformerViewManager,
-			FilterWorker worker, ModelMonitor modelMonitor, FilterIO filterIo, TaskManager<?, ?> taskManager,
-			FilterPanelStyle style, IconManager iconManager) {
-		super(worker, transformerManager, transformerViewManager, filterIo, taskManager, style, iconManager);
+	public FilterPanelController(
+			TransformerManager transformerManager, 
+			TransformerViewManager transformerViewManager,
+			ValidationManager validationManager,
+			FilterWorker worker, 
+			ModelMonitor modelMonitor, 
+			FilterIO filterIo, 
+			FilterPanelStyle style, 
+			final CyServiceRegistrar serviceRegistrar) 
+	{
+		super(worker, transformerManager, transformerViewManager, validationManager, filterIo, style, serviceRegistrar);
 		worker.setController(this);
 		
 		this.transformerManager = transformerManager;

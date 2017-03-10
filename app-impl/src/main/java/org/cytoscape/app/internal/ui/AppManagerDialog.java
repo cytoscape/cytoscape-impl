@@ -24,9 +24,14 @@ import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
 import org.cytoscape.util.swing.FileUtil;
+// import Help;
+// import org.cytoscape.util.swing.HelpImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.TaskManager;
-
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import java.awt.Desktop;
+import java.net.URI;
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
@@ -85,7 +90,7 @@ public class AppManagerDialog extends JDialog {
         this.downloadSitesManager = downloadSitesManager;
         this.updateManager = updateManager;
         this.fileUtil = fileUtil;
-        this.taskManager = taskManager;
+        this.taskManager = taskManager;  
         initComponents();
         
         // Create new manage download sites dialog
@@ -128,7 +133,7 @@ public class AppManagerDialog extends JDialog {
 			}
 		});
         
-        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton);
+        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");
         
         final GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -185,4 +190,6 @@ public class AppManagerDialog extends JDialog {
             networkErrorLabel.setVisible(false);
         }
     }
-}
+    
+    
+ }

@@ -37,31 +37,29 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 /**
  * Defines arrow shapes.<br>
  * This replaces constants defined in Arrow.java.
- *
- *
  */
 public enum DArrowShape {
-	NONE("None", "NONE", ArrowShapeVisualProperty.NONE, GraphGraphics.ARROW_NONE),
-	DIAMOND("Diamond", "DIAMOND", ArrowShapeVisualProperty.DIAMOND, GraphGraphics.ARROW_DIAMOND),
-	DELTA("Delta", "DELTA", ArrowShapeVisualProperty.DELTA, GraphGraphics.ARROW_DELTA),
-	ARROW("Arrow", "ARROW", ArrowShapeVisualProperty.ARROW, GraphGraphics.ARROW_ARROWHEAD),
-	T("T", "T", ArrowShapeVisualProperty.T, GraphGraphics.ARROW_TEE),
-	CIRCLE("Circle", "CIRCLE", ArrowShapeVisualProperty.CIRCLE, GraphGraphics.ARROW_DISC),
-	HALF_TOP("Half Top", "HALF_TOP", ArrowShapeVisualProperty.HALF_TOP, GraphGraphics.ARROW_HALF_TOP),
-	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM, GraphGraphics.ARROW_HALF_BOTTOM),
-	DELTA_SHORT_1("Delta Short 1", "DELTA_SHORT_1", ArrowShapeVisualProperty.DELTA_SHORT_1, GraphGraphics.ARROW_DELTA_SHORT_1),
-	DELTA_SHORT_2("Delta Short 2", "DELTA_SHORT_2", ArrowShapeVisualProperty.DELTA_SHORT_2, GraphGraphics.ARROW_DELTA_SHORT_2),
-	ARROW_SHORT("Arrow Short", "ARROW_SHORT", ArrowShapeVisualProperty.ARROW_SHORT, GraphGraphics.ARROW_ARROWHEAD_SHORT),
-	DIAMOND_SHORT_1("Diamond Short 1", "DIAMOND_SHORT_1", ArrowShapeVisualProperty.DIAMOND_SHORT_1, GraphGraphics.ARROW_DIAMOND_SHORT_1),
-	DIAMOND_SHORT_2("Diamond Short 2", "DIAMOND_SHORT_2", ArrowShapeVisualProperty.DIAMOND_SHORT_2, GraphGraphics.ARROW_DIAMOND_SHORT_2);
+	NONE("None", "NONE", ArrowShapeVisualProperty.NONE),
+	DIAMOND("Diamond", "DIAMOND", ArrowShapeVisualProperty.DIAMOND),
+	DELTA("Delta", "DELTA", ArrowShapeVisualProperty.DELTA),
+	ARROW("Arrow", "ARROW", ArrowShapeVisualProperty.ARROW),
+	T("T", "T", ArrowShapeVisualProperty.T),
+	CIRCLE("Circle", "CIRCLE", ArrowShapeVisualProperty.CIRCLE),
+	HALF_TOP("Half Top", "HALF_TOP", ArrowShapeVisualProperty.HALF_TOP),
+	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM),
+	DELTA_SHORT_1("Delta Short 1", "DELTA_SHORT_1", ArrowShapeVisualProperty.DELTA_SHORT_1),
+	DELTA_SHORT_2("Delta Short 2", "DELTA_SHORT_2", ArrowShapeVisualProperty.DELTA_SHORT_2),
+	ARROW_SHORT("Arrow Short", "ARROW_SHORT", ArrowShapeVisualProperty.ARROW_SHORT),
+	DIAMOND_SHORT_1("Diamond Short 1", "DIAMOND_SHORT_1", ArrowShapeVisualProperty.DIAMOND_SHORT_1),
+	DIAMOND_SHORT_2("Diamond Short 2", "DIAMOND_SHORT_2", ArrowShapeVisualProperty.DIAMOND_SHORT_2);
 	
 
 	private final String displayName;
 	private final String serializableString;
 	private final ArrowShape presentationShape;
-	private final byte rendererTypeID;
 	
-	private static final Map<Byte, Shape> ARROW_SHAPES;
+	private static final Map<ArrowShape, Shape> ARROW_SHAPES;
+	
 	/** old_key -> ArrowShape */
 	private static final Map<String, DArrowShape> legacyShapes = new Hashtable<String, DArrowShape>();
 	static {
@@ -77,43 +75,30 @@ public enum DArrowShape {
 		ARROW_SHAPES = GraphGraphics.getArrowShapes();
 	}
 	
-	
-	private DArrowShape(final String displayName, final String serializableString, 
-	                    final ArrowShape presentationShape, final byte rendererTypeID) {
+	private DArrowShape(final String displayName, final String serializableString, final ArrowShape presentationShape) {
 		this.displayName = displayName;
-		this.rendererTypeID = rendererTypeID;
 		this.serializableString = serializableString;
 		this.presentationShape = presentationShape;
 	}
 
 	/**
-	 * Returns arrow type ID used in renderer code.
-	 *
-	 * @return
+	 * Returns arrow shape definition.
 	 */
-	public byte getRendererTypeID() {
-		return rendererTypeID;
+	public ArrowShape getPresentationShape() {
+		return presentationShape;
 	}
-
 
 	/**
 	 * Returns human-readable name of this object.  This will be used in labels.
-	 *
-	 * @return DOCUMENT ME!
 	 */
 	public String getDisplayName() {
 		return displayName;
 	}
 	
 	public Shape getShape() {
-		return ARROW_SHAPES.get((Byte) rendererTypeID);
+		return ARROW_SHAPES.get(presentationShape);
 	}
 
-	/**
-	 *
-	 * @param text
-	 * @return
-	 */
 	public static DArrowShape parseArrowText(final String text) {
 		DArrowShape shape = null;
 		
@@ -145,15 +130,6 @@ public enum DArrowShape {
 		return shape;
 	}
 
-	public static ArrowShape getArrowShape(final Byte rendererTypeID) {
-		for (DArrowShape shape : values()) {
-			if (shape.rendererTypeID == rendererTypeID) {
-				return shape.presentationShape;
-			}
-		}
-		return ArrowShapeVisualProperty.NONE;
-	}
-	
 	public static DArrowShape getArrowShape(final ArrowShape arrowShape) {
 		final String serializedString = arrowShape.getSerializableString();
 		// first try for an exact match

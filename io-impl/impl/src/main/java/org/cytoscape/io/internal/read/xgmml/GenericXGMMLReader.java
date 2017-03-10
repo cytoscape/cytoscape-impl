@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.xgmml;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -54,6 +30,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
@@ -73,6 +50,30 @@ import org.xml.sax.SAXParseException;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.ParserAdapter;
 
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class GenericXGMMLReader extends AbstractCyNetworkReader {
 
 	public static final String REPAIR_BARE_AMPERSANDS_PROPERTY = "cytoscape.xgmml.repair.bare.ampersands";
@@ -80,9 +81,11 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	protected final ReadDataManager readDataMgr;
 	protected final XGMMLParser parser;
 	protected final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr;
-	protected final VisualLexicon visualLexicon;
+	protected final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Map<String, String> legacyArrowShapes = new HashMap<String, String>();
+	private VisualLexicon visualLexicon;
+	
+	private static final Map<String, String> legacyArrowShapes = new HashMap<>();
 	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
 	
 	static {
@@ -109,19 +112,19 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	}
 	
 	public GenericXGMMLReader(final InputStream inputStream,
-							  final CyNetworkFactory cyNetworkFactory,
-							  final RenderingEngineManager renderingEngineMgr,
 							  final ReadDataManager readDataMgr,
 							  final XGMMLParser parser,
 							  final UnrecognizedVisualPropertyManager unrecognizedVisualPropertyMgr,
-							  final CyNetworkManager cyNetworkManager, 
-							  final CyRootNetworkManager cyRootNetworkManager,
-							  final CyApplicationManager cyApplicationManager) {
-		super(inputStream, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+							  final CyApplicationManager applicationManager,
+							  final CyNetworkFactory netFactory,
+							  final CyNetworkManager netManager, 
+							  final CyRootNetworkManager rootNetManager,
+							  final CyServiceRegistrar serviceRegistrar) {
+		super(inputStream, applicationManager, netFactory, netManager, rootNetManager);
 		this.readDataMgr = readDataMgr;
 		this.parser = parser;
 		this.unrecognizedVisualPropertyMgr = unrecognizedVisualPropertyMgr;
-		this.visualLexicon = renderingEngineMgr.getDefaultVisualLexicon();
+		this.serviceRegistrar = serviceRegistrar;
 		
 		// This should only be used when an XGMML file or session cannot be read due to improperly encoded ampersands,
 		// as it slows down the reading process.
@@ -132,9 +135,11 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		
 		if (!SessionUtil.isReadingSessionFile()) {
 			final List<CyNetwork> selectedNetworks = cyApplicationManager.getSelectedNetworks();
+			
 			if (selectedNetworks != null && selectedNetworks.size() > 0) {
 				final CyNetwork selectedNetwork = cyApplicationManager.getSelectedNetworks().get(0);
 				String rootName = "";
+				
 				if (selectedNetwork instanceof CySubNetwork) {
 					CySubNetwork subnet = (CySubNetwork) selectedNetwork;
 					CyRootNetwork rootNet = subnet.getRootNetwork();
@@ -143,6 +148,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 					// it is a root network
 					rootName = selectedNetwork.getRow(selectedNetwork).get(CyNetwork.NAME, String.class);
 				}
+				
 				getRootNetworkList().setSelectedValue(rootName);
 			}
 		}
@@ -307,7 +313,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 
 			for (final String attName : attSet) {
 				String attValue = atts.get(attName);
-				final VisualProperty vp = visualLexicon.lookup(type, attName);
+				final VisualProperty vp = getVisualLexicon().lookup(type, attName);
 				
 				if (vp != null) {
 					if (isXGMMLTransparency(attName))
@@ -328,6 +334,13 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 				}
 			}
 		}
+	}
+	
+	protected VisualLexicon getVisualLexicon() {
+		if (visualLexicon == null)
+			visualLexicon = serviceRegistrar.getService(RenderingEngineManager.class).getDefaultVisualLexicon();
+		
+		return visualLexicon;
 	}
 	
 	private static final Pattern DIRECT_NODE_PROPS_PATTERN = Pattern.compile("x|y|z");

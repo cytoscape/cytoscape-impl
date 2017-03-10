@@ -1,12 +1,24 @@
 package org.cytoscape.webservice.internal.task;
 
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.net.URL;
+
+import javax.swing.ImageIcon;
+import javax.swing.KeyStroke;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
+
 /*
  * #%L
  * Cytoscape Webservice Impl (webservice-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,49 +36,70 @@ package org.cytoscape.webservice.internal.task;
  * #L%
  */
 
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-
-import javax.swing.KeyStroke;
-
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.webservice.internal.ui.WebServiceImportDialog;
-
 /**
  * Display Network Import GUI.
- * 
  */
+@SuppressWarnings("serial")
 public class ShowImportDialogAction extends AbstractCyAction {
-
-	private static final long serialVersionUID = -36712860667900147L;
-
 
 	private WebServiceImportDialog<?> dialog;
 	private final Window parent;
 
-	public ShowImportDialogAction(final CySwingApplication app,
-			final WebServiceImportDialog<?> dialog, final String menuLocation, final String menuLabel,
-			final KeyStroke shortcut) {
+	public ShowImportDialogAction(
+			final WebServiceImportDialog<?> dialog,
+			final String menuLocation,
+			final float menuGravity,
+			final String menuLabel,
+			final KeyStroke shortcut,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(menuLabel);
 
 		if (dialog == null)
 			throw new NullPointerException("Dialog is null.");
-
 		if (menuLocation == null)
 			throw new NullPointerException("Menu Location is null.");
-		
 		if (menuLabel == null)
 			throw new NullPointerException("Menu Label is null.");
 
 		setPreferredMenu(menuLocation);
-		setMenuGravity(3.0f);
+		setMenuGravity(menuGravity);
 
-		if(shortcut != null)
+		if (shortcut != null)
 			setAcceleratorKeyStroke(shortcut);
-
-		this.parent = app.getJFrame();
+		
+		this.parent = serviceRegistrar.getService(CySwingApplication.class).getJFrame();
 		this.dialog = dialog;
+	}
+	
+	/**
+	 * Use this constructor to also make the action available as a tool bar button.
+	 */
+	public ShowImportDialogAction(
+			final WebServiceImportDialog<?> dialog,
+			final String menuLocation,
+			final float menuGravity,
+			final String menuLabel,
+			final KeyStroke shortcut,
+			final float toolbarGravity,
+			final URL iconUrl,
+			final String toolTip,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		this(dialog, menuLocation, menuGravity, menuLabel, shortcut, serviceRegistrar);
+		
+		setPreferredMenu(menuLocation);
+		setMenuGravity(menuGravity);
+		
+		if (shortcut != null)
+			setAcceleratorKeyStroke(shortcut);
+		
+		inToolBar = true;
+		setToolbarGravity(toolbarGravity);
+		putValue(SHORT_DESCRIPTION, toolTip);
+		
+		if (iconUrl != null)
+			putValue(LARGE_ICON_KEY, new ImageIcon(iconUrl));
 	}
 
 	@Override

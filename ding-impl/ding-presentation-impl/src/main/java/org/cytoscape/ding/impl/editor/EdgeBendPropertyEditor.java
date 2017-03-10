@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
@@ -48,7 +49,7 @@ public class EdgeBendPropertyEditor extends com.l2fprod.common.beans.editor.Abst
 	/**
 	 * Creates a new CyLabelPositionLabelEditor object.
 	 */
-	public EdgeBendPropertyEditor(final ValueEditor<Bend> valueEditor, final IconManager iconManager) {
+	public EdgeBendPropertyEditor(final ValueEditor<Bend> valueEditor, final CyServiceRegistrar serviceRegistrar) {
 		this.valueEditor = valueEditor;
 					
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));
@@ -56,6 +57,8 @@ public class EdgeBendPropertyEditor extends com.l2fprod.common.beans.editor.Abst
 		
 		((JPanel) editor).add("*", label = new EdgeBendCellRenderer());
 		label.setOpaque(false);
+		
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		((JPanel) editor).add(button = ComponentFactory.Helper.getFactory().createMiniButton());
 		button.setText(IconManager.ICON_ELLIPSIS_H);

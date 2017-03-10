@@ -566,7 +566,7 @@ public class BookmarkDialog extends JDialog implements ActionListener, ListSelec
 				
 				layout.setHorizontalGroup(layout.createParallelGroup(Alignment.TRAILING, true)
 						.addComponent(formPnl, DEFAULT_SIZE, 480, 480)
-						.addComponent(buttonPnl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(buttonPnl, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				);
 				layout.setVerticalGroup(layout.createSequentialGroup()
 						.addComponent(formPnl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

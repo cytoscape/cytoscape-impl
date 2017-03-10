@@ -1,5 +1,24 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.DVisualLexicon.EDGE_CURVED;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_SOURCE_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.ding.DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_COLOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_FACE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_FONT_SIZE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LABEL_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_LINE_TYPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SOURCE_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_UNSELECTED_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -36,8 +55,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.LineType;
-
-import static org.cytoscape.ding.DVisualLexicon.*;
 
 final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 
@@ -93,11 +110,11 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		} else if (vp == EDGE_TARGET_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+			setTargetEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == EDGE_SOURCE_ARROW_SHAPE) {
 			final ArrowShape shape = (ArrowShape) value;
 			final String shapeID = shape.getSerializableString();
-			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getRendererTypeID());
+			setSourceEdgeEnd(DArrowShape.parseArrowText(shapeID).getPresentationShape());
 		} else if (vp == EDGE_LABEL) {
 			setText((String) value);
 		} else if (vp == EDGE_LABEL_FONT_FACE) {
@@ -216,15 +233,15 @@ final class EdgeViewDefaultSupport extends AbstractViewDefaultSupport {
 		}
 	}
 
-	public void setSourceEdgeEnd(final int rendererTypeID) {
+	public void setSourceEdgeEnd(final ArrowShape arrowShape) {
 		synchronized (lock) {
-			edgeDetails.setSourceArrowDefault((byte) rendererTypeID);
+			edgeDetails.setSourceArrowDefault(arrowShape);
 		}
 	}
 
-	public void setTargetEdgeEnd(final int rendererTypeID) {
+	public void setTargetEdgeEnd(final ArrowShape arrowShape) {
 		synchronized (lock) {
-			edgeDetails.setTargetArrowDefault((byte) rendererTypeID);
+			edgeDetails.setTargetArrowDefault(arrowShape);
 		}
 	}
 
