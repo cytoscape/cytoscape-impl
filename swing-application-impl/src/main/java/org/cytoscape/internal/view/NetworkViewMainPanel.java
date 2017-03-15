@@ -88,6 +88,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class NetworkViewMainPanel extends JPanel {
 
+	public static String NAME = "__NETWORK_VIEW_MAIN_PANEL__";
+	
 	private JPanel contentPane;
 	private final CardLayout cardLayout;
 	private final NetworkViewGrid networkViewGrid;
@@ -129,6 +131,8 @@ public class NetworkViewMainPanel extends JPanel {
 		cardLayout = new CardLayout();
 		networkViewGrid = createNetworkViewGrid();
 		nullViewPanel = new NullNetworkViewPanel(gridViewToggleModel, serviceRegistrar);
+		
+		setName(NAME);
 		
 		init();
 	}

@@ -50,6 +50,7 @@ import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
+import org.cytoscape.internal.actions.StarterPanelAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
@@ -194,6 +195,7 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoPanelAction cytoPanelEastAction;
 	private CytoPanelAction cytoPanelSouthWestAction;
 
+	private StarterPanelAction starterPanelAction;
 	private DetachedViewToolBarAction detachedViewToolBarAction;
 	private CloseWindowAction closeWindowAction;
 	private CreateNetworkViewsAction createNetworkViewsAction;
@@ -231,6 +233,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
+		registerService(bc, starterPanelAction, CyAction.class, new Properties());
 		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
 		registerService(bc, closeWindowAction, CyAction.class, new Properties());
 		
@@ -461,7 +464,9 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
 		cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
 		
-		detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
+		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
+		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
+		
 		closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
 		createNetworkViewsAction = new CreateNetworkViewsAction(3.0f, serviceRegistrar);
 		destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);

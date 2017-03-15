@@ -1,12 +1,22 @@
 package org.cytoscape.internal.actions;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.Action;
+import javax.swing.event.MenuEvent;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +34,9 @@ package org.cytoscape.internal.actions;
  * #L%
  */
 
-
-
-import javax.swing.*;
-import javax.swing.event.MenuEvent;
-import java.awt.event.ActionEvent;
-
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.application.swing.AbstractCyAction;
-
-
+@SuppressWarnings("serial")
 public class CytoPanelAction extends AbstractCyAction {
-	private final static long serialVersionUID = 1202339869395571L;
-
+	
 	protected static String SHOW = "Show";
 	protected static String HIDE = "Hide";
 
@@ -46,22 +44,22 @@ public class CytoPanelAction extends AbstractCyAction {
 	protected CytoPanelName position;
 	private CySwingApplication desktop;
 
-	public CytoPanelAction(final CytoPanelName position, final boolean show, final CySwingApplication desktop, float menuGravity)
-	{
+	public CytoPanelAction(final CytoPanelName position, final boolean show, final CySwingApplication desktop,
+			float menuGravity) {
 		super(show ? HIDE + " " + position.getTitle() : SHOW + " " + position.getTitle());
 
 		this.title = position.getTitle();
 		this.position = position;
+		this.desktop = desktop;
+		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
-		this.desktop = desktop;
 	}
 
 	/**
 	 * Toggles the cytopanel state.  
-	 *
-	 * @param ev Triggering event - not used. 
 	 */
+	@Override
 	public void actionPerformed(ActionEvent ev) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 
@@ -74,12 +72,13 @@ public class CytoPanelAction extends AbstractCyAction {
 	/**
 	 * This dynamically sets the title of the menu based on the state of the CytoPanel.
 	 */
+	@Override
 	public void menuSelected(MenuEvent me) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
-		if (curState == CytoPanelState.HIDE) {
+		
+		if (curState == CytoPanelState.HIDE)
 			putValue(Action.NAME, SHOW + " " + title);
-		} else {
+		else
 			putValue(Action.NAME, HIDE + " " + title);
-		}
 	}
 }

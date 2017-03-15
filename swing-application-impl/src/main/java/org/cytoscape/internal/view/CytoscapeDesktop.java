@@ -6,6 +6,7 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.Window;
@@ -44,6 +45,10 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.TableAddedEvent;
+import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -84,7 +89,8 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public class CytoscapeDesktop extends JFrame
-		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener {
+		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener,
+		NetworkAddedListener, TableAddedListener {
 
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
@@ -122,6 +128,9 @@ public class CytoscapeDesktop extends JFrame
 	private JToolBar statusToolBar;
 	private StatusBarPanelFactory taskStatusPanelFactory;
 	private StatusBarPanelFactory jobStatusPanelFactory;
+	
+	private JPanel topRightPanel;
+	private StarterPanel starterPanel;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -290,13 +299,10 @@ public class CytoscapeDesktop extends JFrame
 		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, this,
 				serviceRegistrar);
 
-		// determine proper network view manager component
-		final JPanel networkViewPanel = netViewMediator.getNetworkViewMainPanel();
-
 		// create the split pane - we show this on startup
 		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
 		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
-		                                                    networkViewPanel, cytoPanelEast);
+		                                                    getTopRightPanel(), cytoPanelEast);
 
 		// set the cytopanelcontainer
 		cytoPanelEast.setCytoPanelContainer(splitPane);
@@ -458,7 +464,6 @@ public class CytoscapeDesktop extends JFrame
 		});
 	}
 	
-	// handle CytoscapeStartEvent
 	@Override
 	public void handleEvent(CyStartEvent e) {
 		invokeOnEDT(() -> {
@@ -466,7 +471,7 @@ public class CytoscapeDesktop extends JFrame
 			toFront();
 		});
 	}
-
+	
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
@@ -479,6 +484,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		invokeOnEDT(() -> {
 			setTitle(title);
+			hideStarterPanel();
 		});
 	}
 
@@ -490,5 +496,53 @@ public class CytoscapeDesktop extends JFrame
 		invokeOnEDT(() -> {
 			setTitle(TITLE_PREFIX_STRING + sessionName);
 		});
+	}
+	
+	@Override
+	public void handleEvent(NetworkAddedEvent e) {
+		hideStarterPanel();
+	}
+	
+	@Override
+	public void handleEvent(TableAddedEvent e) {
+		hideStarterPanel();
+	}
+	
+	public void showStarterPanel() {
+		invokeOnEDT(() -> {
+			((CardLayout) getTopRightPanel().getLayout()).show(getTopRightPanel(), StarterPanel.NAME);
+		});
+	}
+	
+	public void hideStarterPanel() {
+		invokeOnEDT(() -> {
+			if (isStarterPanelVisible())
+				((CardLayout) getTopRightPanel().getLayout()).show(getTopRightPanel(), NetworkViewMainPanel.NAME);
+		});
+	}
+	
+	public boolean isStarterPanelVisible() {
+		return getStarterPanel().isVisible();
+	}
+	
+	private JPanel getTopRightPanel() {
+		if (topRightPanel == null) {
+			topRightPanel = new JPanel();
+			topRightPanel.setLayout(new CardLayout());
+			
+			topRightPanel.add(getStarterPanel(), StarterPanel.NAME);
+			topRightPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
+		}
+		
+		return topRightPanel;
+	}
+	
+	private StarterPanel getStarterPanel() {
+		if (starterPanel == null) {
+			starterPanel = new StarterPanel(serviceRegistrar);
+			starterPanel.getCloseButton().addActionListener(e -> hideStarterPanel());
+		}
+		
+		return starterPanel;
 	}
 }
