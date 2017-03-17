@@ -37,6 +37,10 @@ import javax.swing.WindowConstants;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
@@ -45,8 +49,6 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -90,7 +92,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CytoscapeDesktop extends JFrame
 		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener,
-		NetworkAddedListener, TableAddedListener {
+		SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener {
 
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
@@ -499,7 +501,12 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	@Override
-	public void handleEvent(NetworkAddedEvent e) {
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		hideStarterPanel();
+	}
+	
+	@Override
+	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		hideStarterPanel();
 	}
 	
@@ -510,6 +517,7 @@ public class CytoscapeDesktop extends JFrame
 	
 	public void showStarterPanel() {
 		invokeOnEDT(() -> {
+			getStarterPanel().update();
 			((CardLayout) getTopRightPanel().getLayout()).show(getTopRightPanel(), StarterPanel.NAME);
 		});
 	}
@@ -531,7 +539,9 @@ public class CytoscapeDesktop extends JFrame
 			topRightPanel.setLayout(new CardLayout());
 			
 			topRightPanel.add(getStarterPanel(), StarterPanel.NAME);
-			topRightPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
+			
+			if (netViewMediator.getNetworkViewMainPanel() != null) // Just for unit tests
+				topRightPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
 		}
 		
 		return topRightPanel;

@@ -112,10 +112,14 @@ public class StarterPanel extends JPanel {
 		setName(NAME);
 		
 		init();
+		update();
+	}
+
+	public void update() {
 		updateRecentSessionsList();
 		updateSampleSessionsList();
 	}
-
+	
 	public void updateRecentSessionsList() {
 		updateSessionsList(getRecentSessionsPanel(), getRecentFiles());
 	}
@@ -341,9 +345,12 @@ public class StarterPanel extends JPanel {
 			galFilteredToolTip = "<html>This (<b>" + GAL_FILTERED_CYS + "</b>) and other example files can be found in:<br />"
 					+ exampleDir.getAbsolutePath() + "</html>";
 		
-		final FileInfo galFiltered = new FileInfo(getSampleFile(GAL_FILTERED_CYS), GAL_FILTERED_EXAMPLE_BUTTON_LABEL,
-				galFilteredToolTip);
-		files.add(galFiltered);
+		final File sampleFile = getSampleFile(GAL_FILTERED_CYS);
+
+		if (sampleFile != null) {
+			final FileInfo fi = new FileInfo(sampleFile, GAL_FILTERED_EXAMPLE_BUTTON_LABEL, galFilteredToolTip);
+			files.add(fi);
+		}
 		
 		return files;
 	}
