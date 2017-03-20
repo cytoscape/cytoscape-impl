@@ -11,12 +11,17 @@ import static org.cytoscape.io.internal.util.session.SessionUtil.PROPERTIES_FOLD
 import static org.cytoscape.io.internal.util.session.SessionUtil.TABLES_FOLDER;
 import static org.cytoscape.io.internal.util.session.SessionUtil.VERSION_EXT;
 
+import java.awt.Graphics;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +32,9 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.imageio.ImageIO;
+
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.internal.util.GroupUtil;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -47,6 +55,8 @@ import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -87,8 +97,11 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
 	private static final Logger logger = LoggerFactory.getLogger(SessionWriterImpl.class);
 	
-	// Name of CySession file.
 	private static final String VIZMAP_FILE = "session_vizmap.xml";
+	private static final String THUMBNAIL_FILE = "session_thumbnail.png";
+	
+	private static final int THUMBNAIL_WIDTH = 96;
+	private static final int THUMBNAIL_HEIGHT = 96;
 	
 	private final String cysessionDocId;
 	private final String sessionDir;
@@ -220,6 +233,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		
 		tm.setStatusMessage("Saving Cytoscape properties...");
 		zipProperties();
+		zipSessionThumbnail();
 		tm.setProgress(0.8);
 		
 		if (cancelled) return;
@@ -252,7 +266,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	private void zipVizmap() throws Exception {
 		Set<VisualStyle> styles = session.getVisualStyles();
 
-		zos.putNextEntry(new ZipEntry(sessionDir + VIZMAP_FILE) );
+		zos.putNextEntry(new ZipEntry(sessionDir + VIZMAP_FILE));
 
 		CyWriter vizmapWriter = vizmapWriterMgr.getWriter(styles, vizmapFilter, zos);
 		vizmapWriter.run(taskMonitor);
@@ -426,6 +440,7 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 	
 	private void zipTableProperties() throws Exception {
 		zos.putNextEntry(new ZipEntry(sessionDir + TABLES_FOLDER + CYTABLE_STATE_FILE));
+		
 		try {
 			CyTablesXMLWriter writer = new CyTablesXMLWriter(session.getTables(), tableFilenamesBySUID, zos);
 			writer.run(taskMonitor);
@@ -434,6 +449,54 @@ public class SessionWriterImpl extends AbstractTask implements CyWriter {
 		}
 	}
 	
+	private void zipSessionThumbnail() {
+		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (view == null)
+			view = session.getNetworkViews().isEmpty() ? null : session.getNetworkViews().iterator().next();
+		
+		if (view != null) {
+			Collection<RenderingEngine<?>> engines =
+				serviceRegistrar.getService(RenderingEngineManager.class).getRenderingEngines(view);
+
+			Image img = null;
+			
+			for (RenderingEngine<?> re : engines) {
+				try {
+					img = re.createImage(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT);
+					break;
+				} catch (Throwable t) {
+					// Better just log the error than prevent the session from being saved
+					// only because a third party renderer throws an exception,
+					// even if it never creates/saves a thumbnail.
+					logger.error("Cannot create session thumbnail", t);
+				}
+			}
+				
+			if (img != null) {
+				try {
+					final RenderedImage ri;
+					
+					if (img instanceof RenderedImage) {
+						ri = (RenderedImage) img;
+					} else {
+						ri = new BufferedImage(THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+						Graphics g = ((BufferedImage) ri).getGraphics();
+					    g.drawImage(img, 0, 0, null);
+					    g.dispose();
+					}
+					
+					zos.putNextEntry(new ZipEntry(sessionDir + THUMBNAIL_FILE));
+					ImageIO.write(ri, "png", zos);
+					zos.closeEntry();
+				} catch (Exception e) {
+					// Just log the error. Don't let it prevent the session from being saved!
+					logger.error("Cannot save session thumbnail", e);
+				}
+			}
+		}
+	}
+
 	private void prepareGroups() {
 		groupUtils.prepareGroupsForSerialization(session.getNetworks());
 	}
