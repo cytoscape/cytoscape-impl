@@ -1918,13 +1918,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * @return Image
 	 * @throws IllegalArgumentException
 	 */
-	private Image createImage(int width, final int height, 
-	                          double shrink, final boolean skipBackground) {
+	private Image createImage(int width, final int height, double shrink, final boolean skipBackground) {
 		// Validate arguments
-		if (width < 0 || height < 0) {
+		if (width < 0 || height < 0)
 			throw new IllegalArgumentException("DGraphView.createImage(int width, int height): "
 							   + "width and height arguments must be greater than zero");
-		}
 
 		if (shrink < 0 || shrink > 1.0) {
 			logger.debug("DGraphView.createImage(width,height,shrink) shrink is invalid: "
@@ -1932,42 +1930,45 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			shrink = 1.0;
 		}
 
-		// We want the width and height to be the same proportions as our network
-		Dimension originalSize = m_networkCanvas.getSize();
-		if (originalSize.getHeight() > 0.0 && originalSize.getWidth() > 0.0) {
-			double ratio = (double)originalSize.getHeight() / (double) originalSize.getWidth();
-			width = (int)((double)height/ratio);
-		}
-
-		// create image to return
-		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB_PRE);		
-		final Graphics g = image.getGraphics();
-
-		if (!skipBackground) {
-			// paint background canvas into image
-			originalSize = m_backgroundCanvas.getSize();
-			m_backgroundCanvas.setSize(width, height);
-			m_backgroundCanvas.paint(g);
-			// Restore background size
-			m_backgroundCanvas.setSize(originalSize);
-		}
+		final double scale = shrink;
+		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		
-		// paint inner canvas (network)
-		originalSize = m_networkCanvas.getSize();
-		m_networkCanvas.setSize(width, height);
-		fitContent(/* updateView = */ false);
-		setZoom(getZoom() * shrink);
-		m_networkCanvas.paint(g);
-		// Restore network to original size
-		m_networkCanvas.setSize(originalSize);
-		fitContent(/* updateView = */ false);
-		
-		// paint foreground canvas
-		originalSize = m_foregroundCanvas.getSize();
-		m_foregroundCanvas.setSize(width, height);
-		m_foregroundCanvas.paint(g);
-		// Restore foreground to original size
-		m_foregroundCanvas.setSize(originalSize);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			// Save current sizes, zoom and viewport position
+			Dimension originalBgSize = m_backgroundCanvas.getSize();
+			Dimension originalNetSize = m_networkCanvas.getSize();
+			Dimension originalFgSize = m_foregroundCanvas.getSize();
+			double zoom = getZoom();
+			Double centerX = getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+			Double centerY = getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+			
+			// Create image to return
+			final Graphics g = image.getGraphics();
+	
+			if (!skipBackground) {
+				// Paint background canvas into image
+				m_backgroundCanvas.setSize(width, height);
+				m_backgroundCanvas.paint(g);
+			}
+			
+			// Paint inner canvas (network)
+			m_networkCanvas.setSize(width, height);
+			fitContent(/* updateView = */ false);
+			setZoom(getZoom() * scale);
+			m_networkCanvas.paint(g);
+			
+			// Paint foreground canvas
+			m_foregroundCanvas.setSize(width, height);
+			m_foregroundCanvas.paint(g);
+			
+			// Restore to to original size, zoom and viewport
+			m_backgroundCanvas.setSize(originalBgSize);
+			m_networkCanvas.setSize(originalNetSize);
+			m_foregroundCanvas.setSize(originalFgSize);
+			setZoom(zoom);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
+			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
+		});
 		
 		return image;
 	}
@@ -2212,7 +2213,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 * Common API for all rendering engines.
 	 */
 	@Override public Image createImage(int width, int height) {
-		return createImage(width, height, 1, true);
+		return createImage(width, height, 1, false);
 	}
 
 	@Override
