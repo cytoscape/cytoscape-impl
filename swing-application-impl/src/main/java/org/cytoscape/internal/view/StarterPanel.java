@@ -9,17 +9,23 @@ import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
+import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
@@ -281,7 +287,6 @@ public class StarterPanel extends JPanel {
 	
 	private JLabel createLinkLabel(final String text, final String url) {
 		JLabel label = new JLabel(text);
-		label.setFont(label.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		label.setForeground(LINK_FONT_COLOR);
 		label.setHorizontalAlignment(SwingConstants.LEFT);
@@ -476,7 +481,7 @@ public class StarterPanel extends JPanel {
 				thumbnailLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
 				thumbnailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 			}
@@ -506,10 +511,12 @@ public class StarterPanel extends JPanel {
 	private final class FileInfo {
 		
 		private final String SESSION_EXT = ".cys";
+		private final String THUMBNAIL_FILE = "/session_thumbnail.png";
 		
 		final private File file;
 		final private String name;
 		final private String help;
+		private Icon icon;
 		
 		FileInfo(File file, String name, String help) {
 			this.file = file;
@@ -534,7 +541,49 @@ public class StarterPanel extends JPanel {
 		}
 		
 		Icon getIcon() {
-			return missingImageIcon;
+			if (icon == null) {
+				Image thumbnail = loadThumbnail();
+				
+				if (thumbnail != null)
+					icon = new ImageIcon(thumbnail);
+				else
+					icon = missingImageIcon;
+			}
+			
+			return icon;
+		}
+		
+		Image loadThumbnail() {
+			Image img = null;
+			ZipFile zipFile = null;
+
+			try {
+				zipFile = new ZipFile(file);
+				Enumeration<? extends ZipEntry> entries = zipFile.entries();
+
+				while (entries.hasMoreElements()) {
+					ZipEntry entry = entries.nextElement();
+
+					if (entry.getName().endsWith(THUMBNAIL_FILE)) {
+						InputStream stream = zipFile.getInputStream(entry);
+						img = ImageIO.read(stream);
+						stream.close();
+						break;
+					}
+				}
+			} catch (Exception e) {
+				logger.error("Cannot load session thumbnail from " + file.getName(), e);
+			} finally {
+				if (zipFile != null) {
+					try {
+						zipFile.close();
+					} catch (final Exception ex) {
+						logger.error("Unable to close file " + file.getName(), ex);
+					}
+				}
+			}
+
+			return img;
 		}
 
 		@Override
