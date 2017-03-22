@@ -10,9 +10,11 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,47 +45,56 @@ import org.slf4j.LoggerFactory;
 
 public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	
-	private static final int MAX_TRACK_COUNT = 10;
+	private static final int MAX_TRACK_COUNT = 100;
+	private static final String MAX_FILES_PROP = "maxRecentlyOpenedFiles";
+	
 	private static final Logger logger = LoggerFactory.getLogger(RecentlyOpenedTrackerImpl.class); 
 	
 	private final String trackerFileName;
 	private final LinkedList<URL> trackerURLs;
 	private final File propDir;
 	
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	/**
 	 * Creates a "recently opened" file tracker.
 	 * 
 	 * @param trackerFileName
-	 *            the name of the file in the Cytoscape config directory to read
-	 *            saved file names from.
+	 *            the name of the file in the Cytoscape config directory to read saved file names from.
 	 */
 	public RecentlyOpenedTrackerImpl(final String trackerFileName, final CyServiceRegistrar serviceRegistrar) {
 		this.trackerFileName = trackerFileName;
 		this.propDir = serviceRegistrar.getService(CyApplicationConfiguration.class).getConfigurationDirectoryLocation();
 		this.trackerURLs = new LinkedList<URL>();
+		this.serviceRegistrar = serviceRegistrar;
 
 		BufferedReader reader = null;
+		
 		try {
 			final File input = new File(propDir, trackerFileName);
+			
 			if (!input.exists())
 				input.createNewFile();
 	
 			reader = new BufferedReader(new FileReader(input));
+			int max = getMaxRecentlyOpenedFiles();
 			String line;
-			while ((line = reader.readLine()) != null && trackerURLs.size() < MAX_TRACK_COUNT) {
+			
+			while ((line = reader.readLine()) != null && trackerURLs.size() < max) {
 				final String newURL = line.trim();
+				
 				if (newURL.length() > 0)
 					trackerURLs.addLast(new URL(newURL));
 			}
 		} catch (IOException ioe) {
-			logger.warn("problem reading Recently Opened File list",ioe); 	
+			logger.warn("Problem reading Recently Opened File list", ioe); 	
 		} finally {
 			if (reader != null) {
 				try {
 					reader.close();
 					reader = null;
 				} catch (IOException e) {
-					logger.error("Colud not close the reader for RecentlyOpenedTracker.",e); 	
+					logger.error("Could not close the reader for RecentlyOpenedTracker.", e); 	
 				}
 			}
 		}
@@ -97,8 +108,10 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	@Override
 	public synchronized void add(final URL newURL) {
 		trackerURLs.remove(newURL);
-		if (trackerURLs.size() == MAX_TRACK_COUNT)
+		
+		if (trackerURLs.size() == getMaxRecentlyOpenedFiles())
 			trackerURLs.removeLast();
+		
 		trackerURLs.addFirst(newURL);
 	}
 	
@@ -115,8 +128,10 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	@Override
 	public void writeOut() throws FileNotFoundException {
 		final PrintWriter writer = new PrintWriter(new File(propDir, trackerFileName));
+		
 		for (final URL trackerURL : trackerURLs)
 			writer.println(trackerURL.toString());
+		
 		writer.close();
 	}
 
@@ -126,5 +141,22 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 			return null;
 		else
 			return trackerURLs.getFirst();
+	}
+	
+	private int getMaxRecentlyOpenedFiles() {
+		int max = 12;
+		
+		try {
+			Properties props = (Properties) serviceRegistrar
+					.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+			String s = props.getProperty(MAX_FILES_PROP);
+			
+			if (s != null)
+				max = Integer.parseInt(s.trim());
+		} catch (Exception e) {
+			logger.error("Cannot load property " + MAX_FILES_PROP, e);
+		}
+		
+		return Math.min(max, MAX_TRACK_COUNT);
 	}
 }
