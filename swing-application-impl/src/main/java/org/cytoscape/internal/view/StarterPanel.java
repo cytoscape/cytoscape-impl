@@ -40,7 +40,6 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -162,7 +161,6 @@ public class StarterPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
@@ -194,6 +192,10 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getRecentSessionsPanel() {
 		if (recentSessionsPanel == null) {
 			recentSessionsPanel = new SessionListPanel("Recent Sessions");
+			
+			Dimension minimumSize = recentSessionsPanel.getScrollPane().getMinimumSize();
+			recentSessionsPanel.getScrollPane().setPreferredSize(
+					new Dimension(minimumSize.width, minimumSize.height * 2));
 		}
 		
 		return recentSessionsPanel;
@@ -202,6 +204,7 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getSampleSessionsPanel() {
 		if (sampleSessionsPanel == null) {
 			sampleSessionsPanel = new SessionListPanel("Sample Sessions");
+			sampleSessionsPanel.getScrollPane().setPreferredSize(sampleSessionsPanel.getScrollPane().getMinimumSize());
 		}
 		
 		return sampleSessionsPanel;
@@ -400,7 +403,7 @@ public class StarterPanel extends JPanel {
 		SessionListPanel(String title) {
 			JLabel titleLabel = new JLabel(title);
 			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 16, 5, 16));
+			titleLabel.setBorder(BorderFactory.createEmptyBorder(2, 16, 2, 16));
 			
 			setLayout(new BorderLayout());
 			add(titleLabel, BorderLayout.NORTH);
@@ -421,7 +424,7 @@ public class StarterPanel extends JPanel {
 			}
 		}
 		
-		private JScrollPane getScrollPane() {
+		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
 				scrollPane = new JScrollPane(getListPanel());
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -434,7 +437,7 @@ public class StarterPanel extends JPanel {
 				
 				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
 				int minWidth = tmpSessionPanel.getPreferredSize().width + 60;
-				int minHeight = tmpSessionPanel.getPreferredSize().height + 10;
+				int minHeight = tmpSessionPanel.getPreferredSize().height + 12;
 				scrollPane.setMinimumSize(new Dimension(minWidth, minHeight));
 			}
 			
@@ -444,7 +447,7 @@ public class StarterPanel extends JPanel {
 		private ScrollableListPanel getListPanel() {
 			if (listPanel == null) {
 				listPanel = new ScrollableListPanel();
-				listPanel.setBackground(UIManager.getColor("Separator.foreground"));
+				listPanel.setBackground(UIManager.getColor("Table.background"));
 			}
 			
 			return listPanel;
@@ -498,9 +501,11 @@ public class StarterPanel extends JPanel {
 		}
 		
 		private void init() {
-			setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
+			setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")),
+					BorderFactory.createEmptyBorder(2, 2, 2, 2)
+			));
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
-			setOpaque(false);
 			
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
@@ -533,10 +538,13 @@ public class StarterPanel extends JPanel {
 				thumbnailLabel = new JLabel(fileInfo.getIcon());
 				thumbnailLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
-				thumbnailLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
-				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
 				thumbnailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				
+				if (thumbnailLabel.getIcon() == missingImageIcon)
+					thumbnailLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
+				else
+					thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			}
 			
 			return thumbnailLabel;
