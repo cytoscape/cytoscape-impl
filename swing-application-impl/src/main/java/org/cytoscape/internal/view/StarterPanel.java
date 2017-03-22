@@ -3,13 +3,18 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -28,15 +33,15 @@ import java.util.zip.ZipFile;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.ParallelGroup;
-import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
@@ -91,15 +96,16 @@ public class StarterPanel extends JPanel {
 	private static final String SAMPLE_DATA_DIR = "sampleData";
 	private static final String GAL_FILTERED_CYS = "galFiltered.cys";
 	
-	private static final int MAX_FILES = 6;
+	private static final int MAX_FILES = 100;
 	
 	private static final String MISSING_IMAGE = "/images/logo-transp-gray.png";
 	
 	private static final Logger logger = LoggerFactory.getLogger(StarterPanel.class);
 	
 	private JPanel contentPane;
-	private JPanel recentSessionsPanel;
-	private JPanel sampleSessionsPanel;
+	private SessionListPanel recentSessionsPanel;
+	private SessionListPanel sampleSessionsPanel;
+	private JPanel titlePanel;
 	private JPanel linksPanel;
 	
 	private JButton closeButton;
@@ -122,120 +128,80 @@ public class StarterPanel extends JPanel {
 	}
 
 	public void update() {
-		updateRecentSessionsList();
-		updateSampleSessionsList();
-	}
-	
-	public void updateRecentSessionsList() {
-		updateSessionsList(getRecentSessionsPanel(), getRecentFiles());
-	}
-	
-	public void updateSampleSessionsList() {
-		updateSessionsList(getSampleSessionsPanel(), getSampleFiles());
-	}
-
-	private void updateSessionsList(JPanel panel, List<FileInfo> files) {
-		panel.removeAll();
-		panel.setVisible(!files.isEmpty());
-		
-		final GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(true);
-		
-		final SequentialGroup hGroup = layout.createSequentialGroup();
-		final ParallelGroup vGroup = layout.createParallelGroup(CENTER, true);
-		
-		layout.setHorizontalGroup(hGroup);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addContainerGap()
-				.addGroup(vGroup)
-		);
-		
-		hGroup.addGap(0, 0, Short.MAX_VALUE);
-		
-		for (final FileInfo fi : files) {
-			SessionPanel sessionPanel = new SessionPanel(fi);
-
-			hGroup.addComponent(sessionPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-			vGroup.addComponent(sessionPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-		}
-		
-		hGroup.addGap(0, 0, Short.MAX_VALUE);
+		getRecentSessionsPanel().update(getRecentFiles());
+		getSampleSessionsPanel().update(getSampleFiles());
 	}
 	
 	private void init() {
-		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
-		setBackground(UIManager.getColor("Label.disabledForeground"));
+		setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")),
+				BorderFactory.createCompoundBorder(
+						BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 4),
+						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"))
+				)
+		));
 		
-		final GroupLayout layout = new GroupLayout(this);
-		setLayout(layout);
-		layout.setAutoCreateContainerGaps(true);
-		layout.setAutoCreateGaps(true);
-		
-		layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
-				.addComponent(getContentPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-		);
-		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGap(0, 0, Short.MAX_VALUE)
-				.addComponent(getContentPane(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addGap(0, 0, Short.MAX_VALUE)
-		);
+		setLayout(new BorderLayout());
+		add(getTitlePanel(), BorderLayout.NORTH);
+		add(getContentPane(), BorderLayout.CENTER);
+		add(getLinksPanel(), BorderLayout.SOUTH);
 	}
 
 	public JPanel getContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
-			contentPane.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.foreground")));
 			
 			final GroupLayout layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createParallelGroup(TRAILING, true)
-					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGroup(layout.createSequentialGroup()
-							.addGroup(layout.createParallelGroup(TRAILING, true)
-									.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-									.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-									.addComponent(getLinksPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-							)
-					)
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getRecentSessionsPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getSampleSessionsPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addComponent(getLinksPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addContainerGap()
+					.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
 		
 		return contentPane;
 	}
 	
-	private JPanel getRecentSessionsPanel() {
-		if (recentSessionsPanel == null) {
-			recentSessionsPanel = new JPanel();
-			recentSessionsPanel.setBorder(LookAndFeelUtil.createTitledBorder("Recent Sessions"));
+	private JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			titlePanel = new JPanel();
 			
-			if (LookAndFeelUtil.isAquaLAF())
-				recentSessionsPanel.setOpaque(false);
+			final GroupLayout layout = new GroupLayout(titlePanel);
+			titlePanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+		}
+		
+		return titlePanel;
+	}
+	
+	private SessionListPanel getRecentSessionsPanel() {
+		if (recentSessionsPanel == null) {
+			recentSessionsPanel = new SessionListPanel("Recent Sessions");
 		}
 		
 		return recentSessionsPanel;
 	}
 	
-	private JPanel getSampleSessionsPanel() {
+	private SessionListPanel getSampleSessionsPanel() {
 		if (sampleSessionsPanel == null) {
-			sampleSessionsPanel = new JPanel();
-			sampleSessionsPanel.setBorder(LookAndFeelUtil.createTitledBorder("Sample Sessions"));
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				sampleSessionsPanel.setOpaque(false);
+			sampleSessionsPanel = new SessionListPanel("Sample Sessions");
 		}
 		
 		return sampleSessionsPanel;
@@ -249,17 +215,15 @@ public class StarterPanel extends JPanel {
 			
 			final GroupLayout layout = new GroupLayout(linksPanel);
 			linksPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(tutorialsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(100)
+					.addGap(80)
 					.addComponent(newsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 0, Short.MAX_VALUE)
-					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(tutorialsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -428,6 +392,97 @@ public class StarterPanel extends JPanel {
 			openSession(file);
 	}
 	
+	private class SessionListPanel extends JPanel {
+		
+		private JScrollPane scrollPane;
+		private ScrollableListPanel listPanel;
+		
+		SessionListPanel(String title) {
+			JLabel titleLabel = new JLabel(title);
+			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			titleLabel.setBorder(BorderFactory.createEmptyBorder(5, 16, 5, 16));
+			
+			setLayout(new BorderLayout());
+			add(titleLabel, BorderLayout.NORTH);
+			add(getScrollPane(), BorderLayout.CENTER);
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				setOpaque(false);
+		}
+		
+		void update(List<FileInfo> files) {
+			JPanel panel = getListPanel();
+			panel.removeAll();
+			panel.setVisible(!files.isEmpty());
+			
+			for (final FileInfo fi : files) {
+				SessionPanel sessionPanel = new SessionPanel(fi);
+				panel.add(sessionPanel);
+			}
+		}
+		
+		private JScrollPane getScrollPane() {
+			if (scrollPane == null) {
+				scrollPane = new JScrollPane(getListPanel());
+				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+				scrollPane.getViewport().setBackground(getListPanel().getBackground());
+				scrollPane.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(0, 16, 0, 16, UIManager.getColor("Panel.background")),
+						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))
+				));
+				
+				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
+				int minWidth = tmpSessionPanel.getPreferredSize().width + 60;
+				int minHeight = tmpSessionPanel.getPreferredSize().height + 10;
+				scrollPane.setMinimumSize(new Dimension(minWidth, minHeight));
+			}
+			
+			return scrollPane;
+		}
+		
+		private ScrollableListPanel getListPanel() {
+			if (listPanel == null) {
+				listPanel = new ScrollableListPanel();
+				listPanel.setBackground(UIManager.getColor("Separator.foreground"));
+			}
+			
+			return listPanel;
+		}
+		
+		private class ScrollableListPanel extends JPanel implements Scrollable {
+			
+			public ScrollableListPanel() {
+				setLayout(new ModifiedFlowLayout());
+			}
+			
+			@Override
+			public Dimension getPreferredScrollableViewportSize() {
+				return getPreferredSize();
+			}
+
+			@Override
+			public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+				return 10;
+			}
+
+			@Override
+			public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+				return ((orientation == SwingConstants.VERTICAL) ? visibleRect.height : visibleRect.width) - 10;
+			}
+
+			@Override
+			public boolean getScrollableTracksViewportWidth() {
+				return true;
+			}
+
+			@Override
+			public boolean getScrollableTracksViewportHeight() {
+				return false;
+			}
+		}
+	}
+	
 	private class SessionPanel extends JPanel {
 		
 		static final int NAME_WIDTH = 124;
@@ -437,7 +492,7 @@ public class StarterPanel extends JPanel {
 		
 		private final FileInfo fileInfo;
 
-		public SessionPanel(FileInfo fileInfo) {
+		SessionPanel(FileInfo fileInfo) {
 			this.fileInfo = fileInfo;
 			init();
 		}
@@ -445,6 +500,7 @@ public class StarterPanel extends JPanel {
 		private void init() {
 			setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 2));
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
+			setOpaque(false);
 			
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
@@ -459,9 +515,6 @@ public class StarterPanel extends JPanel {
 					.addComponent(getThumbnailLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getNameLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				setOpaque(false);
 			
 			MouseListener mouseListener = new MouseAdapter() {
 				@Override
@@ -493,8 +546,10 @@ public class StarterPanel extends JPanel {
 			if (nameLabel == null) {
 				nameLabel = new JLabel(fileInfo.getName());
 				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-				nameLabel.setToolTipText(fileInfo.getFile().getPath());
-				nameLabel.setForeground(LINK_FONT_COLOR);
+				
+				if (fileInfo.getFile() != null)
+					nameLabel.setToolTipText(fileInfo.getFile().getPath());
+				
 				nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				nameLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				
@@ -505,6 +560,120 @@ public class StarterPanel extends JPanel {
 			}
 			
 			return nameLabel;
+		}
+	}
+	
+	/**
+	 * A modified version of FlowLayout that allows containers using this Layout
+	 * to behave in a reasonable manner when placed inside a JScrollPane.
+	 * See http://stackoverflow.com/questions/3679886/how-can-i-let-jtoolbars-wrap-to-the-next-line-flowlayout-without-them-being-hi
+	 * 
+	 * @author Babu Kalakrishnan
+	 * Modifications by greearb and jzd
+	 */
+	public class ModifiedFlowLayout extends FlowLayout {
+		
+		public ModifiedFlowLayout() {
+			super();
+		}
+
+		public ModifiedFlowLayout(int align) {
+			super(align);
+		}
+
+		public ModifiedFlowLayout(int align, int hgap, int vgap) {
+			super(align, hgap, vgap);
+		}
+
+		@Override
+		public Dimension minimumLayoutSize(Container target) {
+			// Size of largest component, so we can resize it in either direction with something like a split-pane.
+			return computeMinSize(target);
+		}
+
+		@Override
+		public Dimension preferredLayoutSize(Container target) {
+			return computeSize(target);
+		}
+
+		private Dimension computeSize(Container target) {
+			synchronized (target.getTreeLock()) {
+				int hgap = getHgap();
+				int vgap = getVgap();
+				int w = target.getWidth();
+
+				// Let this behave like a regular FlowLayout (single row)
+				// if the container hasn't been assigned any size yet
+				if (w == 0)
+					w = Integer.MAX_VALUE;
+
+				Insets insets = target.getInsets();
+				
+				if (insets == null)
+					insets = new Insets(0, 0, 0, 0);
+				
+				int reqdWidth = 0;
+
+				int maxwidth = w - (insets.left + insets.right + hgap * 2);
+				int n = target.getComponentCount();
+				int x = 0;
+				int y = insets.top + vgap; // FlowLayout starts by adding vgap, so do that here too.
+				int rowHeight = 0;
+
+				for (int i = 0; i < n; i++) {
+					Component c = target.getComponent(i);
+					
+					if (c.isVisible()) {
+						Dimension d = c.getPreferredSize();
+						
+						if ((x == 0) || ((x + d.width) <= maxwidth)) {
+							// fits in current row.
+							if (x > 0)
+								x += hgap;
+							
+							x += d.width;
+							rowHeight = Math.max(rowHeight, d.height);
+						} else {
+							// Start of new row
+							x = d.width;
+							y += vgap + rowHeight;
+							rowHeight = d.height;
+						}
+						
+						reqdWidth = Math.max(reqdWidth, x);
+					}
+				}
+				
+				y += rowHeight;
+				y += insets.bottom;
+				
+				return new Dimension(reqdWidth + insets.left + insets.right, y);
+			}
+		}
+
+		private Dimension computeMinSize(Container target) {
+			synchronized (target.getTreeLock()) {
+				int minx = Integer.MAX_VALUE;
+				int miny = Integer.MIN_VALUE;
+				boolean found_one = false;
+				int n = target.getComponentCount();
+
+				for (int i = 0; i < n; i++) {
+					Component c = target.getComponent(i);
+					
+					if (c.isVisible()) {
+						found_one = true;
+						Dimension d = c.getPreferredSize();
+						minx = Math.min(minx, d.width);
+						miny = Math.min(miny, d.height);
+					}
+				}
+				
+				if (found_one)
+					return new Dimension(minx, miny);
+				
+				return new Dimension(0, 0);
+			}
 		}
 	}
 	
@@ -555,30 +724,33 @@ public class StarterPanel extends JPanel {
 		
 		Image loadThumbnail() {
 			Image img = null;
-			ZipFile zipFile = null;
-
-			try {
-				zipFile = new ZipFile(file);
-				Enumeration<? extends ZipEntry> entries = zipFile.entries();
-
-				while (entries.hasMoreElements()) {
-					ZipEntry entry = entries.nextElement();
-
-					if (entry.getName().endsWith(THUMBNAIL_FILE)) {
-						InputStream stream = zipFile.getInputStream(entry);
-						img = ImageIO.read(stream);
-						stream.close();
-						break;
+			
+			if (file != null) {
+				ZipFile zipFile = null;
+	
+				try {
+					zipFile = new ZipFile(file);
+					Enumeration<? extends ZipEntry> entries = zipFile.entries();
+	
+					while (entries.hasMoreElements()) {
+						ZipEntry entry = entries.nextElement();
+	
+						if (entry.getName().endsWith(THUMBNAIL_FILE)) {
+							InputStream stream = zipFile.getInputStream(entry);
+							img = ImageIO.read(stream);
+							stream.close();
+							break;
+						}
 					}
-				}
-			} catch (Exception e) {
-				logger.error("Cannot load session thumbnail from " + file.getName(), e);
-			} finally {
-				if (zipFile != null) {
-					try {
-						zipFile.close();
-					} catch (final Exception ex) {
-						logger.error("Unable to close file " + file.getName(), ex);
+				} catch (Exception e) {
+					logger.error("Cannot load session thumbnail from " + file.getName(), e);
+				} finally {
+					if (zipFile != null) {
+						try {
+							zipFile.close();
+						} catch (final Exception ex) {
+							logger.error("Unable to close file " + file.getName(), ex);
+						}
 					}
 				}
 			}
