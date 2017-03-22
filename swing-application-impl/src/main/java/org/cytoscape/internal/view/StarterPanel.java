@@ -89,7 +89,7 @@ public class StarterPanel extends JPanel {
 	public static final String TUTORIAL_URL = "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3";
 	public static final String NEWS_URL = "http://cytoscape-publications.tumblr.com/";
 	
-	public static final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
+	public final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
 	
 	private static final String GAL_FILTERED_EXAMPLE_BUTTON_LABEL = "Sample Yeast Network";
 	private static final String SAMPLE_DATA_DIR = "sampleData";
@@ -152,7 +152,7 @@ public class StarterPanel extends JPanel {
 			
 			final GroupLayout layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
@@ -232,9 +232,6 @@ public class StarterPanel extends JPanel {
 					.addComponent(tutorialsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(newsLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				linksPanel.setOpaque(false);
 		}
 		
 		return linksPanel;
@@ -408,9 +405,6 @@ public class StarterPanel extends JPanel {
 			setLayout(new BorderLayout());
 			add(titleLabel, BorderLayout.NORTH);
 			add(getScrollPane(), BorderLayout.CENTER);
-			
-			if (LookAndFeelUtil.isAquaLAF())
-				setOpaque(false);
 		}
 		
 		void update(List<FileInfo> files) {
@@ -430,10 +424,7 @@ public class StarterPanel extends JPanel {
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.getViewport().setBackground(getListPanel().getBackground());
-				scrollPane.setBorder(BorderFactory.createCompoundBorder(
-						BorderFactory.createMatteBorder(0, 16, 0, 16, UIManager.getColor("Panel.background")),
-						BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"))
-				));
+				scrollPane.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 				
 				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
 				int minWidth = tmpSessionPanel.getPreferredSize().width + 60;
@@ -501,10 +492,8 @@ public class StarterPanel extends JPanel {
 		}
 		
 		private void init() {
-			setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")),
-					BorderFactory.createEmptyBorder(2, 2, 2, 2)
-			));
+			setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+			setOpaque(false);
 			setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
 			final GroupLayout layout = new GroupLayout(this);
@@ -540,11 +529,6 @@ public class StarterPanel extends JPanel {
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
 				thumbnailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
-				
-				if (thumbnailLabel.getIcon() == missingImageIcon)
-					thumbnailLabel.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-				else
-					thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			}
 			
 			return thumbnailLabel;
@@ -554,6 +538,7 @@ public class StarterPanel extends JPanel {
 			if (nameLabel == null) {
 				nameLabel = new JLabel(fileInfo.getName());
 				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+				nameLabel.setForeground(UIManager.getColor("CyColor.primary(-2)"));
 				
 				if (fileInfo.getFile() != null)
 					nameLabel.setToolTipText(fileInfo.getFile().getPath());

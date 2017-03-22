@@ -98,7 +98,7 @@ public class CytoscapeDesktop extends JFrame
 	private static final String NEW_SESSION_NAME ="New Session";
 	
 	static final Dimension DEF_DESKTOP_SIZE = new Dimension(1300, 850);
-	private static final int DEF_DIVIDER_LOATION = 553;
+	private static final int DEF_DIVIDER_LOATION = 540;
 	
 	private static final String SMALL_ICON = "/images/logo.png";
 	
