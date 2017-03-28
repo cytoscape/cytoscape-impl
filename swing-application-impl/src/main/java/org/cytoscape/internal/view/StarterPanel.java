@@ -91,9 +91,8 @@ public class StarterPanel extends JPanel {
 	
 	public final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
 	
-	private static final String GAL_FILTERED_EXAMPLE_BUTTON_LABEL = "Sample Yeast Network";
-	private static final String SAMPLE_DATA_DIR = "sampleData";
-	private static final String GAL_FILTERED_CYS = "galFiltered.cys";
+	private static final String SAMPLE_DATA_DIR = "sampleData/sessions";
+	private static final String SESSION_EXT = ".cys";
 	
 	private static final int MAX_FILES = 100;
 	
@@ -127,7 +126,10 @@ public class StarterPanel extends JPanel {
 	}
 
 	public void update() {
-		getRecentSessionsPanel().update(getRecentFiles());
+		List<FileInfo> recentFiles = getRecentFiles();
+		getRecentSessionsPanel().update(recentFiles);
+		getRecentSessionsPanel().setVisible(!recentFiles.isEmpty());
+		
 		getSampleSessionsPanel().update(getSampleFiles());
 	}
 	
@@ -192,10 +194,6 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getRecentSessionsPanel() {
 		if (recentSessionsPanel == null) {
 			recentSessionsPanel = new SessionListPanel("Recent Sessions");
-			
-			Dimension minimumSize = recentSessionsPanel.getScrollPane().getMinimumSize();
-			recentSessionsPanel.getScrollPane().setPreferredSize(
-					new Dimension(minimumSize.width, minimumSize.height * 2));
 		}
 		
 		return recentSessionsPanel;
@@ -204,7 +202,6 @@ public class StarterPanel extends JPanel {
 	private SessionListPanel getSampleSessionsPanel() {
 		if (sampleSessionsPanel == null) {
 			sampleSessionsPanel = new SessionListPanel("Sample Sessions");
-			sampleSessionsPanel.getScrollPane().setPreferredSize(sampleSessionsPanel.getScrollPane().getMinimumSize());
 		}
 		
 		return sampleSessionsPanel;
@@ -305,40 +302,29 @@ public class StarterPanel extends JPanel {
 	 * Returns a list of example files.
 	 */
 	private List<FileInfo> getSampleFiles() {
-		// TODO Just get all cys files from samples directory
-		final List<FileInfo> files = new ArrayList<>();
-		String galFilteredToolTip = "";
-		final File exampleDir = getExampleDir();
+		final List<FileInfo> list = new ArrayList<>();
+		final File dir = getExampleDir();
 		
-		if (exampleDir != null && exampleDir.exists())
-			galFilteredToolTip = "<html>This (<b>" + GAL_FILTERED_CYS + "</b>) and other example files can be found in:<br />"
-					+ exampleDir.getAbsolutePath() + "</html>";
-		
-		final File sampleFile = getSampleFile(GAL_FILTERED_CYS);
-
-		if (sampleFile != null) {
-			final FileInfo fi = new FileInfo(sampleFile, GAL_FILTERED_EXAMPLE_BUTTON_LABEL, galFilteredToolTip);
-			files.add(fi);
+		if (dir != null && dir.exists() && dir.canRead()) {
+			File[] files = dir.listFiles();
+			
+			if (files != null) {
+				for (File f : files) {
+					if (f.canRead() && f.getName().toLowerCase().endsWith(SESSION_EXT)) {
+						String toolTip = 
+								"<html>This (<b>" + f.getName() + "</b>) and other example files can be found in:<br />"
+								+ dir.getAbsolutePath() + "</html>";
+						
+						final FileInfo fi = new FileInfo(f, f.getName().replace(SESSION_EXT, ""), toolTip);
+						list.add(fi);
+					}
+				}
+			}
 		}
 		
-		return files;
+		return list;
 	}
 	
-	/**
-	 * Get the location for "galFiltered.cys".
-	 */
-	private final File getSampleFile(final String filename) {
-		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
-		
-		if (applicationCfg != null) {
-			return new File(applicationCfg.getInstallationDirectoryLocation() + "/" + SAMPLE_DATA_DIR + "/" +  filename);
-		} else {
-			logger.error("application configuration is null, cannot find the installation directory");
-			return null;
-		}
-	}
-	
-	// This returns to location of the example files.
 	private final File getExampleDir() {
 		final CyApplicationConfiguration applicationCfg = serviceRegistrar.getService(CyApplicationConfiguration.class);
 
@@ -410,7 +396,6 @@ public class StarterPanel extends JPanel {
 		void update(List<FileInfo> files) {
 			JPanel panel = getListPanel();
 			panel.removeAll();
-			panel.setVisible(!files.isEmpty());
 			
 			for (final FileInfo fi : files) {
 				SessionPanel sessionPanel = new SessionPanel(fi);
@@ -538,7 +523,7 @@ public class StarterPanel extends JPanel {
 			if (nameLabel == null) {
 				nameLabel = new JLabel(fileInfo.getName());
 				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-				nameLabel.setForeground(UIManager.getColor("CyColor.primary(-2)"));
+				nameLabel.setForeground(LINK_FONT_COLOR);
 				
 				if (fileInfo.getFile() != null)
 					nameLabel.setToolTipText(fileInfo.getFile().getPath());
@@ -672,21 +657,16 @@ public class StarterPanel extends JPanel {
 	
 	private final class FileInfo {
 		
-		private final String SESSION_EXT = ".cys";
 		private final String THUMBNAIL_FILE = "/session_thumbnail.png";
 		
-		final private File file;
-		final private String name;
-		final private String help;
+		private final File file;
+		private final String name;
+		private final String help;
 		private Icon icon;
 		
 		FileInfo(File file, String name, String help) {
 			this.file = file;
 			this.help = help;
-			
-			if (name != null && name.toLowerCase().endsWith(SESSION_EXT))
-				name = name.substring(0, name.length() - SESSION_EXT.length());
-			
 			this.name = name;
 		}
 
