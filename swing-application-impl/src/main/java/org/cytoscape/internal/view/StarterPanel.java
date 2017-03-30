@@ -174,16 +174,22 @@ public class StarterPanel extends JPanel {
 		if (titlePanel == null) {
 			titlePanel = new JPanel();
 			
+			JLabel titleLabel = new JLabel("Welcome to Cytoscape");
+			titleLabel.setHorizontalAlignment(JLabel.CENTER);
+			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			
 			final GroupLayout layout = new GroupLayout(titlePanel);
 			titlePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addGap(0, 0, Short.MAX_VALUE)
+					.addGap(getCloseButton().getPreferredSize().width)
+					.addComponent(titleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
-			layout.setVerticalGroup(layout.createSequentialGroup()
+			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getCloseButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -514,6 +520,7 @@ public class StarterPanel extends JPanel {
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
 				thumbnailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
+				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			}
 			
 			return thumbnailLabel;
