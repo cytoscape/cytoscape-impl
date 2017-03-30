@@ -78,6 +78,8 @@ import org.cytoscape.internal.view.GridViewToggleModel;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
+import org.cytoscape.internal.view.NetworkSearchMediator;
+import org.cytoscape.internal.view.NetworkSearchPanel;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -141,6 +143,8 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoscapeMenus cytoscapeMenus;
 	private ToolBarEnableUpdater toolBarEnableUpdater;
 	
+	private NetworkSearchPanel netSearchPanel;
+	private NetworkSearchMediator netSearchMediator;
 	private NetworkMainPanel netMainPanel;
 	private NetworkMediator netMediator;
 	private ViewComparator viewComparator;
@@ -407,7 +411,10 @@ public class CyActivator extends AbstractCyActivator {
 		cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 		toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 		
-		netMainPanel = new NetworkMainPanel(serviceRegistrar);
+		netSearchPanel = new NetworkSearchPanel(serviceRegistrar);
+		netSearchMediator = new NetworkSearchMediator(netSearchPanel, serviceRegistrar);
+		
+		netMainPanel = new NetworkMainPanel(netSearchPanel, serviceRegistrar);
 		netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
 		
 		viewComparator = new ViewComparator(netMainPanel);
