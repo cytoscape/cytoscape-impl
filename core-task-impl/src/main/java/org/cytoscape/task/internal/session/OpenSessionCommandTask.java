@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.session;
 
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -78,6 +79,8 @@ public class OpenSessionCommandTask extends AbstractTask {
 
 	@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
 	public File file;
+	@Tunable(description="URL from which to load the session file:", params="fileCategory=session;input=true")
+	public String url;
 
 	private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();
 	private Set<CyGroup> currentGroupSet = new HashSet<CyGroup>();
@@ -115,10 +118,13 @@ public class OpenSessionCommandTask extends AbstractTask {
 				taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
 				taskMonitor.setProgress(0.0);
 		
-				if (file == null)
-					throw new NullPointerException("No file specified.");
+				if (file == null && (url == null || url.trim().isEmpty()))
+					throw new NullPointerException("No file or URL specified.");
 				
-				reader = readerMgr.getReader(file.toURI(), file.getName());
+				if (file != null)
+					reader = readerMgr.getReader(file.toURI(), file.getName());
+				else
+					reader = readerMgr.getReader(new URI(url.trim()), url);
 				
 				if (reader == null)
 					throw new NullPointerException("Failed to find appropriate reader for file: " + file);
@@ -169,7 +175,8 @@ public class OpenSessionCommandTask extends AbstractTask {
 		if (newSession == null)
 			throw new NullPointerException("Session could not be read for file: " + file);
 
-		sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
+		String fileName = file != null ? file.getAbsolutePath() : new URI(url).getPath().replace("/", "");
+		sessionMgr.setCurrentSession(newSession, fileName);
 		
 		// Set Current network: this is necessary to update GUI.
 		final RenderingEngine<CyNetwork> currentEngine = appManager.getCurrentRenderingEngine();
@@ -178,10 +185,11 @@ public class OpenSessionCommandTask extends AbstractTask {
 			appManager.setCurrentRenderingEngine(currentEngine);
 		
 		taskMonitor.setProgress(1.0);
-		taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");
+		taskMonitor.setStatusMessage("Session file " + fileName + " successfully loaded.");
 		
 		// Add this session file URL as the most recent file.
-		tracker.add(file.toURI().toURL());
+		if (file != null)
+			tracker.add(file.toURI().toURL());
 	}
 		
 	private void disposeCancelledSession() {
