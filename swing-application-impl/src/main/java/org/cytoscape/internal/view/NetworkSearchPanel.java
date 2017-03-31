@@ -15,6 +15,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.net.URL;
@@ -26,17 +31,24 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
+import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -104,9 +116,9 @@ public class NetworkSearchPanel extends JPanel {
 		init();
 		// TODO: remove this test data ============================
 		update(Arrays.asList(new NetworkSearchSource[]{ 
-				new NetworkSearchSource("a", "GeneMANIA", emptyIcon),
-				new NetworkSearchSource("b", "String", emptyIcon),
-				new NetworkSearchSource("c", "Another ONE", emptyIcon),
+				new NetworkSearchSource("a", "GeneMANIA", "Search similar genes in GeneMANIA", emptyIcon),
+				new NetworkSearchSource("b", "String", "Lorem ipsum dolor sit amet", emptyIcon),
+				new NetworkSearchSource("c", "Another ONE", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium", emptyIcon),
 		}));
 	}
 	
@@ -143,8 +155,8 @@ public class NetworkSearchPanel extends JPanel {
 	public void setSelectedSource(NetworkSearchSource selectedSource) {
 		if (selectedSource != this.selectedSource) {
 			this.selectedSource = selectedSource;
-			setEnabled(selectedSource != null);
 			updateSourcesButton();
+			updateSearchEnabled();
 		}
 	}
 	
@@ -194,8 +206,15 @@ public class NetworkSearchPanel extends JPanel {
 			getSourcesButton().setToolTipText("Please select a network source...");
 		}
 		
-		getOptionsButton().setEnabled(!sources.isEmpty());
-		getSearchButton().setEnabled(!sources.isEmpty());
+		getSourcesButton().setEnabled(!sources.isEmpty());
+		getSourcesSelectorButton().setEnabled(!sources.isEmpty());
+	}
+	
+	private void updateSearchEnabled() {
+		boolean enabled = selectedSource != null;
+		getSearchTextField().setEnabled(enabled);
+		getOptionsButton().setEnabled(enabled);
+		getSearchButton().setEnabled(enabled);
 	}
 	
 	private void showSourcesDialog() {
@@ -203,7 +222,9 @@ public class NetworkSearchPanel extends JPanel {
 			return;
 		
 		setEnabled(false); // Disable the search components to prevent accidental repeated clicks
-		disposeSourcesDialog(); // Just to make sure there will never be more than one dialog
+		
+		if (sourcesDialog != null)
+			disposeSourcesDialog(false); // Just to make sure there will never be more than one dialog
 		
 		sourcesDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
 		sourcesDialog.setUndecorated(true);
@@ -212,12 +233,7 @@ public class NetworkSearchPanel extends JPanel {
 		sourcesDialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowDeactivated(WindowEvent e) {
-				disposeSourcesDialog();
-			}
-			@Override
-			public void windowClosed(WindowEvent e) {
-				setSelectedSource(getSourcesPanel().getSourcesList().getSelectedValue());
-				sourcesDialog = null;
+				disposeSourcesDialog(false);
 			}
 		});
 		
@@ -226,14 +242,28 @@ public class NetworkSearchPanel extends JPanel {
 		final Point pt = getSourcesButton().getLocationOnScreen(); 
 		sourcesDialog.setLocation(pt.x, pt.y + getSourcesButton().getHeight());
 		sourcesDialog.pack();
+		
+		int height = Math.min(6, sources.size()) * (ICON_SIZE + 1/*(border width)*/) + 4;
+		getSourcesPanel().getScrollPane().setPreferredSize(
+				new Dimension(getSourcesPanel().getSourcesList().getPreferredSize().width, height));
+		sourcesDialog.pack(); // Pack again?
+		
 		sourcesDialog.setVisible(true);
 		sourcesDialog.requestFocus();
 		getSourcesPanel().getSourcesList().requestFocusInWindow();
 	}
 	
-	private void disposeSourcesDialog() {
-		if (sourcesDialog != null)
+	private void disposeSourcesDialog(boolean commit) {
+		if (sourcesDialog != null) {
+			if (commit && getSourcesPanel().getSourcesList().getSelectedValue() != null)
+				setSelectedSource(getSourcesPanel().getSourcesList().getSelectedValue());
+			
 			sourcesDialog.dispose();
+			sourcesDialog = null;
+			
+			updateSourcesButton();
+			updateSearchEnabled();
+		}
 	}
 
 	private void init() {
@@ -400,6 +430,8 @@ public class NetworkSearchPanel extends JPanel {
 		SourcesPanel() {
 			setLayout(new BorderLayout());
 			add(getScrollPane(), BorderLayout.CENTER);
+			
+			setKeyBindings();
 		}
 		
 		JScrollPane getScrollPane() {
@@ -415,6 +447,60 @@ public class NetworkSearchPanel extends JPanel {
 		JList<NetworkSearchSource> getSourcesList() {
 			if (sourcesList == null) {
 				sourcesList = new JList<>(new DefaultListModel<>());
+				sourcesList.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent e) {
+						disposeSourcesDialog(true);
+					}
+				});
+				sourcesList.addMouseMotionListener(new MouseMotionAdapter() {
+					@Override
+					public void mouseMoved(MouseEvent e) {
+						int index = getSourcesList().locationToIndex(e.getPoint());
+						
+						if (index > -1)
+							getSourcesList().setSelectedIndex(index);
+					}
+				});
+				
+				// Renderer
+				final JPanel cell = new JPanel();
+				cell.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+				
+				final JLabel iconLabel = new JLabel(emptyIcon);
+				
+				final JLabel nameLabel = new JLabel(" --- ");
+				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+				
+				final GroupLayout layout = new GroupLayout(cell);
+				cell.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(true);
+				
+				layout.setHorizontalGroup(layout.createSequentialGroup()
+						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addGap(15)
+				);
+				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(nameLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				);
+				
+				sourcesList.setCellRenderer((JList<? extends NetworkSearchSource> list, NetworkSearchSource value,
+						int index, boolean isSelected, boolean cellHasFocus) -> {
+							iconLabel.setIcon(value.getIcon());
+							nameLabel.setText(value.getName());
+							cell.setToolTipText(value.getDescription());
+							
+							String bg = isSelected ? "Table.selectionBackground" : "Table.background";
+							String fg = isSelected ? "Table.selectionForeground" : "Table.foreground"; 
+							cell.setBackground(UIManager.getColor(bg));
+							nameLabel.setForeground(UIManager.getColor(fg));
+							
+							return cell;
+				});
 			}
 			
 			return sourcesList;
@@ -429,6 +515,40 @@ public class NetworkSearchPanel extends JPanel {
 				model.addElement(src);
 			
 			getSourcesList().setSelectedValue(selectedSource, true);
+		}
+		
+		private void setKeyBindings() {
+			final ActionMap actionMap = getActionMap();
+			final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyAction.VK_ESCAPE);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+			
+			actionMap.put(KeyAction.VK_ESCAPE, new KeyAction(KeyAction.VK_ESCAPE));
+			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
+			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+		}
+
+		private class KeyAction extends AbstractAction {
+
+			final static String VK_ESCAPE = "VK_ESCAPE";
+			final static String VK_ENTER = "VK_ENTER";
+			final static String VK_SPACE = "VK_SPACE";
+			
+			KeyAction(final String actionCommand) {
+				putValue(ACTION_COMMAND_KEY, actionCommand);
+			}
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final String cmd = e.getActionCommand();
+				
+				if (cmd.equals(VK_ESCAPE))
+					disposeSourcesDialog(false);
+				else if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
+					disposeSourcesDialog(true);
+			}
 		}
 	}
 	
@@ -477,7 +597,6 @@ public class NetworkSearchPanel extends JPanel {
 
 		@Override
 		public int getIconHeight() {
-			// TODO Auto-generated method stub
 			return height;
 		}
 	}
