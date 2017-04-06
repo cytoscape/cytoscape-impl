@@ -80,6 +80,8 @@ import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
 import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSearchPanel;
+import org.cytoscape.internal.view.NetworkSearchPanel.AbstractNetworkSearchTaskFactory;
+import org.cytoscape.internal.view.NetworkSearchPanel.NetworkSearchTaskFactory;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -104,8 +106,11 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -116,7 +121,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -368,6 +373,107 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, netMediator, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
+		
+		// TODO: remove this test data and add listeners for Network Search Factories =================================
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("a", "Simple", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("b", "With Options 1", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("c", "With Options 2", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("d", "With Options 3", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("e", "Lorem ipsum dolor sit amet Lorem ipsum dolor sit ABCDEFGHIG ABCDEFGHIG ABCDEFGHIG", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("f", "Dolor Sit Smet", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		{
+			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("g", "Lorem Ipsum", "Lorem ipsum dolor sit amet", null) {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return new TaskIterator(new AbstractTask() {
+						@Override
+						public void run(TaskMonitor tm) throws Exception {
+							// TODO Auto-generated method stub
+						}
+					});
+				}
+			};
+			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+		}
+		// ============================
 		
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		

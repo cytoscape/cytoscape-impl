@@ -22,12 +22,13 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.text.Collator;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -38,6 +39,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -56,6 +58,9 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.Tunable;
 
 /*
  * #%L
@@ -84,24 +89,24 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class NetworkSearchPanel extends JPanel {
 
-	private static final String DEFAULT_SOURCE_PROP_KEY = "networkSearch.defaultSource";
+	private static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	private static final int ICON_SIZE = 32;
 	private static final String DEF_SEARCH_TEXT = "Type your query here...";
 	
-	private JButton sourcesButton;
-	private JButton sourcesSelectorButton;
+	private JButton providersButton;
+	private JButton providerSelectorButton;
 	private JPanel contentPane;
 	private JTextField searchTextField;
 	private JButton optionsButton;
 	private JButton searchButton;
-	private JDialog sourcesDialog;
-	private SourcesPanel sourcesPanel;
+	private JDialog providersDialog;
+	private ProvidersPanel providersPanel;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
 	
-	private final Set<NetworkSearchSource> sources;
-	private NetworkSearchSource defaultSource;
-	private NetworkSearchSource selectedSource;
+	private final Set<NetworkSearchTaskFactory> providers;
+	private NetworkSearchTaskFactory defaultProvider;
+	private NetworkSearchTaskFactory selectedProvider;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -109,65 +114,59 @@ public class NetworkSearchPanel extends JPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final Collator collator = Collator.getInstance();
-		sources = new TreeSet<>((NetworkSearchSource o1, NetworkSearchSource o2) -> {
+		providers = new TreeSet<>((NetworkSearchTaskFactory o1, NetworkSearchTaskFactory o2) -> {
 			return collator.compare(o1.getName(), o2.getName());
 		});
 		
 		init();
-		// TODO: remove this test data ============================
-		update(Arrays.asList(new NetworkSearchSource[]{ 
-				new NetworkSearchSource("a", "GeneMANIA", "Search similar genes in GeneMANIA", emptyIcon),
-				new NetworkSearchSource("b", "String", "Lorem ipsum dolor sit amet", emptyIcon),
-				new NetworkSearchSource("c", "Another ONE", "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium", emptyIcon),
-		}));
 	}
 	
-	public void setDefaultSource(NetworkSearchSource suggestedSource) {
+	public void setDefaultProvider(NetworkSearchTaskFactory suggestedProvider) {
 		Properties props = (Properties) serviceRegistrar
 				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
 		
-		if (suggestedSource == null || !sources.contains(suggestedSource)) {
+		if (suggestedProvider == null || !providers.contains(suggestedProvider)) {
 			// Check if there is a CyProperty for this
-			String id = props.getProperty(DEFAULT_SOURCE_PROP_KEY);
+			String id = props.getProperty(DEFAULT_PROVIDER_PROP_KEY);
 			
 			if (id != null)
-				suggestedSource = getSource(id);
+				suggestedProvider = getProvider(id);
 		}
 		
-		if (suggestedSource != null) {
+		if (suggestedProvider != null) {
 			// Update the CyProperty as well;
-			props.setProperty(DEFAULT_SOURCE_PROP_KEY, suggestedSource.getId());
+			props.setProperty(DEFAULT_PROVIDER_PROP_KEY, suggestedProvider.getId());
 		} else {
-			if (!sources.isEmpty())
-				suggestedSource = sources.iterator().next();
-			// Do not set this source as default in the CyProperty,
+			if (!providers.isEmpty())
+				suggestedProvider = providers.iterator().next();
+			// Do not set this provider as default in the CyProperty,
 			// because it may be provided by an app that is missing right now,
 			// but can be installed later.
 		}
 		
-		defaultSource = suggestedSource;
+		defaultProvider = suggestedProvider;
 	}
 	
-	public NetworkSearchSource getDefaultSource() {
-		return defaultSource;
+	public NetworkSearchTaskFactory getDefaultProvider() {
+		return defaultProvider;
 	}
 	
-	public void setSelectedSource(NetworkSearchSource selectedSource) {
-		if (selectedSource != this.selectedSource) {
-			this.selectedSource = selectedSource;
-			updateSourcesButton();
+	public void setSelectedProvider(NetworkSearchTaskFactory selectedProvider) {
+		if (selectedProvider != this.selectedProvider) {
+			this.selectedProvider = selectedProvider;
+			updateProvidersButton();
 			updateSearchEnabled();
 		}
 	}
 	
-	public NetworkSearchSource getSelectedSource() {
-		return selectedSource;
+	public NetworkSearchTaskFactory getSelectedProvider() {
+		return selectedProvider;
 	}
 	
-	public NetworkSearchSource getSource(String id) {
-		for (NetworkSearchSource src : sources) {
-			if (src.getId().equals(id))
-				return src;
+	public NetworkSearchTaskFactory getProvider(String id) {
+		for (NetworkSearchTaskFactory tf : providers) {
+			if (tf.getId().equals(id))
+				return tf;
 		}
 		
 		return null;
@@ -176,92 +175,87 @@ public class NetworkSearchPanel extends JPanel {
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
-		getSourcesButton().setEnabled(enabled);
-		getSourcesSelectorButton().setEnabled(enabled);
+		getProvidersButton().setEnabled(enabled);
+		getProviderSelectorButton().setEnabled(enabled);
 		getSearchTextField().setEnabled(enabled);
 		getOptionsButton().setEnabled(enabled);
 		getSearchButton().setEnabled(enabled);
 	}
 	
-	void update(Collection<NetworkSearchSource> newSources) {
-		sources.clear();
+	void update(Collection<NetworkSearchTaskFactory> newProviders) {
+		providers.clear();
 		
-		if (newSources != null)
-			sources.addAll(newSources);
+		if (newProviders != null)
+			providers.addAll(newProviders);
 		
-		setDefaultSource(defaultSource);
+		setDefaultProvider(defaultProvider);
 		
-		if (selectedSource != null && sources.contains(selectedSource))
-			setSelectedSource(selectedSource);
+		if (selectedProvider != null && providers.contains(selectedProvider))
+			setSelectedProvider(selectedProvider);
 		else
-			setSelectedSource(defaultSource);
+			setSelectedProvider(defaultProvider);
 	}
 	
-	private void updateSourcesButton() {
-		if (selectedSource != null) {
-			getSourcesButton().setIcon(selectedSource.getIcon());
-			getSourcesButton().setToolTipText(selectedSource.getName());
+	private void updateProvidersButton() {
+		if (selectedProvider != null) {
+			getProvidersButton().setIcon(selectedProvider.getIcon());
+			getProvidersButton().setToolTipText(selectedProvider.getName());
 		} else {
-			getSourcesButton().setIcon(emptyIcon);
-			getSourcesButton().setToolTipText("Please select a network source...");
+			getProvidersButton().setIcon(emptyIcon);
+			getProvidersButton().setToolTipText("Please select a search provider...");
 		}
 		
-		getSourcesButton().setEnabled(!sources.isEmpty());
-		getSourcesSelectorButton().setEnabled(!sources.isEmpty());
+		getProvidersButton().setEnabled(!providers.isEmpty());
+		getProviderSelectorButton().setEnabled(!providers.isEmpty());
 	}
 	
 	private void updateSearchEnabled() {
-		boolean enabled = selectedSource != null;
+		boolean enabled = selectedProvider != null;
 		getSearchTextField().setEnabled(enabled);
 		getOptionsButton().setEnabled(enabled);
 		getSearchButton().setEnabled(enabled);
 	}
 	
-	private void showSourcesDialog() {
-		if (sources.isEmpty())
+	private void showProvidersDialog() {
+		if (providers.isEmpty())
 			return;
 		
 		setEnabled(false); // Disable the search components to prevent accidental repeated clicks
 		
-		if (sourcesDialog != null)
-			disposeSourcesDialog(false); // Just to make sure there will never be more than one dialog
+		if (providersDialog != null)
+			disposeProvidersDialog(false); // Just to make sure there will never be more than one dialog
 		
-		sourcesDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
-		sourcesDialog.setUndecorated(true);
-		sourcesDialog.setBackground(getBackground());
-		sourcesDialog.getContentPane().add(getSourcesPanel(), BorderLayout.CENTER);
-		sourcesDialog.addWindowListener(new WindowAdapter() {
+		providersDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
+		providersDialog.setUndecorated(true);
+		providersDialog.setBackground(getBackground());
+		providersDialog.getContentPane().add(getProvidersPanel(), BorderLayout.CENTER);
+		providersDialog.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowDeactivated(WindowEvent e) {
-				disposeSourcesDialog(false);
+				disposeProvidersDialog(false);
 			}
 		});
 		
-		getSourcesPanel().update();
+		getProvidersPanel().update();
+		providersDialog.pack();
 		
-		final Point pt = getSourcesButton().getLocationOnScreen(); 
-		sourcesDialog.setLocation(pt.x, pt.y + getSourcesButton().getHeight());
-		sourcesDialog.pack();
+		final Point pt = getProvidersButton().getLocationOnScreen(); 
+		providersDialog.setLocation(pt.x, pt.y + getProvidersButton().getHeight());
 		
-		int height = Math.min(6, sources.size()) * (ICON_SIZE + 1/*(border width)*/) + 4;
-		getSourcesPanel().getScrollPane().setPreferredSize(
-				new Dimension(getSourcesPanel().getSourcesList().getPreferredSize().width, height));
-		sourcesDialog.pack(); // Pack again?
-		
-		sourcesDialog.setVisible(true);
-		sourcesDialog.requestFocus();
-		getSourcesPanel().getSourcesList().requestFocusInWindow();
+		providersDialog.setVisible(true);
+		providersDialog.requestFocus();
+		getProvidersPanel().getProvidersList().requestFocusInWindow();
 	}
 	
-	private void disposeSourcesDialog(boolean commit) {
-		if (sourcesDialog != null) {
-			if (commit && getSourcesPanel().getSourcesList().getSelectedValue() != null)
-				setSelectedSource(getSourcesPanel().getSourcesList().getSelectedValue());
+	private void disposeProvidersDialog(boolean commit) {
+		if (providersDialog != null) {
+			if (commit && getProvidersPanel().getProvidersList().getSelectedValue() != null)
+				setSelectedProvider(getProvidersPanel().getProvidersList().getSelectedValue());
 			
-			sourcesDialog.dispose();
-			sourcesDialog = null;
+			providersDialog.dispose();
+			providersDialog = null;
 			
-			updateSourcesButton();
+			updateProvidersButton();
 			updateSearchEnabled();
 		}
 	}
@@ -279,14 +273,14 @@ public class NetworkSearchPanel extends JPanel {
 		layout.setAutoCreateGaps(false);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(getSourcesButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(getSourcesSelectorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getProvidersButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getProviderSelectorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getContentPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getSearchButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-				.addComponent(getSourcesButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getSourcesSelectorButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getProvidersButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getProviderSelectorButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getContentPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getSearchButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
@@ -294,30 +288,30 @@ public class NetworkSearchPanel extends JPanel {
 		update(Collections.emptyList());
 	}
 	
-	JButton getSourcesButton() {
-		if (sourcesButton == null) {
-			sourcesButton = new JButton(emptyIcon);
-			styleButton(sourcesButton, ICON_SIZE, sourcesButton.getFont());
-			sourcesButton.addActionListener(evt -> {
-				showSourcesDialog();
+	JButton getProvidersButton() {
+		if (providersButton == null) {
+			providersButton = new JButton(emptyIcon);
+			styleButton(providersButton, ICON_SIZE, providersButton.getFont());
+			providersButton.addActionListener(evt -> {
+				showProvidersDialog();
 			});
-			updateSourcesButton();
+			updateProvidersButton();
 		}
 		
-		return sourcesButton;
+		return providersButton;
 	}
 	
-	JButton getSourcesSelectorButton() {
-		if (sourcesSelectorButton == null) {
-			sourcesSelectorButton = new JButton(IconManager.ICON_SORT_DOWN);
-			sourcesSelectorButton.setToolTipText("Click to select a network source...");
-			styleButton(sourcesSelectorButton, 12, serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
-			sourcesSelectorButton.addActionListener(evt -> {
-				getSourcesButton().doClick();
+	JButton getProviderSelectorButton() {
+		if (providerSelectorButton == null) {
+			providerSelectorButton = new JButton(IconManager.ICON_SORT_DOWN);
+			providerSelectorButton.setToolTipText("Click to select a search provider...");
+			styleButton(providerSelectorButton, 12, serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			providerSelectorButton.addActionListener(evt -> {
+				getProvidersButton().doClick();
 			});
 		}
 		
-		return sourcesSelectorButton;
+		return providerSelectorButton;
 	}
 	
 	JPanel getContentPane() {
@@ -404,12 +398,12 @@ public class NetworkSearchPanel extends JPanel {
 		return searchButton;
 	}
 	
-	SourcesPanel getSourcesPanel() {
-		if (sourcesPanel == null) {
-			sourcesPanel = new SourcesPanel();
+	ProvidersPanel getProvidersPanel() {
+		if (providersPanel == null) {
+			providersPanel = new ProvidersPanel();
 		}
 		
-		return sourcesPanel;
+		return providersPanel;
 	}
 	
 	private void styleButton(AbstractButton btn, int width, Font font) {
@@ -422,12 +416,12 @@ public class NetworkSearchPanel extends JPanel {
 		btn.setPreferredSize(d);
 	}
 	
-	class SourcesPanel extends JPanel {
+	class ProvidersPanel extends JPanel {
 		
 		private JScrollPane scrollPane;
-		private JList<NetworkSearchSource> sourcesList;
+		private JList<NetworkSearchTaskFactory> providersList;
 		
-		SourcesPanel() {
+		ProvidersPanel() {
 			setLayout(new BorderLayout());
 			add(getScrollPane(), BorderLayout.CENTER);
 			
@@ -436,7 +430,7 @@ public class NetworkSearchPanel extends JPanel {
 		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getSourcesList());
+				scrollPane = new JScrollPane(getProvidersList());
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			}
@@ -444,22 +438,23 @@ public class NetworkSearchPanel extends JPanel {
 			return scrollPane;
 		}
 		
-		JList<NetworkSearchSource> getSourcesList() {
-			if (sourcesList == null) {
-				sourcesList = new JList<>(new DefaultListModel<>());
-				sourcesList.addMouseListener(new MouseAdapter() {
+		JList<NetworkSearchTaskFactory> getProvidersList() {
+			if (providersList == null) {
+				providersList = new JList<>(new DefaultListModel<>());
+				
+				providersList.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						disposeSourcesDialog(true);
+						disposeProvidersDialog(true);
 					}
 				});
-				sourcesList.addMouseMotionListener(new MouseMotionAdapter() {
+				providersList.addMouseMotionListener(new MouseMotionAdapter() {
 					@Override
 					public void mouseMoved(MouseEvent e) {
-						int index = getSourcesList().locationToIndex(e.getPoint());
+						int index = getProvidersList().locationToIndex(e.getPoint());
 						
 						if (index > -1)
-							getSourcesList().setSelectedIndex(index);
+							getProvidersList().setSelectedIndex(index);
 					}
 				});
 				
@@ -480,15 +475,15 @@ public class NetworkSearchPanel extends JPanel {
 				layout.setHorizontalGroup(layout.createSequentialGroup()
 						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
-						.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGap(15)
+						.addComponent(nameLabel, 120, PREFERRED_SIZE, 380)
+						.addGap(10)
 				);
 				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(nameLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				);
 				
-				sourcesList.setCellRenderer((JList<? extends NetworkSearchSource> list, NetworkSearchSource value,
+				providersList.setCellRenderer((JList<? extends NetworkSearchTaskFactory> list, NetworkSearchTaskFactory value,
 						int index, boolean isSelected, boolean cellHasFocus) -> {
 							iconLabel.setIcon(value.getIcon());
 							nameLabel.setText(value.getName());
@@ -499,22 +494,25 @@ public class NetworkSearchPanel extends JPanel {
 							cell.setBackground(UIManager.getColor(bg));
 							nameLabel.setForeground(UIManager.getColor(fg));
 							
+							cell.revalidate();
+							
 							return cell;
 				});
 			}
 			
-			return sourcesList;
+			return providersList;
 		}
 		
 		void update() {
-			DefaultListModel<NetworkSearchSource> model =
-					(DefaultListModel<NetworkSearchSource>) getSourcesList().getModel();
+			DefaultListModel<NetworkSearchTaskFactory> model =
+					(DefaultListModel<NetworkSearchTaskFactory>) getProvidersList().getModel();
 			model.removeAllElements();
 			
-			for (NetworkSearchSource src : sources)
-				model.addElement(src);
+			for (NetworkSearchTaskFactory tf : providers)
+				model.addElement(tf);
 			
-			getSourcesList().setSelectedValue(selectedSource, true);
+			getProvidersList().setSelectedValue(selectedProvider, true);
+			getProvidersList().setVisibleRowCount(Math.min(10, providers.size()));
 		}
 		
 		private void setKeyBindings() {
@@ -545,9 +543,9 @@ public class NetworkSearchPanel extends JPanel {
 				final String cmd = e.getActionCommand();
 				
 				if (cmd.equals(VK_ESCAPE))
-					disposeSourcesDialog(false);
+					disposeProvidersDialog(false);
 				else if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
-					disposeSourcesDialog(true);
+					disposeProvidersDialog(true);
 			}
 		}
 	}
@@ -602,8 +600,61 @@ public class NetworkSearchPanel extends JPanel {
 	}
 	
 	// =================================================================================================================
-	// TODO Make it API
-	public static final class NetworkSearchSource {
+	/**
+	 * Task Factory that haver to be implemented in order to create and register a Network Search provider.
+	 */
+	public static interface NetworkSearchTaskFactory extends TaskFactory {
+		
+		/**
+		 * Returns the unique id of this network search provider.
+		 * Use namespaces to make sure it is unique (e.g. "org.myCompany.mySearch").
+		 * @return A unique id for this search provider.
+		 */
+		String getId();
+		
+		/**
+		 * A short name to be displayed to the user.
+		 * @return The name of this search provider.
+		 */
+		String getName();
+
+		/**
+		 * An optional short text describing what this search provider does.
+		 * @return A text that describes this search provider, which can be null.
+		 */
+		String getDescription();
+		
+		/**
+		 * An icon that represents this search provider.
+		 * @return If null, Cytoscape may provide a default or random icon for this search provider.
+		 */
+		Icon getIcon();
+		
+		/**
+		 * An optional URL the user can use to find more information about this search provider.
+		 * @return A URL to a website, which can be null.
+		 */
+		URL getWebsite();
+
+		/**
+		 * @return If null, Cytoscape will create a basic search field for you.
+		 */
+		JComponent createQueryComponent();
+		
+		/**
+		 * @return If null, extra search options will not be available to the end user.
+		 */
+		JComponent createOptionsComponent();
+	}
+	
+	// TODO: Think about commands--use tunables for options
+	public static abstract class AbstractNetworkSearchTaskFactory extends AbstractTaskFactory
+			implements NetworkSearchTaskFactory {
+		
+		// TODO For Commands, Tunables go into Tasks?
+		// TODO Use conventions? e.g. 'query' (type String) creates a standard JTextField unless createQueryComponent() returns not null
+		@Tunable(description = "Search Query:")
+		public String query;
 		
 		private final String id;
 		private final String name;
@@ -611,49 +662,71 @@ public class NetworkSearchPanel extends JPanel {
 		private final Icon icon;
 		private final URL website;
 		
-		public NetworkSearchSource(String id, String name, Icon icon) {
+		protected AbstractNetworkSearchTaskFactory(String id, String name, Icon icon) {
 			this(id, name, null, icon, null);
 		}
 		
-		public NetworkSearchSource(String id, String name, String description, Icon icon) {
+		protected AbstractNetworkSearchTaskFactory(String id, String name, String description, Icon icon) {
 			this(id, name, description, icon, null);
 		}
 		
-		public NetworkSearchSource(String id, String name, String description, Icon icon, URL website) {
+		protected AbstractNetworkSearchTaskFactory(String id, String name, String description, Icon icon, URL website) {
 			if (id == null || id.trim().isEmpty())
 				throw new IllegalArgumentException("'id' must not be null or blank.");
 			if (name == null || name.trim().isEmpty())
 				throw new IllegalArgumentException("'name' must not be null or blank.");
-			if (icon == null)
-				throw new IllegalArgumentException("'icon' must not be null.");
 			
 			this.id = id;
 			this.name = name;
 			this.description = description;
-			this.icon = icon;
+			this.icon = icon != null ? icon : new ImageIcon(new RandomImage(ICON_SIZE, ICON_SIZE));
 			this.website = website;
 		}
-
+		
+		@Override
 		public String getId() {
 			return id;
 		}
 
+		@Override
 		public String getName() {
 			return name;
 		}
 
+		@Override
 		public String getDescription() {
 			return description;
 		}
 
+		@Override
 		public Icon getIcon() {
 			return icon;
 		}
 
+		@Override
 		public URL getWebsite() {
 			return website;
 		}
-
+		
+		public String getQuery() {
+			return query;
+		}
+		
+		@Override
+		public JComponent createQueryComponent() {
+			return null;
+		}
+		
+		@Override
+		public JComponent createOptionsComponent() {
+			return null;
+		}
+		
+		@Override
+		public boolean isReady() {
+			return query != null && !query.trim().isEmpty();
+		}
+		
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -670,18 +743,89 @@ public class NetworkSearchPanel extends JPanel {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			NetworkSearchSource other = (NetworkSearchSource) obj;
+			AbstractNetworkSearchTaskFactory other = (AbstractNetworkSearchTaskFactory) obj;
 			if (id == null) {
 				if (other.id != null)
 					return false;
-			} else if (!id.equals(other.id))
+			} else if (!id.equals(other.id)) {
 				return false;
+			}
 			return true;
 		}
-		
+
 		@Override
 		public String toString() {
 			return name;
+		}
+		
+		private class RandomImage extends BufferedImage {
+
+			private final int grain = 5;
+			private final int colorRange = 5;
+			private final Color[] colors = new Color[grain];
+			
+			public RandomImage(int width, int height) {
+				super(width, height, BufferedImage.TYPE_INT_ARGB);
+				draw();
+			}
+			
+			private void draw() {
+				int w = getWidth();
+				int h = getHeight();
+				
+				Graphics2D g2 = (Graphics2D) getGraphics();
+				g2.setRenderingHints(new RenderingHints(RenderingHints.KEY_TEXT_ANTIALIASING,
+						RenderingHints.VALUE_TEXT_ANTIALIAS_ON));
+
+				int max = 200, min = 100;
+				
+				Color color = randomColor();
+				int red = color.getRed();
+				int green = color.getGreen();
+				int blue = color.getBlue();
+				
+				double blockout = Math.random();
+				int x = 0, y = 0;
+				
+				for (int i = 0; i < grain; i++) {
+					for (int j = 0; j < grain; j++) {
+						if (blockout < 0.4) {
+							g2.fillRect(x, y, w / grain, h / grain);
+							g2.fillRect(w - x - w / grain, y, w / grain, h / grain);
+							x += w / grain;
+						} else {
+							if (colors.length > j)
+							
+							red -= colorRange;
+							red = Math.min(max, Math.max(red, min));
+							
+							green += colorRange;
+							green = Math.min(max, Math.max(green, min));
+							
+							blue += colorRange;
+							blue = Math.min(max, Math.max(blue, min));
+							
+							g2.setColor(new Color(red, green, blue));
+							x += w / grain;
+						}
+						
+						blockout = Math.random();
+					}
+					
+					y += h / grain;
+					x = 0;
+				}
+			}
+			
+			private Color randomColor() {
+				// Get rainbow, pastel colors
+				Random random = new Random();
+				final float hue = random.nextFloat();
+				final float saturation = 0.9f;// 1.0 for brilliant, 0.0 for dull
+				final float luminance = 1.0f; // 1.0 for brighter, 0.0 for black
+				
+				return Color.getHSBColor(hue, saturation, luminance);
+			}
 		}
 	}
 }

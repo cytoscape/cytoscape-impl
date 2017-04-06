@@ -1,5 +1,9 @@
 package org.cytoscape.internal.view;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.internal.view.NetworkSearchPanel.NetworkSearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
@@ -28,6 +32,8 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class NetworkSearchMediator {
 
+	private final Map<String, NetworkSearchTaskFactory> taskFactories = new HashMap<>();
+	
 	private final NetworkSearchPanel networkSearchPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -38,5 +44,21 @@ public class NetworkSearchMediator {
 	
 	public NetworkSearchPanel getNetworkSearchPanel() {
 		return networkSearchPanel;
+	}
+	
+	public void addNetworkSearchTaskFactory(NetworkSearchTaskFactory factory, Map<?, ?> properties) {
+		if (factory.getId() != null && !factory.getId().trim().isEmpty()) {
+			taskFactories.put(factory.getId(), factory);
+			updateSearchPanel();
+		}
+	}
+	
+	public void removeNetworkSearchTaskFactory(NetworkSearchTaskFactory factory, Map<?, ?> properties) {
+		if (factory.getId() != null && taskFactories.remove(factory.getId(), factory))
+			updateSearchPanel();
+	}
+	
+	private void updateSearchPanel() {
+		networkSearchPanel.update(taskFactories.values());
 	}
 }
