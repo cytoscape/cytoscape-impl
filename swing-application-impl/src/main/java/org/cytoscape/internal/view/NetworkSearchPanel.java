@@ -46,7 +46,10 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -93,8 +96,11 @@ public class NetworkSearchPanel extends JPanel {
 	private JTextField searchTextField;
 	private JButton optionsButton;
 	private JButton searchButton;
+	
 	private JPopupMenu providersPopup;
 	private ProvidersPanel providersPanel;
+	
+	private JPopupMenu optionsPopup;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
 	
@@ -148,7 +154,12 @@ public class NetworkSearchPanel extends JPanel {
 	public void setSelectedProvider(NetworkSearchTaskFactory selectedProvider) {
 		if (selectedProvider != this.selectedProvider) {
 			this.selectedProvider = selectedProvider;
+			
+			if (selectedProvider != null)
+				updateSelectedProvider();
+			
 			updateProvidersButton();
+			updateOptionsButton();
 			updateSearchEnabled();
 		}
 	}
@@ -174,6 +185,13 @@ public class NetworkSearchPanel extends JPanel {
 		getSearchTextField().setEnabled(enabled);
 		getOptionsButton().setEnabled(enabled);
 		getSearchButton().setEnabled(enabled);
+	}
+	
+	void updateSelectedProvider() {
+		if (selectedProvider instanceof AbstractNetworkSearchTaskFactory) {
+			// TODO only if the TaskFactory did not provide its own query component!
+			((AbstractNetworkSearchTaskFactory) selectedProvider).query = getSearchTextField().getText().trim();
+		}
 	}
 	
 	void update(Collection<NetworkSearchTaskFactory> newProviders) {
@@ -207,7 +225,15 @@ public class NetworkSearchPanel extends JPanel {
 		boolean enabled = selectedProvider != null;
 		getSearchTextField().setEnabled(enabled);
 		getOptionsButton().setEnabled(enabled);
-		getSearchButton().setEnabled(enabled);
+		updateSearchButton();
+	}
+	
+	private void updateOptionsButton() {
+		getOptionsButton().setVisible(selectedProvider != null && selectedProvider.getOptionsComponent() != null);
+	}
+	
+	private void updateSearchButton() {
+		getSearchButton().setEnabled(selectedProvider != null && selectedProvider.isReady());
 	}
 	
 	private void showProvidersPopup() {
@@ -250,6 +276,49 @@ public class NetworkSearchPanel extends JPanel {
 			providersPopup = null;
 		}
 	}
+	
+	private void showOptionsPopup() {
+		if (selectedProvider == null)
+			return;
+		
+		JComponent comp = selectedProvider.getOptionsComponent();
+		
+		if (comp == null)
+			return;
+		
+//		setEnabled(false); // Disable the search components to prevent accidental repeated clicks
+		
+		if (optionsPopup != null)
+			disposeOptionsPopup(); // Just to make sure there will never be more than one dialog
+		
+		optionsPopup = new JPopupMenu();
+		optionsPopup.setBackground(getBackground());
+		optionsPopup.setBorder(BorderFactory.createEmptyBorder());
+		
+		optionsPopup.setLayout(new BorderLayout());
+		optionsPopup.add(comp, BorderLayout.CENTER);
+		
+		optionsPopup.addPropertyChangeListener("visible", evt -> {
+			if (evt.getNewValue() == Boolean.FALSE) {
+//				updateProvidersButton();
+//				updateSearchEnabled();
+			}
+		});
+		
+//		getProvidersPanel().update();
+		
+		optionsPopup.pack();
+		optionsPopup.show(getOptionsButton(), 0, getOptionsButton().getHeight());
+		optionsPopup.requestFocus();
+//		getProvidersPanel().getProvidersList().requestFocusInWindow();
+	}
+	
+	private void disposeOptionsPopup() {
+		if (optionsPopup != null) {
+			optionsPopup.setVisible(false);
+			optionsPopup = null;
+		}
+	}
 
 	private void init() {
 		setBackground(UIManager.getColor("Table.background"));
@@ -282,7 +351,7 @@ public class NetworkSearchPanel extends JPanel {
 	JButton getProvidersButton() {
 		if (providersButton == null) {
 			providersButton = new JButton(emptyIcon);
-			styleButton(providersButton, ICON_SIZE, providersButton.getFont());
+			styleButton(providersButton, ICON_SIZE, providersButton.getFont(), -1);
 			providersButton.addActionListener(evt -> {
 				showProvidersPopup();
 			});
@@ -296,7 +365,8 @@ public class NetworkSearchPanel extends JPanel {
 		if (providerSelectorButton == null) {
 			providerSelectorButton = new JButton(IconManager.ICON_SORT_DOWN);
 			providerSelectorButton.setToolTipText("Click to select a search provider...");
-			styleButton(providerSelectorButton, 12, serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			styleButton(providerSelectorButton, 12, serviceRegistrar.getService(IconManager.class).getIconFont(10.0f),
+					SwingConstants.RIGHT);
 			providerSelectorButton.addActionListener(evt -> {
 				getProvidersButton().doClick();
 			});
@@ -359,11 +429,24 @@ public class NetworkSearchPanel extends JPanel {
 				}
 			};
 			searchTextField.setMinimumSize(searchTextField.getPreferredSize());
-			searchTextField.setBorder(BorderFactory.createCompoundBorder(
-					BorderFactory.createMatteBorder(0, 1, 0, 1, UIManager.getColor("Separator.foreground")),
-					BorderFactory.createEmptyBorder(1, hgap-1, 1, hgap-1)
-			));
+			searchTextField.setBorder(BorderFactory.createEmptyBorder(1, hgap, 1, hgap));
 			searchTextField.setFont(searchTextField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			searchTextField.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateSelectedProvider();
+					updateSearchButton();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateSelectedProvider();
+					updateSearchButton();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					// Nothing to do here...
+				}
+			});
 		}
 		
 		return searchTextField;
@@ -372,7 +455,12 @@ public class NetworkSearchPanel extends JPanel {
 	JButton getOptionsButton() {
 		if (optionsButton == null) {
 			optionsButton = new JButton(IconManager.ICON_ELLIPSIS_V);
-			styleButton(optionsButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
+			optionsButton.setToolTipText("More Options...");
+			styleButton(optionsButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(16.0f),
+					SwingConstants.LEFT);
+			optionsButton.addActionListener(evt -> {
+				showOptionsPopup();
+			});
 		}
 		
 		return optionsButton;
@@ -381,7 +469,8 @@ public class NetworkSearchPanel extends JPanel {
 	JButton getSearchButton() {
 		if (searchButton == null) {
 			searchButton = new JButton(IconManager.ICON_SEARCH);
-			styleButton(searchButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
+			styleButton(searchButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(16.0f),
+					SwingConstants.LEFT);
 			searchButton.setBorder(
 					BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground")));
 		}
@@ -397,10 +486,24 @@ public class NetworkSearchPanel extends JPanel {
 		return providersPanel;
 	}
 	
-	private void styleButton(AbstractButton btn, int width, Font font) {
+	private void styleButton(AbstractButton btn, int width, Font font, int borderSide) {
 		btn.setFont(font);
-		btn.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		btn.setContentAreaFilled(false);
+		
+		if (borderSide == SwingConstants.LEFT)
+			btn.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(1, 0, 1, 1),
+					BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground"))
+					
+			));
+		else if (borderSide == SwingConstants.RIGHT)
+			btn.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(1, 1, 1, 0),
+					BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground"))
+					
+			));
+		else
+			btn.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		
 		Dimension d = new Dimension(width, getSearchTextField().getPreferredSize().height);
 		btn.setMinimumSize(d);
@@ -628,12 +731,12 @@ public class NetworkSearchPanel extends JPanel {
 		/**
 		 * @return If null, Cytoscape will create a basic search field for you.
 		 */
-		JComponent createQueryComponent();
+		JComponent getQueryComponent();
 		
 		/**
 		 * @return If null, extra search options will not be available to the end user.
 		 */
-		JComponent createOptionsComponent();
+		JComponent getOptionsComponent();
 	}
 	
 	// TODO: Think about commands--use tunables for options
@@ -702,12 +805,12 @@ public class NetworkSearchPanel extends JPanel {
 		}
 		
 		@Override
-		public JComponent createQueryComponent() {
+		public JComponent getQueryComponent() {
 			return null;
 		}
 		
 		@Override
-		public JComponent createOptionsComponent() {
+		public JComponent getOptionsComponent() {
 			return null;
 		}
 		

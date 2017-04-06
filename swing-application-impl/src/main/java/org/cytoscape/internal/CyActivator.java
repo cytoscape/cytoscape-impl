@@ -25,7 +25,11 @@ import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -382,7 +386,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
@@ -396,10 +400,14 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
+				@Override
+				public JComponent getOptionsComponent() {
+					return new JCheckBox("Lorem ipsum dolor");
+				};
 			};
 			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
 		}
@@ -410,10 +418,14 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
+				@Override
+				public JComponent getOptionsComponent() {
+					return new JCheckBox("Dolor sit amet");
+				};
 			};
 			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
 		}
@@ -424,7 +436,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
@@ -438,7 +450,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
@@ -452,10 +464,14 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}
+				@Override
+				public JComponent getOptionsComponent() {
+					return new JScrollPane(new JTextArea());
+				};
 			};
 			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
 		}
@@ -466,7 +482,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new TaskIterator(new AbstractTask() {
 						@Override
 						public void run(TaskMonitor tm) throws Exception {
-							// TODO Auto-generated method stub
+							System.out.println("=> Network Search Provider: " + getName());
 						}
 					});
 				}

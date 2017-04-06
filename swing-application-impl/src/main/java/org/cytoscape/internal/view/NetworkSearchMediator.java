@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.cytoscape.internal.view.NetworkSearchPanel.NetworkSearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
  * #%L
@@ -40,8 +41,15 @@ public class NetworkSearchMediator {
 	public NetworkSearchMediator(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
 		this.networkSearchPanel = networkSearchPanel;
 		this.serviceRegistrar = serviceRegistrar;
+		
+		networkSearchPanel.getSearchTextField().addActionListener(evt -> {
+			runSearch();
+		});
+		networkSearchPanel.getSearchButton().addActionListener(evt -> {
+			runSearch();
+		});
 	}
-	
+
 	public NetworkSearchPanel getNetworkSearchPanel() {
 		return networkSearchPanel;
 	}
@@ -60,5 +68,12 @@ public class NetworkSearchMediator {
 	
 	private void updateSearchPanel() {
 		networkSearchPanel.update(taskFactories.values());
+	}
+	
+	private void runSearch() {
+		NetworkSearchTaskFactory tf = networkSearchPanel.getSelectedProvider();
+		
+		if (tf != null && tf.isReady())
+			serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator());
 	}
 }
