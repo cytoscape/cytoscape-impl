@@ -7,21 +7,17 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.net.URL;
 import java.text.Collator;
@@ -43,15 +39,13 @@ import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.property.CyProperty;
@@ -99,7 +93,7 @@ public class NetworkSearchPanel extends JPanel {
 	private JTextField searchTextField;
 	private JButton optionsButton;
 	private JButton searchButton;
-	private JDialog providersDialog;
+	private JPopupMenu providersPopup;
 	private ProvidersPanel providersPanel;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
@@ -216,47 +210,44 @@ public class NetworkSearchPanel extends JPanel {
 		getSearchButton().setEnabled(enabled);
 	}
 	
-	private void showProvidersDialog() {
+	private void showProvidersPopup() {
 		if (providers.isEmpty())
 			return;
 		
 		setEnabled(false); // Disable the search components to prevent accidental repeated clicks
 		
-		if (providersDialog != null)
-			disposeProvidersDialog(false); // Just to make sure there will never be more than one dialog
+		if (providersPopup != null)
+			disposeProvidersPopup(false); // Just to make sure there will never be more than one dialog
 		
-		providersDialog = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
-		providersDialog.setUndecorated(true);
-		providersDialog.setBackground(getBackground());
-		providersDialog.getContentPane().add(getProvidersPanel(), BorderLayout.CENTER);
-		providersDialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-				disposeProvidersDialog(false);
+		providersPopup = new JPopupMenu();
+		providersPopup.setBackground(getBackground());
+		providersPopup.setBorder(BorderFactory.createEmptyBorder());
+		
+		providersPopup.setLayout(new BorderLayout());
+		providersPopup.add(getProvidersPanel(), BorderLayout.CENTER);
+		
+		providersPopup.addPropertyChangeListener("visible", evt -> {
+			if (evt.getNewValue() == Boolean.FALSE) {
+				updateProvidersButton();
+				updateSearchEnabled();
 			}
 		});
 		
 		getProvidersPanel().update();
-		providersDialog.pack();
 		
-		final Point pt = getProvidersButton().getLocationOnScreen(); 
-		providersDialog.setLocation(pt.x, pt.y + getProvidersButton().getHeight());
-		
-		providersDialog.setVisible(true);
-		providersDialog.requestFocus();
+		providersPopup.pack();
+		providersPopup.show(getProvidersButton(), 0, getProvidersButton().getHeight());
+		providersPopup.requestFocus();
 		getProvidersPanel().getProvidersList().requestFocusInWindow();
 	}
 	
-	private void disposeProvidersDialog(boolean commit) {
-		if (providersDialog != null) {
+	private void disposeProvidersPopup(boolean commit) {
+		if (providersPopup != null) {
 			if (commit && getProvidersPanel().getProvidersList().getSelectedValue() != null)
 				setSelectedProvider(getProvidersPanel().getProvidersList().getSelectedValue());
 			
-			providersDialog.dispose();
-			providersDialog = null;
-			
-			updateProvidersButton();
-			updateSearchEnabled();
+			providersPopup.setVisible(false);
+			providersPopup = null;
 		}
 	}
 
@@ -293,7 +284,7 @@ public class NetworkSearchPanel extends JPanel {
 			providersButton = new JButton(emptyIcon);
 			styleButton(providersButton, ICON_SIZE, providersButton.getFont());
 			providersButton.addActionListener(evt -> {
-				showProvidersDialog();
+				showProvidersPopup();
 			});
 			updateProvidersButton();
 		}
@@ -445,7 +436,7 @@ public class NetworkSearchPanel extends JPanel {
 				providersList.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						disposeProvidersDialog(true);
+						disposeProvidersPopup(true);
 					}
 				});
 				providersList.addMouseMotionListener(new MouseMotionAdapter() {
@@ -460,7 +451,10 @@ public class NetworkSearchPanel extends JPanel {
 				
 				// Renderer
 				final JPanel cell = new JPanel();
-				cell.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+				cell.setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(1, 1, 0, 1),
+						BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"))
+				));
 				
 				final JLabel iconLabel = new JLabel(emptyIcon);
 				
@@ -470,11 +464,11 @@ public class NetworkSearchPanel extends JPanel {
 				final GroupLayout layout = new GroupLayout(cell);
 				cell.setLayout(layout);
 				layout.setAutoCreateContainerGaps(false);
-				layout.setAutoCreateGaps(true);
+				layout.setAutoCreateGaps(false);
 				
 				layout.setHorizontalGroup(layout.createSequentialGroup()
 						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addGap(10)
 						.addComponent(nameLabel, 120, PREFERRED_SIZE, 380)
 						.addGap(10)
 				);
@@ -519,18 +513,15 @@ public class NetworkSearchPanel extends JPanel {
 			final ActionMap actionMap = getActionMap();
 			final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
 
-			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyAction.VK_ESCAPE);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
 			
-			actionMap.put(KeyAction.VK_ESCAPE, new KeyAction(KeyAction.VK_ESCAPE));
 			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
 			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
 		}
 
 		private class KeyAction extends AbstractAction {
 
-			final static String VK_ESCAPE = "VK_ESCAPE";
 			final static String VK_ENTER = "VK_ENTER";
 			final static String VK_SPACE = "VK_SPACE";
 			
@@ -542,10 +533,8 @@ public class NetworkSearchPanel extends JPanel {
 			public void actionPerformed(final ActionEvent e) {
 				final String cmd = e.getActionCommand();
 				
-				if (cmd.equals(VK_ESCAPE))
-					disposeProvidersDialog(false);
-				else if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
-					disposeProvidersDialog(true);
+				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
+					disposeProvidersPopup(true);
 			}
 		}
 	}
@@ -762,7 +751,6 @@ public class NetworkSearchPanel extends JPanel {
 
 			private final int grain = 5;
 			private final int colorRange = 5;
-			private final Color[] colors = new Color[grain];
 			
 			public RandomImage(int width, int height) {
 				super(width, height, BufferedImage.TYPE_INT_ARGB);
@@ -784,6 +772,8 @@ public class NetworkSearchPanel extends JPanel {
 				int green = color.getGreen();
 				int blue = color.getBlue();
 				
+				g2.setColor(color);
+				
 				double blockout = Math.random();
 				int x = 0, y = 0;
 				
@@ -794,8 +784,6 @@ public class NetworkSearchPanel extends JPanel {
 							g2.fillRect(w - x - w / grain, y, w / grain, h / grain);
 							x += w / grain;
 						} else {
-							if (colors.length > j)
-							
 							red -= colorRange;
 							red = Math.min(max, Math.max(red, min));
 							
