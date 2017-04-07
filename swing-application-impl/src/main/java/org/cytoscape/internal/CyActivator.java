@@ -41,6 +41,8 @@ import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
+import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CreateNetworkViewsAction;
@@ -84,8 +86,6 @@ import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
 import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSearchPanel;
-import org.cytoscape.internal.view.NetworkSearchPanel.AbstractNetworkSearchTaskFactory;
-import org.cytoscape.internal.view.NetworkSearchPanel.NetworkSearchTaskFactory;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -115,6 +115,7 @@ import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -378,9 +379,25 @@ public class CyActivator extends AbstractCyActivator {
 		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
 		
+		registerServiceListener(bc, netSearchMediator, "addNetworkSearchTaskFactory", "removeNetworkSearchTaskFactory",
+								NetworkSearchTaskFactory.class);
+		
 		// TODO: remove this test data and add listeners for Network Search Factories =================================
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("a", "Simple", "Lorem ipsum dolor sit amet", null) {
+				
+				@Tunable(description = "Test String:")
+				public String testString;
+				
+				@Tunable(description = "Test Integer:")
+				public int testInt = 100;
+				
+				@Tunable(description = "Test Float:")
+				public float testFloat = 10.5f;
+				
+				@Tunable(description = "Test Boolean:")
+				public boolean testBoolean = true;
+				
 				@Override
 				public TaskIterator createTaskIterator() {
 					return new TaskIterator(new AbstractTask() {
@@ -391,7 +408,7 @@ public class CyActivator extends AbstractCyActivator {
 					});
 				}
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("b", "With Options 1", "Lorem ipsum dolor sit amet", null) {
@@ -409,7 +426,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new JCheckBox("Lorem ipsum dolor");
 				};
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("c", "With Options 2", "Lorem ipsum dolor sit amet", null) {
@@ -427,7 +444,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new JCheckBox("Dolor sit amet");
 				};
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("d", "With Options 3", "Lorem ipsum dolor sit amet", null) {
@@ -441,7 +458,7 @@ public class CyActivator extends AbstractCyActivator {
 					});
 				}
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("e", "Lorem ipsum dolor sit amet Lorem ipsum dolor sit ABCDEFGHIG ABCDEFGHIG ABCDEFGHIG", "Lorem ipsum dolor sit amet", null) {
@@ -455,7 +472,7 @@ public class CyActivator extends AbstractCyActivator {
 					});
 				}
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("f", "Dolor Sit Smet", "Lorem ipsum dolor sit amet", null) {
@@ -473,7 +490,7 @@ public class CyActivator extends AbstractCyActivator {
 					return new JScrollPane(new JTextArea());
 				};
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		{
 			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("g", "Lorem Ipsum", "Lorem ipsum dolor sit amet", null) {
@@ -487,7 +504,7 @@ public class CyActivator extends AbstractCyActivator {
 					});
 				}
 			};
-			netSearchMediator.addNetworkSearchTaskFactory(taskFactory, null);
+			registerAllServices(bc, taskFactory);
 		}
 		// ============================
 		
