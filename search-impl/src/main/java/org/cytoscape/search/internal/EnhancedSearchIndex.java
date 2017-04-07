@@ -27,6 +27,7 @@ package org.cytoscape.search.internal;
 
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -64,8 +65,8 @@ public class EnhancedSearchIndex {
 	private void BuildIndex(RAMDirectory idx, CyNetwork network) {
 
 		try {
-			// Make a writer to create the index
-			StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30);
+			// Make a writer to create the index, empty set of stop words (redmine #3808)
+			StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30, Collections.emptySet());
 			analyzer.setMaxTokenLength(1024*10);
 			IndexWriter writer = new IndexWriter(idx, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
 
