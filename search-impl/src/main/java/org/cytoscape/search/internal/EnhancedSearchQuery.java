@@ -28,6 +28,8 @@ package org.cytoscape.search.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
@@ -96,7 +98,7 @@ public class EnhancedSearchQuery {
 		// Build a Query object.
 		// CustomMultiFieldQueryParser is used to support range queries on numerical attribute fields.
 		final CustomMultiFieldQueryParser queryParser =
-			new CustomMultiFieldQueryParser(attFields, new StandardAnalyzer(Version.LUCENE_30));
+			new CustomMultiFieldQueryParser(attFields, new StandardAnalyzer(Version.LUCENE_30, Collections.emptySet()));
 
 		try {
 			// Execute query
