@@ -13,6 +13,7 @@ import javax.swing.event.DocumentListener;
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.slf4j.Logger;
@@ -176,7 +177,12 @@ public class NetworkSearchMediator {
 		
 		if (tf != null && tf.isReady()) {
 			DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-			taskManager.execute(tf.createTaskIterator());
+			TaskObserver taskObserver = tf.getTaskObserver();
+			
+			if (taskObserver != null)
+				taskManager.execute(tf.createTaskIterator(), taskObserver);
+			else
+				taskManager.execute(tf.createTaskIterator());
 		}
 	}
 }
