@@ -127,7 +127,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.fileType = fileType;
 		this.inputName = inputName;
 		this.isStart = is;
-		
+
+
 		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, serviceRegistrar.getService(IconManager.class));
 				
 		try {
@@ -157,7 +158,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		}
 		
 		List<String> tempList = new ArrayList<>();
-		tempList.add(TextDelimiter.TAB.getDelimiter());
+		if (fileType.equals(".csv"))
+			tempList.add(TextDelimiter.COMMA.getDelimiter());
+		else
+			tempList.add(TextDelimiter.TAB.getDelimiter());
 		delimiters.setSelectedValues(tempList);
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}
