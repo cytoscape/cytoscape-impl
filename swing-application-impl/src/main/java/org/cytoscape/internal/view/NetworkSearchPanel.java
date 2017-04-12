@@ -365,6 +365,7 @@ public class NetworkSearchPanel extends JPanel {
 	JTextField getSearchTextField() {
 		if (searchTextField == null) {
 			final Color msgColor = UIManager.getColor("Label.disabledForeground");
+			final int vgap = 1;
 			final int hgap = 5;
 			
 			searchTextField = new JTextField() {
@@ -384,7 +385,7 @@ public class NetworkSearchPanel extends JPanel {
 					    // Determine the X coordinate for the text
 					    int x = hgap;
 					    // Determine the Y coordinate for the text (note we add the ascent, as in java 2d 0 is top of the screen)
-					    int y = metrics.getHeight() / 2 + metrics.getAscent();
+					    int y = (metrics.getHeight() / 2) + metrics.getAscent() + vgap;
 						// Draw
 						g2.setColor(msgColor);
 						g2.drawString(DEF_SEARCH_TEXT, x, y);
@@ -393,7 +394,7 @@ public class NetworkSearchPanel extends JPanel {
 				}
 			};
 			searchTextField.setMinimumSize(searchTextField.getPreferredSize());
-			searchTextField.setBorder(BorderFactory.createEmptyBorder(1, hgap, 1, hgap));
+			searchTextField.setBorder(BorderFactory.createEmptyBorder(vgap, hgap, vgap, hgap));
 			searchTextField.setFont(searchTextField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		}
 		
@@ -450,7 +451,7 @@ public class NetworkSearchPanel extends JPanel {
 		else
 			btn.setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
 		
-		Dimension d = new Dimension(width, getSearchTextField().getPreferredSize().height);
+		Dimension d = new Dimension(width, Math.max(width, getSearchTextField().getPreferredSize().height));
 		btn.setMinimumSize(d);
 		btn.setPreferredSize(d);
 	}
