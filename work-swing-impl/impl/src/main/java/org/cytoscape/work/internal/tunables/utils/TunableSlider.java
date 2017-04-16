@@ -132,7 +132,8 @@ public class TunableSlider extends JPanel {
 	}
 	
 	public Number getValue(){
-		return getFieldValue();
+		// return getFieldValue();
+		return value;
 	}
 
 	public void setValue(final Number value) {
@@ -233,6 +234,12 @@ public class TunableSlider extends JPanel {
 				ignore = true;
 				// update the value
 				value = getTunableValue();
+
+				// Due to small inaccuracies in the slider position, it's possible
+				// to get values less than the min or greater than the max.  If so,
+				// just adjust the value and don't issue a warning.
+				value = clamp(value);
+
 				// set text field value
 				setFieldValue();
 				// fire event
@@ -281,7 +288,10 @@ public class TunableSlider extends JPanel {
 			
 			val = Math.min(val, S_MAX);
 			val = Math.max(val, S_MIN);
-			val = Math.round(min + (val - S_MIN) * (max - min) / (double) S_RANGE);
+
+			// This can't be math.round!
+			// val = Math.round(min + (val - S_MIN) * (max - min) / (double) S_RANGE);
+			val = min + (val - S_MIN) * (max - min) / (double) S_RANGE;
 			
 			return (value instanceof Double ? (Number) new Double(val) : new Float((float) val));
 		}
@@ -390,6 +400,26 @@ public class TunableSlider extends JPanel {
 	
 	private void setFieldValue() {
 		getTextField().setValue(value);
+	}
+
+	private Number clamp(Number value) {
+		if (value instanceof Integer) {
+			value = Math.min(value.intValue(), max.intValue());
+			value = Math.max(value.intValue(), min.intValue());
+		} else if (value instanceof Long) {
+			value = Math.min(value.longValue(), max.longValue());
+			value = Math.max(value.longValue(), min.longValue());
+		} else {
+			double min = this.min.doubleValue();
+			double max = this.max.doubleValue();
+			
+			if (upper) max -= 0.000000001;
+			if (lower) min += 0.000000001;
+
+			value = Math.min(value.doubleValue(), max);
+			value = Math.max(value.doubleValue(), min);
+		}
+		return value;
 	}
 	
 	public void addChangeListener(ChangeListener cl) {
