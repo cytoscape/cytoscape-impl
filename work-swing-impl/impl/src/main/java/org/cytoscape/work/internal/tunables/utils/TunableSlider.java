@@ -402,24 +402,36 @@ public class TunableSlider extends JPanel {
 		getTextField().setValue(value);
 	}
 
-	private Number clamp(Number value) {
+	private Number clamp(Number val) {
 		if (value instanceof Integer) {
-			value = Math.min(value.intValue(), max.intValue());
-			value = Math.max(value.intValue(), min.intValue());
+			val = Math.min(val.intValue(), max.intValue());
+			val = Math.max(val.intValue(), min.intValue());
+			return (Number) val.intValue();
 		} else if (value instanceof Long) {
-			value = Math.min(value.longValue(), max.longValue());
-			value = Math.max(value.longValue(), min.longValue());
-		} else {
+			val = Math.min(val.longValue(), max.longValue());
+			val = Math.max(val.longValue(), min.longValue());
+			return (Number) val.longValue();
+		} else if (value instanceof Float) {
+			float min = this.min.floatValue();
+			float max = this.max.floatValue();
+			
+			if (upper) max -= 0.000000001;
+			if (lower) min += 0.000000001;
+
+			val = Math.min(val.floatValue(), max);
+			val = Math.max(val.floatValue(), min);
+			return new Float(val.floatValue());
+		} else { // Double
 			double min = this.min.doubleValue();
 			double max = this.max.doubleValue();
 			
 			if (upper) max -= 0.000000001;
 			if (lower) min += 0.000000001;
 
-			value = Math.min(value.doubleValue(), max);
-			value = Math.max(value.doubleValue(), min);
+			val = Math.min(val.doubleValue(), max);
+			val = Math.max(val.doubleValue(), min);
+			return new Double(val.doubleValue());
 		}
-		return value;
 	}
 	
 	public void addChangeListener(ChangeListener cl) {
