@@ -196,7 +196,7 @@ public class TunableSlider extends JPanel {
 				slider.setMinorTickSpacing(S_RANGE / 20);
 				
 				labelTable.put(S_MIN, new JLabel(format.format(min.doubleValue())));
-				labelTable.put(S_RANGE / 2, new JLabel(format.format(range / 2)));
+				labelTable.put(S_MIN+S_RANGE / 2, new JLabel(format.format(min.doubleValue()+range / 2)));
 				labelTable.put(S_MAX, new JLabel(format.format(max.doubleValue())));
 			} else if (value instanceof Long || value instanceof Integer) {
 				final long range = max.longValue() - min.longValue();
@@ -215,7 +215,7 @@ public class TunableSlider extends JPanel {
 				labelTable.put(S_MIN, new JLabel(format.format(min.longValue())));
 				
 				if (range % 2 == 0)
-					labelTable.put(S_RANGE / 2, new JLabel(format.format(range / 2)));
+					labelTable.put(S_MIN+S_RANGE / 2, new JLabel(format.format(min.doubleValue()+range / 2)));
 				
 				labelTable.put(S_MAX, new JLabel(format.format(max.longValue())));
 			}
