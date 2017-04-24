@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.0-RC2</version>
+		<version>3.5.1-RC1</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>app-impl</artifactId>
-  <version>3.5.0-RC2</version>
+  <version>3.5.1-RC1</version>
 
 	<name>Cytoscape App Impl (${project.artifactId})</name>
 
@@ -113,10 +113,12 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-app-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
@@ -172,6 +174,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
@@ -183,55 +186,64 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>equations-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>vizmap-gui-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>webservice-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>filter-api</artifactId>
-			<version>${project.version}</version>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		
 		
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>model-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>viewmodel-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>datasource-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>command-executor-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>jobs-api</artifactId>
-			<version>${project.version}</version>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 
 		<dependency>
@@ -244,6 +256,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>swing-app-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
