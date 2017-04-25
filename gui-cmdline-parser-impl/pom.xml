@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.0</version>
+		<version>3.5.1</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>gui-cmdline-parser-impl</artifactId>
-  <version>3.5.0</version>
+  <version>3.5.1</version>
 
 	<name>Cytoscape GUI Command Line Parser Impl (${project.artifactId})</name>
 
@@ -81,14 +81,17 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>property-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
@@ -103,6 +106,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
+			<version>${cytoscape.api.version}</version>
 		</dependency>
 	</dependencies>
 

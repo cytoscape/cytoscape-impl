@@ -44,10 +44,12 @@ public class HelpUserManualTask extends AbstractTask {
 	public void run(TaskMonitor tm) {
 		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
 		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
+		// final int fixVersion = cyVersion.getBugFixVersion();
+		final int fixVersion = 0; // Overriden for hotfix (impl only) release
 		
 		openBrowser.openURL(MANUAL_URL + 
 				cyVersion.getMajorVersion() + "." +
 				cyVersion.getMinorVersion() + "." +
-				cyVersion.getBugFixVersion());
+				fixVersion);
 	}
 }
