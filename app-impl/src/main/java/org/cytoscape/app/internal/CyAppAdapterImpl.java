@@ -114,6 +114,7 @@ import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
+import org.cytoscape.work.json.JSONResult;
 
 import java.util.Properties;
 
@@ -224,6 +225,7 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Transformers transformers;
 	private TransformerViewFactory transformerViewFactory;
 	private CyJobManager cyjobManager;
+	private JSONResult jsonResult;
 	private EquationFunctionAddedEvent equationFunctionAddedEvent;
 	private EquationFunctionRemovedEvent equationFunctionRemovedEvent;
 
