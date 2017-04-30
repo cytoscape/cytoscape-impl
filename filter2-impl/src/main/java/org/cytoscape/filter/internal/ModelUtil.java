@@ -7,6 +7,9 @@ import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 
 public class ModelUtil {
+	private ModelUtil() {
+	}
+
 	public static NamedTransformer<?, ?> createNamedTransformer(String name, Transformer<?, ?>... transformers) {
 		return new NamedTransformerImpl(name, transformers);
 	}

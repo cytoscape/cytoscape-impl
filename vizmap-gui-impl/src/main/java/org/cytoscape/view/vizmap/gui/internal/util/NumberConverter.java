@@ -25,7 +25,10 @@ package org.cytoscape.view.vizmap.gui.internal.util;
  */
 
 public final class NumberConverter {
-	
+
+	private NumberConverter() {
+	}
+
 	@SuppressWarnings("unchecked")
 	public static final <T> T convert(final Class<T> type, final Number value) {
 		T converted = null;

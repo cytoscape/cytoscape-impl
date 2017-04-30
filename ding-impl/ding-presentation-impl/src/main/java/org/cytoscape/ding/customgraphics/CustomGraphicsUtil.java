@@ -28,6 +28,9 @@ import java.awt.Image;
 
 public class CustomGraphicsUtil {
 
+	private CustomGraphicsUtil() {
+	}
+
 	public static Image getResizedImage(Image original, final Integer w, final Integer h, boolean keepAspectRatio) {
 		if(original == null)
 			throw new IllegalArgumentException("Original image cannot be null.");

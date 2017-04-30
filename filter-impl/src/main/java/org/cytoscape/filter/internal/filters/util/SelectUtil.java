@@ -35,6 +35,9 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
 
 public class SelectUtil {
+	private SelectUtil() {
+	}
+
 	public static void unselectAllNodes(CyNetwork network) {
 		setSelectedState(network, CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true), false);
 	}

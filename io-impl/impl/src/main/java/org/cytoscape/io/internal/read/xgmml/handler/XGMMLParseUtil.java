@@ -30,7 +30,10 @@ import java.util.regex.Pattern;
 public class XGMMLParseUtil {
 
 	static final Pattern XLINK_PATTERN = Pattern.compile(".*#(-?\\d+)");
-	
+
+	private XGMMLParseUtil() {
+	}
+
 	public static double parseDocumentVersion(String value) {
 		double version = 0.0;
     	

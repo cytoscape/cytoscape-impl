@@ -52,6 +52,9 @@ public class GroupUtils {
 	private static final String NETWORK_SUID_ATTR = "__groupNetworks.SUID";
 	private static final String ISMETA_EDGE_ATTR = "__isMetaEdge";
 
+	private GroupUtils() {
+	}
+
 
 	public static Dimension getPosition(CyNetwork net, CyGroup group, Long suid, Class tableClass) {
 		CyTable table = group.getGroupNetwork().getTable(tableClass, CyNetwork.HIDDEN_ATTRS);

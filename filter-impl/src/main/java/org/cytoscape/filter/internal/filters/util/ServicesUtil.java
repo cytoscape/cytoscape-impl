@@ -62,4 +62,7 @@ public class ServicesUtil {
 	public static CyLayoutAlgorithmManager cyLayoutsServiceRef;
 	public static CyVersion cytoscapeVersionService;
 	public static CyApplicationConfiguration cyApplicationConfigurationServiceRef;
+
+	private ServicesUtil() {
+	}
 }

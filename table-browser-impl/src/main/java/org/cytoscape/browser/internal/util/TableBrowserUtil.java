@@ -39,6 +39,9 @@ public final class TableBrowserUtil {
 
 	private static final int EOF = -1;
 
+	private TableBrowserUtil() {
+	}
+
 	/**
 	 *  Creates a Map with the CyColumn names and their types as mapped to the types used by attribute equations.
 	 *  Types (and associated names) not used by attribute equations are omitted.

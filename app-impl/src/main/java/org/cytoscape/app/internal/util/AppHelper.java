@@ -7,7 +7,10 @@ import org.cytoscape.application.CyVersion;
 
 public class AppHelper {
 	private static Pattern COMPAT_VERSION_REGEX = Pattern.compile("^(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?([\\-\\.\\w]+)?$");
-	
+
+	private AppHelper() {
+	}
+
 	public static boolean isCompatible(final CyVersion cyVer, final String compatibleCytoscapeVersions) {
 		final String compatVersStr = compatibleCytoscapeVersions;
 		final String[] compatVers = compatVersStr.split(",");
