@@ -108,6 +108,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public <T extends V> void putMapValue(final K key, final T value) {
 		attribute2visualMap.put(key, value);
 		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
@@ -115,6 +116,7 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public <T extends V> void putAll(Map<K, T> map) {
 		attribute2visualMap.putAll(map);
 		VisualMappingFunction function = this;

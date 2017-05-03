@@ -85,8 +85,8 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);;
 
-		mappings = new HashMap<VisualProperty<?>, VisualMappingFunction<?, ?>>();
-		styleDefaults = new HashMap<VisualProperty<?>, Object>();
+		mappings = new HashMap<>();
+		styleDefaults = new HashMap<>();
 
 		// Init Apply handlers for node, egde and network.
 		final ApplyToNetworkHandler applyToNetworkHandler = new ApplyToNetworkHandler(this, serviceRegistrar);
@@ -97,12 +97,12 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		serviceRegistrar.registerAllServices(applyToNodeHandler, new Properties());
 		serviceRegistrar.registerAllServices(applyToEdgeHandler, new Properties());
 		
-		applyHandlersMap = new HashMap<Class<? extends CyIdentifiable>, ApplyHandler>();
+		applyHandlersMap = new HashMap<>();
 		applyHandlersMap.put(CyNetwork.class, applyToNetworkHandler);
 		applyHandlersMap.put(CyNode.class, applyToNodeHandler);
 		applyHandlersMap.put(CyEdge.class, applyToEdgeHandler);
 
-		dependencies = new HashSet<VisualPropertyDependency<?>>();
+		dependencies = new HashSet<>();
 
 		// Listening to dependencies
 		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
@@ -155,8 +155,8 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public void apply(final CyNetworkView networkView) {
-		@SuppressWarnings("unchecked")
 		// This is always safe.
 		final ApplyHandler<CyNetwork> networkViewHandler;
 		synchronized (lock) {
@@ -263,12 +263,13 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	@Override
 	public void handleEvent(VisualMappingFunctionChangedEvent e) {
 		final VisualMappingFunction<?, ?> mapping = e.getSource();
-		boolean hasMapping;
+		boolean hasMapping = false;
+		
 		synchronized (lock) {
 			hasMapping = mappings.containsValue(mapping);
 		}
-		if (hasMapping) {
-			eventHelper.addEventPayload((VisualStyle)this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
-		}
+		
+		if (hasMapping)
+			eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 }

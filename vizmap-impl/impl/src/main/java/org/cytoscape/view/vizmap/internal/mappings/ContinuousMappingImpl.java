@@ -98,6 +98,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
 		points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
 		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
@@ -105,6 +106,7 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public void removePoint(int index) {
 		points.remove(index);
 		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),

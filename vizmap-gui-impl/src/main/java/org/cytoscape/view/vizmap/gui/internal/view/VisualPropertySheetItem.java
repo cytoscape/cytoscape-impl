@@ -22,8 +22,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +76,30 @@ import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
+
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class VisualPropertySheetItem<T> extends JPanel implements Comparable<VisualPropertySheetItem<?>> {
@@ -375,41 +397,26 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 		add(getTopPnl(), BorderLayout.NORTH);
 		add(getMappingPnl(), BorderLayout.CENTER);
 		
-		model.addPropertyChangeListener("defaultValue", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				updateDefaultButton();
-			}
+		model.addPropertyChangeListener("defaultValue", evt -> {
+			updateDefaultButton();
 		});
-		model.addPropertyChangeListener("lockedValue", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				updateBypassButton();
-			}
+		model.addPropertyChangeListener("lockedValue", evt -> {
+			updateBypassButton();
 		});
-		model.addPropertyChangeListener("lockedValueState", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				updateBypassButton();
-			}
+		model.addPropertyChangeListener("lockedValueState", evt -> {
+			updateBypassButton();
 		});
-		model.addPropertyChangeListener("renderingEngine", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				updateDefaultButton();
-				updateBypassButton();
-			}
+		model.addPropertyChangeListener("renderingEngine", evt -> {
+			updateDefaultButton();
+			updateBypassButton();
 		});
-		model.addPropertyChangeListener("visualMappingFunction", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(final PropertyChangeEvent e) {
-				// Update our tracer
-				if (!model.isVisualMappingAllowed())
-					return;
-				// Note that if this isn't a Continuous mapper, this will just return
-				ContinuousMappingEditorPanel.resetTracer(model.getVisualProperty());
-				updateMapping();
-			}
+		model.addPropertyChangeListener("visualMappingFunction", evt -> {
+			// Update our tracer
+			if (!model.isVisualMappingAllowed())
+				return;
+			// Note that if this isn't a Continuous mapper, this will just return
+			ContinuousMappingEditorPanel.resetTracer(model.getVisualProperty());
+			updateMapping();
 		});
 	}
 
@@ -538,14 +545,11 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	protected ExpandCollapseButton getShowMappingBtn() {
 		if (expandCollapseBtn == null) {
-			expandCollapseBtn = new ExpandCollapseButton(false, new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					if (getMappingPnl().isShowing())
-						collapse();
-					else
-						expand();
-				}
+			expandCollapseBtn = new ExpandCollapseButton(false, evt -> {
+				if (getMappingPnl().isShowing())
+					collapse();
+				else
+					expand();
 			});
 			
 			final Dimension d = new Dimension(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
@@ -602,16 +606,13 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			mappingBtn.setDisabledIcon(disabledBtnIcon);
 			updateMappingIcon();
 			
-			mappingBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent ae) {
-					if (getMappingPnl().isShowing())
-						collapse();
-					else
-						expand();
-					
-					updateMappingIcon();
-				}
+			mappingBtn.addActionListener(evt -> {
+				if (getMappingPnl().isShowing())
+					collapse();
+				else
+					expand();
+				
+				updateMappingIcon();
 			});
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
 				@Override
@@ -1053,11 +1054,8 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 			
 			btn.setBorder(btn.isEnabled() ? borderEnabled : borderDisabled);
 			
-			btn.addPropertyChangeListener("enabled", new PropertyChangeListener() {
-				@Override
-				public void propertyChange(final PropertyChangeEvent evt) {
-					btn.setBorder(evt.getNewValue() == Boolean.TRUE ? borderEnabled : borderDisabled);
-				}
+			btn.addPropertyChangeListener("enabled", evt -> {
+				btn.setBorder(evt.getNewValue() == Boolean.TRUE ? borderEnabled : borderDisabled);
 			});
 		}
 

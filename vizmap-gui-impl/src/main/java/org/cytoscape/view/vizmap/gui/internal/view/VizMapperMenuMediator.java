@@ -6,8 +6,6 @@ import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
@@ -42,6 +40,29 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.puremvc.java.multicore.interfaces.INotification;
 import org.puremvc.java.multicore.patterns.mediator.Mediator;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class VizMapperMenuMediator extends Mediator {
 
@@ -54,7 +75,7 @@ public class VizMapperMenuMediator extends Mediator {
 	
 	private VizMapperProxy proxy;
 
-	private final Set<RenderingEngineFactory<?>> engineFactories = new HashSet<RenderingEngineFactory<?>>();
+	private final Set<RenderingEngineFactory<?>> engineFactories = new HashSet<>();
 	
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
@@ -173,7 +194,7 @@ public class VizMapperMenuMediator extends Mediator {
 		private static final String SET_TO_NETWORK = "Set Bypass to Network";
 		
 		private final VisualProperty<?> root;
-		private final Set<VisualProperty<?>> vpSet = new HashSet<VisualProperty<?>>();
+		private final Set<VisualProperty<?>> vpSet = new HashSet<>();
 		
 		public BypassContextMenuBuilder(final VisualProperty<?> root) {
 			this.root = root;
@@ -200,13 +221,9 @@ public class VizMapperMenuMediator extends Mediator {
 			{
 				final JMenuItem mi = new JMenuItem(REMOVE_ALL_FROM + viewName);
 				mi.setEnabled(hasLockedValues(view));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						final LockedValuesVO vo = new LockedValuesVO(netView, 
-								(Set)Collections.singleton(view), vpSet);
-						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
-					}
+				mi.addActionListener(evt -> {
+					final LockedValuesVO vo = new LockedValuesVO(netView, (Set) Collections.singleton(view), vpSet);
+					sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 				});
 				rootMenu.add(mi);
 			}
@@ -216,12 +233,9 @@ public class VizMapperMenuMediator extends Mediator {
 				
 				final JMenuItem mi = new JMenuItem(REMOVE_ALL_FROM_SELECTED_NODES);
 				mi.setEnabled(hasLockedValues(selectedViews));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
-						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
-					}
+				mi.addActionListener(evt -> {
+					final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
+					sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 				});
 				rootMenu.add(mi);
 			}
@@ -231,12 +245,9 @@ public class VizMapperMenuMediator extends Mediator {
 				
 				final JMenuItem mi = new JMenuItem(REMOVE_ALL_FROM_SELECTED_EDGES);
 				mi.setEnabled(hasLockedValues(selectedViews));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
-						sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
-					}
+				mi.addActionListener(evt -> {
+					final LockedValuesVO vo = new LockedValuesVO(netView, selectedViews, vpSet);
+					sendNotification(NotificationNames.REMOVE_LOCKED_VALUES, vo);
 				});
 				rootMenu.add(mi);
 			}
@@ -246,32 +257,23 @@ public class VizMapperMenuMediator extends Mediator {
 			{
 				final JMenuItem mi = new JMenuItem(SET_TO_SELECTED_NODES);
 				mi.setEnabled(!proxy.getSelectedNodeViews(netView).isEmpty());
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						showVizMapperPanel(CyNode.class);
-					}
+				mi.addActionListener(evt -> {
+					showVizMapperPanel(CyNode.class);
 				});
 				rootMenu.add(mi);
 			}
 			{
 				final JMenuItem mi = new JMenuItem(SET_TO_SELECTED_EDGES);
 				mi.setEnabled(!proxy.getSelectedEdgeViews(netView).isEmpty());
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						showVizMapperPanel(CyEdge.class);
-					}
+				mi.addActionListener(evt -> {
+					showVizMapperPanel(CyEdge.class);
 				});
 				rootMenu.add(mi);
 			}
 			{
 				final JMenuItem mi = new JMenuItem(SET_TO_NETWORK);
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						showVizMapperPanel(CyNetwork.class);
-					}
+				mi.addActionListener(evt -> {
+					showVizMapperPanel(CyNetwork.class);
 				});
 				rootMenu.add(mi);
 			}

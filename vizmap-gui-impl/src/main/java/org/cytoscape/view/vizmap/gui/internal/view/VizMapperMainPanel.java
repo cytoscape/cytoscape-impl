@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
@@ -38,7 +14,6 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -98,6 +73,30 @@ import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.DefaultViewPanel;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * VizMapper UI main panel.
@@ -226,7 +225,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	}
 	
 	public Set<VisualPropertySheet> getVisualPropertySheets() {
-		return new HashSet<VisualPropertySheet>(vpSheetMap.values());
+		return new HashSet<>(vpSheetMap.values());
 	}
 	
 	public VisualPropertySheet getVisualPropertySheet(final Class<? extends CyIdentifiable> targetDataType) {
@@ -423,12 +422,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			{
 				final JMenuItem mi = new JMenuItem("Hide Selected Visual Properties");
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						hideSelectedItems();
-					}
-				});
+				mi.addActionListener(evt -> hideSelectedItems());
 				contextPopupMenu.add(mi);
 			}
 		}
@@ -520,12 +514,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			SEL_FG_COLOR = UIManager.getColor("Table.focusCellForeground");
 			BORDER_COLOR = UIManager.getColor("Separator.foreground");
 			
-			addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					if (styles != null && !styles.isEmpty())
-						showDialog();
-				}
+			addActionListener(evt -> {
+				if (styles != null && !styles.isEmpty())
+					showDialog();
 			});
 		}
 		

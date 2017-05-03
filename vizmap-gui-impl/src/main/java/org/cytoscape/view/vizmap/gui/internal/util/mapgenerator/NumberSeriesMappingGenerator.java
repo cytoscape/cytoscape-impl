@@ -1,12 +1,23 @@
 package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDTAndWait;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,16 +35,6 @@ package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDiscreteMappingGenerator<V> {
 
 	private static final Logger logger = LoggerFactory.getLogger(NumberSeriesMappingGenerator.class);
@@ -43,8 +44,9 @@ public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDisc
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> Map<T, V> generateMap(final Set<T> attributeSet) {
-		final Map<T, V> valueMap = new HashMap<T, V>();
+		final Map<T, V> valueMap = new HashMap<>();
 
 		// Error check
 		if (attributeSet == null || attributeSet.size() == 0)
@@ -52,21 +54,9 @@ public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDisc
 
 		final Double[] params = new Double[2];
 		
-		if (SwingUtilities.isEventDispatchThread()) {
+		invokeOnEDTAndWait(() -> {
 			getStartAndIncrement(params);
-		} else {
-			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						getStartAndIncrement(params);
-					}
-				});
-			} catch (Exception e) {
-				logger.error("Error getting start and increment values", e);
-				return valueMap;
-			}
-		}
+		}, logger);
 
 		Double st = params[0];
 		Double inc = params[1];

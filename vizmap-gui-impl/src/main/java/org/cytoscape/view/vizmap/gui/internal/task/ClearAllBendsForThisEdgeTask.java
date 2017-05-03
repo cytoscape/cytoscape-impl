@@ -1,6 +1,6 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
-import javax.swing.SwingUtilities;
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkView;
@@ -17,7 +17,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -50,7 +50,7 @@ public class ClearAllBendsForThisEdgeTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		SwingUtilities.invokeLater(() -> {
+		invokeOnEDT(() -> {
 			final BendFactory bendFactory = servicesUtil.get(BendFactory.class);
 			edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bendFactory.createBend());
 			netView.updateView();
