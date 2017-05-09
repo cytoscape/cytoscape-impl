@@ -212,6 +212,27 @@ public class NetworkSearchPanel extends JPanel {
 		getSearchButton().setEnabled(selectedProvider != null && selectedProvider.isReady());
 	}
 	
+	void updateSelectedSearchComponent(JComponent queryComp) {
+		getContentPane().removeAll();
+		
+		if (queryComp == null)
+			queryComp = getSearchTextField();
+		
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addComponent(queryComp, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
+				.addComponent(queryComp, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getOptionsButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+	}
+	
 	private void showProvidersPopup() {
 		if (providers.isEmpty())
 			return;
@@ -344,19 +365,7 @@ public class NetworkSearchPanel extends JPanel {
 			contentPane = new JPanel();
 			contentPane.setBackground(getBackground());
 			
-			final GroupLayout layout = new GroupLayout(contentPane);
-			contentPane.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(false);
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addComponent(getSearchTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getSearchTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getOptionsButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-			);
+			updateSelectedSearchComponent(getSearchTextField());
 		}
 		
 		return contentPane;

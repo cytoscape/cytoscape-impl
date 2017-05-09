@@ -47,6 +47,7 @@ public class NetworkSearchMediator {
 
 	private final Map<String, NetworkSearchTaskFactory> taskFactories = new HashMap<>();
 	private final Map<NetworkSearchTaskFactory, JComponent> optionsComponents = new HashMap<>();
+	private final Map<NetworkSearchTaskFactory, JComponent> queryComponents = new HashMap<>();
 	
 	private final NetworkSearchPanel networkSearchPanel;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -71,15 +72,20 @@ public class NetworkSearchMediator {
 			try {
 				synchronized (lock) {
 					if (factory != null) {
-						JComponent comp = factory.getOptionsComponent();
+						JComponent qc = factory.getQueryComponent();
 						
-						if (comp == null) {
+						if (qc != null)
+							queryComponents.put(factory, qc);
+						
+						JComponent oc = factory.getOptionsComponent();
+						
+						if (oc == null) {
 							PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
-							comp = taskManager.getConfiguration(factory, factory);
+							oc = taskManager.getConfiguration(factory, factory);
 						}
 						
-						if (comp != null)
-							optionsComponents.put(factory, comp);
+						if (oc != null)
+							optionsComponents.put(factory, oc);
 					}
 				
 					taskFactories.put(factory.getId(), factory);
@@ -96,6 +102,7 @@ public class NetworkSearchMediator {
 		boolean removed = false;
 		
 		synchronized (lock) {
+			queryComponents.remove(factory);
 			optionsComponents.remove(factory);
 			
 			if (factory.getId() != null)
@@ -113,10 +120,10 @@ public class NetworkSearchMediator {
 		networkSearchPanel.addPropertyChangeListener("selectedProvider", evt -> {
 			NetworkSearchTaskFactory tf = (NetworkSearchTaskFactory) evt.getNewValue();
 			
-			if (tf != null) {
-				updateSelectedProvider();
-				updateOptionsButton(optionsComponents.get(tf));
-			}
+			if (tf != null)
+				updateSelectedProvider(tf);
+			
+			updateSelectedSearchComponent(tf);
 			
 			networkSearchPanel.updateProvidersButton();
 			networkSearchPanel.updateSearchEnabled();
@@ -124,11 +131,13 @@ public class NetworkSearchMediator {
 		networkSearchPanel.getSearchTextField().getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				updateSelectedProvider();
+				updateSelectedProvider(networkSearchPanel.getSelectedProvider());
+				networkSearchPanel.updateSearchButton();
 			}
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				updateSelectedProvider();
+				updateSelectedProvider(networkSearchPanel.getSelectedProvider());
+				networkSearchPanel.updateSearchButton();
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
@@ -147,28 +156,29 @@ public class NetworkSearchMediator {
 		});
 	}
 	
-	private void updateSelectedProvider() {
-		NetworkSearchTaskFactory tf = networkSearchPanel.getSelectedProvider();
+	private void updateSelectedProvider(NetworkSearchTaskFactory factory) {
+		JComponent queryComp = queryComponents.get(factory);
 		
-		if (tf instanceof AbstractNetworkSearchTaskFactory) {
-			// TODO only if the TaskFactory did not provide its own query component!
-			((AbstractNetworkSearchTaskFactory) tf).setQuery(networkSearchPanel.getSearchTextField().getText().trim());
+		// Only if the TaskFactory did not provide its own query component!
+		if (factory instanceof AbstractNetworkSearchTaskFactory && queryComp == null)
+			((AbstractNetworkSearchTaskFactory) factory).setQuery(
+					networkSearchPanel.getSearchTextField().getText().trim());
+	}
+	
+	private void updateSelectedSearchComponent(NetworkSearchTaskFactory factory) {
+		invokeOnEDT(() -> {
+			JComponent queryComp = queryComponents.get(factory);
+			JComponent optionsComp = optionsComponents.get(factory);
 			
-			invokeOnEDT(() -> {
-				networkSearchPanel.updateSearchButton();
-			});
-		}
+			networkSearchPanel.updateSelectedSearchComponent(queryComp);
+			networkSearchPanel.getOptionsButton().setVisible(optionsComp != null);
+			networkSearchPanel.updateSearchButton();
+		});
 	}
 	
 	private void updateSearchPanel() {
 		invokeOnEDT(() -> {
 			networkSearchPanel.update(new HashSet<>(taskFactories.values()));
-		});
-	}
-	
-	void updateOptionsButton(JComponent optionsComponent) {
-		invokeOnEDT(() -> {
-			networkSearchPanel.getOptionsButton().setVisible(optionsComponent != null);
 		});
 	}
 	

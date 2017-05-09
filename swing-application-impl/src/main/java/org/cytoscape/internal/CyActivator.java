@@ -25,11 +25,7 @@ import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -41,7 +37,6 @@ import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
-import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
@@ -110,12 +105,8 @@ import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -381,132 +372,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerServiceListener(bc, netSearchMediator, "addNetworkSearchTaskFactory", "removeNetworkSearchTaskFactory",
 								NetworkSearchTaskFactory.class);
-		
-		// TODO: remove this test data and add listeners for Network Search Factories =================================
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("a", "Simple", "Lorem ipsum dolor sit amet", null) {
-				
-				@Tunable(description = "Test String:")
-				public String testString;
-				
-				@Tunable(description = "Test Integer:")
-				public int testInt = 100;
-				
-				@Tunable(description = "Test Float:")
-				public float testFloat = 10.5f;
-				
-				@Tunable(description = "Test Boolean:")
-				public boolean testBoolean = true;
-				
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("b", "With Options 1", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-				@Override
-				public JComponent getOptionsComponent() {
-					return new JCheckBox("Lorem ipsum dolor");
-				};
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("c", "With Options 2", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-				@Override
-				public JComponent getOptionsComponent() {
-					return new JCheckBox("Dolor sit amet");
-				};
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("d", "With Options 3", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("e", "Lorem ipsum dolor sit amet Lorem ipsum dolor sit ABCDEFGHIG ABCDEFGHIG ABCDEFGHIG", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("f", "Dolor Sit Smet", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-				@Override
-				public JComponent getOptionsComponent() {
-					return new JScrollPane(new JTextArea());
-				};
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		{
-			NetworkSearchTaskFactory taskFactory = new AbstractNetworkSearchTaskFactory("g", "Lorem Ipsum", "Lorem ipsum dolor sit amet", null) {
-				@Override
-				public TaskIterator createTaskIterator() {
-					return new TaskIterator(new AbstractTask() {
-						@Override
-						public void run(TaskMonitor tm) throws Exception {
-							System.out.println("=> Network Search Provider: " + getName());
-						}
-					});
-				}
-			};
-			registerAllServices(bc, taskFactory);
-		}
-		// ============================
 		
 		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
 		
