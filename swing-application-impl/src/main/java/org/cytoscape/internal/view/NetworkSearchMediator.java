@@ -1,7 +1,10 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.QUERY_PROPERTY;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -74,14 +77,19 @@ public class NetworkSearchMediator {
 					if (factory != null) {
 						JComponent qc = factory.getQueryComponent();
 						
-						if (qc != null)
+						if (qc != null) {
 							queryComponents.put(factory, qc);
+							qc.addPropertyChangeListener(QUERY_PROPERTY, new QueryChangeListener(factory));
+						}
 						
 						JComponent oc = factory.getOptionsComponent();
 						
 						if (oc == null) {
 							PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
 							oc = taskManager.getConfiguration(factory, factory);
+						} else {
+							oc.addPropertyChangeListener(QUERY_PROPERTY, new QueryChangeListener(factory));
+							// TODO How do we detect changes to tunable fields???
 						}
 						
 						if (oc != null)
@@ -193,6 +201,23 @@ public class NetworkSearchMediator {
 				taskManager.execute(tf.createTaskIterator(), taskObserver);
 			else
 				taskManager.execute(tf.createTaskIterator());
+		}
+	}
+	
+	private class QueryChangeListener implements PropertyChangeListener {
+
+		private NetworkSearchTaskFactory factory;
+		
+		public QueryChangeListener(NetworkSearchTaskFactory factory) {
+			this.factory = factory;
+		}
+		
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (factory.equals(networkSearchPanel.getSelectedProvider()))
+				invokeOnEDT(() -> {
+					networkSearchPanel.updateSearchButton();
+				});
 		}
 	}
 }
