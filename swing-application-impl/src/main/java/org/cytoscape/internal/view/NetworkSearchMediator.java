@@ -2,6 +2,8 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.QUERY_PROPERTY;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.util.ViewUtil.makeSmall;
+import static org.cytoscape.internal.util.ViewUtil.recursiveDo;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -10,6 +12,8 @@ import java.util.HashSet;
 import java.util.Map;
 
 import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -87,6 +91,15 @@ public class NetworkSearchMediator {
 						if (oc == null) {
 							PanelTaskManager taskManager = serviceRegistrar.getService(PanelTaskManager.class);
 							oc = taskManager.getConfiguration(factory, factory);
+							
+							if (oc != null) {
+								// Make the components smaller and the background white
+								recursiveDo(oc, (c) -> makeSmall(c));
+								recursiveDo(oc, (c) -> {
+									if (c instanceof JPanel)
+										((JPanel) c).setBackground(UIManager.getColor("Table.background"));
+								});
+							}
 						} else {
 							oc.addPropertyChangeListener(QUERY_PROPERTY, new QueryChangeListener(factory));
 							// TODO How do we detect changes to tunable fields???
