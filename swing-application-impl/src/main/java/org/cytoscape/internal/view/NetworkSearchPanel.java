@@ -7,17 +7,22 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowFocusListener;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +40,7 @@ import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -43,6 +49,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
@@ -92,7 +99,7 @@ public class NetworkSearchPanel extends JPanel {
 	private JPopupMenu providersPopup;
 	private ProvidersPanel providersPanel;
 	
-	private JPopupMenu optionsPopup;
+	private JDialog optionsPopup;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
 	
@@ -280,27 +287,38 @@ public class NetworkSearchPanel extends JPanel {
 		if (optionsPopup != null)
 			disposeOptionsPopup(); // Just to make sure there will never be more than one dialog
 		
-		optionsPopup = new JPopupMenu();
+		optionsPopup = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
 		optionsPopup.setBackground(getBackground());
-		optionsPopup.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+		optionsPopup.setUndecorated(true);
+		optionsPopup.setContentPane(comp);
 		
-		optionsPopup.setLayout(new BorderLayout());
-		optionsPopup.add(comp, BorderLayout.CENTER);
-		
-		optionsPopup.addPropertyChangeListener("visible", evt -> {
-			if (evt.getNewValue() == Boolean.FALSE)
+		optionsPopup.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosed(WindowEvent e) {System.out.println("Closed");
 				updateSearchEnabled();
+			}
+		});
+		optionsPopup.addWindowFocusListener(new WindowFocusListener() {
+			@Override
+			public void windowLostFocus(WindowEvent e) {System.out.println("windowLostFocus");
+				disposeOptionsPopup();
+			}
+			@Override
+			public void windowGainedFocus(WindowEvent e) {
+			}
 		});
 		
+		final Point pt = getOptionsButton().getLocationOnScreen(); 
+		optionsPopup.setLocation(pt.x, pt.y + getOptionsButton().getHeight());
 		optionsPopup.pack();
-		optionsPopup.show(getOptionsButton(), 0, getOptionsButton().getHeight());
+		optionsPopup.setVisible(true);
 		optionsPopup.requestFocus();
 	}
 	
 	private void disposeOptionsPopup() {
 		if (optionsPopup != null) {
 			optionsPopup.removeAll();
-			optionsPopup.setVisible(false);
+			optionsPopup.dispose();
 			optionsPopup = null;
 		}
 	}
