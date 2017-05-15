@@ -3,11 +3,11 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static org.cytoscape.internal.util.ViewUtil.hasVisibleOwnedWindows;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dialog.ModalityType;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -53,7 +53,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
-import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -100,7 +99,7 @@ public class NetworkSearchPanel extends JPanel {
 	private JPopupMenu providersPopup;
 	private ProvidersPanel providersPanel;
 	
-	private JDialog optionsPopup;
+	private OptionsDialog optionsDialog;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
 	
@@ -281,50 +280,21 @@ public class NetworkSearchPanel extends JPanel {
 		}
 	}
 	
-	void showOptionsPopup(JComponent comp) {
+	void showOptionsDialog(JComponent comp) {
 		if (comp == null)
 			return;
 		
-		if (optionsPopup != null)
-			disposeOptionsPopup(); // Just to make sure there will never be more than one dialog
-		
-		optionsPopup = new JDialog(SwingUtilities.getWindowAncestor(this), ModalityType.MODELESS);
-		optionsPopup.setBackground(getBackground());
-		optionsPopup.setUndecorated(true);
-		optionsPopup.setContentPane(comp);
-		
-		optionsPopup.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosed(WindowEvent e) {System.out.println("Closed");
-				updateSearchEnabled();
-			}
-		});
-		optionsPopup.addWindowFocusListener(new WindowFocusListener() {
-			@Override
-			public void windowLostFocus(WindowEvent e) {
-				// If the a component in the Options popup opens another dialog, the Options one
-				// loses focus, but we don't want it to be disposed.
-				if (!ViewUtil.hasVisibleOwnedWindows(optionsPopup))
-					disposeOptionsPopup();
-			}
-			@Override
-			public void windowGainedFocus(WindowEvent e) {
-			}
-		});
+		getOptionsDialog().update(comp);
 		
 		final Point pt = getOptionsButton().getLocationOnScreen(); 
-		optionsPopup.setLocation(pt.x, pt.y + getOptionsButton().getHeight());
-		optionsPopup.pack();
-		optionsPopup.setVisible(true);
-		optionsPopup.requestFocus();
+		getOptionsDialog().setLocation(pt.x, pt.y + getOptionsButton().getHeight());
+		getOptionsDialog().pack();
+		getOptionsDialog().setVisible(true);
+		getOptionsDialog().requestFocus();
 	}
 	
-	private void disposeOptionsPopup() {
-		if (optionsPopup != null) {
-			optionsPopup.removeAll();
-			optionsPopup.dispose();
-			optionsPopup = null;
-		}
+	private void disposeOptionsDialog() {
+		getOptionsDialog().dispose();
 	}
 
 	private void init() {
@@ -461,6 +431,14 @@ public class NetworkSearchPanel extends JPanel {
 		}
 		
 		return providersPanel;
+	}
+	
+	public OptionsDialog getOptionsDialog() {
+		if (optionsDialog == null) {
+			optionsDialog = new OptionsDialog();
+		}
+		
+		return optionsDialog;
 	}
 	
 	private void styleButton(AbstractButton btn, int width, Font font, int borderSide) {
@@ -615,6 +593,64 @@ public class NetworkSearchPanel extends JPanel {
 				
 				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
 					disposeProvidersPopup(true);
+			}
+		}
+	}
+	
+	private class OptionsDialog extends JDialog {
+		
+		public OptionsDialog() {
+			super(SwingUtilities.getWindowAncestor(NetworkSearchPanel.this), ModalityType.MODELESS);
+			setBackground(getBackground());
+			setUndecorated(true);
+			
+			addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosed(WindowEvent e) {
+					updateSearchEnabled();
+				}
+			});
+			addWindowFocusListener(new WindowFocusListener() {
+				@Override
+				public void windowLostFocus(WindowEvent e) {
+					// If the a component in the Options popup opens another dialog, the Options one
+					// loses focus, but we don't want it to be disposed.
+					if (!hasVisibleOwnedWindows(OptionsDialog.this))
+						disposeOptionsDialog();
+				}
+				@Override
+				public void windowGainedFocus(WindowEvent e) {
+				}
+			});
+		}
+		
+		void update(JComponent comp) {
+			setContentPane(comp);
+			setKeyBindings(comp);
+		}
+		
+		private void setKeyBindings(JComponent comp) {
+			final ActionMap actionMap = comp.getActionMap();
+			final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyAction.VK_ESCAPE);
+			actionMap.put(KeyAction.VK_ESCAPE, new KeyAction(KeyAction.VK_ESCAPE));
+		}
+		
+		private class KeyAction extends AbstractAction {
+
+			final static String VK_ESCAPE = "VK_ESCAPE";
+			
+			KeyAction(final String actionCommand) {
+				putValue(ACTION_COMMAND_KEY, actionCommand);
+			}
+
+			@Override
+			public void actionPerformed(final ActionEvent e) {
+				final String cmd = e.getActionCommand();
+				
+				if (cmd.equals(VK_ESCAPE))
+					disposeOptionsDialog();
 			}
 		}
 	}

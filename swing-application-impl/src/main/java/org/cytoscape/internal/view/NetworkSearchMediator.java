@@ -170,7 +170,7 @@ public class NetworkSearchMediator {
 		});
 		networkSearchPanel.getOptionsButton().addActionListener(evt -> {
 			if (networkSearchPanel.getSelectedProvider() != null)
-				networkSearchPanel.showOptionsPopup(optionsComponents.get(networkSearchPanel.getSelectedProvider()));
+				networkSearchPanel.showOptionsDialog(optionsComponents.get(networkSearchPanel.getSelectedProvider()));
 		});
 		networkSearchPanel.getSearchButton().addActionListener(evt -> {
 			runSearch();
