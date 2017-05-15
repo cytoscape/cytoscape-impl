@@ -13,6 +13,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -26,6 +27,8 @@ import java.awt.event.WindowFocusListener;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -37,6 +40,7 @@ import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -53,6 +57,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
+import org.cytoscape.internal.util.RandomImage;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -102,6 +107,7 @@ public class NetworkSearchPanel extends JPanel {
 	private OptionsDialog optionsDialog;
 	
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
+	private final Map<NetworkSearchTaskFactory, Icon> providerIcons = new HashMap<>();
 	
 	private final Set<NetworkSearchTaskFactory> providers;
 	private NetworkSearchTaskFactory defaultProvider;
@@ -183,9 +189,23 @@ public class NetworkSearchPanel extends JPanel {
 	
 	void update(Collection<NetworkSearchTaskFactory> newProviders) {
 		providers.clear();
+		providerIcons.clear();
 		
-		if (newProviders != null)
+		if (newProviders != null) {
 			providers.addAll(newProviders);
+			newProviders.forEach(p -> {
+				Icon icon = p.getIcon();
+				
+				if (icon instanceof ImageIcon)  {
+					ImageIcon ii = (ImageIcon) icon;
+					
+					if (ii.getIconWidth() > ICON_SIZE || ii.getIconHeight() > ICON_SIZE)
+						icon = new ImageIcon(ii.getImage().getScaledInstance(ICON_SIZE, ICON_SIZE, Image.SCALE_SMOOTH));
+				}
+				
+				providerIcons.put(p, icon != null ? icon : new ImageIcon(new RandomImage(ICON_SIZE, ICON_SIZE)));
+			});
+		}
 		
 		setDefaultProvider(defaultProvider);
 		
@@ -197,7 +217,8 @@ public class NetworkSearchPanel extends JPanel {
 	
 	void updateProvidersButton() {
 		if (selectedProvider != null) {
-			getProvidersButton().setIcon(selectedProvider.getIcon());
+			Icon icon = providerIcons.get(selectedProvider);
+			getProvidersButton().setIcon(icon != null ? icon : emptyIcon);
 			getProvidersButton().setToolTipText(selectedProvider.getName());
 		} else {
 			getProvidersButton().setIcon(emptyIcon);
@@ -525,19 +546,20 @@ public class NetworkSearchPanel extends JPanel {
 				layout.setAutoCreateGaps(false);
 				
 				layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(iconLabel, ICON_SIZE, ICON_SIZE, ICON_SIZE)
 						.addGap(10)
 						.addComponent(nameLabel, 120, PREFERRED_SIZE, 380)
 						.addGap(10)
 				);
 				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(iconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(iconLabel, ICON_SIZE, ICON_SIZE, ICON_SIZE)
 						.addComponent(nameLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				);
 				
 				providersList.setCellRenderer((JList<? extends NetworkSearchTaskFactory> list, NetworkSearchTaskFactory value,
 						int index, boolean isSelected, boolean cellHasFocus) -> {
-							iconLabel.setIcon(value.getIcon());
+							Icon icon = providerIcons.get(value);
+							iconLabel.setIcon(icon != null ? icon: emptyIcon);
 							nameLabel.setText(value.getName());
 							cell.setToolTipText(value.getDescription());
 							
