@@ -231,6 +231,20 @@ public final class ViewUtil {
 		}
 	}
 	
+	public static boolean hasVisibleOwnedWindows(Window window) {
+		Window[] ownedWindows = window != null ? window.getOwnedWindows() : null;
+		
+		if (ownedWindows == null || ownedWindows.length == 0)
+			return false;
+		
+		for (Window w : ownedWindows) {
+			if (w.isVisible())
+				return true;
+		}
+	
+		return false;
+	}
+	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable

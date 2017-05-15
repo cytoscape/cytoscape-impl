@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -300,8 +301,11 @@ public class NetworkSearchPanel extends JPanel {
 		});
 		optionsPopup.addWindowFocusListener(new WindowFocusListener() {
 			@Override
-			public void windowLostFocus(WindowEvent e) {System.out.println("windowLostFocus");
-				disposeOptionsPopup();
+			public void windowLostFocus(WindowEvent e) {
+				// If the a component in the Options popup opens another dialog, the Options one
+				// loses focus, but we don't want it to be disposed.
+				if (!ViewUtil.hasVisibleOwnedWindows(optionsPopup))
+					disposeOptionsPopup();
 			}
 			@Override
 			public void windowGainedFocus(WindowEvent e) {
