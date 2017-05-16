@@ -20,10 +20,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.net.URL;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -37,7 +37,6 @@ import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListModel;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -45,16 +44,21 @@ import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.util.RandomImage;
@@ -62,6 +66,7 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 
 /*
  * #%L
@@ -287,13 +292,13 @@ public class NetworkSearchPanel extends JPanel {
 		providersPopup.pack();
 		providersPopup.show(getProvidersButton(), 0, getProvidersButton().getHeight());
 		providersPopup.requestFocus();
-		getProvidersPanel().getProvidersList().requestFocusInWindow();
+		getProvidersPanel().getTable().requestFocusInWindow();
 	}
 	
 	private void disposeProvidersPopup(boolean commit) {
 		if (providersPopup != null) {
-			if (commit && getProvidersPanel().getProvidersList().getSelectedValue() != null)
-				setSelectedProvider(getProvidersPanel().getProvidersList().getSelectedValue());
+			if (commit && getProvidersPanel().getSelectedValue() != null)
+				setSelectedProvider(getProvidersPanel().getSelectedValue());
 			
 			providersPopup.removeAll();
 			providersPopup.setVisible(false);
@@ -488,8 +493,15 @@ public class NetworkSearchPanel extends JPanel {
 	
 	class ProvidersPanel extends JPanel {
 		
+		private final static int COL_COUNT = 4;
+		
+		final static int ICON_COL_IDX = 0;
+		final static int DEF_COL_IDX = 1;
+		final static int NAME_COL_IDX = 2;
+		final static int WEBSITE_COL_IDX = 3;
+		
 		private JScrollPane scrollPane;
-		private JList<NetworkSearchTaskFactory> providersList;
+		private JTable table;
 		
 		ProvidersPanel() {
 			setLayout(new BorderLayout());
@@ -498,9 +510,19 @@ public class NetworkSearchPanel extends JPanel {
 			setKeyBindings();
 		}
 		
+		private NetworkSearchTaskFactory getProvider(int row) {
+			return (NetworkSearchTaskFactory) getTable().getModel().getValueAt(row, NAME_COL_IDX);
+		}
+		
+		public NetworkSearchTaskFactory getSelectedValue() {
+			int row = getTable().getSelectedRow();
+			
+			return row != -1 ? getProvider(row) : null;
+		}
+
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getProvidersList());
+				scrollPane = new JScrollPane(getTable());
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 			}
@@ -508,85 +530,176 @@ public class NetworkSearchPanel extends JPanel {
 			return scrollPane;
 		}
 		
-		JList<NetworkSearchTaskFactory> getProvidersList() {
-			if (providersList == null) {
-				providersList = new JList<>(new DefaultListModel<>());
+		JTable getTable() {
+			if (table == null) {
+				DefaultTableModel model = new DefaultTableModel() {
+					@Override
+					public boolean isCellEditable(int row, int column) {
+						return false;
+					}
+				};
+				model.setColumnCount(COL_COUNT);
 				
-				providersList.addMouseListener(new MouseAdapter() {
+				table = new JTable(model);
+				table.setDefaultRenderer(Object.class, new ProvidersTableCellRenderer());
+				table.setTableHeader(null);
+				table.setIntercellSpacing(new Dimension(0, 0));
+				table.setShowVerticalLines(false);
+				table.setShowHorizontalLines(true);
+				table.setGridColor(UIManager.getColor("Separator.foreground"));
+				table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+				table.setColumnSelectionAllowed(false);
+				table.setRowHeight(ICON_SIZE);
+				
+				table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 					@Override
-					public void mouseClicked(MouseEvent e) {
-						disposeProvidersPopup(true);
+					public void valueChanged(ListSelectionEvent e) {
+						if (!e.getValueIsAdjusting()) {
+							// Workaround for preventing a click on the check-box in a selected row
+							// from changing the selection when multiple table rows are already selected
+//							if (table.getSelectedRowCount() > 0)
+//								previousSelectedRows = Arrays.stream(table.getSelectedRows()).boxed()
+//										.collect(Collectors.toList());
+						}
 					}
 				});
-				providersList.addMouseMotionListener(new MouseMotionAdapter() {
+				
+				table.addMouseListener(new MouseAdapter() {
 					@Override
-					public void mouseMoved(MouseEvent e) {
-						int index = getProvidersList().locationToIndex(e.getPoint());
-						
-						if (index > -1)
-							getProvidersList().setSelectedIndex(index);
+					public void  mousePressed(MouseEvent e) {
+					    int col = getTable().columnAtPoint(e.getPoint());
+					    int row = getTable().rowAtPoint(e.getPoint());
+					    
+					    if (row != -1) {
+					    	NetworkSearchTaskFactory tf = getProvider(row);
+					    	
+							if (col == DEF_COL_IDX) {
+								setDefaultProvider(tf);
+								setSelectedProvider(tf);
+								table.repaint();
+							} else if (col == WEBSITE_COL_IDX && tf.getWebsite() != null) {
+								serviceRegistrar.getService(OpenBrowser.class).openURL(tf.getWebsite().toString());
+							} else {
+								setSelectedProvider(tf);
+								table.repaint();
+								disposeProvidersPopup(true);
+							}
+					    }
 					}
 				});
+//				providersTable.addMouseMotionListener(new MouseMotionAdapter() {
+//					@Override
+//					public void mouseMoved(MouseEvent e) {
+//						int index = getProvidersTable().locationToIndex(e.getPoint());
+//						
+//						if (index > -1)
+//							getProvidersTable().setSelectedIndex(index);
+//					}
+//				});
 				
 				// Renderer
-				final JPanel cell = new JPanel();
-				cell.setBorder(BorderFactory.createCompoundBorder(
-						BorderFactory.createEmptyBorder(1, 1, 0, 1),
-						BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"))
-				));
-				
-				final JLabel iconLabel = new JLabel(emptyIcon);
-				
-				final JLabel nameLabel = new JLabel(" --- ");
-				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-				
-				final GroupLayout layout = new GroupLayout(cell);
-				cell.setLayout(layout);
-				layout.setAutoCreateContainerGaps(false);
-				layout.setAutoCreateGaps(false);
-				
-				layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addComponent(iconLabel, ICON_SIZE, ICON_SIZE, ICON_SIZE)
-						.addGap(10)
-						.addComponent(nameLabel, 120, PREFERRED_SIZE, 380)
-						.addGap(10)
-				);
-				layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(iconLabel, ICON_SIZE, ICON_SIZE, ICON_SIZE)
-						.addComponent(nameLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				);
-				
-				providersList.setCellRenderer((JList<? extends NetworkSearchTaskFactory> list, NetworkSearchTaskFactory value,
-						int index, boolean isSelected, boolean cellHasFocus) -> {
-							Icon icon = providerIcons.get(value);
-							iconLabel.setIcon(icon != null ? icon: emptyIcon);
-							nameLabel.setText(value.getName());
-							cell.setToolTipText(value.getDescription());
-							
-							String bg = isSelected ? "Table.selectionBackground" : "Table.background";
-							String fg = isSelected ? "Table.selectionForeground" : "Table.foreground"; 
-							cell.setBackground(UIManager.getColor(bg));
-							nameLabel.setForeground(UIManager.getColor(fg));
-							
-							cell.revalidate();
-							
-							return cell;
-				});
+//				final JPanel cell = new JPanel();
+//				cell.setBorder(BorderFactory.createCompoundBorder(
+//						BorderFactory.createEmptyBorder(1, 1, 0, 1),
+//						BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"))
+//				));
 			}
 			
-			return providersList;
+			return table;
 		}
 		
 		void update() {
-			DefaultListModel<NetworkSearchTaskFactory> model =
-					(DefaultListModel<NetworkSearchTaskFactory>) getProvidersList().getModel();
-			model.removeAllElements();
+			Object[][] data = new Object[providers.size()][COL_COUNT];
+			int selectedRow = -1;
+			int i = 0;
 			
-			for (NetworkSearchTaskFactory tf : providers)
-				model.addElement(tf);
+			for (NetworkSearchTaskFactory tf : providers) {
+				data[i][ICON_COL_IDX] = tf;
+				data[i][DEF_COL_IDX] = tf;
+				data[i][NAME_COL_IDX] = tf;
+				data[i][WEBSITE_COL_IDX] = tf;
+				
+				if (tf.equals(getSelectedProvider()))
+					selectedRow = i;
+				
+				i++;
+			}
 			
-			getProvidersList().setSelectedValue(selectedProvider, true);
-			getProvidersList().setVisibleRowCount(Math.min(10, providers.size()));
+			DefaultTableModel model = (DefaultTableModel) getTable().getModel();
+			model.setDataVector(data, new String[COL_COUNT]);
+			
+			getTable().getColumnModel().getColumn(ICON_COL_IDX).setMinWidth(ICON_SIZE);
+			getTable().getColumnModel().getColumn(ICON_COL_IDX).setMaxWidth(ICON_SIZE);
+			getTable().getColumnModel().getColumn(DEF_COL_IDX).setMinWidth(28);
+			getTable().getColumnModel().getColumn(DEF_COL_IDX).setMaxWidth(28);
+			getTable().getColumnModel().getColumn(NAME_COL_IDX).setMaxWidth(380);
+			getTable().getColumnModel().getColumn(WEBSITE_COL_IDX).setMinWidth(28);
+			getTable().getColumnModel().getColumn(WEBSITE_COL_IDX).setMaxWidth(28);
+			
+			getTable().clearSelection();
+			
+			if (selectedRow != -1)
+				getTable().setRowSelectionInterval(selectedRow, selectedRow);
+			
+			int h = (ICON_SIZE + 1) * Math.min(10, providers.size());
+			getScrollPane().setPreferredSize(new Dimension(getScrollPane().getPreferredSize().width, h));
+		}
+		
+		private class ProvidersTableCellRenderer extends DefaultTableCellRenderer {
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			final Font defFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
+			final Font iconFont = iconManager.getIconFont(16.0f);
+			final Border defBorder = 
+					BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"));
+			
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				setForeground(UIManager.getColor("Label.foreground"));
+				setBackground(UIManager.getColor(isSelected ? "Table.selectionBackground" : "Table.background"));
+				setHorizontalAlignment(CENTER);
+				setFont(defFont);
+				setText(null);
+				setIcon(null);
+				setBorder(defBorder);
+				
+				if (value instanceof NetworkSearchTaskFactory) {
+					NetworkSearchTaskFactory tf = (NetworkSearchTaskFactory) value;
+					setToolTipText(tf.getDescription());
+					
+					switch (column) {
+						case ICON_COL_IDX:
+							Icon icon = providerIcons.get(tf);
+							setIcon(icon != null ? icon : emptyIcon);
+							break;
+		
+						case DEF_COL_IDX:
+							setText(tf.equals(getDefaultProvider()) ? IconManager.ICON_STAR : IconManager.ICON_STAR_O);
+							setFont(iconFont);
+							setForeground(UIManager.getColor("CyColor.primary(+1)"));
+							setToolTipText("Set as Preferred Network Search Provider");
+							break;
+						
+						case NAME_COL_IDX:
+							setText(tf.getName());
+							setHorizontalAlignment(LEFT);
+							break;
+						
+						case WEBSITE_COL_IDX:
+							URL url = tf.getWebsite();
+							setText(url != null ? IconManager.ICON_EXTERNAL_LINK : "");
+							setFont(iconFont);
+							setForeground(UIManager.getColor("Table.focusCellBackground"));
+							setToolTipText("Visit Website...");
+							break;
+					}
+				}
+				
+				return this;
+			}
 		}
 		
 		private void setKeyBindings() {
