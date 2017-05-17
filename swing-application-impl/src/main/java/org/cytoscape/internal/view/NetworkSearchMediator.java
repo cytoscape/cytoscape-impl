@@ -17,6 +17,8 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -50,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class NetworkSearchMediator {
+public class NetworkSearchMediator implements AppsFinishedStartingListener {
 
 	private final Map<String, NetworkSearchTaskFactory> taskFactories = new HashMap<>();
 	private final Map<NetworkSearchTaskFactory, JComponent> optionsComponents = new HashMap<>();
@@ -58,6 +60,8 @@ public class NetworkSearchMediator {
 	
 	private final NetworkSearchPanel networkSearchPanel;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private boolean appsFinishedStarting;
 	
 	private final Object lock = new Object();
 	
@@ -112,7 +116,14 @@ public class NetworkSearchMediator {
 					taskFactories.put(factory.getId(), factory);
 				}
 				
-				updateSearchPanel();
+				invokeOnEDT(() -> {
+					updateSearchPanel();
+					
+					// Also select the new provider,
+					// so the user knows it has been installed correctly and is now available
+					if (factory != null && appsFinishedStarting)
+						networkSearchPanel.setSelectedProvider(factory);
+				});
 			} catch (Exception e) {
 				logger.error("Cannot install Network Search Provider: " + factory, e);
 			}
@@ -132,6 +143,11 @@ public class NetworkSearchMediator {
 		
 		if (removed)
 			updateSearchPanel();
+	}
+	
+	@Override
+	public void handleEvent(AppsFinishedStartingEvent evt) {
+		appsFinishedStarting = true;
 	}
 	
 	/**

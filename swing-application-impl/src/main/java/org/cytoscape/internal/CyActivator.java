@@ -334,6 +334,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, toolBarEnableUpdater, new Properties());
 		registerAllServices(bc, recentSessionManager, new Properties());
 		registerAllServices(bc, networkSelectionMediator, new Properties());
+		registerAllServices(bc, netSearchMediator);
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
 		registerServiceListener(bc, preferenceAction, "addCyProperty", "removeCyProperty",
