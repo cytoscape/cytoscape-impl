@@ -183,7 +183,7 @@ public class CyActivator extends AbstractCyActivator {
 	private RowsSetViewUpdater rowsSetViewUpdater;
 	
 	private RecentSessionManager recentSessionManager;
-	private NetworkSelectionMediator networkSelectionMediator;
+	private NetworkSelectionMediator netSelectionMediator;
 	
 	///// CyActions ////
 	private UndoAction undoAction;
@@ -217,34 +217,34 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//////////////
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(serviceRegistrar);
-		registerService(bc, configDirPropertyWriter, CyShutdownListener.class, new Properties());
+		registerService(bc, configDirPropertyWriter, CyShutdownListener.class);
 		
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
-		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
+		registerService(bc, cyHelpBroker, CyHelpBroker.class);
 		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty", CyProperty.class);
 		
 		invokeOnEDTAndWait(() -> {
 			initComponents(bc, serviceRegistrar);
 		});
 		
-		registerService(bc, undoAction, CyAction.class, new Properties());
-		registerService(bc, redoAction, CyAction.class, new Properties());
-		registerService(bc, printAction, CyAction.class, new Properties());
-		registerService(bc, preferenceAction, CyAction.class, new Properties());
-		registerService(bc, bookmarkAction, CyAction.class, new Properties());
-		registerService(bc, settingsAction, CyAction.class, new Properties());
-		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class, new Properties());
-		registerService(bc, cytoPanelWestAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
-		registerService(bc, starterPanelAction, CyAction.class, new Properties());
-		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
-		registerService(bc, closeWindowAction, CyAction.class, new Properties());
+		registerService(bc, undoAction, CyAction.class);
+		registerService(bc, redoAction, CyAction.class);
+		registerService(bc, printAction, CyAction.class);
+		registerService(bc, preferenceAction, CyAction.class);
+		registerService(bc, bookmarkAction, CyAction.class);
+		registerService(bc, settingsAction, CyAction.class);
+		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class);
+		registerService(bc, cytoPanelWestAction, CyAction.class);
+		registerService(bc, cytoPanelSouthAction, CyAction.class);
+		registerService(bc, cytoPanelEastAction, CyAction.class);
+		registerService(bc, cytoPanelSouthWestAction, CyAction.class);
+		registerService(bc, starterPanelAction, CyAction.class);
+		registerService(bc, detachedViewToolBarAction, CyAction.class);
+		registerService(bc, closeWindowAction, CyAction.class);
 		
-		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
+		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class);
 		
-		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
+		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class);
 
 		{
 			Properties props = new Properties();
@@ -317,23 +317,23 @@ public class CyActivator extends AbstractCyActivator {
 			registerAllServices(bc, destroyNetworksAction, props);
 		}
 		
-		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, netMainPanel, new Properties());
-		registerAllServices(bc, netMediator, new Properties());
-		registerAllServices(bc, netViewMediator, new Properties());
-		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
-		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
-		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class, new Properties());
-		registerAllServices(bc, rowViewTracker, new Properties());
-		registerAllServices(bc, selecteEdgeViewUpdater, new Properties());
-		registerAllServices(bc, selecteNodeViewUpdater, new Properties());
+		registerAllServices(bc, cytoscapeDesktop);
+		registerAllServices(bc, netMainPanel);
+		registerAllServices(bc, netMediator);
+		registerAllServices(bc, netViewMediator);
+		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class);
+		registerService(bc, undoMonitor, NetworkDestroyedListener.class);
+		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class);
+		registerAllServices(bc, rowViewTracker);
+		registerAllServices(bc, selecteEdgeViewUpdater);
+		registerAllServices(bc, selecteNodeViewUpdater);
 
-		registerAllServices(bc, rowsSetViewUpdater, new Properties());
+		registerAllServices(bc, rowsSetViewUpdater);
 		
-		registerAllServices(bc, sessionHandler, new Properties());
-		registerAllServices(bc, toolBarEnableUpdater, new Properties());
-		registerAllServices(bc, recentSessionManager, new Properties());
-		registerAllServices(bc, networkSelectionMediator, new Properties());
+		registerAllServices(bc, sessionHandler);
+		registerAllServices(bc, toolBarEnableUpdater);
+		registerAllServices(bc, recentSessionManager);
+		registerAllServices(bc, netSelectionMediator);
 		registerAllServices(bc, netSearchMediator);
 
 		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
@@ -389,7 +389,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY,"10.0");
 			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
 			
-			registerService(bc, exitAction, CyAction.class, new Properties());
+			registerService(bc, exitAction, CyAction.class);
 		}
 	
 		// Full screen actions.  This is platform dependent
@@ -404,7 +404,7 @@ public class CyActivator extends AbstractCyActivator {
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
 		}
 		
-		registerService(bc, fullScreenAction, CyAction.class, new Properties());
+		registerService(bc, fullScreenAction, CyAction.class);
 	}
 
 	private void initComponents(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
@@ -459,7 +459,7 @@ public class CyActivator extends AbstractCyActivator {
 		rowsSetViewUpdater = new RowsSetViewUpdater(rowViewTracker, netViewMediator, serviceRegistrar);
 
 		recentSessionManager = new RecentSessionManager(serviceRegistrar);
-		networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
+		netSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
 		
 		///// CyActions ////
 		undoAction = new UndoAction(serviceRegistrar);
