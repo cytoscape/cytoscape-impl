@@ -533,7 +533,7 @@ public class NetworkSearchPanel extends JPanel {
 			setLayout(new BorderLayout());
 			add(getScrollPane(), BorderLayout.CENTER);
 			
-			setKeyBindings();
+			setKeyBindings(getTable());
 		}
 		
 		private NetworkSearchTaskFactory getProvider(int row) {
@@ -724,21 +724,24 @@ public class NetworkSearchPanel extends JPanel {
 			}
 		}
 		
-		private void setKeyBindings() {
-			final ActionMap actionMap = getActionMap();
-			final InputMap inputMap = getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+		private void setKeyBindings(JComponent comp) {
+			final ActionMap actionMap = comp.getActionMap();
+			final InputMap inputMap = comp.getInputMap(WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), KeyAction.VK_ENTER);
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), KeyAction.VK_SPACE);
+			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0), KeyAction.VK_TAB);
 			
 			actionMap.put(KeyAction.VK_ENTER, new KeyAction(KeyAction.VK_ENTER));
 			actionMap.put(KeyAction.VK_SPACE, new KeyAction(KeyAction.VK_SPACE));
+			actionMap.put(KeyAction.VK_TAB, new KeyAction(KeyAction.VK_TAB));
 		}
 
 		private class KeyAction extends AbstractAction {
 
 			final static String VK_ENTER = "VK_ENTER";
 			final static String VK_SPACE = "VK_SPACE";
+			final static String VK_TAB = "VK_TAB";
 			
 			KeyAction(final String actionCommand) {
 				putValue(ACTION_COMMAND_KEY, actionCommand);
@@ -748,7 +751,7 @@ public class NetworkSearchPanel extends JPanel {
 			public void actionPerformed(final ActionEvent e) {
 				final String cmd = e.getActionCommand();
 				
-				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE))
+				if (cmd.equals(VK_ENTER) || cmd.equals(VK_SPACE) || cmd.equals(VK_TAB))
 					disposeProvidersPopup(true);
 			}
 		}
@@ -788,7 +791,7 @@ public class NetworkSearchPanel extends JPanel {
 		
 		private void setKeyBindings(JComponent comp) {
 			final ActionMap actionMap = comp.getActionMap();
-			final InputMap inputMap = comp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+			final InputMap inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
 
 			inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), KeyAction.VK_ESCAPE);
 			actionMap.put(KeyAction.VK_ESCAPE, new KeyAction(KeyAction.VK_ESCAPE));
