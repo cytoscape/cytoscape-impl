@@ -127,7 +127,7 @@ public class NetworkSearchMediator {
 			optionsComponents.remove(factory);
 			
 			if (factory.getId() != null)
-				taskFactories.remove(factory.getId(), factory);
+				removed = taskFactories.remove(factory.getId(), factory);
 		}
 		
 		if (removed)
