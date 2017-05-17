@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.AbstractAction;
@@ -115,7 +114,9 @@ public class NetworkSearchPanel extends JPanel {
 	private final EmptyIcon emptyIcon = new EmptyIcon(ICON_SIZE, ICON_SIZE);
 	private final Map<NetworkSearchTaskFactory, Icon> providerIcons = new HashMap<>();
 	
-	private final Set<NetworkSearchTaskFactory> providers;
+	private final TreeSet<NetworkSearchTaskFactory> providers;
+	
+	/** This should only be set when the user explicitly selects a provider */
 	private NetworkSearchTaskFactory selectedProvider;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -160,14 +161,31 @@ public class NetworkSearchPanel extends JPanel {
 	
 	public void setSelectedProvider(NetworkSearchTaskFactory newValue) {
 		if (newValue != selectedProvider) {
-			NetworkSearchTaskFactory oldValue = selectedProvider;
+			NetworkSearchTaskFactory oldValue = getSelectedProvider(); // Get the actual "current" provider
 			selectedProvider = newValue;
-			firePropertyChange("selectedProvider", oldValue, newValue);
+			
+			if (newValue != oldValue)
+				firePropertyChange("selectedProvider", oldValue, newValue);
 		}
 	}
 	
+	/**
+	 * If there is no previously selected provider (by the user),
+	 * it returns the preferred one or the first one in the list.
+	 */
 	public NetworkSearchTaskFactory getSelectedProvider() {
-		return selectedProvider;
+		if (selectedProvider != null)
+			return selectedProvider;
+		
+		NetworkSearchTaskFactory defProvider = getDefaultProvider();
+		
+		if (defProvider != null)
+			return defProvider;
+		
+		if (!providers.isEmpty())
+			return providers.first();
+		
+		return null;
 	}
 	
 	public NetworkSearchTaskFactory getProvider(String id) {
@@ -190,6 +208,7 @@ public class NetworkSearchPanel extends JPanel {
 	}
 	
 	void update(Collection<NetworkSearchTaskFactory> newProviders) {
+		NetworkSearchTaskFactory oldSelected = getSelectedProvider();
 		providers.clear();
 		providerIcons.clear();
 		
@@ -209,17 +228,27 @@ public class NetworkSearchPanel extends JPanel {
 			});
 		}
 		
-		if (selectedProvider != null && providers.contains(selectedProvider))
-			setSelectedProvider(selectedProvider);
-		else
-			setSelectedProvider(getDefaultProvider());
+		if (selectedProvider != null && !newProviders.contains(selectedProvider))
+			selectedProvider = null;
+		
+		// We are not changing the selectedProvider field here (only the user should do it),
+		// but still need to let the widget know that the actual "current" provider has changed.
+		// This is done this way to prevent a core provider from preventing another preferred one
+		// (from third-party apps) from being pre-selected when Cytoscape restarts,
+		// since the preferred one is auto-selected only when the user has not selected another provider yet.
+		NetworkSearchTaskFactory newSelected = getSelectedProvider();
+		
+		if (newSelected != oldSelected)
+			firePropertyChange("selectedProvider", oldSelected, newSelected);
 	}
 	
 	void updateProvidersButton() {
-		if (selectedProvider != null) {
-			Icon icon = providerIcons.get(selectedProvider);
+		NetworkSearchTaskFactory currentProvider = getSelectedProvider();
+		
+		if (currentProvider != null) {
+			Icon icon = providerIcons.get(currentProvider);
 			getProvidersButton().setIcon(icon != null ? icon : emptyIcon);
-			getProvidersButton().setToolTipText(selectedProvider.getName());
+			getProvidersButton().setToolTipText(currentProvider.getName());
 		} else {
 			getProvidersButton().setIcon(emptyIcon);
 			getProvidersButton().setToolTipText("Please select a search provider...");
@@ -230,14 +259,15 @@ public class NetworkSearchPanel extends JPanel {
 	}
 	
 	void updateSearchEnabled() {
-		boolean enabled = selectedProvider != null;
+		boolean enabled = getSelectedProvider() != null;
 		getSearchTextField().setEnabled(enabled);
 		getOptionsButton().setEnabled(enabled);
 		updateSearchButton();
 	}
 	
 	void updateSearchButton() {
-		getSearchButton().setEnabled(selectedProvider != null && selectedProvider.isReady());
+		NetworkSearchTaskFactory tf = getSelectedProvider();
+		getSearchButton().setEnabled(tf != null && tf.isReady());
 	}
 	
 	void updateSelectedSearchComponent(JComponent queryComp) {
