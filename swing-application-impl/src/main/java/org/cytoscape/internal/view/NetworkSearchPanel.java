@@ -3,7 +3,10 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static org.cytoscape.internal.util.ViewUtil.DEFAULT_PROVIDER_PROP_KEY;
+import static org.cytoscape.internal.util.ViewUtil.getViewProperty;
 import static org.cytoscape.internal.util.ViewUtil.hasVisibleOwnedWindows;
+import static org.cytoscape.internal.util.ViewUtil.setViewProperty;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -32,7 +35,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -63,7 +65,6 @@ import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.util.RandomImage;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -96,7 +97,6 @@ import org.cytoscape.util.swing.OpenBrowser;
 @SuppressWarnings("serial")
 public class NetworkSearchPanel extends JPanel {
 
-	private static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	private static final int ICON_SIZE = 32;
 	private static final String DEF_SEARCH_TEXT = "Type your query here...";
 	
@@ -116,7 +116,6 @@ public class NetworkSearchPanel extends JPanel {
 	private final Map<NetworkSearchTaskFactory, Icon> providerIcons = new HashMap<>();
 	
 	private final Set<NetworkSearchTaskFactory> providers;
-	private NetworkSearchTaskFactory defaultProvider;
 	private NetworkSearchTaskFactory selectedProvider;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -133,12 +132,9 @@ public class NetworkSearchPanel extends JPanel {
 	}
 	
 	public void setDefaultProvider(NetworkSearchTaskFactory suggestedProvider) {
-		Properties props = (Properties) serviceRegistrar
-				.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
-		
 		if (suggestedProvider == null || !providers.contains(suggestedProvider)) {
 			// Check if there is a CyProperty for this
-			String id = props.getProperty(DEFAULT_PROVIDER_PROP_KEY);
+			String id = getViewProperty(DEFAULT_PROVIDER_PROP_KEY, serviceRegistrar);
 			
 			if (id != null)
 				suggestedProvider = getProvider(id);
@@ -146,7 +142,7 @@ public class NetworkSearchPanel extends JPanel {
 		
 		if (suggestedProvider != null) {
 			// Update the CyProperty as well;
-			props.setProperty(DEFAULT_PROVIDER_PROP_KEY, suggestedProvider.getId());
+			setViewProperty(DEFAULT_PROVIDER_PROP_KEY, suggestedProvider.getId(), serviceRegistrar);
 		} else {
 			if (!providers.isEmpty())
 				suggestedProvider = providers.iterator().next();
@@ -154,12 +150,12 @@ public class NetworkSearchPanel extends JPanel {
 			// because it may be provided by an app that is missing right now,
 			// but can be installed later.
 		}
-		
-		defaultProvider = suggestedProvider;
 	}
 	
 	public NetworkSearchTaskFactory getDefaultProvider() {
-		return defaultProvider;
+		String id = getViewProperty(DEFAULT_PROVIDER_PROP_KEY, serviceRegistrar);
+		
+		return getProvider(id);
 	}
 	
 	public void setSelectedProvider(NetworkSearchTaskFactory newValue) {
@@ -213,12 +209,10 @@ public class NetworkSearchPanel extends JPanel {
 			});
 		}
 		
-		setDefaultProvider(defaultProvider);
-		
 		if (selectedProvider != null && providers.contains(selectedProvider))
 			setSelectedProvider(selectedProvider);
 		else
-			setSelectedProvider(defaultProvider);
+			setSelectedProvider(getDefaultProvider());
 	}
 	
 	void updateProvidersButton() {

@@ -63,6 +63,7 @@ public final class ViewUtil {
 	public static final String SHOW_NODE_EDGE_COUNT_KEY = "showNodeEdgeCount";
 	public static final String SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY = "showNetworkProvenanceHierarchy";
 	public static final String SHOW_NETWORK_TOOL_BAR = "showNetworkToolBar";
+	public static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
