@@ -98,8 +98,8 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 							
 							if (oc != null) {
 								// Make the components smaller and the background white
-								recursiveDo(oc, (c) -> makeSmall(c));
-								recursiveDo(oc, (c) -> {
+								recursiveDo(oc, c -> makeSmall(c));
+								recursiveDo(oc, c -> {
 									if (c instanceof JPanel)
 										((JPanel) c).setBackground(UIManager.getColor("Table.background"));
 								});

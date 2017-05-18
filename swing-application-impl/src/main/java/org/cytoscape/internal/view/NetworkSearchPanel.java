@@ -132,7 +132,7 @@ public class NetworkSearchPanel extends JPanel {
 		init();
 	}
 	
-	public void setDefaultProvider(NetworkSearchTaskFactory suggestedProvider) {
+	private void setDefaultProvider(NetworkSearchTaskFactory suggestedProvider) {
 		if (suggestedProvider == null || !providers.contains(suggestedProvider)) {
 			// Check if there is a CyProperty for this
 			String id = getViewProperty(DEFAULT_PROVIDER_PROP_KEY, serviceRegistrar);
@@ -141,19 +141,11 @@ public class NetworkSearchPanel extends JPanel {
 				suggestedProvider = getProvider(id);
 		}
 		
-		if (suggestedProvider != null) {
-			// Update the CyProperty as well;
+		if (suggestedProvider != null) // Update the CyProperty
 			setViewProperty(DEFAULT_PROVIDER_PROP_KEY, suggestedProvider.getId(), serviceRegistrar);
-		} else {
-			if (!providers.isEmpty())
-				suggestedProvider = providers.iterator().next();
-			// Do not set this provider as default in the CyProperty,
-			// because it may be provided by an app that is missing right now,
-			// but can be installed later.
-		}
 	}
 	
-	public NetworkSearchTaskFactory getDefaultProvider() {
+	private NetworkSearchTaskFactory getDefaultProvider() {
 		String id = getViewProperty(DEFAULT_PROVIDER_PROP_KEY, serviceRegistrar);
 		
 		return getProvider(id);
@@ -163,6 +155,8 @@ public class NetworkSearchPanel extends JPanel {
 		if (newValue != selectedProvider) {
 			NetworkSearchTaskFactory oldValue = getSelectedProvider(); // Get the actual "current" provider
 			selectedProvider = newValue;
+			// Save the last selected provider now, so it can be selected by default when Cytoscape restarts
+			setDefaultProvider(newValue);
 			
 			if (newValue != oldValue)
 				firePropertyChange("selectedProvider", oldValue, newValue);
@@ -519,12 +513,11 @@ public class NetworkSearchPanel extends JPanel {
 	class ProvidersPanel extends JPanel {
 		
 		private final static int MAX_VISIBLE_ROWS = 10;
-		private final static int COL_COUNT = 4;
+		private final static int COL_COUNT = 3;
 		
 		final static int ICON_COL_IDX = 0;
 		final static int NAME_COL_IDX = 1;
-		final static int DEF_COL_IDX = 2;
-		final static int WEBSITE_COL_IDX = 3;
+		final static int WEBSITE_COL_IDX = 2;
 		
 		private JScrollPane scrollPane;
 		private JTable table;
@@ -593,10 +586,7 @@ public class NetworkSearchPanel extends JPanel {
 					    if (row != -1) {
 					    	NetworkSearchTaskFactory tf = getProvider(row);
 					    	
-							if (col == DEF_COL_IDX) {
-								setDefaultProvider(tf);
-								getTable().repaint();
-							} else if (col == WEBSITE_COL_IDX && tf != null && tf.getWebsite() != null) {
+							if (col == WEBSITE_COL_IDX && tf != null && tf.getWebsite() != null) {
 								serviceRegistrar.getService(OpenBrowser.class).openURL(tf.getWebsite().toString());
 							} else {
 								getTable().repaint();
@@ -623,7 +613,6 @@ public class NetworkSearchPanel extends JPanel {
 			for (NetworkSearchTaskFactory tf : providers) {
 				data[i][ICON_COL_IDX] = tf;
 				data[i][NAME_COL_IDX] = tf;
-				data[i][DEF_COL_IDX] = tf;
 				data[i][WEBSITE_COL_IDX] = tf;
 				
 				if (tf.equals(getSelectedProvider()))
@@ -641,8 +630,6 @@ public class NetworkSearchPanel extends JPanel {
 			getTable().getColumnModel().getColumn(ICON_COL_IDX).setMinWidth(ICON_SIZE);
 			getTable().getColumnModel().getColumn(ICON_COL_IDX).setMaxWidth(ICON_SIZE);
 			getTable().getColumnModel().getColumn(NAME_COL_IDX).setMinWidth(nameWidth + 10);
-			getTable().getColumnModel().getColumn(DEF_COL_IDX).setMinWidth(28);
-			getTable().getColumnModel().getColumn(DEF_COL_IDX).setMaxWidth(28);
 			getTable().getColumnModel().getColumn(WEBSITE_COL_IDX).setMinWidth(32);
 			getTable().getColumnModel().getColumn(WEBSITE_COL_IDX).setMaxWidth(32);
 			
@@ -664,7 +651,7 @@ public class NetworkSearchPanel extends JPanel {
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			final Font defFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
-			final Font iconFont = iconManager.getIconFont(16.0f);
+			final Font iconFont = iconManager.getIconFont(12.0f);
 			final Border defBorder = BorderFactory.createCompoundBorder(
 					BorderFactory.createEmptyBorder(1, 0, 0, 0),
 					BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground"))
@@ -703,16 +690,9 @@ public class NetworkSearchPanel extends JPanel {
 							setBorder(nameBorder);
 							break;
 						
-						case DEF_COL_IDX:
-							setText(tf.equals(getDefaultProvider()) ? IconManager.ICON_STAR : IconManager.ICON_STAR_O);
-							setFont(iconFont);
-							setForeground(UIManager.getColor("CyColor.primary(+1)"));
-							setToolTipText("Set as Preferred Network Search Provider");
-							break;
-						
 						case WEBSITE_COL_IDX:
 							URL url = tf.getWebsite();
-							setText(url != null ? IconManager.ICON_HOME : "");
+							setText(url != null ? IconManager.ICON_EXTERNAL_LINK : "");
 							setFont(iconFont);
 							setForeground(UIManager.getColor("Table.focusCellBackground"));
 							setToolTipText(url != null ? "Visit Website..." : null);
