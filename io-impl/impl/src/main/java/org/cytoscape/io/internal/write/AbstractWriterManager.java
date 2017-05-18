@@ -54,7 +54,7 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void addCyWriterFactory(T factory, Map props) {
+	public void addCyWriterFactory(T factory, Map<String,String> props) {
 		if ( factory != null && factory.getFileFilter().getDataCategory() == category ) {
 			logger.info("adding IO taskFactory ");
 			factories.put(factory.getFileFilter(), factory);
@@ -63,7 +63,7 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 	}
 
 	@SuppressWarnings("unchecked")
-	public void removeCyWriterFactory(T factory, Map props) {
+	public void removeCyWriterFactory(T factory, Map<String,String> props) {
 		factories.remove(factory.getFileFilter());
 	}
 

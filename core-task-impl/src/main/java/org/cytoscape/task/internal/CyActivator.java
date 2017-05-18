@@ -798,7 +798,7 @@ public class CyActivator extends AbstractCyActivator {
 		newEmptyNetworkTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Create an empty network");
 		registerService(bc,newEmptyNetworkTaskFactory,TaskFactory.class, newEmptyNetworkTaskFactoryProps);
 		registerService(bc,newEmptyNetworkTaskFactory,NewEmptyNetworkViewFactory.class, newEmptyNetworkTaskFactoryProps);
-		registerServiceListener(bc, newEmptyNetworkTaskFactory, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
+		registerServiceListener(bc, newEmptyNetworkTaskFactory::addNetworkViewRenderer, newEmptyNetworkTaskFactory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 
 		Properties newNetworkSelectedNodesEdgesTaskFactoryProps = new Properties();
 		newNetworkSelectedNodesEdgesTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SELECTED_NODES_OR_EDGES);
@@ -964,7 +964,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewTaskFactoryProps.setProperty(TITLE,"Create Views");
 		registerService(bc,createNetworkViewTaskFactory,NetworkCollectionTaskFactory.class, createNetworkViewTaskFactoryProps);
 		registerService(bc,createNetworkViewTaskFactory,CreateNetworkViewTaskFactory.class, createNetworkViewTaskFactoryProps);
-		registerServiceListener(bc, createNetworkViewTaskFactory, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
+		registerServiceListener(bc, createNetworkViewTaskFactory::addNetworkViewRenderer, createNetworkViewTaskFactory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 
 		// For commands
 		Properties createNetworkViewCommandProps = new Properties();
@@ -1826,6 +1826,6 @@ public class CyActivator extends AbstractCyActivator {
 		exportAsWebArchiveTaskFactoryProps.setProperty(MENU_GRAVITY,"5.3");
 		exportAsWebArchiveTaskFactoryProps.setProperty(TITLE,"Export as Web Page...");
 		registerAllServices(bc, exportAsWebArchiveTaskFactory, exportAsWebArchiveTaskFactoryProps);
-		registerServiceListener(bc, exportAsWebArchiveTaskFactory, "registerFactory", "unregisterFactory", CySessionWriterFactory.class);
+		registerServiceListener(bc, exportAsWebArchiveTaskFactory::registerFactory, exportAsWebArchiveTaskFactory::unregisterFactory, CySessionWriterFactory.class);
 	}
 }

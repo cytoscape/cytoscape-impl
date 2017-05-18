@@ -14,7 +14,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -435,14 +434,14 @@ public class CytoscapeDesktop extends JFrame
 		                                   + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
 	}
 
-	public void addCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
+	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
 			impl.add(cp);
 		});
 	}
 
-	public void removeCytoPanelComponent(CytoPanelComponent cp, Dictionary<?, ?> props) {
+	public void removeCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
 			impl.remove(cp);
@@ -454,13 +453,13 @@ public class CytoscapeDesktop extends JFrame
 		return statusToolBar;
 	}
 
-	public void addToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
+	public void addToolBarComponent(ToolBarComponent tp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			((CytoscapeToolBar) cyMenus.getJToolBar()).addToolBarComponent(tp);
 		});
 	}
 
-	public void removeToolBarComponent(ToolBarComponent tp, Dictionary<?, ?> props) {
+	public void removeToolBarComponent(ToolBarComponent tp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			((CytoscapeToolBar) cyMenus.getJToolBar()).removeToolBarComponent(tp);
 		});

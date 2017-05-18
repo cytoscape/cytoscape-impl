@@ -216,7 +216,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
-		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty", CyProperty.class);
+		registerServiceListener(bc, configDirPropertyWriter::addCyProperty, configDirPropertyWriter::removeCyProperty, CyProperty.class);
 		
 		invokeOnEDTAndWait(() -> {
 			initComponents(bc, serviceRegistrar);
@@ -330,42 +330,26 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, recentSessionManager, new Properties());
 		registerAllServices(bc, networkSelectionMediator, new Properties());
 
-		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
-		registerServiceListener(bc, preferenceAction, "addCyProperty", "removeCyProperty",
-		                        CyProperty.class);
-		registerServiceListener(bc, cytoscapeDesktop, "addCytoPanelComponent",
-		                        "removeCytoPanelComponent", CytoPanelComponent.class);
-		registerServiceListener(bc, cytoscapeDesktop, "addToolBarComponent",
-		                        "removeToolBarComponent", ToolBarComponent.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addTaskFactory", "removeTaskFactory",
-		                        TaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkTaskFactory",
-		                        "removeNetworkTaskFactory", NetworkTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkViewTaskFactory",
-		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkCollectionTaskFactory",
-		                        "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkViewCollectionTaskFactory",
-		                        "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
-		                        "removeTableTaskFactory", TableTaskFactory.class);
-		registerServiceListener(bc, layoutSettingsManager, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
-		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
+		registerServiceListener(bc, cytoscapeDesktop::addAction, cytoscapeDesktop::removeAction, CyAction.class);
+		registerServiceListener(bc, preferenceAction::addCyProperty, preferenceAction::removeCyProperty, CyProperty.class);
+		registerServiceListener(bc, cytoscapeDesktop::addCytoPanelComponent, cytoscapeDesktop::removeCytoPanelComponent, CytoPanelComponent.class);
+		registerServiceListener(bc, cytoscapeDesktop::addToolBarComponent, cytoscapeDesktop::removeToolBarComponent, ToolBarComponent.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addTaskFactory, cytoscapeMenuPopulator::removeTaskFactory, TaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkTaskFactory, cytoscapeMenuPopulator::removeNetworkTaskFactory, NetworkTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewTaskFactory, cytoscapeMenuPopulator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addTableTaskFactory, cytoscapeMenuPopulator::removeTableTaskFactory, TableTaskFactory.class);
+		registerServiceListener(bc, layoutSettingsManager::addLayout, layoutSettingsManager::removeLayout, CyLayoutAlgorithm.class);
+		registerServiceListener(bc, settingsAction::addLayout, settingsAction::removeLayout, CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, netMediator, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
-				                NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkTaskFactory", "removeNetworkTaskFactory",
-				                NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
-		
-		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
+		registerServiceListener(bc, netMediator::addNetworkViewTaskFactory, netMediator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkTaskFactory, netMediator::removeNetworkTaskFactory, NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkViewCollectionTaskFactory, netMediator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkCollectionTaskFactory, netMediator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addCyAction, netMediator::removeCyAction, CyAction.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, layoutMenuPopulator::addLayout, layoutMenuPopulator::removeLayout, CyLayoutAlgorithm.class);
 		
 		if (LookAndFeelUtil.isMac()) {
 			try {

@@ -74,13 +74,13 @@ public class CyActivator extends AbstractCyActivator {
 		TransformerManagerImpl transformerManager = new TransformerManagerImpl();
 		registerService(bc, transformerManager, TransformerManager.class, new Properties());
 		
-		registerServiceListener(bc, transformerManager, "registerTransformerSource", "unregisterTransformerSource", TransformerSource.class);
-		registerServiceListener(bc, transformerManager, "registerFilterFactory", "unregisterFilterFactory", FilterFactory.class);
-		registerServiceListener(bc, transformerManager, "registerElementTransformerFactory", "unregisterElementTransformerFactory", ElementTransformerFactory.class);
-		registerServiceListener(bc, transformerManager, "registerHolisticTransformerFactory", "unregisterHolisticTransformerFactory", HolisticTransformerFactory.class);
+		registerServiceListener(bc, transformerManager::registerTransformerSource, transformerManager::unregisterTransformerSource, TransformerSource.class);
+		registerServiceListener(bc, transformerManager::registerFilterFactory, transformerManager::unregisterFilterFactory, FilterFactory.class);
+		registerServiceListener(bc, transformerManager::registerElementTransformerFactory, transformerManager::unregisterElementTransformerFactory, ElementTransformerFactory.class);
+		registerServiceListener(bc, transformerManager::registerHolisticTransformerFactory, transformerManager::unregisterHolisticTransformerFactory, HolisticTransformerFactory.class);
 		
 		TransformerViewManager transformerViewManager = new TransformerViewManager(transformerManager);
-		registerServiceListener(bc, transformerViewManager, "registerTransformerViewFactory", "unregisterTransformerViewFactory", TransformerViewFactory.class);
+		registerServiceListener(bc, transformerViewManager::registerTransformerViewFactory, transformerViewManager::unregisterTransformerViewFactory, TransformerViewFactory.class);
 		
 		registerService(bc, new CyNetworkSource(), TransformerSource.class, new Properties());
 

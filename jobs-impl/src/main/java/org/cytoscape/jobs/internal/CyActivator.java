@@ -76,8 +76,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		// Our job manager also needs to handle the registration of jobs handlers and job session handlers
-		registerServiceListener(bc, jobManager, "addJobMonitor", "removeJobMonitor", CyJobMonitor.class);
-		registerServiceListener(bc, jobManager, "addExecutionService", "removeExecutionService", CyJobExecutionService.class);
+		registerServiceListener(bc, jobManager::addJobMonitor, jobManager::removeJobMonitor, CyJobMonitor.class);
+		registerServiceListener(bc, jobManager::addExecutionService, jobManager::removeExecutionService, CyJobExecutionService.class);
 
 		// Our job manager also needs to know about session load and save
 		registerService(bc, jobManager, SessionAboutToBeSavedListener.class, new Properties());

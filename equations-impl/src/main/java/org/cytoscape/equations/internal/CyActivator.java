@@ -50,7 +50,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, parser, EquationParser.class, new Properties());
 
 		// For dynamically add functions.
-		registerServiceListener(bc, parser, "registerFunctionService", "unregisterFunctionService", Function.class);
+		registerServiceListener(bc, parser::registerFunctionService, parser::unregisterFunctionService, Function.class);
 	}
 }
 

@@ -93,7 +93,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, showImportTableFromWebServiceDialogAction, CyAction.class, new Properties());
 		registerService(bc, webServiceGui, WebServiceGUI.class, new Properties());
 
-		registerServiceListener(bc, unifiedNetworkImportDialog, "addClient", "removeClient", WebServiceClient.class);
-		registerServiceListener(bc, unifiedTableImportDialog, "addClient", "removeClient", WebServiceClient.class);
+		registerServiceListener(bc, unifiedNetworkImportDialog::addClient, unifiedNetworkImportDialog::removeClient, WebServiceClient.class);
+		registerServiceListener(bc, unifiedTableImportDialog::addClient, unifiedTableImportDialog::removeClient, WebServiceClient.class);
 	}
 }

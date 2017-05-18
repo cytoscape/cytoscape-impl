@@ -51,7 +51,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, cytoscapeVersion, new Properties());
 		registerAllServices(bc, cyApplicationConfiguration, new Properties());
 
-		registerServiceListener(bc, cyApplicationManager, "addNetworkViewRenderer", "removeNetworkViewRenderer", NetworkViewRenderer.class);
+		registerServiceListener(bc, cyApplicationManager::addNetworkViewRenderer, cyApplicationManager::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		
 		DefaultNetworkViewFactory viewFactory = new DefaultNetworkViewFactory(cyApplicationManager);
 		Properties viewFactoryProperties = new Properties();

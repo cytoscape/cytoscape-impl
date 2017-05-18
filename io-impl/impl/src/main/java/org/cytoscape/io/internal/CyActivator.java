@@ -88,7 +88,6 @@ import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyTableWriterFactory;
 import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.io.write.CyTransformerWriter;
-import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.io.write.PresentationWriterFactory;
 import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.io.write.VizmapWriterFactory;
@@ -217,7 +216,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyTransformerWriterImpl transformerWriter = new CyTransformerWriterImpl();
 		registerService(bc, transformerReader, CyTransformerReader.class, new Properties());
 		registerService(bc, transformerWriter, CyTransformerWriter.class, new Properties());
-		registerServiceListener(bc, transformerReader, "registerTransformerManager", "unregisterTransformerManager", TransformerManager.class);
+		registerServiceListener(bc, transformerReader::registerTransformerManager, transformerReader::unregisterTransformerManager, TransformerManager.class);
 		
 		registerService(bc, cyNetworkReaderManager, CyNetworkReaderManager.class, new Properties());
 		registerService(bc, cyDataTableReaderManager, CyTableReaderManager.class, new Properties());
@@ -252,17 +251,17 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,unrecognizedVisualPropertyManager, NetworkViewAboutToBeDestroyedListener.class, new Properties());
 		registerService(bc, recentlyOpenedTracker, RecentlyOpenedTracker.class, new Properties());
 		
-		registerServiceListener(bc,cyNetworkReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,cyDataTableReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,cySessionReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,cyPropertyReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,vizmapReaderManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,viewWriterManager,"addCyWriterFactory","removeCyWriterFactory",PresentationWriterFactory.class,CyWriterFactory.class);
-		registerServiceListener(bc,networkViewWriterManager,"addCyWriterFactory","removeCyWriterFactory",CyNetworkViewWriterFactory.class,CyWriterFactory.class);
-		registerServiceListener(bc,sessionWriterManager,"addCyWriterFactory","removeCyWriterFactory",CySessionWriterFactory.class,CyWriterFactory.class);
-		registerServiceListener(bc,propertyWriterManager,"addCyWriterFactory","removeCyWriterFactory",CyPropertyWriterFactory.class,CyWriterFactory.class);
-		registerServiceListener(bc,tableWriterManager,"addCyWriterFactory","removeCyWriterFactory",CyTableWriterFactory.class,CyWriterFactory.class);
-		registerServiceListener(bc,vizmapWriterManager,"addCyWriterFactory","removeCyWriterFactory",VizmapWriterFactory.class,CyWriterFactory.class);
+		registerServiceListener(bc, cyNetworkReaderManager::addInputStreamTaskFactory, cyNetworkReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
+		registerServiceListener(bc, cyDataTableReaderManager::addInputStreamTaskFactory, cyDataTableReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
+		registerServiceListener(bc, cySessionReaderManager::addInputStreamTaskFactory, cySessionReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
+		registerServiceListener(bc, cyPropertyReaderManager::addInputStreamTaskFactory, cyPropertyReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
+		registerServiceListener(bc, vizmapReaderManager::addInputStreamTaskFactory, vizmapReaderManager::removeInputStreamTaskFactory, InputStreamTaskFactory.class);
+		registerServiceListener(bc, viewWriterManager::addCyWriterFactory, viewWriterManager::removeCyWriterFactory, PresentationWriterFactory.class);
+		registerServiceListener(bc, networkViewWriterManager::addCyWriterFactory, networkViewWriterManager::removeCyWriterFactory, CyNetworkViewWriterFactory.class);
+		registerServiceListener(bc, sessionWriterManager::addCyWriterFactory, sessionWriterManager::removeCyWriterFactory, CySessionWriterFactory.class);
+		registerServiceListener(bc, propertyWriterManager::addCyWriterFactory, propertyWriterManager::removeCyWriterFactory, CyPropertyWriterFactory.class);
+		registerServiceListener(bc, tableWriterManager::addCyWriterFactory, tableWriterManager::removeCyWriterFactory, CyTableWriterFactory.class);
+		registerServiceListener(bc, vizmapWriterManager::addCyWriterFactory, vizmapWriterManager::removeCyWriterFactory, VizmapWriterFactory.class);
 
 		registerAllServices(bc, pngWriterFactory, new Properties());
 		registerAllServices(bc, jpegWriterFactory, new Properties());

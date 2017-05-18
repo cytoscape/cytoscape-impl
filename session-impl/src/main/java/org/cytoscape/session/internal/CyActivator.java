@@ -43,6 +43,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CySessionManagerImpl cySessionManager = new CySessionManagerImpl(serviceRegistrar);
 		registerAllServices(bc, cySessionManager, new Properties());
-		registerServiceListener(bc, cySessionManager, "addCyProperty", "removeCyProperty", CyProperty.class);
+		registerServiceListener(bc, cySessionManager::addCyProperty, cySessionManager::removeCyProperty, CyProperty.class);
 	}
 }

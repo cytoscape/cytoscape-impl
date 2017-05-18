@@ -77,8 +77,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, globalTableBrowser, RowsSetListener.class, globalTableProp);
 		registerService(bc, globalTableBrowser, RowsDeletedListener.class, globalTableProp);
 
-		registerServiceListener(bc, popupMenuHelper, "addTableColumnTaskFactory", "removeTableColumnTaskFactory", TableColumnTaskFactory.class);
-		registerServiceListener(bc, popupMenuHelper, "addTableCellTaskFactory", "removeTableCellTaskFactory", TableCellTaskFactory.class);
+		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
+		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
 		
 		{
 			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);

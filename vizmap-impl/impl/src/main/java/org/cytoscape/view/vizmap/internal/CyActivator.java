@@ -65,7 +65,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty("service.type", "factory");
 			props.setProperty("mapping.type", "passthrough");
 			registerService(bc, pmFactory, VisualMappingFunctionFactory.class, props);
-			registerServiceListener(bc, pmFactory, "addValueTranslator", "removeValueTranslator", ValueTranslator.class);
+			registerServiceListener(bc, pmFactory::addValueTranslator, pmFactory::removeValueTranslator, ValueTranslator.class);
 		}
 		
 		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
