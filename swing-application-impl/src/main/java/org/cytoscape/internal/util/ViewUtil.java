@@ -1,13 +1,18 @@
 package org.cytoscape.internal.util;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
+import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 
@@ -21,6 +26,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -57,6 +63,7 @@ public final class ViewUtil {
 	public static final String SHOW_NODE_EDGE_COUNT_KEY = "showNodeEdgeCount";
 	public static final String SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY = "showNetworkProvenanceHierarchy";
 	public static final String SHOW_NETWORK_TOOL_BAR = "showNetworkToolBar";
+	public static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
@@ -183,6 +190,60 @@ public final class ViewUtil {
 			window = swingApplication.getJFrame();
 		
 		return window;
+	}
+	
+	public static void recursiveDo(Component component, Consumer<JComponent> c) {
+		if (component instanceof JComponent)
+			c.accept((JComponent) component);
+		
+		if (component instanceof Container) {
+			for (Component child : ((Container) component).getComponents())
+				recursiveDo(child, c);
+		}
+	}
+	
+	@SuppressWarnings("serial")
+	public static void makeSmall(final JComponent... components) {
+		if (components == null || components.length == 0)
+			return;
+
+		for (JComponent c : components) {
+			if (LookAndFeelUtil.isAquaLAF()) {
+				c.putClientProperty("JComponent.sizeVariant", "small");
+			} else {
+				if (c.getFont() != null)
+					c.setFont(c.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			}
+
+			if (c instanceof JList) {
+				((JList<?>) c).setCellRenderer(new DefaultListCellRenderer() {
+					@Override
+					public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+							boolean isSelected, boolean cellHasFocus) {
+						super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+						setFont(getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+
+						return this;
+					}
+				});
+			} else if (c instanceof JMenuItem) {
+				c.setFont(c.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			}
+		}
+	}
+	
+	public static boolean hasVisibleOwnedWindows(Window window) {
+		Window[] ownedWindows = window != null ? window.getOwnedWindows() : null;
+		
+		if (ownedWindows == null || ownedWindows.length == 0)
+			return false;
+		
+		for (Window w : ownedWindows) {
+			if (w.isVisible())
+				return true;
+		}
+	
+		return false;
 	}
 	
 	/**

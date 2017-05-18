@@ -141,12 +141,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private NetworkViewPreviewDialog viewDialog;
 
-	private CyServiceRegistrar serviceRegistrar;
+	private final NetworkSearchPanel networkSearchPanel;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(NetworkMainPanel.class);
 
-	public NetworkMainPanel(final CyServiceRegistrar serviceRegistrar) {
+	public NetworkMainPanel(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
+		this.networkSearchPanel = networkSearchPanel;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		init();
@@ -227,21 +229,27 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(true);
 			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getCollapseAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getNetworkSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addContainerGap()
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addComponent(networkSearchPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getCollapseAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(0, 10, Short.MAX_VALUE)
+							.addComponent(getNetworkSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addGap(0, 10, Short.MAX_VALUE)
+							.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addContainerGap()
+					)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getCollapseAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getNetworkSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addComponent(networkSearchPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(getExpandAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getCollapseAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getNetworkSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
 			);
 		}
 		
