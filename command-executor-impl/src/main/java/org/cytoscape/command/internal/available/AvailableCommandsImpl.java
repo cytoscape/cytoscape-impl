@@ -60,6 +60,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	private final Map<String, TaskFactory> commands;
 	private final Map<String, String> descriptions;
+	private final Map<String, String> longDescriptions;
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
 	private final ArgRecorder argRec;
@@ -74,6 +75,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		this.argRec = argRec;
 		this.commands = new HashMap<>();
 		this.descriptions = new HashMap<>();
+		this.longDescriptions = new HashMap<>();
 		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
 		this.provisioners = new IdentityHashMap<>();
@@ -106,10 +108,22 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		}
 	}
 
+	private static String getCommandKey(String namespace, String command) {
+		return namespace+" "+command;
+	}
+	
 	@Override
 	public String getDescription(String namespace, String command) {
-		if (descriptions.containsKey(namespace+" "+command)) {
-			return descriptions.get(namespace+" "+command);
+		if (descriptions.containsKey(getCommandKey(namespace, command))) {
+			return descriptions.get(getCommandKey(namespace, command));
+		}
+		return "";
+	}
+	
+	@Override
+	public String getLongDescription(String namespace, String command) {
+		if (longDescriptions.containsKey(getCommandKey(namespace, command))) {
+			return longDescriptions.get(getCommandKey(namespace, command));
 		}
 		return "";
 	}
@@ -163,6 +177,14 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
 		if (map != null && map.containsKey(argument))
 			return map.get(argument).getDescription();
+		return null;
+	}
+	
+	@Override
+	public String getArgLongDescription(String namespace, String command, String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getLongDescription();
 		return null;
 	}
 
@@ -267,13 +289,16 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		String namespace = (String)(properties.get(ServiceProperties.COMMAND_NAMESPACE));
 		String command = (String)(properties.get(ServiceProperties.COMMAND));
 		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
-
+		String longDescription = (String)(properties.get(ServiceProperties.COMMAND_LONG_DESCRIPTION));
+		
 		if (command == null || namespace == null) 
 			return;
-
+		
 		synchronized (lock) {
-			commands.put(namespace+" "+command, tf);
-			descriptions.put(namespace+" "+command, description);
+			String commandKey = getCommandKey(namespace, command);
+			commands.put(commandKey, tf);
+			descriptions.put(commandKey, description);
+			longDescriptions.put(commandKey, longDescription);
 			// List<String> args = getArgs(tf);
 			Map<String, ArgHandler> args = null;
 			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
@@ -291,8 +316,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		String command = (String)(properties.get(ServiceProperties.COMMAND));
 
 		synchronized (lock) {
-			descriptions.remove(namespace+" "+command);
-			TaskFactory l = commands.remove(namespace+" "+command);
+			String commandKey = getCommandKey(namespace, command);
+			descriptions.remove(commandKey);
+			longDescriptions.remove(commandKey);
+			TaskFactory l = commands.remove(commandKey);
 			
 			if (l == null)
 				return;
