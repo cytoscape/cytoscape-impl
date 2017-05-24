@@ -23,7 +23,10 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ResultDescriptor;
 import org.cytoscape.work.ServiceProperties;
+import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -61,6 +64,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final Map<String, TaskFactory> commands;
 	private final Map<String, String> descriptions;
 	private final Map<String, String> longDescriptions;
+	
+	private final Map<String, List<ResultDescriptor>> resultDescriptors;
+	
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
 	private final ArgRecorder argRec;
@@ -76,6 +82,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		this.commands = new HashMap<>();
 		this.descriptions = new HashMap<>();
 		this.longDescriptions = new HashMap<>();
+		
+		this.resultDescriptors = new HashMap<String, List<ResultDescriptor>>();
+		
 		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
 		this.provisioners = new IdentityHashMap<>();
@@ -189,6 +198,14 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	@Override
+	public String getArgDefaultStringValue(String namespace, String command, String argument) {
+		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
+		if (map != null && map.containsKey(argument))
+			return map.get(argument).getDefaultStringValue();
+		return null;
+	}
+	
+	@Override
 	public Class<?> getArgType(String namespace, String command, String argument) {
 		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
 		if (map != null && map.containsKey(argument))
@@ -290,6 +307,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		String command = (String)(properties.get(ServiceProperties.COMMAND));
 		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
 		String longDescription = (String)(properties.get(ServiceProperties.COMMAND_LONG_DESCRIPTION));
+	
 		
 		if (command == null || namespace == null) 
 			return;
@@ -299,6 +317,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			commands.put(commandKey, tf);
 			descriptions.put(commandKey, description);
 			longDescriptions.put(commandKey, longDescription);
+			
+			
 			// List<String> args = getArgs(tf);
 			Map<String, ArgHandler> args = null;
 			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
@@ -319,6 +339,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			String commandKey = getCommandKey(namespace, command);
 			descriptions.remove(commandKey);
 			longDescriptions.remove(commandKey);
+			
+			resultDescriptors.remove(commandKey);
+			
 			TaskFactory l = commands.remove(commandKey);
 			
 			if (l == null)
@@ -350,6 +373,31 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		}
 	}
 
+	private List<ResultDescriptor> getResultDescriptors(TaskFactory tf) {
+		try { 
+			TaskIterator ti = tf.createTaskIterator();
+			if (ti == null)
+				return Collections.emptyList();
+
+			List<ResultDescriptor> resultDescriptors = new ArrayList<ResultDescriptor>();
+
+			while ( ti.hasNext() ) {	
+				Task task = ti.next();
+				if (task instanceof ObservableTask) {
+					ResultDescriptor resultDescriptor = ((ObservableTask) task).getResultDescriptor();
+					if (resultDescriptor != null) {
+						resultDescriptors.add(resultDescriptor);
+					}
+				}
+			}
+			return resultDescriptors;	
+		} catch (Exception e) {
+			logger.debug("Could not create invocation string for command.",e);
+			e.printStackTrace();
+			return Collections.emptyList();
+		}
+	}
+	
 	private Map<String, ArgHandler> getArgs(TaskFactory tf) {
 		try { 
 			TaskIterator ti = tf.createTaskIterator();
@@ -436,6 +484,19 @@ public class AvailableCommandsImpl implements AvailableCommands {
 					return factory.createTaskIterator(reference.get());
 				}
 			};
+		}
+	}
+
+	@Override
+	public List<ResultDescriptor> getResultDescriptors(String namespace, String command) {
+		synchronized (lock) {
+			String commandKey = getCommandKey(namespace, command);
+			List<ResultDescriptor> list = resultDescriptors.get(commandKey);
+			if (list == null) {
+				list = getResultDescriptors(commands.get(commandKey));
+				resultDescriptors.put(commandKey, list);
+			}
+			return list;
 		}
 	}
 }
