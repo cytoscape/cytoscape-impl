@@ -189,8 +189,8 @@ public class LinkOut implements PropertyUpdatedListener {
 		return dict;
 	}
 
-	public void addCommanLineLinkOut(CyProperty<Properties> commandline, Map<?, ?> p ){
-		if (!p.get("cyPropertyName").equals("commandline.props"))
+	public void addCommanLineLinkOut(CyProperty<Properties> commandline, Map<?, ?> p) {
+		if (!"commandline.props".equals(p.get("cyPropertyName")))
 			return;
 		
 		Properties props = commandline.getProperties();
