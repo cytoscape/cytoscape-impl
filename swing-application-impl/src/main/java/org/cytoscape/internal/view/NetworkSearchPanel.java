@@ -354,6 +354,8 @@ public class NetworkSearchPanel extends JPanel {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 		
+		int maxHeight = getContentPane().getPreferredSize().height;
+		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(getProvidersButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getProviderSelectorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -363,7 +365,7 @@ public class NetworkSearchPanel extends JPanel {
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getProvidersButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getProviderSelectorButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getContentPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getContentPane(), maxHeight, maxHeight, maxHeight)
 				.addComponent(getSearchButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		
