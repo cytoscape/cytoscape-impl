@@ -256,8 +256,7 @@ public class StarterPanel extends JPanel {
 		JLabel label = new JLabel(text);
 		label.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
 		label.setForeground(LINK_FONT_COLOR);
-		label.setHorizontalAlignment(SwingConstants.LEFT);
-		label.setHorizontalTextPosition(SwingConstants.LEFT);
+		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setCursor(new Cursor(Cursor.HAND_CURSOR));
 		
 		label.addMouseListener(new MouseAdapter() {
