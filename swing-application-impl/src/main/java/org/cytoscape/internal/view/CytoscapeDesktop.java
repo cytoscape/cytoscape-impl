@@ -48,6 +48,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -511,7 +512,12 @@ public class CytoscapeDesktop extends JFrame
 	
 	@Override
 	public void handleEvent(TableAddedEvent e) {
-		hideStarterPanel();
+		CyTable table = e.getTable();
+		
+		// It does not make sense to hide the Starter Panel when the table is private, because the user will not see it.
+		// Also apps can create private tables during initialization, which would hide the Starter Panel by accident.
+		if (table != null && table.isPublic())
+			hideStarterPanel();
 	}
 	
 	public void showStarterPanel() {
