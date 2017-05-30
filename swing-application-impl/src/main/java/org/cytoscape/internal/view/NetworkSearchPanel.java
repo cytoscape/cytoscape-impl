@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -57,6 +58,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -354,6 +356,8 @@ public class NetworkSearchPanel extends JPanel {
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 		
+		int maxHeight = getContentPane().getPreferredSize().height;
+		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 				.addComponent(getProvidersButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getProviderSelectorButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -363,7 +367,7 @@ public class NetworkSearchPanel extends JPanel {
 		layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
 				.addComponent(getProvidersButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getProviderSelectorButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getContentPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getContentPane(), maxHeight, maxHeight, maxHeight)
 				.addComponent(getSearchButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
 		
@@ -595,6 +599,9 @@ public class NetworkSearchPanel extends JPanel {
 					    }
 					}
 				});
+				// Provider descriptions can be very long, so let's make the tooltip visible for a few minutes
+				// to give the user a chance to read them
+				table.addMouseListener(new DismissDelayMouseAdapter((int) TimeUnit.MINUTES.toMillis(5))); // 5 min
 			}
 			
 			return table;
@@ -793,6 +800,30 @@ public class NetworkSearchPanel extends JPanel {
 					disposeOptionsDialog();
 			}
 		}
+	}
+	
+	/**
+	 * Hack to prolong a tooltip’s visible delay
+	 * Thanks to: http://tech.chitgoks.com/2010/05/31/disable-tooltip-delay-in-java-swing/
+	 */
+	private class DismissDelayMouseAdapter extends MouseAdapter {
+		
+		final int defaultDismissTimeout = ToolTipManager.sharedInstance().getDismissDelay();
+		final int dismissDelayMinutes;
+		
+		public DismissDelayMouseAdapter(int milliseconds) {
+		    dismissDelayMinutes = milliseconds;
+		}
+	    
+	    @Override
+	    public void mouseEntered(final MouseEvent e) {
+	        ToolTipManager.sharedInstance().setDismissDelay(dismissDelayMinutes);
+	    }
+	 
+	    @Override
+	    public void mouseExited(final MouseEvent e) {
+	        ToolTipManager.sharedInstance().setDismissDelay(defaultDismissTimeout);
+	    }
 	}
 	
 	private class EmptyIcon implements Icon {

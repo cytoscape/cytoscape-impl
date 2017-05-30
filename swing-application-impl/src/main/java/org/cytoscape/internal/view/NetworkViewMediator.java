@@ -251,7 +251,8 @@ public class NetworkViewMediator
 		final VisualStyle style = e.getVisualStyle();
 		
 		if (style != null) {
-			final CyNetworkView curView = getNetworkViewMainPanel().getCurrentNetworkView();
+			final CyNetworkView curView =
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 			
 			if (curView != null) {
 				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
