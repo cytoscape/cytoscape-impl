@@ -88,7 +88,7 @@ public class Text extends AbstractFunction {
 			}
 
 			try {
-				return decimalFormat.format(value).toString();
+				return decimalFormat.format(value);
 			} catch (final Exception e) {
 				throw new IllegalStateException("we should *never* get here (2): " + e);
 			}

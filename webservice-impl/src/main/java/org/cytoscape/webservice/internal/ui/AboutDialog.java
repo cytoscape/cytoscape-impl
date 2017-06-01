@@ -212,7 +212,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 		try {
 			serviceRegistrar.getService(OpenBrowser.class).openURL(url);
 		} catch (Exception err) {
-			logger.warn("Unable to open browser for " + url.toString(), err);
+			logger.warn("Unable to open browser for " + url, err);
 		}
 	}
 }

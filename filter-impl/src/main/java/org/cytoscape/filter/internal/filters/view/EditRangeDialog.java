@@ -47,7 +47,7 @@ public class EditRangeDialog extends JDialog implements ActionListener {
         
         dataType = pDataType;
         
-        String message = lbPleaseEnterBoundValues.getText()+ " (" + pBoundsVect.elementAt(2).toString()+ " ~ " +pBoundsVect.elementAt(3).toString() + "):";
+        String message = lbPleaseEnterBoundValues.getText()+ " (" + pBoundsVect.elementAt(2) + " ~ " + pBoundsVect.elementAt(3) + "):";
         lbPleaseEnterBoundValues.setText(message);
         
         boundValueVect = pBoundsVect;
@@ -55,7 +55,7 @@ public class EditRangeDialog extends JDialog implements ActionListener {
 		tfHighBound.setText(pBoundsVect.elementAt(1).toString());
 
 		tfLowBound.setSelectionStart(0);
-		tfLowBound.setSelectionEnd(pBoundsVect.elementAt(0).toString().length());
+		tfLowBound.setSelectionEnd(pBoundsVect.elementAt(0).length());
 
 		setSize(new java.awt.Dimension(300, 170));
 		
