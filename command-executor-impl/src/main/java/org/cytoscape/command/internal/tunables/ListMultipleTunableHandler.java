@@ -38,17 +38,14 @@ public class ListMultipleTunableHandler extends AbstractStringTunableHandler {
 		ListMultipleSelection lss = (ListMultipleSelection)getValue();
 		
 		String[] options = arg.split("(?<!\\\\),");
-		if(options.length > 0)
+		if(options.length > 0 && Arrays.asList(options).contains("\\,"))
 		{
-			if(Arrays.asList(options).contains("\\,"))
-			{
-				for(int i =0 ; i< options.length ; i++)
-					if(options[i].equals("\\,"))
-					{
-						options[i] = ",";
-						break;
-					}
-			}
+			for(int i =0 ; i< options.length ; i++)
+				if(options[i].equals("\\,"))
+				{
+					options[i] = ",";
+					break;
+				}
 		}
 		lss.setSelectedValues(Arrays.asList(options));
 		return lss;

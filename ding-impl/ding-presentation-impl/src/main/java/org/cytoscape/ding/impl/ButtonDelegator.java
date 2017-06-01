@@ -50,10 +50,8 @@ class ButtonDelegator {
 				singleRightClick(e);
 			}
 		// double click
-		} else if ( e.getClickCount() == 2 ) {
-			if ( isLeftClick(e) ) {
-				doubleLeftClick(e);
-			}
+		} else if ( e.getClickCount() == 2  && isLeftClick(e)) {
+			doubleLeftClick(e);
 		}
 	}
 

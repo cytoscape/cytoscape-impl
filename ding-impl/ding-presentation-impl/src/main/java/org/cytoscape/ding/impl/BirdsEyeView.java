@@ -394,9 +394,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		}
 
 		@Override public void mouseReleased(MouseEvent e) {
-			if (e.getButton() == MouseEvent.BUTTON1) {
-				if (m_currMouseButton == 1)
-					m_currMouseButton = 0;
+			if (e.getButton() == MouseEvent.BUTTON1 && m_currMouseButton == 1) {
+				m_currMouseButton = 0;
 			}
 		}
 	}

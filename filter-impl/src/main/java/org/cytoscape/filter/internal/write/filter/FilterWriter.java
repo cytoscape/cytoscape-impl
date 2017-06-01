@@ -115,16 +115,12 @@ public class FilterWriter {
 			CompositeFilter theFilter = (CompositeFilter) pFilters[i];
 			AdvancedSetting advSetting = theFilter.getAdvancedSetting();
 
-			if (pScope.equalsIgnoreCase("global")) {
-				if (advSetting.isGlobalChecked()) {
-					retFilterList.add(theFilter);
-				}
+			if (pScope.equalsIgnoreCase("global") && advSetting.isGlobalChecked()) {
+				retFilterList.add(theFilter);
 			}
 
-			if (pScope.equalsIgnoreCase("session")) {
-				if (advSetting.isSessionChecked()) {
-					retFilterList.add(theFilter);
-				}
+			if (pScope.equalsIgnoreCase("session") && advSetting.isSessionChecked()) {
+				retFilterList.add(theFilter);
 			}
 		}
 

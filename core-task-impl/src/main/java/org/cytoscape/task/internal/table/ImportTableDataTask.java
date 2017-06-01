@@ -403,9 +403,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
 		}
 		
-		if (networksPresent) {
-			if (name2RootMap.isEmpty())
-				return;
+		if (networksPresent && name2RootMap.isEmpty()) {
+			return;
 		}
 
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
