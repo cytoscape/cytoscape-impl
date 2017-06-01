@@ -121,6 +121,12 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		}
 
 		if (changed) {
+			// Flush payload events to make sure any VisualMappingFunctionChangedEvents
+			// from this mapping are fired now (before the mapping is added to this style),
+			// which will prevent this style from receiving it later
+			// and then firing unnecessary VisualStyleChangedEvents, as consequence.
+			eventHelper.flushPayloadEvents();
+			
 			synchronized (lock) {
 				mappings.put(mapping.getVisualProperty(), mapping);
 			}
