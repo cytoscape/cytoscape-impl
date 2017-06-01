@@ -38,6 +38,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.text.Collator;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -434,7 +435,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * "String" nor "numeric" will be excluded
 	 */
 	private List<String> getCyAttributesList(final CyNetwork network, final String pType) {
-		final Vector<String> attributeList = new Vector<String>();
+		final List<String> attributeList = new ArrayList<String>();
 		CyTable table = null;
 		
 		if (pType.equalsIgnoreCase("node") && network.getNodeCount() > 0) {

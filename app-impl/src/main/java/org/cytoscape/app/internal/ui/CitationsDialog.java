@@ -173,7 +173,7 @@ class Article {
   }
 
   public String getAuthorsAsString() {
-    final StringBuffer buffer = new StringBuffer();
+    final StringBuilder buffer = new StringBuilder();
     for (int i = 0; i < authors.size(); i++) {
       buffer.append(authors.get(i));
       if (i != (authors.size() - 1))
@@ -213,7 +213,7 @@ class PubMedParser {
    * Takes a sequence of PubMed IDs and returns a URL for requesting article summaries from PubMed.
    */
   protected static String makeRequestURL(final Iterable<String> pmids) {
-    final StringBuffer buffer = new StringBuffer(REQUEST_URL_BASE);
+    final StringBuilder buffer = new StringBuilder(REQUEST_URL_BASE);
     final Iterator<String> iterator = pmids.iterator();
     while (iterator.hasNext()) {
       buffer.append(iterator.next());
@@ -376,7 +376,7 @@ class RetrieveTask implements Task {
     final PubMedParser pubMedParser = new PubMedParser();
     final Map<String,Article> articles = pubMedParser.retrieveArticles(pmids);
 
-    final StringBuffer buffer = new StringBuffer("<html>");
+    final StringBuilder buffer = new StringBuilder("<html>");
     formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape"), buffer);
     buffer.append("<br><hr><br>");
     for (final String name : new TreeSet<String>(articles.keySet())) {
@@ -390,7 +390,7 @@ class RetrieveTask implements Task {
     textPane.setText(buffer.toString());
   }
 
-  private static void formatArticleAsHtmlDefinition(final String name, final Article article, final StringBuffer buffer) {
+  private static void formatArticleAsHtmlDefinition(final String name, final Article article, final StringBuilder buffer) {
     buffer.append("<dl><dt><b>");
     buffer.append(name);
     buffer.append("</b></dt>");
