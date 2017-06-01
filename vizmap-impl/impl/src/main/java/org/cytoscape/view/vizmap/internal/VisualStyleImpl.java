@@ -113,11 +113,20 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	@Override
 	public void addVisualMappingFunction(final VisualMappingFunction<?, ?> mapping) {
+		boolean changed = false;
+
 		synchronized (lock) {
-			mappings.put(mapping.getVisualProperty(), mapping);
+			VisualMappingFunction<?, ?> oldMapping = mappings.get(mapping.getVisualProperty());
+			changed = !mapping.equals(oldMapping);
 		}
-		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
-				VisualStyleChangedEvent.class);
+
+		if (changed) {
+			synchronized (lock) {
+				mappings.put(mapping.getVisualProperty(), mapping);
+			}
+			
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+		}
 	}
 
 	@Override
@@ -130,11 +139,15 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	@Override
 	public void removeVisualMappingFunction(VisualProperty<?> t) {
+		boolean changed = false;
+		
 		synchronized (lock) {
-			mappings.remove(t);
+			VisualMappingFunction<?, ?> oldMapping = mappings.remove(t);
+			changed = oldMapping != null;
 		}
-		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
-				VisualStyleChangedEvent.class);
+		
+		if (changed)
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -147,11 +160,16 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 
 	@Override
 	public <V, S extends V> void setDefaultValue(final VisualProperty<V> vp, final S value) {
+		boolean changed = false;
+		
 		synchronized (lock) {
-			styleDefaults.put(vp, value);
+			boolean containsKey = styleDefaults.containsKey(vp);
+			Object oldValue = styleDefaults.put(vp, value);
+			changed = !containsKey || (value == null && oldValue != null) || (value != null && !value.equals(oldValue));
 		}
-		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
-				VisualStyleChangedEvent.class);
+		
+		if (changed)
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 
 	@Override
@@ -227,20 +245,26 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 	 */
 	@Override
 	public void addVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
+		boolean changed = false;
+		
 		synchronized (lock) {
-			dependencies.add(dependency);
+			changed = dependencies.add(dependency);
 		}
-		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
-				VisualStyleChangedEvent.class);
+		
+		if (changed)
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 
 	@Override
 	public void removeVisualPropertyDependency(VisualPropertyDependency<?> dependency) {
+		boolean changed = false;
+		
 		synchronized (lock) {
-			dependencies.remove(dependency);
+			changed = dependencies.remove(dependency);
 		}
-		eventHelper.addEventPayload((VisualStyle) this, new VisualStyleChangeRecord(),
-				VisualStyleChangedEvent.class);
+		
+		if (changed)
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 
 	/**
@@ -266,7 +290,7 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		boolean hasMapping = false;
 		
 		synchronized (lock) {
-			hasMapping = mappings.containsValue(mapping);
+			hasMapping = mapping == mappings.get(mapping.getVisualProperty());
 		}
 		
 		if (hasMapping)

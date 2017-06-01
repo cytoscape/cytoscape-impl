@@ -66,6 +66,8 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 	// Contains List of Data Points
 	private List<ContinuousMappingPoint<K, V>> points;
+	
+	private final Object lock = new Object();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp, final CyEventHelper eventHelper) {
@@ -98,18 +100,22 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
-		points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
-		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+		synchronized (lock) {
+			points.add(new ContinuousMappingPoint<>(value, brv, this, eventHelper));
+		}
+
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
 				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
-	@SuppressWarnings("rawtypes")
 	public void removePoint(int index) {
-		points.remove(index);
-		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+		synchronized (lock) {
+			points.remove(index);
+		}
+		
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
 				VisualMappingFunctionChangedEvent.class);
 	}
 
