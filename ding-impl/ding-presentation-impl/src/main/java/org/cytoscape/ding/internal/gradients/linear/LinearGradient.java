@@ -46,7 +46,7 @@ public class LinearGradient extends AbstractGradient<LinearGradientLayer> {
 			final View<? extends CyIdentifiable> grView) {
 		final LinearGradientLayer layer = createLayer();
 		
-		return layer != null ? Collections.singletonList(layer) : Collections.EMPTY_LIST;
+		return layer != null ? Collections.singletonList(layer) : Collections.emptyList();
 	}
 	
 	@Override

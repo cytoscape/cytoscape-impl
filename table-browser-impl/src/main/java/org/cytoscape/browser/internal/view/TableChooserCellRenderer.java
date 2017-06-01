@@ -42,7 +42,7 @@ public class TableChooserCellRenderer extends DefaultListCellRenderer {
 
 	@SuppressWarnings("unchecked")
 	TableChooserCellRenderer() {
-		this(Collections.EMPTY_MAP);
+		this(Collections.<CyTable, String>emptyMap());
 	}
 	
 	TableChooserCellRenderer(final Map<CyTable, String> tableToStringMap) {

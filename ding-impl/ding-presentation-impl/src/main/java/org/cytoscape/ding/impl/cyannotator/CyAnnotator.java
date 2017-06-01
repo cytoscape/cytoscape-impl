@@ -152,7 +152,7 @@ public class CyAnnotator {
 
 		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null) {
 			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,
-			                                   String.class,false,Collections.EMPTY_LIST);
+			                                   String.class,false, Collections.<String>emptyList());
 		}
 
 		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).

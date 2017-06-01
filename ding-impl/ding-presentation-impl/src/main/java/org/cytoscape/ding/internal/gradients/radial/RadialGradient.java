@@ -50,7 +50,7 @@ public class RadialGradient extends AbstractGradient<RadialGradientLayer> {
 			final View<? extends CyIdentifiable> grView) {
 		final RadialGradientLayer layer = createLayer();
 		
-		return layer != null ? Collections.singletonList(layer) : Collections.EMPTY_LIST;
+		return layer != null ? Collections.singletonList(layer) : Collections.emptyList();
 	}
 	
 	@Override

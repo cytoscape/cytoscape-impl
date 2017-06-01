@@ -73,7 +73,7 @@ public class CreateNetworkViewTaskTest {
 	public void setUp() throws Exception {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.<org.cytoscape.view.presentation.RenderingEngine<?>>emptyList());
 	}
 	
 	@Test

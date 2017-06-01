@@ -122,7 +122,7 @@ public class MappingIntegrationTest {
         when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
         
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.<org.cytoscape.view.presentation.RenderingEngine<?>>emptyList());
 	}
 	
 	@Test
