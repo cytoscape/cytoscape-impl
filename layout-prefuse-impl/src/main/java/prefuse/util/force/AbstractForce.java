@@ -52,7 +52,7 @@ public abstract class AbstractForce implements Force {
      * @see prefuse.util.force.Force#getParameterCount()
      */
     public int getParameterCount() {
-        return ( params == null ? 0 : params.length );
+        return params == null ? 0 : params.length;
     }
 
     /**

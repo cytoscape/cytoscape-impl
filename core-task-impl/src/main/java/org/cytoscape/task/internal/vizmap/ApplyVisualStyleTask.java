@@ -76,7 +76,7 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask {
 			vmm.setVisualStyle(selected, view);
 
 			i++;
-			tm.setProgress((i / (double) viewCount));
+			tm.setProgress(i / (double) viewCount);
 		}
 
 		tm.setProgress(1.0);

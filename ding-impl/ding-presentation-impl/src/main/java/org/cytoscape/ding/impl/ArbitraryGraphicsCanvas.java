@@ -361,7 +361,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private void clearImage(Graphics2D image2D) {
 		if (img != null) {
 			// set color alpha based on opacity setting
-			int alpha = (m_isOpaque) ? 255 : 0;
+			int alpha = m_isOpaque ? 255 : 0;
 			Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 			                                  m_backgroundColor.getBlue(), alpha);
 
@@ -398,7 +398,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		}
 
 		public boolean equals(Component o1, Component o2) {
-			return (getComponentZOrder(o1) == getComponentZOrder(o2));
+			return getComponentZOrder(o1) == getComponentZOrder(o2);
 		}
 	}
 

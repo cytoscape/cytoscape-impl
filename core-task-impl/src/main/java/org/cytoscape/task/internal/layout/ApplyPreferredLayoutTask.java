@@ -90,7 +90,7 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 			}
 
 			i++;
-			tm.setProgress((i / (double) viewCount));
+			tm.setProgress(i / (double) viewCount);
 		}
 
 		tm.setProgress(1.0);
