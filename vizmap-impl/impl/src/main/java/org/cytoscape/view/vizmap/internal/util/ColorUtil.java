@@ -1,4 +1,4 @@
-package org.cytoscape.view.vizmap.internal.mappings;
+package org.cytoscape.view.vizmap.internal.util;
 
 /*
  * #%L
@@ -6,7 +6,7 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,7 +33,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO: DELETE?
 public class ColorUtil {
 
 	private static final int COLOR_RANGE_MAX = 255;

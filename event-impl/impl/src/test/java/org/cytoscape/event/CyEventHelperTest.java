@@ -1,12 +1,22 @@
 package org.cytoscape.event;
 
+import org.cytoscape.event.internal.CyEventHelperImpl;
+import org.cytoscape.event.internal.CyListenerAdapter;
+import org.junit.After;
+import org.junit.Before;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.springframework.osgi.mock.MockBundleContext;
+import org.springframework.osgi.mock.MockServiceReference;
+
 /*
  * #%L
  * Cytoscape Event Impl (event-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +34,6 @@ package org.cytoscape.event;
  * #L%
  */
 
-import junit.framework.Assert;
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
-import org.cytoscape.event.internal.*;
-
-import org.osgi.framework.*;
-
-import org.springframework.osgi.mock.*;
-
-import java.lang.RuntimeException;
-
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-
-
-/**
- * DOCUMENT ME!
-  */
 public class CyEventHelperTest extends AbstractCyEventHelperTest {
 
 	private ServiceReference stubServiceRef;
@@ -54,9 +42,6 @@ public class CyEventHelperTest extends AbstractCyEventHelperTest {
 	private BundleContext bc;
 	private CyEventHelperImpl helperImpl;
 
-	/**
-	 *  DOCUMENT ME!
-	 */
 	@Before
 	public void setUp() {
 		service = new StubCyListenerImpl();
@@ -67,38 +52,40 @@ public class CyEventHelperTest extends AbstractCyEventHelperTest {
 		payloadServiceRef = new MockServiceReference();
 
 		bc = new MockBundleContext() {
-				public ServiceReference getServiceReference(String clazz) {
-					if ( clazz.equals( FakeCyListener.class.getName() ) )
-						return fakeServiceRef;
-					else if ( clazz.equals( StubCyListener.class.getName() ) )
-						return stubServiceRef;
-					else if ( clazz.equals( StubCyPayloadListener.class.getName() ) )
-						return payloadServiceRef;
-					else
-						return null;
-				}
+			@Override
+			public ServiceReference getServiceReference(String clazz) {
+				if (clazz.equals(FakeCyListener.class.getName()))
+					return fakeServiceRef;
+				else if (clazz.equals(StubCyListener.class.getName()))
+					return stubServiceRef;
+				else if (clazz.equals(StubCyPayloadListener.class.getName()))
+					return payloadServiceRef;
+				else
+					return null;
+			}
 
-				public ServiceReference[] getServiceReferences(String clazz, String filter)
-				    throws InvalidSyntaxException {
-					if ( clazz.equals( FakeCyListener.class.getName() ) )
-						return new ServiceReference[] { fakeServiceRef };
-					else if ( clazz.equals( StubCyListener.class.getName() ) )
-						return new ServiceReference[] { stubServiceRef };
-					else if ( clazz.equals( StubCyPayloadListener.class.getName() ) )
-						return new ServiceReference[] { payloadServiceRef };
-					else
-						return null;
-				}
+			@Override
+			public ServiceReference[] getServiceReferences(String clazz, String filter) throws InvalidSyntaxException {
+				if (clazz.equals(FakeCyListener.class.getName()))
+					return new ServiceReference[] { fakeServiceRef };
+				else if (clazz.equals(StubCyListener.class.getName()))
+					return new ServiceReference[] { stubServiceRef };
+				else if (clazz.equals(StubCyPayloadListener.class.getName()))
+					return new ServiceReference[] { payloadServiceRef };
+				else
+					return null;
+			}
 
-				public Object getService(ServiceReference ref) {
-					if ( ref == stubServiceRef )
-						return service;
-					else if ( ref == payloadServiceRef )
-						return payloadService;
-					else 
-						return null;
-				}
-			};
+			@Override
+			public Object getService(ServiceReference ref) {
+				if (ref == stubServiceRef)
+					return service;
+				else if (ref == payloadServiceRef)
+					return payloadService;
+				else
+					return null;
+			}
+		};
 
 		CyListenerAdapter la = new CyListenerAdapter(bc);
 

@@ -1,12 +1,20 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
+import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
+import org.cytoscape.view.vizmap.mappings.ValueTranslator;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,16 +32,6 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
-import org.cytoscape.view.vizmap.mappings.PassthroughMapping;
-import org.cytoscape.view.vizmap.mappings.ValueTranslator;
-
-/**
- */
 public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements
 		PassthroughMapping<K, V> {
 
@@ -48,11 +46,6 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 			final ValueTranslator<K, V> translator, final CyEventHelper eventHelper) {
 		super(columnName, columnType, vp, eventHelper);
 		this.translator = translator;
-	}
-
-	@Override
-	public String toString() {
-		return PassthroughMapping.PASSTHROUGH;
 	}
 
 	@Override
@@ -89,5 +82,10 @@ public class PassthroughMappingImpl<K, V> extends AbstractVisualMappingFunction<
 		}
 		
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return PassthroughMapping.PASSTHROUGH;
 	}
 }
