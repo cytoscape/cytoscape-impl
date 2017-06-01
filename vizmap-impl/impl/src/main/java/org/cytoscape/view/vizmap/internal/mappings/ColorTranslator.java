@@ -26,6 +26,7 @@ package org.cytoscape.view.vizmap.internal.mappings;
 
 import java.awt.Paint;
 
+import org.cytoscape.view.vizmap.internal.util.ColorUtil;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 
 public class ColorTranslator implements ValueTranslator<String, Paint>{

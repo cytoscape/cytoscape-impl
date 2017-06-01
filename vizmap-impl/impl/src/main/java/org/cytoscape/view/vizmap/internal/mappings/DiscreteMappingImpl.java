@@ -1,12 +1,26 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +38,6 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
-import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
-import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-
 /**
  * Implements a lookup table mapping data to values of a particular class. The
  * data value is extracted from a bundle of attributes by using a specified data
@@ -46,27 +45,15 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
  */
 public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements DiscreteMapping<K, V> {
 
-	// contains the actual map elements (sorted)
+	/** Contains the actual map elements (sorted) */
 	private final Map<K, V> attribute2visualMap;
 	
 	private final Object lock = new Object();
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param attrName
-	 * @param attrType
-	 * @param vp
-	 */
 	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
 			final CyEventHelper eventHelper) {
 		super(attrName, attrType, vp, eventHelper);
-		attribute2visualMap = new HashMap<K, V>();
-	}
-
-	@Override
-	public String toString() {
-		return DiscreteMapping.DISCRETE;
+		attribute2visualMap = new HashMap<>();
 	}
 
 	@Override
@@ -165,5 +152,10 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 	@Override
 	public Map<K, V> getAll() {
 		return Collections.unmodifiableMap(attribute2visualMap);
+	}
+
+	@Override
+	public String toString() {
+		return DiscreteMapping.DISCRETE;
 	}
 }
