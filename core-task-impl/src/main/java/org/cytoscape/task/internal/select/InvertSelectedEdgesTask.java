@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.select;
 
+import java.util.Collection;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,50 +34,51 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class InvertSelectedEdgesTask extends AbstractSelectTask {
+	
 	private final UndoSupport undoSupport;
 
-	public InvertSelectedEdgesTask(final UndoSupport undoSupport, final CyNetwork net,
-	                               final CyNetworkViewManager networkViewManager,
-	                               final CyEventHelper eventHelper)
-	{
+	public InvertSelectedEdgesTask(
+			final UndoSupport undoSupport,
+			final CyNetwork net,
+			final CyNetworkViewManager networkViewManager,
+			final CyEventHelper eventHelper
+	) {
 		super(net, networkViewManager, eventHelper);
 		this.undoSupport = undoSupport;
 	}
 
+	@Override
 	public void run(final TaskMonitor tm) {
+		tm.setTitle("Invert Edge Selection");
 		tm.setProgress(0.0);
+		
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView view = null;
-		if(views.size() != 0)
-			view = views.iterator().next();
 		
-		undoSupport.postEdit(
-			new SelectionEdit(eventHelper, "Invert Selected Edges", network, view,
-			                  SelectionEdit.SelectionFilter.EDGES_ONLY));
+		if (views.size() != 0)
+			view = views.iterator().next();
+
+		undoSupport.postEdit(new SelectionEdit(eventHelper, "Invert Selected Edges", network, view,
+				SelectionEdit.SelectionFilter.EDGES_ONLY));
+		
+		tm.setStatusMessage("Inverting Edge Selection...");
 		tm.setProgress(0.2);
+		
 		for (final CyEdge e : network.getEdgeList()) {
 			if (network.getRow(e).get(CyNetwork.SELECTED, Boolean.class))
 				network.getRow(e).set(CyNetwork.SELECTED, false);
 			else
 				network.getRow(e).set(CyNetwork.SELECTED, true);
 		}
+		
+		tm.setStatusMessage("Updating View...");
 		tm.setProgress(0.6);
 		eventHelper.flushPayloadEvents();
+		
 		tm.setProgress(0.8);
 		updateView();
+		
 		tm.setProgress(1.0);
 	}
 }
