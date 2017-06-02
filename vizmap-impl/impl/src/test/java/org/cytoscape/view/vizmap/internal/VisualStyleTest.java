@@ -171,7 +171,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	
 	@Test
 	@SuppressWarnings("rawtypes")
-	public void testAddVisualMappingFiresEvent() {
+	public void testAddMappingFiresEvent() {
 		DiscreteMapping dm = mock(DiscreteMapping.class);
 		when(dm.getVisualProperty()).thenReturn(NODE_BORDER_WIDTH);
 		
@@ -186,7 +186,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	
 	@Test
 	@SuppressWarnings("rawtypes")
-	public void testAddVisualMappingDoesNotFireEvent() { // When same mappings added again...
+	public void testAddMappingDoesNotFireEvent() { // When same mappings added again...
 		DiscreteMapping dm = mock(DiscreteMapping.class);
 		when(dm.getVisualProperty()).thenReturn(NODE_BORDER_WIDTH);
 		
@@ -197,9 +197,14 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 				eq(style), any(VisualStyleChangeRecord.class), eq(VisualStyleChangedEvent.class));
 	}
 	
+	@Test(expected=NullPointerException.class)
+	public void testAddNullMappingThrowsNPE() {
+		style.addVisualMappingFunction(null);
+	}
+	
 	@Test
 	@SuppressWarnings("rawtypes")
-	public void testRemoveVisualMappingFiresEvent() {
+	public void testRemoveMappingFiresEvent() {
 		DiscreteMapping dm = mock(DiscreteMapping.class);
 		when(dm.getVisualProperty()).thenReturn(NODE_BORDER_WIDTH);
 		
@@ -212,7 +217,7 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 	}
 	
 	@Test
-	public void testRemoveVisualMappingDoesNotFireEvent() { // When there was no mapping to remove...
+	public void testRemoveMappingDoesNotFireEvent() { // When there was no mapping to remove...
 		style.removeVisualMappingFunction(NODE_BORDER_WIDTH); // Just to make sure there is no mapping here
 		reset(eventHelper);
 		
@@ -256,6 +261,11 @@ public class VisualStyleTest extends AbstractVisualStyleTest {
 		style.removeVisualPropertyDependency(dependency);
 		verify(eventHelper, times(0)).addEventPayload(
 				eq(style), any(VisualStyleChangeRecord.class), eq(VisualStyleChangedEvent.class));
+	}
+	
+	@Test(expected=NullPointerException.class)
+	public void testApplyToNullThrowsNPE() {
+		style.apply(null);
 	}
 	
 	@Test
