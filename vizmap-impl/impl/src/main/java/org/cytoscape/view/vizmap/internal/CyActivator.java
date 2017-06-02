@@ -18,7 +18,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -69,9 +69,9 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
-		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());
+		registerService(bc, visualStyleFactory, VisualStyleFactory.class);
 		
 		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
-		registerAllServices(bc, visualMappingManager, new Properties());
+		registerAllServices(bc, visualMappingManager);
 	}
 }

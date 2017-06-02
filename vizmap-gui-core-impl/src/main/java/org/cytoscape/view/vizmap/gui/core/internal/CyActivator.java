@@ -1,12 +1,17 @@
 package org.cytoscape.view.vizmap.gui.core.internal;
 
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.view.vizmap.gui.core.internal.cellrenderer.ContinuousMappingCellRendererFactoryImpl;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Core Impl (vizmap-gui-core-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +29,11 @@ package org.cytoscape.view.vizmap.gui.core.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.view.vizmap.gui.core.internal.cellrenderer.ContinuousMappingCellRendererFactoryImpl;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
 
 	@Override
 	public void start(BundleContext context) throws Exception {
-		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactoryImpl = new ContinuousMappingCellRendererFactoryImpl();
-		registerService(context, continuousMappingCellRendererFactoryImpl, ContinuousMappingCellRendererFactory.class, new Properties());
+		ContinuousMappingCellRendererFactory factory = new ContinuousMappingCellRendererFactoryImpl();
+		registerService(context, factory, ContinuousMappingCellRendererFactory.class);
 	}
-
 }
