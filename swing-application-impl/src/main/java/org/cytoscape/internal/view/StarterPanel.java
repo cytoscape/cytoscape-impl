@@ -42,6 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationConfiguration;
@@ -262,7 +263,8 @@ public class StarterPanel extends JPanel {
 		label.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				serviceRegistrar.getService(OpenBrowser.class).openURL(url);
+				if (e.getClickCount() == 1)
+					serviceRegistrar.getService(OpenBrowser.class).openURL(url);
 			}
 		});
 		
@@ -484,7 +486,6 @@ public class StarterPanel extends JPanel {
 		private void init() {
 			setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
 			setOpaque(false);
-			setCursor(new Cursor(Cursor.HAND_CURSOR));
 			
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
@@ -503,11 +504,11 @@ public class StarterPanel extends JPanel {
 			MouseListener mouseListener = new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					maybeOpenSession(fileInfo.getFile());
+					if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e))
+						maybeOpenSession(fileInfo.getFile());
 				}
 			};
 			
-			addMouseListener(mouseListener);
 			getThumbnailLabel().addMouseListener(mouseListener);
 			getNameLabel().addMouseListener(mouseListener);
 		}
@@ -518,7 +519,6 @@ public class StarterPanel extends JPanel {
 				thumbnailLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
-				thumbnailLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				thumbnailLabel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			}
 			
@@ -535,7 +535,6 @@ public class StarterPanel extends JPanel {
 					nameLabel.setToolTipText(fileInfo.getFile().getPath());
 				
 				nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-				nameLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
 				
 				Dimension d = new Dimension(NAME_WIDTH, nameLabel.getPreferredSize().height);
 				nameLabel.setMinimumSize(d);
