@@ -96,7 +96,7 @@ public class StarterPanel extends JPanel {
 	
 	private static final int MAX_FILES = 100;
 	
-	private static final String MISSING_IMAGE = "/images/logo-transp-gray.png";
+	private static final String MISSING_IMAGE = "/images/logo-light-96.png";
 	
 	private static final Logger logger = LoggerFactory.getLogger(StarterPanel.class);
 	
