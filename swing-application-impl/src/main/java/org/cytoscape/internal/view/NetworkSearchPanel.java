@@ -469,6 +469,7 @@ public class NetworkSearchPanel extends JPanel {
 					SwingConstants.LEFT);
 			searchButton.setBorder(
 					BorderFactory.createMatteBorder(0, 1, 0, 0, UIManager.getColor("Separator.foreground")));
+			searchButton.setToolTipText("Search Network");
 		}
 		
 		return searchButton;
