@@ -11,8 +11,7 @@ import org.cytoscape.app.internal.ui.CitationsDialog;
 import org.cytoscape.app.internal.util.Utils;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.TaskManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -20,7 +19,7 @@ import org.cytoscape.work.TaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -41,32 +40,27 @@ import org.cytoscape.work.TaskManager;
 @SuppressWarnings("serial")
 public class CitationsAction extends AbstractCyAction {
 	
-	final WebQuerier webQuerier;
-	final AppManager appMgr;
-	final TaskManager taskMgr;
-	final CySwingApplication swingApp;
-	final OpenBrowser openBrowser;
+	private CitationsDialog dialog;
+	
+	private final WebQuerier webQuerier;
+	private final AppManager appManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	CitationsDialog dialog;
-
-	public CitationsAction(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, CySwingApplication swingApp,
-			OpenBrowser openBrowser) {
-		super("Citations...");
+	public CitationsAction(WebQuerier webQuerier, AppManager appManager, CyServiceRegistrar serviceRegistrar) {
+		super("Citations");
 		super.setPreferredMenu("Help");
 		super.setMenuGravity(2.0f);
 
 		this.webQuerier = webQuerier;
-		this.appMgr = appMgr;
-		this.taskMgr = taskMgr;
-		this.swingApp = swingApp;
-		this.openBrowser = openBrowser;
+		this.appManager = appManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (dialog == null) {
-			final Window owner = Utils.getWindowAncestor(e, swingApp);
-			dialog = new CitationsDialog(webQuerier, appMgr, taskMgr, owner, openBrowser);
+			final Window owner = Utils.getWindowAncestor(e, serviceRegistrar.getService(CySwingApplication.class));
+			dialog = new CitationsDialog(owner, webQuerier, appManager, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {

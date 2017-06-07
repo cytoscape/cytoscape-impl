@@ -1,30 +1,5 @@
 package org.cytoscape.app.internal;
 
-/*
- * #%L
- * Cytoscape App Impl (app-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.cytoscape.app.CyAppAdapter;
@@ -72,8 +47,6 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
@@ -130,7 +103,6 @@ import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
-import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -145,54 +117,73 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
-import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.service.startlevel.StartLevel;
 
-public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
+public class CyActivator extends AbstractCyActivator {
+
+	@Override
 	public void start(BundleContext bc) {
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		CyApplicationConfiguration cyApplicationConfigurationRef = getService(bc, CyApplicationConfiguration.class);
-		CyApplicationManager cyApplicationManagerRef = getService(bc,CyApplicationManager.class);
-		CyEventHelper cyEventHelperRef = getService(bc,CyEventHelper.class);
-		CyGroupAggregationManager cyGroupAggregationManagerRef = getService(bc,CyGroupAggregationManager.class);
-		CyGroupFactory cyGroupFactoryRef = getService(bc,CyGroupFactory.class);
-		CyGroupManager cyGroupManagerRef = getService(bc,CyGroupManager.class);
-		CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef = getService(bc,CyLayoutAlgorithmManager.class);
-		CyNetworkFactory cyNetworkFactoryRef = getService(bc,CyNetworkFactory.class);
-		CyNetworkManager cyNetworkManagerRef = getService(bc,CyNetworkManager.class);
-		CyNetworkViewFactory cyNetworkViewFactoryRef = getService(bc,CyNetworkViewFactory.class);
-		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc,CyNetworkViewManager.class);
-		CyNetworkReaderManager cyNetworkViewReaderManagerRef = getService(bc,CyNetworkReaderManager.class);
-		CyNetworkViewWriterManager cyNetworkViewWriterManagerRef = getService(bc,CyNetworkViewWriterManager.class);
-		CyProperty<Properties> cyPropertyRef = getService(bc,CyProperty.class,"(cyPropertyName=cytoscape3.props)");
-		CyPropertyReaderManager cyPropertyReaderManagerRef = getService(bc,CyPropertyReaderManager.class);
-		CyPropertyWriterManager cyPropertyWriterManagerRef = getService(bc,CyPropertyWriterManager.class);
-		CyRootNetworkManager cyRootNetworkFactoryRef = getService(bc,CyRootNetworkManager.class);
-		CyServiceRegistrar cyServiceRegistrarRef = getService(bc,CyServiceRegistrar.class);
-		CySessionManager cySessionManagerRef = getService(bc,CySessionManager.class);
-		CySessionReaderManager cySessionReaderManagerRef = getService(bc,CySessionReaderManager.class);
-		CySessionWriterManager cySessionWriterManagerRef = getService(bc,CySessionWriterManager.class);
-		CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
-		CyTableFactory cyTableFactoryRef = getService(bc,CyTableFactory.class);
-		CyTableManager cyTableManagerRef = getService(bc,CyTableManager.class);
-		CyTableReaderManager cyTableReaderManagerRef = getService(bc,CyTableReaderManager.class);
-		CyTableWriterManager cyTableWriterManagerRef = getService(bc,CyTableWriterManager.class);
-		PanelTaskManager panelTaskManagerRef = getService(bc,PanelTaskManager.class);
-		DialogTaskManager dialogTaskManagerRef = getService(bc,DialogTaskManager.class);
-		PresentationWriterManager presentationWriterManagerRef = getService(bc,PresentationWriterManager.class);
-		RenderingEngineManager renderingEngineManagerRef = getService(bc,RenderingEngineManager.class);
-		TaskManager taskManagerRef = getService(bc,TaskManager.class);
-		UndoSupport undoSupportRef = getService(bc,UndoSupport.class);
-		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef = getService(bc,TunablePropertySerializerFactory.class);
-		VisualMappingManager visualMappingManagerRef = getService(bc,VisualMappingManager.class);
-		VisualStyleFactory visualStyleFactoryRef = getService(bc,VisualStyleFactory.class);
-		CyVersion cytoscapeVersionService = getService(bc,CyVersion.class);
-		CyProperty<Bookmarks> bookmarkServiceRef = getService(bc,CyProperty.class,"(cyPropertyName=bookmarks)");
-		BookmarksUtil bookmarksUtilServiceRef = getService(bc,BookmarksUtil.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc,CyApplicationConfiguration.class);
+		CyApplicationManager cyApplicationManagerRef = getService(bc, CyApplicationManager.class);
+		CyEventHelper cyEventHelperRef = getService(bc, CyEventHelper.class);
+		CyGroupAggregationManager cyGroupAggregationManagerRef = getService(bc, CyGroupAggregationManager.class);
+		CyGroupFactory cyGroupFactoryRef = getService(bc, CyGroupFactory.class);
+		CyGroupManager cyGroupManagerRef = getService(bc, CyGroupManager.class);
+		CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef = getService(bc, CyLayoutAlgorithmManager.class);
+		CyNetworkFactory cyNetworkFactoryRef = getService(bc, CyNetworkFactory.class);
+		CyNetworkManager cyNetworkManagerRef = getService(bc, CyNetworkManager.class);
+		CyNetworkViewFactory cyNetworkViewFactoryRef = getService(bc, CyNetworkViewFactory.class);
+		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc, CyNetworkViewManager.class);
+		CyNetworkReaderManager cyNetworkViewReaderManagerRef = getService(bc, CyNetworkReaderManager.class);
+		CyNetworkViewWriterManager cyNetworkViewWriterManagerRef = getService(bc, CyNetworkViewWriterManager.class);
+		CyProperty<Properties> cyPropertyRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyPropertyReaderManager cyPropertyReaderManagerRef = getService(bc, CyPropertyReaderManager.class);
+		CyPropertyWriterManager cyPropertyWriterManagerRef = getService(bc, CyPropertyWriterManager.class);
+		CyRootNetworkManager cyRootNetworkFactoryRef = getService(bc, CyRootNetworkManager.class);
+		CySessionManager cySessionManagerRef = getService(bc, CySessionManager.class);
+		CySessionReaderManager cySessionReaderManagerRef = getService(bc, CySessionReaderManager.class);
+		CySessionWriterManager cySessionWriterManagerRef = getService(bc, CySessionWriterManager.class);
+		CySwingApplication cySwingApplicationRef = getService(bc, CySwingApplication.class);
+		CyTableFactory cyTableFactoryRef = getService(bc, CyTableFactory.class);
+		CyTableManager cyTableManagerRef = getService(bc, CyTableManager.class);
+		CyTableReaderManager cyTableReaderManagerRef = getService(bc, CyTableReaderManager.class);
+		CyTableWriterManager cyTableWriterManagerRef = getService(bc, CyTableWriterManager.class);
+		PanelTaskManager panelTaskManagerRef = getService(bc, PanelTaskManager.class);
+		DialogTaskManager dialogTaskManagerRef = getService(bc, DialogTaskManager.class);
+		PresentationWriterManager presentationWriterManagerRef = getService(bc, PresentationWriterManager.class);
+		RenderingEngineManager renderingEngineManagerRef = getService(bc, RenderingEngineManager.class);
+		TaskManager taskManagerRef = getService(bc, TaskManager.class);
+		UndoSupport undoSupportRef = getService(bc, UndoSupport.class);
+		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef = getService(bc, TunablePropertySerializerFactory.class);
+		VisualMappingManager visualMappingManagerRef = getService(bc, VisualMappingManager.class);
+		VisualStyleFactory visualStyleFactoryRef = getService(bc, VisualStyleFactory.class);
+		CyVersion cytoscapeVersionService = getService(bc, CyVersion.class);
+		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
 		
 		VisualMappingFunctionFactory vmfFactoryC = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
 		VisualMappingFunctionFactory vmfFactoryD = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
@@ -269,14 +260,12 @@ public class CyActivator extends AbstractCyActivator {
 
 		// End of core-task services
 
-
 		// Command execution services
 		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc,CommandExecutorTaskFactory.class);
 		AvailableCommands availableCommands = getService(bc,AvailableCommands.class);
 		 
     	 StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
     	 FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-    	 OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 
     	 CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
 				 cyApplicationConfigurationRef,
@@ -296,7 +285,7 @@ public class CyActivator extends AbstractCyActivator {
                  cyPropertyReaderManagerRef,
                  cyPropertyWriterManagerRef,
                  cyRootNetworkFactoryRef,
-                 cyServiceRegistrarRef,
+                 serviceRegistrar,
                  cySessionManagerRef,
                  cySessionReaderManagerRef,
                  cySessionWriterManagerRef,
@@ -376,47 +365,40 @@ public class CyActivator extends AbstractCyActivator {
                  unGroupNodesTaskFactory,
                  cyCommandExecutorTaskFactory,
                  availableCommands
-                 );
+        );
 		
-		registerService(bc,cyAppAdapter,CyAppAdapter.class, new Properties());
-		registerService(bc,cyAppAdapter,CySwingAppAdapter.class, new Properties());
+		registerService(bc, cyAppAdapter, CyAppAdapter.class);
+		registerService(bc, cyAppAdapter, CySwingAppAdapter.class);
 		
 		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef, cytoscapeVersionService);
-		registerService(bc, webQuerier, WebQuerier.class, new Properties());
-		
-		Properties properties = System.getProperties();
-
-		for (Entry<Object, Object> entry : properties.entrySet()) {
-			//System.out.println("Entry: " + entry.getKey() + ", value: " + entry.getValue());
-		}
+		registerService(bc, webQuerier, WebQuerier.class);
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
-		PackageAdmin packageAdmin = getService(bc, PackageAdmin.class);
 		
 		// Instantiate new manager
 		final AppManager appManager = new AppManager(cyAppAdapter, cyApplicationConfigurationServiceRef,
 				cytoscapeVersionService, cyEventHelperRef, webQuerier, startLevel, bc);
-		registerService(bc, appManager, AppManager.class, new Properties());
+		registerService(bc, appManager, AppManager.class);
 		bc.addFrameworkListener(appManager);
 		
 		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyPropertyRef);
 		
 		final UpdateManager updateManager = new UpdateManager(appManager, downloadSitesManager);
-		registerService(bc, updateManager, AppsFinishedStartingListener.class, new Properties());
+		registerService(bc, updateManager, AppsFinishedStartingListener.class);
 		
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
-		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class, new Properties());
+		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
 		
 		// AbstractCyAction implementation for updated app manager
 		AppManagerAction appManagerAction = new AppManagerAction(
 				appManager, downloadSitesManager, updateManager, 
 				cySwingApplicationRef, fileUtilServiceRef,
-				dialogTaskManagerRef, cyServiceRegistrarRef);
-		registerService(bc, appManagerAction, CyAction.class, new Properties());
+				dialogTaskManagerRef, serviceRegistrar);
+		registerService(bc, appManagerAction, CyAction.class);
 
 		// Show citations dialog
-		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, dialogTaskManagerRef, cySwingApplicationRef, openBrowser);
-		registerService(bc, citationsAction, CyAction.class, new Properties());
+		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, serviceRegistrar);
+		registerService(bc, citationsAction, CyAction.class);
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
@@ -429,7 +411,7 @@ public class CyActivator extends AbstractCyActivator {
         httpd.addResponder(appGetResponder.new InstallResponder());
         httpd.start();
 
-        Object o = cyPropertyRef;
+//		Object o = cyPropertyRef;
 //		cyPropertyRef.getProperties().put("testkey1", "testval1");
 //		cyPropertyRef.getProperties().setProperty("testkey2", "testval2");
 		

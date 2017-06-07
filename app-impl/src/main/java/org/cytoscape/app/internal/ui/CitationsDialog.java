@@ -21,7 +21,6 @@ import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,11 +29,12 @@ import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.swing.DialogTaskManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -67,19 +67,18 @@ import org.xml.sax.SAXException;
 @SuppressWarnings("serial")
 public class CitationsDialog extends JDialog {
 
-	final WebQuerier webQuerier;
-	final AppManager appMgr;
-	final TaskManager taskMgr;
-	final Window parent;
-	final JTextPane textPane;
+	private final JTextPane textPane;
+	
+	private final WebQuerier webQuerier;
+	private final AppManager appManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public CitationsDialog(WebQuerier webQuerier, AppManager appMgr, TaskManager taskMgr, Window parent,
-			final OpenBrowser openBrowser) {
-		super(parent, "Citations", JDialog.ModalityType.MODELESS);
+	public CitationsDialog(Window owner, WebQuerier webQuerier, AppManager appManager,
+			CyServiceRegistrar serviceRegistrar) {
+		super(owner, "Citations", JDialog.ModalityType.MODELESS);
 		this.webQuerier = webQuerier;
-		this.appMgr = appMgr;
-		this.taskMgr = taskMgr;
-		this.parent = parent;
+		this.appManager = appManager;
+		this.serviceRegistrar = serviceRegistrar;
 
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setPreferredSize(new Dimension(500, 400));
@@ -87,12 +86,11 @@ public class CitationsDialog extends JDialog {
 		textPane = new JTextPane();
 		textPane.setEditable(false);
 		textPane.setContentType("text/html");
-		textPane.addHyperlinkListener(new HyperlinkListener() {
-			public void hyperlinkUpdate(HyperlinkEvent e) {
-				if (!e.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
-					return;
-				openBrowser.openURL(e.getURL().toString());
-			}
+		textPane.addHyperlinkListener(evt -> {
+			if (!evt.getEventType().equals(HyperlinkEvent.EventType.ACTIVATED))
+				return;
+			
+			serviceRegistrar.getService(OpenBrowser.class).openURL(evt.getURL().toString());
 		});
 
 		setLayout(new GridBagLayout());
@@ -112,7 +110,8 @@ public class CitationsDialog extends JDialog {
 	@Override
 	public void setVisible(boolean b) {
 		if (b) {
-			taskMgr.execute(new TaskIterator(new RetrieveTask(webQuerier, appMgr, textPane)));
+			DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+			taskMgr.execute(new TaskIterator(new RetrieveTask(webQuerier, textPane, appManager)));
 			pack();
 		}
 		
@@ -194,6 +193,7 @@ class Article {
     return pages;
   }
 
+  @Override
   public String toString() {
     return toString("%s. <i>%s</i> %s, %s:%s (%s). %s. PubMed ID: %s.");
   }
@@ -207,6 +207,7 @@ class Article {
  * Retrieves article summaries from PubMed and stores them in {@code Article} instances.
  */
 class PubMedParser {
+	
   static final String REQUEST_URL_BASE = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=";
 
   /**
@@ -256,7 +257,7 @@ class PubMedParser {
     String pubDate = null;
     String source = null;
     String title = null;
-    List<String> authors = new ArrayList<String>();
+    List<String> authors = new ArrayList<>();
     String volume = null;
     String issue = null;
     String pages = null;
@@ -312,7 +313,7 @@ class PubMedParser {
    * a map of the (potentially) same app names to {@code Article} objects.
    */
   public Map<String,Article> retrieveArticles(final Map<String,String> pmids) throws ParserConfigurationException, MalformedURLException, IOException, SAXException {
-    final Map<String,Article> articles = new HashMap<String,Article>();
+    final Map<String,Article> articles = new HashMap<>();
     final Document root = xmlRequest(makeRequestURL(pmids.values()));
     final NodeList results = root.getChildNodes();
     for (int i = 0; i < results.getLength(); i++) {
@@ -333,28 +334,28 @@ class PubMedParser {
 }
 
 class RetrieveTask implements Task {
-  /**
-   * PubMed ID of Cytoscape article that will always be included in the citations dialog.
-   */
-  protected static final String CYTOSCAPE_PMID = "14597658";
 
-  final WebQuerier webQuerier;
-  final AppManager appMgr;
-  final JTextPane textPane;
+	/** PubMed ID of Cytoscape article that will always be included in the citations dialog. */
+	protected static final String CYTOSCAPE_PMID = "14597658";
 
-  public RetrieveTask(final WebQuerier webQuerier, final AppManager appMgr, final JTextPane textPane) {
-    this.webQuerier = webQuerier;
-    this.appMgr = appMgr;
-    this.textPane = textPane;
-  }
+	private final WebQuerier webQuerier;
+	private final JTextPane textPane;
+	private final AppManager appManager;
+
+	public RetrieveTask(WebQuerier webQuerier, JTextPane textPane, AppManager appManager) {
+		this.webQuerier = webQuerier;
+		this.textPane = textPane;
+		this.appManager = appManager;
+	}
 
   /**
    * Return a map of app names to their PubMed IDs.
    */
   private Map<String,String> getPmidsOfApps() {
-    final Map<String,String> pmids = new HashMap<String,String>();
+    final Map<String,String> pmids = new HashMap<>();
     final Set<WebApp> allApps = webQuerier.getAllApps();
-    webQuerier.checkWebAppInstallStatus(allApps, appMgr);
+    webQuerier.checkWebAppInstallStatus(allApps, appManager);
+    
     for (final WebApp app : allApps) {
       if (app.getCorrespondingApp() == null
        || app.getCorrespondingApp().getStatus() != App.AppStatus.INSTALLED)
@@ -365,6 +366,7 @@ class RetrieveTask implements Task {
     return pmids;
   }
 
+  @Override
   public void run(final TaskMonitor monitor) throws Exception {
     monitor.setTitle("Retrieve citations from PubMed");
 
@@ -379,7 +381,7 @@ class RetrieveTask implements Task {
     final StringBuffer buffer = new StringBuffer("<html>");
     formatArticleAsHtmlDefinition("Cytoscape", articles.get("Cytoscape"), buffer);
     buffer.append("<br><hr><br>");
-    for (final String name : new TreeSet<String>(articles.keySet())) {
+    for (final String name : new TreeSet<>(articles.keySet())) {
       if (name.equals("Cytoscape"))
         continue;
       final Article article = articles.get(name);
@@ -403,6 +405,7 @@ class RetrieveTask implements Task {
     buffer.append("</dd></dl>");
   }
 
+  @Override
   public void cancel() {
   }
 }
