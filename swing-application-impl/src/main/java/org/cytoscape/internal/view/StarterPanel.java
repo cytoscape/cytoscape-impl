@@ -44,6 +44,7 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -90,7 +91,14 @@ public class StarterPanel extends JPanel {
 	public static final String TUTORIAL_URL = "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3";
 	public static final String NEWS_URL = "http://cytoscape-publications.tumblr.com/";
 	
+	public final Color LIST_BG_COLOR = UIManager.getColor("Table.background");
+	public final Color LIST_FOCUS_BG_COLOR = UIManager.getColor("Table.selectionBackground");
 	public final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
+	
+	private final Border DEF_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+	private final Border FOCUS_BORDER = BorderFactory.createCompoundBorder(
+			BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
+			BorderFactory.createLineBorder(LIST_FOCUS_BG_COLOR, 1));
 	
 	private static final String SAMPLE_DATA_DIR = "sampleData/sessions";
 	private static final String SESSION_EXT = ".cys";
@@ -385,6 +393,19 @@ public class StarterPanel extends JPanel {
 			openSession(file);
 	}
 	
+	private void drawFocus(SessionPanel panel) {
+		List<SessionPanel> all = getRecentSessionsPanel().getAllPanels();
+		all.addAll(getSampleSessionsPanel().getAllPanels());
+		
+		for (SessionPanel p : all)
+			drawFocus(p, panel == p);
+	}
+	
+	private void drawFocus(SessionPanel panel, boolean hasFocus) {
+		panel.setBorder(hasFocus ? FOCUS_BORDER : DEF_BORDER);
+		panel.setBackground(hasFocus ? LIST_FOCUS_BG_COLOR : LIST_BG_COLOR);
+	}
+	
 	private class SessionListPanel extends JPanel {
 		
 		private JScrollPane scrollPane;
@@ -410,6 +431,17 @@ public class StarterPanel extends JPanel {
 			}
 		}
 		
+		List<SessionPanel> getAllPanels() {
+			ScrollableListPanel lp = getListPanel();
+			int total = lp.getComponentCount();
+			ArrayList<SessionPanel> list = new ArrayList<>(total);
+			
+			for (int i = 0; i < total; i++)
+				list.add((SessionPanel) lp.getComponent(i));
+			
+			return list;
+		}
+		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
 				scrollPane = new JScrollPane(getListPanel());
@@ -430,7 +462,7 @@ public class StarterPanel extends JPanel {
 		private ScrollableListPanel getListPanel() {
 			if (listPanel == null) {
 				listPanel = new ScrollableListPanel();
-				listPanel.setBackground(UIManager.getColor("Table.background"));
+				listPanel.setBackground(LIST_BG_COLOR);
 			}
 			
 			return listPanel;
@@ -484,8 +516,8 @@ public class StarterPanel extends JPanel {
 		}
 		
 		private void init() {
-			setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-			setOpaque(false);
+			setBorder(DEF_BORDER);
+			setBackground(LIST_BG_COLOR);
 			
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
@@ -507,8 +539,21 @@ public class StarterPanel extends JPanel {
 					if (e.getClickCount() == 1 && SwingUtilities.isLeftMouseButton(e))
 						maybeOpenSession(fileInfo.getFile());
 				}
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					drawFocus(SessionPanel.this);
+				}
+				@Override
+				public void mouseExited(MouseEvent e) {
+					Component c = SwingUtilities.getDeepestComponentAt(e.getComponent(), e.getX(), e.getY());
+					boolean inside = c != null && SwingUtilities.isDescendingFrom(c, SessionPanel.this);
+					
+					if (!inside)
+						drawFocus(SessionPanel.this, false);
+				}
 			};
 			
+			addMouseListener(mouseListener);
 			getThumbnailLabel().addMouseListener(mouseListener);
 			getNameLabel().addMouseListener(mouseListener);
 		}
@@ -516,6 +561,8 @@ public class StarterPanel extends JPanel {
 		private JLabel getThumbnailLabel() {
 			if (thumbnailLabel == null) {
 				thumbnailLabel = new JLabel(fileInfo.getIcon());
+				thumbnailLabel.setOpaque(true);
+				thumbnailLabel.setBackground(LIST_BG_COLOR);
 				thumbnailLabel.setHorizontalAlignment(SwingConstants.CENTER);
 				thumbnailLabel.setHorizontalTextPosition(SwingConstants.CENTER);
 				thumbnailLabel.setToolTipText(fileInfo.getHelp());
