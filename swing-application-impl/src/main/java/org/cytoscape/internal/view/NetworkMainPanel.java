@@ -7,9 +7,9 @@ import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
-import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -49,6 +49,7 @@ import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -63,9 +64,9 @@ import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.util.Util;
@@ -75,11 +76,9 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,12 +119,10 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private JScrollPane rootNetworkScroll;
 	private RootNetworkListPanel rootNetworkListPanel;
 	private JPanel networkHeader;
-	private JPanel networkToolBar;
 	private JButton expandAllButton;
 	private JButton collapseAllButton;
 	private JButton optionsBtn;
 	private JLabel networkSelectionLabel;
-	private JButton createButton;
 
 	private CyNetwork currentNetwork;
 	
@@ -187,11 +184,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		setLayout(new BorderLayout());
 		add(getNetworkHeader(), BorderLayout.NORTH);
 		add(getRootNetworkScroll(), BorderLayout.CENTER);
-		add(getNetworkToolBar(), BorderLayout.SOUTH);
 		
 		updateNetworkHeader();
-		
-		getNetworkToolBar().setVisible(isShowNetworkToolBar());
 	}
 	
 	JScrollPane getRootNetworkScroll() {
@@ -326,73 +320,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		return networkSelectionLabel;
 	}
 	
-	private JPanel getNetworkToolBar() {
-		if (networkToolBar == null) {
-			networkToolBar = new JPanel();
-			
-			final GroupLayout layout = new GroupLayout(networkToolBar);
-			networkToolBar.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
-			
-			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 10, Short.MAX_VALUE)
-					.addContainerGap()
-			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, true)
-					.addComponent(getCreateButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-			);
-		}
-		
-		return networkToolBar;
-	}
-	
-	private JButton getCreateButton() {
-		if (createButton == null) {
-			createButton = new JButton(ICON_PLUS);
-			createButton.setToolTipText("Add...");
-			styleButton(createButton, serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE));
-
-			createButton.addActionListener((ActionEvent e) -> {
-				getCreateMenu().show(createButton, 0, createButton.getHeight());
-			});
-		}
-		
-		return createButton;
-	}
-	
-	private JPopupMenu getCreateMenu() {
-		final JPopupMenu menu = new JPopupMenu();
-		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-		
-		{
-			final LoadNetworkFileTaskFactory factory = serviceRegistrar.getService(LoadNetworkFileTaskFactory.class);
-			
-			final JMenuItem mi = new JMenuItem("New Network From File...");
-			mi.addActionListener((ActionEvent e) -> {
-				taskMgr.execute(factory.createTaskIterator());
-			});
-			mi.setEnabled(factory.isReady());
-			menu.add(mi);
-		}
-		{
-			final CyAction action = serviceRegistrar.getService(CyAction.class,
-					"(id=showImportNetworkFromWebServiceDialogAction)");
-			
-			final JMenuItem mi = new JMenuItem("New Network From Database...");
-			mi.addActionListener((ActionEvent e) -> {
-				action.actionPerformed(e);
-			});
-			mi.setEnabled(action.isEnabled());
-			menu.add(mi);
-		}
-
-		return menu;
-	}
-	
 	private JPopupMenu getNetworkOptionsMenu() {
 		final JPopupMenu menu = new JPopupMenu();
 		
@@ -410,14 +337,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				setShowNodeEdgeCount(mi.isSelected());
 			});
 			mi.setSelected(isShowNodeEdgeCount());
-			menu.add(mi);
-		}
-		{
-			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Toolbar");
-			mi.addActionListener((ActionEvent e) -> {
-				setShowNetworkToolBar(mi.isSelected());
-			});
-			mi.setSelected(isShowNetworkToolBar());
 			menu.add(mi);
 		}
 		
@@ -567,16 +486,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			item.setShowIndentation(b);
 		
 		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY, "" + b, serviceRegistrar);
-	}
-	
-	public boolean isShowNetworkToolBar() {
-		return "true".equalsIgnoreCase(
-				ViewUtil.getViewProperty(ViewUtil.SHOW_NETWORK_TOOL_BAR, serviceRegistrar));
-	}
-	
-	public void setShowNetworkToolBar(final boolean b) {
-		ViewUtil.setViewProperty(ViewUtil.SHOW_NETWORK_TOOL_BAR, "" + b, serviceRegistrar);
-		getNetworkToolBar().setVisible(b);
 	}
 	
 	public void scrollTo(final CyNetwork network) {
@@ -1155,12 +1064,30 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	class RootNetworkListPanel extends JPanel implements Scrollable {
 		
 		private final JPanel filler = new JPanel();
+		private final JLabel dropIconLabel = new JLabel();
+		private final JLabel dropLabel = new JLabel("Drag a network file here");
+		private final Border dropBorder;
 		private boolean scrollableTracksViewportHeight;
 		
 		private final Map<CyRootNetwork, RootNetworkPanel> items = new LinkedHashMap<>();
 		
 		RootNetworkListPanel() {
 			setBackground(UIManager.getColor("Table.background"));
+			
+			Color fg = UIManager.getColor("Label.disabledForeground");
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 60);
+			
+			dropBorder = BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(3, 3, 3, 3),
+					BorderFactory.createDashedBorder(fg, 2, 2, 2, true)
+			);
+			
+			dropIconLabel.setIcon(
+					new ImageIcon(getClass().getClassLoader().getResource("/images/drop-net-file-56.png")));
+			dropIconLabel.setForeground(fg);
+			
+			dropLabel.setFont(dropLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
+			dropLabel.setForeground(fg);
 			
 			filler.setAlignmentX(LEFT_ALIGNMENT);
 			filler.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
@@ -1173,13 +1100,36 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 				}
 			});
 			
+			final GroupLayout layout = new GroupLayout(filler);
+			filler.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			
 			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 			add(filler);
 			
+			updateDropArea();
 			updateScrollableTracksViewportHeight();
 		}
 		
 		void update() {
+			updateDropArea();
+			
 			for (final RootNetworkPanel rnp : getAllItems()) {
 				boolean currentRoot = false;
 				
@@ -1196,6 +1146,13 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 			
 			updateScrollableTracksViewportHeight();
+		}
+
+		void updateDropArea() {
+			boolean empty = items == null || items.isEmpty();
+			dropIconLabel.setVisible(empty);
+			dropLabel.setVisible(empty);
+			filler.setBorder(empty ? dropBorder : null);
 		}
 		
 		void updateScrollableTracksViewportHeight() {
