@@ -68,26 +68,23 @@ public abstract class AbstractTableBrowser extends JPanel
 										   			  SessionAboutToBeSavedListener{
 
 	static final int SELECTOR_WIDTH = 400;
-	
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
 	protected final CyServiceRegistrar serviceRegistrar;
 	
 	private TableBrowserToolBar toolBar;
-		
 	protected CyTable currentTable;
-	protected Class<? extends CyIdentifiable> currentTableType;
+	private JScrollPane currentScrollPane;
 	private final PopupMenuHelper popupMenuHelper; 
-	
 
-	// Tab title for the CytoPanel
 	private final String tabTitle;
 	private final Map<BrowserTable, JScrollPane> scrollPanes;
 	private final Map<CyTable, BrowserTable> browserTables;
-	private JScrollPane currentScrollPane;
 	protected final String appFileName;
+	protected Class<? extends CyIdentifiable> currentTableType;
 
-
+	private final Object lock = new Object();
+	
 	AbstractTableBrowser(
 			final String tabTitle,
 			final CyServiceRegistrar serviceRegistrar,
@@ -110,7 +107,9 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	@Override
-	public Component getComponent() { return this; }
+	public Component getComponent() {
+		return this;
+	}
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
@@ -118,23 +117,34 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	@Override
-	public String getTitle() { return tabTitle; }
+	public String getTitle() {
+		return tabTitle;
+	}
 
 	@Override
-	public Icon getIcon() { return null; }
+	public Icon getIcon() {
+		return null;
+	}
 	
 	/**
 	 * Delete the given table from the JTable
 	 */
 	public void removeTable(final CyTable cyTable) {
-		final BrowserTable table = browserTables.remove(cyTable);
+		BrowserTable table = null;
+		
+		synchronized (lock) {
+			table = browserTables.remove(cyTable);
+		}
 		
 		if (table == null)
 			return;
 		
 		table.setVisible(false);
 		
-		scrollPanes.remove(table);
+		synchronized (lock) {
+			scrollPanes.remove(table);
+		}
+		
 		TableModel model = table.getModel();
 		serviceRegistrar.unregisterAllServices(table);
 		serviceRegistrar.unregisterAllServices(model);
@@ -167,7 +177,9 @@ public abstract class AbstractTableBrowser extends JPanel
 		JScrollPane scrollPane = null;
 		
 		if (browserTable != null) {
-			scrollPane = scrollPanes.get(browserTable);
+			synchronized (lock) {
+				scrollPane = scrollPanes.get(browserTable);
+			}
 			
 			if (scrollPane == null) {
 				BrowserTableModel browserTableModel = (BrowserTableModel) browserTable.getModel();
@@ -194,7 +206,10 @@ public abstract class AbstractTableBrowser extends JPanel
 				browserTable.setVisibleAttributeNames(attrList);
 				
 				scrollPane = new JScrollPane(browserTable);
-				scrollPanes.put(browserTable, scrollPane);
+				
+				synchronized (lock) {
+					scrollPanes.put(browserTable, scrollPane);
+				}
 				
 				// So the drop event can go straight through the table to the drop target associated with this panel
 				if (browserTable.getDropTarget() != null)
@@ -206,7 +221,11 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	protected BrowserTable getCurrentBrowserTable() {
-		BrowserTable table = browserTables.get(currentTable);
+		BrowserTable table = null;
+		
+		synchronized (lock) {
+			table = browserTables.get(currentTable);
+		}
 		
 		if (table == null && currentTable != null) {
 			final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
@@ -214,7 +233,10 @@ public abstract class AbstractTableBrowser extends JPanel
 			table = new BrowserTable(compiler, popupMenuHelper, serviceRegistrar);
 			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
 			table.setModel(model);
-			browserTables.put(currentTable, table);
+			
+			synchronized (lock) {
+				browserTables.put(currentTable, table);
+			}
 			
 			return table;
 		}
@@ -223,11 +245,13 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 	
 	public BrowserTable getBrowserTable(final CyTable table) {
-		return browserTables.get(table);
+		synchronized (lock) {
+			return browserTables.get(table);
+		}
 	}
 	
 	protected Map<CyTable, BrowserTable> getAllBrowserTablesMap() {
-		return browserTables;
+		return new HashMap<>(browserTables);
 	}
 
 	@Override
@@ -242,21 +266,21 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (tscMap == null || tscMap.isEmpty())
 			return;
 		
-		Map<CyTable, BrowserTable>  browserTableModels = getAllBrowserTablesMap();
+		Map<CyTable, BrowserTable> browserTablesMap = getAllBrowserTablesMap();
 		
-		for (CyTable table : browserTableModels.keySet()){
+		for (CyTable table : browserTablesMap.keySet()){
 			if (! tscMap.containsKey(table.getTitle()))
 				continue;
 			
 			final TableColumnStat tcs = tscMap.get(table.getTitle());
 			
-			final BrowserTable browserTable = browserTables.get(table);
+			final BrowserTable browserTable = getBrowserTable(table);
 			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 			final BrowserTableColumnModel colM = (BrowserTableColumnModel)browserTable.getColumnModel();
 			colM.setAllColumnsVisible();
 			final List<String> orderedCols = tcs.getOrderedCol();
 			
-			for (int i = 0; i < orderedCols.size(); i++){
+			for (int i = 0; i < orderedCols.size(); i++) {
 				final String colName = orderedCols.get(i);
 				colM.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName)), i);
 			}
@@ -270,7 +294,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
 		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 
-		for (CyTable table :  browserTables.keySet()){
+		for (CyTable table : browserTables.keySet()){
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());
 
 			BrowserTable browserTable = browserTables.get(table);
@@ -289,7 +313,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			tableColumnStatList.add(tcs);
 		}
 		
-		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	
+		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
 	}
 	
 	@SuppressWarnings("unchecked")

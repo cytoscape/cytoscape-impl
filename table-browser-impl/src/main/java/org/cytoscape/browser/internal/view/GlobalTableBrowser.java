@@ -99,19 +99,19 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		final CyTable cyTable = e.getTable();
 		
 		if (cyTable.isPublic() || showPrivateTables()) {
-			final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
-			comboBoxModel.removeItem(cyTable);
-			getToolBar().updateEnableState(tableChooser);
-			
-			if (comboBoxModel.getSize() == 0) {
-				// The last table is deleted, refresh the browser table (this is a special case)
-				removeTable(cyTable);
-				invokeOnEDT(() -> {
+			invokeOnEDT(() -> {
+				final GlobalTableComboBoxModel comboBoxModel = (GlobalTableComboBoxModel) tableChooser.getModel();
+				comboBoxModel.removeItem(cyTable);
+				getToolBar().updateEnableState(tableChooser);
+				
+				if (comboBoxModel.getSize() == 0) {
+					// The last table is deleted, refresh the browser table (this is a special case)
+					removeTable(cyTable);
 					serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
 					serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(null);
 					showSelectedTable();
-				});
-			}
+				}
+			});
 		}
 	}
 	
@@ -152,10 +152,10 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 			comboBoxModel.removeItem(table);
 
 			if (comboBoxModel.getSize() == 0) {
-				tableChooser.setEnabled(false);
-				// The last table is deleted, refresh the browser table (this is a special case)
-				removeTable(table);
 				invokeOnEDT(() -> {
+					tableChooser.setEnabled(false);
+					// The last table is deleted, refresh the browser table (this is a special case)
+					removeTable(table);
 					serviceRegistrar.unregisterService(GlobalTableBrowser.this, CytoPanelComponent.class);
 					showSelectedTable();
 				});

@@ -281,7 +281,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	@Override
 	public void handleEvent(final TableAboutToBeDeletedEvent e) {
 		final CyTable cyTable = e.getTable();
-		final BrowserTable table = getAllBrowserTablesMap().get(cyTable);
+		final BrowserTable table = getBrowserTable(cyTable);
 		
 		if (table != null) {
 			((DefaultComboBoxModel<CyTable>)getTableChooser().getModel()).removeElement(cyTable);
@@ -291,14 +291,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				getToolBar().updateEnableState(getTableChooser());
 				removeTable(cyTable);
 			});
-			
-//			final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-//			final CyNetwork network = netTableManager.getNetworkForTable(cyTable);
-//			final String namespace = netTableManager.getTableNamespace(cyTable);
-			
-			// FIXME: why is the table browser removing the table??????
-			// if (network != null && namespace != null)
-			// 	networkTableManager.removeTable(network, objType, namespace);
 		}
 	}
 	
