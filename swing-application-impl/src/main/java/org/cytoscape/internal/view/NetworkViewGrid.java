@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.KeyboardFocusManager;
 import java.awt.Rectangle;
@@ -768,9 +769,12 @@ public class NetworkViewGrid extends JPanel {
 	private JLabel getInfoLabel() {
 		if (infoLabel == null) {
 			infoLabel = new JLabel("No views");
-			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f));
+			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
 			infoLabel.setEnabled(false);
-			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			
+			Color c = UIManager.getColor("Label.disabledForeground");
+			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
+			infoLabel.setForeground(c);
 		}
 		
 		return infoLabel;

@@ -1,10 +1,15 @@
 package org.cytoscape.browser.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,10 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.UIManager;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -70,19 +80,21 @@ public abstract class AbstractTableBrowser extends JPanel
 	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	protected final CyServiceRegistrar serviceRegistrar;
-	
 	private TableBrowserToolBar toolBar;
-	protected CyTable currentTable;
+	private JPanel dropPanel;
+	private final JLabel dropIconLabel = new JLabel();
+	private final JLabel dropLabel = new JLabel("Drag a table file here");
 	private JScrollPane currentScrollPane;
 	private final PopupMenuHelper popupMenuHelper; 
 
 	private final String tabTitle;
+	protected CyTable currentTable;
 	private final Map<BrowserTable, JScrollPane> scrollPanes;
 	private final Map<CyTable, BrowserTable> browserTables;
 	protected final String appFileName;
 	protected Class<? extends CyIdentifiable> currentTableType;
 
+	protected final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 	
 	AbstractTableBrowser(
@@ -93,17 +105,19 @@ public abstract class AbstractTableBrowser extends JPanel
 		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
 		this.popupMenuHelper = popupMenuHelper;
-		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
-
-		this.scrollPanes = new HashMap<>();
-		this.browserTables = new HashMap<>();
 		
-		this.setLayout(new BorderLayout());
-		this.setOpaque(!isAquaLAF());
-		this.setPreferredSize(PANEL_SIZE);
-		this.setSize(PANEL_SIZE);
+		appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
+		scrollPanes = new HashMap<>();
+		browserTables = new HashMap<>();
 		
+		setLayout(new BorderLayout());
+		setOpaque(!isAquaLAF());
+		setPreferredSize(PANEL_SIZE);
+		setSize(PANEL_SIZE);
+		
+		addDropPanel();
 		new CyDropListener(this, serviceRegistrar);
+		update();
 	}
 
 	@Override
@@ -153,24 +167,102 @@ public abstract class AbstractTableBrowser extends JPanel
 			currentTable = null;
 			currentTableType = null;
 		}
+		
+		update();
 	}
 	
-	synchronized void showSelectedTable() {
-		if (currentScrollPane != null)
-			remove(currentScrollPane);
-
-		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
-		final JScrollPane newScrollPane = getScrollPane(currentBrowserTable);
-		
-		if (newScrollPane != null) {
-			add(newScrollPane, BorderLayout.CENTER);
-			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable, false);
-		} else {
-			repaint();
+	/**
+	 * @return true if it contains no tables
+	 */
+	protected boolean isEmpty() {
+		synchronized (lock) {
+			return browserTables.isEmpty();
 		}
+	}
+	
+	protected void update() {
+		updateToolBar();
+	}
 
-		currentScrollPane = newScrollPane;
-		getToolBar().setBrowserTable(currentBrowserTable);
+	private void updateToolBar() {
+		if (toolBar != null)
+			toolBar.setVisible(!isEmpty());
+	}
+	
+	private void addDropPanel() {
+		if (getDropPanel().getParent() == null)
+			add(getDropPanel(), BorderLayout.CENTER);
+	}
+	
+	private JPanel getDropPanel() {
+		if (dropPanel == null) {
+			dropPanel = new JPanel();
+			dropPanel.setBackground(UIManager.getColor("Table.background"));
+			
+			Color fg = UIManager.getColor("Label.disabledForeground");
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 60);
+			
+			dropPanel.setBorder(BorderFactory.createCompoundBorder(
+					UIManager.getBorder("ScrollPane.border"),
+					BorderFactory.createCompoundBorder(
+						BorderFactory.createEmptyBorder(3, 3, 3, 3),
+						BorderFactory.createDashedBorder(fg, 2, 2, 2, true)
+					)
+			));
+			
+			dropIconLabel.setIcon(
+					new ImageIcon(getClass().getClassLoader().getResource("/images/drop-table-file-56.png")));
+			dropIconLabel.setForeground(fg);
+			
+			dropLabel.setFont(dropLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
+			dropLabel.setForeground(fg);
+			
+			final GroupLayout layout = new GroupLayout(dropPanel);
+			dropPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+		}
+		
+		return dropPanel;
+	}
+	
+	void showSelectedTable() {
+		synchronized (lock) {
+			if (currentScrollPane != null)
+				remove(currentScrollPane);
+	
+			final BrowserTable currentBrowserTable = getCurrentBrowserTable();
+			final JScrollPane newScrollPane = getScrollPane(currentBrowserTable);
+			
+			if (newScrollPane != null) {
+				if (getDropPanel().getParent() == this)
+					remove(getDropPanel());
+					
+				add(newScrollPane, BorderLayout.CENTER);
+				ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable, false);
+			} else {
+				addDropPanel();
+				repaint();
+			}
+	
+			currentScrollPane = newScrollPane;
+			getToolBar().setBrowserTable(currentBrowserTable);
+		}
 	}
 
 	private JScrollPane getScrollPane(final BrowserTable browserTable) {
@@ -238,7 +330,7 @@ public abstract class AbstractTableBrowser extends JPanel
 				browserTables.put(currentTable, table);
 			}
 			
-			return table;
+			update();
 		}
 		
 		return table;
@@ -335,5 +427,6 @@ public abstract class AbstractTableBrowser extends JPanel
 			add(toolBar, BorderLayout.NORTH);
 			
 		this.toolBar = toolBar;
+		updateToolBar();
 	}
 }
