@@ -41,7 +41,7 @@ import org.cytoscape.util.swing.ColumnResizer;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -73,7 +73,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	protected final CyServiceRegistrar serviceRegistrar;
 	
-	protected AttributeBrowserToolBar attributeBrowserToolBar;
+	private TableBrowserToolBar toolBar;
 		
 	protected CyTable currentTable;
 	protected Class<? extends CyIdentifiable> currentTableType;
@@ -125,9 +125,8 @@ public abstract class AbstractTableBrowser extends JPanel
 	
 	/**
 	 * Delete the given table from the JTable
-	 * @param cyTable
 	 */
-	public void deleteTable(final CyTable cyTable) {
+	public void removeTable(final CyTable cyTable) {
 		final BrowserTable table = browserTables.remove(cyTable);
 		
 		if (table == null)
@@ -161,7 +160,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 
 		currentScrollPane = newScrollPane;
-		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
+		getToolBar().setBrowserTable(currentBrowserTable);
 	}
 
 	private JScrollPane getScrollPane(final BrowserTable browserTable) {
@@ -299,5 +298,18 @@ public abstract class AbstractTableBrowser extends JPanel
 				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		
 		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
+	}
+	
+	protected TableBrowserToolBar getToolBar() {
+		return toolBar;
+	}
+	
+	protected void setToolBar(TableBrowserToolBar toolBar) {
+		if (toolBar == null && this.toolBar != null)
+			remove(this.toolBar);
+		else if (toolBar != null)
+			add(toolBar, BorderLayout.NORTH);
+			
+		this.toolBar = toolBar;
 	}
 }
