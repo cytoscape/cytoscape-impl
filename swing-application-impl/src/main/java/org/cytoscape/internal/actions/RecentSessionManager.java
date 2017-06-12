@@ -101,8 +101,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			try {
 				URI uri = url.toURI();
 				file = new File(uri);
-			} catch (URISyntaxException e) {
-				logger.error("Invalid file URL.", e);
+			} catch (Exception e) {
+				logger.error("Invalid recent file URL.", e);
 				continue;
 			}
 			

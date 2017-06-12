@@ -22,7 +22,6 @@ import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -291,16 +290,15 @@ public class StarterPanel extends JPanel {
 		
 		for (int i = 0; i < fileCount; i++) {
 			final URL url = recentFiles.get(i);
-			URI fileURI = null;
+			File file = null;
 			
 			try {
-				fileURI = url.toURI();
-			} catch (URISyntaxException e) {
+				URI uri = url.toURI();
+				file = new File(uri);
+			} catch (Exception e) {
 				logger.error("Invalid file URL.", e);
 				continue;
 			}
-			
-			final File file = new File(fileURI);
 			
 			if (file.exists() && file.canRead()) {
 				FileInfo fi = new FileInfo(file, file.getName(), file.getAbsolutePath());
