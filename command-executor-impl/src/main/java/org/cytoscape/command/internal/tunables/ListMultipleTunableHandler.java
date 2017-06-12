@@ -50,7 +50,20 @@ public class ListMultipleTunableHandler extends AbstractStringTunableHandler {
 					}
 			}
 		}
-		lss.setSelectedValues(Arrays.asList(options));
+
+		// At this point, we have an array of strings, but the tunable might
+		// not be a string tunable.  Create a list of appropriately typed
+		// values by using toString() to match
+		List<Object> optionList = new ArrayList<Object>();
+		for (Object t: lss.getPossibleValues()) {
+			for (String s: options) {
+				if (s.equals(t.toString())) {
+					optionList.add(t);
+					break;
+				}
+			}
+		}
+		lss.setSelectedValues(optionList);
 		return lss;
 	}
 }
