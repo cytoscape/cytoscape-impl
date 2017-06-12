@@ -210,7 +210,7 @@ public class CyActivator extends AbstractCyActivator {
 		CSVTableWriterFactory sessionTableWriterFactory = new CSVTableWriterFactory(sessionTableFilter, true, true, false);
 		VizmapWriterFactoryImpl vizmapWriterFactory = new VizmapWriterFactoryImpl(vizmapXMLFilter, visualStyleSerializer);
 		SessionWriterFactoryImpl sessionWriterFactory = new SessionWriterFactoryImpl(cys3Filter, bookmarksFilter, propertiesFilter, sessionTableFilter, vizmapXMLFilter, sessionXgmmlWriterFactory, propertyWriterManager, tableWriterManager, vizmapWriterManager, groupUtil, serviceRegistrar);
-		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl("tracker.recent.sessions", serviceRegistrar);
+		RecentlyOpenedTrackerImpl recentlyOpenedTracker = new RecentlyOpenedTrackerImpl(serviceRegistrar);
 		
 		CyTransformerReaderImpl transformerReader = new CyTransformerReaderImpl();
 		CyTransformerWriterImpl transformerWriter = new CyTransformerWriterImpl();
