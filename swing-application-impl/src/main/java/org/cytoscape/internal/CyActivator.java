@@ -367,7 +367,7 @@ public class CyActivator extends AbstractCyActivator {
 		} else {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Help");
-			props.setProperty(TITLE, "About...");
+			props.setProperty(TITLE, "About");
 			props.setProperty(MENU_GRAVITY,"10.0");
 			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
 			
