@@ -2,11 +2,9 @@ package org.cytoscape.browser.internal.view;
 
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.util.swing.IconManager.ICON_COG;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JPopupMenu;
@@ -42,7 +39,6 @@ import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 
 /*
  * #%L
@@ -72,7 +68,6 @@ import org.cytoscape.util.swing.IconManager;
 public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
 		TableAddedListener, TableAboutToBeDeletedListener, ColumnCreatedListener, ColumnDeletedListener {
 
-	private JButton selectionModeButton;
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
 	
@@ -88,31 +83,17 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			final PopupMenuHelper popupMenuHelper
 	) {
 		super(tabTitle, serviceRegistrar, popupMenuHelper);
-
 		this.objType = objType;
 
 		createPopupMenu();
 		
-		if (objType != CyNetwork.class) {
-			selectionModeButton = new JButton(ICON_COG);
-			selectionModeButton.setToolTipText("Change Table Mode");
-			
-			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			TableBrowserToolBar.styleButton(selectionModeButton,
-					iconManager.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE * 4/5));
-			
-			selectionModeButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					DefaultTableBrowser.this.actionPerformed(e);
-					displayMode.show(selectionModeButton, 0, selectionModeButton.getHeight());
-				}
-			});
-			
-			setToolBar(new TableBrowserToolBar(serviceRegistrar, getTableChooser(), selectionModeButton, objType));
-		} else {
-			setToolBar(new TableBrowserToolBar(serviceRegistrar, getTableChooser(), objType));
-		}
+		TableBrowserToolBar toolBar = new TableBrowserToolBar(serviceRegistrar, getTableChooser(), objType);
+		setToolBar(toolBar);
+		
+		toolBar.getSelectionModeButton().addActionListener(e -> {
+			DefaultTableBrowser.this.actionPerformed(e);
+			displayMode.show(toolBar.getSelectionModeButton(), 0, toolBar.getSelectionModeButton().getHeight());
+		});
 	}
 	
 	private void createPopupMenu() {
@@ -124,43 +105,31 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		final JCheckBoxMenuItem displaySelect = new JCheckBoxMenuItem("Show selected");
 		displaySelect.setSelected(rowSelectionMode == BrowserTableModel.ViewMode.SELECTED);
 
-		displayAuto.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
-				changeSelectionMode();
+		displayAuto.addActionListener(e -> {
+			rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
+			changeSelectionMode();
 
-				displayAuto.setSelected(true);
-				displayAll.setSelected(false);
-				displaySelect.setSelected(false);
-			}
+			displayAuto.setSelected(true);
+			displayAll.setSelected(false);
+			displaySelect.setSelected(false);
 		});
 		
-		displayAll.addActionListener(new ActionListener() {
-			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.ALL;
-				changeSelectionMode();
+		displayAll.addActionListener(e -> {
+			rowSelectionMode = BrowserTableModel.ViewMode.ALL;
+			changeSelectionMode();
 
-				displayAuto.setSelected(false);
-				displayAll.setSelected(true);
-				displaySelect.setSelected(false);
-			}
+			displayAuto.setSelected(false);
+			displayAll.setSelected(true);
+			displaySelect.setSelected(false);
 		});
 		
-		displaySelect.addActionListener(new ActionListener() {
+		displaySelect.addActionListener(e -> {
+			rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
+			changeSelectionMode();
 			
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				rowSelectionMode = BrowserTableModel.ViewMode.SELECTED;
-				changeSelectionMode();
-				
-				displayAuto.setSelected(false);
-				displayAll.setSelected(false);
-				displaySelect.setSelected(true);
-			}
+			displayAuto.setSelected(false);
+			displayAll.setSelected(false);
+			displaySelect.setSelected(true);
 		});
 		
 		displayMode.add(displayAuto);

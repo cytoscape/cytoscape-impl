@@ -2,6 +2,7 @@ package org.cytoscape.browser.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
 import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
@@ -12,7 +13,6 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -99,8 +99,6 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private BrowserTable browserTable;
 	private BrowserTableModel browserTableModel;
 	
-	private static final Dimension TOOLBAR_SIZE = new Dimension(500, 38);
-
 	/* GUI components */
 	private JPopupMenu columnSelectorPopupMenu;
 	private ColumnSelector columnSelector;
@@ -112,6 +110,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	
 	private JButton selectButton;
 	
+	private JButton selectionModeButton;
 	private JButton createNewAttributeButton;
 	private JButton deleteAttributeButton;
 	private JButton deleteTableButton;
@@ -121,7 +120,6 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 
 	private AttributeListModel attrListModel;
 	
-	private final JButton selectionModeButton;
 	private final List<JComponent> components;
 	
 	private final Class<? extends CyIdentifiable> objType;
@@ -134,17 +132,6 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			final JComboBox<CyTable> tableChooser,
 			final Class<? extends CyIdentifiable> objType
 	) {
-		this(serviceRegistrar, tableChooser, new JButton(), objType);
-		this.selectionModeButton.setVisible(false);
-	}
-	
-	public TableBrowserToolBar(
-			final CyServiceRegistrar serviceRegistrar,
-			final JComboBox<CyTable> tableChooser,
-			final JButton selectionModeButton,
-			final Class<? extends CyIdentifiable> objType
-	) {
-		this.selectionModeButton = selectionModeButton;
 		this.components = new ArrayList<>();
 		this.tableChooser = tableChooser;
 		this.attrListModel = new AttributeListModel(null);
@@ -154,7 +141,6 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		
 		serviceRegistrar.registerAllServices(attrListModel, new Properties());
 
-		selectionModeButton.setEnabled(false);
 		initializeGUI();
 	}
 
@@ -244,8 +230,8 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		add(getToolBar(), BorderLayout.CENTER);
 
 		// Add buttons
-		if (selectionModeButton != null)
-			addComponent(selectionModeButton, ComponentPlacement.RELATED);
+		if (objType == CyNode.class || objType == CyEdge.class)
+			addComponent(getSelectionModeButton(), ComponentPlacement.RELATED);
 		
 		addComponent(getSelectButton(), ComponentPlacement.RELATED);
 		addComponent(getNewButton(), ComponentPlacement.RELATED);
@@ -272,12 +258,19 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		components.add(component);
 	}
 
-	static void styleButton(final AbstractButton btn, final Font font) {
+	protected void styleButton(final AbstractButton btn, final Font font) {
 		btn.setFont(font);
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
 		btn.setBorderPainted(false);
-		btn.setMinimumSize(new Dimension(32, 32));
+		
+		int w = 32, h = 32;
+		
+		if (tableChooser != null)
+			h = Math.max(h, tableChooser.getPreferredSize().height);
+		
+		btn.setMinimumSize(new Dimension(w, h));
+		btn.setPreferredSize(new Dimension(w, h));
 	}
 	
 	private JPopupMenu getColumnSelectorPopupMenu() {
@@ -414,22 +407,18 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JToolBar getToolBar() {
 		if (toolBar == null) {
 			toolBar = new JToolBar();
-			toolBar.setMargin(new Insets(0, 0, 3, 0));
-			toolBar.setPreferredSize(TOOLBAR_SIZE);
-			toolBar.setSize(TOOLBAR_SIZE);
 			toolBar.setFloatable(false);
 			toolBar.setOrientation(JToolBar.HORIZONTAL);
 			toolBar.setOpaque(!isAquaLAF());
 
-			final GroupLayout buttonBarLayout = new GroupLayout(toolBar);
-			toolBar.setLayout(buttonBarLayout);
-			hToolBarGroup = buttonBarLayout.createSequentialGroup();
-			vToolBarGroup = buttonBarLayout.createParallelGroup(Alignment.CENTER, false);
+			final GroupLayout layout = new GroupLayout(toolBar);
+			toolBar.setLayout(layout);
+			hToolBarGroup = layout.createSequentialGroup();
+			vToolBarGroup = layout.createParallelGroup(Alignment.CENTER, false);
 			
 			// Layout information.
-			buttonBarLayout.setHorizontalGroup(buttonBarLayout.createParallelGroup(Alignment.LEADING)
-								.addGroup(hToolBarGroup));
-			buttonBarLayout.setVerticalGroup(vToolBarGroup);
+			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(hToolBarGroup));
+			layout.setVerticalGroup(vToolBarGroup);
 		}
 
 		return toolBar;
@@ -605,6 +594,16 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return attributeArray;
 	}
 
+	protected JButton getSelectionModeButton() {
+		if (selectionModeButton == null) {
+			selectionModeButton = new JButton(ICON_COG);
+			selectionModeButton.setToolTipText("Change Table Mode");
+			styleButton(selectionModeButton, iconMgr.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE * 4/5));
+		}
+		
+		return selectionModeButton;
+	}
+	
 	private JButton getNewButton() {
 		if (createNewAttributeButton == null) {
 			createNewAttributeButton = new JButton(ICON_PLUS);
@@ -632,12 +631,9 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			mapGlobalTableButton.setToolTipText("Link Table to Attributes");
 			mapGlobalTableButton.setBorder(null);
 
-			mapGlobalTableButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					if (mapGlobalTableButton.isEnabled())
-						guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator( browserTableModel.getAttributes() ));
-				}
+			mapGlobalTableButton.addActionListener(e -> {
+				if (mapGlobalTableButton.isEnabled())
+					guiTaskManagerServiceRef.execute(mapGlobalTableTaskFactoryService.createTaskIterator( browserTableModel.getAttributes() ));
 			});
 		}
 		mapGlobalTableButton.setEnabled(false);
