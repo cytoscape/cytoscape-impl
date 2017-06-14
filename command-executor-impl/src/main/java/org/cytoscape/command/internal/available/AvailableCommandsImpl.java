@@ -155,6 +155,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	@Override
 	public List<String> getArguments(String namespace,String command) {
 		synchronized (lock) {
+			// System.out.println("Getting arguments for "+namespace+" "+command);
 			Map<String,Map<String, ArgHandler>> mm = argHandlers.get(namespace);
 			if ( mm == null ) {
 				return Collections.emptyList();
@@ -443,8 +444,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			e.printStackTrace();
 			return Collections.emptyMap();
 		} finally {
-			// No matter what, make sure we unsilence the
-			// events, if we silenced them
 			resetCurrentNetworkView(resetView);
 			resetCurrentNetwork(resetNetwork);
 		}
@@ -486,7 +485,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		if (appMgr.getCurrentNetwork() == null) {
 			getServices();
 			getNetwork();
-			eventHelper.silenceEventSource(netMgr);
 			netMgr.addNetwork(emptyNetwork, true);
 			return true;
 		}
@@ -498,7 +496,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		appMgr.setCurrentNetwork(null);
 		netMgr.destroyNetwork(emptyNetwork);
 		emptyNetwork = null;
-		eventHelper.unsilenceEventSource(netMgr);
 	}
 
 	private CyNetworkView getNetworkView() {
@@ -514,7 +511,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private boolean setCurrentNetworkView() {
 		if (appMgr.getCurrentNetworkView() == null) {
 			getNetworkView();
-			eventHelper.silenceEventSource(netViewMgr);
 			netViewMgr.addNetworkView(emptyView, true);
 			return true;
 		}
@@ -526,7 +522,6 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		appMgr.setCurrentNetworkView(null);
 		netViewMgr.destroyNetworkView(emptyView);
 		emptyView = null;
-		eventHelper.unsilenceEventSource(netViewMgr);
 	}
 
 	class StaticTaskFactoryProvisioner {
