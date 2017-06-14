@@ -31,6 +31,8 @@ import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.TaskIterator;
 
 
@@ -38,16 +40,32 @@ public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFa
 	
 	private final PresentationWriterManager presentationWriterMgr; 
 	private final CyApplicationManager applicationManager;
+	private final RenderingEngineManager engineManager;
 
 	public ExportNetworkImageTaskFactoryImpl(final PresentationWriterManager presentationWriterMgr,
-			final CyApplicationManager applicationManager) {
+			final CyApplicationManager applicationManager,
+			final RenderingEngineManager engineManager) {
 		this.presentationWriterMgr = presentationWriterMgr;
 		this.applicationManager = applicationManager;
+		this.engineManager = engineManager;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
+		// Get the rendering engine
+		RenderingEngine<?> engine = applicationManager.getCurrentRenderingEngine();
+
+		// Now get the rendering engine for this view and use this one
+		// if we can
+		String engineId = view.getRendererId();
+		for (RenderingEngine<?> e: engineManager.getRenderingEngines(view)) {
+			if (engineId.equals(e.getRendererId())) {
+				engine = e;
+				break;
+			}
+		}
+
 		return new TaskIterator(2, new ViewWriter( presentationWriterMgr, applicationManager,
-				view, applicationManager.getCurrentRenderingEngine() ) );
+				view, engine ) );
 	}
 }

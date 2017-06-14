@@ -42,6 +42,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.task.internal.export.ViewWriter;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.junit.After;
@@ -52,6 +53,7 @@ public class ExportNetworkImageTaskFactoryTest {
 	
 	private final PresentationWriterManager viewWriterMgr = mock(PresentationWriterManager.class);
 	private final CyApplicationManager applicationManager = mock(CyApplicationManager.class);
+	private final RenderingEngineManager engineManager = mock(RenderingEngineManager.class);
 
 	@Before
 	public void setUp() throws Exception {
@@ -72,7 +74,7 @@ public class ExportNetworkImageTaskFactoryTest {
 	@Test
 	public void testExportNetworkImageTaskFactory() throws Exception {
 		final ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(viewWriterMgr, 
-				applicationManager);
+				applicationManager, engineManager);
 		final CyNetworkView view = mock(CyNetworkView.class);
 		final CyNetwork network = mock(CyNetwork.class);
 		final CyRow row = mock(CyRow.class);
