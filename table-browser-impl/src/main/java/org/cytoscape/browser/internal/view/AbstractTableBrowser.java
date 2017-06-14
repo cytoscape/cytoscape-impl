@@ -262,7 +262,6 @@ public abstract class AbstractTableBrowser extends JPanel
 		
 		if (browserTable != null) {
 			scrollPane.setViewportView(browserTable);
-			ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
 		} else {
 			showDropPanel();
 			repaint();
@@ -323,6 +322,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (browserTable.getDropTarget() != null)
 			browserTable.getDropTarget().setActive(false);
 		
+		ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
 		update();
 		
 		return browserTable;
