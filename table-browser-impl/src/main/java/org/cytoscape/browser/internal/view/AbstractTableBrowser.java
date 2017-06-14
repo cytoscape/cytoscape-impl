@@ -206,7 +206,7 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	private void updateToolBar() {
 		if (toolBar != null)
-			toolBar.setVisible(!isEmpty());
+			toolBar.setVisible(currentTable != null);
 	}
 	
 	private void showDropPanel() {
@@ -258,19 +258,18 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 	
 	void showSelectedTable() {
-		synchronized (lock) {
-			final BrowserTable browserTable = getCurrentBrowserTable();
-			
-			if (browserTable != null) {
-				scrollPane.setViewportView(browserTable);
-				ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
-			} else {
-				showDropPanel();
-				repaint();
-			}
-	
-			getToolBar().setBrowserTable(browserTable);
+		final BrowserTable browserTable = getCurrentBrowserTable();
+		
+		if (browserTable != null) {
+			scrollPane.setViewportView(browserTable);
+			ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
+		} else {
+			showDropPanel();
+			repaint();
 		}
+
+		update();
+		getToolBar().setBrowserTable(browserTable);
 	}
 
 	protected BrowserTable getCurrentBrowserTable() {
@@ -529,7 +528,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		}
 		
 		private JComponent getDropTarget() {
-			return isEmpty() ? scrollPane : AbstractTableBrowser.this;
+			return currentTable == null ? scrollPane : AbstractTableBrowser.this;
 		}
 	}
 }
