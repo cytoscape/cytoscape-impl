@@ -453,9 +453,9 @@ public class NetworkSearchPanel extends JPanel {
 	
 	JButton getOptionsButton() {
 		if (optionsButton == null) {
-			optionsButton = new JButton(IconManager.ICON_ELLIPSIS_V);
+			optionsButton = new JButton(IconManager.ICON_BARS);
 			optionsButton.setToolTipText("More Options...");
-			styleButton(optionsButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(16.0f),
+			styleButton(optionsButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f),
 					SwingConstants.LEFT);
 		}
 		
