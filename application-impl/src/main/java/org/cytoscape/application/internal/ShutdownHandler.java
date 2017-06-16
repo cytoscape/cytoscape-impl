@@ -57,6 +57,7 @@ public class ShutdownHandler implements CyShutdown {
 
 		if (ev.actuallyShutdown()) {
 			try {
+				logger.info("#CiaoBello", rootBundle);
 				rootBundle.stop();
 			} catch (BundleException e) {
 				logger.error("Error while shutting down", e);
@@ -65,4 +66,4 @@ public class ShutdownHandler implements CyShutdown {
 			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason());
 		}
 	}
-}
+}	
