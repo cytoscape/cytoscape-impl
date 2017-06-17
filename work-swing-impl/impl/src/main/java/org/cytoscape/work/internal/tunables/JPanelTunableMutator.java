@@ -262,8 +262,10 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 						groupNames = groupNames + g;
 						
 						if (!panels.containsKey(groupNames)) {
-							panels.put(groupNames,
-							           createJPanel(g, gh, groupToVerticalMap.get(g), groupToDisplayedMap.get(g)));
+							boolean displayed = groupToDisplayedMap.get(g);
+							boolean vertical = groupToVerticalMap.get(g);
+							if (g.startsWith("_")) displayed = false;				// #2935 
+							panels.put(groupNames, createJPanel(g, gh, vertical, displayed));
 							final JPanel pnl = panels.get(groupNames);
 							panels.get(lastGroup).add(pnl, gh.getChildKey());
 						}
