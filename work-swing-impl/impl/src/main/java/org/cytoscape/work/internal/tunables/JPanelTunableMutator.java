@@ -256,7 +256,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 					String groupNames = "";
 					
 					for (String g : gh.getGroups()) {
-						if (g.equals(""))
+						if (g == null || g.equals(""))
 							throw new IllegalArgumentException("A group's name must not be \"\".");
 						
 						groupNames = groupNames + g;
@@ -264,7 +264,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 						if (!panels.containsKey(groupNames)) {
 							boolean displayed = groupToDisplayedMap.get(g);
 							boolean vertical = groupToVerticalMap.get(g);
-							if (g.startsWith("_")) displayed = false;				// #2935 
+							if (g.startsWith("_")) displayed = false;			 	// #2935 
 							panels.put(groupNames, createJPanel(g, gh, vertical, displayed));
 							final JPanel pnl = panels.get(groupNames);
 							panels.get(lastGroup).add(pnl, gh.getChildKey());
