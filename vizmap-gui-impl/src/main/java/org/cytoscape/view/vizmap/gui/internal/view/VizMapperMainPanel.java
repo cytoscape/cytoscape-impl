@@ -398,8 +398,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 			
 			optionsBtn = new DropDownMenuButton(getMainMenu(), false);
 			optionsBtn.setToolTipText("Options...");
-			optionsBtn.setFont(iconManager.getIconFont(11.0f));
-			optionsBtn.setText(IconManager.ICON_CARET_DOWN);
+			optionsBtn.setFont(iconManager.getIconFont(12.0f));
+			optionsBtn.setText(IconManager.ICON_BARS);
 		}
 		
 		return optionsBtn;

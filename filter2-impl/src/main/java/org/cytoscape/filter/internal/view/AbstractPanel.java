@@ -111,8 +111,8 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		optionsButton = new JButton(IconManager.ICON_CARET_DOWN);
-		optionsButton.setFont(iconManager.getIconFont(11.0f));
+		optionsButton = new JButton(IconManager.ICON_BARS);
+		optionsButton.setFont(iconManager.getIconFont(12.0f));
 		optionsButton.setToolTipText("Options...");
 		optionsButton.addActionListener(this::handleShowMenu);
 		
