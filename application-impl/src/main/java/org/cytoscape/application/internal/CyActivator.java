@@ -42,9 +42,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		Bundle rootBundle = bc.getBundle(0);
 		ShutdownHandler cytoscapeShutdown = new ShutdownHandler(rootBundle, serviceRegistrar);
-		CyApplicationConfigurationImpl cyApplicationConfiguration = new CyApplicationConfigurationImpl();
-		CyApplicationManagerImpl cyApplicationManager = new CyApplicationManagerImpl(serviceRegistrar);
 		CyVersionImpl cytoscapeVersion = new CyVersionImpl(serviceRegistrar);
+		CyApplicationConfigurationImpl cyApplicationConfiguration = new CyApplicationConfigurationImpl(cytoscapeVersion.getVersion());
+		CyApplicationManagerImpl cyApplicationManager = new CyApplicationManagerImpl(serviceRegistrar);
 
 		registerAllServices(bc, cyApplicationManager, new Properties());
 		registerAllServices(bc, cytoscapeShutdown, new Properties());
