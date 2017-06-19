@@ -1,5 +1,16 @@
 package org.cytoscape.application.internal;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Dictionary;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
+
 /*
  * #%L
  * Cytoscape Application Impl (application-impl)
@@ -25,26 +36,19 @@ package org.cytoscape.application.internal;
  */
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.property.CyProperty;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Dictionary;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
-
 public class CyApplicationConfigurationImpl implements CyApplicationConfiguration {
 	
 	/** Default configuration directory used for all Cytoscape configuration files */
 	public static final String DEFAULT_CONFIG_DIR = CyProperty.DEFAULT_PROPS_CONFIG_DIR ;
 
-	private static final Logger logger = LoggerFactory.getLogger(CyApplicationConfigurationImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String USER_DIR = System.getProperty("user.dir");
 	private static final String USER_HOME_DIR = System.getProperty("user.home");
@@ -57,7 +61,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 	private final File cytoscapeConfigurationDir;
 	private final File cytoscapeInstallationDir;
 	
-	public CyApplicationConfigurationImpl() {
+	public CyApplicationConfigurationImpl(String version) {
 		cytoscapeConfigurationDir = new File(USER_HOME_DIR, DEFAULT_CONFIG_DIR);
 		
 		if(cytoscapeConfigurationDir.exists() == false) {
@@ -73,8 +77,53 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 			cytoscapeInstallationDir = new File(USER_DIR);
 		else
 			cytoscapeInstallationDir = null;
+		
+		addActiveSessionFile(version);
 	}
 	
+	//------------------------------
+	/* we keep a file in the configuration folder that should be removed on exit
+	 * 
+	 * if it is still there on startup, we had a crash / hang and we want to collect a log
+	 * 
+	 */
+	public static final String activeSessionFilename = "tracker.active.session";
+
+	private void addActiveSessionFile(String version) {
+		
+		// if (version.contains("SNAPSHOT")) 	return;		//  a developer override
+		Path path = Paths.get(cytoscapeConfigurationDir.getAbsolutePath(), activeSessionFilename);
+		if (path.toFile().exists())
+		{
+			try
+			{
+				String content = new String(Files.readAllBytes(path));			
+				logger.error("Previous session failed to terminate gracefully. " + content);
+				phoneHome(content);
+			}
+			catch (Exception e)
+			{
+				logger.error("Previous session failed to terminate gracefully and file failed to read.");
+			}
+		}
+		
+		try
+		{
+			logger.info("Write " + activeSessionFilename + " into " + cytoscapeConfigurationDir);
+			Files.write(path, version.getBytes());			
+		}
+		catch (Exception e)
+		{
+			logger.error("Failed to write " + activeSessionFilename + " into " + cytoscapeConfigurationDir);
+		}
+	}
+
+
+	private void phoneHome(String content) {
+		// send the result of the session back to San Diego for processing
+	}
+	//------------------------------
+
 	@Override
 	public File getInstallationDirectoryLocation() {
 		return cytoscapeInstallationDir;
@@ -99,7 +148,7 @@ public class CyApplicationConfigurationImpl implements CyApplicationConfiguratio
 			String path = join(File.separator, configurationDirectory.getPath(), APP_CONFIGURATION_DIR, basePath + "-" + version);
 			return new File(path);
 		}
-		//Bundle is null, we are dealing with a Simple App.
+		//Bundle is null, we are dealing with a Simple App.   
 		URLClassLoader cl = (URLClassLoader)appClass.getClassLoader();
 	    URL url = cl.findResource("META-INF/MANIFEST.MF");
 		try {
