@@ -1,12 +1,17 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +29,12 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-
 /**
  * Specific instance of AbstractLoadNetworkTask that loads a File.
  */
 public class LoadNetworkTask extends AbstractLoadNetworkTask {
+	
+	private CyNetworkReader reader;
 	
 	@ProvidesTitle
 	@Override
@@ -48,19 +42,8 @@ public class LoadNetworkTask extends AbstractLoadNetworkTask {
 		return "Load Network from File";
 	}
 	
-	public LoadNetworkTask(
-			final CyNetworkReaderManager mgr,
-			final CyNetworkManager netmgr,
-			final CyNetworkReader reader,
-			final String networkName,
-			final CyNetworkViewManager networkViewManager,
-			final Properties props,
-			final CyNetworkNaming namingUtil,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
+	public LoadNetworkTask(CyNetworkReader reader, String networkName, CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		this.reader = reader;
 		this.name = networkName;
 	}

@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import java.net.URI;
+import java.util.Properties;
+
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +34,6 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import java.net.URI;
-import java.util.Properties;
-
-import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-
 /**
  * Task to load a new network.
  */
@@ -54,45 +49,20 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	
 	protected int viewThreshold;
 	
-	protected CyNetworkReader reader;
 	protected URI uri;
 	protected TaskMonitor taskMonitor;
 	protected String name;
-	protected boolean interrupted = false;
-	protected CyNetworkReaderManager mgr;
-	protected CyNetworkManager networkManager;
-	protected CyNetworkViewManager networkViewManager;
-	protected Properties props;
-	protected CyNetworkNaming namingUtil;
-	protected final VisualMappingManager vmm;
-	protected final CyNetworkViewFactory nullNetworkViewFactory;
+	protected boolean interrupted;
 	protected final CyServiceRegistrar serviceRegistrar;
 
-	public AbstractLoadNetworkTask(
-			final CyNetworkReaderManager mgr,
-			final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager,
-			final Properties props,
-			final CyNetworkNaming namingUtil,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		this.mgr = mgr;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.props = props;
-		this.namingUtil = namingUtil;
-		this.vmm = vmm;
-		this.nullNetworkViewFactory = nullNetworkViewFactory;
+	public AbstractLoadNetworkTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-
-		this.viewThreshold = getViewThreshold();
+		viewThreshold = getViewThreshold();
 	}
 
-	protected void loadNetwork(final CyNetworkReader viewReader) throws Exception {
-		if (viewReader == null)
-			throw new IllegalArgumentException("Could not read file: Network View Reader is null.");
+	protected void loadNetwork(final CyNetworkReader reader) throws Exception {
+		if (reader == null)
+			throw new IllegalArgumentException("Could not read file: Network Reader is null.");
 
 		if (taskMonitor != null) {
 			taskMonitor.setStatusMessage("Reading in Network Data...");
@@ -100,17 +70,20 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
 		
-		GenerateNetworkViewsTask generateViewsTask = new GenerateNetworkViewsTask(name, viewReader, networkManager,
-				networkViewManager, namingUtil, viewThreshold, vmm, nullNetworkViewFactory, serviceRegistrar);
-		insertTasksAfterCurrentTask(viewReader, generateViewsTask);
+		GenerateNetworkViewsTask generateViewsTask =
+				new GenerateNetworkViewsTask(name, reader, viewThreshold, serviceRegistrar);
+		insertTasksAfterCurrentTask(reader, generateViewsTask);
 		
 		if (taskMonitor != null)
 			taskMonitor.setProgress(1.0);
 	}
 
 	private int getViewThreshold() {
+		final Properties props = (Properties)
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
 		final String vts = props.getProperty(VIEW_THRESHOLD);
 		int threshold;
+		
 		try {
 			threshold = Integer.parseInt(vts);
 		} catch (Exception e) {

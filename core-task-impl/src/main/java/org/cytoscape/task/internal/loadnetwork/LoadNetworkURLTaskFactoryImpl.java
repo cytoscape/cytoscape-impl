@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,71 +35,21 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.Properties;
-
-import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-
-
 /**
  * Task to load a new network.
  */
 public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implements LoadNetworkURLTaskFactory {
 
-	private CyNetworkReaderManager mgr;
-	private CyNetworkManager netmgr;
-	private final CyNetworkViewManager networkViewManager;
-	private Properties props;
-	private StreamUtil streamUtil;
-
-	private CyNetworkNaming cyNetworkNaming;
-	
-	private final VisualMappingManager vmm;
-	private final CyNetworkViewFactory nullNetworkViewFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadNetworkURLTaskFactoryImpl(
-			final CyNetworkReaderManager mgr,
-			final CyNetworkManager netmgr,
-			final CyNetworkViewManager networkViewManager,
-			final CyProperty<Properties> cyProps,
-			final CyNetworkNaming cyNetworkNaming,
-			final StreamUtil streamUtil,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		this.mgr = mgr;
-		this.netmgr = netmgr;
-		this.networkViewManager = networkViewManager;
-		this.props = cyProps.getProperties();
-		this.cyNetworkNaming = cyNetworkNaming;
-		this.streamUtil = streamUtil;
-		this.vmm = vmm;
-		this.nullNetworkViewFactory = nullNetworkViewFactory;
+	public LoadNetworkURLTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
 		// Usually we need to create view, so expected number is 2.
-		return new TaskIterator(2, new LoadNetworkURLTask(mgr, netmgr, networkViewManager, props, cyNetworkNaming,
-				streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar));
+		return new TaskIterator(2, new LoadNetworkURLTask(serviceRegistrar));
 	}
 
 	public TaskIterator createTaskIterator(final URL url) {
@@ -110,13 +71,12 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 		CyNetworkReader reader = null;
 		
 		try {
-			reader = mgr.getReader(url.toURI(), url.toURI().toString());
+			reader = serviceRegistrar.getService(CyNetworkReaderManager.class)
+					.getReader(url.toURI(), url.toURI().toString());
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		return new TaskIterator(2, new LoadNetworkTask(mgr, netmgr, reader, name, networkViewManager, props,
-				cyNetworkNaming, vmm, nullNetworkViewFactory, serviceRegistrar));
+		return new TaskIterator(2, new LoadNetworkTask(reader, name, serviceRegistrar));
 	}
 }

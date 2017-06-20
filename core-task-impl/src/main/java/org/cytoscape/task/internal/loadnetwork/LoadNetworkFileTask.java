@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import java.io.File;
+
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +33,6 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import java.io.File;
-import java.util.Properties;
-
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 /**
  * Specific instance of AbstractLoadNetworkTask that loads a File.
  */
@@ -51,16 +46,8 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 		return "Load Network from File";
 	}
 	
-	public LoadNetworkFileTask(
-			final CyNetworkReaderManager mgr,
-			final CyNetworkManager netmgr,
-			final CyNetworkViewManager networkViewManager,
-			final Properties props,
-			final CyNetworkNaming namingUtil,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyServiceRegistrar serviceRegistrar) {
-		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
+	public LoadNetworkFileTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	@Override
@@ -70,7 +57,8 @@ public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 		if (file == null)
 			throw new NullPointerException("No file specified.");
 
-		reader = mgr.getReader(file.toURI(), file.getName());
+		CyNetworkReader reader = serviceRegistrar.getService(CyNetworkReaderManager.class)
+				.getReader(file.toURI(), file.getName());
 
 		if (cancelled)
 			return;

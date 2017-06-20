@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
@@ -61,7 +37,6 @@ import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
@@ -284,6 +259,29 @@ import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CyActivator extends AbstractCyActivator {
 	
@@ -297,7 +295,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc,CyNetworkViewFactory.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc,CyNetworkFactory.class);
 		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc,CyRootNetworkManager.class);
-		CyNetworkReaderManager cyNetworkReaderManagerServiceRef = getService(bc,CyNetworkReaderManager.class);
 		VizmapReaderManager vizmapReaderManagerServiceRef = getService(bc,VizmapReaderManager.class);
 		VisualMappingManager visualMappingManagerServiceRef = getService(bc,VisualMappingManager.class);
 		StreamUtil streamUtilRef = getService(bc,StreamUtil.class);
@@ -325,9 +322,6 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
 		
 		LoadVizmapFileTaskFactoryImpl loadVizmapFileTaskFactory = new LoadVizmapFileTaskFactoryImpl(vizmapReaderManagerServiceRef,visualMappingManagerServiceRef,synchronousTaskManagerServiceRef, tunableSetterServiceRef);
-
-		LoadNetworkFileTaskFactoryImpl loadNetworkFileTaskFactory = new LoadNetworkFileTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef, visualMappingManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
-		LoadNetworkURLTaskFactoryImpl loadNetworkURLTaskFactory = new LoadNetworkURLTaskFactoryImpl(cyNetworkReaderManagerServiceRef,cyNetworkManagerServiceRef,cyNetworkViewManagerServiceRef,cyPropertyServiceRef,cyNetworkNamingServiceRef,streamUtilRef, visualMappingManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
 
 		SelectAllTaskFactoryImpl selectAllTaskFactory = new SelectAllTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
 		SelectAllEdgesTaskFactoryImpl selectAllEdgesTaskFactory = new SelectAllEdgesTaskFactoryImpl(undoSupportServiceRef,cyNetworkViewManagerServiceRef,cyEventHelperRef);
@@ -408,108 +402,116 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, applyVisualStyleTaskFactory, NetworkViewCollectionTaskFactory.class, applyVisualStyleProps);
 		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
-		// Clear edge bends
-		ClearAllEdgeBendsFactory clearAllEdgeBendsFactory = new ClearAllEdgeBendsFactory(visualMappingManagerServiceRef);
-		Properties clearAllEdgeBendsProps = new Properties();
-		clearAllEdgeBendsProps.setProperty(ID, "clearAllEdgeBendsFactory");
-		clearAllEdgeBendsProps.setProperty(TITLE, "Clear All Edge Bends");
-		clearAllEdgeBendsProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-		clearAllEdgeBendsProps.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-		clearAllEdgeBendsProps.setProperty(PREFERRED_MENU, "Layout");
-		clearAllEdgeBendsProps.setProperty(MENU_GRAVITY, "0.1");
-
-		registerService(bc, clearAllEdgeBendsFactory, NetworkViewCollectionTaskFactory.class, clearAllEdgeBendsProps);
-		
-		Properties mapGlobalProps = new Properties();
-	/*	mapGlobalProps.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
-		mapGlobalProps.setProperty(PREFERRED_MENU,"Tools");
-		mapGlobalProps.setProperty(ACCELERATOR,"cmd m");
-		mapGlobalProps.setProperty(TITLE, "Map Table to Attributes");
-		mapGlobalProps.setProperty(MENU_GRAVITY,"1.0");
-		mapGlobalProps.setProperty(TOOL_BAR_GRAVITY,"3.0");
-		mapGlobalProps.setProperty(IN_TOOL_BAR,"false");
-		mapGlobalProps.setProperty(COMMAND,"map-global-to-local");
-		mapGlobalProps.setProperty(COMMAND_NAMESPACE,"table");
-	*/	registerService(bc, mapGlobal, TableTaskFactory.class, mapGlobalProps);
-		registerService(bc, mapGlobal, MapGlobalToLocalTableTaskFactory.class, mapGlobalProps);
-	
-		Properties loadNetworkFileTaskFactoryProps = new Properties();
-		loadNetworkFileTaskFactoryProps.setProperty(ID,"loadNetworkFileTaskFactory");
-		loadNetworkFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
-		loadNetworkFileTaskFactoryProps.setProperty(ACCELERATOR,"cmd l");
-		loadNetworkFileTaskFactoryProps.setProperty(TITLE,"File...");
-		loadNetworkFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		loadNetworkFileTaskFactoryProps.setProperty(COMMAND,"load file");
-		loadNetworkFileTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML)");
-		loadNetworkFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
-		loadNetworkFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.0");
-		loadNetworkFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-32.png").toString());
-		loadNetworkFileTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		loadNetworkFileTaskFactoryProps.setProperty(TOOLTIP,"Import Network From File");
-		registerService(bc, loadNetworkFileTaskFactory, TaskFactory.class, loadNetworkFileTaskFactoryProps);
-		registerService(bc, loadNetworkFileTaskFactory, LoadNetworkFileTaskFactory.class, loadNetworkFileTaskFactoryProps);
-
-		Properties loadNetworkURLTaskFactoryProps = new Properties();
-		loadNetworkURLTaskFactoryProps.setProperty(ID,"loadNetworkURLTaskFactory");
-		loadNetworkURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
-		loadNetworkURLTaskFactoryProps.setProperty(ACCELERATOR,"cmd shift l");
-		loadNetworkURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
-//		loadNetworkURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.1");
-		loadNetworkURLTaskFactoryProps.setProperty(TITLE,"URL...");
-//		loadNetworkURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-url-32.png").toString());
-//		loadNetworkURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		loadNetworkURLTaskFactoryProps.setProperty(TOOLTIP,"Import Network From URL");
-		loadNetworkURLTaskFactoryProps.setProperty(COMMAND,"load url");
-		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		loadNetworkURLTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML) from a url");
-		registerService(bc, loadNetworkURLTaskFactory, TaskFactory.class, loadNetworkURLTaskFactoryProps);
-		registerService(bc, loadNetworkURLTaskFactory, LoadNetworkURLTaskFactory.class, loadNetworkURLTaskFactoryProps);
-
-		Properties loadVizmapFileTaskFactoryProps = new Properties();
-		loadVizmapFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import");
-		loadVizmapFileTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		loadVizmapFileTaskFactoryProps.setProperty(TITLE,"Styles...");
-		loadVizmapFileTaskFactoryProps.setProperty(COMMAND,"load file");
-		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"vizmap");
-		loadVizmapFileTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Load styles from a file");
-		registerService(bc,loadVizmapFileTaskFactory,TaskFactory.class, loadVizmapFileTaskFactoryProps);
-		registerService(bc,loadVizmapFileTaskFactory,LoadVizmapFileTaskFactory.class, new Properties());
-
-		Properties importAttrsFileTaskFactoryProps = new Properties();
-		importAttrsFileTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2.0]");
-		importAttrsFileTaskFactoryProps.setProperty(MENU_GRAVITY,"1.0");
-		importAttrsFileTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.2");
-		importAttrsFileTaskFactoryProps.setProperty(TITLE,"File...");
-		importAttrsFileTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-table-32.png").toString());
-		importAttrsFileTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		importAttrsFileTaskFactoryProps.setProperty(TOOLTIP,"Import Table From File");
-		//importAttrsFileTaskFactoryProps.setProperty(COMMAND,"load file");
-		//importAttrsFileTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		//importAttrsFileTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
-		registerService(bc,loadTableFileTaskFactory,TaskFactory.class, importAttrsFileTaskFactoryProps);
-		registerService(bc,loadTableFileTaskFactory,LoadTableFileTaskFactory.class, importAttrsFileTaskFactoryProps);
-
-
-		Properties importAttrsURLTaskFactoryProps = new Properties();
-		importAttrsURLTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Import.Table[2.0]");
-		importAttrsURLTaskFactoryProps.setProperty(MENU_GRAVITY,"2.0");
-//		importAttrsURLTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"2.3");
-		importAttrsURLTaskFactoryProps.setProperty(TITLE,"URL...");
-//		importAttrsURLTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-table-url-32.png").toString());
-//		importAttrsURLTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		importAttrsURLTaskFactoryProps.setProperty(TOOLTIP,"Import Table From URL");
-		//importAttrsURLTaskFactoryProps.setProperty(COMMAND,"load url");
-		//importAttrsURLTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"table");
-		//importAttrsURLTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
-		registerService(bc,loadTableURLTaskFactory,TaskFactory.class, importAttrsURLTaskFactoryProps);
-		registerService(bc,loadTableURLTaskFactory,LoadTableURLTaskFactory.class, importAttrsURLTaskFactoryProps);
-
-		Properties proxySettingsTaskFactoryProps = new Properties();
-		proxySettingsTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit.Preferences");
-		proxySettingsTaskFactoryProps.setProperty(MENU_GRAVITY,"3.0");
-		proxySettingsTaskFactoryProps.setProperty(TITLE,"Proxy Settings...");
-		registerService(bc,proxySettingsTaskFactory,TaskFactory.class, proxySettingsTaskFactoryProps);
-
+		{
+			// Clear edge bends
+			ClearAllEdgeBendsFactory factory = new ClearAllEdgeBendsFactory(visualMappingManagerServiceRef);
+			Properties props = new Properties();
+			props.setProperty(ID, "clearAllEdgeBendsFactory");
+			props.setProperty(TITLE, "Clear All Edge Bends");
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(PREFERRED_MENU, "Layout");
+			props.setProperty(MENU_GRAVITY, "0.1");
+			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			// props.setProperty(ID,"mapGlobalToLocalTableTaskFactory");
+			// props.setProperty(PREFERRED_MENU,"Tools");
+			// props.setProperty(ACCELERATOR,"cmd m");
+			// props.setProperty(TITLE, "Map Table to Attributes");
+			// props.setProperty(MENU_GRAVITY,"1.0");
+			// props.setProperty(TOOL_BAR_GRAVITY,"3.0");
+			// props.setProperty(IN_TOOL_BAR,"false");
+			// props.setProperty(COMMAND,"map-global-to-local");
+			// props.setProperty(COMMAND_NAMESPACE,"table");
+			registerService(bc, mapGlobal, TableTaskFactory.class, props);
+			registerService(bc, mapGlobal, MapGlobalToLocalTableTaskFactory.class, props);
+		}
+		{
+			LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ID,"loadNetworkFileTaskFactory");
+			props.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
+			props.setProperty(ACCELERATOR,"cmd l");
+			props.setProperty(TITLE,"File...");
+			props.setProperty(COMMAND_NAMESPACE,"network");
+			props.setProperty(COMMAND,"load file");
+			props.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML)");
+			props.setProperty(MENU_GRAVITY,"1.0");
+			props.setProperty(TOOL_BAR_GRAVITY,"2.0");
+			props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-32.png").toString());
+			props.setProperty(IN_TOOL_BAR,"true");
+			props.setProperty(TOOLTIP,"Import Network From File");
+			registerService(bc, factory, TaskFactory.class, props);
+			registerService(bc, factory, LoadNetworkFileTaskFactory.class, props);
+		}
+		{
+			LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ID, "loadNetworkURLTaskFactory");
+			props.setProperty(PREFERRED_MENU, "File.Import.Network[1.0]");
+			props.setProperty(ACCELERATOR, "cmd shift l");
+			props.setProperty(MENU_GRAVITY, "2.0");
+			// props.setProperty(TOOL_BAR_GRAVITY,"2.1");
+			props.setProperty(TITLE, "URL...");
+			// props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-url-32.png").toString());
+			// props.setProperty(IN_TOOL_BAR,"true");
+			props.setProperty(TOOLTIP, "Import Network From URL");
+			props.setProperty(COMMAND, "load url");
+			props.setProperty(COMMAND_NAMESPACE, "network");
+			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML) from a url");
+			registerService(bc, factory, TaskFactory.class, props);
+			registerService(bc, factory, LoadNetworkURLTaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import");
+			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(TITLE, "Styles...");
+			props.setProperty(COMMAND, "load file");
+			props.setProperty(COMMAND_NAMESPACE, "vizmap");
+			props.setProperty(COMMAND_DESCRIPTION, "Load styles from a file");
+			registerService(bc, loadVizmapFileTaskFactory, TaskFactory.class, props);
+			registerService(bc, loadVizmapFileTaskFactory, LoadVizmapFileTaskFactory.class, new Properties());
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import.Table[2.0]");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(TOOL_BAR_GRAVITY, "2.2");
+			props.setProperty(TITLE, "File...");
+			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
+			props.setProperty(IN_TOOL_BAR, "true");
+			props.setProperty(TOOLTIP, "Import Table From File");
+			// props.setProperty(COMMAND,"load file");
+			// props.setProperty(COMMAND_NAMESPACE,"table");
+			// props.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
+			registerService(bc, loadTableFileTaskFactory, TaskFactory.class, props);
+			registerService(bc, loadTableFileTaskFactory, LoadTableFileTaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.Import.Table[2.0]");
+			props.setProperty(MENU_GRAVITY, "2.0");
+			// props.setProperty(TOOL_BAR_GRAVITY,"2.3");
+			props.setProperty(TITLE, "URL...");
+			// props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-table-url-32.png").toString());
+			// props.setProperty(IN_TOOL_BAR,"true");
+			props.setProperty(TOOLTIP, "Import Table From URL");
+			// props.setProperty(COMMAND,"load url");
+			// props.setProperty(COMMAND_NAMESPACE,"table");
+			// props.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK);
+			registerService(bc, loadTableURLTaskFactory, TaskFactory.class, props);
+			registerService(bc, loadTableURLTaskFactory, LoadTableURLTaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Edit.Preferences");
+			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(TITLE, "Proxy Settings...");
+			registerService(bc,proxySettingsTaskFactory,TaskFactory.class, props);
+		}
 		{
 			DeleteSelectedNodesAndEdgesTaskFactoryImpl factory = new DeleteSelectedNodesAndEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();

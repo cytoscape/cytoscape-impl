@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import java.io.IOException;
+import java.net.URL;
+
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +35,6 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-
-import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
-
-import org.cytoscape.io.read.CyNetworkReaderManager;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-
 /**
  * Specific instance of AbstractLoadNetworkTask that loads a URL.
  */
@@ -50,23 +43,12 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 	@Tunable(description="The URL to load:", params = "fileCategory=network;input=true")
 	public URL url;
 	
-	StreamUtil streamUtil;
-
 	static String BAD_INTERNET_SETTINGS_MSG = "<html><p>Cytoscape has failed to connect to the URL. Please ensure that:</p><p><ol><li>the URL is correct,</li><li>your computer is able to connect to the Internet, and</li><li>your proxy settings are correct.</li></ol></p><p>The reason for the failure is: %s</html>";
 
-	public LoadNetworkURLTask(
-			final CyNetworkReaderManager mgr,
-			final CyNetworkManager netmgr,
-			final CyNetworkViewManager networkViewManager,
-			final Properties props,
-			final CyNetworkNaming namingUtil,
-			final StreamUtil streamUtil,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		super(mgr, netmgr, networkViewManager, props, namingUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
-		this.streamUtil = streamUtil;
+	private CyNetworkReader reader;
+	
+	public LoadNetworkURLTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	@Override
@@ -81,10 +63,10 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 		name = parts[parts.length-1];
 
 		taskMonitor.setTitle(String.format("Loading Network from \'%s\'", name));
-
 		taskMonitor.setStatusMessage("Checking URL...");
+		
 		try {
-			streamUtil.getURLConnection(url).connect();
+			serviceRegistrar.getService(StreamUtil.class).getURLConnection(url).connect();
 		} catch (IOException e) {
 			throw new Exception(String.format(BAD_INTERNET_SETTINGS_MSG, e.getMessage()), e);
 		}
@@ -93,7 +75,7 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 			return;
 
 		taskMonitor.setStatusMessage("Finding compatible network reader for this file...");
-		reader = mgr.getReader(url.toURI(),url.toString());
+		reader = serviceRegistrar.getService(CyNetworkReaderManager.class).getReader(url.toURI(),url.toString());
 
 		if (cancelled)
 			return;

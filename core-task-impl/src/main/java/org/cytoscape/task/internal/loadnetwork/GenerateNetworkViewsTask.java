@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.loadnetwork;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,38 +22,47 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	
 	private final String name;
 	private final CyNetworkReader viewReader;
-	private final CyNetworkManager networkManager;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyNetworkNaming namingUtil;
 	private final int viewThreshold;
-	private final VisualMappingManager vmm;
-	private final CyNetworkViewFactory nullNetworkViewFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 	private	List<CyNetworkView> results;
 
 	public GenerateNetworkViewsTask(
 			final String name,
 			final CyNetworkReader viewReader,
-			final CyNetworkManager networkManager,
-			final CyNetworkViewManager networkViewManager,
-			final CyNetworkNaming namingUtil,
 			final int viewThreshold,
-			final VisualMappingManager vmm,
-			final CyNetworkViewFactory nullNetworkViewFactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.name = name;
 		this.viewReader = viewReader;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
-		this.namingUtil = namingUtil;
 		this.viewThreshold = viewThreshold;
-		this.vmm = vmm;
-		this.nullNetworkViewFactory = nullNetworkViewFactory;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -89,6 +74,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			return;
 		
 		taskMonitor.setProgress(0.0);
+		final CyNetworkNaming networkNaming = serviceRegistrar.getService(CyNetworkNaming.class);
 		double numNets = (double) networks.length;
 		int i = 0;
 		results = new ArrayList<>();
@@ -105,9 +91,9 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 					networkName = "? (Name is missing)";
 			}
 			
-			net.getRow(net).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+			net.getRow(net).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(networkName));
 			
-			networkManager.addNetwork(net, false);
+			serviceRegistrar.getService(CyNetworkManager.class).addNetwork(net, false);
 			final int numGraphObjects = net.getNodeCount() + net.getEdgeCount();
 			
 			if (numGraphObjects < viewThreshold)
@@ -147,7 +133,7 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 					if (networkName == null)
 						networkName = "? (Name is missing)";
 					
-					rootNet.getRow(rootNet).set(CyNetwork.NAME, namingUtil.getSuggestedNetworkTitle(networkName));
+					rootNet.getRow(rootNet).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(networkName));
 				}
 			}			
 		}
@@ -156,10 +142,10 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		
 		if (!largeNetworks.isEmpty())
 			insertTasksAfterCurrentTask(new ConfirmCreateNetworkViewsTask(largeNetworks));
-			
 	}
-
+	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class expectedType) {
 		if (expectedType.equals(String.class))
 			return getStringResults();
@@ -177,18 +163,20 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	}
 	
 	private void createNetworkView(final CyNetwork network) {
-		final VisualStyle curStyle = vmm.getCurrentVisualStyle(); // get the current style before registering the views!
+		final VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
+		// get the current style before registering the views!
+		final VisualStyle curStyle = vmManager.getCurrentVisualStyle();
 		
 		final CyNetworkView view = viewReader.buildCyNetworkView(network);
-		final VisualStyle viewStyle = vmm.getVisualStyle(view);
-		networkViewManager.addNetworkView(view, false);
+		final VisualStyle viewStyle = vmManager.getVisualStyle(view);
+		serviceRegistrar.getService(CyNetworkViewManager.class).addNetworkView(view, false);
 		
 		// Only set current style when no style (or usually the default one) is already set for this view.
 		// This allows the CyNetworkReader implementation to set the desired style itself.
-		if (viewStyle != null && !viewStyle.equals(vmm.getDefaultVisualStyle())) {
+		if (viewStyle != null && !viewStyle.equals(vmManager.getDefaultVisualStyle())) {
 			viewStyle.apply(view);
 		} else {
-			vmm.setVisualStyle(curStyle, view);
+			vmManager.setVisualStyle(curStyle, view);
 			curStyle.apply(view);
 		}
 		
@@ -236,14 +224,16 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
 			taskMonitor.setProgress(0.0);
-			final double numNets = (double)(networks.size());
+			final CyNetworkViewFactory nullNetViewFactory =
+					serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+			final double numNets = (double) networks.size();
 			int i = 0;
 		
 			for (CyNetwork net : networks) {
 				if (createNetworkViews)
 					createNetworkView(net);
 				else
-					results.add(nullNetworkViewFactory.createNetworkView(net));
+					results.add(nullNetViewFactory.createNetworkView(net));
 				
 				taskMonitor.setProgress((double)(++i)/numNets);
 			}
