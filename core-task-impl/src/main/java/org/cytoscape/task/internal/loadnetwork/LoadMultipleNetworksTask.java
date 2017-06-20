@@ -73,7 +73,7 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 		return "Load Networks from Files";
 	}
 
-	@Tunable(description = "Node Identifier Mapping Column:", gravity = 1.0)
+	@Tunable(description = "Node Identifier Mapping Column:", groups = "_Network", gravity = 1.0)
 	public ListSingleSelection<String> getTargetColumnList() {
 		return targetColumnList;
 	}
@@ -87,7 +87,7 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 		}
 	}
 	
-	@Tunable(description = "Network View Renderer:", gravity = 2.0)
+	@Tunable(description = "Network View Renderer:", groups = "_Network", gravity = 2.0)
 	public ListSingleSelection<NetworkViewRenderer> getNetworkViewRendererList() {
 		return rendererList;
 	}
@@ -105,29 +105,34 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 
 		final String rootNetName = rootNetwork != null ?
 				rootNetwork.getRow(rootNetwork).get(CyRootNetwork.NAME, String.class) : null;
-		final String targetColumn = targetColumnList.getSelectedValue();
+		final String targetColumn = targetColumnList != null ? targetColumnList.getSelectedValue() : null;
+		final NetworkViewRenderer renderer = rendererList != null ? rendererList.getSelectedValue() : null;
 		
 		readers.values().forEach(r -> {
 			if (r instanceof AbstractCyNetworkReader) {
 				AbstractCyNetworkReader ar = (AbstractCyNetworkReader) r;
 				
 				if (rootNetName != null) {
-					ListSingleSelection<String> listSelection =
-							new ListSingleSelection<>(Collections.singletonList(rootNetName));
-					listSelection.setSelectedValue(rootNetName);
-					
-					ar.setRootNetworkList(listSelection);
+					ListSingleSelection<String> ls = new ListSingleSelection<>(Collections.singletonList(rootNetName));
+					ls.setSelectedValue(rootNetName);
+					ar.setRootNetworkList(ls);
 				} else {
+					// Force "create new collection"
 					ar.setRootNetworkList(new ListSingleSelection<>(Collections.emptyList()));
 					ar.setTargetColumnList(new ListSingleSelection<>(Collections.emptyList()));
 				}
 				
 				if (targetColumn != null) {
-					ListSingleSelection<String> listSelection =
-							new ListSingleSelection<>(Collections.singletonList(targetColumn));
-					listSelection.setSelectedValue(targetColumn);
-					
-					ar.setTargetColumnList(listSelection);
+					ListSingleSelection<String> ls = new ListSingleSelection<>(Collections.singletonList(targetColumn));
+					ls.setSelectedValue(targetColumn);
+					ar.setTargetColumnList(ls);
+				}
+				
+				if (renderer != null) {
+					ListSingleSelection<NetworkViewRenderer> ls =
+							new ListSingleSelection<>(Collections.singletonList(renderer));
+					ls.setSelectedValue(renderer);
+					ar.setNetworkViewRendererList(ls);
 				}
 			}
 		});
@@ -140,36 +145,40 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 	}
 	
 	private void init() {
-		// Initialize column list
-		if (rootNetwork != null)
-			setTargetColumnList(getTargetColumns(rootNetwork));
-		else
-			setTargetColumnList(new ListSingleSelection<>());
-		
-		// Initialize renderer list
-		final List<NetworkViewRenderer> renderers = new ArrayList<>();
-		NetworkViewRenderer defViewRenderer = null;
-		
-		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		final Set<NetworkViewRenderer> rendererSet = applicationManager.getNetworkViewRendererSet();
-		
-		// If there is only one registered renderer, we don't want to add it to the List Selection,
-		// so the combo-box does not appear to the user, since there is nothing to select anyway.
-		if (rendererSet.size() > 1) {
-			renderers.addAll(rendererSet);
-			Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
-				@Override
-				public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
-					return r1.toString().compareToIgnoreCase(r2.toString());
-				}
-			});
+		// Only initialize these tunable lists (so they can be displayed) if there is more than one file to load,
+		// otherwise let the reader's tunables handle it.
+		if (readers != null && readers.size() > 1) {
+			// Initialize column list
+			if (rootNetwork != null)
+				setTargetColumnList(getTargetColumns(rootNetwork));
+			else
+				setTargetColumnList(new ListSingleSelection<>());
+			
+			// Initialize renderer list
+			final List<NetworkViewRenderer> renderers = new ArrayList<>();
+			NetworkViewRenderer defViewRenderer = null;
+			
+			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			final Set<NetworkViewRenderer> rendererSet = applicationManager.getNetworkViewRendererSet();
+			
+			// If there is only one registered renderer, we don't want to add it to the List Selection,
+			// so the combo-box does not appear to the user, since there is nothing to select anyway.
+			if (rendererSet.size() > 1) {
+				renderers.addAll(rendererSet);
+				Collections.sort(renderers, new Comparator<NetworkViewRenderer>() {
+					@Override
+					public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
+						return r1.toString().compareToIgnoreCase(r2.toString());
+					}
+				});
+			}
+			defViewRenderer = applicationManager.getDefaultNetworkViewRenderer();
+			
+			rendererList = new ListSingleSelection<>(renderers);
+			
+			if (defViewRenderer != null && renderers.contains(defViewRenderer))
+				rendererList.setSelectedValue(defViewRenderer);
 		}
-		defViewRenderer = applicationManager.getDefaultNetworkViewRenderer();
-		
-		rendererList = new ListSingleSelection<>(renderers);
-		
-		if (defViewRenderer != null && renderers.contains(defViewRenderer))
-			rendererList.setSelectedValue(defViewRenderer);
 	}
 	
 	private final ListSingleSelection<String> getTargetColumns(final CyNetwork network) {
