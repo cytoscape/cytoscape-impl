@@ -1,29 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -44,7 +20,6 @@ import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
@@ -75,6 +50,29 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
 	
@@ -91,31 +89,31 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private File tempFile;
 	private TaskMonitor taskMonitor;
 	
-	@Tunable(description="Text Delimiters:", context="both")
+	@Tunable(description = "Text Delimiters:", context = "both")
 	public ListMultipleSelection<String> delimiters;
-	
-	@Tunable(description="Text Delimiters for data list type:", context="both")
+
+	@Tunable(description = "Text Delimiters for data list type:", context = "both")
 	public ListSingleSelection<String> delimitersForDataList;
-	
-	@Tunable(description="Start Load Row:", context="both")
+
+	@Tunable(description = "Start Load Row:", context = "both")
 	public int startLoadRow = -1;
-	
-	@Tunable(description="First row used for column names:", context="both")
+
+	@Tunable(description = "First row used for column names:", context = "both")
 	public boolean firstRowAsColumnNames;
-	
-	@Tunable(description="Column for source interaction:", context="both")
+
+	@Tunable(description = "Column for source interaction:", context = "both")
 	public int indexColumnSourceInteraction = -1;
-	
-	@Tunable(description="Column for target interaction:", context="both")
+
+	@Tunable(description = "Column for target interaction:", context = "both")
 	public int indexColumnTargetInteraction = -1;
-	
-	@Tunable(description="Column for interaction type:", context="both")
+
+	@Tunable(description = "Column for interaction type:", context = "both")
 	public int indexColumnTypeInteraction = -1;
-	
-	@Tunable(description="Default interaction type:", context="both")
+
+	@Tunable(description = "Default interaction type:", context = "both")
 	public String defaultInteraction = TypeUtil.DEFAULT_INTERACTION;
 	
-	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
+	@Tunable(description = "List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context = "nongui")
 	public String dataTypeList;
 	
 	private NetworkTableMappingParameters ntmp;

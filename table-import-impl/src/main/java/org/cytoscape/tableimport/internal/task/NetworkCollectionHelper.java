@@ -1,30 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -54,6 +29,30 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class NetworkCollectionHelper extends AbstractTask {
 
 	private LoadNetworkReaderTask importTask;
@@ -70,21 +69,25 @@ public class NetworkCollectionHelper extends AbstractTask {
 	//******** tunables ********************
 
 	public ListSingleSelection<String> rootNetworkList;
-	@Tunable(description = "Network Collection:", groups="Network", gravity=1.0)
-	public ListSingleSelection<String> getRootNetworkList(){
+	
+	@Tunable(description = "Network Collection:", groups = "Network", gravity = 1.0)
+	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
+
 	public void setRootNetworkList(ListSingleSelection<String> roots) {
+		if (roots == rootNetworkList)
+			return;
+
 		final String rootNetName = roots.getSelectedValue();
 
 		if (rootNetName != null && !rootNetName.equalsIgnoreCase(CREATE_NEW_COLLECTION_STRING)) {
 			ListSingleSelection<String> tempList = getTargetColumns(name2RootMap.get(rootNetName));
+			
 			if (!targetColumnList.getPossibleValues().containsAll(tempList.getPossibleValues())
-					|| targetColumnList.getPossibleValues().size() != tempList.getPossibleValues().size()) {
+					|| targetColumnList.getPossibleValues().size() != tempList.getPossibleValues().size())
 				setTargetColumnList(tempList);
-			}	
-		}
-		else {
+		} else {
 			setTargetColumnList(new ListSingleSelection<String>());
 		}
 
@@ -92,20 +95,24 @@ public class NetworkCollectionHelper extends AbstractTask {
 	}
 	
 	public ListSingleSelection<String> targetColumnList;
-	@Tunable(description = "Node Identifier Mapping Column:", groups="Network", gravity=2.0, listenForChange={"RootNetworkList"})
+
+	@Tunable(description = "Node Identifier Mapping Column:", groups = "Network", gravity = 2.0, listenForChange = {
+			"RootNetworkList" })
 	public ListSingleSelection<String> getTargetColumnList() {
 		return targetColumnList;
 	}
-	public void setTargetColumnList(ListSingleSelection<String> colList){
+
+	public void setTargetColumnList(ListSingleSelection<String> colList) {
 		this.targetColumnList = colList;
 	}
-	
+
 	public ListSingleSelection<NetworkViewRenderer> rendererList;
-	@Tunable(description = "Network View Renderer:", groups="Network", gravity=3.0)
+
+	@Tunable(description = "Network View Renderer:", groups = "Network", gravity = 3.0)
 	public ListSingleSelection<NetworkViewRenderer> getNetworkViewRendererList() {
 		return rendererList;
 	}
-	
+
 	public void setNetworkViewRendererList(final ListSingleSelection<NetworkViewRenderer> rendererList) {
 		this.rendererList = rendererList;
 	}
@@ -122,10 +129,11 @@ public class NetworkCollectionHelper extends AbstractTask {
 		}
 		
 		if (colNames.isEmpty() || (colNames.size() == 1 && colNames.contains(CyRootNetwork.SHARED_NAME)))
-			return new ListSingleSelection<String>();
+			return new ListSingleSelection<>();
 		
 		sort(colNames);
-		ListSingleSelection<String> targetColumns = new ListSingleSelection<String>(colNames);
+		ListSingleSelection<String> targetColumns = new ListSingleSelection<>(colNames);
+		
 		if (targetColumns.getPossibleValues().contains(CyRootNetwork.SHARED_NAME))
 			targetColumns.setSelectedValue(CyRootNetwork.SHARED_NAME);
 		
@@ -169,12 +177,10 @@ public class NetworkCollectionHelper extends AbstractTask {
 		else if (rootNames.contains(CREATE_NEW_COLLECTION_STRING))
 			rootNetworkList.setSelectedValue(CREATE_NEW_COLLECTION_STRING);
 		
-		if(rootNet != null) {
+		if (rootNet != null)
 			targetColumnList = getTargetColumns(rootNet);
-		}
-		else {
+		else
 			targetColumnList = new ListSingleSelection<>();
-		}
 		
 		// initialize renderer list
 		final List<NetworkViewRenderer> renderers = new ArrayList<>();
@@ -245,7 +251,8 @@ public class NetworkCollectionHelper extends AbstractTask {
 		while (it.hasNext()) {
 			CyNode node = it.next();
 			Object keyValue = rootNetwork.getRow(node).getRaw(targetKeyColName);
-			if(keyValue != null)
+			
+			if (keyValue != null)
 				nMap.put(keyValue.toString(), node);
 		}
 	}
