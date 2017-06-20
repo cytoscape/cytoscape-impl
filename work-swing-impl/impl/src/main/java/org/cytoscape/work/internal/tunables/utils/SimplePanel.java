@@ -106,19 +106,19 @@ public class SimplePanel extends JPanel implements HierarchyListener {
 
 	@Override
     public void hierarchyChanged(HierarchyEvent e) {
-        if (isDisplayed() && !hasVisibleControls(this))
+        if (isDisplayed() && !hasEnabledControls(this))
         	setVisible(false);
     }
 	
-	public boolean hasVisibleControls(final JPanel panel) {
+	public boolean hasEnabledControls(final JPanel panel) {
 		final int total = panel.getComponentCount();
         
         for (int i = 0; i < total; i++) {
         	final Component c = panel.getComponent(i);
     		
-        	if (c.isVisible()) {
+        	if (c.isVisible() && c.isEnabled()) {
 	    		if (c instanceof JPanel) {
-	    			if (hasVisibleControls((JPanel) c))
+	    			if (hasEnabledControls((JPanel) c))
 	    				return true;
 	    		} else if (c instanceof Filler == false) {
 	    			return true;
