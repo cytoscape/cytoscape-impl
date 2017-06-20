@@ -142,6 +142,7 @@ import org.cytoscape.task.internal.layout.GetPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.layout.SetPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.loaddatatable.LoadTableFileTaskFactoryImpl;
 import org.cytoscape.task.internal.loaddatatable.LoadTableURLTaskFactoryImpl;
+import org.cytoscape.task.internal.loadnetwork.LoadMultipleNetworkFilesTaskFactoryImpl;
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.task.internal.loadnetwork.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.task.internal.loadvizmap.LoadVizmapFileTaskFactoryImpl;
@@ -219,6 +220,7 @@ import org.cytoscape.task.internal.zoom.FitContentTaskFactory;
 import org.cytoscape.task.internal.zoom.FitSelectedTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomInTaskFactory;
 import org.cytoscape.task.internal.zoom.ZoomOutTaskFactory;
+import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
@@ -445,6 +447,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP,"Import Network From File");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadNetworkFileTaskFactory.class, props);
+		}
+		{
+			LoadMultipleNetworkFilesTaskFactoryImpl factory = new LoadMultipleNetworkFilesTaskFactoryImpl(serviceRegistrar);
+			Properties props = new Properties();
+			// props.setProperty(ID, "loadMultipleNetworkFilesTaskFactory");
+			// props.setProperty(COMMAND_NAMESPACE, "network");
+			// props.setProperty(COMMAND, "load file");
+			// props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML)");
+			registerService(bc, factory, TaskFactory.class, props);
+			registerService(bc, factory, LoadMultipleNetworkFilesTaskFactory.class, props);
 		}
 		{
 			LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
