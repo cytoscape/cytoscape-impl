@@ -78,12 +78,14 @@ public class CyActivator extends AbstractCyActivator {
 			// ".txt"
 			WildCardCyFileFilter filter = new WildCardCyFileFilter(
 					new String[] { "csv", "tsv", "txt", "tab", "net", "" },
-					new String[] { "text/csv", "text/tab-separated-values" },
+					new String[] { "text/csv", "text/tab-separated-values", "text/plain", "" },
 					"Comma or Tab Separated Value",
 					TABLE,
 					streamUtil
 			);
-			filter.setBlacklist("xml", "rdf", "owl", "cys");
+			filter.setBlacklist("xml", "xgmml", "rdf", "owl", "zip", "rar", "jar", "doc", "docx", "ppt", "pptx",
+					"pdf", "jpg", "jpeg", "gif", "png", "svg", "tiff", "ttf", "mp3", "mp4", "mpg", "mpeg",
+					"exe", "dmg", "iso", "cys");
 
 			ImportAttributeTableReaderFactory factory = new ImportAttributeTableReaderFactory(filter, serviceRegistrar);
 			Properties props = new Properties();
@@ -112,11 +114,13 @@ public class CyActivator extends AbstractCyActivator {
 			// "txt"
 			WildCardCyFileFilter filter = new WildCardCyFileFilter(
 					new String[] { "csv", "tsv", "txt", "" },
-					new String[] { "text/csv", "text/tab-separated-values" },
+					new String[] { "text/csv", "text/tab-separated-values", "text/plain", "" },
 					"Comma or Tab Separated Value", NETWORK,
 					streamUtil
 			);
-			filter.setBlacklist("xml", "rdf", "owl", "cys");
+			filter.setBlacklist("xml", "xgmml", "rdf", "owl", "zip", "rar", "jar", "doc", "docx", "ppt", "pptx",
+					"pdf", "jpg", "jpeg", "gif", "png", "svg", "tiff", "ttf", "mp3", "mp4", "mpg", "mpeg",
+					"exe", "dmg", "iso", "cys");
 
 			ImportNetworkTableReaderFactory factory = new ImportNetworkTableReaderFactory(filter, serviceRegistrar);
 			Properties props = new Properties();
