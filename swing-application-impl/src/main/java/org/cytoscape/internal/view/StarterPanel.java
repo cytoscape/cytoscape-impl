@@ -46,15 +46,12 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -351,13 +348,7 @@ public class StarterPanel extends JPanel {
 	
 	private void maybeOpenSession(final File file) {
 		if (file.exists()) {
-			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
-			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
-			
-			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
-				openSession(file);
-			else
-				openSessionWithWarning(file);
+			Util.maybeOpenSession(file, StarterPanel.this.getTopLevelAncestor(), serviceRegistrar);
 		} else {
 			JOptionPane.showMessageDialog(
 					StarterPanel.this.getTopLevelAncestor(),
@@ -374,21 +365,6 @@ public class StarterPanel extends JPanel {
 				logger.error("Error removing session file from RecentlyOpenedTracker.", e);
 			}
 		}
-	}
-	
-	private void openSession(final File file) {
-		final OpenSessionTaskFactory taskFactory = serviceRegistrar.getService(OpenSessionTaskFactory.class);
-		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-		taskManager.execute(taskFactory.createTaskIterator(file));
-	}
-	
-	private void openSessionWithWarning(final File file) {
-		if (JOptionPane.showConfirmDialog(
-				StarterPanel.this.getTopLevelAncestor(),
-				"Current session (all networks and tables) will be lost.\nDo you want to continue?",
-				"Open Session",
-				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
-			openSession(file);
 	}
 	
 	private void drawFocus(SessionPanel panel) {
