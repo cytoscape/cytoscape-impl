@@ -38,7 +38,6 @@ import java.awt.event.WindowFocusListener;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -65,7 +64,6 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -80,6 +78,7 @@ import javax.swing.border.Border;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.internal.task.LoadFileListTask;
 import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -87,13 +86,10 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1090,7 +1086,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		private final JPanel filler = new JPanel();
 		private final JLabel dropIconLabel = new JLabel();
-		private final JLabel dropLabel = new JLabel("Drag a network file here");
+		private final JLabel dropLabel = new JLabel("Drag network files here");
 		private final Border dropBorder;
 		private boolean scrollableTracksViewportHeight;
 		
@@ -1458,82 +1454,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		private void loadFiles(final List<File> data) {
-			// TODO get files recursively
-			List<File> netFiles = new ArrayList<>();
-			getOnlyFiles(data, netFiles);
-			
-			int cysCount = 0;
-			File cysFile = null;
-			
-			for (Iterator<File> iter = netFiles.iterator(); iter.hasNext();) {
-				File file = iter.next();
-				
-				if (isCySession(file)) {
-					iter.remove();
-					cysCount++;
-					cysFile = file;
-				}
-			}
-			
-			if (cysCount > 1) {
-				// The dragged list can contain only 1 .cys file!
-				JOptionPane.showMessageDialog(
-						SwingUtilities.getWindowAncestor(targetComponent),
-						"You dragged " + cysCount + " Cytoscape Session files (.cys).\n" + 
-						"Please try again with no more than one Session file.",
-						"Invalid File List",
-						JOptionPane.ERROR_MESSAGE
-				);
-			} else if (cysCount == 1 && cysFile != null) {
-				// Load the session file first, if there is one and only one .cys file...
-				Util.maybeOpenSession(cysFile, SwingUtilities.getWindowAncestor(targetComponent), serviceRegistrar,
-						new TaskObserver() {
-							@Override
-							public void taskFinished(ObservableTask task) {
-							}
-
-							@Override
-							public void allFinished(FinishStatus finishStatus) {
-								// If the session file has been loaded,
-								// load standalone network files as new network collections
-								if (finishStatus == FinishStatus.getSucceeded())
-									loadNetworkFiles(netFiles, null);
-							}
-						});
-			} else {
-				// No session files: Just load all standalone network files into the target collection...
-				loadNetworkFiles(netFiles, rootNetwork);
-			}
-		}
-		
-		private void loadNetworkFiles(final List<File> files, final CyRootNetwork rootNetwork) {
-			if (files == null || files.isEmpty())
-				return;
-			
-			final LoadMultipleNetworkFilesTaskFactory factory =
-					serviceRegistrar.getService(LoadMultipleNetworkFilesTaskFactory.class);
-
-			if (factory != null) {
-				final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
-				taskManager.execute(factory.createTaskIterator(files, rootNetwork));
-			}
-		}
-		
-		private boolean isCySession(File f) {
-			return f != null && f.isFile() && f.getName().toLowerCase().endsWith(".cys");
-		}
-		
-		private void getOnlyFiles(List<File> filesOrDirectories, List<File> files) {
-			for (File f : filesOrDirectories) {
-				if (f.isDirectory()) {
-					File[] listFiles = f.listFiles();
-					
-					if (listFiles != null)
-						getOnlyFiles(Arrays.asList(listFiles), files);
-				} else if (f.exists() && f.canRead() && !f.isHidden()) {
-					files.add(f);
-				}
-			}
+			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			taskManager.execute(new TaskIterator(new LoadFileListTask(data, rootNetwork, serviceRegistrar)));
 		}
 		
 		private boolean isAcceptable(DropTargetDropEvent evt) {

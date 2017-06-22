@@ -70,7 +70,7 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 	@ProvidesTitle
 	@Override
 	public String getTitle() {
-		return "Load Networks from Files";
+		return "Import Networks from Files";
 	}
 
 	@Tunable(description = "Node Identifier Mapping Column:", groups = "_Network", gravity = 1.0)
@@ -101,14 +101,25 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 		this.taskMonitor = taskMonitor;
 
 		if (readers == null && readers.isEmpty())
-			throw new NullPointerException("No network reader specified.");
+			throw new IllegalArgumentException("No network reader specified.");
 
+		taskMonitor.setTitle("Import Networks");
+		taskMonitor.setProgress(0.0);
+		
 		final String rootNetName = rootNetwork != null ?
 				rootNetwork.getRow(rootNetwork).get(CyRootNetwork.NAME, String.class) : null;
 		final String targetColumn = targetColumnList != null ? targetColumnList.getSelectedValue() : null;
 		final NetworkViewRenderer renderer = rendererList != null ? rendererList.getSelectedValue() : null;
 		
-		readers.values().forEach(r -> {
+		final float total = readers.size();
+		int count = 1;
+		
+		for (Entry<String, CyNetworkReader> entry : readers.entrySet()) {
+			if (cancelled)
+				return;
+			
+			final CyNetworkReader r = entry.getValue();
+			
 			if (r instanceof AbstractCyNetworkReader) {
 				AbstractCyNetworkReader ar = (AbstractCyNetworkReader) r;
 				
@@ -135,12 +146,12 @@ public class LoadMultipleNetworksTask extends AbstractLoadNetworkTask {
 					ar.setNetworkViewRendererList(ls);
 				}
 			}
-		});
-		
-		for (Entry<String, CyNetworkReader> entry : readers.entrySet()) {
-			CyNetworkReader r = entry.getValue();
+			
 			name = entry.getKey();
 			loadNetwork(r);
+			
+			taskMonitor.setProgress(count / total);
+			count++;
 		}
 	}
 	

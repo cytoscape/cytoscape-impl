@@ -105,7 +105,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	private JPanel dropPanel;
 	private final JScrollPane scrollPane = new JScrollPane();
 	private final JLabel dropIconLabel = new JLabel();
-	private final JLabel dropLabel = new JLabel("Drag a table file here");
+	private final JLabel dropLabel = new JLabel("Drag table files here");
 	private final PopupMenuHelper popupMenuHelper; 
 
 	private final String tabTitle;

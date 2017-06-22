@@ -1,12 +1,39 @@
 package org.cytoscape.task.internal.session;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.File;
+import java.util.Collections;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.io.read.CySessionReader;
+import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySession.Builder;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.internal.session.OpenSessionTask.OpenSessionWithoutWarningTask;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +51,9 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.File;
-import java.util.Collections;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.io.read.CySessionReader;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.CySession.Builder;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.internal.session.OpenSessionTask.OpenSessionWithoutWarningTask;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class OpenSessionTaskTest {
 	
+	@Mock private CyServiceRegistrar serviceRegistrar;
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
 	@Mock private CySessionReaderManager readerMgr;
@@ -79,11 +81,20 @@ public class OpenSessionTaskTest {
 		
 		session = new Builder().build();
 		when(reader.getSession()).thenReturn(session);
+		
+		when(serviceRegistrar.getService(CySessionManager.class)).thenReturn(mgr);
+		when(serviceRegistrar.getService(CySessionReaderManager.class)).thenReturn(readerMgr);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tableMgr);
+		when(serviceRegistrar.getService(CyNetworkTableManager.class)).thenReturn(netTableMgr);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(grMgr);
+		when(serviceRegistrar.getService(RecentlyOpenedTracker.class)).thenReturn(tracker);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 	}
 	
 	@Test
 	public void testRun() throws Exception {
-		final OpenSessionTask t = new OpenSessionTask(mgr, readerMgr, netMgr, tableMgr, netTableMgr, grMgr, tracker, eventHelper);
+		final OpenSessionTask t = new OpenSessionTask(serviceRegistrar);
 		OpenSessionWithoutWarningTask t2 = t.new OpenSessionWithoutWarningTask();
 		t2.file = sampleFile;
 		t2.setTaskIterator(new TaskIterator(t2));

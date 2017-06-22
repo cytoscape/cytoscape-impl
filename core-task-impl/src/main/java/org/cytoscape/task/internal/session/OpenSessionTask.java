@@ -1,12 +1,41 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.io.read.CySessionReader;
+import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +53,6 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.io.read.CySessionReader;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-
 /**
  * Call the session reader and read everything in the zip archive.<br>
  * setAcceleratorCombo(java.awt.event.KeyEvent.VK_O, ActionEvent.CTRL_MASK);
@@ -62,37 +64,18 @@ public class OpenSessionTask extends AbstractTask {
 		return "Open Session";
 	}
 	
-	private final CySessionManager sessionMgr;
-	private final CySessionReaderManager readerMgr;
-	private final CyNetworkManager netManager;
-	private final CyTableManager tableManager;
-	private final CyNetworkTableManager netTableManager;
-	private final CyGroupManager grManager;
-	private final RecentlyOpenedTracker tracker;
-	private final CyEventHelper eventHelper;
-	
 	private CySessionReader reader;
+	
+	private final File sessionFile;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-	 * Constructor.<br>
-	 * Add a menu item under "File" and set shortcut.
-	 */
-	public OpenSessionTask(final CySessionManager mgr,
-						   final CySessionReaderManager readerManager,
-						   final CyNetworkManager netManager,
-						   final CyTableManager tableManager,
-						   final CyNetworkTableManager netTableManager,
-						   final CyGroupManager grManager,
-						   final RecentlyOpenedTracker tracker,
-						   final CyEventHelper eventHelper) {
-		this.sessionMgr = mgr;
-		this.readerMgr = readerManager;
-		this.netManager = netManager;
-		this.tableManager = tableManager;
-		this.netTableManager = netTableManager;
-		this.grManager = grManager;
-		this.tracker = tracker;
-		this.eventHelper = eventHelper;
+	public OpenSessionTask(CyServiceRegistrar serviceRegistrar) {
+		this(null, serviceRegistrar);
+	}
+	
+	public OpenSessionTask(File sessionFile, CyServiceRegistrar serviceRegistrar) {
+		this.sessionFile = sessionFile;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
@@ -100,23 +83,41 @@ public class OpenSessionTask extends AbstractTask {
 	 */
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
+		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+		
 		if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
-			insertTasksAfterCurrentTask(new OpenSessionWithoutWarningTask());
+			loadSession(this);
 		else
 			insertTasksAfterCurrentTask(new OpenSessionWithWarningTask());
 	}
 	
-
+	private void loadSession(AbstractTask currentTask) {
+		if (sessionFile == null) {
+			// Should use Tunables to show a file chooser and let the user select the file
+			getTaskIterator().insertTasksAfter(currentTask, new OpenSessionWithoutWarningTask());
+		} else {
+			// Should not show the Tunables dialog
+			final Map<String, Object> m = new HashMap<>();
+			m.put("file", sessionFile);
+	
+			final TunableSetter tunableSetter = serviceRegistrar.getService(TunableSetter.class);
+			getTaskIterator().insertTasksAfter(currentTask,
+					tunableSetter.createTaskIterator(new TaskIterator(new OpenSessionWithoutWarningTask()), m));
+		}
+	}
+	
 	public final class OpenSessionWithoutWarningTask extends AbstractTask {
 		
 		@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
 		public File file;
 		
-		private Set<CyNetwork> currentNetworkSet = new HashSet<CyNetwork>();
-		private Set<CyGroup> currentGroupSet = new HashSet<CyGroup>();
+		private Set<CyNetwork> currentNetworkSet = new HashSet<>();
+		private Set<CyGroup> currentGroupSet = new HashSet<>();
 
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
 			
 			try {
@@ -127,13 +128,17 @@ public class OpenSessionTask extends AbstractTask {
 					if (file == null)
 						throw new NullPointerException("No file specified.");
 					
-					reader = readerMgr.getReader(file.toURI(), file.getName());
+					reader = serviceRegistrar.getService(CySessionReaderManager.class)
+							.getReader(file.toURI(), file.getName());
 					
 					if (reader == null)
 						throw new NullPointerException("Failed to find appropriate reader for file: " + file);
 					
 					// Save the current network and group set, in case loading the new session is cancelled later
+					final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
 					currentNetworkSet.addAll(netTableManager.getNetworkSet());
+					
+					final CyGroupManager grManager = serviceRegistrar.getService(CyGroupManager.class);
 					
 					for (final CyNetwork n : currentNetworkSet)
 						currentGroupSet.addAll(grManager.getGroupSet(n));
@@ -170,7 +175,7 @@ public class OpenSessionTask extends AbstractTask {
 			if (reader != null)
 				reader.cancel(); // Remember to cancel the Session Reader!
 			
-			eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
+			serviceRegistrar.getService(CyEventHelper.class).fireEvent(new SessionLoadCancelledEvent(this));
 		}
 		
 		private void changeCurrentSession(final TaskMonitor taskMonitor) throws Exception {
@@ -179,13 +184,13 @@ public class OpenSessionTask extends AbstractTask {
 			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + file);
 
-			sessionMgr.setCurrentSession(newSession, file.getAbsolutePath());
+			serviceRegistrar.getService(CySessionManager.class).setCurrentSession(newSession, file.getAbsolutePath());
 			
 			taskMonitor.setProgress(1.0);
 			taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");
 			
 			// Add this session file URL as the most recent file.
-			tracker.add(file.toURI().toURL());
+			serviceRegistrar.getService(RecentlyOpenedTracker.class).add(file.toURI().toURL());
 		}
 		
 		private void disposeCancelledSession() {
@@ -201,7 +206,10 @@ public class OpenSessionTask extends AbstractTask {
 				// This is necessary because the new CySession contains only registered networks;
 				// unregistered networks (e.g. CyGroup networks) may have been loaded and need to be disposed as well.
 				// The Network Table Manager should contain all networks, including the unregistered ones.
-				final Set<CyNetwork> newNetworkSet = new HashSet<CyNetwork>(netTableManager.getNetworkSet());
+				final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+				final Set<CyNetwork> newNetworkSet = new HashSet<>(netTableManager.getNetworkSet());
+				
+				final CyGroupManager grManager = serviceRegistrar.getService(CyGroupManager.class);
 				
 				for (final CyNetwork net : newNetworkSet) {
 					if (!currentNetworkSet.contains(net)) {
@@ -229,7 +237,7 @@ public class OpenSessionTask extends AbstractTask {
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
 			if (loadSession)
-				insertTasksAfterCurrentTask(new OpenSessionWithoutWarningTask());
+				loadSession(this);
 		}
 	}
 }

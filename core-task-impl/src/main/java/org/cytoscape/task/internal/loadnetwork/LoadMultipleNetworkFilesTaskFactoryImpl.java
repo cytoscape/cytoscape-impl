@@ -1,8 +1,6 @@
 package org.cytoscape.task.internal.loadnetwork;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,9 +10,12 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -44,6 +45,8 @@ public class LoadMultipleNetworkFilesTaskFactoryImpl extends AbstractTaskFactory
 		implements LoadMultipleNetworkFilesTaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private static final Logger logger = LoggerFactory.getLogger(LoadMultipleNetworkFilesTaskFactoryImpl.class);
 
 	public LoadMultipleNetworkFilesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -55,44 +58,62 @@ public class LoadMultipleNetworkFilesTaskFactoryImpl extends AbstractTaskFactory
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(List<File> filesOrDirectories, CyRootNetwork rootNetwork) {
-		return createTaskIterator(filesOrDirectories, rootNetwork, null);
+	public TaskIterator createTaskIterator(List<File> files, CyRootNetwork rootNetwork) {
+		if (files == null || files.isEmpty())
+			throw new IllegalArgumentException("'files' must not be empty");
+		
+		return new TaskIterator(new FindReadersAndLoadFilesTask(files, rootNetwork));
 	}
+	
+	private class FindReadersAndLoadFilesTask extends AbstractTask {
+		
+		private final List<File> files;
+		private final CyRootNetwork rootNetwork;
 
-	@Override
-	public TaskIterator createTaskIterator(List<File> filesOrDirectories, CyRootNetwork rootNetwork,
-			TaskObserver observer) {
-		List<File> files = new ArrayList<>();
-		getOnlyFiles(filesOrDirectories, files);
-		
-		Map<String, CyNetworkReader> readerMap = new LinkedHashMap<>();
-		CyNetworkReaderManager netReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
-		
-		for (File f : files) {
-			CyNetworkReader reader = netReaderManager.getReader(f.toURI(), f.toURI().toString());
-			
-			if (reader != null)
-				readerMap.put(f.getName(), reader);
+		public FindReadersAndLoadFilesTask(List<File> files, CyRootNetwork rootNetwork) {
+			this.files = files;
+			this.rootNetwork = rootNetwork;
 		}
 		
-		TaskIterator taskIterator = new TaskIterator();
-		
-		if (!readerMap.isEmpty())
-			taskIterator.append(new LoadMultipleNetworksTask(readerMap, rootNetwork, serviceRegistrar));
-
-		return taskIterator;
-	}
-
-	private void getOnlyFiles(List<File> filesOrDirectories, List<File> files) {
-		for (File f : filesOrDirectories) {
-			if (f.isDirectory()) {
-				File[] listFiles = f.listFiles();
+		@Override
+		public void run(TaskMonitor tm) throws Exception {
+			tm.setTitle("Find Network Readers");
+			tm.setStatusMessage("Finding readers for network files...");
+			tm.setProgress(0.0);
+			
+			Map<String, CyNetworkReader> readers = new LinkedHashMap<>();
+			CyNetworkReaderManager netReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
+			
+			final float total = files.size();
+			int count = 1;
+			
+			for (File f : files) {
+				if (cancelled)
+					return;
 				
-				if (listFiles != null)
-					getOnlyFiles(Arrays.asList(listFiles), files);
-			} else {
-				files.add(f);
+				try {
+					CyNetworkReader netReader = netReaderManager.getReader(f.toURI(), f.toURI().toString());
+					
+					if (netReader != null)
+						readers.put(f.getName(), netReader);
+				} catch (Exception e) {
+					logger.warn("Cannot load file", e);
+				}
+				
+				tm.setProgress(count / total);
+				count++;
 			}
+
+			if (cancelled)
+				return;
+			
+			if (readers.isEmpty()) {
+				logger.warn("Failed to find appropriate network readers for the input files.");
+				return;
+			}
+				
+			tm.setProgress(1.0);
+			insertTasksAfterCurrentTask(new LoadMultipleNetworksTask(readers, rootNetwork, serviceRegistrar));
 		}
 	}
 }
