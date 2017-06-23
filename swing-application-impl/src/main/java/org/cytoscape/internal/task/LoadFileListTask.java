@@ -1,10 +1,12 @@
 package org.cytoscape.internal.task;
 
 import java.io.File;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
 
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -12,6 +14,7 @@ import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 /*
  * #%L
@@ -42,8 +45,13 @@ import org.cytoscape.work.TaskMonitor;
  */
 public class LoadFileListTask extends AbstractTask {
 
-	private final List<File> files;
+	private final int FILE_COUNT_THRESHOLD = 10;
+	
+	private final Queue<File> queue;
+	private List<File> netFiles;
 	private final CyRootNetwork rootNetwork;
+	private final boolean confirmLargeList;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
@@ -52,8 +60,20 @@ public class LoadFileListTask extends AbstractTask {
 	 * @param serviceRegistrar
 	 */
 	public LoadFileListTask(List<File> files, CyRootNetwork rootNetwork, CyServiceRegistrar serviceRegistrar) {
-		this.files = files;
+		this(new ArrayDeque<>(files), new ArrayList<>(), rootNetwork, true, serviceRegistrar);
+	}
+	
+	private LoadFileListTask(
+			Queue<File> sourceQueue,
+			List<File> netFiles,
+			CyRootNetwork rootNetwork,
+			boolean confirmLargeList,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this.queue = sourceQueue;
+		this.netFiles = netFiles;
 		this.rootNetwork = rootNetwork;
+		this.confirmLargeList = confirmLargeList;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
@@ -64,8 +84,24 @@ public class LoadFileListTask extends AbstractTask {
 		tm.setProgress(-1);
 		
 		// Collect files first
-		List<File> netFiles = new ArrayList<>();
-		getOnlyFiles(files, netFiles, tm);
+		while (!queue.isEmpty() && !cancelled) {
+			File f = queue.remove();
+			
+			if (f.isDirectory()) {
+				File[] listFiles = f.listFiles();
+				
+				if (listFiles != null)
+					queue.addAll(Arrays.asList(listFiles));
+			} else if (f.exists() && f.canRead() && !f.isHidden()) {
+				netFiles.add(f);
+				
+				if (confirmLargeList && netFiles.size() > FILE_COUNT_THRESHOLD) {
+					// Too many files? The user has to confirm it then!
+					insertTasksAfterCurrentTask(new ConfirmLargeFileListTask());
+					return;
+				}
+			}
+		}
 		
 		if (cancelled)
 			return;
@@ -73,10 +109,7 @@ public class LoadFileListTask extends AbstractTask {
 		int cysCount = 0;
 		File cysFile = null;
 		
-		for (Iterator<File> iter = netFiles.iterator(); iter.hasNext();) {
-			if (cancelled)
-				return;
-			
+		for (Iterator<File> iter = netFiles.iterator(); iter.hasNext() && !cancelled;) {
 			File file = iter.next();
 			
 			if (isCySession(file)) {
@@ -113,19 +146,21 @@ public class LoadFileListTask extends AbstractTask {
 		return f != null && f.isFile() && f.getName().toLowerCase().endsWith(".cys");
 	}
 	
-	private void getOnlyFiles(List<File> filesOrDirectories, List<File> normalFiles, TaskMonitor tm) {
-		for (File f : filesOrDirectories) {
-			if (cancelled)
-				return;
-			
-			if (f.isDirectory()) {
-				File[] listFiles = f.listFiles();
-				
-				if (listFiles != null)
-					getOnlyFiles(Arrays.asList(listFiles), normalFiles, tm);
-			} else if (f.exists() && f.canRead() && !f.isHidden()) {
-				normalFiles.add(f);
-			}
+	public class ConfirmLargeFileListTask extends AbstractTask {
+
+		@Tunable(
+				description = "<html>The file list contains more than " + FILE_COUNT_THRESHOLD +
+				              " files, which may take too long to import.<br />Do you want to continue?</html>",
+				params = "ForceSetDirectly=true;ForceSetTitle=Import Files"
+		)
+		public boolean ok;
+		
+		@Override
+		public void run(TaskMonitor tm) throws Exception {
+			// If the user confirm it, execute the original task again, but it won't check the file count this time
+			if (ok && ! cancelled)
+				insertTasksAfterCurrentTask(
+						new LoadFileListTask(queue, netFiles, rootNetwork, false, serviceRegistrar));
 		}
 	}
 }
