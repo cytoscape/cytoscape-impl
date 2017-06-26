@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 
+import org.cytoscape.internal.tunable.CyPropertyConfirmation;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
@@ -45,8 +46,6 @@ import org.cytoscape.work.Tunable;
  */
 public class LoadFileListTask extends AbstractTask {
 
-	private final int FILE_COUNT_THRESHOLD = 10;
-	
 	private final Queue<File> queue;
 	private List<File> netFiles;
 	private final CyRootNetwork rootNetwork;
@@ -95,10 +94,21 @@ public class LoadFileListTask extends AbstractTask {
 			} else if (f.exists() && f.canRead() && !f.isHidden()) {
 				netFiles.add(f);
 				
-				if (confirmLargeList && netFiles.size() > FILE_COUNT_THRESHOLD) {
-					// Too many files? The user has to confirm it then!
-					insertTasksAfterCurrentTask(new ConfirmLargeFileListTask());
-					return;
+				if (confirmLargeList) {
+					ConfirmLargeFileListTask confirmTask = new ConfirmLargeFileListTask();
+					String propVal = confirmTask.confirmation.getPropertyValue();
+					int max = -1;
+					
+					try {
+						max = Integer.parseInt(propVal);
+					} catch (Exception e) {
+					}
+					
+					if (max > 0 && netFiles.size() > max) {
+						// Too many files? The user has to confirm it then!
+						insertTasksAfterCurrentTask(confirmTask);
+						return;
+					}
 				}
 			}
 		}
@@ -147,18 +157,21 @@ public class LoadFileListTask extends AbstractTask {
 	}
 	
 	public class ConfirmLargeFileListTask extends AbstractTask {
+		
+		private static final String FILE_THRESHOLD_PROP = "networkImport.fileThreshold";
 
 		@Tunable(
-				description = "<html>The file list contains more than " + FILE_COUNT_THRESHOLD +
-				              " files, which may take too long to import.<br />Do you want to continue?</html>",
-				params = "ForceSetDirectly=true;ForceSetTitle=Import Files"
+				description = "<html><b>Are you sure you want to import all these files?</b><br><br>"
+						+ "The import list contains more than ${" + FILE_THRESHOLD_PROP + "} files,<br>"
+						+ "which may take too long to process.</html>",
+				params="doNotAskLabel=Always import and do not ask me again;cancelLabel=Cancel;okLabel=Import"
 		)
-		public boolean ok;
+		public CyPropertyConfirmation confirmation = new CyPropertyConfirmation(FILE_THRESHOLD_PROP, serviceRegistrar);
 		
 		@Override
 		public void run(TaskMonitor tm) throws Exception {
 			// If the user confirm it, execute the original task again, but it won't check the file count this time
-			if (ok && ! cancelled)
+			if (!cancelled && confirmation.isConfirmed())
 				insertTasksAfterCurrentTask(
 						new LoadFileListTask(queue, netFiles, rootNetwork, false, serviceRegistrar));
 		}

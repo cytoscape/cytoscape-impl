@@ -9,6 +9,7 @@ render.edgeArrowThreshold=600
 render.edgeLabelThreshold=200
 layout.default=force-directed
 maximizeViewOnCreate=false
+networkImport.fileThreshold=10
 proxy.server=
 proxy.server.port=
 proxy.server.type=

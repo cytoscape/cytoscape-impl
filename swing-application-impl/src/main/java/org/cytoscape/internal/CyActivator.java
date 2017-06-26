@@ -63,6 +63,8 @@ import org.cytoscape.internal.select.RowsSetViewUpdater;
 import org.cytoscape.internal.select.SelectEdgeViewUpdater;
 import org.cytoscape.internal.select.SelectNodeViewUpdater;
 import org.cytoscape.internal.shutdown.ConfigDirPropertyWriter;
+import org.cytoscape.internal.tunable.CyPropertyConfirmation;
+import org.cytoscape.internal.tunable.CyPropertyConfirmationHandler;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
@@ -107,6 +109,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -222,6 +226,10 @@ public class CyActivator extends AbstractCyActivator {
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
 		registerService(bc, cyHelpBroker, CyHelpBroker.class);
 		registerServiceListener(bc, configDirPropertyWriter::addCyProperty, configDirPropertyWriter::removeCyProperty, CyProperty.class);
+		
+		SimpleGUITunableHandlerFactory<CyPropertyConfirmationHandler> cyPropConfirmHandlerFactory =
+				new SimpleGUITunableHandlerFactory<>(CyPropertyConfirmationHandler.class, CyPropertyConfirmation.class);
+		registerService(bc, cyPropConfirmHandlerFactory, GUITunableHandlerFactory.class);
 		
 		invokeOnEDTAndWait(() -> {
 			initComponents(bc, serviceRegistrar);
