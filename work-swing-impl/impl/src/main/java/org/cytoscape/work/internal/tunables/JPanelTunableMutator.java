@@ -1,30 +1,5 @@
 package org.cytoscape.work.internal.tunables;
 
-/*
- * #%L
- * Cytoscape Work Swing Impl (work-swing-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Window;
@@ -62,6 +37,30 @@ import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 import org.cytoscape.work.swing.GUITunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Interceptor of <code>Tunable</code> that will be applied on <code>GUITunableHandlers</code>.
@@ -192,7 +191,6 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 	
 			if (handlers.isEmpty()) {
-				System.out.println("Handlers are empty!");
 				if (tunablePanel != null) {
 					tunablePanel.removeAll();
 					
@@ -216,7 +214,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 			}
 	
 			if (!panelMap.containsKey(handlers)) {
-				Map<String, JPanel> panels = new HashMap<String, JPanel>();
+				Map<String, JPanel> panels = new HashMap<>();
 				final JPanel topLevel = new SimplePanel(true);
 				panels.put(TOP_GROUP, topLevel);
 	
@@ -533,7 +531,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	 * Get information about the Groups and parameters to create the proper GUI.
 	 */
 	private Map<String, Boolean> processGroupParams(GUITunableHandler gh, String paramName, String defaultValue) {
-		final Map<String, Boolean> groupMap = new HashMap<String, Boolean>();
+		final Map<String, Boolean> groupMap = new HashMap<>();
 
 		final String[] groups = gh.getGroups();
 		// empty string splits to single element array containing string "" 
