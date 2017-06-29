@@ -390,6 +390,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	private List<ResultDescriptor> getResultDescriptors(TaskFactory tf) {
+		boolean resetNetwork = setCurrentNetwork();
+		boolean resetView = setCurrentNetworkView();
+		
 		try { 
 			TaskIterator ti = tf.createTaskIterator();
 			if (ti == null)
@@ -411,6 +414,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			logger.debug("Could not create invocation string for command.",e);
 			e.printStackTrace();
 			return Collections.emptyList();
+		}
+		finally {
+			resetCurrentNetworkView(resetView);
+			resetCurrentNetwork(resetNetwork);
 		}
 	}
 
