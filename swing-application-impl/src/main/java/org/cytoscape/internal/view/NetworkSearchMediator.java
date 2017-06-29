@@ -116,6 +116,10 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 					taskFactories.put(factory.getId(), factory);
 				}
 				
+				// Save this flag to a local scope variable first, because it may change before the
+				// EDT below starts, which would cause the selection of the incorrect default provider
+				final boolean appsFinishedStarting = this.appsFinishedStarting;
+				
 				invokeOnEDT(() -> {
 					updateSearchPanel();
 					
