@@ -27,7 +27,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -72,7 +72,7 @@ public class GraphicsDetailAction extends AbstractCyAction {
 		
 		setPreferredMenu("View");
 		setMenuGravity(5.0f);
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F,
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_D,
 				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.SHIFT_MASK));
 	}
 
