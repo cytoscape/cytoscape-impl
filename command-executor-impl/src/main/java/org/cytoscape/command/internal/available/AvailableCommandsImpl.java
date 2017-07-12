@@ -30,7 +30,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.ResultDescriptor;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
@@ -71,7 +70,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final Map<String, String> descriptions;
 	private final Map<String, String> longDescriptions;
 
-	private final Map<String, List<ResultDescriptor>> resultDescriptors;
+	private final Map<String, Map<Class<? extends ObservableTask>, List<Class<?>>>> resultClasses;
 
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
@@ -96,7 +95,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		this.descriptions = new HashMap<>();
 		this.longDescriptions = new HashMap<>();
 
-		this.resultDescriptors = new HashMap<String, List<ResultDescriptor>>();
+		this.resultClasses = new HashMap<String, Map<Class<? extends ObservableTask>, List<Class<?>>>>();
 
 		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
@@ -356,7 +355,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			descriptions.remove(commandKey);
 			longDescriptions.remove(commandKey);
 
-			resultDescriptors.remove(commandKey);
+			resultClasses.remove(commandKey);
 
 			TaskFactory l = commands.remove(commandKey);
 
@@ -389,23 +388,24 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		}
 	}
 
-	private List<ResultDescriptor> getResultDescriptors(TaskFactory tf) {
+	private Map<Class<? extends ObservableTask>, List<Class<?>>> getResultDescriptors(TaskFactory tf) {
 		boolean resetNetwork = setCurrentNetwork();
 		boolean resetView = setCurrentNetworkView();
 		
 		try { 
 			TaskIterator ti = tf.createTaskIterator();
 			if (ti == null)
-				return Collections.emptyList();
+				return Collections.emptyMap();
 
-			List<ResultDescriptor> resultDescriptors = new ArrayList<ResultDescriptor>();
+			Map<Class<? extends ObservableTask>, List<Class<?>>> resultDescriptors = new HashMap<Class<? extends ObservableTask>, List<Class<?>>>();
 
 			while ( ti.hasNext() ) {
 				Task task = ti.next();
 				if (task instanceof ObservableTask) {
-					ResultDescriptor resultDescriptor = ((ObservableTask) task).getResultDescriptor();
-					if (resultDescriptor != null) {
-						resultDescriptors.add(resultDescriptor);
+					ObservableTask observableTask = (ObservableTask) task;
+					List<Class<?>> resultClasses = observableTask.getResultClasses();
+					if (resultClasses != null) {
+						resultDescriptors.put(observableTask.getClass(), resultClasses);
 					}
 				}
 			}
@@ -413,7 +413,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		} catch (Exception e) {
 			logger.debug("Could not create invocation string for command.",e);
 			e.printStackTrace();
-			return Collections.emptyList();
+			return Collections.emptyMap();
 		}
 		finally {
 			resetCurrentNetworkView(resetView);
@@ -584,15 +584,15 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	@Override
-	public List<ResultDescriptor> getResultDescriptors(String namespace, String command) {
+	public Map<Class<? extends ObservableTask>, List<Class<?>>> getResultClasses(String namespace, String command) {
 		synchronized (lock) {
 			String commandKey = getCommandKey(namespace, command);
-			List<ResultDescriptor> list = resultDescriptors.get(commandKey);
-			if (list == null) {
-				list = getResultDescriptors(commands.get(commandKey));
-				resultDescriptors.put(commandKey, list);
+			Map<Class<? extends ObservableTask>, List<Class<?>>> resultClasses = this.resultClasses.get(commandKey);
+			if (resultClasses == null) {
+				resultClasses = getResultDescriptors(commands.get(commandKey));
+				this.resultClasses.put(commandKey, resultClasses);
 			}
-			return list;
+			return resultClasses;
 		}
 	}
 }
