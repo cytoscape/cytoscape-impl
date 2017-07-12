@@ -1,12 +1,32 @@
 package org.cytoscape.internal.actions;
 
+import java.awt.Rectangle;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import javax.swing.JFrame;
+import javax.swing.KeyStroke;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,26 +43,6 @@ package org.cytoscape.internal.actions;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import javax.swing.JFrame;
-import javax.swing.KeyStroke;
-
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
 
 public class FullScreenAction extends AbstractCyAction {
 
@@ -67,10 +67,18 @@ public class FullScreenAction extends AbstractCyAction {
 		super(menuName);
 		setPreferredMenu("View");
 		setMenuGravity(5.1f);
-		this.useCheckBoxMenuItem = true;
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit()
-				.getMenuShortcutKeyMask()));
+		useCheckBoxMenuItem = true;
 		this.desktop = desktop;
+		
+		final KeyStroke ks;
+		
+		if (LookAndFeelUtil.isMac())
+			ks = KeyStroke.getKeyStroke(KeyEvent.VK_F,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.CTRL_DOWN_MASK);
+		else // Windows and Linux
+			ks = KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0);
+			
+		setAcceleratorKeyStroke(ks);
 
 		panels = new HashSet<CytoPanel>();
 		states = new HashMap<CytoPanel, CytoPanelState>();
