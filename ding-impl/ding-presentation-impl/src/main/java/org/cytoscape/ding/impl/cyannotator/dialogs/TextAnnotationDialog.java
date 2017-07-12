@@ -146,6 +146,7 @@ public class TextAnnotationDialog extends JDialog {
 		mAnnotation.setFont(textAnnotationPanel.getNewFont());
 		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
 		mAnnotation.setText(textAnnotationPanel.getText());
+		mAnnotation.setName(textAnnotationPanel.getName());
 
 		if (!create) {
 			mAnnotation.update();

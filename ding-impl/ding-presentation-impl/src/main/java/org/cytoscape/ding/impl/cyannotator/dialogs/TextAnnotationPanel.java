@@ -55,6 +55,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 @SuppressWarnings("serial")
 public class TextAnnotationPanel extends JPanel {
 	
+	private JTextField nameField;
 	private JTextField annotationText;
 	private JList<String> fontSizeList;
 	private JList<String> fontStyleList;
@@ -75,10 +76,18 @@ public class TextAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
+		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Text:");
 		final JLabel label2 = new JLabel("Font Family:");
 		final JLabel label3 = new JLabel("Style:");
 		final JLabel label4 = new JLabel("Size:");
+
+		nameField = new JTextField(32);
+		if (annotation.getName() != null) {
+			nameField.setText(annotation.getName());
+		}
+		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
+
 		annotationText = new JTextField(annotation.getText());
 		textColorButton = new ColorButton(getTextColor());
 		fontTypeList = new JList<>();

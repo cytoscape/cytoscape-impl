@@ -177,6 +177,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		annotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
 		annotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
 		annotation.setAnchorType(ArrowEnd.TARGET, preview.getAnchorType(ArrowEnd.TARGET));
+		annotation.setName(preview.getName());
 
 		if (!create) {
 			annotation.update();

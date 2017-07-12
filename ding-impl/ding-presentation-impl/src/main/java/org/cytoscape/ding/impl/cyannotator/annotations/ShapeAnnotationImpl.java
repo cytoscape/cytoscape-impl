@@ -56,6 +56,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeWidth = 0.0;
 	protected double shapeHeight = 0.0;
 	protected double factor = 1.0;
+	protected static int instanceCount = 0;
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height, Window owner) {
 		super(cyAnnotator, view, owner);
@@ -63,6 +64,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeHeight = height;
 		shapeType = ShapeType.RECTANGLE;
 		borderWidth = 1.0;
+		if (super.name == null)
+			super.name = "ShapeAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, Window owner) {
@@ -73,7 +77,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		borderColor = c.getBorderColor();
 		borderWidth = c.getBorderWidth();
 		fillColor = c.getFillColor();
+		super.name = c.getName();
 		shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		if (super.name == null)
+			super.name = "ShapeAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, ShapeType shapeType,
@@ -90,6 +98,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		if (super.name == null)
+			super.name = "ShapeAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
@@ -116,6 +127,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			this.shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
 
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		if (super.name == null) {
+			super.name = "ShapeAnnotation_"+instanceCount;
+		}
+		instanceCount++;
 	}
 
 	@Override

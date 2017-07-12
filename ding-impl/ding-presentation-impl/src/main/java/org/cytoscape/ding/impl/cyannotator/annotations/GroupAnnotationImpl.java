@@ -53,15 +53,20 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	List<DingAnnotation> annotations = null;
 	Rectangle2D bounds = null;
+	private static int instanceCount = 0;
 
 	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationImpl.class);
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
 		super(cyAnnotator, view, owner); 
+		if (super.name == null)
+			super.name = "GroupAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public GroupAnnotationImpl(GroupAnnotationImpl c, Window owner) { 
 		super(c, owner);
+		super.name = c.getName();
 	}
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
@@ -72,6 +77,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			if (a instanceof DingAnnotation)
 				this.annotations.add((DingAnnotation)a);
 		}
+		if (super.name == null)
+			super.name = "GroupAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -95,6 +103,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				}
 			}
 		}
+		if (super.name == null)
+			super.name = "GroupAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	@Override

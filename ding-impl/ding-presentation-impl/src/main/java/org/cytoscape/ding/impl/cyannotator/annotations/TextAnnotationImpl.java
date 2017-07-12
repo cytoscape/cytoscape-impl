@@ -50,6 +50,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	private String text = "";
 
+	private static int instanceCount = 0;
+
 	protected float fontSize = 0.0f;
 	protected Font font = null;
 	protected int initialFontSize=12;
@@ -60,6 +62,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
+		if (super.name == null)
+			super.name = "TextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public TextAnnotationImpl(TextAnnotationImpl c, Window owner) {
@@ -68,6 +73,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
 		this.font = c.getFont();
+		super.name = c.getName();
 	}
 
 	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -77,6 +83,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
+		if (super.name == null)
+			super.name = "TextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -89,6 +98,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
+		if (super.name == null)
+			super.name = "TextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	@Override

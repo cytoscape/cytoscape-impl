@@ -70,6 +70,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	protected CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
+	private static int instanceCount = 0;
 
 	// XXX HACK to force the custom graphics manager to respect these graphics
 	public void preserveCustomGraphics() {
@@ -79,6 +80,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
 		super(cyAnnotator, view, 0, 0, owner);
+		if (super.name == null)
+			super.name = "ImageAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ImageAnnotationImpl(ImageAnnotationImpl c, Window owner) { 
@@ -92,6 +96,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.brightness = c.brightness;
 		this.contrast = c.contrast;
 		setBorderWidth(0.0); // Our default border width is 0
+		super.name = c.getName();
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
@@ -109,6 +114,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
+		if (super.name == null)
+			super.name = "ImageAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -144,6 +152,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			logger.warn("Unable to restore image '"+argMap.get(URL)+"'",e);
 			return;
 		}
+		if (super.name == null)
+			super.name = "ImageAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	@Override

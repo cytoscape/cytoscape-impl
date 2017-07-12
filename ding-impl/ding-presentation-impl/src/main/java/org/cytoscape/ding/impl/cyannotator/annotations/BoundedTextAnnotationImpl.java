@@ -56,6 +56,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	protected Font font = null;
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
+
+	private static int instanceCount = 0;
 	
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
 		super(cyAnnotator, view, 100, 100, owner);
@@ -64,6 +66,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = "Text Annotation";
 		super.setSize(getTextWidth((Graphics2D)this.getGraphics())+4, 
 		              getTextHeight((Graphics2D)this.getGraphics())+4);
+		if (super.name == null) 
+			super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height,
@@ -72,6 +77,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
+		if (super.name == null) 
+			super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) { 
@@ -80,6 +88,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
 		this.font = c.getFont();
+		super.name = c.getName();
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
@@ -92,6 +101,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
+		if (super.name == null) 
+			super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
@@ -107,6 +119,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);
 		}
+		if (super.name == null) 
+			super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public Map<String,String> getArgMap() {

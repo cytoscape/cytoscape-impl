@@ -65,6 +65,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
+
 	private DGraphView.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
@@ -75,6 +76,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected ArbitraryGraphicsCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
+	protected String name;
 
 	protected static final String ID = "id";
 	protected static final String TYPE = "type";
@@ -135,6 +137,11 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.view = view;
 		Point2D coords = getComponentCoordinates(argMap);
 		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
+		if (argMap.containsKey(NAME)) {
+			this.name = argMap.get(NAME);
+		} else {
+			this.name = null;
+		}
 		String canvasString = getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
@@ -372,6 +379,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void resizeAnnotation(double width, double height) {};
 
+	public String getName() { return name; }
+	public void setName(String name) { this.name = name; }
+
 	public double getZoom() { return globalZoom; }
 	public void setZoom(double zoom) { 
 		globalZoom = zoom; 
@@ -401,6 +411,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = new HashMap<String, String>();
+		if (name != null)
+			argMap.put(NAME, this.name);
 		addNodeCoordinates(argMap);
 		argMap.put(ZOOM,Double.toString(this.globalZoom));
 		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))

@@ -44,6 +44,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +63,7 @@ public class ImageAnnotationPanel extends JPanel {
 	private JSlider opacitySlider;
 	private JSlider brightnessSlider;
 	private JSlider contrastSlider;
+	private JTextField nameField;
 
 	private ImageAnnotationImpl preview;
 	private PreviewPanel previewPanel;
@@ -79,12 +81,19 @@ public class ImageAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
+		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Border Color:");
 		final JLabel label2 = new JLabel("Border Opacity:");
 		final JLabel label3 = new JLabel("Border Width:");
 		final JLabel label4 = new JLabel("Opacity:");
 		final JLabel label5 = new JLabel("Brightness:");
 		final JLabel label6 = new JLabel("Contrast:");
+
+		nameField = new JTextField(32);
+		if (annotation.getName() != null) {
+			nameField.setText(annotation.getName());
+		}
+		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
 		
 		borderColorCheck = new JCheckBox();
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);

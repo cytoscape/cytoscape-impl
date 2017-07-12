@@ -74,6 +74,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private double xOffset = 0.0;
 	private double yOffset = 0.0;
 
+	private static int instanceCount = 0;
+
 
 	private Line2D arrowLine = null;
 
@@ -122,6 +124,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
 		super(cyAnnotator, view, owner);
+		if (super.name == null)
+			super.name = "ArrowAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ArrowAnnotationImpl(ArrowAnnotationImpl c, Window owner) {
@@ -142,6 +147,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetType = c.targetType;
 		this.targetColor = c.targetColor;
 		this.targetSize = c.targetSize;
+		super.name = c.getName();
 	}
 
 	public ArrowAnnotationImpl(
@@ -179,6 +185,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetSize = targetSize;
 
 		updateBounds();
+		if (super.name == null)
+			super.name = "ArrowAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public ArrowAnnotationImpl(
@@ -229,6 +238,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			target = nv.getModel();
 		}
 		updateBounds();
+		if (super.name == null)
+			super.name = "ArrowAnnotation_"+instanceCount;
+		instanceCount++;
   }
 
 	public Map<String,String> getArgMap() {
