@@ -191,8 +191,16 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 				tm.setProgress(0.0);
 				final List<CyNetworkView> createdViews = (List<CyNetworkView>) createViewTask.getResults(List.class);
 				
-				if (!createdViews.isEmpty())
-					appMgr.setCurrentNetworkView(createdViews.get(createdViews.size() - 1));
+				if (!createdViews.isEmpty()) {
+					CyNetworkView nv = createdViews.get(createdViews.size() - 1);
+					if (nv != null) {
+						appMgr.setCurrentNetworkView(nv);
+						// Temporary workaround.  Since setting the current network view only
+						// changes the current network if we're on the EDT -- BUG!!! --
+						// change it explicitly here
+						appMgr.setCurrentNetwork(nv.getModel());
+					}
+				}
 				
 				tm.setProgress(1.0);
 			}
