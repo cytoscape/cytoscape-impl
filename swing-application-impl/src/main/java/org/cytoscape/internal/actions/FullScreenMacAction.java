@@ -1,12 +1,22 @@
 package org.cytoscape.internal.actions;
 
+import javax.swing.JFrame;
+
+import org.cytoscape.application.swing.CySwingApplication;
+
+import com.apple.eawt.AppEvent.FullScreenEvent;
+import com.apple.eawt.Application;
+import com.apple.eawt.FullScreenAdapter;
+import com.apple.eawt.FullScreenListener;
+import com.apple.eawt.FullScreenUtilities;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +34,24 @@ package org.cytoscape.internal.actions;
  * #L%
  */
 
-import javax.swing.JFrame;
-
-import org.cytoscape.application.swing.CySwingApplication;
-
-import com.apple.eawt.Application;
-import com.apple.eawt.FullScreenAdapter;
-import com.apple.eawt.FullScreenListener;
-import com.apple.eawt.FullScreenUtilities;
-import com.apple.eawt.AppEvent.FullScreenEvent;
-
 public class FullScreenMacAction extends FullScreenAction {
 
 	private static final long serialVersionUID = 1886462527637755625L;
-	private static final String MAC_MENU_NAME = "Full Screen Mode";
 
-	private boolean macScreenState = false;
+	private boolean macScreenState;
 
 	public FullScreenMacAction(CySwingApplication desktop) {
-		super(desktop, MAC_MENU_NAME);
+		super(desktop);
 
 		final FullScreenListener listener = new FullScreenAdapter() {
 
 			@Override
-			public void windowExitedFullScreen(FullScreenEvent arg0) {
+			public void windowExitedFullScreen(FullScreenEvent e) {
 				macScreenState = false;
 			}
 
 			@Override
-			public void windowEnteredFullScreen(FullScreenEvent arg0) {
+			public void windowEnteredFullScreen(FullScreenEvent e) {
 				macScreenState = true;
 			}
 		};
@@ -63,6 +62,7 @@ public class FullScreenMacAction extends FullScreenAction {
 	protected void toggle() {
 		super.toggle();
 		final JFrame window = desktop.getJFrame();
+		
 		try {
 			// Full screen mode
 			if ((macScreenState != inFullScreenMode)) {

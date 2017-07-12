@@ -385,14 +385,10 @@ public class CyActivator extends AbstractCyActivator {
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
 		
-		if (LookAndFeelUtil.isMac()) {
-			if (MacFullScreenEnabler.supportsNativeFullScreenMode())
-				fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
-			else
-				fullScreenAction = new FullScreenAction(cytoscapeDesktop);
-		} else {
+		if (LookAndFeelUtil.isMac() && MacFullScreenEnabler.supportsNativeFullScreenMode())
+			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
+		else
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
-		}
 		
 		registerService(bc, fullScreenAction, CyAction.class);
 	}
