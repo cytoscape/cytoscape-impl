@@ -62,9 +62,10 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 			final InputStreamTaskFactory isTaskfactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
+	// Removing from menu options until fixed or replaced per #3697
 		super("Ontology and Annotation...");
-		setPreferredMenu("File.Import");
-		setMenuGravity(4.0f);
+	//	setPreferredMenu("File.Import");
+	//	setMenuGravity(4.0f);
 
 		this.isTaskfactory = isTaskfactory;
 		this.serviceRegistrar = serviceRegistrar;
