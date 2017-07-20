@@ -1,5 +1,11 @@
-package org.cytoscape.event;
+package org.cytoscape.event.internal;
 
+import org.cytoscape.event.AbstractCyEventHelperTest;
+import org.cytoscape.event.FakeCyListener;
+import org.cytoscape.event.StubCyListener;
+import org.cytoscape.event.StubCyListenerImpl;
+import org.cytoscape.event.StubCyPayloadListener;
+import org.cytoscape.event.StubCyPayloadListenerImpl;
 import org.cytoscape.event.internal.CyEventHelperImpl;
 import org.cytoscape.event.internal.CyListenerAdapter;
 import org.junit.After;
