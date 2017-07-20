@@ -94,8 +94,8 @@ public class ClearAllErrorsTask extends AbstractTableColumnTask {
 				final Equation eq = (Equation) raw;
 				final boolean success =
 						compiler.compile(eq.toString(), TableBrowserUtil.getAttNameToTypeMap(table, null));
-				
-				if (!success || table.getLastInternalError() != null)
+				//TODO: success is incorrectly set to yes on broken equations [=ABS(String)]
+				if (!success || row.get(column.getName(), column.getType()) == null)
 					errorEquations.add(new ErrorEquation(row, column.getName(), eq));
 			}
 		}
