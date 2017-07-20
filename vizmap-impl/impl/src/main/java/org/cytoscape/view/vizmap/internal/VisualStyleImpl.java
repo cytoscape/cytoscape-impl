@@ -24,6 +24,8 @@ import org.cytoscape.view.vizmap.VisualPropertyDependencyFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
 import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedListener;
+import org.cytoscape.view.vizmap.events.VisualPropertyDependencyChangedEvent;
+import org.cytoscape.view.vizmap.events.VisualPropertyDependencyChangedListener;
 import org.cytoscape.view.vizmap.events.VisualStyleChangeRecord;
 import org.cytoscape.view.vizmap.events.VisualStyleChangedEvent;
 import org.slf4j.Logger;
@@ -53,7 +55,8 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChangedListener {
+public class VisualStyleImpl
+		implements VisualStyle, VisualMappingFunctionChangedListener, VisualPropertyDependencyChangedListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(VisualStyleImpl.class);
 
@@ -106,7 +109,7 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		serviceRegistrar.registerServiceListener(this, "registerDependencyFactory", "unregisterDependencyFactory",
 				VisualPropertyDependencyFactory.class);
 		serviceRegistrar.registerService(this, VisualMappingFunctionChangedListener.class, new Properties());
-		logger.info("New Visual Style Created: Style Name = " + this.title);
+		serviceRegistrar.registerService(this, VisualPropertyDependencyChangedListener.class, new Properties());
 	}
 
 	@Override
@@ -255,8 +258,10 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 			changed = dependencies.add(dependency);
 		}
 		
-		if (changed)
+		if (changed) {
+			dependency.setEventHelper(eventHelper);
 			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+		}
 	}
 
 	@Override
@@ -292,6 +297,14 @@ public class VisualStyleImpl implements VisualStyle, VisualMappingFunctionChange
 		}
 		
 		if (hasMapping)
+			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
+	}
+
+	@Override
+	public void handleEvent(VisualPropertyDependencyChangedEvent e) {
+		final VisualPropertyDependency<?> dep = e.getSource();
+		
+		if (dependencies.contains(dep))
 			eventHelper.addEventPayload(this, new VisualStyleChangeRecord(), VisualStyleChangedEvent.class);
 	}
 }

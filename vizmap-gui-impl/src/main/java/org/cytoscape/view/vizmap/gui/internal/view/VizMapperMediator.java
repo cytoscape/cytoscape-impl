@@ -45,7 +45,6 @@ import javax.swing.JSeparator;
 
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -1301,20 +1300,10 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
-	@SuppressWarnings("rawtypes")
 	private void onDependencySelectionChanged(final ItemEvent e, final VisualPropertySheetItem<?> vpSheetItem) {
 		final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
 		final VisualPropertyDependency<?> dep = vpSheetItem.getModel().getVisualPropertyDependency();
 		dep.setDependency(selected);
-		
-		final CyEventHelper evtHelper = servicesUtil.get(CyEventHelper.class);
-		final Set<VisualProperty<?>> visualProperties = dep.getVisualProperties();
-		final Set parent = Collections.singleton(dep.getParentVisualProperty());
-		
- 		if (selected)
- 			evtHelper.fireEvent(new LexiconStateChangedEvent(this, parent, visualProperties));
-		else
-			evtHelper.fireEvent(new LexiconStateChangedEvent(this, visualProperties, parent));
 	}
 	
 	private void onColumnChanged(final String colName, final CyTable tbl) {
