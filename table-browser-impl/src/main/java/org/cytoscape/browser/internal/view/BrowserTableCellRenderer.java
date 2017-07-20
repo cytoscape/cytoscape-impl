@@ -105,7 +105,15 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				displayText = "#ERR: " + objEditStr.getErrorText();
 			else if (validatedObj instanceof Boolean)
 				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
-			else
+			else if (validatedObj instanceof Double){
+				final BrowserTableColumnModel model = (BrowserTableColumnModel) table.getColumnModel();
+				final String colName = table.getColumnName(column);
+				final String formatStr = model.getColumnFormat(colName);
+				if (formatStr != null)
+					displayText = String.format(formatStr, validatedObj);
+				else
+					displayText = validatedObj.toString();
+			}else
 				displayText = validatedObj.toString();
 			
 			setText(displayText);
