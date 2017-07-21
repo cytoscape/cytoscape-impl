@@ -338,4 +338,72 @@ class FileUtilImpl implements FileUtil {
 			return false;
 		}
 	}
+
+	
+	@Override
+	public File getFolder(Component parent, String title, String startDir) {
+		if (parent == null)
+			throw new NullPointerException("\"parent\" must not be null.");
+		
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		
+		final String osName = System.getProperty("os.name");
+		if(osName.startsWith("Mac")) {
+			final String property = System.getProperty("apple.awt.fileDialogForDirectories");
+			System.setProperty("apple.awt.fileDialogForDirectories", "true");
+			try {
+				FileDialog chooser;
+				if(parent instanceof Dialog)
+					chooser = new FileDialog((Dialog)parent, title, FileDialog.LOAD);
+				else if(parent instanceof Frame)
+					chooser = new FileDialog((Frame)parent, title, FileDialog.LOAD);
+				else
+					throw new IllegalArgumentException("parent must be Dialog or Frame");
+				
+				if (startDir != null)
+					chooser.setDirectory(startDir);
+				else
+					chooser.setDirectory(applicationManager.getCurrentDirectory().getAbsolutePath());
+				
+				chooser.setModal(true);
+				chooser.setLocationRelativeTo(parent);
+				chooser.setVisible(true);
+				
+				String file = chooser.getFile();
+				String dir = chooser.getDirectory();
+				
+				if(file == null || dir == null) {
+					return null;
+				}
+				
+				return new File(dir + File.separator + file);
+			} finally {
+				if(property != null) {
+					System.setProperty("apple.awt.fileDialogForDirectories", property);
+				}
+			}
+		} else {
+			// this is not a Mac, use the Swing based file dialog
+			final JFileChooser chooser;
+			if(startDir != null)
+				chooser = new JFileChooser(new File(startDir));
+			else
+				chooser = new JFileChooser(applicationManager.getCurrentDirectory());
+						
+		    chooser.setDialogTitle(title);
+		    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		    chooser.setAcceptAllFileFilterUsed(false);
+		    
+		    File result = null;
+		    
+		    if (chooser.showOpenDialog(parent) == JFileChooser.APPROVE_OPTION) { 
+		    		result = chooser.getSelectedFile();
+		    }
+		    
+		    if (result != null && chooser.getCurrentDirectory().getPath() != null)
+				applicationManager.setCurrentDirectory(chooser.getCurrentDirectory());
+		    
+		    return result;
+		}
+	}
 }
