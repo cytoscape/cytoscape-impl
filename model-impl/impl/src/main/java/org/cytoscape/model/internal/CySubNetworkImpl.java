@@ -249,7 +249,6 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		
 		List<Long> nodeSuids = new ArrayList<>();
 		Set<Long> edgeSuids = new HashSet<>();
-		Set<CyEdge> edges = new HashSet<>();
 
 		for(CyNode node: nodes) {
 			if (this.containsNode(node)) {
@@ -261,7 +260,6 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 					Long edgeSuid = edge.getSUID();
 					if (edgeDefaultTable.rowExists(edgeSuid)) {
 						edgeSuids.add(edgeSuid);
-						edges.add(edge);
 					}
 				}
 			}
@@ -275,8 +273,6 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		edgeDefaultTable.deleteRows(edgeSuids);
 		
 		if(ret) {
-			// must call subnetworkEdgesRemoved() first
-			parent.subnetworkEdgesRemoved(edges);
 			parent.subnetworkNodesRemoved(nodes);
 		}
 		if(ret) {
@@ -300,11 +296,12 @@ public final class CySubNetworkImpl extends DefaultTablesNetwork implements CySu
 		CyTable defaultTable = getTable(CyEdge.class, CyNetwork.DEFAULT_ATTRS);
 		List<Long> suids = new ArrayList<>();
 
-		for(CyEdge edge: edges)
-			if (this.containsEdge(edge)) {
+		for(CyEdge edge: edges) {
+			if (	containsEdge(edge)) {
 				// getRow(edge).set(CyNetwork.SELECTED, false);
 				suids.add(edge.getSUID());
 			}
+		}
 
 		boolean ret = removeEdgesInternal(edges);
 

@@ -28,13 +28,16 @@ package org.cytoscape.model.internal;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -264,8 +267,18 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 	}
 	
 	// Check if the nodes have been removed from all subnetworks, 
-	// if so move the root instanece of the node to the recycle bin.
+	// if so move the root instance of the node to the recycle bin.
 	void subnetworkNodesRemoved(Collection<CyNode> nodes) {
+		// Not so convenient to use streams here because the edges come in an Iterable instance
+		Set<CyEdge> edges = new HashSet<>();
+		for(CyNode node : nodes) {
+			for(CyEdge edge : getAdjacentEdgeIterable(node, Type.ANY)) {
+				edges.add(edge);
+			}
+		}
+		
+		subnetworkEdgesRemoved(edges);
+		
 		List<CyNode> nodesToCache = nodes.stream()   // cache the nodes if they are:
 			.filter(n -> containsNode(n))            // - contained in this root network
 			.filter(n -> !anySubnetworkContains(n))  // - not contained in any subnetwork
@@ -285,7 +298,6 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		removedAttributesCache.cache(edgesToCache);
 		removeRows(edgesToCache, CyEdge.class);
 		removeEdgesInternal(edgesToCache);
-		
 	}
 	
 	void garbageCollect() {
@@ -358,6 +370,8 @@ public final class CyRootNetworkImpl extends DefaultTablesNetwork implements CyR
 		if(containsEdge(edge))
 			return;
 		if(removedAttributesCache.contains(edge)) {
+			restoreNode(edge.getSource());
+			restoreNode(edge.getTarget());
 			removedAttributesCache.restore(edge);
 			addEdgeInternal(edge.getSource(), edge.getTarget(), edge.isDirected(), edge);
 		}
