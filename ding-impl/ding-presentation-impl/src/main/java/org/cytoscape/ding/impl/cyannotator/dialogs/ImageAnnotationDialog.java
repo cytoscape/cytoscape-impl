@@ -156,7 +156,7 @@ public class ImageAnnotationDialog extends JDialog {
 		annotation.setImageOpacity(preview.getImageOpacity());
 		annotation.setImageBrightness(preview.getImageBrightness());
 		annotation.setImageContrast(preview.getImageContrast());
-		annotation.setName(preview.getName());
+		annotation.setName(imageAnnotationPanel.getName());
 
 		if (!create) {
 			annotation.update();

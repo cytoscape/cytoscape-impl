@@ -77,6 +77,12 @@ public class ArrowAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
+	// We need to expose this in case the user just presses "return", which
+	// fires the OK button action in the parent dialog
+	public String getName() {
+		return nameField.getText();
+	}
+
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
@@ -231,6 +237,9 @@ public class ArrowAnnotationPanel extends JPanel {
 		preview.setArrowSize(ArrowEnd.TARGET, annotation.getArrowSize(ArrowEnd.TARGET));
 		preview.setArrowColor(ArrowEnd.TARGET, annotation.getArrowColor(ArrowEnd.TARGET));
 		preview.setAnchorType(ArrowEnd.TARGET, annotation.getAnchorType(ArrowEnd.TARGET));
+
+		// Name
+		preview.setName(annotation.getName());
 
 		previewPanel.repaint();
 	}

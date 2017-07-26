@@ -159,7 +159,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		mAnnotation.setBorderColor(preview.getBorderColor());
 		mAnnotation.setBorderOpacity(preview.getBorderOpacity());
 		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
-		mAnnotation.setName(preview.getName());
+		mAnnotation.setName(shapeAnnotationPanel.getName());
 
 		if (!create) {
 			mAnnotation.update(); 

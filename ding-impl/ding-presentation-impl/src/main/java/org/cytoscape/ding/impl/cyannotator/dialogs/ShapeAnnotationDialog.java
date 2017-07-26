@@ -139,15 +139,15 @@ public class ShapeAnnotationDialog extends JDialog {
 	}
 
 	private void applyButtonActionPerformed(ActionEvent evt) {
-		dispose();           
-		
+		dispose();
+
 		shapeAnnotation.setShapeType(preview.getShapeType());
 		shapeAnnotation.setFillColor(preview.getFillColor());
 		shapeAnnotation.setFillOpacity(preview.getFillOpacity());
 		shapeAnnotation.setBorderColor(preview.getBorderColor());
 		shapeAnnotation.setBorderOpacity(preview.getBorderOpacity());
 		shapeAnnotation.setBorderWidth((int)preview.getBorderWidth());
-		shapeAnnotation.setName(preview.getName());
+		shapeAnnotation.setName(shapeAnnotationPanel.getName());
 
 		if (!create) {
 			shapeAnnotation.update(); 

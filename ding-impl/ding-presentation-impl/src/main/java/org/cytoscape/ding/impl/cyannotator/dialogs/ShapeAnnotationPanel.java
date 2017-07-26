@@ -89,6 +89,12 @@ public class ShapeAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
+	// We need to expose this in case the user just presses "return", which
+	// fires the OK button action in the parent dialog
+	public String getName() {
+		return nameField.getText();
+	}
+
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
@@ -318,6 +324,7 @@ public class ShapeAnnotationPanel extends JPanel {
 		preview.setFillOpacity(annotation.getFillOpacity());
 		preview.setBorderColor(annotation.getBorderColor());
 		preview.setBorderOpacity(annotation.getBorderOpacity());
+		preview.setName(annotation.getName());
 
 		previewPanel.repaint();
 	}	
@@ -325,6 +332,7 @@ public class ShapeAnnotationPanel extends JPanel {
 	public void modifySAPreview(){
 		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
 		preview.setShapeType(shapeList.getSelectedValue());
+		preview.setName(annotation.getName());
 
 		previewPanel.repaint();
 	}	    
