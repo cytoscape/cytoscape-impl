@@ -1,8 +1,12 @@
-package org.cytoscape.view.manual.internal;
+package org.cytoscape.view.manual.internal.util;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.Action;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.model.CyNetwork;
@@ -18,7 +22,7 @@ import org.slf4j.Logger;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -75,6 +79,20 @@ public final class Util {
 					e.printStackTrace();
 			}
 		}
+	}
+	
+	public static JButton createButton(Action a, String tt) {
+		JButton b = new JButton(a);
+		b.setToolTipText(tt);
+		b.setPreferredSize(new Dimension(32, 24));
+		b.setMaximumSize(new Dimension(32, 24));
+		b.setMinimumSize(new Dimension(32, 24));
+		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
+		b.setBorderPainted(false);
+		b.setOpaque(false);
+		b.setContentAreaFilled(false);
+
+		return b;
 	}
 	
 	private Util() {

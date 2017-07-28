@@ -1,28 +1,33 @@
 package org.cytoscape.view.manual.internal.scale;
 
-import java.awt.Dimension;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
 import java.awt.event.ActionEvent;
 import java.util.Hashtable;
 
 import javax.swing.AbstractAction;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.manual.internal.common.CheckBoxTracker;
 import org.cytoscape.view.manual.internal.common.GraphConverter2;
 import org.cytoscape.view.manual.internal.common.PolymorphicSlider;
 import org.cytoscape.view.manual.internal.common.SliderStateTracker;
 import org.cytoscape.view.manual.internal.layout.algorithm.MutablePolyEdgeGraphLayout;
+import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -31,7 +36,7 @@ import org.cytoscape.view.model.CyNetworkView;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,136 +57,99 @@ import org.cytoscape.view.model.CyNetworkView;
  * GUI for scale of manualLayout
  */
 @SuppressWarnings("serial")
-public class ScalePanel extends AbstractManualPanel implements ChangeListener, PolymorphicSlider {
+public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSlider {
 	
-	private JCheckBox jCheckBox;
-	private JSlider jSlider;
+	private JCheckBox checkBox;
+	private JSlider slider;
 	private JCheckBox alongXAxis;
 	private JCheckBox alongYAxis;
-	private JButton clearButton;
+	private JButton resetButton;
 	
 	private int prevValue; 
 
 	private boolean startAdjusting = true;
-//	private ViewChangeEdit currentEdit = null;
 
 	private final CyApplicationManager appMgr;
 
-	public ScalePanel(CyApplicationManager appMgr) {
-		super("Scale");
+	public ScalePanel(CyApplicationManager appMgr, IconManager iconMgr) {
 		this.appMgr = appMgr;
 
-		jSlider = new JSlider();
-		jSlider.setMajorTickSpacing(100);
-		jSlider.setPaintTicks(true);
-		jSlider.setPaintLabels(true);
-		jSlider.setMaximum(300);
-		jSlider.setValue(0);
-		jSlider.setMinimum(-300);
-		jSlider.addChangeListener(this);
+		prevValue = getSlider().getValue();
 
-		prevValue = jSlider.getValue();
-
-		Hashtable<Integer,JLabel> labels = new Hashtable<Integer,JLabel>();
-		labels.put(new Integer(-300), new JLabel("1/8"));
-		labels.put(new Integer(-200), new JLabel("1/4"));
-		labels.put(new Integer(-100), new JLabel("1/2"));
-		labels.put(new Integer(0), new JLabel("1"));
-		labels.put(new Integer(100), new JLabel("2"));
-		labels.put(new Integer(200), new JLabel("4"));
-		labels.put(new Integer(300), new JLabel("8"));
-
-		jSlider.setLabelTable(labels);
-		jSlider.setPreferredSize(new Dimension(300, 60));
-
-		jCheckBox = new JCheckBox("Selected Only", /* selected = */true);
-		new CheckBoxTracker( jCheckBox );
+		JLabel label = new JLabel("Scale:");
+		
+		checkBox = new JCheckBox("Selected Only", /* selected = */true);
+		new CheckBoxTracker( checkBox );
 
 		alongXAxis = new JCheckBox("Width");
 		alongYAxis = new JCheckBox("Height");
 		alongXAxis.setSelected(true);
 		alongYAxis.setSelected(true);
 
-		clearButton = new JButton("Reset Scale");
-		clearButton.addActionListener(new AbstractAction() {
+		resetButton = Util.createButton(new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateSlider(0);
 			}
-		});
-
+		}, "Reset Scale");
+		resetButton.setText(IconManager.ICON_REFRESH);
+		resetButton.setFont(iconMgr.getIconFont(16.0f));
+		
+		makeSmall(label, checkBox, getSlider(), alongXAxis, alongYAxis);
+		
 		new SliderStateTracker(this);
 
-//		final GroupLayout layout = new GroupLayout(this);
-//		this.setLayout(layout);
-//		layout.setAutoCreateContainerGaps(true);
-//		layout.setAutoCreateGaps(true);
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(false);
 		
-//		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-//				.addComponent(jSlider)
-//				.addGroup(layout.createSequentialGroup()
-//						.addComponent(jCheckBox)
-//						.addGap(10, 10, Short.MAX_VALUE)
-//						.addComponent(clearButton)
-//				)
-//				.addComponent(alongXAxis)
-//				.addComponent(alongYAxis)
-//		);
-//		layout.setVerticalGroup(layout.createSequentialGroup()
-//				.addComponent(jSlider)
-//				.addPreferredGap(ComponentPlacement.UNRELATED)
-//				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
-//						.addComponent(jCheckBox)
-//						.addComponent(clearButton)
-//				)
-//				.addPreferredGap(ComponentPlacement.UNRELATED)
-//				.addComponent(alongXAxis)
-//				.addComponent(alongYAxis)
-//		);
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(label)
+						.addGap(10,  10, Short.MAX_VALUE)
+						.addComponent(alongXAxis)
+						.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(alongYAxis)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(checkBox)
+				)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(getSlider(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(resetButton)
+				)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(alongXAxis, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(alongYAxis, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(checkBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+						.addComponent(getSlider(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(resetButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+		);
 		
-		JPanel top = new JPanel();
-		top.setLayout(new BoxLayout(top, BoxLayout.LINE_AXIS));
-		top.add(new JLabel("Scale"));
-		top.add(Box.createHorizontalGlue()); 
-		top.add(jCheckBox);
-
-		JPanel row1 = new JPanel();
-		row1.setLayout(new BoxLayout(row1, BoxLayout.LINE_AXIS));
-
-		row1.add(alongXAxis);
-		row1.add(alongYAxis);
-		row1.add(Box.createHorizontalGlue()); 
-		row1.add(clearButton);
-		
-		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-		add(top);
-		add(jSlider);
-		add(row1);
-		setMinimumSize(new Dimension(100,100));
-		setPreferredSize(new Dimension(300,120));
-		setMaximumSize(new Dimension(300,120));
-		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (isAquaLAF())
 			setOpaque(false);
-			top.setOpaque(false);
-			row1.setOpaque(false);
-		}
 	} 
 
 	@Override
 	public void updateSlider(int x) {
 		prevValue = x;
-		jSlider.setValue(x);
+		getSlider().setValue(x);
 	}
 
 	@Override
 	public int getSliderValue() {
-		return jSlider.getValue();
+		return getSlider().getValue();
 	}
 
 	@Override
 	public void stateChanged(ChangeEvent e) {
-		if (e.getSource() != jSlider)
+		if (e.getSource() != getSlider())
 			return;
 
 		CyNetworkView currentView = appMgr.getCurrentNetworkView();
@@ -198,12 +166,12 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 		// do the scaling
 		MutablePolyEdgeGraphLayout nativeGraph = GraphConverter2.getGraphReference(128.0d, true,
-			                                                   jCheckBox.isSelected(),currentView);
+			                                                   checkBox.isSelected(),currentView);
 		ScaleLayouter scale = new ScaleLayouter(nativeGraph);
 
 		double prevAbsoluteScaleFactor = Math.pow(2, ((double) prevValue) / 100.0d);
 
-		double currentAbsoluteScaleFactor = Math.pow(2, ((double) jSlider.getValue()) / 100.0d);
+		double currentAbsoluteScaleFactor = Math.pow(2, ((double) getSlider().getValue()) / 100.0d);
 
 		double neededIncrementalScaleFactor = currentAbsoluteScaleFactor / prevAbsoluteScaleFactor;
 
@@ -217,11 +185,11 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 		
 		scale.scaleGraph(neededIncrementalScaleFactor, direction);
 		currentView.updateView();
-		prevValue = jSlider.getValue();
+		prevValue = getSlider().getValue();
 
 		// TODO support undo
 		// only post the edit when we're finished adjusting 
-		if (!jSlider.getValueIsAdjusting()) { 
+		if (!getSlider().getValueIsAdjusting()) { 
 			//currentEdit.post();
 			startAdjusting = true;
 		} 
@@ -229,12 +197,38 @@ public class ScalePanel extends AbstractManualPanel implements ChangeListener, P
 
 	@Override
 	public void setEnabled(final boolean enabled) {
-		jCheckBox.setEnabled(enabled);
-		jSlider.setEnabled(enabled);
+		checkBox.setEnabled(enabled);
+		getSlider().setEnabled(enabled);
 		alongXAxis.setEnabled(enabled);
 		alongYAxis.setEnabled(enabled);
-		clearButton.setEnabled(enabled);
+		resetButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
+	}
+	
+	public JSlider getSlider() {
+		if (slider == null) {
+			slider = new JSlider();
+			slider.setMajorTickSpacing(100);
+			slider.setPaintTicks(true);
+			slider.setPaintLabels(true);
+			slider.setMaximum(300);
+			slider.setValue(0);
+			slider.setMinimum(-300);
+			slider.addChangeListener(this);
+			
+			Hashtable<Integer,JLabel> labels = new Hashtable<>();
+			labels.put(new Integer(-300), new JLabel("1/8"));
+			labels.put(new Integer(-200), new JLabel("1/4"));
+			labels.put(new Integer(-100), new JLabel("1/2"));
+			labels.put(new Integer(0), new JLabel("1"));
+			labels.put(new Integer(100), new JLabel("2"));
+			labels.put(new Integer(200), new JLabel("4"));
+			labels.put(new Integer(300), new JLabel("8"));
+
+			slider.setLabelTable(labels);
+		}
+		
+		return slider;
 	}
 }

@@ -1,9 +1,8 @@
 package org.cytoscape.view.manual.internal.control.view;
 
-import java.awt.Dimension;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -12,13 +11,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.manual.internal.control.actions.dist.HDistCenter;
 import org.cytoscape.view.manual.internal.control.actions.dist.HDistLeft;
 import org.cytoscape.view.manual.internal.control.actions.dist.HDistRight;
 import org.cytoscape.view.manual.internal.control.actions.dist.VDistBottom;
 import org.cytoscape.view.manual.internal.control.actions.dist.VDistCenter;
 import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
+import org.cytoscape.view.manual.internal.util.Util;
 
 /*
  * #%L
@@ -26,7 +25,7 @@ import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,6 +42,7 @@ import org.cytoscape.view.manual.internal.control.actions.dist.VDistTop;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
 @SuppressWarnings("serial")
 public class DistPanel extends JPanel {
 	
@@ -54,9 +54,6 @@ public class DistPanel extends JPanel {
 	private JButton vabButton;
 	
 	public DistPanel(CyApplicationManager app) {
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-		
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_DIST_LEFT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_DIST_CENTER.gif"));
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_DIST_RIGHT.gif"));
@@ -72,24 +69,21 @@ public class DistPanel extends JPanel {
 		VDistCenter vac = new VDistCenter(vaci,app);
 		VDistBottom vab = new VDistBottom(vabi,app);
 
+		JLabel label = new JLabel("Distribute:");
+		makeSmall(label);
+		
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		int HGHT = 32;
-		setMinimumSize(new Dimension(120, HGHT));
-		setPreferredSize(new Dimension(300, HGHT));
-		setMaximumSize(new Dimension(350, HGHT));
-
-		JLabel dst = new JLabel("Distribute");
-		dst.setPreferredSize(new Dimension(105, 25));
-		dst.setMinimumSize(new Dimension(105, 25));
-		dst.setMaximumSize(new Dimension(105, 25));
-    	add(Box.createRigidArea(new Dimension(25, 0)));
-        add(dst);
-		add(halButton = createJButton(hal, "Horizontal Distribute Left"));
-		add(hacButton = createJButton(hac, "Horizontal Distribute Center"));
-		add(harButton = createJButton(har, "Horizontal Distribute Right"));
-		add(vatButton = createJButton(vat, "Vertical Distribute Top"));
-		add(vacButton = createJButton(vac, "Vertical Distribute Center"));
-		add(vabButton = createJButton(vab, "Vertical Distribute Bottom"));
+        add(label);
+        add(Box.createHorizontalGlue());
+		add(halButton = Util.createButton(hal, "Horizontal Distribute Left"));
+		add(hacButton = Util.createButton(hac, "Horizontal Distribute Center"));
+		add(harButton = Util.createButton(har, "Horizontal Distribute Right"));
+		add(vatButton = Util.createButton(vat, "Vertical Distribute Top"));
+		add(vacButton = Util.createButton(vac, "Vertical Distribute Center"));
+		add(vabButton = Util.createButton(vab, "Vertical Distribute Bottom"));
+		
+		if (isAquaLAF())
+			setOpaque(false);
 	}
 	
 	@Override
@@ -102,19 +96,5 @@ public class DistPanel extends JPanel {
 		vabButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
-	}
-
-	protected JButton createJButton(Action a, String tt) {
-		JButton b = new JButton(a);
-		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(32, 24));
-		b.setMaximumSize(new Dimension(32, 24));
-		b.setMinimumSize(new Dimension(32, 24));
-		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
-		b.setBorderPainted(false);
-		b.setOpaque(false);
-		b.setContentAreaFilled(false);
-
-		return b;
 	}
 }
