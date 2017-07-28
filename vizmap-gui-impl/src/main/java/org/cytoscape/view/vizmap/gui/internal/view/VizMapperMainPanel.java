@@ -328,7 +328,8 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	// ==[ PRIVATE METHODS ]============================================================================================
 
 	private void init() {
-		setMinimumSize(new Dimension(420, getMinimumSize().height));
+		setMinimumSize(new Dimension(420, 240));
+		setPreferredSize(new Dimension(420, 385));
 		setOpaque(!isAquaLAF());
 		
 		final GroupLayout layout = new GroupLayout(this);
@@ -343,7 +344,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		layout.setVerticalGroup(layout.createParallelGroup(Alignment.LEADING)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(getStylesPnl(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getPropertiesPn(), DEFAULT_SIZE, 510, Short.MAX_VALUE)
+						.addComponent(getPropertiesPn(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 		);
 	}
