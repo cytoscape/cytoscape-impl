@@ -16,7 +16,7 @@ import org.cytoscape.application.swing.CytoPanelName;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -35,12 +35,20 @@ import org.cytoscape.application.swing.CytoPanelName;
  */
 
 /**
- * Contains methods to assist with various
- * tasks performed by the CytoPanel API.
- *
- * @author Ethan Cerami, Ben Gross
+ * Contains methods to assist with various tasks performed by the CytoPanel API.
  */
-public class CytoPanelUtil {
+public final class CytoPanelUtil {
+	
+	public static final int WEST_MIN_WIDTH = 100;
+	public static final int WEST_MAX_WIDTH = 400;
+	public static final int WEST_MIN_HEIGHT = 250;
+	
+	public static final int SOUTH_MIN_WIDTH = 500;
+	public static final int SOUTH_MIN_HEIGHT = 50;
+	
+	public static final int EAST_MIN_WIDTH = 100;
+	public static final int EAST_MAX_WIDTH = 1500;
+	public static final int EAST_MIN_HEIGHT = 100;
 	
 	static final int BUTTON_SIZE = 16;
 	
@@ -64,27 +72,28 @@ public class CytoPanelUtil {
 	 * @param compassDirection Compass Direction, SwingConstants.
 	 * @return Point Object.
 	 */
-	public static Point getLocationOfExternalWindow(Dimension screenDimension,
-	                                               Rectangle containerBounds,
-	                                               Dimension frameDimension, final CytoPanelName compassDirection,
-	                                               boolean outputDiagnostics)
-	{
+	public static Point getLocationOfExternalWindow(
+			Dimension screenDimension,
+			Rectangle containerBounds,
+			Dimension frameDimension,
+			CytoPanelName compassDirection,
+			boolean outputDiagnostics) {
 		if (outputDiagnostics)
 			outputDiagnostics(screenDimension, containerBounds, frameDimension, compassDirection);
 
-		//  Get Location and Dimension of Container
+		// Get Location and Dimension of Container
 		Point containerLocation = containerBounds.getLocation();
 		int containerWidth = (int) containerBounds.getWidth();
 		int containerHeight = (int) containerBounds.getHeight();
 
-		//  Get Screen Dimensions
+		// Get Screen Dimensions
 		int screenWidth = (int) screenDimension.getWidth();
 		int screenHeight = (int) screenDimension.getHeight();
 
-		//  Initialize Point
+		// Initialize Point
 		Point p = new Point(containerLocation.x, containerLocation.y);
 
-		//  Set Point Based on Compass Direction
+		// Set Point Based on Compass Direction
 		if (compassDirection == CytoPanelName.WEST) {
 			p.x = containerLocation.x - INSET - (int) frameDimension.getWidth();
 		} else if (compassDirection == CytoPanelName.EAST) {
@@ -93,19 +102,17 @@ public class CytoPanelUtil {
 			p.y = containerLocation.y + INSET + (int) containerHeight;
 		}
 
-		//  Remove any negative coordinates
+		// Remove any negative coordinates
 		p.x = Math.max(0, p.x);
 		p.y = Math.max(0, p.y);
 
-		if ((p.x + frameDimension.getWidth()) > screenWidth) {
-			//  Adjust for right most case
+		// Adjust for right most case
+		if ((p.x + frameDimension.getWidth()) > screenWidth)
 			p.x = screenWidth - (int) frameDimension.getWidth();
-		}
 
-		if ((p.y + frameDimension.getHeight()) > screenHeight) {
-			//  Adjust for bottom-most case
+		// Adjust for bottom-most case
+		if ((p.y + frameDimension.getHeight()) > screenHeight)
 			p.y = screenHeight - (int) frameDimension.getHeight();
-		}
 
 		return p;
 	}
@@ -122,20 +129,10 @@ public class CytoPanelUtil {
 	}
 	
 	/**
-	 * Determines if we are running on Windows platform.
-	 */
-	public boolean isWindows() {
-		String os = System.getProperty("os.name");
-
-		return os.regionMatches(true, 0, WINDOWS, 0, WINDOWS.length());
-	}
-
-	/**
 	 * Outputs Diagnostics Related to Screen/Window Dimensions.
 	 */
 	private static void outputDiagnostics(Dimension screenDimension, Rectangle containerBounds,
-	                                      Dimension preferredSizeOfPanel, final CytoPanelName compassDirection)
-	{
+			Dimension preferredSizeOfPanel, final CytoPanelName compassDirection) {
 		System.err.println("Compass Direction:  " + compassDirection);
 		System.err.println("Screen Dimension:  " + screenDimension);
 		System.err.println("Container Bounds:  " + containerBounds.toString());

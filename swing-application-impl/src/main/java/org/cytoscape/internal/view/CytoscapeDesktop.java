@@ -2,12 +2,20 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CytoPanelState.DOCK;
+import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ComponentAdapter;
@@ -16,7 +24,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -47,6 +54,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.TableAddedEvent;
@@ -92,7 +100,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CytoscapeDesktop extends JFrame
 		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener,
-		SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener {
+		SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener, CytoPanelStateChangedListener {
 
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
@@ -117,22 +125,26 @@ public class CytoscapeDesktop extends JFrame
 	 */
 	protected NetworkViewMediator netViewMediator;
 
-	//
-	// CytoPanel Variables
-	//
-	private CytoPanelImp cytoPanelWest;
-	private CytoPanelImp cytoPanelEast;
-	private CytoPanelImp cytoPanelSouth;
-	private CytoPanelImp cytoPanelSouthWest; 
+	private BiModalJSplitPane masterPane;
+	private BiModalJSplitPane rightPane;
+	private BiModalJSplitPane topRightPane;
+	
+	private CytoPanelImpl westPanel;
+	private CytoPanelImpl eastPanel;
+	private CytoPanelImpl southPanel;
+	private CytoPanelImpl southWestPanel; 
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
 	private JPanel mainPanel;
+	private JPanel centerPanel;
 	private JToolBar statusToolBar;
+	private StarterPanel starterPanel;
 	private StatusBarPanelFactory taskStatusPanelFactory;
 	private StatusBarPanelFactory jobStatusPanelFactory;
 	
-	private JPanel topRightPanel;
-	private StarterPanel starterPanel;
+	/** Holds frames that contain floating CytoPanels */
+	private final  Map<CytoPanel, JFrame> floatingFrames = new HashMap<>();
+	private boolean ignoreFloatingFrameCloseEvents;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -151,15 +163,6 @@ public class CytoscapeDesktop extends JFrame
 		taskManager.setExecutionContext(this);
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
-
-		mainPanel = new JPanel();
-		mainPanel.setLayout(new BorderLayout());
-
-		// create the CytoscapeDesktop
-		final BiModalJSplitPane masterPane = setupCytoPanels(netViewMediator);
-
-		mainPanel.add(masterPane, BorderLayout.CENTER);
-		mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
 
 		// statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
 
@@ -205,9 +208,6 @@ public class CytoscapeDesktop extends JFrame
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
-			public void componentHidden(ComponentEvent e) { }
-
-			@Override
 			public void componentShown(ComponentEvent e) {
 				// We need to do this later in the cycle to make sure everything is loaded
 				if (jobStatusPanelFactory == null || taskStatusPanelFactory == null) {
@@ -219,15 +219,13 @@ public class CytoscapeDesktop extends JFrame
 		});
 
 		// Prepare to show the desktop...
-		setContentPane(mainPanel);
+		setContentPane(getMainPanel());
+		
 		pack();
 		setSize(DEF_DESKTOP_SIZE);
 		
-		// Defines default divider location for the network panel to JDesktop
-		masterPane.setDividerLocation(400);
-		
 		// Move it to the center
-		this.setLocationRelativeTo(null);
+		setLocationRelativeTo(null);
 
 		// ...but don't actually show it!!!!
 		// Once the system has fully started the JFrame will be set to 
@@ -235,7 +233,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	private JToolBar setupStatusPanel(StatusBarPanelFactory jobStatusPanelFactory,
-	                                  StatusBarPanelFactory taskStatusPanelFactory) {
+			StatusBarPanelFactory taskStatusPanelFactory) {
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
 		final JPanel jobStatusPanel = jobStatusPanelFactory.createTaskStatusPanel();
 		final JToolBar statusToolBar = new JToolBar();
@@ -278,100 +276,9 @@ public class CytoscapeDesktop extends JFrame
 				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
 		);
 		
-		mainPanel.add(statusPanel, BorderLayout.SOUTH);
-		
+		getMainPanel().add(statusPanel, BorderLayout.SOUTH);
+
 		return statusToolBar;
-	}
-
-	/**
-	 * Create the CytoPanels UI.
-	 */
-	private BiModalJSplitPane setupCytoPanels(NetworkViewMediator netViewMediator) {
-		// bimodals that our Cytopanels Live within
-		final BiModalJSplitPane topRightPane = createTopRightPane(netViewMediator);
-		final BiModalJSplitPane rightPane = createRightPane(topRightPane);
-		final BiModalJSplitPane masterPane = createMasterPane(rightPane);
-		createBottomLeft();
-
-		return masterPane;
-	}
-
-	private BiModalJSplitPane createTopRightPane(NetworkViewMediator netViewMediator) {
-		// create cytopanel with tabs along the top
-		cytoPanelEast = new CytoPanelImp(CytoPanelName.EAST, JTabbedPane.TOP, CytoPanelState.HIDE, this,
-				serviceRegistrar);
-
-		// create the split pane - we show this on startup
-		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
-		                                                    BiModalJSplitPane.MODE_HIDE_SPLIT,
-		                                                    getTopRightPanel(), cytoPanelEast);
-
-		// set the cytopanelcontainer
-		cytoPanelEast.setCytoPanelContainer(splitPane);
-
-		// set the resize weight - left component gets extra space
-		splitPane.setResizeWeight(1.0);
-
-		// outta here
-		return splitPane;
-	}
-
-	private BiModalJSplitPane createRightPane(BiModalJSplitPane topRightPane) {
-		// create cytopanel with tabs along the bottom
-		cytoPanelSouth = new CytoPanelImp(CytoPanelName.SOUTH, JTabbedPane.BOTTOM, CytoPanelState.DOCK, this,
-				serviceRegistrar);
-
-		// create the split pane - hidden by default
-		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
-		                                                    BiModalJSplitPane.MODE_SHOW_SPLIT,
-		                                                    topRightPane, cytoPanelSouth);
-
-		// set the cytopanel container
-		cytoPanelSouth.setCytoPanelContainer(splitPane);
-
-		splitPane.setDividerLocation(DEF_DIVIDER_LOATION);
-
-		// set resize weight - top component gets all the extra space.
-		splitPane.setResizeWeight(1.0);
-
-		// outta here
-		return splitPane;
-	}
-
-	private void createBottomLeft() {
-		// create cytopanel with tabs along the top for manual layout
-		cytoPanelSouthWest = new CytoPanelImp(CytoPanelName.SOUTH_WEST, JTabbedPane.TOP, CytoPanelState.HIDE, this,
-				serviceRegistrar);
-
-        final BiModalJSplitPane split = new BiModalJSplitPane(this, JSplitPane.VERTICAL_SPLIT,
-                                      BiModalJSplitPane.MODE_HIDE_SPLIT, new JPanel(),
-                                      cytoPanelSouthWest);
-        split.setResizeWeight(0.8);
-        cytoPanelSouthWest.setCytoPanelContainer(split);
-        cytoPanelSouthWest.setMinimumSize(new Dimension(180, 300));
-        cytoPanelSouthWest.setMaximumSize(new Dimension(180, 530));
-        cytoPanelSouthWest.setPreferredSize(new Dimension(180, 430));
-
-		ToolCytoPanelListener t = new ToolCytoPanelListener( split, cytoPanelWest, 
-		                                                     cytoPanelSouthWest );
-		serviceRegistrar.registerService(t,CytoPanelStateChangedListener.class,new Properties());
-	}
-
-	private BiModalJSplitPane createMasterPane(BiModalJSplitPane rightPane) {
-		// create cytopanel with tabs along the top
-		cytoPanelWest = new CytoPanelImp(CytoPanelName.WEST, JTabbedPane.TOP, CytoPanelState.DOCK, this,
-				serviceRegistrar);
-
-		// create the split pane - displayed by default
-		BiModalJSplitPane splitPane = new BiModalJSplitPane(this, JSplitPane.HORIZONTAL_SPLIT,
-		                                                    BiModalJSplitPane.MODE_SHOW_SPLIT,
-		                                                    cytoPanelWest, rightPane);
-
-		// set the cytopanel container
-		cytoPanelWest.setCytoPanelContainer(splitPane);
-
-		// outta here
-		return splitPane;
 	}
 
 	public void addAction(CyAction action, Map<?, ?> props) {
@@ -417,34 +324,32 @@ public class CytoscapeDesktop extends JFrame
 		return getCytoPanelInternal(compassDirection);
 	}
 
-	private CytoPanelImp getCytoPanelInternal(final CytoPanelName compassDirection) {
-		// return appropriate cytoPanel based on compass direction
+	private CytoPanelImpl getCytoPanelInternal(final CytoPanelName compassDirection) {
 		switch (compassDirection) {
-		case SOUTH:
-			return cytoPanelSouth;
-		case EAST:
-			return cytoPanelEast;
-		case WEST:
-			return cytoPanelWest;
-		case SOUTH_WEST:
-			return cytoPanelSouthWest;
+			case SOUTH:
+				return getSouthPanel();
+			case EAST:
+				return getEastPanel();
+			case WEST:
+				return getWestPanel();
+			case SOUTH_WEST:
+				return getSouthWestPanel();
 		}
 
-		// houston we have a problem
-		throw new IllegalArgumentException("Illegal Argument:  " + compassDirection
-		                                   + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
+		throw new IllegalArgumentException(
+				"Illegal Argument:  " + compassDirection + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
 	}
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
+			CytoPanelImpl impl = getCytoPanelInternal(cp.getCytoPanelName());
 			impl.add(cp);
 		});
 	}
 
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImp impl = getCytoPanelInternal(cp.getCytoPanelName());
+			CytoPanelImpl impl = getCytoPanelInternal(cp.getCytoPanelName());
 			impl.remove(cp);
 		});
 	}
@@ -520,17 +425,38 @@ public class CytoscapeDesktop extends JFrame
 			hideStarterPanel();
 	}
 	
+	@Override
+	public void handleEvent(CytoPanelStateChangedEvent e) {
+		if (e.getCytoPanel() instanceof CytoPanelImpl == false)
+			return;
+		
+		CytoPanelImpl cytoPanel = (CytoPanelImpl) e.getCytoPanel();
+		CytoPanelState state = e.getNewState();
+
+		switch (state) {
+			case HIDE:
+				hideCytoPanel(cytoPanel);
+				break;
+			case FLOAT:
+				floatCytoPanel(cytoPanel);
+				break;
+			case DOCK:
+				dockCytoPanel(cytoPanel);
+				break;
+		}
+	}
+	
 	public void showStarterPanel() {
 		invokeOnEDT(() -> {
 			getStarterPanel().update();
-			((CardLayout) getTopRightPanel().getLayout()).show(getTopRightPanel(), StarterPanel.NAME);
+			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
 		});
 	}
 	
 	public void hideStarterPanel() {
 		invokeOnEDT(() -> {
 			if (isStarterPanelVisible())
-				((CardLayout) getTopRightPanel().getLayout()).show(getTopRightPanel(), NetworkViewMainPanel.NAME);
+				((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
 		});
 	}
 	
@@ -538,18 +464,181 @@ public class CytoscapeDesktop extends JFrame
 		return getStarterPanel().isVisible();
 	}
 	
-	private JPanel getTopRightPanel() {
-		if (topRightPanel == null) {
-			topRightPanel = new JPanel();
-			topRightPanel.setLayout(new CardLayout());
+	private void floatCytoPanel(CytoPanelImpl cytoPanel) {
+		// show ourselves
+		showCytoPanel(cytoPanel);
+
+		if (!isFloating(cytoPanel)) {
+			BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
 			
-			topRightPanel.add(getStarterPanel(), StarterPanel.NAME);
+			if (splitPane != null)
+				splitPane.removeCytoPanel(cytoPanel);
 			
-			if (netViewMediator.getNetworkViewMainPanel() != null) // Just for unit tests
-				topRightPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
+			// New window to place this CytoPanel
+			JFrame frame = new JFrame(cytoPanel.getTitle(), getGraphicsConfiguration());
+			floatingFrames.put(cytoPanel, frame);
+			
+			// add listener to handle when window is closed
+			frame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(WindowEvent e) {
+					if (!ignoreFloatingFrameCloseEvents)
+						cytoPanel.setState(DOCK);
+				}
+			});
+
+			if (cytoPanel.getThisComponent().getSize() != null) {
+				frame.getContentPane().setPreferredSize(cytoPanel.getThisComponent().getSize());
+				frame.getContentPane().setSize(cytoPanel.getThisComponent().getSize());
+			}
+			
+			//  Add CytoPanel to the New External Window
+			frame.getContentPane().add(cytoPanel.getThisComponent(), BorderLayout.CENTER);
+			frame.pack();
+			
+			// Show it
+			setLocationOfFloatingFrame(frame, cytoPanel);
+			frame.setVisible(true);
+
+			if (splitPane != null)
+				splitPane.update();
+		}
+	}
+	
+	private void dockCytoPanel(CytoPanelImpl cytoPanel) {
+		// Show the panel first
+		showCytoPanel(cytoPanel);
+
+		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+		
+		if (isFloating(cytoPanel)) {
+			// Remove cytopanel from external view
+			JFrame frame = floatingFrames.remove(cytoPanel);
+			
+			if (frame != null) {
+				frame.remove(cytoPanel.getThisComponent());
+				ignoreFloatingFrameCloseEvents = true;
+				
+				try {
+					frame.dispose();
+				} finally {
+					ignoreFloatingFrameCloseEvents = false;
+				}
+			}
+
+			if (splitPane != null)
+				splitPane.addCytoPanel(cytoPanel);
+		}
+
+		if (splitPane != null)
+			splitPane.update();
+	}
+	
+	private void showCytoPanel(CytoPanelImpl cytoPanel) {
+		cytoPanel.getThisComponent().setVisible(true);
+	}
+	
+	private void hideCytoPanel(CytoPanelImpl cytoPanel) {
+		if (isFloating(cytoPanel))
+			dockCytoPanel(cytoPanel);
+
+		cytoPanel.getThisComponent().setVisible(false);
+		
+		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+		
+		if (splitPane != null)
+			splitPane.update();
+	}
+	
+	private boolean isFloating(CytoPanelImpl cytoPanel) {
+		JFrame frame = floatingFrames.get(cytoPanel);
+		
+		return frame != null && frame == SwingUtilities.getWindowAncestor(cytoPanel.getThisComponent());
+	}
+	
+	private void setLocationOfFloatingFrame(JFrame frame, CytoPanelImpl cytoPanel) {
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Dimension screenDimension = tk.getScreenSize();
+
+		// Get Absolute Location and Bounds, relative to Screen
+		Rectangle bounds = getBounds();
+		bounds.setLocation(getLocationOnScreen());
+
+		Point p = CytoPanelUtil.getLocationOfExternalWindow(screenDimension, bounds, frame.getSize(),
+				cytoPanel.getCytoPanelName(), false);
+		frame.setLocation(p);
+		frame.setVisible(true);
+	}
+	
+	private BiModalJSplitPane getSplitPaneOf(CytoPanelImpl cytoPanel) {
+		switch (cytoPanel.getCytoPanelName()) {
+			case SOUTH:
+				return getRightPane();
+			case EAST:
+				return getTopRightPane();
+			case WEST:
+				return getMasterPane();
+			case SOUTH_WEST:
+				return (BiModalJSplitPane) getWestPanel().getThisComponent();
+			default:
+				return null;
+		}
+	}
+	
+	private JPanel getMainPanel() {
+		if (mainPanel == null) {
+			mainPanel = new JPanel();
+			mainPanel.setLayout(new BorderLayout());
+			mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
+			mainPanel.add(getMasterPane(), BorderLayout.CENTER);
 		}
 		
-		return topRightPanel;
+		return mainPanel;
+	}
+	
+	private BiModalJSplitPane getMasterPane() {
+		if (masterPane == null) {
+			masterPane = new BiModalJSplitPane(WEST, JSplitPane.HORIZONTAL_SPLIT, getWestPanel().getThisComponent(),
+					getRightPane());
+			masterPane.setDividerLocation(400);
+		}
+
+		return masterPane;
+	}
+
+	private BiModalJSplitPane getRightPane() {
+		if (rightPane == null) {
+			rightPane = new BiModalJSplitPane(SOUTH, JSplitPane.VERTICAL_SPLIT, getTopRightPane(),
+					getSouthPanel().getThisComponent());
+			rightPane.setDividerLocation(DEF_DIVIDER_LOATION);
+			rightPane.setResizeWeight(1.0);
+		}
+
+		return rightPane;
+	}
+
+	private BiModalJSplitPane getTopRightPane() {
+		if (topRightPane == null) {
+			topRightPane = new BiModalJSplitPane(EAST, JSplitPane.HORIZONTAL_SPLIT, getCenterPanel(),
+					getEastPanel().getThisComponent());
+			topRightPane.setResizeWeight(1.0);
+		}
+
+		return topRightPane;
+	}
+	
+	private JPanel getCenterPanel() {
+		if (centerPanel == null) {
+			centerPanel = new JPanel();
+			centerPanel.setLayout(new CardLayout());
+			
+			centerPanel.add(getStarterPanel(), StarterPanel.NAME);
+			
+			if (netViewMediator.getNetworkViewMainPanel() != null) // Just for unit tests
+				centerPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
+		}
+		
+		return centerPanel;
 	}
 	
 	private StarterPanel getStarterPanel() {
@@ -557,7 +646,40 @@ public class CytoscapeDesktop extends JFrame
 			starterPanel = new StarterPanel(serviceRegistrar);
 			starterPanel.getCloseButton().addActionListener(e -> hideStarterPanel());
 		}
-		
+
 		return starterPanel;
+	}
+
+	private CytoPanelImpl getWestPanel() {
+		if (westPanel == null) {
+			westPanel = new CytoPanelImpl(WEST, JTabbedPane.TOP, DOCK, getSouthWestPanel(), JSplitPane.VERTICAL_SPLIT,
+					1.0, serviceRegistrar);
+		}
+
+		return westPanel;
+	}
+
+	private CytoPanelImpl getEastPanel() {
+		if (eastPanel == null) {
+			eastPanel = new CytoPanelImpl(EAST, JTabbedPane.TOP, HIDE, serviceRegistrar);
+		}
+
+		return eastPanel;
+	}
+
+	private CytoPanelImpl getSouthPanel() {
+		if (southPanel == null) {
+			southPanel = new CytoPanelImpl(SOUTH, JTabbedPane.BOTTOM, DOCK, serviceRegistrar);
+		}
+
+		return southPanel;
+	}
+
+	private CytoPanelImpl getSouthWestPanel() {
+		if (southWestPanel == null) {
+			southWestPanel = new CytoPanelImpl(SOUTH_WEST, JTabbedPane.TOP, HIDE, serviceRegistrar);
+		}
+		
+		return southWestPanel;
 	}
 }
