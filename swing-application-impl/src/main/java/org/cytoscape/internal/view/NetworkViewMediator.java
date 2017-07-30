@@ -431,9 +431,7 @@ public class NetworkViewMediator
 				// Update views with styles affected by this RowsSetEvent
 				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
 				
-				for (final RowSetRecord record : e.getPayloadCollection()) {
-					final String columnName = record.getColumn();
-					
+				for (String columnName : e.getColumns()) {
 					// Reapply locked values that map to changed columns
 					final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
 					
