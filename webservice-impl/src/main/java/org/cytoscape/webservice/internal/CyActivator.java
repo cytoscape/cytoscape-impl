@@ -70,9 +70,7 @@ public class CyActivator extends AbstractCyActivator {
 				3.0f,
 				"Public Databases...",
 				networkImportShortcut,
-				2.1f,
-				getClass().getResource("/images/icons/import-net-db-32.png"),
-				"Import Network From Database...",
+				"Import Network from Database...",
 				serviceRegistrar
 		);
 		ShowImportDialogAction showImportTableFromWebServiceDialogAction = new ShowImportDialogAction(
