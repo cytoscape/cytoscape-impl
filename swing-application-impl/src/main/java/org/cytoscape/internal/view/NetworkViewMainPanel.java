@@ -54,6 +54,8 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -148,13 +150,21 @@ public class NetworkViewMainPanel extends JPanel {
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
 				engineFactory, thumbnailFactory, gridViewToggleModel, serviceRegistrar);
 		
-		vc.getDetachViewButton().addActionListener((ActionEvent e) -> {
+		vc.getDetachViewButton().addActionListener(evt -> {
 			detachNetworkView(view);
 		});
-		vc.getReattachViewButton().addActionListener((ActionEvent e) -> {
+		vc.getReattachViewButton().addActionListener(evt -> {
 			reattachNetworkView(view);
 		});
-		vc.getViewTitleTextField().addActionListener((ActionEvent e) -> {
+		vc.getExportButton().addActionListener(evt -> {
+			ExportNetworkViewTaskFactory factory = serviceRegistrar.getService(ExportNetworkViewTaskFactory.class);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(view));
+		});
+		vc.getExportImageButton().addActionListener(evt -> {
+			ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(view));
+		});
+		vc.getViewTitleTextField().addActionListener(evt -> {
 			changeCurrentViewTitle(vc);
 			vc.requestFocusInWindow();
 		});
