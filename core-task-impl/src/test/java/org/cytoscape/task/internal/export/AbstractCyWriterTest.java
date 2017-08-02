@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.export;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.File;
+
+import org.cytoscape.io.CyFileFilter;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +32,9 @@ package org.cytoscape.task.internal.export;
  * #L%
  */
 
-
-
-import java.io.File;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.task.internal.export.AbstractCyWriter;
-
-import static org.junit.Assert.*;
-import org.junit.Test;
-
-
 public abstract class AbstractCyWriterTest {
-	protected AbstractCyWriter cyWriter;
+	
+	protected AbstractCyWriter<?, ?> cyWriter;
 	protected CyFileFilter fileFilter;
 
 	@Test

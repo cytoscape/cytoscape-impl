@@ -872,11 +872,8 @@ public class NetworkViewMediator
 			}
 			{
 				final JMenuItem mi = new JMenuItem("Detach View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						getNetworkViewMainPanel().detachNetworkViews(selectedViews);
-					}
+				mi.addActionListener(evt -> {
+					getNetworkViewMainPanel().detachNetworkViews(selectedViews);
 				});
 				popupMenu.add(mi);
 				
@@ -894,13 +891,10 @@ public class NetworkViewMediator
 			popupMenu.addSeparator();
 			{
 				final JMenuItem mi = new JMenuItem("Destroy View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final DestroyNetworkViewTaskFactory factory = serviceRegistrar
-								.getService(DestroyNetworkViewTaskFactory.class);
-						taskMgr.execute(factory.createTaskIterator(selectedViews));
-					}
+				mi.addActionListener(evt -> {
+					DestroyNetworkViewTaskFactory factory = serviceRegistrar
+							.getService(DestroyNetworkViewTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews));
 				});
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());

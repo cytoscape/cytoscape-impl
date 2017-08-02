@@ -13,8 +13,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -25,7 +23,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -678,24 +675,21 @@ public class NetworkViewMainPanel extends JPanel {
 			// Now we can create the comparison panel
 			cp = new NetworkViewComparisonPanel(gridViewToggleModel, containersToCompare, currentView, serviceRegistrar);
 			
-			cp.getDetachComparedViewsButton().addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Component currentCard = getCurrentCard();
+			cp.getDetachComparedViewsButton().addActionListener(evt -> {
+				final Component currentCard = getCurrentCard();
+				
+				if (currentCard instanceof NetworkViewComparisonPanel) {
+					final NetworkViewComparisonPanel ncp = (NetworkViewComparisonPanel) currentCard;
+					final Set<CyNetworkView> viewSet = ncp.getAllNetworkViews();
 					
-					if (currentCard instanceof NetworkViewComparisonPanel) {
-						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-						final Set<CyNetworkView>views = cp.getAllNetworkViews();
-						
-						// End comparison first
-						endComparison(cp);
-						// Then detach the views
-						detachNetworkViews(views);
-					}
+					// End comparison first
+					endComparison(ncp);
+					// Then detach the views
+					detachNetworkViews(viewSet);
 				}
 			});
 			
-			cp.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
+			cp.addPropertyChangeListener("currentNetworkView", evt -> {
 				final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();
 				setCurrentNetworkView(newCurrentView);
 			});
@@ -775,7 +769,7 @@ public class NetworkViewMainPanel extends JPanel {
 	private NetworkViewGrid createNetworkViewGrid() {
 		final NetworkViewGrid nvg = new NetworkViewGrid(gridViewToggleModel, viewComparator, serviceRegistrar);
 		
-		nvg.getDetachSelectedViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getDetachSelectedViewsButton().addActionListener(evt -> {
 			final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 
 			if (selectedItems != null) {
@@ -796,14 +790,14 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
-		nvg.getReattachAllViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getReattachAllViewsButton().addActionListener(evt -> {
 			final Collection<NetworkViewFrame> allFrames = new ArrayList<>(viewFrames.values());
 
 			for (NetworkViewFrame f : allFrames)
 				reattachNetworkView(f.getNetworkView());
 		});
 		
-		nvg.getDestroySelectedViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getDestroySelectedViewsButton().addActionListener(evt -> {
 			final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
 			
 			if (selectedViews != null && !selectedViews.isEmpty()) {
@@ -824,7 +818,7 @@ public class NetworkViewMainPanel extends JPanel {
 		add(getContentPane(), BorderLayout.CENTER);
 		
 		// Add Listeners
-		nullViewPanel.getCreateViewButton().addActionListener((ActionEvent e) -> {
+		nullViewPanel.getCreateViewButton().addActionListener(evt -> {
 			if (nullViewPanel.getNetwork() instanceof CySubNetwork) {
 				final CreateNetworkViewTaskFactory factory =
 						serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
@@ -843,17 +837,17 @@ public class NetworkViewMainPanel extends JPanel {
 				}
 			}
 		});
-		nullViewPanel.getReattachViewButton().addActionListener((ActionEvent e) -> {
+		nullViewPanel.getReattachViewButton().addActionListener(evt -> {
 			if (nullViewPanel.getNetworkView() != null)
 				reattachNetworkView(nullViewPanel.getNetworkView());
 		});
 		
-		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
+		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", evt -> {
 			// Just fire the same event
-			firePropertyChange("selectedNetworkViews", e.getOldValue(), e.getNewValue());
+			firePropertyChange("selectedNetworkViews", evt.getOldValue(), evt.getNewValue());
 		});
-		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
-			final CyNetworkView curView = (CyNetworkView) e.getNewValue();
+		networkViewGrid.addPropertyChangeListener("currentNetworkView", evt -> {
+			final CyNetworkView curView = (CyNetworkView) evt.getNewValue();
 			
 			for (NetworkViewContainer vc : getAllNetworkViewContainers())
 				vc.setCurrent(vc.getNetworkView().equals(curView));
