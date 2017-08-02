@@ -9,7 +9,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.write.ExportNetworkTaskFactory;
+import org.cytoscape.task.write.ExportSelectedNetworkTaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -37,7 +37,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  */
 
 /**
- * Simply executes the {@link ExportNetworkTaskFactory} if there is one and only one network selected.
+ * Simply executes the {@link ExportSelectedNetworkTaskFactory} if there is one and only one network selected.
  */
 @SuppressWarnings("serial")
 public class ExportNetworkAction extends AbstractCyAction {
@@ -54,18 +54,16 @@ public class ExportNetworkAction extends AbstractCyAction {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
-		
-		if (networks.size() == 1) {
-			ExportNetworkTaskFactory factory = serviceRegistrar.getService(ExportNetworkTaskFactory.class);
-			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(networks.get(0)));
-		}
+		ExportSelectedNetworkTaskFactory factory = serviceRegistrar.getService(ExportSelectedNetworkTaskFactory.class);
+		serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator());
 	}
 	
 	@Override
 	public void updateEnableState() {
 		List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
-		setEnabled(networks.size() == 1);
+		CyNetwork currentNet = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
+		setEnabled(networks.size() == 1 && networks.iterator().next().equals(currentNet));
 	}
 	
 	@Override
