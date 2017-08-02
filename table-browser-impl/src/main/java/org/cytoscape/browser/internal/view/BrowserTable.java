@@ -74,6 +74,7 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -142,7 +143,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		this.popupMenuHelper = popupMenuHelper;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class));
+		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class), serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)"));
 		
 		init();
 		setAutoCreateColumnsFromModel(false);

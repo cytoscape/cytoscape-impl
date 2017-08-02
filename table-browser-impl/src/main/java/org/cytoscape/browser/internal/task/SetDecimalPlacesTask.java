@@ -62,7 +62,6 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.AbstractCyEdit;
 
 public class SetDecimalPlacesTask extends AbstractTableColumnTask {
 	
@@ -121,20 +120,3 @@ public class SetDecimalPlacesTask extends AbstractTableColumnTask {
 	}
 }
 
-class SetDecimalPlacesEdit extends AbstractCyEdit {
-
-
-	public SetDecimalPlacesEdit(final String columnName) {
-		super("Set Decimal Places in column \"" + columnName + "\"");
-	}
-
-	@Override
-	public void undo() {
-		
-	}
-
-	@Override
-	public void redo() {
-		
-	}
-}
