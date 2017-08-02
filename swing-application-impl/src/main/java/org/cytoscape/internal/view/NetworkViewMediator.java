@@ -51,6 +51,8 @@ import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -902,6 +904,27 @@ public class NetworkViewMediator
 				});
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());
+			}
+			popupMenu.addSeparator();
+			{
+				final JMenuItem mi = new JMenuItem("Export View...");
+				mi.addActionListener(evt -> {
+					ExportNetworkViewTaskFactory factory = serviceRegistrar
+							.getService(ExportNetworkViewTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews.get(0)));
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(selectedViews.size() == 1);
+			}
+			{
+				final JMenuItem mi = new JMenuItem("Export View as Image...");
+				mi.addActionListener(evt -> {
+					ExportNetworkImageTaskFactory factory = serviceRegistrar
+							.getService(ExportNetworkImageTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews.get(0)));
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(selectedViews.size() == 1);
 			}
 			
 			popupMenu.show(e.getComponent(), e.getX(), e.getY());
