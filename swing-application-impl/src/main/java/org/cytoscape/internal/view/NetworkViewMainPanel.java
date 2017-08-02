@@ -39,7 +39,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -154,12 +156,7 @@ public class NetworkViewMainPanel extends JPanel {
 			reattachNetworkView(view);
 		});
 		vc.getExportButton().addActionListener(evt -> {
-			ExportNetworkViewTaskFactory factory = serviceRegistrar.getService(ExportNetworkViewTaskFactory.class);
-			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(view));
-		});
-		vc.getExportImageButton().addActionListener(evt -> {
-			ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
-			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(view));
+			showExportPopup(vc.getExportButton(), view);
 		});
 		vc.getViewTitleTextField().addActionListener(evt -> {
 			changeCurrentViewTitle(vc);
@@ -497,7 +494,6 @@ public class NetworkViewMainPanel extends JPanel {
 				showViewContainer(vc.getName());
 		}
 	}
-
 	
 	public void updateThumbnailPanel(final CyNetworkView view, final boolean redraw) {
 		// If the Grid is not visible, just flag this view as dirty.
@@ -508,7 +504,6 @@ public class NetworkViewMainPanel extends JPanel {
 				tp.update(redraw);
 		}
 	}
-	
 	
 	public void update(final CyNetworkView view) {
 		final NetworkViewFrame frame = getNetworkViewFrame(view);
@@ -915,6 +910,30 @@ public class NetworkViewMainPanel extends JPanel {
 		vc.getViewTitleTextField().setText(null);
 		vc.getViewTitleTextField().setVisible(false);
 		vc.getViewTitleLabel().setVisible(true);
+	}
+	
+	private void showExportPopup(JComponent source, CyNetworkView view) {
+		DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+
+		final JPopupMenu popupMenu = new JPopupMenu();
+		{
+			final JMenuItem mi = new JMenuItem("Export View...");
+			mi.addActionListener(evt -> {
+				ExportNetworkViewTaskFactory factory = serviceRegistrar.getService(ExportNetworkViewTaskFactory.class);
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popupMenu.add(mi);
+		}
+		{
+			final JMenuItem mi = new JMenuItem("Export View as Image...");
+			mi.addActionListener(evt -> {
+				ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popupMenu.add(mi);
+		}
+
+		popupMenu.show(source, 0, source.getHeight());
 	}
 	
 	private class MousePressedAWTEventListener implements AWTEventListener {
