@@ -991,10 +991,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "File.Export");
 			props.setProperty(MENU_GRAVITY, "1.1");
-			props.setProperty(TOOL_BAR_GRAVITY, "3.0");
+			//props.setProperty(TOOL_BAR_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Network...");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-net-32.png").toString());
-			props.setProperty(IN_TOOL_BAR, "true");
+			//props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-net-32.png").toString());
+			//props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network to File");
 			props.setProperty(COMMAND, "export");
@@ -1003,29 +1003,29 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportSelectedNetworkTaskFactory.class, props);
 		}
-		
-		Properties exportCurrentTableTaskFactoryProps = new Properties();
-		exportCurrentTableTaskFactoryProps.setProperty(ENABLE_FOR,"table");
-		exportCurrentTableTaskFactoryProps.setProperty(PREFERRED_MENU,"File.Export");
-		exportCurrentTableTaskFactoryProps.setProperty(MENU_GRAVITY,"1.3");
-		exportCurrentTableTaskFactoryProps.setProperty(TOOL_BAR_GRAVITY,"3.1");
-		exportCurrentTableTaskFactoryProps.setProperty(TITLE,"Table...");
-		exportCurrentTableTaskFactoryProps.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/export-table-32.png").toString());
-		exportCurrentTableTaskFactoryProps.setProperty(IN_TOOL_BAR,"true");
-		exportCurrentTableTaskFactoryProps.setProperty(TOOLTIP,"Export Table to File");
-		registerService(bc,exportCurrentTableTaskFactory, TaskFactory.class, exportCurrentTableTaskFactoryProps);
-		registerService(bc,exportCurrentTableTaskFactory,ExportSelectedTableTaskFactory.class, exportCurrentTableTaskFactoryProps);
-		
+		{
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, "table");
+			props.setProperty(PREFERRED_MENU, "File.Export");
+			props.setProperty(MENU_GRAVITY, "1.3");
+			//props.setProperty(TOOL_BAR_GRAVITY,"3.1");
+			props.setProperty(TITLE, "Table...");
+			//props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/export-table-32.png").toString());
+			//props.setProperty(IN_TOOL_BAR,"true");
+			props.setProperty(TOOLTIP, "Export Table to File");
+			registerService(bc, exportCurrentTableTaskFactory, TaskFactory.class, props);
+			registerService(bc, exportCurrentTableTaskFactory, ExportSelectedTableTaskFactory.class, props);
+		}
 		{
 			ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-img-32.png").toString());
+			//props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-img-32.png").toString());
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(MENU_GRAVITY, "5.2");
 			props.setProperty(TITLE, "Export as Image...");
-			props.setProperty(TOOL_BAR_GRAVITY, "3.2");
-			props.setProperty(IN_TOOL_BAR, "true");
+			//props.setProperty(TOOL_BAR_GRAVITY, "3.2");
+			//props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network Image to File");
 			props.setProperty(COMMAND, "export");

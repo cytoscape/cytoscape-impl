@@ -90,7 +90,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	
 	@ProvidesTitle
 	public String getTitle() {
-		return "Export as Image";
+		return "Export View as Image";
 	}
 
 	@Override
