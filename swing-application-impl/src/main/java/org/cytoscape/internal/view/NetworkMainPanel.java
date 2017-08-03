@@ -126,8 +126,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private static final String TITLE = "Network";
 	private static final String ID = "org.cytoscape.Network";
 	
-	private static final Dimension PANEL_SIZE = new Dimension(400, 700);
-
 	private JPanel networksPanel;
 	private JScrollPane rootNetworkScroll;
 	private RootNetworkListPanel rootNetworkListPanel;
@@ -189,8 +187,6 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void init() {
-		setPreferredSize(PANEL_SIZE);
-		setSize(PANEL_SIZE);
 		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 
 		setLayout(new BorderLayout());
@@ -224,6 +220,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 					getRootNetworkListPanel().updateScrollableTracksViewportHeight();
 				}
 			});
+			rootNetworkScroll.setMinimumSize(new Dimension(280, 160));
+			rootNetworkScroll.setPreferredSize(new Dimension(380, 420));
 		}
 		
 		return rootNetworkScroll;

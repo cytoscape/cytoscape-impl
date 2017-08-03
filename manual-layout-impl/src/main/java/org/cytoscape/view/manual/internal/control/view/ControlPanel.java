@@ -1,15 +1,23 @@
-package org.cytoscape.view.manual.internal.control;
+package org.cytoscape.view.manual.internal.control.view;
 
-import java.awt.Dimension;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.Component;
 import java.util.Collection;
 
-import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
+import javax.swing.JPanel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.CytoPanelComponent2;
+import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
@@ -24,14 +32,10 @@ import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.Util;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-import org.cytoscape.view.manual.internal.control.view.AlignPanel;
-import org.cytoscape.view.manual.internal.control.view.DistPanel;
-import org.cytoscape.view.manual.internal.control.view.StackPanel;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
+import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -41,7 +45,7 @@ import org.cytoscape.view.model.View;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -59,26 +63,15 @@ import org.cytoscape.view.model.View;
  * #L%
  */
 
-import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
-import javax.swing.Box;
-import java.awt.Dimension;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.manual.internal.common.AbstractManualPanel;
-import org.cytoscape.view.manual.internal.control.view.AlignPanel;
-import org.cytoscape.view.manual.internal.control.view.DistPanel;
-import org.cytoscape.view.manual.internal.control.view.StackPanel;
-import org.cytoscape.view.manual.internal.rotate.RotatePanel;
-import org.cytoscape.view.manual.internal.scale.ScalePanel;
-
 /**
  * GUI for Align and Distribute of manualLayout
  */
 @SuppressWarnings("serial")
-public class ControlPanel extends AbstractManualPanel implements SessionAboutToBeLoadedListener,
+public class ControlPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
 		SessionLoadCancelledListener, SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
+	
+	private static final String TITLE = "Node Layout Tools";
+	private static final String ID = "org.cytoscape.NodeLayoutTools";
 	
 	private ScalePanel scalePanel;
 	private AlignPanel alignPanel;
@@ -91,27 +84,76 @@ public class ControlPanel extends AbstractManualPanel implements SessionAboutToB
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
-		super("Node Layout Tools");
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final IconManager iconMgr = serviceRegistrar.getService(IconManager.class);
 		
-		if (LookAndFeelUtil.isAquaLAF())
+		scalePanel = new ScalePanel(appMgr, iconMgr);
+		alignPanel = new AlignPanel(appMgr);
+		distPanel = new DistPanel(appMgr);
+		stackPanel = new StackPanel(appMgr);
+		rotatePanel = new RotatePanel(appMgr);
+		
+		final GroupLayout layout = new GroupLayout(this);
+		this.setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(false);
+		
+		int w = 320;
+		
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+				.addGap(0, 0, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(scalePanel, DEFAULT_SIZE, w, w)
+						.addComponent(alignPanel, DEFAULT_SIZE, w, w)
+						.addComponent(distPanel, DEFAULT_SIZE, w, w)
+						.addComponent(stackPanel, DEFAULT_SIZE, w, w)
+						.addComponent(rotatePanel, DEFAULT_SIZE, w, w)
+				)
+				.addGap(0, 0, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(scalePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(alignPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(distPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(stackPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addPreferredGap(ComponentPlacement.UNRELATED)
+				.addComponent(rotatePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		);
+		
+		if (isAquaLAF())
 			setOpaque(false);
-		
-		setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
-		setLayout(new BoxLayout(this,  BoxLayout.PAGE_AXIS));
-
-		add(scalePanel = new ScalePanel(appMgr));
-		add(alignPanel = new AlignPanel(appMgr));
-		add(distPanel = new DistPanel(appMgr));
-		add(stackPanel = new StackPanel(appMgr));
-		add(Box.createRigidArea(new Dimension(3, 20)));
-		add(rotatePanel = new RotatePanel(appMgr));
 		
 		updatePanels();
 	}
 
+	@Override
+	public CytoPanelName getCytoPanelName() {
+		return CytoPanelName.SOUTH_WEST;
+	}
+
+	@Override
+	public String getTitle() {
+		return TITLE;
+	}
+
+	@Override
+	public Component getComponent() {
+		return this;
+	}
+
+	@Override
+	public Icon getIcon() {
+		return null;
+	}
+	
+	@Override
+	public String getIdentifier() {
+		return ID;
+	}
+	
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;

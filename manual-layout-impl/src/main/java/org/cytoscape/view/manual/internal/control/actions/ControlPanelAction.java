@@ -1,4 +1,4 @@
-package org.cytoscape.view.manual.internal.common;
+package org.cytoscape.view.manual.internal.control.actions;
 
 /*
  * #%L
@@ -25,41 +25,26 @@ package org.cytoscape.view.manual.internal.common;
  */
 
 
-import java.awt.Component;
-
-import javax.swing.Icon;
-import javax.swing.JPanel;
-
+import org.cytoscape.view.manual.internal.common.AbstractManualLayoutAction;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
 
-@SuppressWarnings("serial")
-public abstract class AbstractManualPanel extends JPanel implements CytoPanelComponent {
+/**
+ * Action for the Align and Distribute functionality. 
+ */
+public class ControlPanelAction extends AbstractManualLayoutAction {
 
-	private final String title;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 949048793512867597L;
 
-	public AbstractManualPanel(String title) {
-		super();
-		this.title = title;
-	}
-
-	@Override
-	public CytoPanelName getCytoPanelName() {
-		return CytoPanelName.SOUTH_WEST;
-	}
-
-	@Override
-	public String getTitle() {
-		return title;
-	}
-
-	@Override
-	public Component getComponent() {
-		return this;
-	}
-
-	@Override
-	public Icon getIcon() {
-		return null;
+	/**
+ 	 * Action for the Align and Distribute functionality. Should be in menu slot 2.
+	 */
+	public ControlPanelAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager) {
+		super(comp, swingApp, appMgr, networkViewManager, 1.2f);
 	}
 }

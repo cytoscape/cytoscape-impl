@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.export.network;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,19 +36,8 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
-public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements ExportNetworkViewTaskFactory {
+public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory
+		implements ExportNetworkViewTaskFactory {
 
 	private CyNetworkViewWriterManager writerManager;
 	private CyApplicationManager cyApplicationManager;

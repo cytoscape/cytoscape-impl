@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
 import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
@@ -60,6 +61,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -114,7 +116,8 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton createNewAttributeButton;
 	private JButton deleteAttributeButton;
 	private JButton deleteTableButton;
-	private JButton formulaBuilderButton;
+	private JButton fnBuilderButton;
+	private JButton exportButton;
 	
 	private final JComboBox<CyTable> tableChooser;
 
@@ -153,11 +156,11 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		if (browserTable != null) {
 			browserTable.getSelectionModel().addListSelectionListener(e -> {
 				if (!e.getValueIsAdjusting())
-					updateEnableState(formulaBuilderButton);
+					updateEnableState(fnBuilderButton);
 			});
 			browserTable.getColumnModel().getSelectionModel().addListSelectionListener(e -> {
 				if (!e.getValueIsAdjusting())
-					updateEnableState(formulaBuilderButton);
+					updateEnableState(fnBuilderButton);
 			});
 		}
 	}
@@ -206,7 +209,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 						break;
 					}
 				}
-			} else if (comp == formulaBuilderButton) {
+			} else if (comp == fnBuilderButton) {
 				final int row = browserTable.getSelectedRow();
 				final int column = browserTable.getSelectedColumn();
 				enabled = row >=0 && column >= 0 && browserTableModel.isCellEditable(row, column);
@@ -237,8 +240,9 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		addComponent(getNewButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
-		addComponent(getFunctionBuilderButton(), ComponentPlacement.RELATED);
+		addComponent(getFnBuilderButton(), ComponentPlacement.RELATED);
 //		addComponent(getMapGlobalTableButton(). ComponentPlacement.RELATED);
+		addComponent(getExportButton(), ComponentPlacement.RELATED);
 		
 		if (tableChooser != null) {
 			hToolBarGroup.addGap(0, 20, Short.MAX_VALUE);
@@ -443,10 +447,10 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return selectButton;
 	}
 
-	private JButton getFunctionBuilderButton() {
-		if (formulaBuilderButton == null) {
-			formulaBuilderButton = new JButton("f(x)");
-			formulaBuilderButton.setToolTipText("Function Builder");
+	private JButton getFnBuilderButton() {
+		if (fnBuilderButton == null) {
+			fnBuilderButton = new JButton("f(x)");
+			fnBuilderButton.setToolTipText("Function Builder");
 			
 			Font iconFont = null;
 			
@@ -457,11 +461,11 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 				throw new RuntimeException("Error loading font", e);
 			}
 			
-			styleButton(formulaBuilderButton, iconFont.deriveFont(18.0f));
+			styleButton(fnBuilderButton, iconFont.deriveFont(18.0f));
 
 			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(this);
 
-			formulaBuilderButton.addActionListener(new ActionListener() {
+			fnBuilderButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(final ActionEvent e) {
 					// Do not allow opening of the formula builder dialog while a cell is being edited!
@@ -506,7 +510,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			});
 		}
 		
-		return formulaBuilderButton;
+		return fnBuilderButton;
 	}
 
 	private String getAttribName(final int cellRow, final int cellColumn) {
@@ -641,6 +645,22 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return mapGlobalTableButton;
 	}
 	*/
+	
+	private JButton getExportButton() {
+		if (exportButton == null) {
+			exportButton = new JButton(ICON_SHARE_SQUARE_O);
+			exportButton.setToolTipText("Export Table to File...");
+			styleButton(exportButton, iconMgr.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE));
+			
+			exportButton.addActionListener(e -> {
+				ExportTableTaskFactory factory = serviceRegistrar.getService(ExportTableTaskFactory.class);
+				DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+				taskManager.execute(factory.createTaskIterator(browserTableModel.getDataTable()));
+			});
+		}
+		
+		return exportButton;
+	}
 	
 	private void createNewAttribute(final String type, boolean isShared) {
 		try {

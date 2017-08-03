@@ -78,6 +78,12 @@ public class ImageAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
+	// We need to expose this in case the user just presses "return", which
+	// fires the OK button action in the parent dialog
+	public String getName() {
+		return nameField.getText();
+	}
+
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
@@ -271,12 +277,14 @@ public class ImageAnnotationPanel extends JPanel {
 		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
 		preview.setImageOpacity((float) opacitySlider.getValue() / 100.0f);
 		preview.setImageBrightness(brightnessSlider.getValue());
+		preview.setName(annotation.getName());
 		preview.setImageContrast(contrastSlider.getValue());
 		previewPanel.repaint();
 	}
 
 	public void modifySAPreview() {
 		preview.setBorderWidth(Integer.parseInt((String) (borderWidthCombo.getModel().getSelectedItem())));
+		preview.setName(annotation.getName());
 		previewPanel.repaint();
 	}
 

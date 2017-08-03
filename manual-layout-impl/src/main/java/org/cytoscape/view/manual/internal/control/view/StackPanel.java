@@ -1,9 +1,8 @@
 package org.cytoscape.view.manual.internal.control.view;
 
-import java.awt.Dimension;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -12,13 +11,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.manual.internal.control.actions.stack.HStackBottom;
 import org.cytoscape.view.manual.internal.control.actions.stack.HStackCenter;
 import org.cytoscape.view.manual.internal.control.actions.stack.HStackTop;
 import org.cytoscape.view.manual.internal.control.actions.stack.VStackCenter;
 import org.cytoscape.view.manual.internal.control.actions.stack.VStackLeft;
 import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
+import org.cytoscape.view.manual.internal.util.Util;
 
 /*
  * #%L
@@ -26,7 +25,7 @@ import org.cytoscape.view.manual.internal.control.actions.stack.VStackRight;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -55,9 +54,6 @@ public class StackPanel extends JPanel {
 	private JButton habButton;
 	
 	public StackPanel(CyApplicationManager app) {
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-
 		ImageIcon vali = new ImageIcon(getClass().getResource("/images/V_STACK_LEFT.gif"));
 		ImageIcon vaci = new ImageIcon(getClass().getResource("/images/V_STACK_CENTER.gif"));
 		ImageIcon vari = new ImageIcon(getClass().getResource("/images/V_STACK_RIGHT.gif"));
@@ -73,24 +69,21 @@ public class StackPanel extends JPanel {
 		HStackCenter hac = new HStackCenter(haci,app);
 		HStackBottom hab = new HStackBottom(habi,app);
 
-		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		int HGHT = 32;
-		setMinimumSize(new Dimension(120, HGHT));
-		setPreferredSize(new Dimension(300, HGHT));
-		setMaximumSize(new Dimension(350, HGHT));
+		JLabel label = new JLabel("Stack:");
+		makeSmall(label);
 		
-		JLabel stack = new JLabel("Stack");
-		add(Box.createRigidArea(new Dimension(25, 0)));
-    	add(stack);
-		stack.setPreferredSize(new Dimension(105, 25));
-		stack.setMinimumSize(new Dimension(105, 25));
-		stack.setMaximumSize(new Dimension(105, 25));
-		add(valButton = createJButton(val, "Vertical Stack Left"));
-		add(vacButton = createJButton(vac, "Vertical Stack Center"));
-		add(varButton = createJButton(var, "Vertical Stack Right"));
-		add(hatButton = createJButton(hat, "Horizontal Stack Top"));
-		add(hacButton = createJButton(hac, "Horizontal Stack Center"));
-		add(habButton = createJButton(hab, "Horizontal Stack Bottom"));
+		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
+    	add(label);
+    	add(Box.createHorizontalGlue());
+		add(valButton = Util.createButton(val, "Vertical Stack Left"));
+		add(vacButton = Util.createButton(vac, "Vertical Stack Center"));
+		add(varButton = Util.createButton(var, "Vertical Stack Right"));
+		add(hatButton = Util.createButton(hat, "Horizontal Stack Top"));
+		add(hacButton = Util.createButton(hac, "Horizontal Stack Center"));
+		add(habButton = Util.createButton(hab, "Horizontal Stack Bottom"));
+		
+		if (isAquaLAF())
+			setOpaque(false);
 	}
 	
 	@Override
@@ -103,19 +96,5 @@ public class StackPanel extends JPanel {
 		habButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
-	}
-
-	protected JButton createJButton(Action a, String tt) {
-		JButton b = new JButton(a);
-		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(32, 24));
-		b.setMaximumSize(new Dimension(32, 24));
-		b.setMinimumSize(new Dimension(32, 24));
-		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
-		b.setBorderPainted(false);
-		b.setOpaque(false);
-		b.setContentAreaFilled(false);
-
-		return b;
 	}
 }

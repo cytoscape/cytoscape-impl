@@ -2,9 +2,7 @@ package org.cytoscape.webservice.internal.task;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.net.URL;
 
-import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -81,8 +79,6 @@ public class ShowImportDialogAction extends AbstractCyAction {
 			final float menuGravity,
 			final String menuLabel,
 			final KeyStroke shortcut,
-			final float toolbarGravity,
-			final URL iconUrl,
 			final String toolTip,
 			final CyServiceRegistrar serviceRegistrar
 	) {
@@ -94,12 +90,7 @@ public class ShowImportDialogAction extends AbstractCyAction {
 		if (shortcut != null)
 			setAcceleratorKeyStroke(shortcut);
 		
-		inToolBar = true;
-		setToolbarGravity(toolbarGravity);
 		putValue(SHORT_DESCRIPTION, toolTip);
-		
-		if (iconUrl != null)
-			putValue(LARGE_ICON_KEY, new ImageIcon(iconUrl));
 	}
 
 	@Override

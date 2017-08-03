@@ -1,12 +1,37 @@
 package org.cytoscape.task.internal.export.graphics;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.write.PresentationWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.export.ViewWriter;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +49,29 @@ package org.cytoscape.task.internal.export.graphics;
  * #L%
  */
 
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.PresentationWriterManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.task.internal.export.ViewWriter;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 public class ExportNetworkImageTaskFactoryTest {
 	
 	private final PresentationWriterManager viewWriterMgr = mock(PresentationWriterManager.class);
 	private final CyApplicationManager applicationManager = mock(CyApplicationManager.class);
 	private final RenderingEngineManager engineManager = mock(RenderingEngineManager.class);
+	private final CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 
 	@Before
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public void setUp() throws Exception {
-		final List<CyFileFilter> filters = new ArrayList<CyFileFilter>();
 		final CyFileFilter dummyFilter = mock(CyFileFilter.class);
+		final RenderingEngine engine = mock(RenderingEngine.class);
+		
+		final List<CyFileFilter> filters = new ArrayList<>();
+		filters.add(dummyFilter);
+		
 		when(dummyFilter.getDescription()).thenReturn("dummy description");
 		when(dummyFilter.getExtensions()).thenReturn(Collections.singleton("dummy"));
-		filters.add(dummyFilter);
 		when(viewWriterMgr.getAvailableWriterFilters()).thenReturn(filters);
-		final RenderingEngine engine = mock(RenderingEngine.class);
 		when(applicationManager.getCurrentRenderingEngine()).thenReturn(engine);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(applicationManager);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(engineManager);
+		when(serviceRegistrar.getService(PresentationWriterManager.class)).thenReturn(viewWriterMgr);
 	}
 
 	@After
@@ -73,8 +80,7 @@ public class ExportNetworkImageTaskFactoryTest {
 	
 	@Test
 	public void testExportNetworkImageTaskFactory() throws Exception {
-		final ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(viewWriterMgr, 
-				applicationManager, engineManager);
+		final ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(serviceRegistrar);
 		final CyNetworkView view = mock(CyNetworkView.class);
 		final CyNetwork network = mock(CyNetwork.class);
 		final CyRow row = mock(CyRow.class);
@@ -88,5 +94,4 @@ public class ExportNetworkImageTaskFactoryTest {
 		final Task task = itr.next();
 		assertTrue(task instanceof ViewWriter);
 	}
-
 }

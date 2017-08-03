@@ -217,9 +217,7 @@ public class VisualPropertySheet extends JPanel{
 			getVpListScr().setViewportView(p);
 			
 			minWidth = Math.min((minWidth += 10), 400);
-			getVpListScr().setMinimumSize(new Dimension(minWidth, getVpListScr().getMinimumSize().height));
-			setMinimumSize(new Dimension(minWidth, getMinimumSize().height));
-			setPreferredSize(new Dimension(minWidth, getPreferredSize().height));
+			getVpListScr().setMinimumSize(new Dimension(minWidth, 140));
 			
 			if (getParent() != null) {
 				minWidth = Math.max(minWidth + 8, getParent().getMinimumSize().width);

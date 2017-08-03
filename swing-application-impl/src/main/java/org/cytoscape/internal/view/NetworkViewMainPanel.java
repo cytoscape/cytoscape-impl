@@ -13,8 +13,6 @@ import java.awt.KeyboardFocusManager;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.AWTEventListener;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -25,7 +23,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +39,9 @@ import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -54,6 +53,8 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
@@ -148,13 +149,16 @@ public class NetworkViewMainPanel extends JPanel {
 		final NetworkViewContainer vc = new NetworkViewContainer(view, view.equals(getCurrentNetworkView()),
 				engineFactory, thumbnailFactory, gridViewToggleModel, serviceRegistrar);
 		
-		vc.getDetachViewButton().addActionListener((ActionEvent e) -> {
+		vc.getDetachViewButton().addActionListener(evt -> {
 			detachNetworkView(view);
 		});
-		vc.getReattachViewButton().addActionListener((ActionEvent e) -> {
+		vc.getReattachViewButton().addActionListener(evt -> {
 			reattachNetworkView(view);
 		});
-		vc.getViewTitleTextField().addActionListener((ActionEvent e) -> {
+		vc.getExportButton().addActionListener(evt -> {
+			showExportPopup(vc.getExportButton(), view);
+		});
+		vc.getViewTitleTextField().addActionListener(evt -> {
 			changeCurrentViewTitle(vc);
 			vc.requestFocusInWindow();
 		});
@@ -490,7 +494,6 @@ public class NetworkViewMainPanel extends JPanel {
 				showViewContainer(vc.getName());
 		}
 	}
-
 	
 	public void updateThumbnailPanel(final CyNetworkView view, final boolean redraw) {
 		// If the Grid is not visible, just flag this view as dirty.
@@ -501,7 +504,6 @@ public class NetworkViewMainPanel extends JPanel {
 				tp.update(redraw);
 		}
 	}
-	
 	
 	public void update(final CyNetworkView view) {
 		final NetworkViewFrame frame = getNetworkViewFrame(view);
@@ -668,24 +670,21 @@ public class NetworkViewMainPanel extends JPanel {
 			// Now we can create the comparison panel
 			cp = new NetworkViewComparisonPanel(gridViewToggleModel, containersToCompare, currentView, serviceRegistrar);
 			
-			cp.getDetachComparedViewsButton().addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final Component currentCard = getCurrentCard();
+			cp.getDetachComparedViewsButton().addActionListener(evt -> {
+				final Component currentCard = getCurrentCard();
+				
+				if (currentCard instanceof NetworkViewComparisonPanel) {
+					final NetworkViewComparisonPanel ncp = (NetworkViewComparisonPanel) currentCard;
+					final Set<CyNetworkView> viewSet = ncp.getAllNetworkViews();
 					
-					if (currentCard instanceof NetworkViewComparisonPanel) {
-						final NetworkViewComparisonPanel cp = (NetworkViewComparisonPanel) currentCard;
-						final Set<CyNetworkView>views = cp.getAllNetworkViews();
-						
-						// End comparison first
-						endComparison(cp);
-						// Then detach the views
-						detachNetworkViews(views);
-					}
+					// End comparison first
+					endComparison(ncp);
+					// Then detach the views
+					detachNetworkViews(viewSet);
 				}
 			});
 			
-			cp.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent evt) -> {
+			cp.addPropertyChangeListener("currentNetworkView", evt -> {
 				final CyNetworkView newCurrentView = (CyNetworkView) evt.getNewValue();
 				setCurrentNetworkView(newCurrentView);
 			});
@@ -765,7 +764,7 @@ public class NetworkViewMainPanel extends JPanel {
 	private NetworkViewGrid createNetworkViewGrid() {
 		final NetworkViewGrid nvg = new NetworkViewGrid(gridViewToggleModel, viewComparator, serviceRegistrar);
 		
-		nvg.getDetachSelectedViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getDetachSelectedViewsButton().addActionListener(evt -> {
 			final List<ThumbnailPanel> selectedItems = networkViewGrid.getSelectedItems();
 
 			if (selectedItems != null) {
@@ -786,14 +785,14 @@ public class NetworkViewMainPanel extends JPanel {
 			}
 		});
 		
-		nvg.getReattachAllViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getReattachAllViewsButton().addActionListener(evt -> {
 			final Collection<NetworkViewFrame> allFrames = new ArrayList<>(viewFrames.values());
 
 			for (NetworkViewFrame f : allFrames)
 				reattachNetworkView(f.getNetworkView());
 		});
 		
-		nvg.getDestroySelectedViewsButton().addActionListener((ActionEvent e) -> {
+		nvg.getDestroySelectedViewsButton().addActionListener(evt -> {
 			final List<CyNetworkView> selectedViews = getSelectedNetworkViews();
 			
 			if (selectedViews != null && !selectedViews.isEmpty()) {
@@ -814,7 +813,7 @@ public class NetworkViewMainPanel extends JPanel {
 		add(getContentPane(), BorderLayout.CENTER);
 		
 		// Add Listeners
-		nullViewPanel.getCreateViewButton().addActionListener((ActionEvent e) -> {
+		nullViewPanel.getCreateViewButton().addActionListener(evt -> {
 			if (nullViewPanel.getNetwork() instanceof CySubNetwork) {
 				final CreateNetworkViewTaskFactory factory =
 						serviceRegistrar.getService(CreateNetworkViewTaskFactory.class);
@@ -833,17 +832,17 @@ public class NetworkViewMainPanel extends JPanel {
 				}
 			}
 		});
-		nullViewPanel.getReattachViewButton().addActionListener((ActionEvent e) -> {
+		nullViewPanel.getReattachViewButton().addActionListener(evt -> {
 			if (nullViewPanel.getNetworkView() != null)
 				reattachNetworkView(nullViewPanel.getNetworkView());
 		});
 		
-		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", (PropertyChangeEvent e) -> {
+		networkViewGrid.addPropertyChangeListener("selectedNetworkViews", evt -> {
 			// Just fire the same event
-			firePropertyChange("selectedNetworkViews", e.getOldValue(), e.getNewValue());
+			firePropertyChange("selectedNetworkViews", evt.getOldValue(), evt.getNewValue());
 		});
-		networkViewGrid.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
-			final CyNetworkView curView = (CyNetworkView) e.getNewValue();
+		networkViewGrid.addPropertyChangeListener("currentNetworkView", evt -> {
+			final CyNetworkView curView = (CyNetworkView) evt.getNewValue();
 			
 			for (NetworkViewContainer vc : getAllNetworkViewContainers())
 				vc.setCurrent(vc.getNetworkView().equals(curView));
@@ -911,6 +910,30 @@ public class NetworkViewMainPanel extends JPanel {
 		vc.getViewTitleTextField().setText(null);
 		vc.getViewTitleTextField().setVisible(false);
 		vc.getViewTitleLabel().setVisible(true);
+	}
+	
+	private void showExportPopup(JComponent source, CyNetworkView view) {
+		DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+
+		final JPopupMenu popupMenu = new JPopupMenu();
+		{
+			final JMenuItem mi = new JMenuItem("Export View...");
+			mi.addActionListener(evt -> {
+				ExportNetworkViewTaskFactory factory = serviceRegistrar.getService(ExportNetworkViewTaskFactory.class);
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popupMenu.add(mi);
+		}
+		{
+			final JMenuItem mi = new JMenuItem("Export View as Image...");
+			mi.addActionListener(evt -> {
+				ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popupMenu.add(mi);
+		}
+
+		popupMenu.show(source, 0, source.getHeight());
 	}
 	
 	private class MousePressedAWTEventListener implements AWTEventListener {

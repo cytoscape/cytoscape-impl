@@ -50,6 +50,7 @@ class TextFieldMouseListener implements MouseListener {
 	public void mouseEntered(MouseEvent e) {}
 	@Override
 	public void mouseExited(MouseEvent e) {
+		// System.out.println("Setting name to "+field.getText());
 		preview.setName(field.getText());
 	}
 	@Override

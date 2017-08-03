@@ -66,8 +66,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = "Text Annotation";
 		super.setSize(getTextWidth((Graphics2D)this.getGraphics())+4, 
 		              getTextHeight((Graphics2D)this.getGraphics())+4);
-		if (super.name == null) 
-			super.name = "BoundedTextAnnotation_"+instanceCount;
+		super.name = "BoundedTextAnnotation_"+instanceCount;
 		instanceCount++;
 	}
 
@@ -77,8 +76,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
-		if (super.name == null) 
-			super.name = "BoundedTextAnnotation_"+instanceCount;
+		super.name = "BoundedTextAnnotation_"+instanceCount;
 		instanceCount++;
 	}
 
@@ -101,8 +99,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
-		if (super.name == null) 
-			super.name = "BoundedTextAnnotation_"+instanceCount;
+		super.name = "BoundedTextAnnotation_"+instanceCount;
 		instanceCount++;
 	}
 
@@ -119,8 +116,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);
 		}
-		if (super.name == null) 
-			super.name = "BoundedTextAnnotation_"+instanceCount;
+		super.name = "BoundedTextAnnotation_"+instanceCount;
 		instanceCount++;
 	}
 

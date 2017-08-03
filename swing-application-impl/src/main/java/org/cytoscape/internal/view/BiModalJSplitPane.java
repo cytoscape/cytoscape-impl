@@ -1,18 +1,23 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MAX_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
+
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
-import javax.swing.JFrame;
+import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -20,7 +25,7 @@ import org.cytoscape.application.swing.CytoPanelState;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -38,7 +43,6 @@ import org.cytoscape.application.swing.CytoPanelState;
  * #L%
  */
 
-
 /**
  * The BiModalJSplitPane class extends JSplitPane to provide two modes:
  * <UL>
@@ -53,235 +57,215 @@ import org.cytoscape.application.swing.CytoPanelState;
  *
  * @author Ethan Cerami, Ben Gross
  */
-public class BiModalJSplitPane extends JSplitPane implements CytoPanelContainer {
-	private final static long serialVersionUID = 1202339868270146L;
-	/**
-	 * Reference application frame.
-	 */
-	private JFrame frame;
-
-	/**
-	 * Available modes of the BiModalJSplitPane.
-	 */
-	public static final int MODE_SHOW_SPLIT = 1;
-
-	/**
-	 *
-	 */
-	public static final int MODE_HIDE_SPLIT = 2;
-
-	/**
-	 * Property listener modes.
-	 */
-	public static final String MODE_PROPERTY = "MODE_PROPERTY";
-
-	/**
-	 * The current mode.
-	 */
-	private int currentMode;
-
-	/**
-	 * The default divider size.
-	 */
+@SuppressWarnings("serial")
+public class BiModalJSplitPane extends JSplitPane {
+	
 	private int defaultDividerSize;
-
-	/**
-	 * The saved divider location.
-	 */
 	private int dividerLocation;
+	private boolean dividerManuallyMoved;
+	private boolean updatingDivider;
+	
+	private final CytoPanelName compassDirection;
+	
+	private static final Logger logger = LoggerFactory.getLogger(BiModalJSplitPane.class);
 
 	/**
-	 * Constructor.
-	 *
 	 * @param orientation    JSplitPane Orientation.
 	 *                       JSplitPane.HORIZONTAL_SPLIT or
 	 *                       JSplitPane.VERTICAL_SPLIT.
-	 * @param initialMode    Initial Mode.
-	 *                       MODE_SHOW_SPLIT or
-	 *                       MODE_HIDE_SPLIT.
 	 * @param leftComponent  Left/Top Component.
 	 * @param rightComponent Right/Bottom Component.
 	 */
-	public BiModalJSplitPane(JFrame f, int orientation, int initialMode, Component leftComponent,
-	                         Component rightComponent) {
+	public BiModalJSplitPane(
+			CytoPanelName compassDirection,
+			int orientation,
+			Component
+			leftComponent,
+			Component rightComponent
+	) {
 		super(orientation, leftComponent, rightComponent);
 
-		// init some member vars
-		currentMode = initialMode;
-		frame = f;
-
-		// add component listener to get resize events
-		addComponentListener();
-
-		//  remove the border
-		setBorder(null);
+		this.compassDirection = compassDirection;
+		
+		// Remove the border
+		setBorder(BorderFactory.createEmptyBorder());
 		setOneTouchExpandable(false);
 
-		//  store the default divider size
-		defaultDividerSize = this.getDividerSize();
+		// Store the default divider size
+		defaultDividerSize = getDividerSize();
 
-		//  hide split
-		if (initialMode == MODE_HIDE_SPLIT) {
-			this.setDividerSize(0);
+		update();
+		
+		addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, evt -> {
+			if (!updatingDivider)
+				dividerManuallyMoved = true;
+		});
+	}
+
+	public void addCytoPanel(CytoPanel cytoPanel) {
+		switch (cytoPanel.getCytoPanelName()) {
+			case WEST:
+				setLeftComponent(cytoPanel.getThisComponent());
+				break;
+			case EAST:
+				setRightComponent(cytoPanel.getThisComponent());
+				break;
+			case SOUTH:
+			case SOUTH_WEST:
+				setBottomComponent(cytoPanel.getThisComponent());
+				break;
+		}
+
+		updatingDivider = true;
+		
+		try {	
+			// Hack to set divider size back to what it should be
+			setDividerSize(defaultDividerSize);
+	
+			// Hack to set divider location back to what it was
+			if (dividerLocation != -1)
+				setDividerLocation(dividerLocation);
+		} finally {
+			updatingDivider = false;
+		}
+	}
+	
+	public void removeCytoPanel(CytoPanel cytoPanel) {
+		remove(cytoPanel.getThisComponent());
+
+		updatingDivider = true;
+		
+		try {
+			// Hack to set divider size back to what it should be
+			setDividerSize(0);
+	
+			// Hack to set divider location back to what it was
+			if (dividerLocation != -1)
+				setDividerLocation(dividerLocation);
+		} finally {
+			updatingDivider = false;
 		}
 	}
 
-	/**
-	 * Inserts CytoPanel at desired compass direction.
-	 *
-	 * @param cytoPanel        CytoPanel reference.
-	 * @param compassDirection CytoPanelName enum value
-	 */
-	public void insertCytoPanel(final CytoPanel cytoPanel, final CytoPanelName compassDirection) {
-		boolean success = false;
-
-		switch (compassDirection) {
-		case SOUTH:
-			this.setBottomComponent(cytoPanel.getThisComponent());
-			success = true;
-			break;
-		case EAST:
-			this.setRightComponent(cytoPanel.getThisComponent());
-			success = true;
-			break;
-		case WEST:
-			this.setLeftComponent(cytoPanel.getThisComponent());
-			success = true;
-			break;
-		case SOUTH_WEST:
-			this.setBottomComponent(cytoPanel.getThisComponent());
-			success = true;
-			break;
-		}
-
-		// houston we have a problem
-		if (!success) {
-			// made it here, houston, we have a problem
-			throw new IllegalArgumentException("Illegal Argument:  " + compassDirection
-			                                   + ".  Must be one of:  CytoPanelName.{SOUTH,EAST,WEST,SOUTH_WEST}.");
-		}
-
-		// hack to set divider size back to what it should be
-		setDividerSize(defaultDividerSize);
-
-		// hack to set divider location back to what it was
-		if (dividerLocation != -1) {
-			setDividerLocation(dividerLocation);
-		}
-	}
-
-	/**
-	 * Gets the location of the applications mainframe.
-	 *
-	 * @return Point object.
-	 */
-	public Point getLocationOnScreen() {
-		return frame.getLocationOnScreen();
-	}
-
-	/**
-	 * Gets the bounds of the applications mainframe.
-	 *
-	 * @return Rectangle Object.
-	 */
-	public Rectangle getBounds() {
-		return frame.getBounds();
-	}
-
-	/**
-	 * Sets the BiModalJSplitframe mode.
-	 *
-	 * @param newMode MODE_SHOW_SPLIT or MODE_HIDE_SPLIT.
-	 */
-	public void setMode(CytoPanelState cytoPanelState, int newMode) {
-		//  check args
-		if ((newMode != MODE_SHOW_SPLIT) && (newMode != MODE_HIDE_SPLIT)) {
-			throw new IllegalArgumentException("Illegal Argument:  " + newMode
-			                                   + ".  Must be one of:  MODE_SHOW_SPLIT or "
-			                                   + " MODE_HIDE_SPLIT.");
-		}
-
-		int oldMode = currentMode;
-
-		//  only process if the mode has changed
-		if (newMode != currentMode) {
-			if (newMode == MODE_HIDE_SPLIT) {
-				hideSplit();
-			} else if (newMode == MODE_SHOW_SPLIT) {
-				showSplit();
+	@Override
+	public void addNotify() {
+		super.addNotify();
+		
+		getParent().addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if (getParent() != null)
+					dividerLocation = -1;
 			}
-
-			this.currentMode = newMode;
-
-			//  fire a property change
-			this.firePropertyChange(MODE_PROPERTY, oldMode, newMode);
+		});
+	}
+	
+	public void update() {
+		Component lc = getLeftComponent();
+		Component rc = getRightComponent();
+		
+		if (lc != null && lc.isVisible() && rc != null && rc.isVisible())
+			showSplit();
+		else
+			hideSplit();
+	}
+	
+	/**
+	 * Move the divider according to the panels' preferred and minimum sizes.
+	 */
+	public void updateDividerLocation() {
+		Component c1 = getTopComponent();
+		Component c2 = getBottomComponent();
+		
+		if (c1 == null || c2 == null || !c1.isVisible() || !c2.isVisible())
+			return;
+		// Do not move the divider when it's been hidden
+		if (getDividerLocation() == -1)
+			return;
+		// Do not move the divider when user has repositioned it manually
+		if (dividerManuallyMoved)
+			return;
+		// If the panel is 0x0, it's probably not created, yet
+		if (c1.getSize() == null || (c1.getSize().width == 0 && c1.getSize().height == 0))
+			return;
+		
+		updatingDivider = true;
+		
+		try {
+			final int w = getSize().width; // Total widht
+			final int h = getSize().height; // Total height
+			final int divSize = getDividerSize();
+			
+			if (compassDirection == SOUTH_WEST) {
+				if (c1 != null && c2 != null && c2.isVisible()) {
+					// TOP panel's preferred height
+					int h1 = Math.max(c1.getPreferredSize().height, WEST_MIN_HEIGHT);
+					
+					// BOTTOM panel's height--we try to allow the bottom panel to reach its preferred height...
+					int h2 = c2.getPreferredSize().height + divSize;
+					// ...but we also want to do the same for the top panel, which has the priority here
+					h2 = Math.min(h2, h - h1);
+					
+					// However we should do everything to respect the bottom panel's minimum height...
+					if (c2.getMinimumSize() != null)
+						h2 = Math.max(h2, c2.getMinimumSize().height + divSize);
+					
+					// ...unless it's bigger than half of the total height (the bottom panel cannot abuse it!)
+					h2 = Math.min(h2, (h - divSize) / 2);
+					
+					// This is the final height of the top component
+					h1 = h - h2;
+					setDividerLocation(h1);
+				}
+			} else if (compassDirection == EAST) {
+				int w1 = c1.getPreferredSize().width;
+				w1 = Math.min(w1, EAST_MAX_WIDTH);
+				w1 = Math.max(w1, EAST_MIN_WIDTH);
+	
+				setDividerLocation(w - getInsets().right - getInsets().left - divSize - w1);
+			}
+		} catch (Exception e) {
+			logger.error("Unable to update Split Pane's divider location", e);
+		} finally {
+			updatingDivider = false;
 		}
+		// TODO: What's the right thing to do with SOUTH?
+	}
+	
+	private void showSplit() {
+		updatingDivider = true;
+		
+		try {
+			setDividerSize(defaultDividerSize);
+	
+			if (dividerLocation != -1)
+				setDividerLocation(dividerLocation);
+	
+			resetToPreferredSizes();
+			validateParent();
+		} finally {
+			updatingDivider = false;
+		}
+	}
 
-		// hack to make sure divider is zero when we go from dock to float
-		// and divider location is set properly when we go back to dock
-		if (cytoPanelState == cytoPanelState.FLOAT) {
+	private void hideSplit() {
+		updatingDivider = true;
+		
+		try {
 			setDividerSize(0);
 			dividerLocation = getDividerLocation();
+			setDividerLocation(-1);
+			resetToPreferredSizes();
+			validateParent();
+		} finally {
+			updatingDivider = false;
 		}
 	}
 
-	/**
-	 * Gets the current mode.
-	 *
-	 * @return MODE_SHOW_SPLIT or MODE_HIDE_SPLIT.
-	 */
-	public int getMode() {
-		return currentMode;
-	}
-
-	/**
-	 * Shows the split.
-	 */
-	private void showSplit() {
-		setDividerSize(defaultDividerSize);
-
-		if (dividerLocation != -1) {
-			setDividerLocation(dividerLocation);
-		}
-
-		resetToPreferredSizes();
-		validateParent();
-	}
-
-	/**
-	 * Hides the split.
-	 */
-	private void hideSplit() {
-		setDividerSize(0);
-		dividerLocation = getDividerLocation();
-		resetToPreferredSizes();
-		validateParent();
-	}
-
-	/**
-	 * Validates the parent container.
-	 */
 	private void validateParent() {
-		Container container = this.getParent();
+		Container container = getParent();
 
-		if (container != null) {
+		if (container != null)
 			container.validate();
-		}
-	}
-
-	/**
-	 * Add a component listener to the app frame to get windows resize events.
-	 */
-	private void addComponentListener() {
-		frame.addComponentListener(new ComponentAdapter() {
-				/**
-				 * Frame is resized.
-				 *
-				 * @param e Component Event.
-				 */
-				public void componentResized(ComponentEvent e) {
-					dividerLocation = -1;
-				}
-			});
 	}
 }

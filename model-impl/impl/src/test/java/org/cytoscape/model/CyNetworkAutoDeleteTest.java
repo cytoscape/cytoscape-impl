@@ -1,10 +1,6 @@
 package org.cytoscape.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -215,7 +211,7 @@ public class CyNetworkAutoDeleteTest {
 	
 	
 	@Test
-	public void testRestoreAPI() {
+	public void testRestoreEdge() {
 		CyNetwork network1 = TestCyNetworkFactory.getInstance();
 		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
 		
@@ -227,14 +223,197 @@ public class CyNetworkAutoDeleteTest {
 		
 		CyNetwork network2 = rootNetwork.addSubNetwork(Arrays.asList(n1,n2,n3), Arrays.asList(e1,e2));
 		
-		network1.removeEdges(Collections.singleton(e1));
-		network2.removeEdges(Collections.singleton(e1));
+		
+		network1.removeEdges(Arrays.asList(e1));
+		network2.removeEdges(Arrays.asList(e1));
 		
 		assertFalse(rootNetwork.containsEdge(e1));
 		
 		rootNetwork.restoreEdge(e1);
 		
 		assertTrue(rootNetwork.containsEdge(e1));
+	}
+	
+
+	@Test
+	public void testRestoreEdgeRestoresSourceAndTarget() {
+		// Better version of above test
+		CyNetwork network1 = TestCyNetworkFactory.getInstance();
+		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
+		
+		CyNode n1 = network1.addNode();
+		CyNode n2 = network1.addNode();
+		CyNode n3 = network1.addNode();
+		CyEdge e1 = network1.addEdge(n1, n2, false);
+		CyEdge e2 = network1.addEdge(n2, n3, false);
+		
+		CyNetwork network2 = rootNetwork.addSubNetwork(Arrays.asList(n1,n2,n3), Arrays.asList(e1,e2));
+		
+		
+		network1.removeNodes(Arrays.asList(n1, n2));
+		network2.removeNodes(Arrays.asList(n1, n2));
+		
+		assertFalse(rootNetwork.containsNode(n1));
+		assertFalse(rootNetwork.containsNode(n2));
+		assertFalse(rootNetwork.containsEdge(e1));
+		
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network2.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network2.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		assertFalse(network2.containsEdge(e1));
+		
+		rootNetwork.restoreEdge(e1);
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsEdge(e1));
+		
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network2.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network2.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		assertFalse(network2.containsEdge(e1));
+	}
+	
+	
+	@Test
+	public void testRestoreBug3838_1() {
+		CyNetwork network1 = TestCyNetworkFactory.getInstance();
+		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
+		
+		CyNode n1 = network1.addNode();
+		CyNode n2 = network1.addNode();
+		CyEdge e1 = network1.addEdge(n1, n2, false);
+		
+		
+		network1.removeEdges(Arrays.asList(e1));
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertFalse(rootNetwork.containsEdge(e1));
+		assertTrue(network1.containsNode(n1));
+		assertTrue(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		rootNetwork.restoreEdge(e1);
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertTrue(network1.containsNode(n1));
+		assertTrue(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		network1.removeNodes(Arrays.asList(n1));
+		
+		assertFalse(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertFalse(rootNetwork.containsEdge(e1));
+		assertFalse(network1.containsNode(n1));
+		assertTrue(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		rootNetwork.restoreEdge(e1);
+		
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertFalse(network1.containsNode(n1));
+		assertTrue(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		CyRow row = rootNetwork.getDefaultEdgeTable().getRow(e1.getSUID());
+		assertNotNull(row);
+	}
+	
+	
+	@Test
+	public void testRestoreBug3838_2() {
+		CyNetwork network1 = TestCyNetworkFactory.getInstance();
+		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
+		
+		CyNode n1 = network1.addNode();
+		CyNode n2 = network1.addNode();
+		CyEdge e1 = network1.addEdge(n1, n2, false);
+		
+		network1.removeNodes(Arrays.asList(n1, n2));
+		
+		assertFalse(rootNetwork.containsNode(n1));
+		assertFalse(rootNetwork.containsNode(n2));
+		assertFalse(rootNetwork.containsEdge(e1));
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		rootNetwork.restoreEdge(e1);
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		network1.removeNodes(Arrays.asList(n1, n2));
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+		
+		rootNetwork.restoreEdge(e1);
+		
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertFalse(network1.containsNode(n1));
+		assertFalse(network1.containsNode(n2));
+		assertFalse(network1.containsEdge(e1));
+	}
+	
+	
+	@Test
+	public void testSubnetworkWorkaround() {
+		CyNetwork network1 = TestCyNetworkFactory.getInstance();
+		CyRootNetwork rootNetwork = ((CySubNetwork)network1).getRootNetwork();
+		
+		CyNode n1 = network1.addNode();
+		CyNode n2 = network1.addNode();
+		CyNode n3 = network1.addNode();
+		CyNode n4 = network1.addNode();
+		CyEdge e1 = network1.addEdge(n1, n2, false);
+		CyEdge e2 = network1.addEdge(n2, n3, false);
+		
+		CyNetwork network2 = rootNetwork.addSubNetwork(Arrays.asList(n1,n2,n3,n4), Arrays.asList(e1,e2));
+		
+		rootNetwork.addSubNetwork(Arrays.asList(n1), Arrays.asList(e1)); // will also cause n2 to be saved because its attached to e1
+		
+		network1.removeEdges(Arrays.asList(e1));
+		network2.removeEdges(Arrays.asList(e1));
+		
+		// additional subnetwork keeps e1 alive
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertTrue(rootNetwork.containsNode(n3));
+		assertTrue(rootNetwork.containsNode(n4));
+		assertTrue(rootNetwork.containsEdge(e2));
+		
+		rootNetwork.removeSubNetwork((CySubNetwork)network1);
+		rootNetwork.removeSubNetwork((CySubNetwork)network2);
+
+		// should flush nodes/edges not in the additional subnetwork
+		assertTrue(rootNetwork.containsEdge(e1));
+		assertTrue(rootNetwork.containsNode(n1));
+		assertTrue(rootNetwork.containsNode(n2));
+		assertFalse(rootNetwork.containsNode(n3));
+		assertFalse(rootNetwork.containsNode(n4));
+		assertFalse(rootNetwork.containsEdge(e2));
 	}
 	
 }
