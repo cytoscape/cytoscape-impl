@@ -422,7 +422,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	JButton getExportButton() {
 		if (exportButton == null) {
 			exportButton = new JButton(ICON_SHARE_SQUARE_O);
-			exportButton.setToolTipText("Export View to File...");
+			exportButton.setToolTipText("Export to File...");
 			styleToolBarButton(exportButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 		}
 		

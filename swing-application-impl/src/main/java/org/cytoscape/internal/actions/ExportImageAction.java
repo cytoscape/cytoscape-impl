@@ -1,6 +1,7 @@
 package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.event.PopupMenuEvent;
@@ -9,7 +10,10 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.write.ExportSelectedNetworkTaskFactory;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -37,33 +41,45 @@ import org.cytoscape.work.swing.DialogTaskManager;
  */
 
 /**
- * Simply executes the {@link ExportSelectedNetworkTaskFactory} if there is one and only one network selected.
+ * Executes a {@link ExportNetworkImageTaskFactory} for each {@link CyNetworkView} of the selected {@link CyNetwork}.
  */
 @SuppressWarnings("serial")
-public class ExportNetworkAction extends AbstractCyAction {
+public class ExportImageAction extends AbstractCyAction {
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ExportNetworkAction(final float menuGravity, final CyServiceRegistrar serviceRegistrar) {
-		super("Export as Network...");
+	public ExportImageAction(final float menuGravity, final CyServiceRegistrar serviceRegistrar) {
+		super("Export as Image...");
 		this.serviceRegistrar = serviceRegistrar;
 		
-		insertSeparatorBefore = true;
 		setMenuGravity(menuGravity);
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		ExportSelectedNetworkTaskFactory factory = serviceRegistrar.getService(ExportSelectedNetworkTaskFactory.class);
-		serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator());
+		List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
+		
+		if (networks.size() == 1) {
+			ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
+			TaskIterator taskIterator = new TaskIterator();
+			Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class)
+					.getNetworkViews(networks.get(0));
+			
+			if (!views.isEmpty()) {
+				for (CyNetworkView nv : views)
+					taskIterator.append(factory.createTaskIterator(nv));
+				
+				serviceRegistrar.getService(DialogTaskManager.class).execute(taskIterator);
+			}
+		}
 	}
 	
 	@Override
 	public void updateEnableState() {
 		List<CyNetwork> networks = serviceRegistrar.getService(CyApplicationManager.class).getSelectedNetworks();
-		CyNetwork currentNet = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
-		setEnabled(networks.size() == 1 && networks.get(0).equals(currentNet));
+		setEnabled(networks.size() == 1
+				&& serviceRegistrar.getService(CyNetworkViewManager.class).viewExists(networks.get(0)));
 	}
 	
 	@Override

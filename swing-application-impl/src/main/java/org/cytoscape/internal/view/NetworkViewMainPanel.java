@@ -917,7 +917,7 @@ public class NetworkViewMainPanel extends JPanel {
 
 		final JPopupMenu popupMenu = new JPopupMenu();
 		{
-			final JMenuItem mi = new JMenuItem("Export View...");
+			final JMenuItem mi = new JMenuItem("Export as Network...");
 			mi.addActionListener(evt -> {
 				ExportNetworkViewTaskFactory factory = serviceRegistrar.getService(ExportNetworkViewTaskFactory.class);
 				taskMgr.execute(factory.createTaskIterator(view));
@@ -925,7 +925,7 @@ public class NetworkViewMainPanel extends JPanel {
 			popupMenu.add(mi);
 		}
 		{
-			final JMenuItem mi = new JMenuItem("Export View as Image...");
+			final JMenuItem mi = new JMenuItem("Export as Image...");
 			mi.addActionListener(evt -> {
 				ExportNetworkImageTaskFactory factory = serviceRegistrar.getService(ExportNetworkImageTaskFactory.class);
 				taskMgr.execute(factory.createTaskIterator(view));
