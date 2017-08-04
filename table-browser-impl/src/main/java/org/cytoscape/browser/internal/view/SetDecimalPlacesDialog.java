@@ -27,6 +27,7 @@ package org.cytoscape.browser.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -49,6 +50,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
+import javax.swing.border.TitledBorder;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,17 +61,17 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 	private static final float FORMAT_EXAMPLE_NUM = 123.4567890987654321f;
 	private JPanel formatPanel;
+	private JPanel allColumnsPanel;
 	private JButton decimalDecreaseButton;
 	private JLabel formatExampleLabel;
 	private JButton decimalIncreaseButton;
-	private JToggleButton scientificNotationToggleButton;
+	private JToggleButton scientificNotationButton;
+	private JToggleButton useDefaultButton;
 	private JTextField formatEntry;
 	private JButton okButton;
 	private JButton cancelButton;
-	private JButton useDefaultButton;
 	private JButton setDefaultButton;
 	private JButton clearDefaultButton;
-
 	private int decimalPlaces = 4;
 	private boolean scientificNotation = false;
 	private boolean defaultFormat = false;
@@ -87,7 +89,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 		this.targetAttrName = targetAttrName;
 		this.tableModel = (BrowserTableModel) table.getModel();
 		tableColumnModel = (BrowserTableColumnModel) table.getColumnModel();
-		
+
 		loadFormat(tableColumnModel.getColumnFormat(targetAttrName));
 		initComponents();
 	}
@@ -97,12 +99,12 @@ public class SetDecimalPlacesDialog extends JDialog {
 		this.targetAttrName = null;
 		this.tableModel = null;
 		tableColumnModel = null;
-		
+
 		initComponents();
 	}
 
 	private void loadFormat(String format) {
-		if (format == null){
+		if (format == null) {
 			defaultFormat = true;
 			format = props.getProperties().getProperty("columnFormat");
 		}
@@ -112,7 +114,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 			if (m.find()) {
 				decimalPlaces = Integer.parseInt(m.group(1));
 				scientificNotation = m.group(2).equals("e");
-				getScientificNotationToggleButton().setSelected(scientificNotation);
+				getScientificNotationButton().setSelected(scientificNotation);
 			}
 			getFormatEntry().setText(format);
 		}
@@ -120,8 +122,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 	private void initComponents() {
 
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton(),
-				getClearDefaultButton());
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
 
 		final JPanel contents = new JPanel();
 		final GroupLayout layout = new GroupLayout(contents);
@@ -131,10 +132,12 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 		layout.setHorizontalGroup(
 				layout.createParallelGroup().addComponent(getFormatPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getAllColumnsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getFormatPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAllColumnsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
 
 		getContentPane().add(contents);
@@ -147,15 +150,83 @@ public class SetDecimalPlacesDialog extends JDialog {
 		setResizable(false);
 	}
 
-	private JButton getUseDefaultButton() {
+	private JPanel getFormatPanel() {
+		if (formatPanel == null) {
+			formatPanel = new JPanel();
+
+			final GroupLayout layout = new GroupLayout(formatPanel);
+			formatPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+
+			JLabel formatLabel = new JLabel("Format Spec:");
+
+			layout.setHorizontalGroup(layout.createParallelGroup()
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getFormatExampleLabel(), 250, 250, 250)
+							.addComponent(getScientificNotationButton()))
+					.addGroup(layout.createSequentialGroup().addComponent(formatLabel).addComponent(getFormatEntry())
+							.addComponent(getUseDefaultButton())));
+
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getFormatExampleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getScientificNotationButton()))
+					.addGroup(layout.createParallelGroup(Alignment.CENTER, true).addComponent(formatLabel)
+							.addComponent(getFormatEntry(), 20, 20, 20).addComponent(getUseDefaultButton())));
+		}
+
+		return formatPanel;
+	}
+
+	private JPanel getAllColumnsPanel() {
+		if (allColumnsPanel == null) {
+			allColumnsPanel = new JPanel();
+			allColumnsPanel.setBorder(new TitledBorder("All Columns"));
+			allColumnsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+			allColumnsPanel.add(getClearDefaultButton());
+			allColumnsPanel.add(getSetDefaultButton());
+		}
+		return allColumnsPanel;
+	}
+
+	private JToggleButton getScientificNotationButton() {
+		if (scientificNotationButton == null) {
+			scientificNotationButton = new JToggleButton("E", scientificNotation);
+			scientificNotationButton.setToolTipText("Scientific Notation");
+			scientificNotationButton.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					scientificNotation = scientificNotationButton.isSelected();
+					updateFormatEntry();
+				}
+
+			});
+		}
+		return scientificNotationButton;
+	}
+	
+	private JToggleButton getUseDefaultButton() {
 		if (useDefaultButton == null) {
-			useDefaultButton = new JButton("Use Default");
+			useDefaultButton = new JToggleButton("Use Default");
 			useDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					boolean allow_input = !useDefaultButton.isSelected();
+					getDecimalDecreaseButton().setEnabled(allow_input);
+					getDecimalIncreaseButton().setEnabled(allow_input);
+					getFormatEntry().setEnabled(allow_input);
+					getSetDefaultButton().setEnabled(allow_input);
+					getClearDefaultButton().setEnabled(allow_input);
+					
 					tableColumnModel.setColumnFormat(targetAttrName, null);
-					if (props.getProperties().containsKey("columnFormat")){
+					if (props.getProperties().containsKey("columnFormat")) {
 						loadFormat(props.getProperties().getProperty("columnFormat"));
 					}
 					defaultFormat = true;
@@ -167,12 +238,12 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 	private JButton getSetDefaultButton() {
 		if (setDefaultButton == null) {
-			setDefaultButton = new JButton("Set Default");
+			setDefaultButton = new JButton("Set As Default");
 			setDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (getFormatExampleLabel() != null){
+					if (getFormatExampleLabel() != null) {
 						props.getProperties().setProperty("columnFormat", getFormatEntry().getText());
 						tableModel.fireTableDataChanged();
 						defaultFormat = true;
@@ -190,7 +261,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (tableColumnModel.getColumnFormat(targetAttrName) == null){
+					if (tableColumnModel.getColumnFormat(targetAttrName) == null) {
 						defaultFormat = true;
 					}
 					props.getProperties().remove("columnFormat");
@@ -199,57 +270,6 @@ public class SetDecimalPlacesDialog extends JDialog {
 			});
 		}
 		return clearDefaultButton;
-	}
-
-	private JPanel getFormatPanel() {
-		if (formatPanel == null) {
-			formatPanel = new JPanel();
-
-			final GroupLayout layout = new GroupLayout(formatPanel);
-			formatPanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(true);
-			layout.setAutoCreateGaps(true);
-
-			JLabel formatLabel = new JLabel("Custom format:");
-
-			layout.setHorizontalGroup(layout.createParallelGroup()
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getScientificNotationToggleButton(), 32, 32, 32)
-							.addComponent(getFormatExampleLabel(), 250, 250, 250).addComponent(getUseDefaultButton()))
-					.addGroup(layout.createSequentialGroup().addComponent(formatLabel).addComponent(getFormatEntry())
-							.addComponent(getSetDefaultButton())));
-
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
-							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getScientificNotationToggleButton(), 32, 32, 32)
-							.addComponent(getFormatExampleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(getUseDefaultButton()))
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, true).addComponent(formatLabel)
-							.addComponent(getFormatEntry(), 20, 20, 20).addComponent(getSetDefaultButton())));
-		}
-
-		return formatPanel;
-	}
-
-	private JToggleButton getScientificNotationToggleButton() {
-		if (scientificNotationToggleButton == null) {
-			scientificNotationToggleButton = new JToggleButton("E", scientificNotation);
-			scientificNotationToggleButton.setToolTipText("Scientific Notation");
-			scientificNotationToggleButton.addActionListener(new ActionListener() {
-
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					scientificNotation = scientificNotationToggleButton.isSelected();
-					updateFormatEntry();
-				}
-
-			});
-		}
-		return scientificNotationToggleButton;
 	}
 
 	private JButton getDecimalIncreaseButton() {
@@ -271,7 +291,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 	private JTextField getFormatEntry() {
 		if (formatEntry == null) {
-			
+
 			formatEntry = new JTextField("%.4f");
 			formatEntry.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -350,7 +370,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 		return cancelButton;
 	}
-	
+
 	private void formatFieldChanged() {
 		boolean valid = false;
 		if (getFormattedExample() != null) {
@@ -380,7 +400,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 	private void updateFormatEntry() {
 		final String formatStr = String.format("%%.%d%c", decimalPlaces,
-				getScientificNotationToggleButton().isSelected() ? 'e' : 'f');
+				getScientificNotationButton().isSelected() ? 'e' : 'f');
 		getFormatEntry().setText(formatStr);
 		defaultFormat = false;
 	}
@@ -398,8 +418,8 @@ public class SetDecimalPlacesDialog extends JDialog {
 			tableModel.fireTableDataChanged();
 		return complete;
 	}
-	
-	public static void main(String[] args){
+
+	public static void main(String[] args) {
 		SetDecimalPlacesDialog d = new SetDecimalPlacesDialog();
 		d.setVisible(true);
 	}
