@@ -97,7 +97,11 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 		// TODO This method should be moved to the superclass, if safe
 		if (contentTypes.isEmpty())
 			return true;
-			
+		
+		// Don't try to create a File if it is a URL (e.g. http)
+		if (!isFile(uri))
+			return true;
+		
 		final File file = new File(uri);
 		
 		// This only checks the file extension
@@ -125,5 +129,9 @@ public class WildCardCyFileFilter extends BasicCyFileFilter {
 			return false;
 
 		return extensions.contains("") || extensions.contains(extension);
+	}
+	
+	private static boolean isFile(URI uri) {
+		return uri.getScheme().equals("file");
 	}
 }
