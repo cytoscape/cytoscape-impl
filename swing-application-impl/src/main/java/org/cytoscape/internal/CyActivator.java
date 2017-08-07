@@ -46,6 +46,7 @@ import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
+import org.cytoscape.internal.actions.ExportImageAction;
 import org.cytoscape.internal.actions.ExportNetworkAction;
 import org.cytoscape.internal.actions.FullScreenAction;
 import org.cytoscape.internal.actions.FullScreenMacAction;
@@ -212,6 +213,7 @@ public class CyActivator extends AbstractCyActivator {
 	private DestroyNetworkViewsAction destroyNetworkViewsAction;
 	private DestroyNetworksAction destroyNetworksAction;
 	private ExportNetworkAction exportNetworkAction;
+	private ExportImageAction exportImageAction;
 	
 	@Override
 	public void start(final BundleContext bc) throws Exception {
@@ -330,6 +332,11 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 			registerAllServices(bc, exportNetworkAction, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, exportImageAction, props);
 		}
 		
 		registerAllServices(bc, cytoscapeDesktop);
@@ -476,7 +483,8 @@ public class CyActivator extends AbstractCyActivator {
 		createNetworkViewsAction = new CreateNetworkViewsAction(3.0f, serviceRegistrar);
 		destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);
 		destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
-		exportNetworkAction = new ExportNetworkAction(100.1f, serviceRegistrar);
+		exportNetworkAction = new ExportNetworkAction(1000.1f, serviceRegistrar);
+		exportImageAction = new ExportImageAction(1000.2f, serviceRegistrar);
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {

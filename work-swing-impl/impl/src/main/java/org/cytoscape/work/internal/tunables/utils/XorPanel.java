@@ -150,6 +150,7 @@ public class XorPanel extends TitledPanel {
 		@Override public boolean controlsMutuallyExclusiveNestedChildren() { return false; }
 		@Override public String[] getGroups() { return null; }
 		@Override public String getDescription() { return null; }
+		@Override public String getExampleStringValue() {return null;}
 		@Override public Object getValue() { return null; }
 		@Override public void setValue(final Object newValue) { }
 		@Override public String getQualifiedName() { return null; }
@@ -166,5 +167,6 @@ public class XorPanel extends TitledPanel {
 		@Override public void changeOccurred(final String name, final String state){}
 		@Override public String getState() {return null;}
 		public void returnPanel() {}
+		
 	}
 }

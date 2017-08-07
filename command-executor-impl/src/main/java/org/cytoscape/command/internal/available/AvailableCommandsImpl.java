@@ -213,10 +213,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	@Override
-	public String getArgDefaultStringValue(String namespace, String command, String argument) {
+	public String getArgExampleStringValue(String namespace, String command, String argument) {
 		Map<String, ArgHandler> map = getArgMap(namespace, command, argument);
 		if (map != null && map.containsKey(argument))
-			return map.get(argument).getDefaultStringValue();
+			return map.get(argument).getExampleStringValue();
 		return null;
 	}
 

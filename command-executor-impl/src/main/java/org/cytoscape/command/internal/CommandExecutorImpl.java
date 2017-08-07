@@ -235,12 +235,14 @@ public class CommandExecutorImpl {
 		StreamTokenizer st = new StreamTokenizer(reader);
 
 		// We don't really want to parse numbers as numbers...
+		st.ordinaryChar(':');
 		st.ordinaryChar('/');
 		st.ordinaryChar('_');
 		st.ordinaryChar('-');
 		st.ordinaryChar('.');
 		st.ordinaryChars('0', '9');
 
+		st.wordChars(':', ':');
 		st.wordChars('/', '/');
 		st.wordChars('_', '_');
 		st.wordChars('-', '-');
@@ -256,7 +258,7 @@ public class CommandExecutorImpl {
 					case '=':
 						// Get the next token
 						i = st.nextToken();
-						if (i == StreamTokenizer.TT_WORD || i == '"') {
+						if (i == StreamTokenizer.TT_WORD || i == '"' || i == '\'') {
 							tokenIndex--;
 							String key = tokenList.get(tokenIndex);
 							settings.put(key, st.sval);
@@ -264,6 +266,7 @@ public class CommandExecutorImpl {
 						}
 						break;
 					case '"':
+					case '\'':
 					case StreamTokenizer.TT_WORD:
 						tokenList.add(st.sval);
 						tokenIndex++;

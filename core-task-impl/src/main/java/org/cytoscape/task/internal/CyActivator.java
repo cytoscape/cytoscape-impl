@@ -13,6 +13,7 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
@@ -388,31 +389,43 @@ public class CyActivator extends AbstractCyActivator {
 		LoadTableFileTaskFactoryImpl loadTableFileTaskFactory = new LoadTableFileTaskFactoryImpl(serviceRegistrar);
 		LoadTableURLTaskFactoryImpl loadTableURLTaskFactory = new LoadTableURLTaskFactoryImpl(serviceRegistrar);
 		MergeTablesTaskFactoryImpl mergeTablesTaskFactory = new MergeTablesTaskFactoryImpl(cyTableManagerServiceRef,cyNetworkManagerServiceRef,tunableSetterServiceRef, rootNetworkManagerServiceRef);
-		// Apply Style Task
-		ApplyVisualStyleTaskFactoryimpl applyVisualStyleTaskFactory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
-		Properties applyVisualStyleProps = new Properties();
-		applyVisualStyleProps.setProperty(ID,"applyVisualStyleTaskFactory");
-		applyVisualStyleProps.setProperty(TITLE, "Apply Style...");
-		applyVisualStyleProps.setProperty(COMMAND,"apply");
-		applyVisualStyleProps.setProperty(COMMAND_NAMESPACE,"vizmap");
-		applyVisualStyleProps.setProperty(COMMAND_DESCRIPTION,"Apply the style");
-		applyVisualStyleProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
-		applyVisualStyleProps.setProperty(ENABLE_FOR,ENABLE_FOR_NETWORK_AND_VIEW);
-		
-		registerService(bc, applyVisualStyleTaskFactory, NetworkViewCollectionTaskFactory.class, applyVisualStyleProps);
-		registerService(bc, applyVisualStyleTaskFactory, ApplyVisualStyleTaskFactory.class, applyVisualStyleProps);
 		
 		{
-			// Clear edge bends
+			// Clear edge bends - Main menu
 			ClearAllEdgeBendsFactory factory = new ClearAllEdgeBendsFactory(visualMappingManagerServiceRef);
 			Properties props = new Properties();
 			props.setProperty(ID, "clearAllEdgeBendsFactory");
 			props.setProperty(TITLE, "Clear All Edge Bends");
-			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Layout");
 			props.setProperty(MENU_GRAVITY, "0.1");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
+		}
+		{
+			// Clear edge bends - Network context menu
+			ClearAllEdgeBendsFactory factory = new ClearAllEdgeBendsFactory(visualMappingManagerServiceRef);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "Clear All Edge Bends");
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(MENU_GRAVITY, "6.0");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
+		}
+		{
+			// Apply Style Task
+			ApplyVisualStyleTaskFactoryimpl factory = new ApplyVisualStyleTaskFactoryimpl(visualMappingManagerServiceRef);
+			Properties props = new Properties();
+			props.setProperty(ID, "applyVisualStyleTaskFactory");
+			props.setProperty(TITLE, "Apply Style...");
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(MENU_GRAVITY, "6.999");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(COMMAND, "apply");
+			props.setProperty(COMMAND_NAMESPACE, "vizmap");
+			props.setProperty(COMMAND_DESCRIPTION, "Apply the style");
+			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
+			registerService(bc, factory, ApplyVisualStyleTaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
@@ -431,18 +444,18 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(ID,"loadNetworkFileTaskFactory");
-			props.setProperty(PREFERRED_MENU,"File.Import.Network[1.0]");
-			props.setProperty(ACCELERATOR,"cmd l");
-			props.setProperty(TITLE,"File...");
-			props.setProperty(COMMAND_NAMESPACE,"network");
-			props.setProperty(COMMAND,"load file");
-			props.setProperty(COMMAND_DESCRIPTION,"Load a network file (e.g. XGMML)");
-			props.setProperty(MENU_GRAVITY,"1.0");
-			props.setProperty(TOOL_BAR_GRAVITY,"2.0");
-			props.setProperty(LARGE_ICON_URL,getClass().getResource("/images/icons/import-net-32.png").toString());
-			props.setProperty(IN_TOOL_BAR,"true");
-			props.setProperty(TOOLTIP,"Import Network From File");
+			props.setProperty(ID, "loadNetworkFileTaskFactory");
+			props.setProperty(PREFERRED_MENU, "File.Import.Network[1.0]");
+			props.setProperty(ACCELERATOR, "cmd l");
+			props.setProperty(TITLE, "File...");
+			props.setProperty(COMMAND_NAMESPACE, "network");
+			props.setProperty(COMMAND, "load file");
+			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML)");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(TOOL_BAR_GRAVITY, "2.0");
+			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-net-32.png").toString());
+			props.setProperty(IN_TOOL_BAR, "true");
+			props.setProperty(TOOLTIP, "Import Network From File");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadNetworkFileTaskFactory.class, props);
 		}
@@ -955,18 +968,19 @@ public class CyActivator extends AbstractCyActivator {
 		fitContentTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Fit all of the nodes and edges into the view");
 		registerService(bc,fitContentTaskFactory,NetworkTaskFactory.class, fitContentTaskFactoryProps);
 
-		Properties editNetworkTitleTaskFactoryProps = new Properties();
-		editNetworkTitleTaskFactoryProps.setProperty(ENABLE_FOR,ENABLE_FOR_SINGLE_NETWORK);
-		editNetworkTitleTaskFactoryProps.setProperty(PREFERRED_MENU,"Edit");
-		editNetworkTitleTaskFactoryProps.setProperty(MENU_GRAVITY,"5.5");
-		editNetworkTitleTaskFactoryProps.setProperty(TITLE,"Rename Network...");
-		editNetworkTitleTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");
-		editNetworkTitleTaskFactoryProps.setProperty(COMMAND,"rename");
-		editNetworkTitleTaskFactoryProps.setProperty(COMMAND_NAMESPACE,"network");
-		editNetworkTitleTaskFactoryProps.setProperty(COMMAND_DESCRIPTION,"Rename a network");
-		registerService(bc,editNetworkTitleTaskFactory,NetworkTaskFactory.class, editNetworkTitleTaskFactoryProps);
-		registerService(bc,editNetworkTitleTaskFactory,EditNetworkTitleTaskFactory.class, editNetworkTitleTaskFactoryProps);
-
+		{
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_SINGLE_NETWORK);
+			props.setProperty(PREFERRED_MENU, "Edit");
+			props.setProperty(MENU_GRAVITY, "5.5");
+			props.setProperty(TITLE, "Rename Network...");
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			props.setProperty(COMMAND, "rename");
+			props.setProperty(COMMAND_NAMESPACE, "network");
+			props.setProperty(COMMAND_DESCRIPTION, "Rename a network");
+			registerService(bc, editNetworkTitleTaskFactory, NetworkTaskFactory.class, props);
+			registerService(bc, editNetworkTitleTaskFactory, EditNetworkTitleTaskFactory.class, props);
+		}
 
 		Properties createNetworkViewTaskFactoryProps = new Properties();
 		createNetworkViewTaskFactoryProps.setProperty(ID,"createNetworkViewTaskFactory");

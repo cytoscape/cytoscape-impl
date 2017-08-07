@@ -901,7 +901,7 @@ public class NetworkViewMediator
 			}
 			popupMenu.addSeparator();
 			{
-				final JMenuItem mi = new JMenuItem("Export View...");
+				final JMenuItem mi = new JMenuItem("Export as Network...");
 				mi.addActionListener(evt -> {
 					ExportNetworkViewTaskFactory factory = serviceRegistrar
 							.getService(ExportNetworkViewTaskFactory.class);
@@ -911,7 +911,7 @@ public class NetworkViewMediator
 				mi.setEnabled(selectedViews.size() == 1);
 			}
 			{
-				final JMenuItem mi = new JMenuItem("Export View as Image...");
+				final JMenuItem mi = new JMenuItem("Export as Image...");
 				mi.addActionListener(evt -> {
 					ExportNetworkImageTaskFactory factory = serviceRegistrar
 							.getService(ExportNetworkImageTaskFactory.class);

@@ -12,20 +12,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.WeakHashMap;
 
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
-import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
-import org.cytoscape.application.events.SetSelectedNetworksEvent;
-import org.cytoscape.application.events.SetSelectedNetworksListener;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
@@ -67,7 +62,6 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -77,7 +71,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -101,14 +95,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedListener,
 		NetworkAboutToBeDestroyedListener, NetworkDestroyedListener, NetworkViewDestroyedListener, RowsSetListener,
 		AddedNodesListener, AddedEdgesListener, RemovedEdgesListener, RemovedNodesListener,
-		SessionAboutToBeLoadedListener, SessionLoadedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener,
-		SetSelectedNetworksListener, SetSelectedNetworkViewsListener {
+		SessionAboutToBeLoadedListener, SessionLoadedListener {
 
-	private final JPopupMenu popup;
-	
-	private final Map<Object, JMenuItem> popupMap = new WeakHashMap<>();
-	private HashMap<JMenuItem, Double> actionGravityMap = new HashMap<>();
-	
 	private final Map<Object, TaskFactory> provisionerMap = new HashMap<>();
 	private final Map<Object, CyAction> popupActionMap = new WeakHashMap<>();
 	
@@ -120,8 +108,6 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	public NetworkMediator(final NetworkMainPanel networkMainPanel, final CyServiceRegistrar serviceRegistrar) {
 		this.networkMainPanel = networkMainPanel;
 		this.serviceRegistrar = serviceRegistrar;
-		
-		popup = new JPopupMenu();
 		
 		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", (PropertyChangeEvent evt) -> {
 			final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
@@ -254,26 +240,6 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		});
 	}
 	
-	@Override
-	public void handleEvent(final SetCurrentNetworkEvent e) {
-		updatePopupMenuItems();
-	}
-	
-	@Override
-	public void handleEvent(final SetCurrentNetworkViewEvent e) {
-		updatePopupMenuItems();
-	}
-	
-	@Override
-	public void handleEvent(final SetSelectedNetworksEvent e) {
-		updatePopupMenuItems();
-	}
-	
-	@Override
-	public void handleEvent(final SetSelectedNetworkViewsEvent e) {
-		updatePopupMenuItems();
-	}
-	
 	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
 			addFactory(factory, props);
@@ -352,19 +318,13 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	
 	public void addCyAction(final CyAction action, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			addAction(action);
+			popupActionMap.put(action, action);
 		});
 	}
 	
 	public void removeCyAction(final CyAction action, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			final JMenuItem item = popupMap.remove(action);
-			
-			if (item != null)
-				popup.remove(item);
-			
 			popupActionMap.remove(action);
-			popup.removePopupMenuListener(action);
 		});
 	}
 	
@@ -379,57 +339,11 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		else
 			action = new TaskFactoryTunableAction(serviceRegistrar, factory, props);
 
-		final JMenuItem item = new JMenuItem(action);
-		Double gravity = 10.0;
-		
-		if (props.containsKey(ServiceProperties.MENU_GRAVITY))
-			gravity = Double.valueOf(props.get(ServiceProperties.MENU_GRAVITY).toString());
-		
-		actionGravityMap.put(item, gravity);
-		
-		popupMap.put(factory, item);
 		popupActionMap.put(factory, action);
-		int menuIndex = getMenuIndexByGravity(item);
-		popup.insert(item, menuIndex);
-		popup.addPopupMenuListener(action);
 	}
 	
 	private void removeFactory(TaskFactory factory) {
-		final JMenuItem item = popupMap.remove(factory);
-		
-		if (item != null)
-			popup.remove(item);
-		
-		final CyAction action = popupActionMap.remove(factory);
-		
-		if (action != null)
-			popup.removePopupMenuListener(action);
-	}
-	
-	private void addAction(final CyAction action) {
-		final JMenuItem item = new JMenuItem(action);
-		final double gravity = action.getMenuGravity();
-		actionGravityMap.put(item, gravity);
-		
-		popupMap.put(action, item);
-		popupActionMap.put(action, action);
-		int menuIndex = getMenuIndexByGravity(item);
-		popup.insert(item, menuIndex);
-		popup.addPopupMenuListener(action);
-	}
-	
-	private int getMenuIndexByGravity(JMenuItem item) {
-		Double gravity = this.actionGravityMap.get(item);
-		Double gravityX;
-
-		for (int i = 0; i < popup.getComponentCount(); i++) {
-			gravityX = this.actionGravityMap.get(popup.getComponent(i));
-
-			if (gravity < gravityX)
-				return i;
-		}
-
-		return popup.getComponentCount();
+		popupActionMap.remove(factory);
 	}
 	
 	private void addMouseListenersForSelection(final AbstractNetworkPanel<?> item, final JComponent... components) {
@@ -448,14 +362,6 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			c.addMouseListener(selectionListener);
 			c.addMouseListener(popupListener);
 		}
-	}
-	
-	private void updatePopupMenuItems() {
-		invokeOnEDT(() -> {
-			// Enable or disable the actions
-			for (CyAction action : popupActionMap.values())
-				action.updateEnableState();
-		});
 	}
 	
 	private void updateViewCount(final CyNetworkView view) {
@@ -513,13 +419,43 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			
 			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
 			final CyNetwork network = item.getModel().getNetwork();
+			final JPopupMenu popup = new JPopupMenu();
 			
 			if (network instanceof CySubNetwork) {
-				updatePopupMenuItems();
-				popup.show(e.getComponent(), e.getX(), e.getY());
-			} else {
-				final JPopupMenu rootPopupMenu = new JPopupMenu();
+				final TreeMap<Double, CyAction> gravityMap = new TreeMap<>();
 				
+				// Sort the actions by gravity first
+				for (CyAction action : popupActionMap.values()) {
+					double g = 99;
+					
+					if (action instanceof AbstractCyAction)
+						g = ((AbstractCyAction) action).getMenuGravity();
+						
+					gravityMap.put(g, action);
+				}
+				
+				// Create the menu items
+				gravityMap.forEach((g, action) -> {
+					int count = popup.getComponentCount();
+					
+					if (action.insertSeparatorBefore() && count > 0
+							&& popup.getComponent(count - 1) instanceof JSeparator == false)
+						popup.addSeparator();
+					
+					final JMenuItem mi = new JMenuItem(action);
+					popup.add(mi);
+					action.updateEnableState();
+					
+					if (action.insertSeparatorAfter())
+						popup.addSeparator();
+				});
+				
+				// Remove the last item if it is a separator
+				int count = popup.getComponentCount();
+				
+				if (count > 0 && popup.getComponent(count - 1) instanceof JSeparator)
+					popup.remove(count - 1);
+			} else {
 				{
 					final JMenuItem mi = new JMenuItem("Rename Network Collection...");
 					mi.addActionListener(new ActionListener() {
@@ -530,19 +466,19 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 							taskMgr.execute(factory.createTaskIterator(network));
 						}
 					});
-					rootPopupMenu.add(mi);
+					popup.add(mi);
 					mi.setEnabled(selectedItems.size() == 1);
 				}
 				{
 					final DestroyNetworksAction action = new DestroyNetworksAction(0.0f, networkMainPanel,
 							serviceRegistrar);
 					final JMenuItem mi = new JMenuItem(action);
-					rootPopupMenu.add(mi);
+					popup.add(mi);
 					action.updateEnableState();
 				}
-				
-				rootPopupMenu.show(e.getComponent(), e.getX(), e.getY());
 			}
+			
+			popup.show(e.getComponent(), e.getX(), e.getY());
 		}
 	}
 }
