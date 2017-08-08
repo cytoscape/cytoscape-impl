@@ -266,7 +266,6 @@ public class ClipboardImpl {
 
 		CySubNetwork targetNetwork = (CySubNetwork)targetView.getModel();
 		CyRootNetwork targetRoot = targetNetwork.getRootNetwork();
-		boolean addedNodes = newNodeMap.size() > 0;
 
 		CyEdge newEdge = null;
 		CyNode sourceNode = edge.getSource();
@@ -284,7 +283,6 @@ public class ClipboardImpl {
 			// Case 1: different root
 
 			if (!newNodeMap.containsKey(sourceNode)) {
-				if (addedNodes) return null;
 				addRows(sourceNode, sourceRoot, sourceNetwork);
 				final CyNode newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
 				newNodeMap.put(sourceNode, newNode);
@@ -292,7 +290,6 @@ public class ClipboardImpl {
 			}
 
 			if (!newNodeMap.containsKey(targetNode)) {
-				if (addedNodes) return null;
 				addRows(targetNode, sourceRoot, sourceNetwork);
 				final CyNode newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
 				newNodeMap.put(targetNode, newNode);
@@ -318,30 +315,22 @@ public class ClipboardImpl {
 			if (!newNodeMap.containsKey(sourceNode)) {
 				if (targetNetwork.containsNode(sourceNode)) {
 					newNodeMap.put(sourceNode, sourceNode);
-				} else if (!addedNodes) {
+				} else {
 					addRows(sourceNode, sourceRoot, sourceNetwork);
 					final CyNode newNode = pasteNode(sourceView, targetView, sourceNode, rowMap);
 					newNodeMap.put(sourceNode, newNode);
 					pastedObjects.add(newNode);
-				} else {
-					// If this network doesn't contain this node and we added nodes in our paste,
-					// skip this edge
-					return null;
 				}
 			}
 
 			if (!newNodeMap.containsKey(targetNode)) {
 				if (targetNetwork.containsNode(targetNode)) {
 					newNodeMap.put(targetNode, targetNode);
-				} else if (!addedNodes) {
+				} else {
 					addRows(targetNode, sourceRoot, sourceNetwork);
 					final CyNode newNode = pasteNode(sourceView, targetView, targetNode, rowMap);
 					newNodeMap.put(targetNode, newNode);
 					pastedObjects.add(newNode);
-				} else {
-					// If this network doesn't contain this node and we added nodes in our paste,
-					// skip this edge
-					return null;
 				}
 			}
 
