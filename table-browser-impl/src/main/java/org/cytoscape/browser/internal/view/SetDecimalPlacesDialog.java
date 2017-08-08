@@ -59,7 +59,8 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class SetDecimalPlacesDialog extends JDialog {
 
-	private static final float FORMAT_EXAMPLE_NUM = 123.4567890987654321f;
+	public static final String FLOAT_FORMAT_PROPERTY = "floatingPointColumnFormat";
+	private static final double FORMAT_EXAMPLE_NUM = 123.4567890987654321;
 	private JPanel formatPanel;
 	private JPanel allColumnsPanel;
 	private JButton decimalDecreaseButton;
@@ -84,7 +85,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 	@SuppressWarnings("unchecked")
 	public SetDecimalPlacesDialog(final BrowserTable table, final Frame parent, final String targetAttrName,
 			CyServiceRegistrar serviceRegistrar) {
-		super(parent, "Set Decimal Places For: " + targetAttrName, ModalityType.APPLICATION_MODAL);
+		super(parent, "Set Decimal Places for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 		this.props = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.targetAttrName = targetAttrName;
 		this.tableModel = (BrowserTableModel) table.getModel();
@@ -94,19 +95,10 @@ public class SetDecimalPlacesDialog extends JDialog {
 		initComponents();
 	}
 
-	public SetDecimalPlacesDialog() {
-		this.props = null;
-		this.targetAttrName = null;
-		this.tableModel = null;
-		tableColumnModel = null;
-
-		initComponents();
-	}
-
 	private void loadFormat(String format) {
 		if (format == null) {
 			defaultFormat = true;
-			format = props.getProperties().getProperty("columnFormat");
+			format = props.getProperties().getProperty(FLOAT_FORMAT_PROPERTY);
 		}
 		if (format != null) {
 			Pattern p = Pattern.compile("\\.(\\d*)(e|f)$");
@@ -161,12 +153,10 @@ public class SetDecimalPlacesDialog extends JDialog {
 
 			JLabel formatLabel = new JLabel("Format Spec:");
 
-			layout.setHorizontalGroup(layout.createParallelGroup()
-					.addGroup(layout.createSequentialGroup()
-							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getFormatExampleLabel(), 250, 250, 250)
-							.addComponent(getScientificNotationButton()))
+			layout.setHorizontalGroup(layout.createParallelGroup().addGroup(layout.createSequentialGroup()
+					.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
+					.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
+					.addComponent(getFormatExampleLabel(), 250, 250, 250).addComponent(getScientificNotationButton()))
 					.addGroup(layout.createSequentialGroup().addComponent(formatLabel).addComponent(getFormatEntry())
 							.addComponent(getUseDefaultButton())));
 
@@ -210,26 +200,33 @@ public class SetDecimalPlacesDialog extends JDialog {
 		}
 		return scientificNotationButton;
 	}
-	
+
 	private JToggleButton getUseDefaultButton() {
 		if (useDefaultButton == null) {
 			useDefaultButton = new JToggleButton("Use Default");
+			useDefaultButton.setToolTipText("Get default format spec from Cytoscape properties");
 			useDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					boolean allow_input = !useDefaultButton.isSelected();
-					getDecimalDecreaseButton().setEnabled(allow_input);
-					getDecimalIncreaseButton().setEnabled(allow_input);
-					getFormatEntry().setEnabled(allow_input);
-					getSetDefaultButton().setEnabled(allow_input);
-					getClearDefaultButton().setEnabled(allow_input);
+					defaultFormat = useDefaultButton.isSelected();
+					getDecimalDecreaseButton().setEnabled(!defaultFormat);
+					getDecimalIncreaseButton().setEnabled(!defaultFormat);
+					getFormatEntry().setEnabled(!defaultFormat);
+					getSetDefaultButton().setEnabled(!defaultFormat);
+					getClearDefaultButton().setEnabled(!defaultFormat);
+					getScientificNotationButton().setEnabled(!defaultFormat);
 					
-					tableColumnModel.setColumnFormat(targetAttrName, null);
-					if (props.getProperties().containsKey("columnFormat")) {
-						loadFormat(props.getProperties().getProperty("columnFormat"));
+					if (!defaultFormat){
+						updateFormatEntry();
+					}else{
+						//tableColumnModel.setColumnFormat(targetAttrName, null);
+						if (props.getProperties().containsKey(FLOAT_FORMAT_PROPERTY)) {
+							loadFormat(props.getProperties().getProperty(FLOAT_FORMAT_PROPERTY));
+						} else {
+							formatExampleLabel.setText("Example: " + FORMAT_EXAMPLE_NUM);
+						}
 					}
-					defaultFormat = true;
 				}
 			});
 		}
@@ -239,12 +236,13 @@ public class SetDecimalPlacesDialog extends JDialog {
 	private JButton getSetDefaultButton() {
 		if (setDefaultButton == null) {
 			setDefaultButton = new JButton("Set As Default");
+			setDefaultButton.setToolTipText("Set default format spec for all floating point columns");
 			setDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (getFormatExampleLabel() != null) {
-						props.getProperties().setProperty("columnFormat", getFormatEntry().getText());
+						props.getProperties().setProperty(FLOAT_FORMAT_PROPERTY, getFormatEntry().getText());
 						tableModel.fireTableDataChanged();
 						defaultFormat = true;
 					}
@@ -257,6 +255,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 	private JButton getClearDefaultButton() {
 		if (clearDefaultButton == null) {
 			clearDefaultButton = new JButton("Clear Default");
+			clearDefaultButton.setToolTipText("Set all floating point columns to display values without formatting");
 			clearDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
@@ -264,7 +263,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 					if (tableColumnModel.getColumnFormat(targetAttrName) == null) {
 						defaultFormat = true;
 					}
-					props.getProperties().remove("columnFormat");
+					props.getProperties().remove(FLOAT_FORMAT_PROPERTY);
 					tableModel.fireTableDataChanged();
 				}
 			});
@@ -293,6 +292,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 		if (formatEntry == null) {
 
 			formatEntry = new JTextField("%.4f");
+			formatEntry.setToolTipText("Specifies the format spec that is applied to all values in the column");
 			formatEntry.getDocument().addDocumentListener(new DocumentListener() {
 
 				@Override
@@ -417,11 +417,6 @@ public class SetDecimalPlacesDialog extends JDialog {
 		if (complete)
 			tableModel.fireTableDataChanged();
 		return complete;
-	}
-
-	public static void main(String[] args) {
-		SetDecimalPlacesDialog d = new SetDecimalPlacesDialog();
-		d.setVisible(true);
 	}
 
 }

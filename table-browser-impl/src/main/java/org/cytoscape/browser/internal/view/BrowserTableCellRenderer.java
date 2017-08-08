@@ -114,7 +114,7 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 				String formatStr = model.getColumnFormat(colName);
 
 				if (formatStr == null)
-					formatStr = propManager.getProperties().getProperty("columnFormat");
+					formatStr = propManager.getProperties().getProperty(SetDecimalPlacesDialog.FLOAT_FORMAT_PROPERTY);
 				
 				if (formatStr == null)
 					displayText = validatedObj.toString();
