@@ -53,8 +53,6 @@ public class PasteTask extends AbstractNetworkViewTask {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	// TODO: add an isRead that is ready when we have something to paste
-
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Task");
