@@ -412,7 +412,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 		
 		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar();
-		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
+		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
 		cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 		toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 		
