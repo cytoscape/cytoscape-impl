@@ -19,6 +19,7 @@ import javax.swing.JToolBar;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -55,7 +56,17 @@ public class CytoscapeToolBar extends JToolBar {
 	private Map<CyAction, JButton> actionButtonMap; 
 	private List<Object> orderedList;
 	private Map<Object, Float> componentGravity;
+	private  CyServiceRegistrar registrar;
 
+	
+	/**
+	 * new constructor passes CyServiceRegistrar in 
+	 */
+	public CytoscapeToolBar(final CyServiceRegistrar serviceRegistrar) {
+		this();
+		registrar = serviceRegistrar;
+		createCustomToolbar();
+	}
 	/**
 	 * Default constructor delegates to the superclass void constructor and then
 	 * calls {@link #initializeCytoscapeToolBar()}.
@@ -69,7 +80,6 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
-		createCustomToolbar();
 	}
 
 	/**
