@@ -201,7 +201,7 @@ public class CytoscapeToolBar extends JToolBar {
 		public void createCustomToolbar()
 		{
 			//get the file
-			// parse the file
+			// this doesn't work: ??  "~/CytoscapeConfiguration/toolbar.custom"
 			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
 			List<String> lines;
 			try {
@@ -210,16 +210,20 @@ public class CytoscapeToolBar extends JToolBar {
 				// file not found: there's no customization, just return
 				return;
 			}
+			
 			System.out.println("createCustomToolbar");
 			System.out.println("read " + lines.size() + " lines");
 
+			for (CyAction a : getAllToolBarActions())
+				removeAction(a);
+			
 			for (String line : lines)
 			{
 //				System.out.println(line);
 				if (line.trim().charAt(0) == '/')
-					{
+				{
 					addSeparator();
-					}
+				}
 				else
 				{
 					CyAction action = parseLine( line);	
