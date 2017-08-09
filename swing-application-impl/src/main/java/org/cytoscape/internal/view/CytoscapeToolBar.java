@@ -1,5 +1,9 @@
 package org.cytoscape.internal.view;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -65,6 +69,7 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
+		createCustomToolbar();
 	}
 
 	/**
@@ -191,4 +196,77 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		return button;
 	}
+
+	//--------------------------------------
+		public void createCustomToolbar()
+		{
+			//get the file
+			// parse the file
+			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
+			List<String> lines;
+			try {
+				lines = Files.readAllLines(new File(configFilename).toPath(), Charset.defaultCharset() );
+			} catch (IOException e) {
+				// file not found: there's no customization, just return
+				return;
+			}
+			System.out.println("createCustomToolbar");
+			System.out.println("read " + lines.size() + " lines");
+
+			for (String line : lines)
+			{
+//				System.out.println(line);
+				if (line.trim().charAt(0) == '/')
+					{
+					addSeparator();
+					}
+				else
+				{
+					CyAction action = parseLine( line);	
+					if (action != null)
+						addAction(action);
+					
+				}
+			}
+		}
+		
+		
+		private CyAction parseLine(String line)
+		{
+			String cmdName = line.substring(0, line.indexOf(' '));
+			String displayName =  getBetween(line, '"','"');
+			String gravity =  getBetween(line, '[',']');
+			double weight = 0;
+			try
+			{
+				weight = Double.parseDouble(gravity);
+			}
+			catch (NumberFormatException ex)
+			{
+				weight = -1;
+			}
+			String iconName = getBetween(line, '{','}');
+			System.out.println("adding button: " + cmdName + " " +  displayName + " " +  gravity + " " + iconName);
+			return lookupAction(cmdName);
+		}
+		
+		
+		private CyAction lookupAction(String cmdName) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		String getBetween(String src, char start, char end)
+		{
+			int startIdx = src.indexOf(start);
+			int endIdx = src.indexOf(end, startIdx+1);
+			if (startIdx >= 0 && endIdx > startIdx)
+			{
+				String s =  src.substring(startIdx + 1, endIdx);
+				return s.trim();
+		
+			}
+			return "";
+		}
+
 }
