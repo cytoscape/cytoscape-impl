@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ import javax.swing.JButton;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
@@ -66,6 +68,7 @@ public class CytoscapeToolBar extends JToolBar {
 		this();
 		registrar = serviceRegistrar;
 		createCustomToolbar();
+		readStopList();
 	}
 	/**
 	 * Default constructor delegates to the superclass void constructor and then
@@ -88,7 +91,13 @@ public class CytoscapeToolBar extends JToolBar {
 	 * gravity property.
 	 */
 	public boolean addAction(CyAction action) {
+		
+		System.out.println("addAction: " + action.getName());
+		
 		if (!action.isInToolBar()) 
+			return false;
+
+		if (stopList.contains(action.getName())) 
 			return false;
 
 		// At present we allow an Action to be in this tool bar only once.
@@ -206,18 +215,55 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		return button;
 	}
+	private HashSet<String> 	stopList = new HashSet<String>();
 
 	//--------------------------------------
+	private void readStopList()
+	{
+		stopList.clear();
+		List<String> lines;
+		try {
+			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+			if (cyApplicationConfiguration == null)
+				System.out.println("cyApplicationConfiguration not found");
+
+			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configFile = null;
+			if (configDirectory.exists())
+				configFile = new File(configDirectory.toPath()  + "/toolbar.stoplist");
+			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
+		} catch (IOException e) {
+			// file not found: there's no customization, just return
+			System.out.println("IOException: " + e.getMessage());
+			return;
+		}
+				
+		for (String line : lines)
+			stopList.add(line.trim());
+	}
+	//------------------------
 		public void createCustomToolbar()
 		{
 			//get the file
 			// this doesn't work: ??  "~/CytoscapeConfiguration/toolbar.custom"
-			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
+//			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
+			System.out.println("createCustomToolbar leaves searly");
+			if (3 > 2) return;
+			
 			List<String> lines;
 			try {
-				lines = Files.readAllLines(new File(configFilename).toPath(), Charset.defaultCharset() );
+				CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+				if (cyApplicationConfiguration == null)
+					System.out.println("cyApplicationConfiguration not found");
+
+				File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+				File configFile = null;
+				if (configDirectory.exists())
+					configFile = new File(configDirectory.toPath()  + "/toolbar.custom");
+				lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
 			} catch (IOException e) {
 				// file not found: there's no customization, just return
+				System.out.println(e.getMessage());
 				return;
 			}
 			
@@ -230,6 +276,7 @@ public class CytoscapeToolBar extends JToolBar {
 			for (String line : lines)
 			{
 //				System.out.println(line);
+				if (line.trim().isEmpty()) continue;
 				if (line.trim().charAt(0) == '/')
 				{
 					addSeparator();
@@ -237,6 +284,7 @@ public class CytoscapeToolBar extends JToolBar {
 				else
 				{
 					CyAction action = parseLine( line);	
+					System.out.println("action = " + action);
 					if (action != null)
 						addAction(action);
 					
@@ -265,9 +313,15 @@ public class CytoscapeToolBar extends JToolBar {
 		}
 		
 		
-		private CyAction lookupAction(String cmdName) {
-			// TODO Auto-generated method stub
-			return null;
+		private CyAction lookupAction(String className) {
+			Class<?> actionClass;
+			CyAction action = null;
+			
+			try {
+				actionClass = Class.forName(className);
+				action = (CyAction) registrar.getService(actionClass);
+			} catch (Exception e) {	}
+			return action;
 		}
 
 		String getBetween(String src, char start, char end)
