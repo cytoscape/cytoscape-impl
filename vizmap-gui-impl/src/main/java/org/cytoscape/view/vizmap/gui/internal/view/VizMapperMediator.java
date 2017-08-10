@@ -1304,6 +1304,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
 		final VisualPropertyDependency<?> dep = vpSheetItem.getModel().getVisualPropertyDependency();
 		dep.setDependency(selected);
+		
+		// Update VP Sheet Items
+		invokeOnEDT(() -> updateItemsStatus());
 	}
 	
 	private void onColumnChanged(final String colName, final CyTable tbl) {
