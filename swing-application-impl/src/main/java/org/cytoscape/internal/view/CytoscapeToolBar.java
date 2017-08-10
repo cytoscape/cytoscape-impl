@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -85,6 +86,11 @@ public class CytoscapeToolBar extends JToolBar {
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 	}
 
+	@Override public Component add(Component comp)
+	{
+		System.out.println("add override goes here");
+		return super.add(comp);
+	}
 	/**
 	 * If the given Action has an absent or false inToolBar property, return;
 	 * otherwise delegate to addAction( String, Action ) with the value of its
