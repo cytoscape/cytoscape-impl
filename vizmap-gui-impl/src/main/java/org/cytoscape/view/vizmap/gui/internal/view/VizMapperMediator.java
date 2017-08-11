@@ -282,7 +282,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
 		final Set<CyNetworkView> views = vmProxy.getNetworkViewsWithStyle(curStyle);
 		
-		for (final CyNetworkView view : views) {
+		for (final CyNetworkView view : views) { // TODO This should be done by NetworkViewMediator only, if possible
 			curStyle.apply(view);
 			view.updateView();
 		}
@@ -298,7 +298,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// Update bypass buttons--check selected nodes and edges of the current view
 		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
 		
-		if (curNetView != null && !e.getColumnRecords(CyNetwork.SELECTED).isEmpty()) {
+		if (curNetView != null && e.containsColumn(CyNetwork.SELECTED)) {
 			final CyNetwork curNet = curNetView.getModel();
 			
 			// We have to get all selected elements again
@@ -324,14 +324,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
 			
 			if (vpSheet != null) {
-				final Collection<RowSetRecord> payloadCollection = e.getPayloadCollection();
+				final Set<String> columns = e.getColumns();
 				
 				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
 					
 					if (mapping != null) {
-						for (final RowSetRecord record : payloadCollection) {
-							if (mapping.getMappingColumnName().equalsIgnoreCase(record.getColumn())) {
+						for (String columnName : columns) {
+							if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
 								invokeOnEDT(() -> item.updateMapping());
 								break;
 							}
