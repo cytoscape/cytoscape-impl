@@ -23,24 +23,17 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -55,8 +48,6 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		final CyTable nodeTable = mock(CyTable.class);
-		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
 		// more setup
@@ -67,9 +58,6 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 		selectedNodes.add(r3);
 		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
 		
-		when (r3.get(CyNetwork.SUID, Long.class)).thenReturn(3L);
-		when (net.getNode(3L)).thenReturn(e3);
-
 		List<CyNode> nl = new ArrayList<CyNode>();
 		nl.add(e4);
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
