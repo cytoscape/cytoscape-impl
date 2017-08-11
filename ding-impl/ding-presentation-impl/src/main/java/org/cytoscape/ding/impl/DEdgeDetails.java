@@ -1100,10 +1100,11 @@ final class DEdgeDetails extends EdgeDetails {
 			final int inx = i;
 
 			return new EdgeAnchors() {
+				@Override
 				public int numAnchors() {
 					return 2;
 				}
-
+				@Override
 				public void getAnchor(int anchorInx, float[] anchorArr, int offset) {
 					if (anchorInx == 0) {
 						anchorArr[offset] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
@@ -1119,7 +1120,6 @@ final class DEdgeDetails extends EdgeDetails {
 		// Now add "invisible" anchors to edges for the case where multiple edges
 		// exist between two nodes. This has no effect if user specified anchors exist on the edge.
 		while (true) {
-
 			// By consistently ordering the source and target nodes, dx and dy
 			// will always
 			// be calculated according to the same orientation. This allows the
@@ -1145,7 +1145,6 @@ final class DEdgeDetails extends EdgeDetails {
 			}
 
 			final LongEnumerator otherEdges = m_heap.orderedElements(false);
-
 			long otherEdge = otherEdges.nextLong();
 
 			// If the first other edge is the same as this edge,
