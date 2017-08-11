@@ -34,6 +34,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
@@ -1011,10 +1012,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		final Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 							m_backgroundColor.getBlue(), 0);
 
-		int lastRenderDetail = m_view.renderSubgraph(graphics, lod, backgroundColor, 
-		                                             m_xCenter, m_yCenter, m_scaleFactor, new LongHash(), nodes, edges);
-		if (setLastRenderDetail)
-			m_lastRenderDetail = lastRenderDetail;
+		synchronized (m_lock) {
+			int lastRenderDetail = m_view.renderSubgraph(graphics, lod, backgroundColor, m_xCenter, m_yCenter,
+					m_scaleFactor, new LongHash(), nodes, edges);
+			
+			if (setLastRenderDetail)
+				m_lastRenderDetail = lastRenderDetail;
+		}
 
 		repaint();
 	}
@@ -1746,6 +1750,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		// Fire event
 		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
-		eventHelper.fireEvent(event);
+		
+		if (SwingUtilities.isEventDispatchThread()) {
+			// Make sure the event is not fired on the EDT,
+			// otherwise selecting many nodes and edges may lock up the UI momentarily
+			new Thread(() -> {
+				eventHelper.fireEvent(event);
+			}).start();
+		} else {
+			eventHelper.fireEvent(event);
+		}
 	}
 }

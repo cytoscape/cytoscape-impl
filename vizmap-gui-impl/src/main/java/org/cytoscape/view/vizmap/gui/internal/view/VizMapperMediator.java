@@ -59,7 +59,6 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -1124,30 +1123,30 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private <S extends CyIdentifiable> void updateLockedValues(final Set<View<S>> selectedViews,
-															   final Class<S> targetDataType) {
-		final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
-		
-		for (VisualPropertySheet sheet : vpSheets) {
-			final Set<VisualPropertySheetItem<?>> vpItems = sheet.getItems();
+	private <S extends CyIdentifiable> void updateLockedValues(Set<View<S>> selectedViews, Class<S> targetDataType) {
+		invokeOnEDT(() -> {
+			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
-			for (final VisualPropertySheetItem<?> item : vpItems) {
-				final VisualPropertySheetItemModel<?> model = item.getModel();
+			for (VisualPropertySheet sheet : vpSheets) {
+				final Set<VisualPropertySheetItem<?>> vpItems = sheet.getItems();
 				
-				if (model.getTargetDataType() != targetDataType)
-					continue;
-				
-				final Set values = getDistinctLockedValues(model.getVisualProperty(), selectedViews);
-				
-				if (targetDataType == CyNode.class) {
-					updateVpInfoLockedState(model, values, selectedViews);
-				} else if (targetDataType == CyEdge.class) {
-					updateVpInfoLockedState(model, values, selectedViews);
-				} else {
-					updateVpInfoLockedState(model, values, selectedViews);
+				for (final VisualPropertySheetItem<?> item : vpItems) {
+					final VisualPropertySheetItemModel<?> model = item.getModel();
+					
+					if (model.getTargetDataType() != targetDataType)
+						continue;
+					
+					final Set values = getDistinctLockedValues(model.getVisualProperty(), selectedViews);
+					
+					if (targetDataType == CyNode.class)
+						updateVpInfoLockedState(model, values, selectedViews);
+					else if (targetDataType == CyEdge.class)
+						updateVpInfoLockedState(model, values, selectedViews);
+					else
+						updateVpInfoLockedState(model, values, selectedViews);
 				}
 			}
-		}
+		});
 	}
 	
 	private <T, S extends CyIdentifiable> void updateVpInfoLockedState(final VisualPropertySheetItemModel<T> model,

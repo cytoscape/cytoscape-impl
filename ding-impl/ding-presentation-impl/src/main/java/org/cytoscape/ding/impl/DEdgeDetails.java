@@ -1055,6 +1055,10 @@ final class DEdgeDetails extends EdgeDetails {
 	@Override
 	public EdgeAnchors getAnchors(final CyEdge edge) {
 		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
+		
+		if (edgeView == null)
+			return null;
+		
 		final EdgeAnchors returnThis = edgeView;
 
 		if (returnThis.numAnchors() > 0)
@@ -1150,14 +1154,19 @@ final class DEdgeDetails extends EdgeDetails {
 				break;
 
 			// So we don't count the other edge twice?
-			int i = (((EdgeAnchors) dGraphView.getDEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
+			DEdgeView otherEdgeView = dGraphView.getDEdgeView(otherEdge);
+			
+			if (otherEdgeView == null)
+				continue;
+			
+			int i = (((EdgeAnchors) otherEdgeView).numAnchors() == 0) ? 1 : 0;
 
 			// Count the number of other edges.
 			while (true) {
 				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
 
-				if (((EdgeAnchors) dGraphView.getDEdgeView(otherEdge)).numAnchors() == 0)
+				if (((EdgeAnchors) otherEdgeView).numAnchors() == 0)
 					i++;
 			}
 
