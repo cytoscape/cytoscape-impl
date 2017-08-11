@@ -30,10 +30,10 @@ import org.cytoscape.task.AbstractTableColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
-public final class SetDecimalPlacesTaskFactory extends AbstractTableColumnTaskFactory {
+public final class SetColumnFormatTaskFactory extends AbstractTableColumnTaskFactory {
 	
 	private CyServiceRegistrar serviceRegistrar;
-	public SetDecimalPlacesTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	public SetColumnFormatTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -42,7 +42,7 @@ public final class SetDecimalPlacesTaskFactory extends AbstractTableColumnTaskFa
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
 		
-		return new TaskIterator(new SetDecimalPlacesTask(column, serviceRegistrar));
+		return new TaskIterator(new SetColumnFormatTask(column, serviceRegistrar));
 	}
 
 	@Override

@@ -56,18 +56,18 @@ import org.cytoscape.browser.internal.view.BrowserTable;/*
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import org.cytoscape.browser.internal.view.SetDecimalPlacesDialog;
+import org.cytoscape.browser.internal.view.SetColumnFormatDialog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class SetDecimalPlacesTask extends AbstractTableColumnTask {
+public class SetColumnFormatTask extends AbstractTableColumnTask {
 	
 	private CyServiceRegistrar serviceRegistrar;
 	
-	public SetDecimalPlacesTask(final CyColumn column, final CyServiceRegistrar serviceRegistrar) {
+	public SetColumnFormatTask(final CyColumn column, final CyServiceRegistrar serviceRegistrar) {
 		super(column);
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -84,7 +84,7 @@ public class SetDecimalPlacesTask extends AbstractTableColumnTask {
 				final JFrame frame = (JFrame)SwingUtilities.getRoot(browserTable);
 				
 				// Set format
-				SetDecimalPlacesDialog dialog = new SetDecimalPlacesDialog(browserTable, frame, name, serviceRegistrar);
+				SetColumnFormatDialog dialog = new SetColumnFormatDialog(browserTable, frame, name, serviceRegistrar);
 
 				dialog.pack();
 				dialog.setLocationRelativeTo(frame);

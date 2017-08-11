@@ -30,7 +30,7 @@ import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
-import org.cytoscape.browser.internal.task.SetDecimalPlacesTaskFactory;
+import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
@@ -88,9 +88,9 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 		{
-			SetDecimalPlacesTaskFactory taskFactory = new SetDecimalPlacesTaskFactory(serviceRegistrar);
+			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Set Decimal Places");
+			props.setProperty(TITLE, "Set Column Format");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 	}

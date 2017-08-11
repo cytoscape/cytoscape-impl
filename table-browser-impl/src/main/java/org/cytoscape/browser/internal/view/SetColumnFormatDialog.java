@@ -57,7 +57,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class SetDecimalPlacesDialog extends JDialog {
+public class SetColumnFormatDialog extends JDialog {
 
 	public static final String FLOAT_FORMAT_PROPERTY = "floatingPointColumnFormat";
 	private static final double FORMAT_EXAMPLE_NUM = 123.4567890987654321;
@@ -83,7 +83,7 @@ public class SetDecimalPlacesDialog extends JDialog {
 	private final CyProperty<Properties> props;
 
 	@SuppressWarnings("unchecked")
-	public SetDecimalPlacesDialog(final BrowserTable table, final Frame parent, final String targetAttrName,
+	public SetColumnFormatDialog(final BrowserTable table, final Frame parent, final String targetAttrName,
 			CyServiceRegistrar serviceRegistrar) {
 		super(parent, "Set Decimal Places for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 		this.props = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
