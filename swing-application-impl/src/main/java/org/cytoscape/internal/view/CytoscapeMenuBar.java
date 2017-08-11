@@ -1,6 +1,12 @@
 package org.cytoscape.internal.view;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
@@ -10,8 +16,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
 import org.slf4j.Logger;
@@ -50,11 +58,12 @@ public class CytoscapeMenuBar extends JMenuBar {
 	private final JMenuTracker menuTracker;
 
 	public static final String DEFAULT_MENU_SPECIFIER = "Tools";
-
+	CyServiceRegistrar registrar;
 	/**
 	 * Default constructor.
 	 */
-	public CytoscapeMenuBar() {
+	public CytoscapeMenuBar(CyServiceRegistrar reg) {
+		registrar = reg;
 		actionMenuItemMap = new HashMap<Action,JMenuItem>();
 		menuTracker = new JMenuTracker(this);
 
@@ -62,6 +71,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 		// menu bar doesn't get too small.
 		// "File" is always first
 		setMinimumSize(getMenu("File").getPreferredSize());
+		readStopList();
 	}
 
 	/**
@@ -73,6 +83,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (!action.isInMenuBar())
 			return false;
 
+//		System.out.println("addAction in CytoscapeMenuBar");
 		boolean insertSepBefore = false;
 		boolean insertSepAfter = false;
 		if (action instanceof AbstractCyAction) {
@@ -91,6 +102,16 @@ public class CytoscapeMenuBar extends JMenuBar {
 		
 		final GravityTracker gravityTracker = menuTracker.getGravityTracker(menu_name);
 		final JMenuItem menu_item = createMenuItem(action);
+		String item = action.getName();
+		if (stopList.contains(item))
+		{
+//			System.out.println("Hiding " + item);
+			menu_item.setVisible(false);
+//			return false;
+		}
+//		else
+//				System.out.println("showing " + item);
+			
 
 		// Add an Accelerator Key, if wanted
 		final KeyStroke accelerator = action.getAcceleratorKeyStroke();
@@ -187,4 +208,40 @@ public class CytoscapeMenuBar extends JMenuBar {
 	public JMenuBar getJMenuBar() {
 		return this;
 	}
+
+	//---------------------------------
+	private HashSet<String> 	stopList = new HashSet<String>();
+	//---------------------------------
+	private void readStopList()
+	{
+		System.out.println("readStopList");
+		stopList.clear();
+		List<String> lines;
+		try {
+			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+			if (cyApplicationConfiguration == null)
+			{
+				System.out.println("cyApplicationConfiguration not found");
+				return;
+			}
+
+			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configFile = null;
+			if (configDirectory.exists())
+				configFile = new File(configDirectory.toPath()  + "/menubar.stoplist");
+			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
+		} catch (IOException e) {
+			// file not found: there's no customization, just return
+			System.out.println("IOException: " + e.getMessage());
+			return;
+		}
+				
+		for (String line : lines)
+		{
+			System.out.println(line);
+			stopList.add(line.trim());
+		}
+	}
+	//------------------------
+
 }

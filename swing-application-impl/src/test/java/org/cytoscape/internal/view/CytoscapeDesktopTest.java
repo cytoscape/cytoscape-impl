@@ -54,7 +54,7 @@ public class CytoscapeDesktopTest {
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);
 		when(fileTracker.getRecentlyOpenedURLs()).thenReturn(Collections.emptyList());
 		
-		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
+		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(registrar), new CytoscapeToolBar(registrar));
 		
 		desktop = new CytoscapeDesktop(menus, netViewMediator, registrar);
 	}

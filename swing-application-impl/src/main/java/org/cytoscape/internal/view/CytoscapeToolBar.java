@@ -88,7 +88,8 @@ public class CytoscapeToolBar extends JToolBar {
 
 	@Override public Component add(Component comp)
 	{
-		System.out.println("add override goes here");
+		if (stopList.contains(comp.getName())) 
+			return null;
 		return super.add(comp);
 	}
 	/**
@@ -103,9 +104,7 @@ public class CytoscapeToolBar extends JToolBar {
 		if (!action.isInToolBar()) 
 			return false;
 
-		if (stopList.contains(action.getName())) 
-			return false;
-
+	
 		// At present we allow an Action to be in this tool bar only once.
 		if ( actionButtonMap.containsKey( action ) )
 			return false;
@@ -127,6 +126,8 @@ public class CytoscapeToolBar extends JToolBar {
 		actionButtonMap.put(action, button);
 		int addInd = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addInd, button);
+		if (stopList.contains(action.getName())) 
+			button.setVisible(false);
 
 		addComponents();
 
@@ -233,6 +234,7 @@ public class CytoscapeToolBar extends JToolBar {
 			if (cyApplicationConfiguration == null)
 				System.out.println("cyApplicationConfiguration not found");
 
+			if (cyApplicationConfiguration == null) return;
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
 			if (configDirectory.exists())
@@ -253,8 +255,8 @@ public class CytoscapeToolBar extends JToolBar {
 			//get the file
 			// this doesn't work: ??  "~/CytoscapeConfiguration/toolbar.custom"
 //			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
-			System.out.println("createCustomToolbar leaves searly");
-			if (3 > 2) return;
+			System.out.println("createCustomToolbar leaves early");
+			if (System.currentTimeMillis() > 1) return;
 			
 			List<String> lines;
 			try {
@@ -278,21 +280,26 @@ public class CytoscapeToolBar extends JToolBar {
 
 			for (CyAction a : getAllToolBarActions())
 				removeAction(a);
-			
+			boolean lastItemWasSeparator = false;
 			for (String line : lines)
 			{
 //				System.out.println(line);
 				if (line.trim().isEmpty()) continue;
-				if (line.trim().charAt(0) == '/')
+				if (line.trim().charAt(0) == '/' && !lastItemWasSeparator)
 				{
 					addSeparator();
+					lastItemWasSeparator = true;
 				}
 				else
 				{
 					CyAction action = parseLine( line);	
 					System.out.println("action = " + action);
 					if (action != null)
+					{	
 						addAction(action);
+						lastItemWasSeparator = false;
+
+					}
 					
 				}
 			}
