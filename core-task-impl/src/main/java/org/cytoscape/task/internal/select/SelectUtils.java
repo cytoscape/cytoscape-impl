@@ -28,8 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -69,10 +69,13 @@ final class SelectUtils {
 		// Create the RowSetRecord collection
 		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
 
+		// The list of objects will be all nodes or all edges
 		for (final CyIdentifiable nodeOrEdge : objects) {
-			CyRow row = network.getRow(nodeOrEdge);
-			row.set(CyNetwork.SELECTED, value);
-			rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, value, value));
+			CyRow row = table.getRow(nodeOrEdge.getSUID());
+			if(row != null) {
+				row.set(CyNetwork.SELECTED, value);
+				rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, value, value));
+			}
 		}
 
 		// Enable all events from our table
