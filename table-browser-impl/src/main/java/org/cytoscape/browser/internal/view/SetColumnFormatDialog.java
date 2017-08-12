@@ -27,10 +27,16 @@ package org.cytoscape.browser.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
+import java.awt.Component;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.AffineTransform;
 import java.util.IllegalFormatException;
 import java.util.Properties;
 import java.util.regex.Matcher;
@@ -40,17 +46,21 @@ import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicIconFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
-import javax.swing.border.TitledBorder;
 
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -61,13 +71,14 @@ public class SetColumnFormatDialog extends JDialog {
 
 	public static final String FLOAT_FORMAT_PROPERTY = "floatingPointColumnFormat";
 	private static final double FORMAT_EXAMPLE_NUM = 123.4567890987654321;
+	private JPanel samplePanel;
 	private JPanel formatPanel;
-	private JPanel allColumnsPanel;
+	private JPanel advancedPanel;
 	private JButton decimalDecreaseButton;
 	private JLabel formatExampleLabel;
 	private JButton decimalIncreaseButton;
-	private JToggleButton scientificNotationButton;
-	private JToggleButton useDefaultButton;
+	private JCheckBox scientificNotationCheckBox;
+	private JButton removeFormatButton;
 	private JTextField formatEntry;
 	private JButton okButton;
 	private JButton cancelButton;
@@ -75,7 +86,6 @@ public class SetColumnFormatDialog extends JDialog {
 	private JButton clearDefaultButton;
 	private int decimalPlaces = 4;
 	private boolean scientificNotation = false;
-	private boolean defaultFormat = false;
 
 	private final BrowserTableModel tableModel;
 	private final BrowserTableColumnModel tableColumnModel;
@@ -85,7 +95,7 @@ public class SetColumnFormatDialog extends JDialog {
 	@SuppressWarnings("unchecked")
 	public SetColumnFormatDialog(final BrowserTable table, final Frame parent, final String targetAttrName,
 			CyServiceRegistrar serviceRegistrar) {
-		super(parent, "Set Decimal Places for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
+		super(parent, "Set Column Format for: " + targetAttrName, ModalityType.APPLICATION_MODAL);
 		this.props = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		this.targetAttrName = targetAttrName;
 		this.tableModel = (BrowserTableModel) table.getModel();
@@ -97,7 +107,6 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private void loadFormat(String format) {
 		if (format == null) {
-			defaultFormat = true;
 			format = props.getProperties().getProperty(FLOAT_FORMAT_PROPERTY);
 		}
 		if (format != null) {
@@ -106,7 +115,7 @@ public class SetColumnFormatDialog extends JDialog {
 			if (m.find()) {
 				decimalPlaces = Integer.parseInt(m.group(1));
 				scientificNotation = m.group(2).equals("e");
-				getScientificNotationButton().setSelected(scientificNotation);
+				getScientificNotationCheckBox().setSelected(scientificNotation);
 			}
 			getFormatEntry().setText(format);
 		}
@@ -114,7 +123,8 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private void initComponents() {
 
-		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton(),
+				getRemoveFormatButton());
 
 		final JPanel contents = new JPanel();
 		final GroupLayout layout = new GroupLayout(contents);
@@ -123,13 +133,15 @@ public class SetColumnFormatDialog extends JDialog {
 		layout.setAutoCreateGaps(true);
 
 		layout.setHorizontalGroup(
-				layout.createParallelGroup().addComponent(getFormatPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(getAllColumnsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				layout.createParallelGroup().addComponent(getSamplePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getFormatPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(getAdvancedPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
 
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getSamplePanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(getFormatPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getAllColumnsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getAdvancedPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE));
 
 		getContentPane().add(contents);
@@ -142,6 +154,15 @@ public class SetColumnFormatDialog extends JDialog {
 		setResizable(false);
 	}
 
+	private JPanel getSamplePanel() {
+		if (samplePanel == null) {
+			samplePanel = new JPanel();
+			samplePanel.setBorder(LookAndFeelUtil.createTitledBorder("Sample"));
+			samplePanel.add(getFormatExampleLabel());
+		}
+		return samplePanel;
+	}
+
 	private JPanel getFormatPanel() {
 		if (formatPanel == null) {
 			formatPanel = new JPanel();
@@ -151,92 +172,136 @@ public class SetColumnFormatDialog extends JDialog {
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
 
-			JLabel formatLabel = new JLabel("Format Spec:");
+			layout.setHorizontalGroup(
+					layout.createSequentialGroup().addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
+							.addComponent(getScientificNotationCheckBox()));
 
-			layout.setHorizontalGroup(layout.createParallelGroup().addGroup(layout.createSequentialGroup()
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
 					.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
-					.addComponent(getFormatExampleLabel(), 250, 250, 250).addComponent(getScientificNotationButton()))
-					.addGroup(layout.createSequentialGroup().addComponent(formatLabel).addComponent(getFormatEntry())
-							.addComponent(getUseDefaultButton())));
-
-			layout.setVerticalGroup(layout.createSequentialGroup()
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
-							.addComponent(getDecimalDecreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getDecimalIncreaseButton(), DEFAULT_SIZE, 32, 32)
-							.addComponent(getFormatExampleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-							.addComponent(getScientificNotationButton()))
-					.addGroup(layout.createParallelGroup(Alignment.CENTER, true).addComponent(formatLabel)
-							.addComponent(getFormatEntry(), 20, 20, 20).addComponent(getUseDefaultButton())));
+					.addComponent(getScientificNotationCheckBox()));
 		}
 
 		return formatPanel;
 	}
 
-	private JPanel getAllColumnsPanel() {
-		if (allColumnsPanel == null) {
-			allColumnsPanel = new JPanel();
-			allColumnsPanel.setBorder(new TitledBorder("All Columns"));
-			allColumnsPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-			allColumnsPanel.add(getClearDefaultButton());
-			allColumnsPanel.add(getSetDefaultButton());
+	private class ExpandedArrow extends ImageIcon {
+		@Override
+		public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+
+			Graphics2D g2 = (Graphics2D) g;
+			Icon icon = BasicIconFactory.getMenuArrowIcon();
+			AffineTransform init = g2.getTransform();
+			g2.translate(c.getHeight() / 3, c.getHeight() / 2);
+			g2.rotate(Math.PI / 2, 0, 0);
+			g2.translate(-c.getHeight() / 3, -c.getHeight() / 2);
+
+			icon.paintIcon(c, g, x, y);
+
+			g2.setTransform(init);
+
 		}
-		return allColumnsPanel;
 	}
 
-	private JToggleButton getScientificNotationButton() {
-		if (scientificNotationButton == null) {
-			scientificNotationButton = new JToggleButton("E", scientificNotation);
-			scientificNotationButton.setToolTipText("Scientific Notation");
-			scientificNotationButton.addActionListener(new ActionListener() {
+	private JPanel getAdvancedPanel() {
+		if (advancedPanel == null) {
+			advancedPanel = new JPanel();
+			advancedPanel.setLayout(new GridBagLayout());
+			GridBagConstraints c = new GridBagConstraints();
+			c.gridx = 0;
+			c.gridy = 0;
+			JCheckBox advancedToggle = new JCheckBox("Advanced");
+			Icon right = BasicIconFactory.getMenuArrowIcon();
+			advancedToggle.setIcon(right);
+			Icon down = new ExpandedArrow();
+			advancedToggle.setSelectedIcon(down);
+
+			advancedPanel.add(advancedToggle, c);
+			c.gridx = 1;
+			c.weightx = 1;
+			advancedPanel.add(new JSeparator(JSeparator.HORIZONTAL), c);
+			JPanel advancedSubpanel = new JPanel();
+			
+			advancedToggle.addChangeListener(new ChangeListener() {
+
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					advancedSubpanel.setVisible(((JCheckBox) e.getSource()).isSelected());
+					pack();
+
+				}
+
+			});
+			
+			advancedSubpanel.setLayout(new GridBagLayout());
+			advancedSubpanel.setBorder(LookAndFeelUtil.createPanelBorder());
+			c.insets = new Insets(3,3,3,3);
+			JLabel formatLabel = new JLabel("Format Spec: ");
+			c.gridx = 0;
+			c.gridy = 0;
+			advancedSubpanel.add(formatLabel, c);
+			c.gridx = 1;
+			c.gridwidth = 2;
+			c.weightx = 1;
+			c.fill = GridBagConstraints.HORIZONTAL;
+			advancedSubpanel.add(getFormatEntry(), c);
+			// c.gridx = 3;
+			c.gridwidth = 1;
+			// advancedSubpanel.add(getUseDefaultButton(), c);
+			c.gridx = 1;
+			c.gridy = 1;
+			advancedSubpanel.add(getClearDefaultButton(), c);
+			c.gridx = 2;
+			advancedSubpanel.add(getSetDefaultButton(), c);
+			c.gridx = 0;
+			c.gridy = 1;
+			c.gridwidth = 2;
+			c.gridheight = 2;
+			advancedPanel.add(advancedSubpanel, c);
+
+			advancedSubpanel.setVisible(false);
+		}
+		return advancedPanel;
+	}
+
+	private JCheckBox getScientificNotationCheckBox() {
+		if (scientificNotationCheckBox == null) {
+			scientificNotationCheckBox = new JCheckBox("Scientific Notation", scientificNotation);
+			scientificNotationCheckBox.setToolTipText("Toggle scientific notation formatting");
+			scientificNotationCheckBox.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					scientificNotation = scientificNotationButton.isSelected();
+					scientificNotation = scientificNotationCheckBox.isSelected();
 					updateFormatEntry();
 				}
 
 			});
 		}
-		return scientificNotationButton;
+		return scientificNotationCheckBox;
 	}
 
-	private JToggleButton getUseDefaultButton() {
-		if (useDefaultButton == null) {
-			useDefaultButton = new JToggleButton("Use Default");
-			useDefaultButton.setToolTipText("Get default format spec from Cytoscape properties");
-			useDefaultButton.addActionListener(new ActionListener() {
+	private JButton getRemoveFormatButton() {
+		if (removeFormatButton == null) {
+			removeFormatButton = new JButton("Remove Format");
+			removeFormatButton.setToolTipText("Use the default floating point format spec from Cytoscape properties");
+			removeFormatButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					defaultFormat = useDefaultButton.isSelected();
-					getDecimalDecreaseButton().setEnabled(!defaultFormat);
-					getDecimalIncreaseButton().setEnabled(!defaultFormat);
-					getFormatEntry().setEnabled(!defaultFormat);
-					getSetDefaultButton().setEnabled(!defaultFormat);
-					getClearDefaultButton().setEnabled(!defaultFormat);
-					getScientificNotationButton().setEnabled(!defaultFormat);
-					
-					if (!defaultFormat){
-						updateFormatEntry();
-					}else{
-						//tableColumnModel.setColumnFormat(targetAttrName, null);
-						if (props.getProperties().containsKey(FLOAT_FORMAT_PROPERTY)) {
-							loadFormat(props.getProperties().getProperty(FLOAT_FORMAT_PROPERTY));
-						} else {
-							formatExampleLabel.setText("Example: " + FORMAT_EXAMPLE_NUM);
-						}
-					}
+					tableColumnModel.setColumnFormat(targetAttrName, null);
+					dispose();
 				}
 			});
 		}
-		return useDefaultButton;
+		return removeFormatButton;
 	}
 
 	private JButton getSetDefaultButton() {
 		if (setDefaultButton == null) {
-			setDefaultButton = new JButton("Set As Default");
-			setDefaultButton.setToolTipText("Set default format spec for all floating point columns");
+			setDefaultButton = new JButton("Save As Default");
+			setDefaultButton.setToolTipText("Store as the default format spec for all floating point columns");
 			setDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
@@ -244,7 +309,6 @@ public class SetColumnFormatDialog extends JDialog {
 					if (getFormatExampleLabel() != null) {
 						props.getProperties().setProperty(FLOAT_FORMAT_PROPERTY, getFormatEntry().getText());
 						tableModel.fireTableDataChanged();
-						defaultFormat = true;
 					}
 				}
 			});
@@ -255,14 +319,11 @@ public class SetColumnFormatDialog extends JDialog {
 	private JButton getClearDefaultButton() {
 		if (clearDefaultButton == null) {
 			clearDefaultButton = new JButton("Clear Default");
-			clearDefaultButton.setToolTipText("Set all floating point columns to display values without formatting");
+			clearDefaultButton.setToolTipText("Remove formatting floating point columns by default");
 			clearDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					if (tableColumnModel.getColumnFormat(targetAttrName) == null) {
-						defaultFormat = true;
-					}
 					props.getProperties().remove(FLOAT_FORMAT_PROPERTY);
 					tableModel.fireTableDataChanged();
 				}
@@ -275,7 +336,7 @@ public class SetColumnFormatDialog extends JDialog {
 		if (decimalIncreaseButton == null) {
 			ImageIcon ico = new ImageIcon(getClass().getResource("/images/decimalIncrease.png"));
 			decimalIncreaseButton = new JButton(ico);
-			decimalIncreaseButton.setToolTipText("Add a decimal place");
+			decimalIncreaseButton.setToolTipText("Increase decimal precision");
 			decimalIncreaseButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -292,7 +353,8 @@ public class SetColumnFormatDialog extends JDialog {
 		if (formatEntry == null) {
 
 			formatEntry = new JTextField("%.4f");
-			formatEntry.setToolTipText("Specifies the format spec that is applied to all values in the column");
+
+			formatEntry.setToolTipText("The formatting rule that is applied to all values in the column");
 			formatEntry.getDocument().addDocumentListener(new DocumentListener() {
 
 				@Override
@@ -321,7 +383,7 @@ public class SetColumnFormatDialog extends JDialog {
 			ImageIcon ico = new ImageIcon(getClass().getResource("/images/decimalDecrease.png"));
 			decimalDecreaseButton = new JButton(ico);
 
-			decimalDecreaseButton.setToolTipText("Remove a decimal place");
+			decimalDecreaseButton.setToolTipText("Decrease decimal precision");
 			decimalDecreaseButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -337,7 +399,7 @@ public class SetColumnFormatDialog extends JDialog {
 	private JLabel getFormatExampleLabel() {
 		if (formatExampleLabel == null) {
 			formatExampleLabel = new JLabel(
-					String.format("Example: " + getFormatEntry().getText(), FORMAT_EXAMPLE_NUM));
+					String.format(getFormatEntry().getText(), FORMAT_EXAMPLE_NUM));
 			formatExampleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 
@@ -346,7 +408,7 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private JButton getOkButton() {
 		if (okButton == null) {
-			okButton = new JButton(new AbstractAction("OK") {
+			okButton = new JButton(new AbstractAction("Apply") {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					if (updateCells())
@@ -382,7 +444,6 @@ public class SetColumnFormatDialog extends JDialog {
 		}
 		getOkButton().setEnabled(valid);
 		getSetDefaultButton().setEnabled(valid);
-		defaultFormat = false;
 	}
 
 	private String getFormattedExample() {
@@ -400,23 +461,35 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private void updateFormatEntry() {
 		final String formatStr = String.format("%%.%d%c", decimalPlaces,
-				getScientificNotationButton().isSelected() ? 'e' : 'f');
+				getScientificNotationCheckBox().isSelected() ? 'e' : 'f');
 		getFormatEntry().setText(formatStr);
-		defaultFormat = false;
 	}
 
 	private void updateFormatExampleLabel() {
 		final String format = getFormattedExample();
-		getFormatExampleLabel().setText("Example: " + format);
+		getFormatExampleLabel().setText(format);
 		pack();
 	}
 
 	private boolean updateCells() {
-		String format = defaultFormat ? null : getFormatEntry().getText();
+		String format = getFormatEntry().getText();
 		boolean complete = tableColumnModel.setColumnFormat(targetAttrName, format);
 		if (complete)
 			tableModel.fireTableDataChanged();
 		return complete;
+	}
+
+	public SetColumnFormatDialog() {
+		targetAttrName = "";
+		tableColumnModel = null;
+		tableModel = null;
+		props = null;
+		initComponents();
+	}
+
+	public static void main(String[] args) {
+		SetColumnFormatDialog d = new SetColumnFormatDialog();
+		d.setVisible(true);
 	}
 
 }

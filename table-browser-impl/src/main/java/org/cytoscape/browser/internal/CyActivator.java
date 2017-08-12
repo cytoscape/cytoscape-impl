@@ -90,7 +90,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Set Column Format");
+			props.setProperty(TITLE, "Format Column");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 	}
