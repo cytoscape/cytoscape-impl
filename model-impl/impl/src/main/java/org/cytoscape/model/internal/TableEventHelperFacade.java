@@ -49,6 +49,7 @@ public class TableEventHelperFacade implements CyEventHelper {
 	private final Object lock = new Object();
 
 	private final CyServiceRegistrar serviceRegistrar;
+	private CyEventHelper eventHelper;
 
 	public TableEventHelperFacade(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -61,9 +62,17 @@ public class TableEventHelperFacade implements CyEventHelper {
 		}
 	}
 
+	private CyEventHelper getEventHelper() {
+		// no need to use synchronized, getting the same service twice is not a problem
+		if(eventHelper == null) {
+			eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		}
+		return eventHelper;
+	}
+	
 	@Override
 	public <E extends CyEvent<?>> void fireEvent(final E event) {
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		final CyEventHelper eventHelper = getEventHelper();
 		
 		// always propagate the actual event
 		eventHelper.fireEvent(event);
@@ -115,7 +124,7 @@ public class TableEventHelperFacade implements CyEventHelper {
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S, P, E extends CyPayloadEvent<S, P>> void addEventPayload(S source, P payload, Class<E> eventType) {
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		final CyEventHelper eventHelper = getEventHelper();
 		
 		// always propagate the payload from the original source
 		eventHelper.addEventPayload(source, payload, eventType);
@@ -150,16 +159,16 @@ public class TableEventHelperFacade implements CyEventHelper {
 
 	@Override
 	public void flushPayloadEvents() {
-		serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+		getEventHelper().flushPayloadEvents();
 	}
 
 	@Override
 	public void silenceEventSource(Object eventSource) {
-		serviceRegistrar.getService(CyEventHelper.class).silenceEventSource(eventSource);
+		getEventHelper().silenceEventSource(eventSource);
 	}
 
 	@Override
 	public void unsilenceEventSource(Object eventSource) {
-		serviceRegistrar.getService(CyEventHelper.class).unsilenceEventSource(eventSource);
+		getEventHelper().unsilenceEventSource(eventSource);
 	}
 }

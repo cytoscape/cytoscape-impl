@@ -23,20 +23,13 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -49,10 +42,8 @@ public class DeselectAllEdgesTaskTest extends AbstractSelectTaskTester {
 		super.setUp();
 	}
 
-	@Test
+	@Test 
 	public void testRun() throws Exception {
-		final CyTable edgeTable = mock(CyTable.class);
-		when(net.getDefaultEdgeTable()).thenReturn(edgeTable);
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
 		Set<CyRow> selectedEdges = new HashSet<CyRow>();
@@ -60,11 +51,6 @@ public class DeselectAllEdgesTaskTest extends AbstractSelectTaskTester {
 		selectedEdges.add(r2);
 		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedEdges);
 		
-		when (r1.get(CyNetwork.SUID, Long.class)).thenReturn(1L);
-		when (net.getEdge(1L)).thenReturn(e1);
-		when (r2.get(CyNetwork.SUID, Long.class)).thenReturn(2L);
-		when (net.getEdge(2L)).thenReturn(e2);
-
 		// run the task
 		Task t = new DeselectAllEdgesTask(undoSupport, net, networkViewManager, eventHelper);
 		t.run(tm);

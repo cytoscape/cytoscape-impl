@@ -55,9 +55,13 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 	private final static long serialVersionUID = 1202339877433771L;
 
-	// Preset colors
-	private static final Color DEF_LOWER_COLOR = Color.BLACK;
-	private static final Color DEF_UPPER_COLOR = Color.WHITE;
+	// Preset colors based on Brewer Palette: RdBu
+	// red-white-blue gradient in 9 steps:["#b2182b","#d6604d","#f4a582","#fddbc7","#f7f7f7","#d1e5f0","#92c5de","#4393c3","#2166ac"]
+	private static final Color DEF_BELOW_LOWER_COLOR = Color.decode("#2166ac");
+	private static final Color DEF_LOWER_COLOR = Color.decode("#4393c3");
+	private static final Color DEF_MID_COLOR = Color.decode("#f7f7f7");
+	private static final Color DEF_UPPER_COLOR = Color.decode("#d6604d");
+	private static final Color DEF_ABOVE_UPPER_COLOR = Color.decode("#b2182b"); 
 
 	// For updating current network views.
 	protected final ValueEditor<Paint> colorEditor;
@@ -147,25 +151,73 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	}
 
 	private void createSimpleGradient() {
-		Number minValue = tracer.getMin(type);
-		Number maxValue = tracer.getMax(type);
+		double minValue = tracer.getMin(type);
+		double maxValue = tracer.getMax(type);
 
 		final BoundaryRangeValues<Color> lowerRange;
+		final BoundaryRangeValues<Color> midRange;
 		final BoundaryRangeValues<Color> upperRange;
 
-		getSlider().getModel().addThumb(15f, DEF_LOWER_COLOR);
-		getSlider().getModel().addThumb(85f, DEF_UPPER_COLOR);
+		if (minValue<0 && maxValue>0) { // values span zero
 
-		lowerRange = new BoundaryRangeValues<Color>(below, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-		upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, above);
+			//set min/max for balanced color mapping
+			if (Math.abs(minValue) > maxValue) {
+				maxValue = Math.abs(minValue);
+			} else {
+				minValue = maxValue * -1;
+			}
 
-		// Add two points.
-		mapping.addPoint(
-				NumberConverter.convert(columnType, minValue.doubleValue()),
+			getSlider().getModel().addThumb(15f, DEF_LOWER_COLOR);
+			getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
+			getSlider().getModel().addThumb(85f, DEF_UPPER_COLOR);
+
+			lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+			midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+
+			// Add three points.
+			mapping.addPoint(
+				NumberConverter.convert(columnType, minValue),
 				lowerRange);
-		mapping.addPoint(
-				NumberConverter.convert(columnType, maxValue.doubleValue()),
+			mapping.addPoint(
+				NumberConverter.convert(columnType, 0.0),
+				midRange);
+			mapping.addPoint(
+				NumberConverter.convert(columnType, maxValue),
 				upperRange);
+		} else if (minValue>=0) { // all positive values
+		
+                        getSlider().getModel().addThumb(15f, DEF_MID_COLOR);
+                        getSlider().getModel().addThumb(85f, DEF_UPPER_COLOR);
+
+                        lowerRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+                        upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+
+                        // Add three points.
+                        mapping.addPoint(
+                                NumberConverter.convert(columnType, minValue),
+                                lowerRange);
+                        mapping.addPoint(
+                                NumberConverter.convert(columnType, maxValue),
+                                upperRange);
+		} else if (maxValue<=0) { // all negative values
+		
+                        getSlider().getModel().addThumb(15f, DEF_LOWER_COLOR);
+                        getSlider().getModel().addThumb(85f, DEF_MID_COLOR);
+
+                        lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+                        upperRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+
+                        // Add three points.
+                        mapping.addPoint(
+                                NumberConverter.convert(columnType, minValue),
+                                lowerRange);
+                        mapping.addPoint(
+                                NumberConverter.convert(columnType, maxValue),
+                                upperRange);
+		}
+
+
 	}
 
 	@Override

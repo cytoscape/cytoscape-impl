@@ -1694,25 +1694,33 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_foregroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 	}
 
-	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, 
-	                         double xMin, double yMin, double xCenter,
-	                         double yCenter, double scaleFactor,
-	                         List<CyNode> nodes, List<CyEdge> edges) {
-		// System.out.println("drawing snapshot: nodes.size()="+nodes.size()+"node count="+m_drawPersp.getNodeCount());
-		// System.out.println("drawing snapshot: edges.size()="+edges.size()+"edges count="+m_drawPersp.getEdgeCount());
-		if (!largeModel || 
-				(nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4) {
+	public void drawSnapshot(
+		VolatileImage img,
+		GraphLOD lod,
+		Paint bgPaint, 
+		double xMin,
+		double yMin,
+		double xCenter,
+		double yCenter,
+		double scaleFactor,
+		List<CyNode> nodes,
+		List<CyEdge> edges
+	) {
+		if (!largeModel
+				|| (nodes.size() + edges.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount()) / 4) {
 			drawSnapshot(img, lod, bgPaint, xMin, yMin, xCenter, yCenter, scaleFactor);
+			
 			return;
 		}
 
 		try {
-		synchronized (m_lock) {
-			// System.out.println("Calling renderSubgraph to draw snapshot");
-			renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, new LongHash(), nodes, edges);
+			synchronized (m_lock) {
+				renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor,
+						new LongHash(), nodes, edges);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		} catch (Exception e) { e.printStackTrace(); }
-
 	}
 
 	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
@@ -1727,8 +1735,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// Make a copy of the nodes and edges arrays to avoid a conflict with selection events
 		// The assumption here is that these arrays are relatively small
-		List<CyNode> nodes = new ArrayList<CyNode>(nodeList);
-		List<CyEdge> edges = new ArrayList<CyEdge>(edgeList);
+		List<CyNode> nodes = new ArrayList<>(nodeList);
+		List<CyEdge> edges = new ArrayList<>(edgeList);
 
 		// Make sure the graphics is initialized
 		if (!graphics.isInitialized())
@@ -1754,8 +1762,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			long idx = node.getSUID();
 			if (m_spacial.exists(idx, m_extentsBuff, 0)) {
 				if (!sub_spacial.exists(idx, new float[4], 0))
-					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], 
-				                     m_extentsBuff[2], m_extentsBuff[3], 0.0);
+					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], m_extentsBuff[2], m_extentsBuff[3],
+							0.0);
 				net.addNode(node);
 			}
 		}
@@ -1770,11 +1778,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final Set<VisualPropertyDependency<?>> dependencies =
 					vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 			
-		// synchronized (m_lock) {
-			lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails,
- 			                                             m_edgeDetails, hash, graphics, null, xCenter,
- 			                                             yCenter, scale, haveZOrder, dependencies);
-		// }
+//			synchronized (m_lock) {
+			lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails, m_edgeDetails, hash,
+					graphics, null, xCenter, yCenter, scale, haveZOrder, dependencies);
+//			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2083,7 +2090,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	public List<NodeView> getNodeViewsList() {
-		ArrayList<NodeView> list = new ArrayList<NodeView>(getNodeViewCount());
+		ArrayList<NodeView> list = new ArrayList<>(getNodeViewCount());
 		for (CyNode nn : getNetwork().getNodeList())
 			list.add(getDNodeView(nn.getSUID()));
 
@@ -2174,13 +2181,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	}
 
 	static <X> List<X> makeList(X nodeOrEdge) {
-		List<X> nl = new ArrayList<X>(1);
+		List<X> nl = new ArrayList<>(1);
 		nl.add(nodeOrEdge);
 		return nl;
 	}
 
 	static List<CyNode> makeNodeList(long[] nodeids, GraphView view) {
-		List<CyNode> l = new ArrayList<CyNode>(nodeids.length);
+		List<CyNode> l = new ArrayList<>(nodeids.length);
+		
 		for (long nid : nodeids)
 			l.add(((DNodeView)view.getDNodeView(nid)).getModel());
 
@@ -2189,8 +2197,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
 		if (view == null || edgeids == null || edgeids.length == 0)
-			return new ArrayList<CyEdge>();
-		List<CyEdge> l = new ArrayList<CyEdge>(edgeids.length);
+			return new ArrayList<>();
+		
+		List<CyEdge> l = new ArrayList<>(edgeids.length);
+		
 		for (long nid : edgeids) {
 			if (view.getDEdgeView(nid) != null)
 				l.add(view.getDEdgeView(nid).getCyEdge());
@@ -2328,13 +2338,15 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (model != e.getSource())
 			return;
 
-		List<View<CyNode>> nvs = new ArrayList<View<CyNode>>(e.getNodes().size());
-		for ( CyNode n : e.getNodes()) {
+		List<View<CyNode>> nvs = new ArrayList<>(e.getNodes().size());
+		
+		for (CyNode n : e.getNodes()) {
 			View<CyNode> v = this.getNodeView(n);
-			if ( v != null)
+			
+			if (v != null)
 				nvs.add(v);
 		}
-		
+
 		if (nvs.size() <= 0)
 			return;
 		
@@ -2349,10 +2361,11 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (model != e.getSource())
 			return;
 
-		List<View<CyEdge>> evs = new ArrayList<View<CyEdge>>(e.getEdges().size());
-		for ( CyEdge edge : e.getEdges() ) {
+		List<View<CyEdge>> evs = new ArrayList<>(e.getEdges().size());
+		
+		for (CyEdge edge : e.getEdges()) {
 			View<CyEdge> v = getEdgeView(edge);
-			if ( v != null)
+			if (v != null)
 				evs.add(v);
 		}
 
@@ -2361,15 +2374,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		//getEventHelper().fireEvent(new AboutToRemoveEdgeViewsEvent(this, evs));
 
-		for ( CyEdge edge : e.getEdges() )
+		for (CyEdge edge : e.getEdges())
 			this.removeEdgeView(edge);
 			//edgeViews.remove(edge);
 	}
 
 	@Override
 	public void handleEvent(AddedNodesEvent e) {
-		// Respond to the event only if the source is equal to the network model
-		// associated with this view.
+		// Respond to the event only if the source is equal to the network model associated with this view.
 		if (model != e.getSource())
 			return;
 
@@ -2762,8 +2774,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		for (DEdgeView edgeView: animatedEdges) {
 			CyEdge edge = edgeView.getModel();
 			Stroke s = m_edgeDetails.getStroke(edge);
+			
 			if (s != null && s instanceof AnimatedStroke) { 
 				Stroke as = ((AnimatedStroke)s).newInstanceForNextOffset();
+				
 				synchronized (m_lock) {
 					m_edgeDetails.overrideStroke(edge, as);
 					setContentChanged();
@@ -2773,8 +2787,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			}
 		}
 
-		// We do this this way to avoid the overhead of concurrent maps since
-		// this should be relatively rare
+		// We do this this way to avoid the overhead of concurrent maps since this should be relatively rare
 		if (removeMe.size() != 0) {
 			for (DEdgeView edgeView: removeMe)
 				animatedEdges.remove(edgeView);

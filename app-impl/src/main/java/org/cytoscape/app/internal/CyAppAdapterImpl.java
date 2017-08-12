@@ -53,6 +53,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
+import org.cytoscape.model.json.CyJSONUtil;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.SimpleCyProperty;
@@ -139,6 +140,7 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -147,7 +149,6 @@ import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
-import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -363,6 +364,8 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 
 	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
 	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;
+	
+	private CyJSONUtil jsonUtil;
 
 	//
 	// Since this is implementation code, there shouldn't be a

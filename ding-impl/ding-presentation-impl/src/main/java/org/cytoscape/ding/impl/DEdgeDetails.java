@@ -1055,6 +1055,10 @@ final class DEdgeDetails extends EdgeDetails {
 	@Override
 	public EdgeAnchors getAnchors(final CyEdge edge) {
 		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
+		
+		if (edgeView == null)
+			return null;
+		
 		final EdgeAnchors returnThis = edgeView;
 
 		if (returnThis.numAnchors() > 0)
@@ -1096,10 +1100,11 @@ final class DEdgeDetails extends EdgeDetails {
 			final int inx = i;
 
 			return new EdgeAnchors() {
+				@Override
 				public int numAnchors() {
 					return 2;
 				}
-
+				@Override
 				public void getAnchor(int anchorInx, float[] anchorArr, int offset) {
 					if (anchorInx == 0) {
 						anchorArr[offset] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
@@ -1115,7 +1120,6 @@ final class DEdgeDetails extends EdgeDetails {
 		// Now add "invisible" anchors to edges for the case where multiple edges
 		// exist between two nodes. This has no effect if user specified anchors exist on the edge.
 		while (true) {
-
 			// By consistently ordering the source and target nodes, dx and dy
 			// will always
 			// be calculated according to the same orientation. This allows the
@@ -1141,7 +1145,6 @@ final class DEdgeDetails extends EdgeDetails {
 			}
 
 			final LongEnumerator otherEdges = m_heap.orderedElements(false);
-
 			long otherEdge = otherEdges.nextLong();
 
 			// If the first other edge is the same as this edge,
@@ -1150,14 +1153,19 @@ final class DEdgeDetails extends EdgeDetails {
 				break;
 
 			// So we don't count the other edge twice?
-			int i = (((EdgeAnchors) dGraphView.getDEdgeView(otherEdge)).numAnchors() == 0) ? 1 : 0;
+			DEdgeView otherEdgeView = dGraphView.getDEdgeView(otherEdge);
+			
+			if (otherEdgeView == null)
+				continue;
+			
+			int i = (((EdgeAnchors) otherEdgeView).numAnchors() == 0) ? 1 : 0;
 
 			// Count the number of other edges.
 			while (true) {
 				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
 
-				if (((EdgeAnchors) dGraphView.getDEdgeView(otherEdge)).numAnchors() == 0)
+				if (((EdgeAnchors) otherEdgeView).numAnchors() == 0)
 					i++;
 			}
 
