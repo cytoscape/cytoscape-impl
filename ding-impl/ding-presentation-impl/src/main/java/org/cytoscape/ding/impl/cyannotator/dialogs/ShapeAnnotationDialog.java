@@ -147,7 +147,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		shapeAnnotation.setBorderColor(preview.getBorderColor());
 		shapeAnnotation.setBorderOpacity(preview.getBorderOpacity());
 		shapeAnnotation.setBorderWidth((int)preview.getBorderWidth());
-		shapeAnnotation.setName(shapeAnnotationPanel.getName());
+		shapeAnnotation.setName(shapeAnnotationPanel.getAnnotationName());
 
 		if (!create) {
 			shapeAnnotation.update(); 

@@ -80,7 +80,7 @@ public class ImageAnnotationPanel extends JPanel {
 
 	// We need to expose this in case the user just presses "return", which
 	// fires the OK button action in the parent dialog
-	public String getName() {
+	public String getAnnotationName() {
 		return nameField.getText();
 	}
 

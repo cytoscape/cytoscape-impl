@@ -81,7 +81,7 @@ public class ArrowAnnotationDialog extends JDialog {
 	
 	private JButton applyButton;
 	private JButton cancelButton;
-	private JPanel arrowAnnotationPanel;
+	private ArrowAnnotationPanel arrowAnnotationPanel;
 
 	private final CyAnnotator cyAnnotator;    
 	private final DGraphView view;    
@@ -178,7 +178,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		annotation.setArrowColor(ArrowEnd.TARGET, preview.getArrowColor(ArrowEnd.TARGET));
 		annotation.setArrowSize(ArrowEnd.TARGET, preview.getArrowSize(ArrowEnd.TARGET));
 		annotation.setAnchorType(ArrowEnd.TARGET, preview.getAnchorType(ArrowEnd.TARGET));
-		annotation.setName(arrowAnnotationPanel.getName());
+		annotation.setName(arrowAnnotationPanel.getAnnotationName());
 
 		if (!create) {
 			annotation.update();
