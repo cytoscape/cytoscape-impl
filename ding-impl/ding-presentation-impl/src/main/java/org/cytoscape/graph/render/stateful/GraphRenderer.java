@@ -479,16 +479,11 @@ public final class GraphRenderer {
 									if ((anchorSize = edgeDetails.getAnchorSize(edge, k)) > 0.0f) {
 										anchors.getAnchor(k, floatBuff4, 0);
 										grafx.drawNodeFull(GraphGraphics.SHAPE_RECTANGLE,
-										                   (float) (floatBuff4[0]
-										                   - (anchorSize / 2.0d)),
-										                   (float) (floatBuff4[1]
-										                   - (anchorSize / 2.0d)),
-										                   (float) (floatBuff4[0]
-										                   + (anchorSize / 2.0d)),
-										                   (float) (floatBuff4[1]
-										                   + (anchorSize / 2.0d)),
-										                   edgeDetails.getAnchorPaint(edge, k), 0.0f, null,
-										                   null);
+										                   (float) (floatBuff4[0] - (anchorSize / 2.0d)),
+										                   (float) (floatBuff4[1] - (anchorSize / 2.0d)),
+										                   (float) (floatBuff4[0] + (anchorSize / 2.0d)),
+										                   (float) (floatBuff4[1] + (anchorSize / 2.0d)),
+										                   edgeDetails.getAnchorPaint(edge, k), 0.0f, null, null);
 									}
 								}
 							}
@@ -521,16 +516,11 @@ public final class GraphRenderer {
 									// Note that we reuse the position enum here.  West == source and East == target
 									// This is sort of safe since we don't provide an API for changing this
 									// in any case.
-									if (edgeAnchor == Position.WEST) {
-										edgeAnchorPointX = srcXAdj;
-										edgeAnchorPointY = srcYAdj;
-									} else if (edgeAnchor == Position.EAST) {
-										edgeAnchorPointX = trgXAdj;
-										edgeAnchorPointY = trgYAdj;
+									if (edgeAnchor == Position.WEST) {		edgeAnchorPointX = srcXAdj;   edgeAnchorPointY = srcYAdj;
+									} else if (edgeAnchor == Position.EAST) { edgeAnchorPointX = trgXAdj; edgeAnchorPointY = trgYAdj;
 									} else if (edgeAnchor == Position.CENTER) {
 										if (!grafx.getEdgePath(srcArrow, srcArrowSize, trgArrow,
-										                       trgArrowSize, srcXAdj, srcYAdj, anchors,
-										                       trgXAdj, trgYAdj, path2d)) {
+										              trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
 											continue;
 										}
 
