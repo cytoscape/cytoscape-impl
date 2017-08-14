@@ -26,8 +26,10 @@ package org.cytoscape.browser.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -70,7 +72,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 public class SetColumnFormatDialog extends JDialog {
 
 	public static final String FLOAT_FORMAT_PROPERTY = "floatingPointColumnFormat";
-	private static final double FORMAT_EXAMPLE_NUM = 123.4567890987654321;
+	private static final double FORMAT_EXAMPLE_NUM = 1234.567890987654321;
 	private JPanel samplePanel;
 	private JPanel formatPanel;
 	private JPanel advancedPanel;
@@ -158,7 +160,13 @@ public class SetColumnFormatDialog extends JDialog {
 		if (samplePanel == null) {
 			samplePanel = new JPanel();
 			samplePanel.setBorder(LookAndFeelUtil.createTitledBorder("Sample"));
-			samplePanel.add(getFormatExampleLabel());
+			samplePanel.setLayout(new BorderLayout());
+
+			samplePanel.add(getFormatExampleLabel(), BorderLayout.CENTER);
+			getFormatExampleLabel().setPreferredSize(new Dimension(200, 25));
+			getFormatExampleLabel().setMaximumSize(new Dimension(200, 25));
+			getFormatExampleLabel().setMinimumSize(new Dimension(200, 25));
+
 		}
 		return samplePanel;
 	}
@@ -222,7 +230,7 @@ public class SetColumnFormatDialog extends JDialog {
 			c.weightx = 1;
 			advancedPanel.add(new JSeparator(JSeparator.HORIZONTAL), c);
 			JPanel advancedSubpanel = new JPanel();
-			
+
 			advancedToggle.addChangeListener(new ChangeListener() {
 
 				@Override
@@ -233,10 +241,10 @@ public class SetColumnFormatDialog extends JDialog {
 				}
 
 			});
-			
+
 			advancedSubpanel.setLayout(new GridBagLayout());
 			advancedSubpanel.setBorder(LookAndFeelUtil.createPanelBorder());
-			c.insets = new Insets(3,3,3,3);
+			c.insets = new Insets(3, 3, 3, 3);
 			JLabel formatLabel = new JLabel("Format Spec: ");
 			c.gridx = 0;
 			c.gridy = 0;
@@ -398,8 +406,7 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private JLabel getFormatExampleLabel() {
 		if (formatExampleLabel == null) {
-			formatExampleLabel = new JLabel(
-					String.format(getFormatEntry().getText(), FORMAT_EXAMPLE_NUM));
+			formatExampleLabel = new JLabel(String.format(getFormatEntry().getText(), FORMAT_EXAMPLE_NUM));
 			formatExampleLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		}
 
@@ -447,13 +454,15 @@ public class SetColumnFormatDialog extends JDialog {
 	}
 
 	private String getFormattedExample() {
-		String formatted = null;
+		String formatted = String.valueOf(FORMAT_EXAMPLE_NUM);
 		String newStr = formatEntry.getText();
-		if (!newStr.isEmpty()) {
+		if (newStr.isEmpty())
+			newStr = props.getProperties().getProperty(FLOAT_FORMAT_PROPERTY);
+		if (newStr != null) {
 			try {
 				formatted = String.format(newStr, FORMAT_EXAMPLE_NUM);
 			} catch (IllegalFormatException e) {
-
+				return null;
 			}
 		}
 		return formatted;
@@ -473,23 +482,12 @@ public class SetColumnFormatDialog extends JDialog {
 
 	private boolean updateCells() {
 		String format = getFormatEntry().getText();
+		if (format.isEmpty())
+			format = null;
 		boolean complete = tableColumnModel.setColumnFormat(targetAttrName, format);
 		if (complete)
 			tableModel.fireTableDataChanged();
 		return complete;
-	}
-
-	public SetColumnFormatDialog() {
-		targetAttrName = "";
-		tableColumnModel = null;
-		tableModel = null;
-		props = null;
-		initComponents();
-	}
-
-	public static void main(String[] args) {
-		SetColumnFormatDialog d = new SetColumnFormatDialog();
-		d.setVisible(true);
 	}
 
 }
