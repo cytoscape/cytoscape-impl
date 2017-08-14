@@ -1,6 +1,8 @@
 package org.cytoscape.internal.view;
 
 import java.awt.Component;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -15,6 +17,8 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
@@ -50,7 +54,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 
 /**
- * Implementation of Toolbar on the Cytoscape Desktop applicaiton.
+ * Implementation of Toolbar on the Cytoscape Desktop application.
  */
 public class CytoscapeToolBar extends JToolBar {
 	
@@ -78,18 +82,37 @@ public class CytoscapeToolBar extends JToolBar {
 	public CytoscapeToolBar() {
 		super("Cytoscape Tools");
 		
-		actionButtonMap = new HashMap<>();
-		componentGravity = new HashMap<>();
-		orderedList = new ArrayList<>();
+		actionButtonMap = new HashMap<CyAction, JButton>();
+		componentGravity = new HashMap<Object, Float>();
+		orderedList = new ArrayList<Object>();
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
+		buildPopup();
 	}
 
+	private void buildPopup() {
+        final JPopupMenu popup = new JPopupMenu();
+        JMenuItem menuItem = new JMenuItem("Show All");
+        popup.add(menuItem);
+        menuItem.addActionListener(e -> { showAll();	} );
+		 addMouseListener(new MouseAdapter() {
+			 
+	            @Override  public void mousePressed(MouseEvent e) {   showPopup(e);  }
+	 
+	            @Override  public void mouseReleased(MouseEvent e) {  showPopup(e); }
+	 
+	            private void showPopup(MouseEvent e) {
+	                if (e.isPopupTrigger()) {
+	                    popup.show(e.getComponent(), e.getX(), e.getY());
+	                }
+	            }
+	        });		
+	}
 	@Override public Component add(Component comp)
 	{
 		if (stopList.contains(comp.getName())) 
-			return null;
+			comp.setVisible(false);
 		return super.add(comp);
 	}
 	/**
@@ -99,7 +122,7 @@ public class CytoscapeToolBar extends JToolBar {
 	 */
 	public boolean addAction(CyAction action) {
 		
-		System.out.println("addAction: " + action.getName());
+//		System.out.println("addAction: " + action.getName());
 		
 		if (!action.isInToolBar()) 
 			return false;
@@ -124,8 +147,8 @@ public class CytoscapeToolBar extends JToolBar {
 
 		componentGravity.put(button,action.getToolbarGravity());
 		actionButtonMap.put(action, button);
-		int addInd = getInsertLocation(action.getToolbarGravity());
-		orderedList.add(addInd, button);
+		int addIndex = getInsertLocation(action.getToolbarGravity());
+		orderedList.add(addIndex, button);
 		if (stopList.contains(action.getName())) 
 			button.setVisible(false);
 
@@ -134,17 +157,21 @@ public class CytoscapeToolBar extends JToolBar {
 		return true;
 	}
 
+	public void showAll()
+	{
+		for ( Object o : orderedList) 
+			if (o instanceof Component)
+				((Component)o).setVisible(true);
+	}
+	
 	private void addComponents() {
 		removeAll();
-		for ( Object o : orderedList) {
-			if ( o instanceof JButton ) {
-				add((JButton)o);
-			} else if ( o instanceof Float ) {
-				addSeparator();
-			}
-			else if (o instanceof ToolBarComponent){
+		for ( Object o : orderedList) 
+		{
+			if ( o instanceof JButton ) 				add((JButton)o);
+			else if ( o instanceof Float ) 				addSeparator();
+			else if (o instanceof ToolBarComponent)
 				add(((ToolBarComponent)o).getComponent());
-			}
 		}
 		validate();
 	}
@@ -161,9 +188,8 @@ public class CytoscapeToolBar extends JToolBar {
 		for ( int i = 0; i < orderedList.size(); i++ ) {
 			Object item = orderedList.get(i);
 			Float gravity = componentGravity.get(item);
-			if ( gravity != null && newGravity < gravity ) {
+			if ( gravity != null && newGravity < gravity ) 
 				return i;
-			}
 		}
 		return orderedList.size();
 	}

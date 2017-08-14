@@ -65,7 +65,7 @@ public class CytoscapeMenus {
 		this.menuBar = menuBar;
 		this.toolBar = toolBar;
 		
-		viewFrameActions = new LinkedHashSet<>();
+		viewFrameActions = new LinkedHashSet<CyAction>();
 
 		menuBar.addMenu("File", 0.0);
 		menuBar.addMenu("File.New", 0.0);
