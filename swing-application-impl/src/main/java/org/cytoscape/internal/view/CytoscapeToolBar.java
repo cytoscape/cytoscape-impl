@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -61,6 +62,7 @@ public class CytoscapeToolBar extends JToolBar {
 	private final static long serialVersionUID = 1202339868655256L;
 	
 	private Map<CyAction, JButton> actionButtonMap; 
+//	private List<CyAction> actionList; 
 	private List<Object> orderedList;
 	private Map<Object, Float> componentGravity;
 	private  CyServiceRegistrar registrar;
@@ -83,6 +85,7 @@ public class CytoscapeToolBar extends JToolBar {
 		super("Cytoscape Tools");
 		
 		actionButtonMap = new HashMap<CyAction, JButton>();
+//		actionList = new ArrayList<CyAction>();
 		componentGravity = new HashMap<Object, Float>();
 		orderedList = new ArrayList<Object>();
 		
@@ -92,21 +95,36 @@ public class CytoscapeToolBar extends JToolBar {
 	}
 
 	private void buildPopup() {
-        final JPopupMenu popup = new JPopupMenu();
-        JMenuItem menuItem = new JMenuItem("Show All");
-        popup.add(menuItem);
-        menuItem.addActionListener(e -> { showAll();	} );
-		 addMouseListener(new MouseAdapter() {
+		addMouseListener(new MouseAdapter() {
 			 
 	            @Override  public void mousePressed(MouseEvent e) {   showPopup(e);  }
-	 
 	            @Override  public void mouseReleased(MouseEvent e) {  showPopup(e); }
-	 
-	            private void showPopup(MouseEvent e) {
-	                if (e.isPopupTrigger()) {
+	            private void showPopup(MouseEvent e)
+            	{
+            		if (e.isPopupTrigger()) 
+            		{
+            	        final JPopupMenu popup = new JPopupMenu();
+            	        JMenuItem menuItem = new JMenuItem("Show All");
+            	        popup.add(menuItem);
+            	        popup.add(new JSeparator());
+            	        menuItem.addActionListener(ev2 -> { showAll();	} );
+            	        for (Component comp : getComponents())
+	                    {
+            				if (comp instanceof JButton)
+            				{
+    							JButton button  = (JButton)comp; 
+    							String tip =  button.getToolTipText();
+            					if (tip == null || tip.isEmpty()) continue;
+	            				JCheckBoxMenuItem checktem = new JCheckBoxMenuItem();
+	            				checktem.setText(tip);
+	            				checktem.setState(button.isVisible());
+		                        popup.add(checktem);
+		                        checktem.addActionListener(ev -> {  button.setVisible(!button.isVisible());	} );
+               				}
+            				                     }
 	                    popup.show(e.getComponent(), e.getX(), e.getY());
-	                }
-	            }
+            		}
+            	}
 	        });		
 	}
 	@Override public Component add(Component comp)
@@ -147,6 +165,7 @@ public class CytoscapeToolBar extends JToolBar {
 
 		componentGravity.put(button,action.getToolbarGravity());
 		actionButtonMap.put(action, button);
+//		actionList.add(action);
 		int addIndex = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addIndex, button);
 		if (stopList.contains(action.getName())) 
