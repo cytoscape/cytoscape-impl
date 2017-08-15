@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
@@ -89,7 +90,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 	};
 
-	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String NO_NETWORKS = "No Networks Found";
 	
 	public static final String NETWORK_COLLECTION = "To a Network Collection";

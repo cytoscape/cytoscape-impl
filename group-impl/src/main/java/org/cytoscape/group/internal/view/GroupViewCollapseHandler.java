@@ -86,7 +86,7 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 	private CyNetworkViewManager cyNetworkViewManager;
 	private CyNetworkViewFactory cyNetworkViewFactory;
 	private VisualMappingManager cyStyleManager;
-	private static final Logger logger = LoggerFactory.getLogger(GroupViewCollapseHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private static final VisualProperty<Double> xLoc = BasicVisualLexicon.NODE_X_LOCATION;
 	private static final VisualProperty<Double> yLoc = BasicVisualLexicon.NODE_Y_LOCATION;
 

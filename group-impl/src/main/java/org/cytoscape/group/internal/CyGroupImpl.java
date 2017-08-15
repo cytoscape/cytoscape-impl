@@ -89,7 +89,7 @@ public class CyGroupImpl implements CyGroup {
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedLocalValuesMap;
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedHiddenValuesMap;
 
-	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Object lock = new Object();
 

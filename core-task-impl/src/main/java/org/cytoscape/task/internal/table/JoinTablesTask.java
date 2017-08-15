@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -74,7 +75,7 @@ public class JoinTablesTask extends AbstractTask {
 		}
 	};
 
-	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String NO_NETWORKS = "No Networks Found";
 	
 	private boolean byReader;

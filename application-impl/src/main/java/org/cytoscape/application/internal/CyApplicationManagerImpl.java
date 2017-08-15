@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
@@ -71,7 +72,7 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
                                                  NetworkViewAboutToBeDestroyedListener,
 												 RenderingEngineAboutToBeRemovedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyApplicationManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String LAST_DIRECTORY = "directory.last";
 	
 	private CyNetwork currentNetwork;

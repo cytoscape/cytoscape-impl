@@ -50,7 +50,7 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(AddEdgeTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public AddEdgeTask(final View<CyNode> nv, final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
 		super(nv, view);

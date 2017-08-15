@@ -111,7 +111,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private UpdateImage redrawTask;
 	private	BirdsEyeViewLOD bevLOD;
 	
-	private static final Logger logger = LoggerFactory.getLogger(BirdsEyeView.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	/**
 	 * Creates a new BirdsEyeView object.

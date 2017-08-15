@@ -116,7 +116,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	// String constants used for separator entries in the attribute combobox
 	private static final String filtersSeparator = "-- Filters --";
 	private static final String attributesSeperator = "-- Table Columns --";
-	private static final Logger logger = LoggerFactory.getLogger(FilterMainPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final QuickFind quickFind;
 

@@ -29,6 +29,7 @@ import javax.swing.WindowConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -68,7 +69,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class CustomGraphicsManagerDialog extends JDialog {
 
-	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private JButton addButton;
 	private JButton deleteButton;

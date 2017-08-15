@@ -99,6 +99,7 @@ import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedListener;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -115,7 +116,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class InstallAppsPanel extends JPanel {
 	
-	private static final Logger logger = LoggerFactory.getLogger(InstallAppsPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
     private JPanel descriptionPanel;
     private JScrollPane descriptionScrollPane;

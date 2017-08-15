@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implements LoadVizmapFileTaskFactory {
 
-	private static final Logger logger = LoggerFactory.getLogger(LoadVizmapFileTaskFactoryImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final VizmapReaderManager vizmapReaderMgr;
 	private final VisualMappingManager vmMgr;

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.json.ColorJsonDeserializer;
 import org.cytoscape.ding.customgraphics.json.ColorJsonSerializer;
 import org.cytoscape.ding.customgraphics.json.ColorSchemeJsonDeserializer;
@@ -56,7 +57,7 @@ public abstract class AbstractCustomGraphics2<T extends CustomGraphicLayer> impl
 	protected final Logger logger;
 
 	protected AbstractCustomGraphics2(final String displayName) {
-		logger = LoggerFactory.getLogger(this.getClass());
+		logger = LoggerFactory.getLogger(CyUserLog.NAME);
 		this.displayName = displayName;
 		this.properties = new HashMap<String, Object>();
 	}

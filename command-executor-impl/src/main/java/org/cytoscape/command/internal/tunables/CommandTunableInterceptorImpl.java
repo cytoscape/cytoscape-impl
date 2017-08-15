@@ -29,6 +29,7 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.StringTunableHandler;
 import org.cytoscape.command.StringTunableHandlerFactory;
 import org.cytoscape.work.AbstractTunableInterceptor;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<StringTunableHandler> {
 
-	private static final Logger logger = LoggerFactory.getLogger(CommandTunableInterceptorImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private String args = null;
 	private Map<String, Object> mapArgs = null;
 

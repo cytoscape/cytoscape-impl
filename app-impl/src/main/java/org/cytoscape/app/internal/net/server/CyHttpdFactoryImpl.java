@@ -56,6 +56,7 @@ import org.apache.http.protocol.ResponseConnControl;
 import org.apache.http.protocol.ResponseContent;
 import org.apache.http.protocol.ResponseDate;
 import org.apache.http.protocol.ResponseServer;
+import org.cytoscape.application.CyUserLog;
 import org.apache.http.protocol.HttpRequestHandlerRegistry;
 import org.apache.http.impl.DefaultConnectionReuseStrategy;
 import org.apache.http.impl.DefaultHttpResponseFactory;
@@ -81,7 +82,7 @@ public class CyHttpdFactoryImpl implements CyHttpdFactory
 
 class CyHttpdImpl implements CyHttpd
 {
-    static final Logger logger = LoggerFactory.getLogger(CyHttpdImpl.class);
+    static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
     
     /**
      * If the server port can't be bound on the first try, wait this long

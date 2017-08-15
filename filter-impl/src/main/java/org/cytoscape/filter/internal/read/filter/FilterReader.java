@@ -54,7 +54,7 @@ import org.slf4j.LoggerFactory;
 
 
 public final class FilterReader {
-	private static final Logger logger = LoggerFactory.getLogger(FilterReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final QuickFind quickFind;
 	

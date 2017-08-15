@@ -116,7 +116,7 @@ import org.slf4j.LoggerFactory;
 
 public class EquationParserImpl implements EquationParser {
 	
-	private static final Logger logger = LoggerFactory.getLogger(EquationParserImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Tokeniser tokeniser;
 	private Map<String, Function> nameToFunctionMap;

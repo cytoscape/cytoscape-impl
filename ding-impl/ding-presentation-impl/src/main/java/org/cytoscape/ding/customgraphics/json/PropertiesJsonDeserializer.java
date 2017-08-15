@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractCustomGraphics2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class PropertiesJsonDeserializer extends JsonDeserializer<Map<String, Obj
 
 	private final AbstractCustomGraphics2<?> cg2; // TODO remove circular dependency
 	
-	private static final Logger logger = LoggerFactory.getLogger(PropertiesJsonDeserializer.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public PropertiesJsonDeserializer(final AbstractCustomGraphics2<?> cg2) {
 		this.cg2 = cg2;

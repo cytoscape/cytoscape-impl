@@ -37,6 +37,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -84,7 +85,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		}
 	};
 	
-	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String NO_NETWORKS = "No Networks Found";
 	public static final String NO_TABLES = "No Tables Found";

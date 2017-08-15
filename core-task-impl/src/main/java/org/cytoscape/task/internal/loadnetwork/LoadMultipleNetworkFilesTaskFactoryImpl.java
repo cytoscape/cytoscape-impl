@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -46,7 +47,7 @@ public class LoadMultipleNetworkFilesTaskFactoryImpl extends AbstractTaskFactory
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(LoadMultipleNetworkFilesTaskFactoryImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public LoadMultipleNetworkFilesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;

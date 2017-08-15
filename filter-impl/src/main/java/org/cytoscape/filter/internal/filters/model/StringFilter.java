@@ -95,7 +95,7 @@ public class StringFilter extends AtomicFilter {
 			edge_bits = new BitSet(objectCount); // all the bits are false at very beginning			
 		}
 		else {
-			LoggerFactory.getLogger(StringFilter.class).error("StringFilter: Index_type is undefined.");
+			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("StringFilter: Index_type is undefined.");
 			return;
 		}
 		

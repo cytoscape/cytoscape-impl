@@ -40,6 +40,7 @@ import java.util.regex.Pattern;
 
 import org.cytoscape.app.internal.exception.AppParsingException;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.application.CyUserLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -88,7 +89,7 @@ public class AppParser {
 	 */
 	private static final String APP_COMPATIBLE_TAG_REGEX = "(\\d+(\\.\\d+)?\\s*)(,\\s*\\d+(\\.\\d+)?\\s*)*";
 	
-	private static final Logger logger = LoggerFactory.getLogger(App.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/**
 	 * Attempt to parse a given {@link File} object as an {@link App} object.

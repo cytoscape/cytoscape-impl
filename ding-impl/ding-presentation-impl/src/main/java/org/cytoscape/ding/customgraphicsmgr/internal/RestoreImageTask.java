@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
 
 public class RestoreImageTask implements Task {
 
-	private static final Logger logger = LoggerFactory.getLogger(RestoreImageTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final CustomGraphicsManager manager;
 
