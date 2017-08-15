@@ -50,7 +50,7 @@ public class RecentlyOpenedTrackerImpl implements RecentlyOpenedTracker {
 	private static final int MAX_TRACK_COUNT = 100;
 	private static final String MAX_FILES_PROP = "maxRecentlyOpenedFiles";
 	
-	private static final Logger logger = LoggerFactory.getLogger(RecentlyOpenedTrackerImpl.class); 
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
 	
 	private final LinkedList<URL> trackerURLs;
 	private final File propDir;

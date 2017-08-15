@@ -68,7 +68,7 @@ public final class AboutDialog extends JDialog implements HyperlinkListener {
 
 	private static final long serialVersionUID = 8966870102741519552L;
 
-	private static final Logger logger = LoggerFactory.getLogger(AboutDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final Dimension WINDOW_SIZE = new Dimension(500, 400);
 

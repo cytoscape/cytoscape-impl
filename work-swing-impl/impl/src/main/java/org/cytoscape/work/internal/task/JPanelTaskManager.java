@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implements PanelTaskManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(JPanelTaskManager.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private final JDialogTaskManager dtm;
 	private final JPanelTunableMutator panelTunableMutator;
 

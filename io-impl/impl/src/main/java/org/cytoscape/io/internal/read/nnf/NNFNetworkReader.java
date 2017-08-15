@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NNFNetworkReader extends AbstractCyNetworkReader {
 	
-	private static final Logger logger = LoggerFactory.getLogger(NNFNetworkReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	// Optional comments start with this character and extend to the end of line.
 	private static final char COMMENT_CHAR = '#';	

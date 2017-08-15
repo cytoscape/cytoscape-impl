@@ -51,7 +51,7 @@ public class ImportOntologyAndAnnotationAction extends AbstractCyAction {
 	
 	private static final long serialVersionUID = 3000065764000826333L;
 
-	private static final Logger logger = LoggerFactory.getLogger(ImportOntologyAndAnnotationAction.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private ImportTablePanel ontologyPanel;
 

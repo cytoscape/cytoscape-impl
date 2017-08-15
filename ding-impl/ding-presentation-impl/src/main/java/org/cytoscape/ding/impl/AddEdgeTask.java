@@ -27,6 +27,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Point;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;

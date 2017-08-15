@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 
 public class ApplyToNetworkHandler extends AbstractApplyHandler<CyNetwork> {
 	
-	private static final Logger logger = LoggerFactory.getLogger(ApplyToNetworkHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	
 	ApplyToNetworkHandler(final VisualStyle style, final CyServiceRegistrar serviceRegistrar) {

@@ -80,7 +80,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel {
 
-	private static final Logger logger = LoggerFactory.getLogger(ContinuousMappingEditorPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final Dimension SPINNER_SIZE = new Dimension(100, 25);
 

@@ -110,7 +110,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 													 ColumnCreatedListener, ColumnDeletedListener,
 													 ColumnNameChangedListener, RowsSetListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String LINE_BREAK = "\n";
 	private static final String CELL_BREAK = "\t";

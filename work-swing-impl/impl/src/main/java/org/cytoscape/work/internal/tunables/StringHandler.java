@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StringHandler extends AbstractGUITunableHandler implements DocumentListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(StringHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private JTextField textField;
 	private boolean readOnly = false;

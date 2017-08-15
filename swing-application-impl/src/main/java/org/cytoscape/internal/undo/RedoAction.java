@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class RedoAction extends AbstractCyAction {
 
-	private static final Logger logger = LoggerFactory.getLogger(RedoAction.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final CyServiceRegistrar serviceRegistrar;
 

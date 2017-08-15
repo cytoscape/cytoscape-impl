@@ -56,7 +56,7 @@ public class BookmarksUtilImpl implements BookmarksUtil {
 	
 	//Map to keep information of new bookmarks converted to DataSource for dataSourceManager
 	private  Map<DataSource, org.cytoscape.io.datasource.DataSource> dataSourceMap;
-	private static final Logger logger = LoggerFactory.getLogger(BookmarksUtilImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private CyServiceRegistrar register;
 	
 	public BookmarksUtilImpl( final CyServiceRegistrar register){

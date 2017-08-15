@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerator<Number> {
 
-	private static final Logger logger = LoggerFactory.getLogger(RandomNumberMappingGenerator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public RandomNumberMappingGenerator() {
 		super(Number.class);

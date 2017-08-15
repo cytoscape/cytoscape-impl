@@ -170,7 +170,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	private final Map<Class<? extends CyIdentifiable>, Set<String>> defVisibleProps;
 	
-	private static final Logger logger = LoggerFactory.getLogger(VizMapperMediator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	

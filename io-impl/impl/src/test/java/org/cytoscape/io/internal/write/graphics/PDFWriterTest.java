@@ -52,7 +52,7 @@ import com.lowagie.text.pdf.PdfWriter;
 
 public class PDFWriterTest {
 	
-	private static final Logger logger = LoggerFactory.getLogger(PDFWriterTest.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	
 	@Test

@@ -64,7 +64,7 @@ public class SessionUtil {
 	
 	private static boolean readingSessionFile; // TODO: delete it and find a better solution!
 	
-	private static final Logger logger = LoggerFactory.getLogger(SessionUtil.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public static String escape(String text) {
 		try {

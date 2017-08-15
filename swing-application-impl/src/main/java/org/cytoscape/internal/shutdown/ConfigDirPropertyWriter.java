@@ -46,7 +46,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 	private final Map<CyProperty<?>, Map<?, ?>> configDirProperties;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(ConfigDirPropertyWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public ConfigDirPropertyWriter(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;

@@ -152,7 +152,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private final NetworkSearchPanel networkSearchPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	private static final Logger logger = LoggerFactory.getLogger(NetworkMainPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public NetworkMainPanel(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
 		this.networkSearchPanel = networkSearchPanel;

@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class URLHandler extends AbstractGUITunableHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(URLHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private JComboBox<String> networkFileComboBox;
 

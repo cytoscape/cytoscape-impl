@@ -103,7 +103,7 @@ public class StarterPanel extends JPanel {
 	
 	private static final String MISSING_IMAGE = "/images/logo-light-96.png";
 	
-	private static final Logger logger = LoggerFactory.getLogger(StarterPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private JPanel contentPane;
 	private SessionListPanel recentSessionsPanel;

@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
 public class CytoscapeMenuBar extends JMenuBar {
 	
 	private final static long serialVersionUID = 1202339868642259L;
-	private final static Logger logger = LoggerFactory.getLogger(CytoscapeMenuBar.class);
+	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final Map<Action,JMenuItem> actionMenuItemMap; 
 	private final Map<String,String> actionOverrideMap; 

@@ -88,7 +88,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 	private CyProperty<Bookmarks> bookmarks;
 	private final Object lock = new Object();
 
-	private static final Logger logger = LoggerFactory.getLogger(CySessionManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public CySessionManagerImpl(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;

@@ -55,7 +55,7 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 	public static final String NAME = "Edit Selected Discrete Mapping Values";
 
 	private static final long serialVersionUID = 7640977428847967990L;
-	private static final Logger logger = LoggerFactory.getLogger(EditSelectedDiscreteValuesAction.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
 	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> newMappingValues;

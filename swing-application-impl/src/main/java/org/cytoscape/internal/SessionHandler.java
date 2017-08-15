@@ -88,7 +88,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final NetworkMainPanel netPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public SessionHandler(
 			final CytoscapeDesktop desktop,

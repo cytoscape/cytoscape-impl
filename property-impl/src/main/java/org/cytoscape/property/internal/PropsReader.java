@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 
 public class PropsReader extends AbstractConfigDirPropsReader {
 
-	private static final Logger logger = LoggerFactory.getLogger(PropsReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * Creates a new PropsReader object.

@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 public final class BookmarkReader implements CyProperty<Bookmarks> {
 	private static final String BOOKMARK_PACKAGE = Bookmarks.class.getPackage().getName();
-	private static final Logger logger = LoggerFactory.getLogger(BookmarkReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private String name;
 	private Bookmarks bookmarks;

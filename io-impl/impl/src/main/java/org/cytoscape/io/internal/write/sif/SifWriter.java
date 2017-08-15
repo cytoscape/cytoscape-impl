@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class SifWriter implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger(SifWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String DEFAULT_INTERACTION = "-";
 	private static final String ENCODING = "UTF-8";

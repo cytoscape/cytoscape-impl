@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class CyNetworkNamingImpl implements CyNetworkNaming {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyNetworkNamingImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String DEF_NETWORK_NAME_PREFIX = "Network";
 	

@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
  */
 public class VisualMappingManagerImpl implements VisualMappingManager, SetCurrentNetworkViewListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(VisualMappingManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	// title for the default visual style.
 	public static final String DEFAULT_STYLE_NAME = "default";

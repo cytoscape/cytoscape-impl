@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class TaskFactoryTunableAction extends AbstractCyAction {
 
-	private final static Logger logger = LoggerFactory.getLogger(TaskFactoryTunableAction.class);
+	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final TaskFactory factory;
 	private final CyServiceRegistrar serviceRegistrar;

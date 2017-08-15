@@ -154,7 +154,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private VisualLexicon visualLexicon;
 
 	protected static final Logger logger = LoggerFactory
-			.getLogger(GMLNetworkReader.class);
+			.getLogger("org.cytoscape.application.userlog");
 
 	static {
 		legacyArrowShapes.put("0", ArrowShapeVisualProperty.NONE); // NO_END

@@ -141,7 +141,7 @@ class ConsoleDialog {
 		}
 	}
 	
-	private static final Logger logger = LoggerFactory.getLogger(ConsoleDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * Contains all log events (except those deleted with the Clear button) that were added with the

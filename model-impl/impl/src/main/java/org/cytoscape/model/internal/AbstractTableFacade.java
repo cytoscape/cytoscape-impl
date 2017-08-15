@@ -49,7 +49,7 @@ import com.google.common.collect.MapMaker;
  */
 public abstract class AbstractTableFacade implements CyTable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(AbstractTableFacade.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final CyTable actual;
 	private final CyEventHelper cyEventHelper;

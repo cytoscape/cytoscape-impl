@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
 
 public class OntologyPanelBuilder {
 	
-	private static final Logger logger = LoggerFactory.getLogger(OntologyPanelBuilder.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String GENE_ASSOCIATION = "gene_association";
 	private static final String DEF_ANNOTATION_ITEM = "Please select an annotation data source...";

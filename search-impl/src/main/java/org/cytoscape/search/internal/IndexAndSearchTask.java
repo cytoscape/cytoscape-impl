@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 public class IndexAndSearchTask extends AbstractNetworkTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger(IndexAndSearchTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final EnhancedSearch enhancedSearch;
 	private final String query;

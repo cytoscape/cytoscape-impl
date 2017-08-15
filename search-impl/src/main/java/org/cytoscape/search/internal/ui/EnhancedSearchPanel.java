@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class EnhancedSearchPanel extends JPanel {
 
-	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final EnhancedSearch searchMgr;
 	private final CyServiceRegistrar serviceRegistrar;

@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class NumberSeriesMappingGenerator<V extends Number> extends AbstractDiscreteMappingGenerator<V> {
 
-	private static final Logger logger = LoggerFactory.getLogger(NumberSeriesMappingGenerator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public NumberSeriesMappingGenerator(final Class<V> type) {
 		super(type);

@@ -67,7 +67,7 @@ public class BiModalJSplitPane extends JSplitPane {
 	
 	private final CytoPanelName compassDirection;
 	
-	private static final Logger logger = LoggerFactory.getLogger(BiModalJSplitPane.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * @param orientation    JSplitPane Orientation.

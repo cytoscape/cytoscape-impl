@@ -50,7 +50,7 @@ import com.lowagie.text.pdf.PdfWriter;
  */
 public class PDFWriter extends AbstractTask implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger(PDFWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	@Tunable(description="Export text as font:")
 	public boolean exportTextAsFont = true;

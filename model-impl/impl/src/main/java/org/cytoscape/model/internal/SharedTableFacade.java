@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class SharedTableFacade extends AbstractTableFacade implements CyTable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(SharedTableFacade.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private final CyTable shared; 
 	private final CyRootNetwork rootNetwork; 
 	private final Class<? extends CyIdentifiable> type;

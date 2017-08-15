@@ -121,7 +121,7 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
 
     private boolean doFullEncoding;
     
-    final static private Logger logger = LoggerFactory.getLogger(GenericXGMMLWriter.class);
+    final static private Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
     public GenericXGMMLWriter(final OutputStream outputStream,
                               final CyNetworkView networkView,

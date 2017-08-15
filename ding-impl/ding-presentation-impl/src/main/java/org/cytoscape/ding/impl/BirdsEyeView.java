@@ -48,6 +48,7 @@ import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyEdge;

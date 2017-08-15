@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
 public class WebServiceImportDialog<T> extends JDialog {
 
 	private static final long serialVersionUID = 4454012178961756787L;
-	private static final Logger logger = LoggerFactory.getLogger(WebServiceImportDialog.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String NO_CLIENT = "No Service Client";
 

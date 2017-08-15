@@ -61,7 +61,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener, EquationFunctionAddedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyTableManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CyIdentifiable>[] COMPATIBLE_TYPES = new Class[] { CyNetwork.class,
