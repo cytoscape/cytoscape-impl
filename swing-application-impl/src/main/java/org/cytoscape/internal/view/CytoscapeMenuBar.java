@@ -1,6 +1,12 @@
 package org.cytoscape.internal.view;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.Action;
@@ -10,8 +16,10 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
 import org.slf4j.Logger;
@@ -47,69 +55,149 @@ public class CytoscapeMenuBar extends JMenuBar {
 	private final static Logger logger = LoggerFactory.getLogger(CytoscapeMenuBar.class);
 	
 	private final Map<Action,JMenuItem> actionMenuItemMap; 
+	private final Map<String,String> actionOverrideMap; 
 	private final JMenuTracker menuTracker;
 
 	public static final String DEFAULT_MENU_SPECIFIER = "Tools";
-
+	private static final boolean verbose = true;
+	CyServiceRegistrar registrar;
 	/**
 	 * Default constructor.
 	 */
-	public CytoscapeMenuBar() {
+	public CytoscapeMenuBar(CyServiceRegistrar reg) {
+		registrar = reg;
 		actionMenuItemMap = new HashMap<Action,JMenuItem>();
+		actionOverrideMap = new HashMap<String,String>();			// map the name to the whole line
 		menuTracker = new JMenuTracker(this);
 
 		// Load the first menu, just to please the layouter. Also make sure the
 		// menu bar doesn't get too small.
 		// "File" is always first
 		setMinimumSize(getMenu("File").getPreferredSize());
+		readStopList();
+		readMenuCustomizer();
 	}
-
+	static boolean produceActionTable = false;
 	/**
 	 * If the given Action has a present and false inMenuBar property, return;
-	 * otherwise delegate to addAction( String, Action ) with the value of its
-	 * preferredMenu property, or null if it does not have that property.
+	 * otherwise create the menu item.
 	 */
 	public boolean addAction(final CyAction action) {
-		if (!action.isInMenuBar())
-			return false;
+		if (null == action.getName()) return false;
+		
+		if (produceActionTable)	
+			dumpActionToTable(action);
+		AbstractCyAction configgedAction = 	configgedAction(action);
+		if (configgedAction == null)    		return false;
+		if (!configgedAction.isInMenuBar())    	return false;
 
-		boolean insertSepBefore = false;
-		boolean insertSepAfter = false;
-		if (action instanceof AbstractCyAction) {
-			insertSepBefore = ((AbstractCyAction)action).insertSeparatorBefore();
-			insertSepAfter = ((AbstractCyAction)action).insertSeparatorAfter();
-		}
+//		System.out.println("addAction in CytoscapeMenuBar");
+		boolean insertSepBefore = configgedAction.insertSeparatorBefore();;
+		boolean insertSepAfter = configgedAction.insertSeparatorAfter();
 
-		// At present we allow an Action to be in this menu bar only once.
-		if ( actionMenuItemMap.containsKey(action) )
-			return false;
+		// We allow an Action to be in this menu bar only once.
+		if ( actionMenuItemMap.containsKey(configgedAction) ) 		return false;
 
 		// Actions with no preferredMenu don't show up in any menu.
-		String menu_name = action.getPreferredMenu();
+		String menu_name = configgedAction.getPreferredMenu();
 		if (menu_name == null || menu_name.isEmpty())
 			return false;
 		
 		final GravityTracker gravityTracker = menuTracker.getGravityTracker(menu_name);
-		final JMenuItem menu_item = createMenuItem(action);
+		final JMenuItem menu_item = createMenuItem(configgedAction);
+		String item = configgedAction.getName();
+		if (stopList.contains(item))
+			menu_item.setVisible(false);			
 
 		// Add an Accelerator Key, if wanted
-		final KeyStroke accelerator = action.getAcceleratorKeyStroke();
+		final KeyStroke accelerator = configgedAction.getAcceleratorKeyStroke();
 		if (accelerator != null)
 			menu_item.setAccelerator(accelerator);
 
-		((JMenu) gravityTracker.getMenu()).addMenuListener(action);
+		((JMenu) gravityTracker.getMenu()).addMenuListener(configgedAction);
 		if (insertSepBefore)
-			gravityTracker.addMenuSeparator(action.getMenuGravity()-.0001);
-		gravityTracker.addMenuItem(menu_item, action.getMenuGravity());
+			gravityTracker.addMenuSeparator(configgedAction.getMenuGravity()-.0001);
+		gravityTracker.addMenuItem(menu_item, configgedAction.getMenuGravity());
 		if (insertSepAfter)
-			gravityTracker.addMenuSeparator(action.getMenuGravity()+.0001);
-		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + action.getMenuGravity());
-		actionMenuItemMap.put(action, menu_item);
+			gravityTracker.addMenuSeparator(configgedAction.getMenuGravity()+.0001);
+		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + configgedAction.getMenuGravity());
+		actionMenuItemMap.put(configgedAction, menu_item);
 
 		revalidate();
 		repaint();
 		
 		return true;
+	}
+
+	// this will produce the table that you can put into excel to edit menu / toolbar appearance
+	private void dumpActionToTable(CyAction action) {
+			String clasname = "" + action.getClass();
+			clasname = clasname.substring(1+clasname.lastIndexOf('.'));
+			System.out.println(action.getName() + "\t"
+						 + ((action.getAcceleratorKeyStroke() == null) ? "" : action.getAcceleratorKeyStroke())   + "\t" 
+							+ (action.isInMenuBar() ? "T" : "F") + "\t"
+							+ ((action.getPreferredMenu()  == null) ? "" : action.getPreferredMenu()) + "\t" 
+							+ action.getMenuGravity() + "\t" 
+							+ (action.isInToolBar() ? "T" : "F") + "\t" 
+							+ action.getToolbarGravity() + "\t" 
+							+ (action.isEnabled() ? "T" : "F") + "\t" 
+							+ clasname + "\t");
+	}
+
+	private AbstractCyAction configgedAction(CyAction action) {
+		String mappedAction = actionOverrideMap.get(action.getName());
+		if (mappedAction != null)
+		{
+			String[] tokens = 	mappedAction.split(TABSTR);
+//			assert tokens.length == 9;
+			String name = tokens[0];
+			String accelerator = tokens[1];
+			//-------------------- !!!!!!!!!!!!!!  ----------- this will break, as setters aren't in the api yet
+			if (tokens.length == 9)			// its the full table (otherwise its just accelerator definition)
+			{
+				boolean inMenuBar = "T".equals(tokens[2]);
+				String prefMenu = tokens[3];
+				String gravity = tokens[4];
+				boolean inToolBar = "T".equals(tokens[5]);
+				String toolgravity = tokens[6];
+				boolean enabled = "T".equals(tokens[7]);   // last two not used
+				String classname = tokens[8];
+				action.setEnabled(enabled);
+//				action.setIsInMenuBar(inMenuBar);
+//				action.setPreferredMenu(prefMenu);
+				float f = 0, g = 0;
+				try {
+					f = Float.parseFloat(gravity);
+				}
+				catch (Exception e) {}
+//				action.setMenuGravity(g);
+				try {
+					g = Float.parseFloat(toolgravity);
+				}
+				catch (Exception e) {}
+//				action.setToolbarGravity(g);
+//				action.setIsInToolBar(inToolBar);
+			}
+			if (verbose && !produceActionTable)
+			{
+				 KeyStroke key = KeyStroke.getKeyStroke(accelerator);
+//				 if (key != action.getAcceleratorKeyStroke())
+//						 System.out.println("Overriding: " + name + " with " + accelerator);  // + (inMenuBar ? " menu" : "") + (inToolBar ? " tool" : "")
+			}
+			try {
+				AbstractCyAction cast = (AbstractCyAction) action;
+				cast.setAcceleratorKeyStroke(KeyStroke.getKeyStroke(accelerator));
+			}
+			catch (ClassCastException e) {  System.err.println("WTF? action isn't an AbstractCyAction"); }
+		}
+		return (AbstractCyAction) action;
+	}
+
+	
+	public void showAll()
+	{
+		for ( JMenuItem item : actionMenuItemMap.values()) 
+			item.setVisible(true);
 	}
 
 	public void addSeparator(String menu_name, final double gravity) {
@@ -187,4 +275,89 @@ public class CytoscapeMenuBar extends JMenuBar {
 	public JMenuBar getJMenuBar() {
 		return this;
 	}
+
+	//---------------------------------
+	private HashSet<String> 	stopList = new HashSet<String>();
+	//---------------------------------
+	private void readStopList()
+	{
+		System.out.println("readStopList");
+		stopList.clear();
+		List<String> lines;
+		try {
+			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+			if (cyApplicationConfiguration == null)
+			{
+				System.out.println("cyApplicationConfiguration not found");
+				return;
+			}
+
+			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configFile = null;
+			if (configDirectory.exists())
+				configFile = new File(configDirectory.toPath()  + "/menubar.stoplist");
+			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
+		} catch (IOException e) {
+			// file not found: there's no customization, just return
+			System.out.println("IOException: " + e.getMessage());
+			return;
+		}
+				
+		for (String line : lines)
+		{
+			System.out.println(line);
+			stopList.add(line.trim());
+		}
+	}
+	//---------------------------------
+	
+	private void readMenuCustomizer()
+	{
+//		System.out.println("readMenuCustomizer");
+		actionOverrideMap.clear();
+		List<String> lines;
+		try {
+			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+			if (cyApplicationConfiguration == null)
+			{
+				System.out.println("cyApplicationConfiguration not found");
+				return;
+			}
+
+			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configFile = null;
+			if (configDirectory.exists())
+				configFile = new File(configDirectory.toPath()  + "/menubar.custom.txt");
+			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
+		} catch (IOException e) {
+			// file not found: there's no customization, just return
+			System.out.println("IOException: " + e.getMessage());
+			return;
+		}
+				
+		for (String line : lines)
+		{
+//			System.out.println(line);
+			addCustomizerRow(line.trim());
+		}
+	}
+	//------------------------
+static private String TABSTR = "\t";
+	private void addCustomizerRow(String trimmed) {
+		String[] tokens = 	trimmed.split(TABSTR);
+		assert tokens.length == 8;
+		String name = tokens[0];
+//		String accelerator = tokens[1];
+//		String prefMenu = tokens[2];
+//		String gravity = tokens[3];
+//		String inMenuBar = tokens[4];
+//		String inToolBar = tokens[5];
+//		String enabled = tokens[6];
+//		String classname = tokens[7];
+//		
+		
+		actionOverrideMap.put(name, trimmed);
+		
+	}
+
 }
