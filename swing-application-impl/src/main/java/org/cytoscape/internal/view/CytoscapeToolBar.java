@@ -123,7 +123,7 @@ public class CytoscapeToolBar extends JToolBar {
 	            				JCheckBoxMenuItem checktem = new JCheckBoxMenuItem();
 	            				checktem.setText(tip);
 	            				checktem.setState(button.isVisible());
-	            				checktem.setIcon(button.getIcon()); 
+	            				checktem.setIcon(button.getIcon());
 		                        popup.add(checktem);
 		                        checktem.addActionListener(ev -> {  button.setVisible(!button.isVisible()); resave();	} );
                				}
