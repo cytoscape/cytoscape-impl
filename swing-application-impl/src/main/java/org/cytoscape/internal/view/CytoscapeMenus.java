@@ -7,7 +7,13 @@ import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 
 import java.awt.Component;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +23,9 @@ import javax.swing.JMenuBar;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
@@ -50,11 +58,14 @@ public class CytoscapeMenus {
 	final private CytoscapeToolBar toolBar;
 	final private Set<CyAction> viewFrameActions;
 	
+	public CytoscapeMenus(CytoscapeMenuBar menuBar, CytoscapeToolBar toolBar, CyServiceRegistrar reg) {
+		this(menuBar, toolBar);
+	}
 	public CytoscapeMenus(CytoscapeMenuBar menuBar, CytoscapeToolBar toolBar) {
 		this.menuBar = menuBar;
 		this.toolBar = toolBar;
 		
-		viewFrameActions = new LinkedHashSet<>();
+		viewFrameActions = new LinkedHashSet<CyAction>();
 
 		menuBar.addMenu("File", 0.0);
 		menuBar.addMenu("File.New", 0.0);
@@ -112,17 +123,11 @@ public class CytoscapeMenus {
 //		toolBar.addSeparator(10.0f);
 	}
 
-	public JMenu getJMenu(String s) {
-		return menuBar.getMenu(s);
-	}
+	public JMenu getJMenu(String s) {		return menuBar.getMenu(s);	}
 
-	public JMenuBar getJMenuBar() {
-		return menuBar;
-	}
+	public JMenuBar getJMenuBar() {		return menuBar;	}
 
-	public JToolBar getJToolBar() {
-		return toolBar;
-	}
+	public JToolBar getJToolBar() {		return toolBar;	}
 	
 	public JToolBar createViewFrameToolBar() {
 		JToolBar viewToolBar = null;
@@ -219,4 +224,5 @@ public class CytoscapeMenus {
 		
 		return dummy;
 	}
+
 }
