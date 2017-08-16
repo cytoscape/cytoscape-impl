@@ -236,11 +236,18 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 		Set<CyGroup> groups = getGroupSet(net);
 		if (groups == null || groups.size() == 0) return;
 
-		List<CyEdge> edgesToAdd = new ArrayList<>();
+		// NOTE: if *any* group is in the process of collapsing or
+		// expanding -- just return.  Chances are *really* good
+		// that this event came from one of the groups
 		for (CyGroup group: groups) {
 			CyGroupImpl gImpl = (CyGroupImpl)group;
 			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
-				continue;
+				return;
+		}
+
+		List<CyEdge> edgesToAdd = new ArrayList<>();
+		for (CyGroup group: groups) {
+			CyGroupImpl gImpl = (CyGroupImpl)group;
 			for (CyEdge edge: edges) {
 				if (!gImpl.isMeta(edge) && gImpl.isConnectingEdge(edge))
 					edgesToAdd.add(edge);
@@ -256,12 +263,14 @@ public class CyGroupManagerImpl implements CyGroupManager, AddedEdgesListener,
 		Set<CyGroup> groups = getGroupSet(net);
 		if (groups == null || groups.size() == 0) return;
 
-		List<CyEdge> edgesToRemove = new ArrayList<>();
 		for (CyGroup group: groups) {
 			CyGroupImpl gImpl = (CyGroupImpl)group;
-
 			if (gImpl.isCollapsing() || gImpl.isExpanding()) 
-				continue;
+				return;
+		}
+
+		List<CyEdge> edgesToRemove = new ArrayList<>();
+		for (CyGroup group: groups) {
 			for (CyEdge edge: edges) {
 				edgesToRemove.add(edge);
 			}

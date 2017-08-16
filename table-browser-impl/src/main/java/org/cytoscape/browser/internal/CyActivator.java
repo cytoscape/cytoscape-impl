@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
@@ -84,6 +85,12 @@ public class CyActivator extends AbstractCyActivator {
 			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Clear all errors");
+			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
+		}
+		{
+			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "Format column...");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 	}

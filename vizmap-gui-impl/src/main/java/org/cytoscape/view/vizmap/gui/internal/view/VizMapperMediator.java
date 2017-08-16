@@ -59,7 +59,6 @@ import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
 import org.cytoscape.model.events.ColumnNameChangedEvent;
 import org.cytoscape.model.events.ColumnNameChangedListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -282,7 +281,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final VisualStyle curStyle = vmProxy.getCurrentVisualStyle();
 		final Set<CyNetworkView> views = vmProxy.getNetworkViewsWithStyle(curStyle);
 		
-		for (final CyNetworkView view : views) {
+		for (final CyNetworkView view : views) { // TODO This should be done by NetworkViewMediator only, if possible
 			curStyle.apply(view);
 			view.updateView();
 		}
@@ -298,7 +297,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		// Update bypass buttons--check selected nodes and edges of the current view
 		final CyNetworkView curNetView = vmProxy.getCurrentNetworkView();
 		
-		if (curNetView != null && !e.getColumnRecords(CyNetwork.SELECTED).isEmpty()) {
+		if (curNetView != null && e.containsColumn(CyNetwork.SELECTED)) {
 			final CyNetwork curNet = curNetView.getModel();
 			
 			// We have to get all selected elements again
@@ -324,14 +323,14 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				vpSheet = vizMapperMainPanel.getVisualPropertySheet(CyNetwork.class);
 			
 			if (vpSheet != null) {
-				final Collection<RowSetRecord> payloadCollection = e.getPayloadCollection();
+				final Set<String> columns = e.getColumns();
 				
 				for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
 					final VisualMappingFunction<?, ?> mapping = item.getModel().getVisualMappingFunction();
 					
 					if (mapping != null) {
-						for (final RowSetRecord record : payloadCollection) {
-							if (mapping.getMappingColumnName().equalsIgnoreCase(record.getColumn())) {
+						for (String columnName : columns) {
+							if (mapping.getMappingColumnName().equalsIgnoreCase(columnName)) {
 								invokeOnEDT(() -> item.updateMapping());
 								break;
 							}
@@ -1124,30 +1123,30 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	}
 	
 	@SuppressWarnings("rawtypes")
-	private <S extends CyIdentifiable> void updateLockedValues(final Set<View<S>> selectedViews,
-															   final Class<S> targetDataType) {
-		final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
-		
-		for (VisualPropertySheet sheet : vpSheets) {
-			final Set<VisualPropertySheetItem<?>> vpItems = sheet.getItems();
+	private <S extends CyIdentifiable> void updateLockedValues(Set<View<S>> selectedViews, Class<S> targetDataType) {
+		invokeOnEDT(() -> {
+			final Set<VisualPropertySheet> vpSheets = vizMapperMainPanel.getVisualPropertySheets();
 			
-			for (final VisualPropertySheetItem<?> item : vpItems) {
-				final VisualPropertySheetItemModel<?> model = item.getModel();
+			for (VisualPropertySheet sheet : vpSheets) {
+				final Set<VisualPropertySheetItem<?>> vpItems = sheet.getItems();
 				
-				if (model.getTargetDataType() != targetDataType)
-					continue;
-				
-				final Set values = getDistinctLockedValues(model.getVisualProperty(), selectedViews);
-				
-				if (targetDataType == CyNode.class) {
-					updateVpInfoLockedState(model, values, selectedViews);
-				} else if (targetDataType == CyEdge.class) {
-					updateVpInfoLockedState(model, values, selectedViews);
-				} else {
-					updateVpInfoLockedState(model, values, selectedViews);
+				for (final VisualPropertySheetItem<?> item : vpItems) {
+					final VisualPropertySheetItemModel<?> model = item.getModel();
+					
+					if (model.getTargetDataType() != targetDataType)
+						continue;
+					
+					final Set values = getDistinctLockedValues(model.getVisualProperty(), selectedViews);
+					
+					if (targetDataType == CyNode.class)
+						updateVpInfoLockedState(model, values, selectedViews);
+					else if (targetDataType == CyEdge.class)
+						updateVpInfoLockedState(model, values, selectedViews);
+					else
+						updateVpInfoLockedState(model, values, selectedViews);
 				}
 			}
-		}
+		});
 	}
 	
 	private <T, S extends CyIdentifiable> void updateVpInfoLockedState(final VisualPropertySheetItemModel<T> model,
@@ -1304,6 +1303,9 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		final boolean selected = e.getStateChange() == ItemEvent.SELECTED;
 		final VisualPropertyDependency<?> dep = vpSheetItem.getModel().getVisualPropertyDependency();
 		dep.setDependency(selected);
+		
+		// Update VP Sheet Items
+		invokeOnEDT(() -> updateItemsStatus());
 	}
 	
 	private void onColumnChanged(final String colName, final CyTable tbl) {
