@@ -195,4 +195,5 @@ public class RemoveSelectedDiscreteValuesAction extends AbstractVizMapperAction 
 			}
 		}
 	}
+
 }

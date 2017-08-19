@@ -65,7 +65,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 	
 	private final Object lock = new Object();
 	
-	private static Logger logger = LoggerFactory.getLogger(NetworkSearchMediator.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public NetworkSearchMediator(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
 		this.networkSearchPanel = networkSearchPanel;

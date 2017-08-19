@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
 public class GraphMLWriter implements CyWriter {
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(GraphMLWriter.class);
+			.getLogger("org.cytoscape.application.userlog");
 
 	private static final String GRAPHML = "graphml";
 	private static final String GRAPH = "graph";

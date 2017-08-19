@@ -109,7 +109,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	final private Map<String, String> serviceProps;
 	final private CytoPanelName cytoPanelName;
 	final private CyServiceRegistrar serviceRegistrar;
-	final private static Logger logger = LoggerFactory.getLogger(CytoPanelTaskFactoryTunableAction.class);
+	final private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public CytoPanelTaskFactoryTunableAction(
 			final TaskFactory factory,

@@ -76,7 +76,7 @@ public class VisualStyleSerializer {
 
 	private VisualLexicon lexicon;
 
-	private static final Logger logger = LoggerFactory.getLogger(VisualStyleSerializer.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public VisualStyleSerializer(final CalculatorConverterFactory calculatorConverterFactory,
 								 final CyServiceRegistrar serviceRegistrar) {

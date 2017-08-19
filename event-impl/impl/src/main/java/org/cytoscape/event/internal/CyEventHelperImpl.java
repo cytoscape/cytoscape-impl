@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class CyEventHelperImpl implements CyEventHelper {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyEventHelperImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final Object DUMMY = new Object();
 

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 public class ImportDefaultVizmapTask extends AbstractTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(ImportDefaultVizmapTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final ServicesUtil servicesUtil;
 	private final File vizmapFile;

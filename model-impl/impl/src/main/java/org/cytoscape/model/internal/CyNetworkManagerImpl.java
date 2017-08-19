@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CyNetworkManagerImpl implements CyNetworkManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyNetworkManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Map<Long, CyNetwork> networkMap;
 	private final CyServiceRegistrar serviceRegistrar;

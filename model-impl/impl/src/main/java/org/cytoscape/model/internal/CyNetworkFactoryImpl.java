@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 
 
 public class CyNetworkFactoryImpl implements CyNetworkFactory {
-	private static final Logger logger = LoggerFactory.getLogger(CyNetworkFactoryImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final CyEventHelper help;
 	private final CyTableManagerImpl mgr;

@@ -37,7 +37,7 @@ import com.l2fprod.common.beans.editor.StringPropertyEditor;
 
 public class CyNumberPropertyEditor<T extends Number> extends StringPropertyEditor {
 
-	private static final Logger logger = LoggerFactory.getLogger(CyNumberPropertyEditor.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Object currentValue;
 	private VisualProperty<T> visualProperty;

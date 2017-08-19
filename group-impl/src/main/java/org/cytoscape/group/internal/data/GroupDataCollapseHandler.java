@@ -52,7 +52,7 @@ public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
 	private final CyGroupManager cyGroupManager;
 	private final CyGroupSettingsImpl cyGroupSettings;
 	private static final Logger logger = 
-		LoggerFactory.getLogger(GroupDataCollapseHandler.class);
+		LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * 

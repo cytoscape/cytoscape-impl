@@ -51,7 +51,7 @@ public class SelectURLTableTask extends AbstractTask {
 	private InputStream stream;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger( SelectURLTableTask.class ); 
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
 
 	public SelectURLTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {

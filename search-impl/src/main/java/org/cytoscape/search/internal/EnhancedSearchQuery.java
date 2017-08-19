@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class EnhancedSearchQuery {
 	
-	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchQuery.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;

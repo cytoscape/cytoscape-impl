@@ -54,7 +54,7 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class DefaultAttributeTableReader implements TextTableReader {
 	
-	private static final Logger logger = LoggerFactory.getLogger(DefaultAttributeTableReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final URL source;
 	private AttributeMappingParameters mapping;

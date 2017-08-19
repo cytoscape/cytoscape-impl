@@ -149,6 +149,7 @@ public class CytoscapeToolBar extends JToolBar {
         if (hidden.size() > 0)
         	writeStopList(hidden);
 	}
+
 	@Override public Component add(Component comp)
 	{
 		if (stopList.contains(comp.getName())) 

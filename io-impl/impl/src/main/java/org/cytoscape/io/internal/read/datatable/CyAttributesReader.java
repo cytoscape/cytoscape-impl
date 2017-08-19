@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class CyAttributesReader extends AbstractTask implements CyTableReader {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyAttributesReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final byte TYPE_BOOLEAN = 1;
 	private static final byte TYPE_FLOATING_POINT = 2;

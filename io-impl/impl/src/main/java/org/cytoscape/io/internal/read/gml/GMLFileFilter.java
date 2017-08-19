@@ -81,7 +81,7 @@ public class GMLFileFilter extends BasicCyFileFilter {
 				stream.close();
 			}
 		} catch (IOException e) {
-			Logger logger = LoggerFactory.getLogger(getClass());
+			Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 			logger.error("Error parsing header", e);
 			return false;
 		}

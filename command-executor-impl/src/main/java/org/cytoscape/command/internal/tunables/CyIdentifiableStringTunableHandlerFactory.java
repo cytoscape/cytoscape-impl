@@ -26,6 +26,7 @@ package org.cytoscape.command.internal.tunables;
 
 import org.cytoscape.work.BasicTunableHandlerFactory;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.StringTunableHandlerFactory;
 
@@ -43,7 +44,7 @@ public class CyIdentifiableStringTunableHandlerFactory<T extends CyIdentifiableT
 	private final StringToModel stringHandler;
 	private final Class<T> tunableHandlerClass;
 	private final Class<?>[] allowedTypes;
-  private final static Logger logger = LoggerFactory.getLogger(CyIdentifiableStringTunableHandlerFactory.class);
+  private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 
 	/**

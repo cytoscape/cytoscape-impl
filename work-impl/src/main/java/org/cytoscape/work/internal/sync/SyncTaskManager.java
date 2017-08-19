@@ -48,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Object>> implements
 		SynchronousTaskManager<Object> {
 
-	private static final Logger logger = LoggerFactory.getLogger(SyncTaskManager.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 
 	private final SyncTunableMutator<?> syncTunableMutator;

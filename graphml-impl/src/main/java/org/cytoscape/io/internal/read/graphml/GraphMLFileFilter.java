@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class GraphMLFileFilter extends BasicCyFileFilter {
 
-	private static final Logger logger = LoggerFactory.getLogger(GraphMLFileFilter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String GRAPHML_NAMESPACE_STRING = "http://graphml.graphdrawing.org/xmlns";
 	private static final String GRAPHML_TAG = "<graphml>";

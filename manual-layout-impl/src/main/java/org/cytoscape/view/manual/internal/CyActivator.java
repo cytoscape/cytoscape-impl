@@ -44,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 	private ControlPanel controlPanel;
 	private ControlPanelAction controlPanelAction;
 	
-	private static Logger logger = LoggerFactory.getLogger(CyActivator.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	@Override
 	public void start(BundleContext bc) {

@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
 
 public final class CyTableImpl implements CyTable, TableAddedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyTableImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Set<String> currentlyActiveAttributes;
 	private Map<String, Map<Object, Object>> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.

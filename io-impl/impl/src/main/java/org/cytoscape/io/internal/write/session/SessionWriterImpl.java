@@ -95,7 +95,7 @@ import org.slf4j.LoggerFactory;
  */
 public class SessionWriterImpl extends AbstractTask implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger(SessionWriterImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String VIZMAP_FILE = "session_vizmap.xml";
 	private static final String THUMBNAIL_FILE = "session_thumbnail.png";

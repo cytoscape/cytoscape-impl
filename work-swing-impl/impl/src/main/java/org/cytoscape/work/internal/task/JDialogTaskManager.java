@@ -60,7 +60,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager {
 
-	private static final Logger logger = LoggerFactory.getLogger(JDialogTaskManager.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * The delay between the execution of the <code>Task</code> and

@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class SessionIO {
 
-	private static final Logger logger = LoggerFactory.getLogger(SessionIO.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	@SuppressWarnings("unchecked")
 	public <T> T read(final File file, final Class<T> type) {

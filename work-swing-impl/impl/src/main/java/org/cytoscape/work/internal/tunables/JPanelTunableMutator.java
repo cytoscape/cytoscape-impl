@@ -94,7 +94,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	private JPanel tunablePanel;
 
 	/** Provides an initialised logger. */
-	private final Logger logger = LoggerFactory.getLogger(JPanelTunableMutator.class);
+	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/** Do not ever modify this panel. Used for special case handling of files. */
 	protected final JPanel HANDLER_CANCEL_PANEL = new JPanel();

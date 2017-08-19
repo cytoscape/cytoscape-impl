@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DragHandler<V extends SelectPanelComponent> implements DragGestureListener, DragSourceListener, DropTargetListener {
-	private static final Logger logger = LoggerFactory.getLogger(DragHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private JComponent view;
 	private final AbstractPanelController<?, V> controller;

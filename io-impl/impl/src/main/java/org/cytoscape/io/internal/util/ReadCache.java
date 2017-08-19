@@ -66,7 +66,7 @@ public class ReadCache {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(ReadCache.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	
 	public ReadCache(final CyServiceRegistrar serviceRegistrar) {

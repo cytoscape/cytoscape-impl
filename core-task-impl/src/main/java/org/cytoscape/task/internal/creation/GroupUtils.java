@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class GroupUtils {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CloneNetworkTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String X_LOCATION_ATTR = "__xLocation";
 	private static final String Y_LOCATION_ATTR = "__yLocation";
 	private static final String NETWORK_SUID_ATTR = "__groupNetworks.SUID";

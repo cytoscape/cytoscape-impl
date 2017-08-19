@@ -141,7 +141,7 @@ public class ReadDataManager {
 	private final GroupUtil groupUtil;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	private static final Logger logger = LoggerFactory.getLogger(ReadDataManager.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public ReadDataManager(final ReadCache cache,
 						   final SUIDUpdater suidUpdater,

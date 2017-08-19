@@ -57,7 +57,7 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final int startLineNumber;
 	private int globalCounter = 0;
 
-	private static final Logger logger = LoggerFactory.getLogger(ExcelAttributeSheetReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	
 	public ExcelAttributeSheetReader(

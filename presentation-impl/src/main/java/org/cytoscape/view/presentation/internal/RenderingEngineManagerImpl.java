@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class RenderingEngineManagerImpl implements RenderingEngineManager, NetworkViewAboutToBeDestroyedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(RenderingEngineManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Map<View<?>, Collection<RenderingEngine<?>>> renderingEngineMap;
 	

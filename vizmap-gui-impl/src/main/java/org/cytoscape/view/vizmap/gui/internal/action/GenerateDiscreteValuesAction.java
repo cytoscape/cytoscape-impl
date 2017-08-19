@@ -233,4 +233,34 @@ public class GenerateDiscreteValuesAction extends AbstractVizMapperAction {
 			}
 		}
 	}
+
+	@Override
+	public void setIsInMenuBar(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setIsInToolBar(boolean b) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setPreferredMenu(String menu) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setToolbarGravity(float f) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setMenuGravity(float f) {
+		// TODO Auto-generated method stub
+		
+	}
 }

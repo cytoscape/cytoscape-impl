@@ -145,7 +145,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
-	private static Logger logger = LoggerFactory.getLogger(CyActivator.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private CytoscapeMenus cytoscapeMenus;
 	private ToolBarEnableUpdater toolBarEnableUpdater;

@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 
 public class RegisterOntologyTask extends AbstractTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger(RegisterOntologyTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final CyNetworkReader reader;
 	private final CyServiceRegistrar serviceRegistrar;

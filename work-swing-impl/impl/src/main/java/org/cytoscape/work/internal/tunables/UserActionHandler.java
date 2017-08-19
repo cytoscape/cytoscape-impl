@@ -54,7 +54,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
  */
 public class UserActionHandler extends AbstractGUITunableHandler {
 	
-	private static final Logger logger = LoggerFactory.getLogger(UserActionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private JButton button;
 	
 	/**

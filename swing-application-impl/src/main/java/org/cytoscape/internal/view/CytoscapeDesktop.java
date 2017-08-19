@@ -111,7 +111,7 @@ public class CytoscapeDesktop extends JFrame
 	private static final String SMALL_ICON = "/images/logo.png";
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(CytoscapeDesktop.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	/**
 	 * The CyMenus object provides access to the all of the menus and toolbars

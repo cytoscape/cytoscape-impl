@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 public class BitmapWriter extends AbstractTask implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger(BitmapWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final double MAX_ZOOM= 500;
 

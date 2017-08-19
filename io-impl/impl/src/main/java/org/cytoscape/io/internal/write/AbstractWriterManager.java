@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWriterManager<T> {
 	protected final DataCategory category; 
 	protected final Map<CyFileFilter,T> factories;
-	private static final Logger logger = LoggerFactory.getLogger( AbstractWriterManager.class ); 
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
 
 	public AbstractWriterManager(DataCategory category) {
 		this.category = category;

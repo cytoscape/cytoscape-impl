@@ -96,7 +96,7 @@ public abstract class AbstractTableBrowser extends JPanel
 										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
 										   			  SessionAboutToBeSavedListener{
 
-	private final Logger logger = LoggerFactory.getLogger(getClass());
+	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);

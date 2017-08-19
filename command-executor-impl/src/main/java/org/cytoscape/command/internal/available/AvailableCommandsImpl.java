@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -64,7 +65,7 @@ import org.slf4j.LoggerFactory;
 
 public class AvailableCommandsImpl implements AvailableCommands {
 
-	private final static Logger logger = LoggerFactory.getLogger(AvailableCommandsImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final Map<String, TaskFactory> commands;
 	private final Map<String, String> descriptions;

@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
+
 /*
  * #%L
  * Cytoscape Datasource Impl (datasource-impl)
@@ -45,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class BookmarkDataSourceBuilder {
 
-	private static final Logger logger = LoggerFactory.getLogger(BookmarkDataSourceBuilder.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final Map<String, DataCategory> CONVERSION_MAP;
 

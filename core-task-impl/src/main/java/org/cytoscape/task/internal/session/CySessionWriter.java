@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.session;
 
 
 import org.cytoscape.session.CySession;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CySessionWriterManager;
 import org.cytoscape.io.write.CyWriter;
@@ -50,7 +51,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	private File outputFile;
 	private File tmpFile;
 
-	Logger logger = LoggerFactory.getLogger(CySessionWriter.class);
+	Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/**
 	 * Constructs this CySessionWriter.

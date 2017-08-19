@@ -27,6 +27,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Point;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -50,7 +51,7 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger(AddEdgeTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public AddEdgeTask(final View<CyNode> nv, final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
 		super(nv, view);

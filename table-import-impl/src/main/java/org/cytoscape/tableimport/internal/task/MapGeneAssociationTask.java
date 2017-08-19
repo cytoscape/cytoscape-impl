@@ -51,7 +51,7 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 	private static final String MAPPING_KEY = "mapping key";
 
-	private static final Logger logger = LoggerFactory.getLogger(MapGeneAssociationTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final CyTableReader tableReader;
 	private final CyServiceRegistrar serviceRegistrar;

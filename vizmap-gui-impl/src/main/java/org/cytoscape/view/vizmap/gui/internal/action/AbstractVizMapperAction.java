@@ -27,13 +27,12 @@ package org.cytoscape.view.vizmap.gui.internal.action;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.PopupMenuEvent;
 
-import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.gui.DefaultViewEditor;
 import org.cytoscape.view.vizmap.gui.VizMapGUI;
@@ -43,7 +42,7 @@ import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
 /**
  * Action class to process commands.
  */
-public abstract class AbstractVizMapperAction extends AbstractAction implements CyAction {
+public abstract class AbstractVizMapperAction extends AbstractCyAction {
 
 	private static final long serialVersionUID = 2123044076909272338L;
 	

@@ -19,6 +19,7 @@ import javax.swing.JTextArea;
 
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.task.ResolveAppConflictTask.AppConflict;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public class AppConflictHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger(AppConflictHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	protected AppConflictHandler(Field field, Object instance, Tunable tunable) {
 		super(field, instance, tunable);

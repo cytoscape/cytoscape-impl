@@ -69,7 +69,7 @@ import org.slf4j.LoggerFactory;
 
 public class OBOReader extends AbstractTask implements CyNetworkReader {
 
-	private static final Logger logger = LoggerFactory.getLogger(OBOReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	//private static final String[] COMPATIBLE_VERSIONS = { "1.2" };
 	

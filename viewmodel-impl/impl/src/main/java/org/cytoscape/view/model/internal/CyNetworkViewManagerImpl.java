@@ -52,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CyNetworkViewManagerImpl implements CyNetworkViewManager, NetworkAboutToBeDestroyedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CyNetworkViewManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Map<CyNetwork, Collection<CyNetworkView>> networkViewMap;
 	private final Set<CyNetworkView> viewsAboutToBeDestroyed;

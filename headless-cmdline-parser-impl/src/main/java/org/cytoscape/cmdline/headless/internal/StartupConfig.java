@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class StartupConfig {
-	private static final Logger logger = LoggerFactory.getLogger(StartupConfig.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final SynchronousTaskManager taskManager;
 	private final CommandExecutorTaskFactory commandFactory;

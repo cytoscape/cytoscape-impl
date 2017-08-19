@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -46,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class PersistImageTask implements Task {
 
-	private static final Logger logger = LoggerFactory.getLogger(PersistImageTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final File location;
 	private final CustomGraphicsManager manager;

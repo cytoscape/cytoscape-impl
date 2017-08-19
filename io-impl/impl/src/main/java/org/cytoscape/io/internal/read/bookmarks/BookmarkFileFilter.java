@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class BookmarkFileFilter extends BasicCyFileFilter {
 	
-	private static final Logger logger = LoggerFactory.getLogger(BookmarkFileFilter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public BookmarkFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {

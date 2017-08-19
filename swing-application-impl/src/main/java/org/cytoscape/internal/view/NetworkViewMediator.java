@@ -122,7 +122,7 @@ public class NetworkViewMediator
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
-	private static final Logger logger = LoggerFactory.getLogger(NetworkViewMediator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final NetworkViewMainPanel networkViewMainPanel;
 	private final NetworkMediator networkMediator;

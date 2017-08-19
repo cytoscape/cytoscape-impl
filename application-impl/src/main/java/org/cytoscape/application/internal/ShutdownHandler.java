@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class ShutdownHandler implements CyShutdown {
 
-	private static final Logger logger = LoggerFactory.getLogger(ShutdownHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final Bundle rootBundle;
 	private final CyServiceRegistrar serviceRegistrar;

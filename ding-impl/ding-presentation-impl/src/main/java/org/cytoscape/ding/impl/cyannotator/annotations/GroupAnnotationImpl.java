@@ -41,6 +41,7 @@ import java.util.UUID;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -55,7 +56,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	Rectangle2D bounds = null;
 	private static int instanceCount = 0;
 
-	private static final Logger logger = LoggerFactory.getLogger(GroupAnnotationImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
 		super(cyAnnotator, view, owner); 

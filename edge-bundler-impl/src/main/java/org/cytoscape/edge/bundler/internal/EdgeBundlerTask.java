@@ -70,7 +70,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(EdgeBundlerTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String BEND_MAP_COLUMN = "BEND_MAP_ID";
 

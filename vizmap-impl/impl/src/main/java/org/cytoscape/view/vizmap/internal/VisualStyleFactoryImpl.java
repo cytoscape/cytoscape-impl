@@ -58,7 +58,7 @@ public class VisualStyleFactoryImpl implements VisualStyleFactory {
 	private final CyServiceRegistrar serviceRegistrar;
 	private final VisualMappingFunctionFactory passThroughFactory;
 	
-	private static final Logger logger = LoggerFactory.getLogger(VisualStyleFactoryImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public VisualStyleFactoryImpl(
 			final CyServiceRegistrar serviceRegistrar,

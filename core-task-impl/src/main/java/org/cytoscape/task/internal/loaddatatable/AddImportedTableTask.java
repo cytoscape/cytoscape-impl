@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.loaddatatable;
 
+import org.cytoscape.application.CyUserLog;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -35,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 class AddImportedTableTask extends AbstractTask {
 
-	private static Logger logger = LoggerFactory.getLogger(AddImportedTableTask.class);
+	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final CyTableReader reader;
 	private final CyServiceRegistrar serviceRegistrar;

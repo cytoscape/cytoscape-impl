@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITunableHandler 
                                                           implements BoundedChangeListener<N> {
 	
-	private static final Logger logger = LoggerFactory.getLogger(BoundedHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>

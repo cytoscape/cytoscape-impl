@@ -58,7 +58,7 @@ import org.slf4j.LoggerFactory;
 public class VisualStyleImpl
 		implements VisualStyle, VisualMappingFunctionChangedListener, VisualPropertyDependencyChangedListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(VisualStyleImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String DEFAULT_TITLE = "?";
 

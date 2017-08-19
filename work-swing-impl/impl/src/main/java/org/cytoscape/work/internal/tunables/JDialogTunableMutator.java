@@ -67,7 +67,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 public class JDialogTunableMutator extends JPanelTunableMutator implements TunableUIHelper {
 
 	/** Provides an initialised logger. */
-	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
+	private Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Window parent;
 

@@ -86,7 +86,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	private VisualLexicon visualLexicon;
 	
 	private static final Map<String, String> legacyArrowShapes = new HashMap<>();
-	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	static {
 		legacyArrowShapes.put("0", "NONE"); // NO_END

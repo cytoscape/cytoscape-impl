@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
@@ -59,7 +60,7 @@ import org.slf4j.LoggerFactory;
 public class CreateNetworkViewTask extends AbstractNetworkCollectionTask 
                                    implements ObservableTask  {
 
-	private static final Logger logger = LoggerFactory.getLogger(CreateNetworkViewTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;

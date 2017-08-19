@@ -1297,8 +1297,7 @@ public final class GraphGraphics {
 
 		if (arrow1 != null) {
 				
-			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1,
-				cosTheta1,
+			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1, cosTheta1,
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 2],
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 1]);
 			m_g2d.transform(m_xformUtil);

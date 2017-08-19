@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 public final class TableColumnStatFileIO {
 	
-	private static final Logger logger = LoggerFactory.getLogger(TableColumnStatFileIO.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	static String APP_NAME = "org.cytoscape.browser";
 	
