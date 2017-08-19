@@ -17,7 +17,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationConfiguration;
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -53,7 +52,7 @@ import org.slf4j.LoggerFactory;
 public class CytoscapeMenuBar extends JMenuBar {
 	
 	private final static long serialVersionUID = 1202339868642259L;
-	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final Map<Action,JMenuItem> actionMenuItemMap; 
 	private final Map<String,String> actionOverrideMap; 
@@ -178,7 +177,6 @@ public class CytoscapeMenuBar extends JMenuBar {
 				catch (Exception e) {}
 //				action.setToolbarGravity(g);
 //				action.setIsInToolBar(inToolBar);
-
 			}
 			if (verbose && !produceActionTable)
 			{
