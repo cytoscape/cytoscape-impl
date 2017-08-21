@@ -17,6 +17,7 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -54,6 +55,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -105,7 +107,7 @@ public class NetworkSearchBar extends JPanel {
 	private JButton providerSelectorButton;
 	private JPanel contentPane;
 	private JTextField searchTextField;
-	private JButton optionsButton;
+	private JToggleButton optionsButton;
 	private JButton searchButton;
 	
 	private JPopupMenu providersPopup;
@@ -451,9 +453,9 @@ public class NetworkSearchBar extends JPanel {
 		return searchTextField;
 	}
 	
-	JButton getOptionsButton() {
+	JToggleButton getOptionsButton() {
 		if (optionsButton == null) {
-			optionsButton = new JButton(IconManager.ICON_BARS);
+			optionsButton = new JToggleButton(IconManager.ICON_BARS);
 			optionsButton.setToolTipText("More Options...");
 			styleButton(optionsButton, 32, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f),
 					SwingConstants.LEFT);
@@ -763,8 +765,20 @@ public class NetworkSearchBar extends JPanel {
 				public void windowLostFocus(WindowEvent e) {
 					// If the a component in the Options popup opens another dialog, the Options one
 					// loses focus, but we don't want it to be disposed.
-					if (!hasVisibleOwnedWindows(OptionsDialog.this))
+					if (!hasVisibleOwnedWindows(OptionsDialog.this)) {
+						// If cursor is over the options button, set the toggle button to not-selected
+						// to prevent it from opening the dialog again right after its disposed
+						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
+						Point buttonLoc = getOptionsButton().getLocationOnScreen();
+						mouseLoc.x -= buttonLoc.x;
+						mouseLoc.y -= buttonLoc.y;
+						
+						if (!getOptionsButton().contains(mouseLoc))
+							getOptionsButton().setSelected(false);
+						
+						// Dispose
 						disposeOptionsDialog();
+					}
 				}
 				@Override
 				public void windowGainedFocus(WindowEvent e) {
@@ -797,8 +811,10 @@ public class NetworkSearchBar extends JPanel {
 			public void actionPerformed(final ActionEvent e) {
 				final String cmd = e.getActionCommand();
 				
-				if (cmd.equals(VK_ESCAPE))
+				if (cmd.equals(VK_ESCAPE)) {
 					disposeOptionsDialog();
+					getOptionsButton().setSelected(false);
+				}
 			}
 		}
 	}

@@ -189,7 +189,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 			runSearch();
 		});
 		networkSearchBar.getOptionsButton().addActionListener(evt -> {
-			if (networkSearchBar.getSelectedProvider() != null)
+			if (networkSearchBar.getSelectedProvider() != null && networkSearchBar.getOptionsButton().isSelected())
 				networkSearchBar.showOptionsDialog(optionsComponents.get(networkSearchBar.getSelectedProvider()));
 		});
 		networkSearchBar.getSearchButton().addActionListener(evt -> {
