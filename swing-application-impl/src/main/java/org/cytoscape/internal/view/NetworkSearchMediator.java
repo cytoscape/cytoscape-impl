@@ -58,7 +58,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 	private final Map<NetworkSearchTaskFactory, JComponent> optionsComponents = new HashMap<>();
 	private final Map<NetworkSearchTaskFactory, JComponent> queryComponents = new HashMap<>();
 	
-	private final NetworkSearchPanel networkSearchPanel;
+	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private boolean appsFinishedStarting;
@@ -67,15 +67,15 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 	
 	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
-	public NetworkSearchMediator(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
-		this.networkSearchPanel = networkSearchPanel;
+	public NetworkSearchMediator(NetworkSearchBar networkSearchBar, CyServiceRegistrar serviceRegistrar) {
+		this.networkSearchBar = networkSearchBar;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		addListeners();
 	}
 
-	public NetworkSearchPanel getNetworkSearchPanel() {
-		return networkSearchPanel;
+	public NetworkSearchBar getNetworkSearchBar() {
+		return networkSearchBar;
 	}
 	
 	public void addNetworkSearchTaskFactory(NetworkSearchTaskFactory factory, Map<?, ?> properties) {
@@ -126,7 +126,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 					// Also select the new provider,
 					// so the user knows it has been installed correctly and is now available
 					if (factory != null && appsFinishedStarting)
-						networkSearchPanel.setSelectedProvider(factory);
+						networkSearchBar.setSelectedProvider(factory);
 				});
 			} catch (Exception e) {
 				logger.error("Cannot install Network Search Provider: " + factory, e);
@@ -158,7 +158,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 	 * Add listeners to UI components.
 	 */
 	private void addListeners() {
-		networkSearchPanel.addPropertyChangeListener("selectedProvider", evt -> {
+		networkSearchBar.addPropertyChangeListener("selectedProvider", evt -> {
 			NetworkSearchTaskFactory tf = (NetworkSearchTaskFactory) evt.getNewValue();
 			
 			if (tf != null)
@@ -166,33 +166,33 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 			
 			updateSelectedSearchComponent(tf);
 			
-			networkSearchPanel.updateProvidersButton();
-			networkSearchPanel.updateSearchEnabled();
+			networkSearchBar.updateProvidersButton();
+			networkSearchBar.updateSearchEnabled();
 		});
-		networkSearchPanel.getSearchTextField().getDocument().addDocumentListener(new DocumentListener() {
+		networkSearchBar.getSearchTextField().getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				updateSelectedProvider(networkSearchPanel.getSelectedProvider());
-				networkSearchPanel.updateSearchButton();
+				updateSelectedProvider(networkSearchBar.getSelectedProvider());
+				networkSearchBar.updateSearchButton();
 			}
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				updateSelectedProvider(networkSearchPanel.getSelectedProvider());
-				networkSearchPanel.updateSearchButton();
+				updateSelectedProvider(networkSearchBar.getSelectedProvider());
+				networkSearchBar.updateSearchButton();
 			}
 			@Override
 			public void changedUpdate(DocumentEvent e) {
 				// Nothing to do here...
 			}
 		});
-		networkSearchPanel.getSearchTextField().addActionListener(evt -> {
+		networkSearchBar.getSearchTextField().addActionListener(evt -> {
 			runSearch();
 		});
-		networkSearchPanel.getOptionsButton().addActionListener(evt -> {
-			if (networkSearchPanel.getSelectedProvider() != null)
-				networkSearchPanel.showOptionsDialog(optionsComponents.get(networkSearchPanel.getSelectedProvider()));
+		networkSearchBar.getOptionsButton().addActionListener(evt -> {
+			if (networkSearchBar.getSelectedProvider() != null)
+				networkSearchBar.showOptionsDialog(optionsComponents.get(networkSearchBar.getSelectedProvider()));
 		});
-		networkSearchPanel.getSearchButton().addActionListener(evt -> {
+		networkSearchBar.getSearchButton().addActionListener(evt -> {
 			runSearch();
 		});
 	}
@@ -203,7 +203,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 		// Only if the TaskFactory did not provide its own query component!
 		if (factory instanceof AbstractNetworkSearchTaskFactory && queryComp == null)
 			((AbstractNetworkSearchTaskFactory) factory).setQuery(
-					networkSearchPanel.getSearchTextField().getText().trim());
+					networkSearchBar.getSearchTextField().getText().trim());
 	}
 	
 	private void updateSelectedSearchComponent(NetworkSearchTaskFactory factory) {
@@ -211,20 +211,20 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 			JComponent queryComp = queryComponents.get(factory);
 			JComponent optionsComp = optionsComponents.get(factory);
 			
-			networkSearchPanel.updateSelectedSearchComponent(queryComp);
-			networkSearchPanel.getOptionsButton().setVisible(optionsComp != null);
-			networkSearchPanel.updateSearchButton();
+			networkSearchBar.updateSelectedSearchComponent(queryComp);
+			networkSearchBar.getOptionsButton().setVisible(optionsComp != null);
+			networkSearchBar.updateSearchButton();
 		});
 	}
 	
 	private void updateSearchPanel() {
 		invokeOnEDT(() -> {
-			networkSearchPanel.update(new HashSet<>(taskFactories.values()));
+			networkSearchBar.update(new HashSet<>(taskFactories.values()));
 		});
 	}
 	
 	private void runSearch() {
-		NetworkSearchTaskFactory tf = networkSearchPanel.getSelectedProvider();
+		NetworkSearchTaskFactory tf = networkSearchBar.getSelectedProvider();
 		
 		if (tf != null && tf.isReady()) {
 			DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
@@ -247,10 +247,8 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 		
 		@Override
 		public void propertyChange(PropertyChangeEvent evt) {
-			if (factory.equals(networkSearchPanel.getSelectedProvider()))
-				invokeOnEDT(() -> {
-					networkSearchPanel.updateSearchButton();
-				});
+			if (factory.equals(networkSearchBar.getSelectedProvider()))
+				invokeOnEDT(() -> networkSearchBar.updateSearchButton());
 		}
 	}
 }

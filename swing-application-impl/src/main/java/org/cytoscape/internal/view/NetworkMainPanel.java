@@ -149,13 +149,13 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private NetworkViewPreviewDialog viewDialog;
 
-	private final NetworkSearchPanel networkSearchPanel;
+	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
-	public NetworkMainPanel(NetworkSearchPanel networkSearchPanel, CyServiceRegistrar serviceRegistrar) {
-		this.networkSearchPanel = networkSearchPanel;
+	public NetworkMainPanel(NetworkSearchBar networkSearchBar, CyServiceRegistrar serviceRegistrar) {
+		this.networkSearchBar = networkSearchBar;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		init();
@@ -190,7 +190,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
 
 		setLayout(new BorderLayout());
-		add(networkSearchPanel, BorderLayout.NORTH);
+		add(networkSearchBar, BorderLayout.NORTH);
 		add(getNetworksPanel(), BorderLayout.CENTER);
 		
 		new NetworkDropListener(null);

@@ -96,7 +96,7 @@ import org.cytoscape.util.swing.OpenBrowser;
  */
 
 @SuppressWarnings("serial")
-public class NetworkSearchPanel extends JPanel {
+public class NetworkSearchBar extends JPanel {
 
 	private static final int ICON_SIZE = 32;
 	private static final String DEF_SEARCH_TEXT = "Type your query here...";
@@ -123,7 +123,7 @@ public class NetworkSearchPanel extends JPanel {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NetworkSearchPanel(CyServiceRegistrar serviceRegistrar) {
+	public NetworkSearchBar(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final Collator collator = Collator.getInstance();
@@ -748,7 +748,7 @@ public class NetworkSearchPanel extends JPanel {
 	private class OptionsDialog extends JDialog {
 		
 		public OptionsDialog() {
-			super(SwingUtilities.getWindowAncestor(NetworkSearchPanel.this), ModalityType.MODELESS);
+			super(SwingUtilities.getWindowAncestor(NetworkSearchBar.this), ModalityType.MODELESS);
 			setBackground(getBackground());
 			setUndecorated(true);
 			
