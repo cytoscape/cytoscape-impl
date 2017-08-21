@@ -293,7 +293,7 @@ public class SetColumnFormatDialog extends JDialog {
 	private JButton getRemoveFormatButton() {
 		if (removeFormatButton == null) {
 			removeFormatButton = new JButton("Remove Format");
-			removeFormatButton.setToolTipText("Use the default floating point format spec from Cytoscape properties");
+			removeFormatButton.setToolTipText("Reset to default Cytoscape column format");
 			removeFormatButton.addActionListener(new ActionListener() {
 
 				@Override
@@ -309,7 +309,7 @@ public class SetColumnFormatDialog extends JDialog {
 	private JButton getSetDefaultButton() {
 		if (setDefaultButton == null) {
 			setDefaultButton = new JButton("Save As Default");
-			setDefaultButton.setToolTipText("Store as the default format spec for all floating point columns");
+			setDefaultButton.setToolTipText("Make default Cytoscape column format");
 			setDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
@@ -327,7 +327,7 @@ public class SetColumnFormatDialog extends JDialog {
 	private JButton getClearDefaultButton() {
 		if (clearDefaultButton == null) {
 			clearDefaultButton = new JButton("Clear Default");
-			clearDefaultButton.setToolTipText("Remove formatting floating point columns by default");
+			clearDefaultButton.setToolTipText("Reset default Cytoscape column format");
 			clearDefaultButton.addActionListener(new ActionListener() {
 
 				@Override
