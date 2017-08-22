@@ -59,7 +59,6 @@ import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
 import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -463,6 +462,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		nodeSelectionList = new ArrayList<>();
 		edgeSelectionList = new ArrayList<>();
+		
 		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
 			largeModel = true;
 
@@ -1008,7 +1008,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private void fitContent(final boolean updateView) {
 		getEventHelper().flushPayloadEvents();
 
-		ViewUtil.invokeOnEDT(() -> {
+		invokeOnEDT(() -> {
 			synchronized (m_lock) {
 				if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
 				                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
@@ -1747,8 +1747,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (!graphics.isInitialized())
 			graphics.clear(bgColor, xCenter, yCenter, scale);
 
-		// System.out.println("DGraphView: renderSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		Color bg = (Color)bgColor;
+		
 		if (bg != null)
 			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
 
@@ -1763,6 +1763,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			nodes.add(edge.getTarget());
 			nodes.add(edge.getSource());
 		}
+		
 		for (CyNode node: nodes) {
 			long idx = node.getSUID();
 			if (m_spacial.exists(idx, m_extentsBuff, 0)) {
@@ -1772,6 +1773,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				net.addNode(node);
 			}
 		}
+		
 		for (CyEdge edge: edges) {
 			net.addEdge(edge);
 		}
@@ -1945,7 +1947,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final double scale = shrink;
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		
-		ViewUtil.invokeOnEDTAndWait(() -> {
+		invokeOnEDTAndWait(() -> {
 			// Save current sizes, zoom and viewport position
 			Dimension originalBgSize = m_backgroundCanvas.getSize();
 			Dimension originalNetSize = m_networkCanvas.getSize();
@@ -2475,13 +2477,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		} else if (vp == BasicVisualLexicon.NETWORK_WIDTH) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			ViewUtil.invokeOnEDT(() -> {
+			invokeOnEDT(() -> {
 				m_networkCanvas.setSize(((Double)value).intValue(), m_networkCanvas.getHeight());
 			});
 		} else if (vp == BasicVisualLexicon.NETWORK_HEIGHT) {
 			// This actually sets the size on the canvas, so we need to make sure
 			// this runs on the AWT thread
-			ViewUtil.invokeOnEDT(() -> {
+			invokeOnEDT(() -> {
 				m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
 			});
 		}
@@ -2670,19 +2672,23 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			nodeSelectionList.clear();
 			edgeSelectionList.clear();
 		}
+		
 		if (e.getSource() == getModel().getDefaultNodeTable()) {
-			// System.out.println("Source is default node table");
 			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
 				// Get the SUID
 				Long suid = record.getRow().get(CyNetwork.SUID, Long.class);
-				// System.out.println("suid = "+suid);
 				CyNode node = getModel().getNode(suid);
-				if (node == null) continue;
-				
-				DNodeView nv = (DNodeView)this.getNodeView(node);
-				if (nv == null) continue;
+
+				if (node == null)
+					continue;
+
+				DNodeView nv = (DNodeView) getNodeView(node);
+
+				if (nv == null)
+					continue;
+
 				boolean value = record.getRow().get(CyNetwork.SELECTED, Boolean.class);
-				// System.out.println("value = "+value);
+
 				if (value)
 					nv.selectInternal();
 				else
@@ -2692,42 +2698,42 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					nodeSelectionList.add(node);
 				}
 			}
-			// System.out.println("RowsSetEvent with "+nodeSelectionList.size()+" nodes");
 		} else if (e.getSource() == getModel().getDefaultEdgeTable()) {
-			// System.out.println("Source is default column table");
-			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
+			for (RowSetRecord record : e.getColumnRecords(CyNetwork.SELECTED)) {
 				// Get the SUID
 				Long suid = record.getRow().get(CyNetwork.SUID, Long.class);
-				// System.out.println("suid = "+suid);
 				CyEdge edge = getModel().getEdge(suid);
-				if (edge == null) continue;
+				
+				if (edge == null)
+					continue;
 
-				DEdgeView ev = (DEdgeView)this.getEdgeView(edge);
-				if (ev == null) continue;
+				DEdgeView ev = (DEdgeView) getEdgeView(edge);
+				
+				if (ev == null)
+					continue;
+				
 				boolean value = record.getRow().get(CyNetwork.SELECTED, Boolean.class);
-				// System.out.println("value = "+value);
+				
 				if (value)
 					ev.selectInternal(false);
 				else
-				  ev.unselectInternal();
+					ev.unselectInternal();
 
 				synchronized (m_lock) {
 					edgeSelectionList.add(edge);
 				}
 			}
-			// System.out.println("RowsSetEvent with "+edgeSelectionList.size()+" edges");
 		} else {
 			return;
 		}
 
 		if (nodeSelectionList.size() > 0 || edgeSelectionList.size() > 0) {
 			// Update renderings
-			// System.out.println("Selecting "+nodeSelectionList.size()+" nodes and "+edgeSelectionList.size()+" edges");
 			m_networkCanvas.updateSubgraph(nodeSelectionList, edgeSelectionList);
+			
 			if (m_navigationCanvas != null)
 				m_navigationCanvas.updateSubgraph(nodeSelectionList, edgeSelectionList);
 		}
-		// System.out.println("RowsSetEvent done");
 	}
 
 	public void setHaveZOrder(boolean z) {

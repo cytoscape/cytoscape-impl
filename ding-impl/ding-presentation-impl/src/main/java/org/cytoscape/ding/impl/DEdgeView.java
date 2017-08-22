@@ -248,6 +248,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		graphView.m_selectedEdges.insert(model.getSUID());
 
 		List<Handle> handles = graphView.m_edgeDetails.getBend(model).getAllHandles();
+		
 		for (int j = 0; j < handles.size(); j++) {
 			final Handle handle = handles.get(j);
 			final Point2D newPoint = handle.calculateHandleLocation(graphView.getViewModel(),this);
@@ -262,6 +263,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			if (selectAnchors)
 				graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 		}
+		
 		return true;
 	}
 
