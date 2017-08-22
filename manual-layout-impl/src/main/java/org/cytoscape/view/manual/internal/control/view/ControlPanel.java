@@ -3,6 +3,8 @@ package org.cytoscape.view.manual.internal.control.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.view.manual.internal.util.Util.findSelectedNodes;
+import static org.cytoscape.view.manual.internal.util.Util.invokeOnEDT;
 
 import java.awt.Component;
 import java.util.Collection;
@@ -35,7 +37,6 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
-import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -204,15 +205,17 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 	private void updatePanels() {
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetworkView view = appMgr.getCurrentNetworkView();
-		final Collection<View<CyNode>> selectedNodeViews = view != null ? Util.findSelectedNodes(view) : null;
+		final Collection<View<CyNode>> selectedNodeViews = view != null ? findSelectedNodes(view) : null;
 		
-		scalePanel.setEnabled(view != null);
-		rotatePanel.setEnabled(view != null);
-		
-		final boolean enabled = selectedNodeViews != null && !selectedNodeViews.isEmpty();
-		
-		alignPanel.setEnabled(enabled);
-		distPanel.setEnabled(enabled);
-		stackPanel.setEnabled(enabled);
+		invokeOnEDT(() -> {
+			scalePanel.setEnabled(view != null);
+			rotatePanel.setEnabled(view != null);
+			
+			final boolean enabled = selectedNodeViews != null && !selectedNodeViews.isEmpty();
+			
+			alignPanel.setEnabled(enabled);
+			distPanel.setEnabled(enabled);
+			stackPanel.setEnabled(enabled);
+		});
 	}
 } 
