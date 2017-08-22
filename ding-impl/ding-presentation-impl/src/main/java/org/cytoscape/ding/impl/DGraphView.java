@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -1069,18 +1072,20 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private void updateView(final boolean forceRedraw) {
 		getEventHelper().flushPayloadEvents();
 		
-		if (forceRedraw)
-			setContentChanged();
-		
-		m_networkCanvas.repaint();
-		
-		//Check if image size has changed if so, visual property needs to be changed as well
-		if (m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight) {
-			imageWidth = m_networkCanvas.getWidth();
-			imageHeight = m_networkCanvas.getHeight();
-			setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,(double)imageWidth);
-			setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,(double)imageHeight);
-		}
+		invokeOnEDTAndWait(() -> {
+			if (forceRedraw)
+				setContentChanged();
+			
+			m_networkCanvas.repaint();
+			
+			//Check if image size has changed if so, visual property needs to be changed as well
+			if (m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight) {
+				imageWidth = m_networkCanvas.getWidth();
+				imageHeight = m_networkCanvas.getHeight();
+				setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) imageWidth);
+				setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
+			}
+		});
 		
 		getEventHelper().fireEvent(new UpdateNetworkPresentationEvent(this));
 	}
@@ -1778,10 +1783,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			final Set<VisualPropertyDependency<?>> dependencies =
 					vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 			
-//			synchronized (m_lock) {
-			lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails, m_edgeDetails, hash,
-					graphics, null, xCenter, yCenter, scale, haveZOrder, dependencies);
-//			}
+			synchronized (m_lock) {
+				lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails, m_edgeDetails, hash,
+						graphics, null, xCenter, yCenter, scale, haveZOrder, dependencies);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -2661,8 +2666,10 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		if (!e.containsColumn(CyNetwork.SELECTED))
 			return;
 
-		nodeSelectionList.clear();
-		edgeSelectionList.clear();
+		synchronized (m_lock) {
+			nodeSelectionList.clear();
+			edgeSelectionList.clear();
+		}
 		if (e.getSource() == getModel().getDefaultNodeTable()) {
 			// System.out.println("Source is default node table");
 			for (RowSetRecord record: e.getColumnRecords(CyNetwork.SELECTED)) {
@@ -2681,7 +2688,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				else
 					nv.unselectInternal();
 
-				nodeSelectionList.add(node);
+				synchronized (m_lock) {
+					nodeSelectionList.add(node);
+				}
 			}
 			// System.out.println("RowsSetEvent with "+nodeSelectionList.size()+" nodes");
 		} else if (e.getSource() == getModel().getDefaultEdgeTable()) {
@@ -2702,7 +2711,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				else
 				  ev.unselectInternal();
 
-				edgeSelectionList.add(edge);
+				synchronized (m_lock) {
+					edgeSelectionList.add(edge);
+				}
 			}
 			// System.out.println("RowsSetEvent with "+edgeSelectionList.size()+" edges");
 		} else {
