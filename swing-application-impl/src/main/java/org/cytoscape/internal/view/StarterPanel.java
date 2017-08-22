@@ -724,7 +724,7 @@ public class StarterPanel extends JPanel {
 		Image loadThumbnail() {
 			Image img = null;
 			
-			if (file != null) {
+			if (file != null && file.canRead()) {
 				ZipFile zipFile = null;
 	
 				try {
