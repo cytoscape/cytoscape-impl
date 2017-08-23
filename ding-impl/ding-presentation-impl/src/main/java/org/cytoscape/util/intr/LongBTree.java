@@ -825,7 +825,6 @@ public final class LongBTree implements java.io.Serializable {
 		if (reverseOrder)
 			return new DescendingEnumerator(totalCount, nodeStack, xMax);
 		else
-
 			return new AscendingEnumerator(totalCount, nodeStack, xMin);
 	}
 
