@@ -71,7 +71,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final Map<String, String> descriptions;
 	private final Map<String, String> longDescriptions;
 
-	private final Map<String, Map<Class<? extends ObservableTask>, List<Class<?>>>> resultClasses;
+	private final Map<String, List<ObservableTaskResultClasses>> resultClasses;
 
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
@@ -96,7 +96,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		this.descriptions = new HashMap<>();
 		this.longDescriptions = new HashMap<>();
 
-		this.resultClasses = new HashMap<String, Map<Class<? extends ObservableTask>, List<Class<?>>>>();
+		this.resultClasses = new HashMap<String, List<ObservableTaskResultClasses>>();
 
 		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
@@ -388,17 +388,17 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			return map;
 		}
 	}
-
-	private Map<Class<? extends ObservableTask>, List<Class<?>>> getResultDescriptors(TaskFactory tf) {
+	
+	private List<ObservableTaskResultClasses> getResultDescriptors(TaskFactory tf) {
 		boolean resetNetwork = setCurrentNetwork();
 		boolean resetView = setCurrentNetworkView();
 		
 		try { 
 			TaskIterator ti = tf.createTaskIterator();
 			if (ti == null)
-				return Collections.emptyMap();
+				return Collections.emptyList();
 
-			Map<Class<? extends ObservableTask>, List<Class<?>>> resultDescriptors = new HashMap<Class<? extends ObservableTask>, List<Class<?>>>();
+			List<ObservableTaskResultClasses> resultDescriptors = new ArrayList<ObservableTaskResultClasses>();
 
 			while ( ti.hasNext() ) {
 				Task task = ti.next();
@@ -406,7 +406,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 					ObservableTask observableTask = (ObservableTask) task;
 					List<Class<?>> resultClasses = observableTask.getResultClasses();
 					if (resultClasses != null) {
-						resultDescriptors.put(observableTask.getClass(), resultClasses);
+						resultDescriptors.add(new ObservableTaskResultClasses(observableTask.getClass(), resultClasses));
 					}
 				}
 			}
@@ -414,7 +414,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		} catch (Exception e) {
 			logger.debug("Could not create invocation string for command.",e);
 			e.printStackTrace();
-			return Collections.emptyMap();
+			return Collections.emptyList();
 		}
 		finally {
 			resetCurrentNetworkView(resetView);
@@ -585,10 +585,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	@Override
-	public Map<Class<? extends ObservableTask>, List<Class<?>>> getResultClasses(String namespace, String command) {
+	public List<ObservableTaskResultClasses> getResultClasses(String namespace, String command) {
 		synchronized (lock) {
 			String commandKey = getCommandKey(namespace, command);
-			Map<Class<? extends ObservableTask>, List<Class<?>>> resultClasses = this.resultClasses.get(commandKey);
+			List<ObservableTaskResultClasses> resultClasses = this.resultClasses.get(commandKey);
 			if (resultClasses == null) {
 				resultClasses = getResultDescriptors(commands.get(commandKey));
 				this.resultClasses.put(commandKey, resultClasses);
