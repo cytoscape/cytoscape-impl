@@ -27,8 +27,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,20 +40,14 @@ import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
@@ -120,7 +112,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	final LongStack m_stack = new LongStack();
 	final LongStack m_stack2 = new LongStack();
 	final Object m_lock;
-	DGraphView m_view;
+	private DGraphView m_view;
 	final GraphLOD[] m_lod = new GraphLOD[1];
 	double m_xCenter;
 	double m_yCenter;
@@ -364,15 +356,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
-
+	@Override
 	public void mouseClicked(MouseEvent e) { }
+	
+	@Override
 	public void mouseEntered(MouseEvent e) { }
+	
+	@Override
 	public void mouseExited(MouseEvent e) { }
 
+	@Override
 	public void mouseReleased(MouseEvent e) {
 		mouseReleasedDelegator.delegateMouseEvent(e);
 	}
 
+	@Override
 	public void mousePressed(MouseEvent e) {
 		if ( addEdgeMode.addingEdge() )
 			addEdgeMousePressedDelegator.delegateMouseEvent(e);
@@ -381,13 +379,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		requestFocusInWindow();
 	}
 
-
 	/**
 	 * Handles key press events. Currently used with the up/down, left/right arrow
 	 * keys. Pressing any of the listed keys will move the selected nodes one pixel
 	 * in that direction.
 	 * @param k The key event that we're listening for.
 	 */
+	@Override
 	public void keyPressed(KeyEvent k) {
 		final int code = k.getKeyCode();
 		if ( (code == KeyEvent.VK_UP) || (code == KeyEvent.VK_DOWN) || 
@@ -1167,12 +1165,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		if ((unselectedNodes != null) && (unselectedNodes.length > 0)) {
 			List<CyNode> unselectedNodeList = DGraphView.makeNodeList(unselectedNodes, m_view);
-			select(unselectedNodeList, CyNode.class, false);
+			m_view.select(unselectedNodeList, CyNode.class, false);
 		}
 
 		if ((unselectedEdges != null) && (unselectedEdges.length > 0)) {
 			List<CyEdge> unselectedEdgeList = DGraphView.makeEdgeList(unselectedEdges, m_view);
-			select(unselectedEdgeList, CyEdge.class, false);
+			m_view.select(unselectedEdgeList, CyEdge.class, false);
 		}
 	}
 	
@@ -1268,21 +1266,19 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (chosenNode >= 0) {
 					CyNode node = ((DNodeView)m_view.getDNodeView(chosenNode)).getModel();
 					
-					if (chosenNodeSelected > 0) {
-						select(Collections.singletonList(node), CyNode.class, true);
-					} else if (chosenNodeSelected < 0) {
-						select(Collections.singletonList(node), CyNode.class, false);
-					}
+					if (chosenNodeSelected > 0)
+						m_view.select(Collections.singletonList(node), CyNode.class, true);
+					else if (chosenNodeSelected < 0)
+						m_view.select(Collections.singletonList(node), CyNode.class, false);
 				}
 		
 				if (chosenEdge >= 0) {
 					CyEdge edge = m_view.getDEdgeView(chosenEdge).getCyEdge();
 					
-					if (chosenEdgeSelected > 0) {
-						select(Collections.singletonList(edge), CyEdge.class, true);
-					} else if (chosenEdgeSelected < 0) {
-						select(Collections.singletonList(edge), CyEdge.class, false);
-					}
+					if (chosenEdgeSelected > 0)
+						m_view.select(Collections.singletonList(edge), CyEdge.class, true);
+					else if (chosenEdgeSelected < 0)
+						m_view.select(Collections.singletonList(edge), CyEdge.class, false);
 				}
 			}
 
@@ -1419,16 +1415,17 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							dNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
 						}						
 					}
+					
 					if (!m_lod[0].getDrawEdges()) {
 						m_lod[0].setDrawEdges(true);
 						m_view.setViewportChanged();
 					}
 	
 					if ((selectedNodes != null) && (selectedNodes.length > 0))
-						select(DGraphView.makeNodeList(selectedNodes,m_view), CyNode.class, true);
+						m_view.select(DGraphView.makeNodeList(selectedNodes, m_view), CyNode.class, true);
 	
 					if ((selectedEdges != null) && (selectedEdges.length > 0))
-						select(DGraphView.makeEdgeList(selectedEdges,m_view), CyNode.class, true);
+						m_view.select(DGraphView.makeEdgeList(selectedEdges, m_view), CyEdge.class, true);
 					
 					repaint();
 				} else if (draggingCanvas) {
@@ -1720,45 +1717,5 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		hideEdgesTimer.stop();
 		m_lod[0].setDrawEdges(false);
 		hideEdgesTimer.start();
-	}
-
-	public void select(final Collection<? extends CyIdentifiable> nodesOrEdges, 
-	                   final Class<? extends CyIdentifiable> type, final boolean selected) {
-		if (nodesOrEdges.isEmpty())
-			return;
-		
-		// Figure out if we're nodes or edges
-		CyTable table = type.equals(CyNode.class) ? m_view.getModel().getDefaultNodeTable()
-				: m_view.getModel().getDefaultEdgeTable();
-
-		// Disable events
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.silenceEventSource(table);
-
-		// Create RowsSetEvent
-		List<RowSetRecord> rowsChanged = new ArrayList<>();
-		
-		for (final CyIdentifiable nodeOrEdge : nodesOrEdges) {
-			CyRow row = m_view.getModel().getRow(nodeOrEdge);
-			
-			row.set(CyNetwork.SELECTED, selected);		
-			// Add to paylod
-			rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
-		}
-
-		eventHelper.unsilenceEventSource(table);
-
-		// Fire event
-		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
-		
-		if (SwingUtilities.isEventDispatchThread()) {
-			// Make sure the event is not fired on the EDT,
-			// otherwise selecting many nodes and edges may lock up the UI momentarily
-			new Thread(() -> {
-				eventHelper.fireEvent(event);
-			}).start();
-		} else {
-			eventHelper.fireEvent(event);
-		}
 	}
 }
