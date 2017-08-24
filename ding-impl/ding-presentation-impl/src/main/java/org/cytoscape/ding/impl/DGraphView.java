@@ -2855,7 +2855,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				if (nv == null)
 					continue;
 
-				Object value = rec.getValue();
+				Boolean value = rec.getRow().get(CyNetwork.SELECTED, Boolean.class);
 
 				synchronized (m_lock) {
 					if (Boolean.TRUE.equals(value))
@@ -2880,7 +2880,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				if (ev == null)
 					continue;
 				
-				Object value = rec.getValue();
+				Boolean value = rec.getRow().get(CyNetwork.SELECTED, Boolean.class);
 				
 				synchronized (m_lock) {
 					if (Boolean.TRUE.equals(value))
