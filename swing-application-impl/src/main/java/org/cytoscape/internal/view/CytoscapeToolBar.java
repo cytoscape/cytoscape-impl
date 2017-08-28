@@ -309,9 +309,11 @@ public class CytoscapeToolBar extends JToolBar {
 		try {
 			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
 			if (cyApplicationConfiguration == null)
-				System.out.println("cyApplicationConfiguration not found");
+			{
+//				System.out.println("cyApplicationConfiguration not found");
+				return;
+			}
 
-			if (cyApplicationConfiguration == null) return;
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
 			if (configDirectory.exists())
@@ -319,7 +321,7 @@ public class CytoscapeToolBar extends JToolBar {
 			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
 		} catch (IOException e) {
 			// file not found: there's no customization, just return
-			System.out.println("IOException: " + e.getMessage());
+//			System.out.println("IOException: " + e.getMessage());
 			return;
 		}
 				
@@ -333,9 +335,11 @@ public class CytoscapeToolBar extends JToolBar {
 		try {
 			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
 			if (cyApplicationConfiguration == null)
-				System.out.println("cyApplicationConfiguration not found");
+			{
+				System.err.println("cyApplicationConfiguration not found");
+				 return;
+			}
 
-			if (cyApplicationConfiguration == null) return;
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
 			if (configDirectory.exists())
@@ -345,7 +349,7 @@ public class CytoscapeToolBar extends JToolBar {
 				if (line != null)
 					writer.write(line + "\n");
 		} catch (IOException e) {
-			System.out.println("IOException: " + e.getMessage());
+			System.err.println("IOException: " + e.getMessage());
 		}finally {
 	          if ( writer != null ) {
 	        	  try {

@@ -288,7 +288,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
 			if (cyApplicationConfiguration == null)
 			{
-				System.out.println("cyApplicationConfiguration not found");
+//				System.out.println("cyApplicationConfiguration not found");
 				return;
 			}
 
@@ -305,7 +305,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 				
 		for (String line : lines)
 		{
-			System.out.println(line);
+//			System.out.println(line);
 			stopList.add(line.trim());
 		}
 	}
