@@ -281,7 +281,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 	//---------------------------------
 	private void readStopList()
 	{
-		System.out.println("readStopList");
+//		System.out.println("readStopList");
 		stopList.clear();
 		List<String> lines;
 		try {
@@ -299,7 +299,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
 		} catch (IOException e) {
 			// file not found: there's no customization, just return
-			System.out.println("IOException: " + e.getMessage());
+//			System.out.println("IOException: " + e.getMessage());
 			return;
 		}
 				
