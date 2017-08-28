@@ -13,7 +13,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskIterator;
@@ -132,17 +131,17 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 					taskMonitor.setProgress(0.8);
 				} catch (Exception e) {
 					reader = null;
-					eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+					disposeCancelledSession(e);
 					throw e;
 				}
 				
 				if (cancelled) {
-					disposeCancelledSession();
+					disposeCancelledSession(null);
 				} else {
 					try {
 						changeCurrentSession(taskMonitor);
 					} catch (Exception e) {
-						eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+						disposeCancelledSession(e);
 						throw e;
 					}
 				}

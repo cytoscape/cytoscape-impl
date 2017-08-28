@@ -610,6 +610,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		appMgr.reset();
 		
+		currentFileName = null;
 		disposed = true;
 	}
 }

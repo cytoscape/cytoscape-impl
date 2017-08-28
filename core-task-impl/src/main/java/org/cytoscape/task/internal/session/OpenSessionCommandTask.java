@@ -12,7 +12,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -69,7 +68,6 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
 		
 		try {
 			try {
@@ -101,17 +99,17 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 				reader.run(taskMonitor);
 				taskMonitor.setProgress(0.8);
 			} catch (Exception e) {
-				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+				disposeCancelledSession(e);
 				throw e;
 			}
 			
 			if (cancelled) {
-				disposeCancelledSession();
+				disposeCancelledSession(null);
 			} else {
 				try {
 					changeCurrentSession(taskMonitor);
 				} catch (Exception e) {
-					eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
+					disposeCancelledSession(e);
 					throw e;
 				}
 			}

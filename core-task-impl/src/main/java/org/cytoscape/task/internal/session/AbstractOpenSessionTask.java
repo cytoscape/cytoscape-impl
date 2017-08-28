@@ -59,7 +59,7 @@ public abstract class AbstractOpenSessionTask extends AbstractTask {
 		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new SessionLoadCancelledEvent(this));
 	}
 	
-	protected void disposeCancelledSession() {
+	protected void disposeCancelledSession(Exception e) {
 		if (reader == null)
 			return;
 		
@@ -86,5 +86,8 @@ public abstract class AbstractOpenSessionTask extends AbstractTask {
 		
 		// Destroy any global tables registered by the reader
 		serviceRegistrar.getService(CyTableManager.class).reset();
+		
+		// Fire the event only after the cancelled session has been disposed
+		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new SessionLoadCancelledEvent(this, e));
 	}
 }
