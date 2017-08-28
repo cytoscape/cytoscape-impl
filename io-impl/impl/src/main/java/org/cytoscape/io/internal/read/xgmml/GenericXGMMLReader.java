@@ -329,7 +329,8 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 						else
 							view.setVisualProperty(vp, parsedValue);
 					}
-				} else {
+				} else if (!(readDataMgr.isSessionFormat() && readDataMgr.getDocumentVersion() < 3.0)) {
+					// No need to save unrecognized properties if loading old session format
 					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
 				}
 			}

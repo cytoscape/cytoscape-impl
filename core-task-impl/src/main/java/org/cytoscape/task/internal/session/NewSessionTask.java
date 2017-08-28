@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,18 +32,6 @@ package org.cytoscape.task.internal.session;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 
 public class NewSessionTask extends AbstractTask {
 
@@ -58,7 +55,15 @@ public class NewSessionTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		if (destroyCurrentSession) {
+			taskMonitor.setProgress(0.0);
+			
+			// Let everybody know the current session will be destroyed
 			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
+			taskMonitor.setProgress(0.1);
+			
+			// Dispose the current session before loading the new one
+			mgr.disposeCurrentSession();
+			taskMonitor.setProgress(0.2);
 			
 			try {
 				mgr.setCurrentSession(null, null);
@@ -66,6 +71,8 @@ public class NewSessionTask extends AbstractTask {
 				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
 				throw e;
 			}
+			
+			taskMonitor.setProgress(1.0);
 		}
 	}
 	

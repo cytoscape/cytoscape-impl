@@ -13,7 +13,6 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -81,11 +80,11 @@ import org.slf4j.LoggerFactory;
 public class CySessionManagerImpl implements CySessionManager, SessionSavedListener {
 
 	private String currentFileName;
-
-	private final CyServiceRegistrar serviceRegistrar;
-
 	private final Map<String, CyProperty<?>> sessionProperties;
 	private CyProperty<Bookmarks> bookmarks;
+	private boolean disposed;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
@@ -205,7 +204,8 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// the session is a large object and that would cause a memory leak
 		
 		// Always remove the current session first
-		disposeCurrentSession();
+		if (!disposed)
+			disposeCurrentSession();
 
 		if (sess == null) {
 			logger.debug("Creating empty session...");
@@ -241,6 +241,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 
 		currentFileName = fileName;
+		disposed = false;
 
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.fireEvent(new SessionLoadedEvent(this, sess, getCurrentSessionFileName()));
@@ -552,22 +553,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		}
 	}
 
-	private void disposeCurrentSession() {
+	@Override
+	public void disposeCurrentSession() {
 		logger.debug("Disposing current session...");
-		
-		// Destroy groups
-		final Set<CyGroup> groups = new HashSet<>();
-		
-		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final CyGroupManager grMgr = serviceRegistrar.getService(CyGroupManager.class);
-		
-		for (final CyNetwork n : netMgr.getNetworkSet())
-			groups.addAll(grMgr.getGroupSet(n));
-		
-		for (final CyGroup gr : groups)
-			grMgr.destroyGroup(gr);
-		// TODO: This can't be done, because the Group Manager may contain groups from the new session, which are being registered in io-impl
-//		grMgr.reset();
 		
 		// Destroy network views
 		final CyNetworkViewManager nvMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
@@ -579,6 +567,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		nvMgr.reset();
 		
 		// Destroy networks
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		final Set<CyNetwork> networks = netMgr.getNetworkSet();
 		
 		for (final CyNetwork n : networks)
@@ -601,6 +590,9 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		final CyTableManager tblMgr = serviceRegistrar.getService(CyTableManager.class);
 		tblMgr.reset();
 		
+		// Reset groups
+		serviceRegistrar.getService(CyGroupManager.class).reset();
+		
 		// Unregister session properties
 		final Set<CyProperty<?>> cyPropsClone = getAllProperties();
 		
@@ -617,5 +609,7 @@ public class CySessionManagerImpl implements CySessionManager, SessionSavedListe
 		// Reset current table and rendering engine
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		appMgr.reset();
+		
+		disposed = true;
 	}
 }
