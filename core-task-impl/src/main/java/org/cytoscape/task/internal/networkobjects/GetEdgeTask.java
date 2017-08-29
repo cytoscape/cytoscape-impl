@@ -24,16 +24,11 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -45,16 +40,16 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	@Tunable(description="Network to get edge from", context="nogui")
 	public CyNetwork network = null;
 
-	@Tunable(description="Edge to get", context="nogui")
+	@Tunable(description="Edge name to match", context="nogui", longDescription="If this parameter is used, all other matching parameters are ignored.")
 	public String edge = null;
 
-	@Tunable(description="Name of source node of edge to get", context="nogui")
+	@Tunable(description="Name of source node to match", context="nogui", longDescription="Specifies that the edge matched must have this node as its source. This parameter must be used with the ```targetNode``` parameter to produce results.")
 	public String sourceNode = null;
 
-	@Tunable(description="Name of target node of edge to get", context="nogui")
+	@Tunable(description="Name of target node to match", context="nogui", longDescription="Specifies that the edge matched must have this node as its target. This parameter must be used with the ```sourceNode``` parameter to produce results.")
 	public String targetNode = null;
 
-	@Tunable(description="Edge type", context="nogui")
+	@Tunable(description="Edge type to match", context="nogui", longDescription="Specifies that the edge matched must be of the specified type. This parameter must be used with the ```sourceNode``` and ```targetNode``` parameters to produce results.")
 	public ListSingleSelection type = new ListSingleSelection("any", "directed", "undirected");
 
 	private CyEdge returnedEdge = null;

@@ -26,8 +26,6 @@ package org.cytoscape.task.internal.networkobjects;
 
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
