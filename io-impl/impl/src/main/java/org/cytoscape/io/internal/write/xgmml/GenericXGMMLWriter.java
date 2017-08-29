@@ -558,7 +558,15 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
             
             if (keys != null && keys.length > 0) {
                 // XGMML graphics attributes...
-                value = vp.toSerializableString(value);
+       try
+       {
+    	   value = vp.toSerializableString(value);
+       }
+       catch (ClassCastException ex)
+       {
+    	   System.err.println(vp.getDisplayName() + " causes ClassCastEx: " + value.getClass() + ", expected: " + vp.getDefault().getClass().getSimpleName() );
+    	   value = null;
+       }
                 
                 if (value != null) {
                     for (int i = 0; i < keys.length; i++) {
