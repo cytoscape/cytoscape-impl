@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.destruction;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +41,20 @@ package org.cytoscape.task.internal.destruction;
  * #L%
  */
 
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
 public class DestroyNetworkTaskTest {
 	
 	private final NetworkTestSupport support = new NetworkTestSupport();
 	
-	private CyNetworkManager netmgr;
+	private CyServiceRegistrar serviceRegistrar;
+	private CyNetworkManager netMgr;
 	private TaskMonitor tm = mock(TaskMonitor.class);
 	
 	@Before
 	public void setUp() throws Exception {
-		netmgr = mock(CyNetworkManager.class);
+		netMgr = mock(CyNetworkManager.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
 	}
 
 	@After
@@ -64,11 +69,10 @@ public class DestroyNetworkTaskTest {
 		networks.add(network1);
 		networks.add(network2);
 		
-		final DestroyNetworkTask task = new DestroyNetworkTask(networks, netmgr);
+		final DestroyNetworkTask task = new DestroyNetworkTask(networks, serviceRegistrar);
 		task.run(tm);
 		
-		verify(netmgr, times(1)).destroyNetwork(network1);
-		verify(netmgr, times(1)).destroyNetwork(network2);
+		verify(netMgr, times(1)).destroyNetwork(network1);
+		verify(netMgr, times(1)).destroyNetwork(network2);
 	}
-	
 }

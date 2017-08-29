@@ -1,13 +1,14 @@
-package org.cytoscape.task.internal.loadnetwork;
+package org.cytoscape.task.internal.export.network;
 
 import java.io.File;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
 
 /*
  * #%L
@@ -34,41 +35,32 @@ import org.cytoscape.work.Tunable;
  */
 
 /**
- * Specific instance of AbstractLoadNetworkTask that loads a File.
+ * Task to load a new network.
  */
-public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
-	
-	@Tunable(description = "Network file to load", params = "fileCategory=network;input=true")
-	public File file;
+public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implements LoadNetworkFileTaskFactory {
 
-	@ProvidesTitle
-	public String getTitle() {
-		return "Load Network from File";
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public LoadNetworkFileTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	public LoadNetworkFileTask(CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar);
+	@Override
+	public TaskIterator createTaskIterator() {
+		// Load, visualize, and layout.
+		return new TaskIterator(3, new LoadNetworkFileTask(serviceRegistrar));
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		this.taskMonitor = taskMonitor;
-		
-		if (file == null)
-			throw new NullPointerException("No file specified.");
+	public TaskIterator createTaskIterator(File file) {
+		return createTaskIterator(file, null);
+	}
 
+	@Override
+	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
 		CyNetworkReader reader = serviceRegistrar.getService(CyNetworkReaderManager.class)
-				.getReader(file.toURI(), file.getName());
+				.getReader(file.toURI(), file.toURI().toString());
 
-		if (cancelled)
-			return;
-
-		if (reader == null)
-			throw new NullPointerException("Failed to find appropriate reader for file: " + file);
-
-		uri = file.toURI();
-		name = file.getName();
-
-		loadNetwork(reader);
+		return new TaskIterator(3, new LoadNetworkTask(reader, file.getName(), serviceRegistrar));
 	}
 }

@@ -1,4 +1,16 @@
-package org.cytoscape.task.internal.export.vizmap;
+package org.cytoscape.task.internal.vizmap;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.write.VizmapWriterManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.write.ExportVizmapTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
 
 /*
  * #%L
@@ -6,7 +18,7 @@ package org.cytoscape.task.internal.export.vizmap;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,18 +35,6 @@ package org.cytoscape.task.internal.export.vizmap;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.VizmapWriterManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.write.ExportVizmapTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
 
 public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements ExportVizmapTaskFactory{
 

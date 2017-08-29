@@ -10,6 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
