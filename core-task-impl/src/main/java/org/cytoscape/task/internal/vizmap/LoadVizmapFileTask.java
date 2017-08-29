@@ -139,7 +139,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 				
 				if (styles != null && !styles.isEmpty()) {
 					for (VisualStyle style : styles)
-						strRes = style.toString() + "\n";
+						strRes += style.toString() + "\n";
 					
 					strRes = strRes.substring(0, strRes.length() - 1);
 				}
