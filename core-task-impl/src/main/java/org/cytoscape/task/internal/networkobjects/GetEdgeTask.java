@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -29,18 +31,23 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.json.CyJSONUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
+	
 	CyApplicationManager appMgr;
-
-	@Tunable(description="Network to get edge from", context="nogui")
+	CyServiceRegistrar serviceRegistrar;
+	
+	@Tunable(description="Network to get edge from", context="nogui", longDescription="If this parameter isn't set, the current network used.")
 	public CyNetwork network = null;
 
-	@Tunable(description="Edge name to match", context="nogui", longDescription="If this parameter is used, all other matching parameters are ignored.")
+	@Tunable(description="Edge name to match", context="nogui", longDescription="If this parameter is set, all other matching parameters are ignored.")
 	public String edge = null;
 
 	@Tunable(description="Name of source node to match", context="nogui", longDescription="Specifies that the edge matched must have this node as its source. This parameter must be used with the ```targetNode``` parameter to produce results.")
@@ -53,9 +60,10 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	public ListSingleSelection type = new ListSingleSelection("any", "directed", "undirected");
 
 	private CyEdge returnedEdge = null;
-
-	public GetEdgeTask(CyApplicationManager appMgr) {
+	
+	public GetEdgeTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -104,6 +112,25 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		return;
 	}
 
+	public class GetEdgeResult implements JSONResult {
+		
+		final CyEdge edge;
+		
+		public GetEdgeResult(CyEdge edge) {
+			this.edge = edge;
+		}
+		
+		@Override
+		public String getJSON() {
+			if (returnedEdge == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(returnedEdge);
+			}
+		}	
+	}
+	
 	public Object getResults(Class type) {
 		if (type.equals(CyEdge.class)) {
 			return returnedEdge;
@@ -111,7 +138,13 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 			if (returnedEdge == null)
 				return "<none>";
 			return returnedEdge.toString();
+		} else if (type.equals(GetEdgeResult.class)) {
+			return new GetEdgeResult(returnedEdge);
 		}
 		return returnedEdge;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyEdge.class, String.class, GetEdgeResult.class);
 	}
 }

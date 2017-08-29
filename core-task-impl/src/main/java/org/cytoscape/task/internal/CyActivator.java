@@ -1348,7 +1348,7 @@ public class CyActivator extends AbstractCyActivator {
 		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
 		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
 
-		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef);
+		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
 		Properties getEdgeTaskFactoryProps = new Properties();
 		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
 		getEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
