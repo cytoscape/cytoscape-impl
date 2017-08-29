@@ -10,6 +10,7 @@ import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
@@ -1347,11 +1348,12 @@ public class CyActivator extends AbstractCyActivator {
 		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
 		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
 
-		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef);
+		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
 		Properties getEdgeTaskFactoryProps = new Properties();
 		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
 		getEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get an edge based on its name");
+		getEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get an edge");
+		getEdgeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be printed.");
 		registerService(bc,getEdgeTaskFactory,TaskFactory.class,getEdgeTaskFactoryProps);
 
 		GetNetworkAttributeTaskFactory getEdgeAttributeTaskFactory = 
