@@ -146,8 +146,9 @@ public class CytoscapeToolBar extends JToolBar {
 				
 				}
         }
-        if (hidden.size() > 0)
-        	writeStopList(hidden);
+        if (hidden.size() == 0)
+        	deleteStopList();
+        else writeStopList(hidden);
 	}
 
 	@Override public Component add(Component comp)
@@ -329,8 +330,27 @@ public class CytoscapeToolBar extends JToolBar {
 			stopList.add(line.trim());
 	}
 	//------------------------
-	private void writeStopList(List<String> list)
+	private void deleteStopList()
 	{
+		CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+		if (cyApplicationConfiguration == null)
+		{
+			System.err.println("cyApplicationConfiguration not found");
+			 return;
+		}
+
+		File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+		File configFile = null;
+		if (configDirectory.exists())
+		{	
+				configFile = new File(configDirectory.toPath()  + "/toolbar.stoplist");
+				if (configFile.exists())
+					configFile.delete();
+		}
+	}
+	
+	private void writeStopList(List<String> list)
+		{
 		BufferedWriter writer = null;
 		try {
 			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
