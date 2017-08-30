@@ -1,11 +1,12 @@
-package org.cytoscape.task.internal.loadnetwork;
+package org.cytoscape.task.internal.export.network;
 
-import java.io.File;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
@@ -37,30 +38,45 @@ import org.cytoscape.work.TaskObserver;
 /**
  * Task to load a new network.
  */
-public class LoadNetworkFileTaskFactoryImpl extends AbstractTaskFactory implements LoadNetworkFileTaskFactory {
+public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implements LoadNetworkURLTaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadNetworkFileTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+	public LoadNetworkURLTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
+	}
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		// Usually we need to create view, so expected number is 2.
+		return new TaskIterator(2, new LoadNetworkURLTask(serviceRegistrar));
+	}
+
+	public TaskIterator createTaskIterator(final URL url) {
+		return loadCyNetworks(url);
+	}
+
+	@Override
+	public TaskIterator createTaskIterator(final URL url, TaskObserver observer) {
+		return loadCyNetworks(url);
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator() {
-		// Load, visualize, and layout.
-		return new TaskIterator(3, new LoadNetworkFileTask(serviceRegistrar));
-	}
+	public TaskIterator loadCyNetworks(final URL url) {
+		// Code adapted from LoadNetworkURLTask
+		// TODO: Refactor to avoid duplication of code
+		final String urlString = url.getFile();
+		final String[] parts = urlString.split("/");
+		final String name = parts[parts.length-1];
+		CyNetworkReader reader = null;
+		
+		try {
+			reader = serviceRegistrar.getService(CyNetworkReaderManager.class)
+					.getReader(url.toURI(), url.toURI().toString());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
 
-	@Override
-	public TaskIterator createTaskIterator(File file) {
-		return createTaskIterator(file, null);
-	}
-
-	@Override
-	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-		CyNetworkReader reader = serviceRegistrar.getService(CyNetworkReaderManager.class)
-				.getReader(file.toURI(), file.toURI().toString());
-
-		return new TaskIterator(3, new LoadNetworkTask(reader, file.getName(), serviceRegistrar));
+		return new TaskIterator(2, new LoadNetworkTask(reader, name, serviceRegistrar));
 	}
 }

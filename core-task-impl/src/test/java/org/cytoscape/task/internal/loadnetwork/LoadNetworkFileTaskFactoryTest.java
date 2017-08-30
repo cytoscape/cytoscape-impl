@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.net.URI;
 
+import org.cytoscape.task.internal.export.network.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;

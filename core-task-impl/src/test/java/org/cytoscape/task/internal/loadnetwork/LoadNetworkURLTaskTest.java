@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.URLConnection;
 
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTask;
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;

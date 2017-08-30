@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.export.vizmap;
+package org.cytoscape.task.internal.vizmap;
 
 /*
  * #%L
