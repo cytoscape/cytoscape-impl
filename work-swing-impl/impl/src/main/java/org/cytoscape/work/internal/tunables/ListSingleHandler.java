@@ -93,9 +93,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		//set Gui
 		label.setVerticalTextPosition(SwingConstants.CENTER);
 
+		T[] values;
+		T selectedValue = null;
+
+		if (getSingleSelection() == null || getSingleSelection().getPossibleValues() == null) {
+			values = (T[])new Object[1];
+		} else {
+			values = (T[])getSingleSelection().getPossibleValues().toArray();
+			selectedValue = getSingleSelection().getSelectedValue();
+		}
+
 		//add list's items to the combobox
-		combobox = new JComboBox<>((T[])getSingleSelection().getPossibleValues().toArray());
-		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+		combobox = new JComboBox<>(values);
+		combobox.getModel().setSelectedItem(selectedValue);
 		combobox.addActionListener(this);
 		
 		updateFieldPanel(panel, label, combobox, horizontal);
