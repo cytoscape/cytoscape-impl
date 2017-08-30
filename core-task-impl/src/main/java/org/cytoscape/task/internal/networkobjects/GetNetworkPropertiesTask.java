@@ -67,7 +67,7 @@ public class GetNetworkPropertiesTask extends AbstractPropertyTask implements Ob
 			return;
 		}
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Property values for network "+DataUtils.getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Property values for network "+DataUtils.getNetworkName(network)+":");
 		String[] props = propertyList.split(",");
 		for (String property: props) {
 			try {
