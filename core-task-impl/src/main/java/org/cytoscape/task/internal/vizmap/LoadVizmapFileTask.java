@@ -2,6 +2,7 @@ package org.cytoscape.task.internal.vizmap;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,11 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 
 /*
  * #%L
@@ -49,7 +55,11 @@ public class LoadVizmapFileTask extends AbstractTask {
 		return "Import Style";
 	}
 	
-	@Tunable(description="Style file:", params = "fileCategory=vizmap;input=true")
+	@Tunable(
+			description = "Styles file",
+			longDescription = "XML or properties file where one or more styles have been saved to.",
+			params = "fileCategory=vizmap;input=true"
+	)
 	public File file;
 
 	private AddVisualStylesTask addStyleTask;
@@ -147,7 +157,26 @@ public class LoadVizmapFileTask extends AbstractTask {
 				return strRes.substring(0, strRes.length() - 1);
 			}
 			
+			if (type == JSONResult.class) {
+				JsonArray jsonArr = new JsonArray();
+				
+				if (styles != null && !styles.isEmpty()) {
+					for (VisualStyle vs : styles)
+						jsonArr.add(new JsonPrimitive(vs.getTitle()));
+				}
+				
+				String json = new Gson().toJson(jsonArr);
+				JSONResult res = () -> { return json; };
+				
+				return res;
+			}
+			
 			return styles;
+		}
+		
+		@Override
+		public List<Class<?>> getResultClasses() {
+			return Arrays.asList(String.class, List.class, JSONResult.class);
 		}
 
 		public Set<VisualStyle> getStyles() {
