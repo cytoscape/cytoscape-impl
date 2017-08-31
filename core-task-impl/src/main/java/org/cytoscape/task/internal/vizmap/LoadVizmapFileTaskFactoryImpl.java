@@ -1,4 +1,30 @@
-package org.cytoscape.task.internal.loadvizmap;
+package org.cytoscape.task.internal.vizmap;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.TunableSetter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -6,7 +32,7 @@ package org.cytoscape.task.internal.loadvizmap;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,50 +50,14 @@ package org.cytoscape.task.internal.loadvizmap;
  * #L%
  */
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.io.read.VizmapReaderManager;
-import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.TunableSetter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implements LoadVizmapFileTaskFactory {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	private final VizmapReaderManager vizmapReaderMgr;
-	private final VisualMappingManager vmMgr;
-	private final SynchronousTaskManager<?> syncTaskManager;
-	private final TunableSetter tunableSetter;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadVizmapFileTaskFactoryImpl(VizmapReaderManager vizmapReaderMgr, VisualMappingManager vmMgr,
-			SynchronousTaskManager<?> syncTaskManager, TunableSetter tunableSetter) {
-		this.vizmapReaderMgr = vizmapReaderMgr;
-		this.vmMgr = vmMgr;
-		this.syncTaskManager = syncTaskManager;
-		this.tunableSetter = tunableSetter;
+	public LoadVizmapFileTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -76,18 +66,18 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	}
 	
 	public LoadVizmapFileTask createTask() {
-		return new LoadVizmapFileTask(vizmapReaderMgr, vmMgr);
+		return new LoadVizmapFileTask(serviceRegistrar);
 	}
 
 	@Override
 	public Set<VisualStyle> loadStyles(File f) {
 		// Set up map containing values to be assigned to tunables.
-		// The name "file" is the name of the tunable field in
-		// LoadVizmapFileTask.
-		Map<String, Object> m = new HashMap<String, Object>();
+		// The name "file" is the name of the tunable field in LoadVizmapFileTask.
+		Map<String, Object> m = new HashMap<>();
 		m.put("file", f);
 
 		LoadVizmapFileTask task = createTask();
+		SynchronousTaskManager<?> syncTaskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
 		syncTaskManager.setExecutionContext(m);
 		syncTaskManager.execute(new TaskIterator(2, task));
 
@@ -98,6 +88,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 	public Set<VisualStyle> loadStyles(final InputStream is) {
 		// Save the contents of inputStream in a tmp file
 		File f = null;
+		
 		try {
 			f = this.getFileFromStream(is);
 		} catch (IOException e) {
@@ -106,9 +97,8 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 		if (f == null)
 			throw new NullPointerException("Could not create temp file.");
-
 		
-		return this.loadStyles(f);
+		return loadStyles(f);
 	}
 
 	@Override
@@ -118,20 +108,20 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	@Override
 	public TaskIterator createTaskIterator(File file, TaskObserver observer) {
-
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("file", file);
 
+		TunableSetter tunableSetter = serviceRegistrar.getService(TunableSetter.class);
+		
 		return tunableSetter.createTaskIterator(this.createTaskIterator(), m, observer);
 	}
 	
 	// Read the inputStream and save the content in a tmp file
 	private File getFileFromStream(final InputStream is) throws IOException {
-
 		File returnFile = null;
 
 		// Get the contents from inputStream
-		final List<String> list = new ArrayList<String>();
+		final List<String> list = new ArrayList<>();
 
 		BufferedReader bf = null;
 		String line;
@@ -158,6 +148,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 		// Save the content to a tmp file
 		Writer output = null;
+		
 		try {
 			returnFile = File.createTempFile("visualStyles", "", new File(System.getProperty("java.io.tmpdir")));
 			returnFile.deleteOnExit();
@@ -179,7 +170,6 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 					logger.error("Could not close stream.", e);
 					output = null;
 				}
-
 			}
 		}
 
@@ -187,6 +177,7 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 			throw new NullPointerException("Could not create temp VizMap file.");
 
 		final String originalFileName = returnFile.getAbsolutePath();
+		
 		if (isXML(list)) {
 			final File xmlFile = new File(originalFileName + ".xml");
 			final boolean renamed = returnFile.renameTo(xmlFile);
@@ -207,16 +198,11 @@ public class LoadVizmapFileTaskFactoryImpl extends AbstractTaskFactory implement
 
 	/**
 	 * Perform simple test whether this file is XML or not.
-	 * 
-	 * @return
 	 */
 	private final boolean isXML(final List<String> list) {
-		if(list == null || list.isEmpty())
+		if (list == null || list.isEmpty())
 			return false;
-		
-		if(list.get(0).contains("<?xml"))
-			return true;
-		else
-			return false;
+
+		return list.get(0).contains("<?xml");
 	}
 }

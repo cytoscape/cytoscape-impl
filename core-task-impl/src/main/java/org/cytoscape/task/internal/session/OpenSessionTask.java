@@ -101,13 +101,14 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 		public File file;
 		
 		@Override
-		public void run(final TaskMonitor taskMonitor) throws Exception {
+		public void run(final TaskMonitor tm) throws Exception {
 			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			final CySessionManager sessionManager = serviceRegistrar.getService(CySessionManager.class);
 			
 			try {
 				try {
-					taskMonitor.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
-					taskMonitor.setProgress(0.0);
+					tm.setStatusMessage("Opening Session File.\n\nIt may take a while.\nPlease wait...");
+					tm.setProgress(0.0);
 		
 					if (file == null)
 						throw new NullPointerException("No file specified.");
@@ -120,47 +121,42 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 					
 					// Let everybody know the current session will be destroyed
 					eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
-					taskMonitor.setProgress(0.1);
+					tm.setProgress(0.1);
 					
 					// Dispose the current session before loading the new one
-					serviceRegistrar.getService(CySessionManager.class).disposeCurrentSession();
-					taskMonitor.setProgress(0.2);
+					sessionManager.disposeCurrentSession();
+					tm.setProgress(0.2);
 					
 					// Now we can read the new session
-					reader.run(taskMonitor);
-					taskMonitor.setProgress(0.8);
+					if (!cancelled)
+						reader.run(tm);
+					
+					tm.setProgress(0.8);
 				} catch (Exception e) {
-					reader = null;
-					disposeCancelledSession(e);
+					disposeCancelledSession(e, sessionManager);
 					throw e;
 				}
 				
-				if (cancelled) {
-					disposeCancelledSession(null);
-				} else {
-					try {
-						changeCurrentSession(taskMonitor);
-					} catch (Exception e) {
-						disposeCancelledSession(e);
-						throw e;
-					}
-				}
+				if (cancelled)
+					disposeCancelledSession(null, sessionManager);
+				else
+					changeCurrentSession(sessionManager, tm);
 			} finally {
 				// plug big memory leak
 				reader = null;
 			}
 		}
 		
-		private void changeCurrentSession(final TaskMonitor taskMonitor) throws Exception {
+		private void changeCurrentSession(CySessionManager sessionManager, TaskMonitor tm) throws Exception {
 			final CySession newSession = reader.getSession();
 			
 			if (newSession == null)
 				throw new NullPointerException("Session could not be read for file: " + file);
 
-			serviceRegistrar.getService(CySessionManager.class).setCurrentSession(newSession, file.getAbsolutePath());
+			sessionManager.setCurrentSession(newSession, file.getAbsolutePath());
 			
-			taskMonitor.setProgress(1.0);
-			taskMonitor.setStatusMessage("Session file " + file + " successfully loaded.");
+			tm.setProgress(1.0);
+			tm.setStatusMessage("Session file " + file + " successfully loaded.");
 			
 			// Add this session file URL as the most recent file.
 			serviceRegistrar.getService(RecentlyOpenedTracker.class).add(file.toURI().toURL());

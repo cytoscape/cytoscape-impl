@@ -58,7 +58,7 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 		views = new ArrayList<CyNetworkView>(viewMgr.getNetworkViews(network));
 		
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-		                        "Views for network "+DataUtils.getNetworkTitle(network));
+		                        "Views for network "+DataUtils.getNetworkName(network));
 		for (CyNetworkView view: views) {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "    "+view);
 			return;

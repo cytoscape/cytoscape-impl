@@ -46,8 +46,6 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
@@ -117,8 +115,8 @@ import org.slf4j.LoggerFactory;
 public class NetworkViewMediator
 		implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
-		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
-		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
+		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener, ColumnDeletedListener,
+		ColumnNameChangedListener, ViewChangedListener {
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
@@ -344,12 +342,6 @@ public class NetworkViewMediator
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadCancelledEvent e) {
-		loadingSession = false;
-		// TODO Destroy rendered views
 	}
 	
 	@Override

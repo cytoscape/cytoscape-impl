@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.loadnetwork;
+package org.cytoscape.task.internal.export.network;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.service.util.CyServiceRegistrar;

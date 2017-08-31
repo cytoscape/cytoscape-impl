@@ -6,6 +6,8 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 
+import org.cytoscape.task.internal.export.network.LoadNetworkFileTask;
+import org.cytoscape.task.internal.export.network.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;

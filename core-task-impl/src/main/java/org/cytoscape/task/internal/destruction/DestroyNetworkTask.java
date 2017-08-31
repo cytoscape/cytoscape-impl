@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.destruction;
 
+import java.util.Collection;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkCollectionTask;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,31 +36,19 @@ package org.cytoscape.task.internal.destruction;
  * #L%
  */
 
-
-import java.util.Collection;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.task.AbstractNetworkCollectionTask;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-
 public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
-	private final CyNetworkManager netmgr;
 	
-	@Tunable(description="<html>The selected networks will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true",context="gui")
+	@Tunable(description = "<html>The selected networks will be lost.<br />Do you want to continue?</html>", params = "ForceSetDirectly=true", context = "gui")
 	public boolean destroyCurrentNetwork = true;
 
-	@Tunable(description="Network to destroy", context="nogui")
-	public CyNetwork network = null;
+	@Tunable(description = "Network to destroy", context = "nogui")
+	public CyNetwork network;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public DestroyNetworkTask(final Collection<CyNetwork> nets, final CyNetworkManager netmgr) {
+	public DestroyNetworkTask(Collection<CyNetwork> nets, CyServiceRegistrar serviceRegistrar) {
 		super(nets);
-		this.netmgr = netmgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -58,19 +58,20 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 		
 		if (destroyCurrentNetwork) {
 			tm.setProgress(0.0);
+			CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			
-			if (networks == null || networks.size() == 0) {
+			if (networks == null || networks.isEmpty()) {
 				if (network == null) {
 					tm.showMessage(TaskMonitor.Level.ERROR, "Need to specify network to destroy");
 					return;
 				}
 				
-				destroyNetwork(network);
+				destroyNetwork(network, netManager);
 			} else {
 				networkCount = networks.size();
 				
 				for (CyNetwork n : networks) {
-					destroyNetwork(n);
+					destroyNetwork(n, netManager);
 					i++;
 					tm.setProgress((i / (double) networkCount));
 				}
@@ -80,26 +81,25 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 		}
 	}
 
-	private void destroyNetwork(final CyNetwork net) {
+	private void destroyNetwork(final CyNetwork net, CyNetworkManager netManager) {
 		CyRootNetwork rootNet = null;
 		CySubNetwork parentNet = null;
-		
+
 		if (net instanceof CySubNetwork) {
 			rootNet = ((CySubNetwork) net).getRootNetwork();
 			final Long suid = DataUtils.getParentNetworkSUID((CySubNetwork) net);
-			
-			if (suid != null && netmgr.getNetwork(suid) instanceof CySubNetwork)
-				parentNet = (CySubNetwork) netmgr.getNetwork(suid);
+
+			if (suid != null && netManager.getNetwork(suid) instanceof CySubNetwork)
+				parentNet = (CySubNetwork) netManager.getNetwork(suid);
 		}
-		
-		netmgr.destroyNetwork(net);
-		
+
+		netManager.destroyNetwork(net);
+
 		if (net instanceof CySubNetwork)
 			updateParentNetworkData(net.getSUID(), rootNet, (parentNet != null ? parentNet.getSUID() : null));
 	}
-	
-	private void updateParentNetworkData(final Long destroyedSUID, final CyRootNetwork rootNet,
-			final Long newParentSUID) {
+
+	private void updateParentNetworkData(Long destroyedSUID, CyRootNetwork rootNet, Long newParentSUID) {
 		for (CySubNetwork sn : rootNet.getSubNetworkList()) {
 			if (destroyedSUID.equals(DataUtils.getParentNetworkSUID(sn)))
 				DataUtils.saveParentNetworkSUID(sn, newParentSUID);

@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.loadnetwork;
+package org.cytoscape.task.internal.export.network;
 
 import java.io.File;
 import java.util.LinkedHashMap;

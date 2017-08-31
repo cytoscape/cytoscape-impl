@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.loadnetwork;
+package org.cytoscape.task.internal.export.network;
 
 import java.net.URI;
 import java.util.Properties;

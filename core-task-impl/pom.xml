@@ -61,6 +61,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>gson</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -136,6 +137,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.1</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3</version>
 		</dependency>
 
 		<!-- Test Dependencies -->

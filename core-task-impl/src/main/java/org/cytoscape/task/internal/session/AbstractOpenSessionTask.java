@@ -3,7 +3,6 @@ package org.cytoscape.task.internal.session;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.read.CySessionReader;
 import org.cytoscape.model.CyNetwork;
@@ -12,7 +11,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
+import org.cytoscape.session.CySessionManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 
@@ -55,11 +54,9 @@ public abstract class AbstractOpenSessionTask extends AbstractTask {
 			
 		if (reader != null)
 			reader.cancel(); // Remember to cancel the Session Reader!
-		
-		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new SessionLoadCancelledEvent(this));
 	}
 	
-	protected void disposeCancelledSession(Exception e) {
+	protected void disposeCancelledSession(Exception e, CySessionManager sessionManager) {
 		if (reader == null)
 			return;
 		
@@ -87,7 +84,7 @@ public abstract class AbstractOpenSessionTask extends AbstractTask {
 		// Destroy any global tables registered by the reader
 		serviceRegistrar.getService(CyTableManager.class).reset();
 		
-		// Fire the event only after the cancelled session has been disposed
-		serviceRegistrar.getService(CyEventHelper.class).fireEvent(new SessionLoadCancelledEvent(this, e));
+		// Set a new, empty session
+		sessionManager.setCurrentSession(null, null);
 	}
 }

@@ -62,7 +62,7 @@ public class ListNetworkAttributesTask extends AbstractTableDataTask implements 
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attributes for network "+DataUtils.getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attributes for network "+DataUtils.getNetworkName(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 

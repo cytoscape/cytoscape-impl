@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.destruction;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
+import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,39 +33,26 @@ package org.cytoscape.task.internal.destruction;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- 
 
+public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory
+		implements DestroyNetworkTaskFactory, TaskFactory {
 
-import java.util.ArrayList;
-import java.util.Collection;
+	private final CyServiceRegistrar serviceRegistrar;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
-public class DestroyNetworkTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements DestroyNetworkTaskFactory, TaskFactory {
-	
-	private CyNetworkManager netmgr;
-
-	public DestroyNetworkTaskFactoryImpl(CyNetworkManager netmgr) {
-		super();
-		this.netmgr = netmgr;
+	public DestroyNetworkTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetwork> networks) {
-		return new TaskIterator(new DestroyNetworkTask(networks, netmgr));
-	} 
+		return new TaskIterator(new DestroyNetworkTask(networks, serviceRegistrar));
+	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DestroyNetworkTask(new ArrayList<CyNetwork>(), netmgr));
-	} 
-	
+		return new TaskIterator(new DestroyNetworkTask(new ArrayList<>(), serviceRegistrar));
+	}
+
 	@Override
 	public boolean isReady() {
 		return true;

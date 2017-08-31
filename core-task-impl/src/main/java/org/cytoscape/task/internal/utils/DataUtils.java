@@ -1,12 +1,25 @@
 package org.cytoscape.task.internal.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +37,32 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-
 public class DataUtils {
 
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
+	public static String getNetworkName(CyNetwork network) {
+		String name = "";
+		
+		try {
+			name = network.getRow(network).get(CyNetwork.NAME, String.class);
+		} catch (Exception e) {
+		}
+		
+		if (name == null || name.trim().isEmpty())
+			name = "? (SUID: " + network.getSUID() + ")";
+		
+		return name;
+	}
+	
+	public static String getViewTitle(CyNetworkView view) {
+		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
+		
+		if (title == null || title.trim().isEmpty())
+			title = getNetworkName(view.getModel());
+		
+		return title;
+	}
 	
 	public static String getNodeName(CyTable table, CyNode node) {
 		String name = table.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
@@ -116,10 +141,6 @@ public class DataUtils {
 			result += v.toString()+",";
 		}
 		return result.substring(0, result.length()-1)+"]";
-	}
-
-	public static String getNetworkTitle(CyNetwork network) {
-		return network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
 
 	public static Class getType(String type) {

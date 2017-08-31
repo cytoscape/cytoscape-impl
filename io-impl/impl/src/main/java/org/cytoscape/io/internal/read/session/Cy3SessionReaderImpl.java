@@ -73,7 +73,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -109,8 +109,10 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 	public static final Pattern GLOBAL_TABLE_PATTERN = Pattern.compile(".*/(global/(\\d+)-([^/]+)[.]cytable)");
 	public static final Pattern PROPERTIES_PATTERN = Pattern.compile(".*/"+PROPERTIES_FOLDER+"?(([^/]+)[.](props|properties))");
 	
-	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<Long, CyNetwork>();
-	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<Long, Set<CyTableMetadataBuilder>>();
+	private static final String THUMBNAIL_FILE = "session_thumbnail.png";
+	
+	private final Map<Long/*network_suid*/, CyNetwork> networkLookup = new LinkedHashMap<>();
+	private final Map<Long/*old_network_id*/, Set<CyTableMetadataBuilder>> networkTableMap = new HashMap<>();
 
 	private final SUIDUpdater suidUpdater;
 	private final CyNetworkReaderManager networkReaderMgr;
@@ -183,7 +185,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				extractTable(is, entryName);
 			} else if (entryName.endsWith(CYTABLE_STATE_FILE)) {
 				extractCyTableSessionState(is, entryName);
-			} else if (!entryName.endsWith(VERSION_EXT)) {
+			} else if (!entryName.endsWith(VERSION_EXT) && !entryName.endsWith("/" + THUMBNAIL_FILE)) {
 				logger.warn("Unknown entry found in session zip file!\n" + entryName);
 			}
 		} else {
@@ -280,7 +282,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 			Set<CyTableMetadataBuilder> builders = networkTableMap.get(oldNetId);
 			
 			if (builders == null) {
-				builders = new HashSet<CyTableMetadataBuilder>();
+				builders = new HashSet<>();
 				networkTableMap.put(oldNetId, builders);
 			}
 			
@@ -413,7 +415,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 
 		// Put the file into appFileListMap
 		if (!appFileListMap.containsKey(appName))
-			appFileListMap.put(appName, new ArrayList<File>());
+			appFileListMap.put(appName, new ArrayList<>());
 
 		List<File> fileList = appFileListMap.get(appName);
 		fileList.add(file);
@@ -449,7 +451,7 @@ public class Cy3SessionReaderImpl extends AbstractSessionReader {
 				}
 			}
 		} else if (obj instanceof Bookmarks) {
-			cyProps = new SimpleCyProperty<Bookmarks>("bookmarks", (Bookmarks)obj, Bookmarks.class,
+			cyProps = new SimpleCyProperty<>("bookmarks", (Bookmarks) obj, Bookmarks.class,
 					CyProperty.SavePolicy.SESSION_FILE);
 		} else {
 			// TODO: get name and create the CyProperty for unknown types
