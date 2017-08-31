@@ -43,26 +43,25 @@ public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFac
 	private CyApplicationManager cyApplicationManager;
 	private final TunableSetter tunableSetter;
 
-	
-	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, CyApplicationManager cyApplicationManager,
-			TunableSetter tunableSetter) {
+	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager,
+			CyApplicationManager cyApplicationManager, TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
 		this.cyApplicationManager = cyApplicationManager;
 		this.tunableSetter = tunableSetter;
 	}
-	
+
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(2,new CyNetworkViewWriter(writerManager, cyApplicationManager, view));
+		return new TaskIterator(2, new CyNetworkViewWriter(writerManager, cyApplicationManager, view));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 
 		CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, cyApplicationManager, view);
 		writer.setDefaultFileFormatUsingFileExt(file);
-		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
+		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);
 	}
 }

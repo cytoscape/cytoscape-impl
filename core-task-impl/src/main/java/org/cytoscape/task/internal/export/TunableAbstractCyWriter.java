@@ -55,7 +55,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	 * the CyWriterManager. This field should not be set directly, but rather
 	 * handled by the {@link org.cytoscape.work.Tunable} processing.
 	 */
-	@Tunable(description = "Select the export file format:", gravity = 1.0)
+	@Tunable(description = "Export File Format:", gravity = 1.0)
 	public ListSingleSelection<String> options;
 
 	@ContainsTunables(offset = 1.0)
@@ -105,7 +105,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	public TunableAbstractCyWriter(T writerManager, CyApplicationManager cyApplicationManager) {
 		super(writerManager, cyApplicationManager);
 		final List<String> availableFormats = new ArrayList<>(getFileFilterDescriptions());
-		options = new ListSingleSelection<String>(availableFormats);
+		options = new ListSingleSelection<>(availableFormats);
 		options.addListener(new ListChangeListener<String>() {
 			@Override
 			public void selectionChanged(ListSelection<String> source) {

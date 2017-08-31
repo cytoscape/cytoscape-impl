@@ -46,7 +46,6 @@ public class SaveSessionAsTaskFactoryTest {
 	
 	@Test
 	public void testRun() throws Exception {
-
 		CySessionManager mgr = mock(CySessionManager.class);
 		CySessionWriterManager wmgr = mock(CySessionWriterManager.class);
 		RecentlyOpenedTracker tracker = mock(RecentlyOpenedTracker.class);
