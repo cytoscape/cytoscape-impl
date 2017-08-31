@@ -38,7 +38,7 @@ public class BendImpl implements Bend {
 	
 	private static final String DELIMITER ="|";
 	
-	// List of Bends included in this Bend
+	// List of Handles included in this Bend
 	private final List<Handle> handles;
 	
 	public BendImpl() {
@@ -99,10 +99,8 @@ public class BendImpl implements Bend {
 		
 		//System.out.println("Serialized String: " + serialized);
 		
-		if(serialized.length() == 0)
-			return "";
-		else
-			return serialized.substring(0, serialized.length()-1);
+		if (serialized.length() == 0)			return "";
+		return serialized.substring(0, serialized.length()-1);
 	}
 	
 	public static Bend parseSerializableString(String strRepresentation) {
