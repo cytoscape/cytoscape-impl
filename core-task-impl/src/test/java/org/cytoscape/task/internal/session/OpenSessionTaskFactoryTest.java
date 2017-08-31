@@ -2,10 +2,13 @@ package org.cytoscape.task.internal.session;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -37,6 +40,14 @@ import org.mockito.MockitoAnnotations;
 public class OpenSessionTaskFactoryTest {
 	
 	@Mock private CyServiceRegistrar serviceRegistrar;
+	@Mock private TunableSetter ts;
+
+	@Before
+	public void initMocks() {
+		MockitoAnnotations.initMocks(this);
+		
+		when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
+	}
 	
 	@Test
 	public void testRun() throws Exception {

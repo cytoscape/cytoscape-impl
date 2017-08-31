@@ -339,7 +339,8 @@ public class CyActivator extends AbstractCyActivator {
 		SelectFirstNeighborsNodeViewTaskFactoryImpl selectFirstNeighborsNodeViewTaskFactory = new SelectFirstNeighborsNodeViewTaskFactoryImpl(CyEdge.Type.ANY,cyEventHelperRef);
 		
 		HelpTaskFactory helpTaskFactory = new HelpTaskFactory(serviceRegistrar);
-		NewSessionTaskFactoryImpl newSessionTaskFactory = new NewSessionTaskFactoryImpl(cySessionManagerServiceRef, tunableSetterServiceRef, cyEventHelperRef);
+		
+		NewSessionTaskFactoryImpl newSessionTaskFactory = new NewSessionTaskFactoryImpl(serviceRegistrar);
 		OpenSessionCommandTaskFactory openSessionCommandTaskFactory = new OpenSessionCommandTaskFactory(serviceRegistrar);
 		OpenSessionTaskFactoryImpl openSessionTaskFactory = new OpenSessionTaskFactoryImpl(serviceRegistrar);
 		SaveSessionTaskFactoryImpl saveSessionTaskFactory = new SaveSessionTaskFactoryImpl( sessionWriterManagerServiceRef, cySessionManagerServiceRef, recentlyOpenedTrackerServiceRef, cyEventHelperRef);

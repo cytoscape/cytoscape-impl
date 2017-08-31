@@ -1,9 +1,9 @@
 package org.cytoscape.task.internal.session;
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -43,42 +43,31 @@ public class NewSessionTask extends AbstractTask {
 	@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true;ForceSetTitle=New Session")
 	public boolean destroyCurrentSession = true;
 
-	private final CySessionManager mgr;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	
-	public NewSessionTask(final CySessionManager mgr, final CyEventHelper eventHelper) {
-		this.mgr = mgr;
-		this.eventHelper = eventHelper;
+	public NewSessionTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		if (destroyCurrentSession) {
-			taskMonitor.setProgress(0.0);
+			tm.setTitle("Create New Session");
+			tm.setProgress(0.0);
+			
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			final CySessionManager sessionManager = serviceRegistrar.getService(CySessionManager.class);
 			
 			// Let everybody know the current session will be destroyed
 			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
-			taskMonitor.setProgress(0.1);
+			tm.setProgress(0.1);
 			
 			// Dispose the current session before loading the new one
-			mgr.disposeCurrentSession();
-			taskMonitor.setProgress(0.2);
+			sessionManager.disposeCurrentSession();
+			tm.setProgress(0.2);
 			
-			try {
-				mgr.setCurrentSession(null, null);
-			} catch (Exception e) {
-				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
-				throw e;
-			}
-			
-			taskMonitor.setProgress(1.0);
+			sessionManager.setCurrentSession(null, null);
+			tm.setProgress(1.0);
 		}
-	}
-	
-	@Override
-	public void cancel() {
-		super.cancel();
-		eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
 	}
 }

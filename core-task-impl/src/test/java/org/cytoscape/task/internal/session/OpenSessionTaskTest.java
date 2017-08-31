@@ -63,10 +63,9 @@ public class OpenSessionTaskTest {
 	@Mock private CyGroupManager grMgr;
 	@Mock private RecentlyOpenedTracker tracker;
 	@Mock private CyEventHelper eventHelper;
-	
 	@Mock private CySessionReader reader;
-	private CySession session;
 	
+	private CySession session;
 	private File sampleFile;
 	
 	@Before

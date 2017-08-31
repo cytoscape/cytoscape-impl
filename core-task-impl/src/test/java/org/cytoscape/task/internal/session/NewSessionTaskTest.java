@@ -1,12 +1,25 @@
 package org.cytoscape.task.internal.session;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +37,9 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class NewSessionTaskTest {
 
+	@Mock private CyServiceRegistrar serviceRegistrar;
 	@Mock private TaskMonitor tm;
 	@Mock private CySessionManager mgr;
 	@Mock private CyEventHelper eh;
@@ -45,11 +47,14 @@ public class NewSessionTaskTest {
 	@Before
 	public void initMocks() {
 		MockitoAnnotations.initMocks(this);
+		
+		when(serviceRegistrar.getService(CySessionManager.class)).thenReturn(mgr);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eh);
 	}
 
 	@Test
 	public void testRun() throws Exception {
-		final NewSessionTask t = new NewSessionTask(mgr, eh);
+		final NewSessionTask t = new NewSessionTask(serviceRegistrar);
 
 		t.run(tm);
 		verify(mgr, times(1)).setCurrentSession(null, null);
