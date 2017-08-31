@@ -43,8 +43,6 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionSaveCancelledEvent;
 import org.cytoscape.session.events.SessionSaveCancelledListener;
 import org.cytoscape.session.events.SessionSavedEvent;
@@ -64,10 +62,9 @@ import javax.swing.SwingUtilities;
  * selected, but since toolbars are always visible, we need to listen for the
  * actual events. This is less than ideal.
  */
-public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener,
-		NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
-		SetCurrentNetworkViewListener, RowsSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
-		SessionAboutToBeSavedListener, SessionSavedListener, SessionLoadCancelledListener,
+public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener, NetworkViewAddedListener,
+		NetworkViewDestroyedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, RowsSetListener,
+		SessionAboutToBeLoadedListener, SessionLoadedListener, SessionAboutToBeSavedListener, SessionSavedListener,
 		SessionSaveCancelledListener, UpdateNetworkPresentationListener {
 
 	private final CytoscapeToolBar toolbar;
@@ -118,11 +115,6 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	
 	@Override
 	public void handleEvent(SessionAboutToBeLoadedEvent e) {
-		updateToolbar();
-	}
-	
-	@Override
-	public void handleEvent(SessionLoadCancelledEvent e) {
 		updateToolbar();
 	}
 	

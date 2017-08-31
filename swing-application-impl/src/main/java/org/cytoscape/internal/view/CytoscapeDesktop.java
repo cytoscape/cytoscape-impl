@@ -60,9 +60,6 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.session.events.SessionSavedEvent;
@@ -101,9 +98,9 @@ import org.slf4j.LoggerFactory;
  * The CytoscapeDesktop is the central Window for working with Cytoscape.
  */
 @SuppressWarnings("serial")
-public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener, SessionLoadedListener,
-		SessionLoadCancelledListener, SessionSavedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener,
-		TableAddedListener, CytoPanelStateChangedListener {
+public class CytoscapeDesktop extends JFrame
+		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener,
+		SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener, CytoPanelStateChangedListener {
 
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
@@ -398,20 +395,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		});
 	}
 	
-	@Override
-	public void handleEvent(SessionLoadCancelledEvent e) {
-		String sessionName = serviceRegistrar.getService(CySessionManager.class).getCurrentSessionFileName();
-		
-		if (sessionName == null)
-			sessionName = NEW_SESSION_NAME;
-		
-		final String title = TITLE_PREFIX_STRING + sessionName;
-		
-		invokeOnEDT(() -> {
-			setTitle(title);
-		});
-	}
-
 	@Override
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title

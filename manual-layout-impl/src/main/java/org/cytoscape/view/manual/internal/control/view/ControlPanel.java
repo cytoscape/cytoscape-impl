@@ -30,8 +30,6 @@ import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.IconManager;
@@ -69,7 +67,7 @@ import org.cytoscape.view.model.View;
  */
 @SuppressWarnings("serial")
 public class ControlPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
-		SessionLoadCancelledListener, SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
+		SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
 	private static final String TITLE = "Node Layout Tools";
 	private static final String ID = "org.cytoscape.NodeLayoutTools";
@@ -158,12 +156,6 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadCancelledEvent e) {
-		loadingSession = false;
-		updatePanels();
 	}
 	
 	@Override
