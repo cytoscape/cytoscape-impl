@@ -36,7 +36,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.ExampleJSONString;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -122,7 +121,7 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		}
 		
 		@Override
-		@ExampleJSONString(value="103") 
+		
 		public String getJSON() {
 			if (returnedEdge == null) 
 				return "{}";
