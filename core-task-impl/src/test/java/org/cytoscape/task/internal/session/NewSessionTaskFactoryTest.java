@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.session;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +39,31 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-import org.junit.Test;
-import org.mockito.Mock;
-
 public class NewSessionTaskFactoryTest {
-	
-	@Mock
-	TunableSetter ts;
-	@Mock
-	private CyEventHelper eh;
+
+	@Mock private CyServiceRegistrar serviceRegistrar;
+	@Mock private CySessionManager mgr;
+	@Mock private TunableSetter ts;
+	@Mock private CyEventHelper eh;
+
+	@Before
+	public void initMocks() {
+		MockitoAnnotations.initMocks(this);
+		
+		when(serviceRegistrar.getService(CySessionManager.class)).thenReturn(mgr);
+		when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eh);
+	}
 	
 	@Test
 	public void testRun() throws Exception {
-		CySessionManager mgr = mock(CySessionManager.class);
+		NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(serviceRegistrar);
 
-		NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(mgr, ts, eh);
-		
 		TaskIterator ti = factory.createTaskIterator();
 		assertNotNull(ti);
-		
-		assertTrue( ti.hasNext() );
+
+		assertTrue(ti.hasNext());
 		Task t = ti.next();
-		assertNotNull( t );				
+		assertNotNull(t);
 	}
 }

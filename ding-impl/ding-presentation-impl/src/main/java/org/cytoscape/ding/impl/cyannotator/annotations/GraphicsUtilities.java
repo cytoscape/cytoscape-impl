@@ -66,7 +66,7 @@ class GraphicsUtilities {
 
 	protected static final ShapeType supportedShapes[] = {
 		ShapeType.RECTANGLE, ShapeType.ROUNDEDRECTANGLE, ShapeType.ELLIPSE, ShapeType.STAR5, 
-		ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON, ShapeType.PENTAGON
+		ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON, ShapeType.PENTAGON, ShapeType.OCTAGON
 	};
 
 	protected static final List<String> supportedShapeNames = Arrays.asList(
@@ -78,6 +78,7 @@ class GraphicsUtilities {
 		ShapeType.STAR6.shapeName(),
 		ShapeType.HEXAGON.shapeName(),
 		ShapeType.PENTAGON.shapeName(),
+		ShapeType.OCTAGON.shapeName(),
 		ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = {
@@ -106,6 +107,7 @@ class GraphicsUtilities {
 			case TRIANGLE: return regularPolygon(3, x, y, width, height); // Pentagon
 			case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
+			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon  added 3.6
 			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}

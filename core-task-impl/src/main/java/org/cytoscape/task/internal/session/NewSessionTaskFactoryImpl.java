@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.session;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.create.NewSessionTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,41 +33,24 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.create.NewSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
-
 public class NewSessionTaskFactoryImpl extends AbstractTaskFactory implements NewSessionTaskFactory {
 
-	private final CySessionManager mgr;
-	private final TunableSetter tunableSetter;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public NewSessionTaskFactoryImpl(CySessionManager mgr, TunableSetter tunableSetter, CyEventHelper eventHelper) {
-		this.mgr = mgr;
-		this.tunableSetter = tunableSetter;
-		this.eventHelper = eventHelper;
+	public NewSessionTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new NewSessionTask(mgr, eventHelper));
+		return new TaskIterator(new NewSessionTask(serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(boolean destroyCurrentSession) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("destroyCurrentSession", destroyCurrentSession);
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		return serviceRegistrar.getService(TunableSetter.class).createTaskIterator(createTaskIterator(), m);
 	}
 }

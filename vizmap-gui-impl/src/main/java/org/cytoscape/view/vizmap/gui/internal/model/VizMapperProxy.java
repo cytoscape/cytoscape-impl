@@ -33,8 +33,6 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -65,8 +63,7 @@ public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
 							  		   VisualStyleChangedListener, SetCurrentVisualStyleListener,
 							  		   SetCurrentNetworkListener, SetCurrentNetworkViewListener,
-							  		   SessionAboutToBeLoadedListener, SessionLoadCancelledListener,
-							  		   SessionLoadedListener, CyStartListener {
+							  		   SessionAboutToBeLoadedListener, SessionLoadedListener, CyStartListener {
 
 	public static final String NAME = "VisualStyleProxy";
 	public static final String PRESET_VIZMAP_FILE = "default_vizmap.xml";
@@ -371,11 +368,6 @@ public class VizMapperProxy extends Proxy
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadCancelledEvent e) {
-		loadingSession = false;
 	}
 	
 	@Override

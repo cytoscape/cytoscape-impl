@@ -61,8 +61,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 			a.update();
 			
 			return (ShapeAnnotation) a;
-		} else {
-			return null;
-		}
+		} 
+		return null;
 	}
 }
