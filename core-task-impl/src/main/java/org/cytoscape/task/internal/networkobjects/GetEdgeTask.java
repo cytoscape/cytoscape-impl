@@ -111,26 +111,6 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No edge matching specification found");
 		return;
 	}
-
-	public class GetEdgeResult implements JSONResult {
-		
-		final CyEdge edge;
-		
-		public GetEdgeResult(CyEdge edge) {
-			this.edge = edge;
-		}
-		
-		@Override
-		
-		public String getJSON() {
-			if (returnedEdge == null) 
-				return "{}";
-			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(returnedEdge);
-			}
-		}	
-	}
 	
 	public Object getResults(Class type) {
 		if (type.equals(CyEdge.class)) {
@@ -139,13 +119,19 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 			if (returnedEdge == null)
 				return "<none>";
 			return returnedEdge.toString();
-		} else if (type.equals(GetEdgeResult.class)) {
-			return new GetEdgeResult(returnedEdge);
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (returnedEdge == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(returnedEdge);
+			}};
+			return res;
 		}
 		return returnedEdge;
 	}
 	
 	public List<Class<?>> getResultClasses() {
-		return Arrays.asList(CyEdge.class, String.class, GetEdgeResult.class);
+		return Arrays.asList(CyEdge.class, String.class, JSONResult.class);
 	}
 }
