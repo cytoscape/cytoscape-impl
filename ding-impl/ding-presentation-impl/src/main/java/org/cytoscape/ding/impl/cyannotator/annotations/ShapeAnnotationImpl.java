@@ -218,9 +218,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void setShapeType(String type) {
 		shapeType = getShapeFromString(type);
-		
-		if (shapeType != ShapeType.CUSTOM)
-			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		setShapeType(shapeType);
 	}
 
 	@Override

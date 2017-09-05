@@ -104,7 +104,7 @@ class GraphicsUtilities {
 			case ELLIPSE: return ellipseShape(x, y, width, height);
 			case STAR5: return starShape(5, x, y, width, height); // 5 pointed star
 			case STAR6: return starShape(6, x, y, width, height); // 6 pointed star
-			case TRIANGLE: return regularPolygon(3, x, y, width, height); // Pentagon
+			case TRIANGLE: return regularPolygon(3, x, y, width, height); // Triangle
 			case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
 			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon  added 3.6
@@ -574,11 +574,13 @@ class GraphicsUtilities {
 	}
 
 	static double circleX(int sides, int angle) {
+		if (sides == 8) angle += (halfPI / 4.0);		// octagons are flat on top
 		double coeff = (double)angle/(double)sides;
 		return epsilon(Math.cos(2*coeff*Math.PI-halfPI));
 	}
 		
 	static double circleY(int sides, int angle) {
+		if (sides == 8) angle += (halfPI / 4.0);			// octagons are flat on top
 		double coeff = (double)angle/(double)sides;
 		return epsilon(Math.sin(2*coeff*Math.PI-halfPI));
 	}
