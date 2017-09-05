@@ -30,9 +30,7 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ServiceProperties;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
@@ -71,7 +69,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final Map<String, String> descriptions;
 	private final Map<String, String> longDescriptions;
 
-	private final Map<String, List<ObservableTaskResultClasses>> resultClasses;
+	private final Map<String, String> exampleJSONs;
+	private final Map<String, Boolean> supportsJSONs;
 
 	// private final Map<String,Map<String,List<String>>> argStrings;
 	private final Map<String,Map<String,Map<String, ArgHandler>>> argHandlers;
@@ -96,7 +95,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		this.descriptions = new HashMap<>();
 		this.longDescriptions = new HashMap<>();
 
-		this.resultClasses = new HashMap<String, List<ObservableTaskResultClasses>>();
+		this.exampleJSONs = new HashMap<>();
+		this.supportsJSONs = new HashMap<>();
 
 		this.argHandlers = new HashMap<>();
 	 	this.factoryProvisioner = new StaticTaskFactoryProvisioner();
@@ -323,8 +323,13 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		String command = (String)(properties.get(ServiceProperties.COMMAND));
 		String description = (String)(properties.get(ServiceProperties.COMMAND_DESCRIPTION));
 		String longDescription = (String)(properties.get(ServiceProperties.COMMAND_LONG_DESCRIPTION));
-
-
+		String exampleJSON = (String)(properties.get(ServiceProperties.COMMAND_EXAMPLE_JSON));
+		String supportsJSONString = (String)(properties.get(ServiceProperties.COMMAND_SUPPORTS_JSON));
+		Boolean supportsJSON = false;
+		if (supportsJSONString != null) {
+			supportsJSON = Boolean.parseBoolean(supportsJSONString);
+		}
+		
 		if (command == null || namespace == null) 
 			return;
 
@@ -333,7 +338,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			commands.put(commandKey, tf);
 			descriptions.put(commandKey, description);
 			longDescriptions.put(commandKey, longDescription);
-
+			exampleJSONs.put(commandKey, exampleJSON);
+			supportsJSONs.put(commandKey, supportsJSON);
 
 			// List<String> args = getArgs(tf);
 			Map<String, ArgHandler> args = null;
@@ -356,8 +362,9 @@ public class AvailableCommandsImpl implements AvailableCommands {
 			descriptions.remove(commandKey);
 			longDescriptions.remove(commandKey);
 
-			resultClasses.remove(commandKey);
-
+			supportsJSONs.remove(commandKey);
+			exampleJSONs.remove(commandKey);
+			
 			TaskFactory l = commands.remove(commandKey);
 
 			if (l == null)
@@ -389,38 +396,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		}
 	}
 	
-	private List<ObservableTaskResultClasses> getResultDescriptors(TaskFactory tf) {
-		boolean resetNetwork = setCurrentNetwork();
-		boolean resetView = setCurrentNetworkView();
-		
-		try { 
-			TaskIterator ti = tf.createTaskIterator();
-			if (ti == null)
-				return Collections.emptyList();
 
-			List<ObservableTaskResultClasses> resultDescriptors = new ArrayList<ObservableTaskResultClasses>();
-
-			while ( ti.hasNext() ) {
-				Task task = ti.next();
-				if (task instanceof ObservableTask) {
-					ObservableTask observableTask = (ObservableTask) task;
-					List<Class<?>> resultClasses = observableTask.getResultClasses();
-					if (resultClasses != null) {
-						resultDescriptors.add(new ObservableTaskResultClasses(observableTask.getClass(), resultClasses));
-					}
-				}
-			}
-			return resultDescriptors;
-		} catch (Exception e) {
-			logger.debug("Could not create invocation string for command.",e);
-			e.printStackTrace();
-			return Collections.emptyList();
-		}
-		finally {
-			resetCurrentNetworkView(resetView);
-			resetCurrentNetwork(resetNetwork);
-		}
-	}
 
 	private Map<String, ArgHandler> getArgs(TaskFactory tf) {
 		// Need to protect ourselves against apps that assume there
@@ -585,15 +561,21 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	}
 
 	@Override
-	public List<ObservableTaskResultClasses> getResultClasses(String namespace, String command) {
-		synchronized (lock) {
-			String commandKey = getCommandKey(namespace, command);
-			List<ObservableTaskResultClasses> resultClasses = this.resultClasses.get(commandKey);
-			if (resultClasses == null) {
-				resultClasses = getResultDescriptors(commands.get(commandKey));
-				this.resultClasses.put(commandKey, resultClasses);
-			}
-			return resultClasses;
+	public boolean getSupportsJSON(String namespace, String command) {
+	
+		if (supportsJSONs.containsKey(getCommandKey(namespace, command))) {
+			return supportsJSONs.get(getCommandKey(namespace, command));
 		}
+		return false;
 	}
+
+	@Override
+	public String getExampleJSON(String namespace, String command) {
+		if (exampleJSONs.containsKey(getCommandKey(namespace, command))) {
+			return exampleJSONs.get(getCommandKey(namespace, command));
+		}
+		return "";
+	}
+
+
 }

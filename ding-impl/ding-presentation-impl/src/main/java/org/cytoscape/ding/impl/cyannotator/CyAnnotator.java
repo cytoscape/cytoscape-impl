@@ -427,6 +427,12 @@ public class CyAnnotator {
 		}
 		// Save it in the network attributes
 		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
+
+		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
+			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE,
+			                                   String.class,false,Collections.EMPTY_LIST);
+		}
+
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 

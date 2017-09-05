@@ -69,17 +69,31 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 		DingAnnotation dAnnotation = (DingAnnotation)annotation;
 		CyNetworkView view = annotation.getNetworkView();
+
+		/*
+		 * Not sure why we're doing this.  We only care about the single view and we don't
+		 * necessarily need it added to the view manager
+		 *
 		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
 		for (CyNetworkView networkView: viewManager.getNetworkViewSet()) {
 			if (view.equals(networkView)) {
 				((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
 				
-				if (dAnnotation.getCanvas() != null)
+				if (dAnnotation.getCanvas() != null) {
 					dAnnotation.getCanvas().add(dAnnotation.getComponent());
-				else
+				} else {
 					((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
+				}
 			}
+		}
+		*/
+
+		((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
+		if (dAnnotation.getCanvas() != null) {
+			dAnnotation.getCanvas().add(dAnnotation.getComponent());
+		} else {
+			((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
 		}
 	}
 
