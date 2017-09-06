@@ -111,20 +111,16 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			return;
 		}
 		
-		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		for (CyNetworkView view: viewManager.getNetworkViewSet())
+		CyNetworkView view = annotation.getNetworkView();
+		if (view != null && view instanceof DGraphView)
 			((DGraphView)view).getCyAnnotator().removeAnnotation(annotation);
 	}
 
 	@Override
 	public List<Annotation> getAnnotations(final CyNetworkView networkView) {
 		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		for (CyNetworkView view: viewManager.getNetworkViewSet()) {
-			if (view.equals(networkView))
-				return ((DGraphView)view).getCyAnnotator().getAnnotations();
-		}
+		if (networkView != null && networkView instanceof DGraphView)
+			return ((DGraphView)networkView).getCyAnnotator().getAnnotations();
 		
 		return null;
 	}
