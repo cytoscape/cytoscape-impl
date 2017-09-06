@@ -9,10 +9,10 @@ import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SIN
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
@@ -1878,7 +1878,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(COMMAND, "apply");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");
-			props.setProperty(COMMAND_DESCRIPTION, "Apply the style");
+			props.setProperty(COMMAND_DESCRIPTION, "Apply a style");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Applies the specified style to the selected views and returns the affected views.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"styles\": \"Minimal\" }");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyVisualStyleTaskFactory.class, props);
 		}
@@ -1892,6 +1895,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");
 			props.setProperty(COMMAND_DESCRIPTION, "Export styles to a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Exports the specified styles to a Cytoscape vizmap (XML) or a Cytoscape.js (JSON) file.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON,
+					"{\n"
+					+ "    \"options\": \"xml\",\n"
+					+ "    \"styles\": [ \"Directed\", \"Minimal\" ],\n"
+					+ "    \"outputFile\": \"/Users/johndoe/Downloads/MyStyles.xm\"\n"
+					+ "}"
+			);
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportVizmapTaskFactory.class, props);
 		}
@@ -1904,6 +1916,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "load file");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");
 			props.setProperty(COMMAND_DESCRIPTION, "Load styles from a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Loads styles from a vizmap (XML or properties) file and returns the names of the loaded styles.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Downloads/MyStyles.xml\" }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadVizmapFileTaskFactory.class, new Properties());
 		}

@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.vizmap;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -48,6 +24,30 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListMultipleSelection;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, VizmapWriterManager> {
 
 	@ProvidesTitle
@@ -55,10 +55,19 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		return "Export Styles";
 	}
 	
-	@Tunable(description = "Select Styles:")
+	@Tunable(
+			description = "Styles:",
+			longDescription = "The styles to be exported. If no styles are specified, only the current one is exported."
+	)
 	public ListMultipleSelection<VisualStyle> styles;
-	
-	@Tunable(description="Save Styles as:", params="fileCategory=vizmap;input=false", gravity = 1.1)
+
+	@Tunable(
+			description = "Save Styles as:",
+			longDescription = "The path name of the file where the styles must be saved to.",
+			params = "fileCategory=vizmap;input=false",
+			required = true,
+			gravity = 1.1
+	)
 	@Override
 	public File getOutputFile() {
 		return outputFile;
@@ -84,7 +93,7 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		styles = new ListMultipleSelection<>(allStyles);
 		// Select the current style by default
 		styles.setSelectedValues(Collections.singletonList(vmMgr.getCurrentVisualStyle()));
-		this.outputFile = getSuggestedFile();
+		outputFile = getSuggestedFile();
 	}
 	
 	void setDefaultFileFormatUsingFileExt(final File file) {
@@ -93,11 +102,12 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 		String searchDesc = "*." + ext;
 		
 		// Use the EXT to determine the default file format
-		for (String fileTypeDesc : this.getFileFilterDescriptions())
+		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
 			if (fileTypeDesc.contains(searchDesc)) {
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
+		}
 	}
 
 	@Override
