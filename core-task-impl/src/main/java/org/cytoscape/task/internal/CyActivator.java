@@ -1262,7 +1262,7 @@ public class CyActivator extends AbstractCyActivator {
 		getEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get an edge");
 		getEdgeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be printed.");
 		getEdgeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+		getEdgeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "101");
 
 		registerService(bc,getEdgeTaskFactory,TaskFactory.class,getEdgeTaskFactoryProps);
 
