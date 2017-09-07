@@ -55,7 +55,9 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 
 	@Tunable(
 			description = "Style:",
-			longDescription = "Name of Style to be applied to the selected views."
+			longDescription = "Name of Style to be applied to the selected views.",
+			exampleStringValue = "Minimal",
+			required = true
 	)
 	public ListSingleSelection<VisualStyle> styles;
 	

@@ -56,8 +56,10 @@ public class LoadVizmapFileTask extends AbstractTask {
 	}
 	
 	@Tunable(
-			description = "Styles file",
+			description = "Styles File:",
 			longDescription = "XML or properties file where one or more styles have been saved to.",
+			exampleStringValue = "/Users/johndoe/Downloads/MyStyles.xml",
+			required = true,
 			params = "fileCategory=vizmap;input=true"
 	)
 	public File file;
@@ -72,7 +74,6 @@ public class LoadVizmapFileTask extends AbstractTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
 		taskMonitor.setProgress(0.0);
 		taskMonitor.setTitle("Load Styles from File");
 		taskMonitor.setStatusMessage("Looking for a reader...");
