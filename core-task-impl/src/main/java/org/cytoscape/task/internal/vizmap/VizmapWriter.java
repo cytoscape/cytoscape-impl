@@ -57,13 +57,15 @@ public class VizmapWriter extends TunableAbstractCyWriter<VizmapWriterFactory, V
 	
 	@Tunable(
 			description = "Styles:",
-			longDescription = "The styles to be exported. If no styles are specified, only the current one is exported."
+			longDescription = "The styles to be exported. If no styles are specified, only the current one is exported.",
+			exampleStringValue = "Minimal,default,Directed"
 	)
 	public ListMultipleSelection<VisualStyle> styles;
 
 	@Tunable(
 			description = "Save Styles as:",
 			longDescription = "The path name of the file where the styles must be saved to.",
+			exampleStringValue = "/Users/johndoe/Downloads/MyStyles.xml",
 			params = "fileCategory=vizmap;input=false",
 			required = true,
 			gravity = 1.1

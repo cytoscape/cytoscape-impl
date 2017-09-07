@@ -58,6 +58,7 @@ public class LoadVizmapFileTask extends AbstractTask {
 	@Tunable(
 			description = "Styles File:",
 			longDescription = "XML or properties file where one or more styles have been saved to.",
+			exampleStringValue = "/Users/johndoe/Downloads/MyStyles.xml",
 			required = true,
 			params = "fileCategory=vizmap;input=true"
 	)

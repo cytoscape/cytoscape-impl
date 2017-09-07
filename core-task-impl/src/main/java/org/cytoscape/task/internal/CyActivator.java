@@ -1879,9 +1879,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "apply");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");
 			props.setProperty(COMMAND_DESCRIPTION, "Apply a style");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Applies the specified style to the selected views and returns the affected views.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Applies the specified style to the selected views and returns the SUIDs of the affected views.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"styles\": \"Minimal\" }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 322, 420 ]");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyVisualStyleTaskFactory.class, props);
 		}
@@ -1897,13 +1897,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Export styles to a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Exports the specified styles to a Cytoscape vizmap (XML) or a Cytoscape.js (JSON) file.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON,
-					"{\n"
-					+ "    \"options\": \"xml\",\n"
-					+ "    \"styles\": [ \"Directed\", \"Minimal\" ],\n"
-					+ "    \"outputFile\": \"/Users/johndoe/Downloads/MyStyles.xm\"\n"
-					+ "}"
-			);
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportVizmapTaskFactory.class, props);
 		}
@@ -1918,7 +1912,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Load styles from a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Loads styles from a vizmap (XML or properties) file and returns the names of the loaded styles.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Downloads/MyStyles.xml\" }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ \"My Style 1\", \"My Style 2\" ]");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadVizmapFileTaskFactory.class, new Properties());
 		}
