@@ -1395,7 +1395,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,addTaskFactory,TaskFactory.class,addTaskFactoryProps);
 
 		AddEdgeTaskFactory addEdgeTaskFactory = new AddEdgeTaskFactory(visualMappingManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef);
+		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
 		Properties addEdgeTaskFactoryProps = new Properties();
 		addEdgeTaskFactoryProps.setProperty(COMMAND, "add edge");
 		addEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");

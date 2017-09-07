@@ -217,6 +217,16 @@
 				<artifactId>service-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>ci-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>util-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
 
 			<!-- test jars -->
 			<dependency>
