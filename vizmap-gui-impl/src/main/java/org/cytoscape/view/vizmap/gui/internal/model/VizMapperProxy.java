@@ -108,19 +108,25 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public void loadVisualStyles() {
+		setIgnoreStyleEvents(true);
+		
 		boolean changed = false;
 		SortedSet<VisualStyle> updatedStyles = null;
 		
-		synchronized (lock) {
-			// Load the styles
-			final Set<VisualStyle> allStyles = getAllVisualStyles();
-			
-			if (! (allStyles.isEmpty() && visualStyles.isEmpty())) {
-				visualStyles.clear();
-				visualStyles.addAll(allStyles);
-				updatedStyles = getVisualStyles();
-				changed = true;
+		try {
+			synchronized (lock) {
+				// Load the styles
+				final Set<VisualStyle> allStyles = getAllVisualStyles();
+				
+				if (! (allStyles.isEmpty() && visualStyles.isEmpty())) {
+					visualStyles.clear();
+					visualStyles.addAll(allStyles);
+					updatedStyles = getVisualStyles();
+					changed = true;
+				}
 			}
+		} finally {
+			setIgnoreStyleEvents(false);
 		}
 		
 		if (changed && cytoscapeStarted)
@@ -329,6 +335,11 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
+		synchronized (lock) {
+			if (ignoreStyleEvents)
+				return;
+		}
+		
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}
