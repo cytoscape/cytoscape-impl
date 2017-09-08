@@ -1540,6 +1540,9 @@ public class CyActivator extends AbstractCyActivator {
 		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
 		getNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
 		getNodeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get a node from a network");
+		getNodeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a node that matches the passed parameters. If multiple nodes are found, only one will be returned, and a warning will be printed.");
+		getNodeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+		getNodeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "101");
 		registerService(bc,getNodeTaskFactory,TaskFactory.class,getNodeTaskFactoryProps);
 
 		GetNetworkAttributeTaskFactory getNodeAttributeTaskFactory = 
