@@ -1535,7 +1535,7 @@ public class CyActivator extends AbstractCyActivator {
 		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
 		registerService(bc,createNodeAttributeTaskFactory,TaskFactory.class,createNodeAttributeTaskFactoryProps);
 
-		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory(cyApplicationManagerServiceRef);
+		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
 		Properties getNodeTaskFactoryProps = new Properties();
 		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
 		getNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
