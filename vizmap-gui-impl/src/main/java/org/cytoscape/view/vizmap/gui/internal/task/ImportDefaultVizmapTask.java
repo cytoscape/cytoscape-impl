@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -137,6 +138,9 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 					vmMgr.setCurrentVisualStyle(defStyle);
 				}
 				
+				// Flush style-related events now, when the Proxy is probably ignoring them, or these
+				// payload events could be fired later and cause unnecessary UI updates!
+				servicesUtil.get(CyEventHelper.class).flushPayloadEvents();
 				taskMonitor.setProgress(1.0);
 			}
 		}
