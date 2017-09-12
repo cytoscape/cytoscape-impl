@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.creation;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +41,6 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkTaskFactory
                                                         implements NewNetworkSelectedNodesOnlyTaskFactory {
 	private final UndoSupport undoSupport;
@@ -55,6 +54,7 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 	private final CyEventHelper eventHelper;
 	private final CyGroupManager groupMgr;
 	private final RenderingEngineManager renderingEngineMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(final UndoSupport undoSupport,
 													  final CyRootNetworkManager crnf,
@@ -66,7 +66,8 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 													  final CyApplicationManager appManager,
 													  final CyEventHelper eventHelper,
 													  final CyGroupManager groupMgr,
-													  final RenderingEngineManager renderingEngineMgr)
+													  final RenderingEngineManager renderingEngineMgr,
+													  final CyServiceRegistrar serviceRegistrar)
 	{
 		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
@@ -79,13 +80,13 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 		this.eventHelper        = eventHelper;
 		this.groupMgr           = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.serviceRegistrar   = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3,
-			new NewNetworkSelectedNodesOnlyTask(undoSupport, network, crnf, cnvf, netmgr,
-			                                    networkViewManager, naming, vmm,
-			                                    appManager, eventHelper, groupMgr, renderingEngineMgr));
+				new NewNetworkSelectedNodesOnlyTask(undoSupport, network, crnf, cnvf, netmgr, networkViewManager,
+						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar));
 	}
 }

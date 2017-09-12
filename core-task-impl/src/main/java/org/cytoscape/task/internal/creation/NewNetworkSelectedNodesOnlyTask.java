@@ -1,12 +1,32 @@
 package org.cytoscape.task.internal.creation;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +44,6 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectionTask {
 	
 	private Set<CyNode> nodes;
@@ -60,9 +59,10 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	                                       final CyApplicationManager appManager,
 	                                       final CyEventHelper eventHelper,
 	                                       final CyGroupManager groupMgr,
-	                                       final RenderingEngineManager renderingEngineMgr) {
+	                                       final RenderingEngineManager renderingEngineMgr,
+	                                       final CyServiceRegistrar serviceRegistrar) {
 		super(undoSupport, net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
+		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 	}
 
 	/**
@@ -70,28 +70,27 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	 */
 	@Override
 	Set<CyNode> getNodes(final CyNetwork net) {
-		if (nodes == null) {
-			nodes = new HashSet<CyNode>(CyTableUtil.getNodesInState(parentNetwork, CyNetwork.SELECTED, true));
-		}
-		
+		if (nodes == null)
+			nodes = new HashSet<>(CyTableUtil.getNodesInState(parentNetwork, CyNetwork.SELECTED, true));
+
 		return nodes;
 	}
-	
+
 	/**
 	 * Returns all edges that connect the selected nodes.
 	 */
 	@Override
 	Set<CyEdge> getEdges(final CyNetwork net) {
 		if (edges == null) {
-			edges = new HashSet<CyEdge>();
+			edges = new HashSet<>();
 			final Set<CyNode> nodes = getNodes(net);
-	
+
 			for (final CyNode n1 : nodes) {
 				for (final CyNode n2 : nodes)
 					edges.addAll(net.getConnectingEdgeList(n1, n2, CyEdge.Type.ANY));
 			}
 		}
-		
+
 		return edges;
 	}
 }

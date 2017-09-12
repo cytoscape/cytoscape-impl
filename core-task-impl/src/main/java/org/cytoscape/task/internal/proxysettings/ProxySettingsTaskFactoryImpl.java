@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.proxysettings;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +28,19 @@ package org.cytoscape.task.internal.proxysettings;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ProxySettingsTaskFactoryImpl extends AbstractTaskFactory {
-	
-	
-	private CyProperty<Properties> proxyProperties;
-	private final StreamUtil streamUtil;
-	private final CyEventHelper eventHelper;
-	
-	public ProxySettingsTaskFactoryImpl(CyProperty<Properties> proxyProperties, StreamUtil streamUtil, CyEventHelper eventHelper) {
-		this.proxyProperties = proxyProperties;
-		this.streamUtil = streamUtil;
-		this.eventHelper = eventHelper;
 
-        // Force reading of proxy properties to assign System properties
-        (new ProxySettingsTask2(proxyProperties, streamUtil, eventHelper)).assignSystemProperties();
+	private CyServiceRegistrar serviceRegistrar;
+
+	public ProxySettingsTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+
+		// Force reading of proxy properties to assign System properties
+		(new ProxySettingsTask2(serviceRegistrar)).assignSystemProperties();
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2,new ProxySettingsTask(proxyProperties, streamUtil, eventHelper));
+		return new TaskIterator(2, new ProxySettingsTask(serviceRegistrar));
 	}
 }

@@ -4,6 +4,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
@@ -16,7 +17,10 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
@@ -30,6 +34,7 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Test;
 
 public class NewNetworkSelectedNodesEdgesTaskFactoryTest {
+	
 	@Test
 	public void testObserver() throws Exception {
 		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
@@ -47,9 +52,17 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryTest {
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		CyGroupManager groupMgr = mock(CyGroupManager.class);
 		RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
+		
+		CyLayoutAlgorithm defLayout = mock(CyLayoutAlgorithm.class);
+		CyLayoutAlgorithmManager layoutMgr = mock(CyLayoutAlgorithmManager.class);
+		when(layoutMgr.getDefaultLayout()).thenReturn(defLayout);
+		
+		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
+		
 		NewNetworkSelectedNodesEdgesTaskFactoryImpl factory = 
 				new NewNetworkSelectedNodesEdgesTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager, 
-						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
+						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 		
 		CyNetwork network = networkFactory.createNetwork();
 		CyNode node = network.addNode();
@@ -58,9 +71,11 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryTest {
 		TaskObserver observer = mock(TaskObserver.class);
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskIterator iterator = factory.createTaskIterator(network);
+		
 		while (iterator.hasNext()) {
 			Task t = iterator.next();
 			t.run(taskMonitor);
+			
 			if (t instanceof ObservableTask)
 				observer.taskFinished((ObservableTask)t);
 		}

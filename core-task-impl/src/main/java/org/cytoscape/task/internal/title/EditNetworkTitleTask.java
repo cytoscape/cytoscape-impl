@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.title;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,47 +34,26 @@ package org.cytoscape.task.internal.title;
  * #L%
  */
 
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.AbstractNetworkTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator {
-	
-	private final UndoSupport undoSupport;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
-	private final CyNetworkNaming cyNetworkNamingServiceRef;
-
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Rename Network";
 	}
-	
+
 	@Tunable(description = "New title:")
 	public String name;
 
-	@Tunable(description = "Network to rename", context="nogui")
-	public CyNetwork sourceNetwork = null;
+	@Tunable(description = "Network to rename", context = "nogui")
+	public CyNetwork sourceNetwork;
 
-	public EditNetworkTitleTask(
-			final UndoSupport undoSupport,
-			final CyNetwork net,
-			final CyNetworkManager cyNetworkManagerServiceRef,
-			final CyNetworkNaming cyNetworkNamingServiceRef
-	) {
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public EditNetworkTitleTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
 		super(net);
-		this.undoSupport = undoSupport;
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
-		this.cyNetworkNamingServiceRef = cyNetworkNamingServiceRef;
-		name = network.getRow(network).get(CyNetwork.NAME, String.class);		
+		this.serviceRegistrar = serviceRegistrar;
+		
+		name = network.getRow(network).get(CyNetwork.NAME, String.class);
 	}
 
 	@Override
@@ -73,36 +62,39 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		
 		// Check if the network tile already existed
 		boolean titleAlreayExisted = false;
+		String newTitle = serviceRegistrar.getService(CyNetworkNaming.class).getSuggestedNetworkTitle(name);
 		
-		String newTitle = this.cyNetworkNamingServiceRef.getSuggestedNetworkTitle(name);
-		if (!newTitle.equalsIgnoreCase(name)){
-			titleAlreayExisted= true;
-		}
-				
-		if (titleAlreayExisted){
+		if (!newTitle.equalsIgnoreCase(name))
+			titleAlreayExisted = true;
+
+		if (titleAlreayExisted) {
 			// Inform user duplicated network title!
 			try {
-				errMsg.append("Duplicated network name.");	
-			} catch (Exception e){
+				errMsg.append("Duplicated network name.");
+			} catch (Exception e) {
 				System.out.println("Warning: Duplicated network name.");
 			}
-			return ValidationState.INVALID;			
+			
+			return ValidationState.INVALID;
 		}
 
-		return ValidationState.OK;		
+		return ValidationState.OK;
 	}
 	
 	@Override
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
+		
 		if (sourceNetwork == null)
 			sourceNetwork = network;
+		
 		final String oldTitle = network.getRow(sourceNetwork).get(CyNetwork.NAME, String.class);
 		e.setProgress(0.3);
+		
 		network.getRow(sourceNetwork).set(CyNetwork.NAME, name);
 		e.setProgress(0.6);
-		undoSupport.postEdit(new NetworkTitleEdit(sourceNetwork, oldTitle));
 		
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new NetworkTitleEdit(sourceNetwork, oldTitle));
 		e.setProgress(1.0);
 	}
 }

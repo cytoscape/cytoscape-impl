@@ -1,30 +1,5 @@
 package org.cytoscape.task.internal.creation;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -46,6 +21,7 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.view.model.CyNetworkView;
@@ -57,6 +33,29 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	
@@ -69,6 +68,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private final CyEventHelper eventHelper;
 	private final RenderingEngineManager renderingEngineMgr;
 	protected final CyGroupManager groupMgr;
+	protected final CyServiceRegistrar serviceRegistrar;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
@@ -81,7 +81,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	                                        final CyApplicationManager appManager,
 	                                        final CyEventHelper eventHelper,
 	                                        final CyGroupManager groupMgr,
-	                                        final RenderingEngineManager renderingEngineMgr) {
+	                                        final RenderingEngineManager renderingEngineMgr,
+	                                        final CyServiceRegistrar serviceRegistrar) {
 		super(parentNetwork, netMgr, netViewMgr);
 
 		this.undoSupport = undoSupport;
@@ -93,6 +94,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		this.eventHelper = eventHelper;
 		this.groupMgr = groupMgr;
 		this.renderingEngineMgr = renderingEngineMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	abstract Set<CyNode> getNodes(CyNetwork net);
@@ -175,14 +177,15 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		
 		if (sourceView != null) {
 			NetworkViewRenderer networkViewRenderer = appMgr.getNetworkViewRenderer(sourceView.getRendererId());
-			if(networkViewRenderer != null) {
+			if (networkViewRenderer != null) {
 				sourceViewFactory = networkViewRenderer.getNetworkViewFactory();
 			}
 		}
 		
 		final CreateNetworkViewTask createViewTask = 
 			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
-				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView);
+				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView,
+				                        serviceRegistrar);
 		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
 			@Override
 			@SuppressWarnings("unchecked")
@@ -210,7 +213,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	}
 
 	private void addColumns(CyTable parentTable, CyTable subTable) {
-		List<CyColumn> colsToAdd = new ArrayList<CyColumn>();
+		List<CyColumn> colsToAdd = new ArrayList<>();
 
 		for (CyColumn col:  parentTable.getColumns())
 			if (subTable.getColumn(col.getName()) == null)

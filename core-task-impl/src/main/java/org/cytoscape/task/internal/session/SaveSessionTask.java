@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionSaveCancelledEvent;
+import org.cytoscape.session.events.SessionSavedEvent;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,60 +36,34 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import java.io.File;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionSaveCancelledEvent;
-import org.cytoscape.session.events.SessionSavedEvent;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
 public class SaveSessionTask extends AbstractTask {
 
-	private final CySessionWriterManager writerMgr;
-	private final RecentlyOpenedTracker tracker;
-	private final CySessionManager sessionMgr;
-	private final CyEventHelper eventHelper;
-
 	private CySessionWriter writer;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * setAcceleratorCombo(KeyEvent.VK_S, ActionEvent.CTRL_MASK);
 	 */
-	public SaveSessionTask(final CySessionWriterManager writerMgr,
-						   final CySessionManager sessionMgr,
-						   final RecentlyOpenedTracker tracker,
-						   final CyEventHelper eventHelper) {
-		super();
-
-		if (writerMgr == null)
-			throw new NullPointerException("CySessionWriterManager is null.");
-		if (sessionMgr == null)
-			throw new NullPointerException("CySessionManager is null.");
-		
-		this.writerMgr = writerMgr;
-		this.sessionMgr = sessionMgr;
-		this.tracker = tracker;
-		this.eventHelper = eventHelper;
+	public SaveSessionTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		CySession session = null;
 		File file = null;
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
 		try {
+			final CySessionManager sessionMgr = serviceRegistrar.getService(CySessionManager.class);
 			taskMonitor.setProgress(0.05);
 	
 			session = sessionMgr.getCurrentSession();
 			final String fileName = sessionMgr.getCurrentSessionFileName();
 			
 			file = new File(fileName);
-			writer = new CySessionWriter(writerMgr, session, file);
+			writer = new CySessionWriter(session, file, serviceRegistrar);
 			writer.run(taskMonitor);
 			
 			taskMonitor.setProgress(1.0);
@@ -93,7 +79,7 @@ public class SaveSessionTask extends AbstractTask {
 		if (!cancelled) {
 			// Fire event to tell others session has been saved to a file.
 			eventHelper.fireEvent(new SessionSavedEvent(this, session, file.getAbsolutePath()));
-			tracker.add(file.toURI().toURL());
+			serviceRegistrar.getService(RecentlyOpenedTracker.class).add(file.toURI().toURL());
 		}
 	}
 	
