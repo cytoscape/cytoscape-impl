@@ -1267,11 +1267,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,getEdgeTaskFactory,TaskFactory.class,getEdgeTaskFactoryProps);
 
 		GetNetworkAttributeTaskFactory getEdgeAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class);
+			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
 		Properties getEdgeAttributeTaskFactoryProps = new Properties();
 		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
 		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
 		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
+		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the attributes for the edges passed as parameters.");
+		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+		
 		registerService(bc,getEdgeAttributeTaskFactory,TaskFactory.class,getEdgeAttributeTaskFactoryProps);
 
 		GetPropertiesTaskFactory getEdgePropertiesTaskFactory = 
@@ -1434,7 +1438,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,getNetwork,TaskFactory.class,getNetworkTaskFactoryProps);
 
 		GetNetworkAttributeTaskFactory getNetworkAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class);
+			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
 		Properties getNetworkAttributeTaskFactoryProps = new Properties();
 		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
 		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
@@ -1546,7 +1550,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc,getNodeTaskFactory,TaskFactory.class,getNodeTaskFactoryProps);
 
 		GetNetworkAttributeTaskFactory getNodeAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class);
+			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
 		Properties getNodeAttributeTaskFactoryProps = new Properties();
 		getNodeAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
 		getNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");

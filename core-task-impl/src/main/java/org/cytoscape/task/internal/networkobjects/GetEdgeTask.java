@@ -44,7 +44,7 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	CyApplicationManager appMgr;
 	CyServiceRegistrar serviceRegistrar;
 	
-	@Tunable(description="Network to get edge from", context="nogui", longDescription="If this parameter isn't set, the current network used.", exampleStringValue="current")
+	@Tunable(description="Network to get edge from", context="nogui", longDescription="If this parameter isn't set, the current network is used.", exampleStringValue="current")
 	public CyNetwork network = null;
 
 	@Tunable(description="Edge name to match", context="nogui", longDescription="If this parameter is set, all other matching parameters are ignored.", exampleStringValue="Node 1 (interacts with) Node 2")
