@@ -25,7 +25,7 @@ public interface ColumnData {
 	public static ColumnData create(Class<?> primaryKeyType, Class<?> type, Class<?> listElementType, int defaultInitSize) {
 		if(Long.class.equals(primaryKeyType)) {
 			if(Integer.class.equals(type)) {
-				return new MapColumnWithEquationSupport((Map)new Long2IntOpenHashMap(defaultInitSize));
+				return new MapColumnWithEquationSupport((Map)new Long2IntOpenHashMap());
 			}
 		}
 		
