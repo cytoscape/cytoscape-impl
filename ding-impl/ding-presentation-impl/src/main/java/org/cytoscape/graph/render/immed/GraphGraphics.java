@@ -1286,6 +1286,7 @@ public final class GraphGraphics {
 				m_g2d.fill(arrow0);
 			else 
 			{
+				float strokeWidth = 0.25f;
 				m_g2d.setStroke(new BasicStroke(0.25f));
 				m_g2d.draw(arrow0);
 			}
@@ -1308,7 +1309,7 @@ public final class GraphGraphics {
 				m_g2d.fill(arrow1);
 			else 
 			{
-				m_g2d.setStroke(new BasicStroke(0.25f));
+				m_g2d.setStroke(new BasicStroke(0.025f));
 				m_g2d.draw(arrow1);
 			}
 			m_g2d.setTransform(m_currNativeXform);
@@ -1435,7 +1436,8 @@ public final class GraphGraphics {
 					((double) arrow1Size) / edgeThickness);
 
 			if (arrow1Cap != null) {
-				m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
+
+					m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
 						-cosTheta, x1Adj, y1Adj);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
@@ -1460,6 +1462,8 @@ public final class GraphGraphics {
 			else
 			{
 				m_g2d.setStroke(new BasicStroke(0.25f));
+				if ( arrow0Type == ArrowShapeVisualProperty.OPEN_CIRCLE )
+					m_g2d.setStroke(new BasicStroke(0.1f));
 				m_g2d.draw(arrow0);
 			}
 			m_g2d.setTransform(m_currNativeXform);
@@ -1480,6 +1484,8 @@ public final class GraphGraphics {
 			else
 			{
 				m_g2d.setStroke(new BasicStroke(0.25f));
+				if ( arrow1Type  == ArrowShapeVisualProperty.OPEN_CIRCLE )
+					m_g2d.setStroke(new BasicStroke(0.1f));
 				m_g2d.draw(arrow1);
 			}
 		m_g2d.setTransform(m_currNativeXform);
