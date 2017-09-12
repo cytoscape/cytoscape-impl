@@ -3,7 +3,6 @@ package org.cytoscape.model.internal.column;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,12 +10,12 @@ import java.util.Set;
 
 import org.cytoscape.model.CyRow;
 
-public class HashMapColumn implements ColumnData {
+class MapColumn implements ColumnData {
 
 	private final Map<Object,Object> attributes;
 	
-	public HashMapColumn(int defaultInitSize) {
-		attributes = new HashMap<>(defaultInitSize);
+	public MapColumn(Map<Object,Object> attributes) {
+		this.attributes = attributes;
 	}
 	
 	@Override
