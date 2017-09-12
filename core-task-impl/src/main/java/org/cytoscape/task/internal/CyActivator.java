@@ -1001,7 +1001,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNode.class);
+					cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1093,11 +1093,17 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyEdge.class);
+					cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Returns the attributes for the edges passed as parameters.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+		
+			
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1604,7 +1610,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNetwork.class);
+					cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -1817,122 +1823,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkTaskFactory.class, props);
 		}
-<<<<<<< HEAD
-		
-		// These are task factories that are only available to the command line
-
-		// NAMESPACE: edge
-		CreateNetworkAttributeTaskFactory createEdgeAttributeTaskFactory = 
-			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
-		                                        cyTableManagerServiceRef, CyEdge.class);
-		Properties createEdgeAttributeTaskFactoryProps = new Properties();
-		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
-		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		createEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
-		registerService(bc,createEdgeAttributeTaskFactory,TaskFactory.class,createEdgeAttributeTaskFactoryProps);
-
-		GetEdgeTaskFactory getEdgeTaskFactory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
-		Properties getEdgeTaskFactoryProps = new Properties();
-		getEdgeTaskFactoryProps.setProperty(COMMAND, "get");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get an edge");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be printed.");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-		getEdgeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "101");
-
-		registerService(bc,getEdgeTaskFactory,TaskFactory.class,getEdgeTaskFactoryProps);
-
-		GetNetworkAttributeTaskFactory getEdgeAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
-		Properties getEdgeAttributeTaskFactoryProps = new Properties();
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the attributes for the edges passed as parameters.");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-		getEdgeAttributeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
-		
-		registerService(bc,getEdgeAttributeTaskFactory,TaskFactory.class,getEdgeAttributeTaskFactoryProps);
-
-		GetPropertiesTaskFactory getEdgePropertiesTaskFactory = 
-			new GetPropertiesTaskFactory(cyApplicationManagerServiceRef, CyEdge.class, 
-			                             cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
-		Properties getEdgePropertiesTaskFactoryProps = new Properties();
-		getEdgePropertiesTaskFactoryProps.setProperty(COMMAND, "get properties");
-		getEdgePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		getEdgePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the visual properties for edges");
-		registerService(bc,getEdgePropertiesTaskFactory,TaskFactory.class,getEdgePropertiesTaskFactoryProps);
-
-		ListEdgesTaskFactory listEdges = new ListEdgesTaskFactory(cyApplicationManagerServiceRef);
-		Properties listEdgesTaskFactoryProps = new Properties();
-		listEdgesTaskFactoryProps.setProperty(COMMAND, "list");
-		listEdgesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		listEdgesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List edges");
-		registerService(bc,listEdges,TaskFactory.class,listEdgesTaskFactoryProps);
-
-		ListNetworkAttributesTaskFactory listEdgeAttributesTaskFactory = 
-			new ListNetworkAttributesTaskFactory(cyApplicationManagerServiceRef, 
-		                                cyTableManagerServiceRef, CyEdge.class);
-		Properties listEdgeAttributesTaskFactoryProps = new Properties();
-		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
-		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		listEdgeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the columns for edges");
-		registerService(bc,listEdgeAttributesTaskFactory,TaskFactory.class,listEdgeAttributesTaskFactoryProps);
-
-		ListPropertiesTaskFactory listEdgeProperties = 
-			new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
-		                                CyEdge.class, cyNetworkViewManagerServiceRef,
-		                                renderingEngineManagerServiceRef);
-		Properties listEdgePropertiesTaskFactoryProps = new Properties();
-		listEdgePropertiesTaskFactoryProps.setProperty(COMMAND, "list properties");
-		listEdgePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		listEdgePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for edges");
-		registerService(bc,listEdgeProperties,TaskFactory.class,listEdgePropertiesTaskFactoryProps);
-
-		RenameEdgeTaskFactory renameEdge = new RenameEdgeTaskFactory();
-		Properties renameEdgeTaskFactoryProps = new Properties();
-		renameEdgeTaskFactoryProps.setProperty(COMMAND, "rename");
-		renameEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		renameEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Rename an edge");
-		registerService(bc,renameEdge,TaskFactory.class,renameEdgeTaskFactoryProps);
-
-		SetNetworkAttributeTaskFactory setEdgeAttributeTaskFactory = 
-			new SetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class);
-		Properties setEdgeAttributeTaskFactoryProps = new Properties();
-		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND, "set attribute");
-		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		setEdgeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Change edge table values for an edge or set of edges");
-		registerService(bc,setEdgeAttributeTaskFactory,TaskFactory.class,setEdgeAttributeTaskFactoryProps);
-
-		SetPropertiesTaskFactory setEdgePropertiesTaskFactory = 
-			new SetPropertiesTaskFactory(cyApplicationManagerServiceRef, CyEdge.class, 
-		                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
-		Properties setEdgePropertiesTaskFactoryProps = new Properties();
-		setEdgePropertiesTaskFactoryProps.setProperty(COMMAND, "set properties");
-		setEdgePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "edge");
-		setEdgePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Change visual properties for a set of edges");
-		registerService(bc,setEdgePropertiesTaskFactory,TaskFactory.class,setEdgePropertiesTaskFactoryProps);
-
-		// NAMESPACE: group
-		{
-			AddToGroupTaskFactory factory = new AddToGroupTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty(COMMAND, "add");
-			props.setProperty(COMMAND_NAMESPACE, "group");
-			props.setProperty(COMMAND_DESCRIPTION, "Add nodes or edges to a group");
-			registerService(bc, factory, TaskFactory.class, props);
-		}
-
-		ListGroupsTaskFactory listGroupsTaskFactory = 
-			new ListGroupsTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
-		Properties listGroupsTFProps = new Properties();
-		listGroupsTFProps.setProperty(COMMAND, "list");
-		listGroupsTFProps.setProperty(COMMAND_NAMESPACE, "group");
-		listGroupsTFProps.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
-		registerService(bc,listGroupsTaskFactory,TaskFactory.class,listGroupsTFProps);
-
-=======
->>>>>>> develop
 		{
 			// Register as 3 types of service.
 			ConnectSelectedNodesTaskFactoryImpl factory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef,
@@ -1953,72 +1843,6 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		// ---------- COMMANDS ----------
 		// NAMESPACE: network
-<<<<<<< HEAD
-		AddTaskFactory addTaskFactory = new AddTaskFactory();
-		Properties addTaskFactoryProps = new Properties();
-		addTaskFactoryProps.setProperty(COMMAND, "add");
-		addTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		addTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add nodes and edges to a network (they must be in the current collection)");
-		registerService(bc,addTaskFactory,TaskFactory.class,addTaskFactoryProps);
-
-		AddEdgeTaskFactory addEdgeTaskFactory = new AddEdgeTaskFactory(visualMappingManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
-		Properties addEdgeTaskFactoryProps = new Properties();
-		addEdgeTaskFactoryProps.setProperty(COMMAND, "add edge");
-		addEdgeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		addEdgeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add an edge between two nodes");
-		registerService(bc,addEdgeTaskFactory,TaskFactory.class,addEdgeTaskFactoryProps);
-
-		AddNodeTaskFactory addNodeTaskFactory = new AddNodeTaskFactory(visualMappingManagerServiceRef,
-		                                                               cyNetworkViewManagerServiceRef, cyEventHelperRef);
-		Properties addNodeTaskFactoryProps = new Properties();
-		addNodeTaskFactoryProps.setProperty(COMMAND, "add node");
-		addNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		addNodeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add a new node to a network");
-		registerService(bc,addNodeTaskFactory,TaskFactory.class,addNodeTaskFactoryProps);
-
-		CreateNetworkAttributeTaskFactory createNetworkAttributeTaskFactory = 
-			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
-		                                        cyTableManagerServiceRef, CyNetwork.class);
-		Properties createNetworkAttributeTaskFactoryProps = new Properties();
-		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
-		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		createNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column in the network table");
-		registerService(bc,createNetworkAttributeTaskFactory,TaskFactory.class,createNetworkAttributeTaskFactoryProps);
-
-		DeselectTaskFactory deselectTaskFactory = new DeselectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef);
-		Properties deselectTaskFactoryProps = new Properties();
-		deselectTaskFactoryProps.setProperty(COMMAND, "deselect");
-		deselectTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		deselectTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Deselect nodes or edges in a network");
-		registerService(bc,deselectTaskFactory,TaskFactory.class,deselectTaskFactoryProps);
-
-		GetNetworkTaskFactory getNetwork = new GetNetworkTaskFactory(cyApplicationManagerServiceRef);
-		Properties getNetworkTaskFactoryProps = new Properties();
-		getNetworkTaskFactoryProps.setProperty(COMMAND, "get");
-		getNetworkTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		getNetworkTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Return a network");
-		registerService(bc,getNetwork,TaskFactory.class,getNetworkTaskFactoryProps);
-
-		GetNetworkAttributeTaskFactory getNetworkAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
-		Properties getNetworkAttributeTaskFactoryProps = new Properties();
-		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
-		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		getNetworkAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the value from a column for a network");
-		registerService(bc,getNetworkAttributeTaskFactory,TaskFactory.class,getNetworkAttributeTaskFactoryProps);
-
-		GetPropertiesTaskFactory getNetworkPropertiesTaskFactory = 
-			new GetPropertiesTaskFactory(cyApplicationManagerServiceRef, CyNetwork.class,
-		                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
-		Properties getNetworkPropertiesTaskFactoryProps = new Properties();
-		getNetworkPropertiesTaskFactoryProps.setProperty(COMMAND, "get properties");
-		getNetworkPropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "network");
-		getNetworkPropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the visual property value for a network");
-		registerService(bc,getNetworkPropertiesTaskFactory,TaskFactory.class,getNetworkPropertiesTaskFactoryProps);
-
-=======
->>>>>>> develop
 		{
 			NewNetworkCommandTaskFactory factory = new NewNetworkCommandTaskFactory(undoSupportServiceRef,
 					cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef, cyNetworkManagerServiceRef,
@@ -2039,225 +1863,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Return a network");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-<<<<<<< HEAD
-
-		// NAMESPACE: node
-		CreateNetworkAttributeTaskFactory createNodeAttributeTaskFactory = 
-			new CreateNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, 
-		                                        cyTableManagerServiceRef, CyNode.class);
-		Properties createNodeAttributeTaskFactoryProps = new Properties();
-		createNodeAttributeTaskFactoryProps.setProperty(COMMAND, "create attribute");
-		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		createNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
-		registerService(bc,createNodeAttributeTaskFactory,TaskFactory.class,createNodeAttributeTaskFactoryProps);
-
-		GetNodeTaskFactory getNodeTaskFactory = new GetNodeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
-		Properties getNodeTaskFactoryProps = new Properties();
-		getNodeTaskFactoryProps.setProperty(COMMAND, "get");
-		getNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		getNodeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get a node from a network");
-		getNodeTaskFactoryProps.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a node that matches the passed parameters. If multiple nodes are found, only one will be returned, and a warning will be printed.");
-		getNodeTaskFactoryProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
-		getNodeTaskFactoryProps.setProperty(COMMAND_EXAMPLE_JSON, "101");
-		registerService(bc,getNodeTaskFactory,TaskFactory.class,getNodeTaskFactoryProps);
-
-		GetNetworkAttributeTaskFactory getNodeAttributeTaskFactory = 
-			new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
-		Properties getNodeAttributeTaskFactoryProps = new Properties();
-		getNodeAttributeTaskFactoryProps.setProperty(COMMAND, "get attribute");
-		getNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		getNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get values from the node table");
-		registerService(bc,getNodeAttributeTaskFactory,TaskFactory.class,getNodeAttributeTaskFactoryProps);
-
-		GetPropertiesTaskFactory getNodePropertiesTaskFactory = 
-			new GetPropertiesTaskFactory(cyApplicationManagerServiceRef, CyNode.class,
-		                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
-		Properties getNodePropertiesTaskFactoryProps = new Properties();
-		getNodePropertiesTaskFactoryProps.setProperty(COMMAND, "get properties");
-		getNodePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		getNodePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get visual properties for a node");
-		registerService(bc,getNodePropertiesTaskFactory,TaskFactory.class,getNodePropertiesTaskFactoryProps);
-
-
-		ListNodesTaskFactory listNodes = new ListNodesTaskFactory(cyApplicationManagerServiceRef);
-		Properties listNodesTaskFactoryProps = new Properties();
-		listNodesTaskFactoryProps.setProperty(COMMAND, "list");
-		listNodesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		listNodesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the nodes in a network");
-		registerService(bc,listNodes,TaskFactory.class,listNodesTaskFactoryProps);
-
-		ListNetworkAttributesTaskFactory listNodeAttributesTaskFactory = 
-			new ListNetworkAttributesTaskFactory(cyApplicationManagerServiceRef, 
-		                                cyTableManagerServiceRef, CyNode.class);
-		Properties listNodeAttributesTaskFactoryProps = new Properties();
-		listNodeAttributesTaskFactoryProps.setProperty(COMMAND, "list attributes");
-		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		listNodeAttributesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List node columns");
-		registerService(bc,listNodeAttributesTaskFactory,TaskFactory.class,listNodeAttributesTaskFactoryProps);
-
-		ListPropertiesTaskFactory listNodeProperties = 
-			new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
-		                                CyNode.class, cyNetworkViewManagerServiceRef,
-		                                renderingEngineManagerServiceRef);
-		Properties listNodePropertiesTaskFactoryProps = new Properties();
-		listNodePropertiesTaskFactoryProps.setProperty(COMMAND, "list properties");
-		listNodePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		listNodePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List node visual properties");
-		registerService(bc,listNodeProperties,TaskFactory.class,listNodePropertiesTaskFactoryProps);
-
-		RenameNodeTaskFactory renameNode = new RenameNodeTaskFactory();
-		Properties renameNodeTaskFactoryProps = new Properties();
-		renameNodeTaskFactoryProps.setProperty(COMMAND, "rename");
-		renameNodeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		renameNodeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Rename a node");
-		registerService(bc,renameNode,TaskFactory.class,renameNodeTaskFactoryProps);
-
-		SetNetworkAttributeTaskFactory setNodeAttributeTaskFactory = 
-			new SetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class);
-		Properties setNodeAttributeTaskFactoryProps = new Properties();
-		setNodeAttributeTaskFactoryProps.setProperty(COMMAND, "set attribute");
-		setNodeAttributeTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		setNodeAttributeTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, 
-		                                             "Change node table values for a node or set of nodes");
-		registerService(bc,setNodeAttributeTaskFactory,TaskFactory.class,setNodeAttributeTaskFactoryProps);
-
-		SetPropertiesTaskFactory setNodePropertiesTaskFactory = 
-			new SetPropertiesTaskFactory(cyApplicationManagerServiceRef, CyNode.class,
-		                               cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
-		Properties setNodePropertiesTaskFactoryProps = new Properties();
-		setNodePropertiesTaskFactoryProps.setProperty(COMMAND, "set properties");
-		setNodePropertiesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "node");
-		setNodePropertiesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Set node visual properties");
-		registerService(bc,setNodePropertiesTaskFactory,TaskFactory.class,setNodePropertiesTaskFactoryProps);
-
-		// NAMESPACE: table
-		AddRowTaskFactory addRowTaskFactory = 
-			new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties addRowTaskFactoryProps = new Properties();
-		addRowTaskFactoryProps.setProperty(COMMAND, "add row");
-		addRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		addRowTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Add a new row to a table");
-		registerService(bc,addRowTaskFactory,TaskFactory.class,addRowTaskFactoryProps);
-
-		CreateColumnTaskFactory createColumnTaskFactory = new CreateColumnTaskFactory(serviceRegistrar);
-		Properties createColumnTaskFactoryProps = new Properties();
-		createColumnTaskFactoryProps.setProperty(COMMAND, "create column");
-		createColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		createColumnTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Create a new column in a table");
-		registerService(bc,createColumnTaskFactory,TaskFactory.class,createColumnTaskFactoryProps);
-
-		DeleteColumnCommandTaskFactory deleteColumnCommandTaskFactory = 
-			new DeleteColumnCommandTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties deleteColumnCommandTaskFactoryProps = new Properties();
-		deleteColumnCommandTaskFactoryProps.setProperty(COMMAND, "delete column");
-		deleteColumnCommandTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		deleteColumnCommandTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
-		registerService(bc,deleteColumnCommandTaskFactory,TaskFactory.class,deleteColumnCommandTaskFactoryProps);
-
-		DeleteRowTaskFactory deleteRowTaskFactory = 
-			new DeleteRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties deleteRowTaskFactoryProps = new Properties();
-		deleteRowTaskFactoryProps.setProperty(COMMAND, "delete row");
-		deleteRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		deleteRowTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Delete a row from a table");
-		registerService(bc,deleteRowTaskFactory,TaskFactory.class,deleteRowTaskFactoryProps);
-
-		GetColumnTaskFactory getColumnTaskFactory = 
-			new GetColumnTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties getColumnTaskFactoryProps = new Properties();
-		getColumnTaskFactoryProps.setProperty(COMMAND, "get column");
-		getColumnTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		getColumnTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Get the information about a table column");
-		registerService(bc,getColumnTaskFactory,TaskFactory.class,getColumnTaskFactoryProps);
-
-		GetRowTaskFactory getRowTaskFactory = 
-			new GetRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties getRowTaskFactoryProps = new Properties();
-		getRowTaskFactoryProps.setProperty(COMMAND, "get row");
-		getRowTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		getRowTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Return all values in a table row");
-		registerService(bc,getRowTaskFactory,TaskFactory.class,getRowTaskFactoryProps);
-
-		GetValueTaskFactory getValueTaskFactory = 
-			new GetValueTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef); 
-		Properties getValueTaskFactoryProps = new Properties();
-		getValueTaskFactoryProps.setProperty(COMMAND, "get value");
-		getValueTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		getValueTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Return a single value from a table");
-		registerService(bc,getValueTaskFactory,TaskFactory.class,getValueTaskFactoryProps);
-
-		ListColumnsTaskFactory listColumnsTaskFactory = 
-			new ListColumnsTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, 
-			                          cyNetworkTableManagerServiceRef);
-		Properties listColumnsTaskFactoryProps = new Properties();
-		listColumnsTaskFactoryProps.setProperty(COMMAND, "list columns");
-		listColumnsTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		listColumnsTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the columns in a table");
-		registerService(bc,listColumnsTaskFactory,TaskFactory.class,listColumnsTaskFactoryProps);
-
-		ListRowsTaskFactory listRowsTaskFactory = 
-			new ListRowsTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
-		Properties listRowsTaskFactoryProps = new Properties();
-		listRowsTaskFactoryProps.setProperty(COMMAND, "list rows");
-		listRowsTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		listRowsTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
-		registerService(bc,listRowsTaskFactory,TaskFactory.class,listRowsTaskFactoryProps);
-
-		ListTablesTaskFactory listTablesTaskFactory = 
-			new ListTablesTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, 
-			                          cyNetworkTableManagerServiceRef);
-		Properties listTablesTaskFactoryProps = new Properties();
-		listTablesTaskFactoryProps.setProperty(COMMAND, "list");
-		listTablesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		listTablesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
-		registerService(bc,listTablesTaskFactory,TaskFactory.class,listTablesTaskFactoryProps);
-
-		SetTableTitleTaskFactory setTableTitleTaskFactory = 
-			new SetTableTitleTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
-		Properties setTableTitleTaskFactoryProps = new Properties();
-		setTableTitleTaskFactoryProps.setProperty(COMMAND, "set title");
-		setTableTitleTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		setTableTitleTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
-		registerService(bc,setTableTitleTaskFactory,TaskFactory.class,setTableTitleTaskFactoryProps);
-
-		SetValuesTaskFactory setValuesTaskFactory = 
-			new SetValuesTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
-		Properties setValuesTaskFactoryProps = new Properties();
-		setValuesTaskFactoryProps.setProperty(COMMAND, "set values");
-		setValuesTaskFactoryProps.setProperty(COMMAND_NAMESPACE, "table");
-		setValuesTaskFactoryProps.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
-		registerService(bc,setValuesTaskFactory,TaskFactory.class,setValuesTaskFactoryProps);
-
-		// NAMESPACE: view
-		// ===============================
-		{
-			ExportNetworkViewTaskFactoryImpl factory = new ExportNetworkViewTaskFactoryImpl(
-					networkViewWriterManagerServiceRef, cyApplicationManagerServiceRef, tunableSetterServiceRef);
-			Properties props = new Properties();
-			props.setProperty(ID, "exportNetworkViewTaskFactory");
-			registerService(bc, factory, NetworkViewTaskFactory.class, props);
-			registerService(bc, factory, ExportNetworkViewTaskFactory.class, props);
-		}
-		{
-			CreateNetworkViewTaskFactoryImpl factory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyLayoutsServiceRef, cyEventHelperRef,
-					visualMappingManagerServiceRef, renderingEngineManagerServiceRef, cyApplicationManagerServiceRef);
-			Properties props = new Properties();
-			props.setProperty(ID, "createNetworkViewTaskFactory");
-			// No ENABLE_FOR because that is handled by the isReady() methdod of the task factory.
-			props.setProperty(PREFERRED_MENU, "Edit");
-			props.setProperty(TITLE, "Create Views");
-			props.setProperty(MENU_GRAVITY, "3.0");
-			props.setProperty(COMMAND, "create");
-			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network"); // TODO test again: for current network or selected ones?
-			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
-			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
-			registerService(bc, factory, TaskFactory.class, props); // for Commands
-			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
-		}
-=======
->>>>>>> develop
 		{
 			ListNetworksTaskFactory factory = new ListNetworksTaskFactory(cyNetworkManagerServiceRef);
 			Properties props = new Properties();
