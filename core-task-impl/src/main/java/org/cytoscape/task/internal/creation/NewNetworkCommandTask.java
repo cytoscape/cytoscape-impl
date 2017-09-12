@@ -1,5 +1,29 @@
 package org.cytoscape.task.internal.creation;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,64 +48,46 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.util.EdgeList;
-import org.cytoscape.command.util.NodeList;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
 
-	@Tunable(description="Name of new network", gravity=1.0, context="nogui")
+	@Tunable(description = "Name of new network", gravity = 1.0, context = "nogui")
 	public String networkName = null;
 
-	@Tunable(description="Source network", gravity=2.0, context="nogui")
+	@Tunable(description = "Source network", gravity = 2.0, context = "nogui")
 	public CyNetwork getsource() {
 		return parentNetwork;
 	}
-	public void setsource(CyNetwork network) { parentNetwork = network; }
+
+	public void setsource(CyNetwork network) {
+		parentNetwork = network;
+	}
 
 	public NodeList nodeList = new NodeList(null);
 
-	@Tunable(description="List of nodes for new network", gravity=3.0, context="nogui")
+	@Tunable(description = "List of nodes for new network", gravity = 3.0, context = "nogui")
 	public NodeList getnodeList() {
 		nodeList.setNetwork(parentNetwork);
 		return nodeList;
 	}
-  public void setnodeList(NodeList setValue) {}
+
+	public void setnodeList(NodeList setValue) {
+	}
 
 	public EdgeList edgeList = new EdgeList(null);
-	@Tunable(description="List of edges for new network", gravity=4.0, context="nogui")
+
+	@Tunable(description = "List of edges for new network", gravity = 4.0, context = "nogui")
 	public EdgeList getedgeList() {
 		edgeList.setNetwork(parentNetwork);
 		return edgeList;
 	}
-  public void setedgeList(EdgeList setValue) {}
 
-	@Tunable(description="Exclude connecting edges", gravity=5.0, context="nogui")
+	public void setedgeList(EdgeList setValue) {
+	}
+
+	@Tunable(description = "Exclude connecting edges", gravity = 5.0, context = "nogui")
 	public boolean excludeEdges = false;
 	
 	public NewNetworkCommandTask(final UndoSupport undoSupport, 
@@ -94,9 +100,10 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	                             final CyApplicationManager appManager,
 	                             final CyEventHelper eventHelper,
 	                             final CyGroupManager groupMgr,
-	                             final RenderingEngineManager renderingEngineMgr) {
+	                             final RenderingEngineManager renderingEngineMgr,
+	                             final CyServiceRegistrar serviceRegistrar) {
 		super(undoSupport, null, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr);
+		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 	}
 
 	/**
@@ -127,9 +134,9 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	Set<CyEdge> getEdges(final CyNetwork net) {
 		if (edges == null) {
 			if (edgeList != null && edgeList.getValue() != null)
-				edges = new HashSet<CyEdge>(edgeList.getValue());
+				edges = new HashSet<>(edgeList.getValue());
 			else
-				edges = new HashSet<CyEdge>();
+				edges = new HashSet<>();
 		}
 
 		if (!excludeEdges) {
@@ -151,6 +158,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	String getNetworkName() {
 		if (networkName != null)
 			return networkName;
+		
 		return super.getNetworkName();
 	}
 }

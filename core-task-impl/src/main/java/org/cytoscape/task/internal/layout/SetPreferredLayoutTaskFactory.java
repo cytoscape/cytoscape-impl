@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.layout;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +28,16 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class SetPreferredLayoutTaskFactory extends AbstractTaskFactory {
 
-	private final CyLayoutAlgorithmManager layouts;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SetPreferredLayoutTaskFactory(final CyLayoutAlgorithmManager layouts) {
-		this.layouts = layouts;
+	public SetPreferredLayoutTaskFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SetPreferredLayoutTask(layouts));
+		return new TaskIterator(new SetPreferredLayoutTask(serviceRegistrar));
 	}
 }

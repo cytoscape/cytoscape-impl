@@ -1,30 +1,5 @@
 package org.cytoscape.task.internal.creation;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
@@ -49,6 +24,7 @@ import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -59,6 +35,30 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class NewNetworkSelectedNodesEdgesTaskTest {
 	
@@ -78,11 +78,13 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	private CyApplicationManager appManager = mock(CyApplicationManager.class);
 	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
-
+	private CyLayoutAlgorithmManager layoutMgr = mock(CyLayoutAlgorithmManager.class);
+	
 	@Before
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+        when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
@@ -106,12 +108,11 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
 		List<CyNetwork> netListbeforeTask = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
 		
-		final NewNetworkSelectedNodesEdgesTask task =
-			new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot, cnvf, netmgr,
-			                                     networkViewManager, cyNetworkNaming,
-			                                     vmm, appManager, eventHelper, groupMgr, renderingEngineManager);
-		
-		assertNotNull("task is null!" , task);
+		final NewNetworkSelectedNodesEdgesTask task = new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot,
+				cnvf, netmgr, networkViewManager, cyNetworkNaming, vmm, appManager, eventHelper, groupMgr,
+				renderingEngineManager, serviceRegistrar);
+
+		assertNotNull("task is null!", task);
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(mock(TaskMonitor.class));
 		
