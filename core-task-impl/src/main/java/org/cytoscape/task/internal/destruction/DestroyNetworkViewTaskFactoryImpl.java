@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.destruction;
 
+import java.util.Collection;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
+import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,34 +31,18 @@ package org.cytoscape.task.internal.destruction;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- 
 
-
-import java.util.Collection;
-
-import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
-import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskIterator;
-
-
-/**
- * Implementation of DestroyNetworkViewTaskFactory.
- *
- */
 public class DestroyNetworkViewTaskFactoryImpl extends AbstractNetworkViewCollectionTaskFactory implements
 		DestroyNetworkViewTaskFactory {
 	
-	private final CyNetworkViewManager networkViewManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public DestroyNetworkViewTaskFactoryImpl(final CyNetworkViewManager networkViewManager) {
-		super();
-		this.networkViewManager = networkViewManager;
+	public DestroyNetworkViewTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(new DestroyNetworkViewTask(networkViews, networkViewManager));
+		return new TaskIterator(new DestroyNetworkViewTask(networkViews, serviceRegistrar));
 	}
 }

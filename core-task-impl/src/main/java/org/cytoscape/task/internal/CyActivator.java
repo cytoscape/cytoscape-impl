@@ -427,15 +427,19 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network"); // TODO test again: for current network or selected ones?
+			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Creates a new view for the passed network and returns the SUID of the new view. "
+					+ "If no networks are specified, it creates a view for the current network, if there is one.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
 			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props); // for Commands
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
-			DestroyNetworkViewTaskFactoryImpl factory = new DestroyNetworkViewTaskFactoryImpl(
-					cyNetworkViewManagerServiceRef);
+			DestroyNetworkViewTaskFactoryImpl factory = new DestroyNetworkViewTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Edit");
 			props.setProperty(TITLE, "Destroy Views");
@@ -443,7 +447,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(COMMAND, "destroy");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Destroy (delete) a network view");
+			props.setProperty(COMMAND_DESCRIPTION, "Destroy the selected network views");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Destroys all selected network views. If no views are selected, this command does nothing.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, DestroyNetworkViewTaskFactory.class, props);
 		}
@@ -1918,6 +1926,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new, empty session");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Destroys the current session and creates a new, empty one.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, NewSessionTaskFactory.class, props);
 		}
@@ -1946,6 +1957,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "open");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Open a session from a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Opens a session from a local file or URL.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1962,6 +1976,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "save");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Saves the current session to an existing file, which will be replaced."
+					+ " If this is a new session that has not been saved yet, use 'save as' instead.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1974,6 +1993,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "save as");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session to a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Saves the current session as a new file.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, SaveSessionAsTaskFactory.class, props);
 		}

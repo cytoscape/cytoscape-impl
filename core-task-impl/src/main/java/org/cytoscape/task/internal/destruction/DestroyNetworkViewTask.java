@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.destruction;
 
+import java.util.Collection;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +33,20 @@ package org.cytoscape.task.internal.destruction;
  * #L%
  */
 
-import java.util.Collection;
-
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 
-	private final CyNetworkViewManager networkViewManager;
-	
-	@Tunable(description="<html>The selected views will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true")
+	@Tunable(
+			description = "<html>The selected views will be lost.<br />Do you want to continue?</html>",
+			params = "ForceSetDirectly=true",
+			context = "gui"
+	)
 	public boolean destroyCurrentNetworkView = true;
 
-	public DestroyNetworkViewTask(final Collection<CyNetworkView> views, final CyNetworkViewManager networkViewManager) {
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public DestroyNetworkViewTask(Collection<CyNetworkView> views, CyServiceRegistrar serviceRegistrar) {
 		super(views);
-		this.networkViewManager = networkViewManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -51,10 +56,11 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 		
 		if (destroyCurrentNetworkView) {
 			tm.setProgress(0.0);
+			final CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 			viewCount = networkViews.size();
 			
 			for (final CyNetworkView n : networkViews) {
-				networkViewManager.destroyNetworkView(n);
+				viewManager.destroyNetworkView(n);
 				i++;
 				tm.setProgress((i / (double) viewCount));
 			}

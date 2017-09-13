@@ -81,8 +81,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 	private final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
-	private CyNetworkManager netMgr = null;
-	private CyNetworkViewManager netViewMgr = null;
+	private CyNetworkManager netMgr;
+	private CyNetworkViewManager netViewMgr;
 
 	private final Object lock = new Object();
 
@@ -494,6 +494,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 	private boolean setCurrentNetworkView() {
 		if (appMgr.getCurrentNetworkView() == null) {
+			getServices();
 			getNetworkView();
 			netViewMgr.addNetworkView(emptyView, true);
 			return true;
