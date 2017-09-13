@@ -51,16 +51,25 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 	public String getTitle() {
 		return "Open Session";
 	}
-	
-	@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
+
+	@Tunable(
+			description = "Session file to load:",
+			longDescription = "The path to the session file (.cys) to be loaded.",
+			exampleStringValue = "/Users/johndoe/Downloads/MySession.cys",
+			params = "fileCategory=session;input=true",
+			context = "nogui"
+	)
 	public File file;
-	@Tunable(description="URL from which to load the session file:", params="fileCategory=session;input=true")
+	
+	@Tunable(
+			description = "URL from which to load the session file:",
+			longDescription = "A URL that provides a session file.",
+			exampleStringValue = "/Users/johndoe/Downloads/MySession.cys",
+			params = "fileCategory=session;input=true",
+			context = "nogui"
+	)
 	public String url;
 
-	/**
-	 * Constructor.<br>
-	 * Add a menu item under "File" and set shortcut.
-	 */
 	public OpenSessionCommandTask(CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar);
 	}
@@ -136,7 +145,7 @@ public class OpenSessionCommandTask extends AbstractOpenSessionTask {
 		tm.setProgress(1.0);
 		tm.setStatusMessage("Session file " + fileName + " successfully loaded.");
 		
-		// Add this session file URL as the most recent file.
+		// Add this session file URL as the most recent file
 		if (file != null)
 			serviceRegistrar.getService(RecentlyOpenedTracker.class).add(file.toURI().toURL());
 	}

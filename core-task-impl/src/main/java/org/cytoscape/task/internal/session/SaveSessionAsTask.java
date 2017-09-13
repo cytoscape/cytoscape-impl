@@ -45,7 +45,13 @@ public class SaveSessionAsTask extends AbstractTask {
 		return "Save Session";
 	}
 
-	@Tunable(description = "Save Session as:", params = "fileCategory=session;input=false")
+	@Tunable(
+			description = "Save Session as:",
+			longDescription = "The path name of the file where the current session must be saved to.",
+			exampleStringValue = "/Users/johndoe/Downloads/MySession.cys",
+			required = true,
+			params = "fileCategory=session;input=false"
+	)
 	public File file;
 
 	private CySessionWriter writer;
@@ -59,18 +65,18 @@ public class SaveSessionAsTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		CySession session = null;
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
 		try {
-			taskMonitor.setProgress(0.05);
+			tm.setProgress(0.05);
 	
 			session = serviceRegistrar.getService(CySessionManager.class).getCurrentSession();
 			writer = new CySessionWriter(session, file, serviceRegistrar);
-			writer.run(taskMonitor);
+			writer.run(tm);
 			
-			taskMonitor.setProgress(1.0);
+			tm.setProgress(1.0);
 		
 			// Add this session file URL as the most recent file.
 			if (!file.getName().endsWith(".cys"))

@@ -1912,6 +1912,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new, empty session");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Destroys the current session and creates a new, empty one.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, NewSessionTaskFactory.class, props);
 		}
@@ -1940,6 +1943,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "open");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Open a session from a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Opens a session from a local file or URL.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1956,6 +1962,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "save");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Saves the current session to an existing file, which will be replaced."
+					+ " If this is a new session that has not been saved yet, use 'save as' instead.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1968,6 +1979,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "save as");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session to a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Saves the current session as a new file.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, SaveSessionAsTaskFactory.class, props);
 		}
