@@ -1009,7 +1009,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNode.class);
+					cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1094,18 +1094,24 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get an edge");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Returns an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be printed.");
+					"Returns an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyEdge.class);
+					cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Returns the attributes for the edges passed as parameters.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+		
+			
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1612,7 +1618,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNetwork.class);
+					cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
