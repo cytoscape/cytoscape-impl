@@ -57,6 +57,8 @@ import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TableTitleChangedEvent;
 import org.cytoscape.model.internal.column.ColumnData;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
+import org.cytoscape.model.internal.column.FastUtilColumnDataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +92,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	// name of the primary key column
 	private String primaryKey;
 	private 	Class<?> primaryKeyType;
+	private final ColumnDataFactory columnFactory;
 
 	private final CyEventHelper eventHelper;
 	private final Interpreter interpreter;
@@ -130,6 +133,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		currentlyActiveAttributes = new HashSet<>();
 		attributes = new HashMap<>();
+		columnFactory = new FastUtilColumnDataFactory();
 		
 		rows = new ConcurrentHashMap<>(defaultInitSize, 0.5f, 2);
 		types = new ConcurrentHashMap<>(16, 0.75f, 2);
@@ -154,7 +158,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		// for getMatchingRows()
 		
 		// MKTODO (this is very strange, why is the primary key column implemented as a map???)
-		attributes.put(normalizedPKName, ColumnData.create(primaryKeyType, primaryKeyType, null, defaultInitSize));
+		attributes.put(normalizedPKName, columnFactory.create(primaryKeyType, primaryKeyType, null, defaultInitSize));
 
 		virtualColumnMap = new HashMap<>();
 	}
@@ -443,7 +447,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							                              /* isPrimaryKey = */ false,
 							                              isImmutable,
 							                              defaultValue));
-			attributes.put(normalizedColName, ColumnData.create(primaryKeyType, type, null, defaultInitSize));
+			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, type, null, defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 		
@@ -483,7 +487,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(normalizedColName, ColumnData.create(primaryKeyType, List.class, listElementType, defaultInitSize));
+			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, List.class, listElementType, defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 
@@ -714,7 +718,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				final List list = (List)value;
 				if (!list.isEmpty())
 					checkType(list.get(0));
-				rawValue = new CyListImpl(type, new ArrayList(list), eventHelper, row, column, this);
+				List<?> listData = columnFactory.createList(type, list);
+				rawValue = new CyListImpl(type, listData, eventHelper, row, column, this);
 			} else if (!(value instanceof Equation)) {
 				throw new IllegalArgumentException("value is a " + value.getClass().getName()
 								   + " and not a List for column '"
@@ -1002,7 +1007,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
-			attributes.put(normalizedTargetName, ColumnData.create(primaryKeyType, sourceColumn.getType(), sourceColumn.getListElementType(), defaultInitSize));
+			attributes.put(normalizedTargetName, columnFactory.create(primaryKeyType, sourceColumn.getType(), sourceColumn.getListElementType(), defaultInitSize));
 			virtualColumnMap.put(normalizedTargetName, virtualColumn);
 			colList.add(types.get(normalizedTargetName));
 		}
