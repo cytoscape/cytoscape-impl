@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.destruction;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +41,20 @@ package org.cytoscape.task.internal.destruction;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-
-
 public class DestroyNetworkViewTaskTest {
 	
 	private final NetworkViewTestSupport support = new NetworkViewTestSupport();
 	
+	private CyServiceRegistrar serviceRegistrar;
 	private CyNetworkViewManager viewManager;
 	private TaskMonitor tm = mock(TaskMonitor.class);
 	
 	@Before
 	public void setUp() throws Exception {
 		viewManager = mock(CyNetworkViewManager.class);
+		
+		serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(viewManager);
 	}
 
 	@After
@@ -64,11 +69,10 @@ public class DestroyNetworkViewTaskTest {
 		views.add(view1);
 		views.add(view2);
 		
-		final DestroyNetworkViewTask task = new DestroyNetworkViewTask(views, viewManager);
+		final DestroyNetworkViewTask task = new DestroyNetworkViewTask(views, serviceRegistrar);
 		task.run(tm);
 		
 		verify(viewManager, times(1)).destroyNetworkView(view1);
 		verify(viewManager, times(1)).destroyNetworkView(view2);
 	}
-	
 }

@@ -427,15 +427,19 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network"); // TODO test again: for current network or selected ones?
+			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Creates a new view for the passed network and returns the SUID of the new view. "
+					+ "If no networks are specified, it creates a view for the current network, if there is one.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
 			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props); // for Commands
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
-			DestroyNetworkViewTaskFactoryImpl factory = new DestroyNetworkViewTaskFactoryImpl(
-					cyNetworkViewManagerServiceRef);
+			DestroyNetworkViewTaskFactoryImpl factory = new DestroyNetworkViewTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Edit");
 			props.setProperty(TITLE, "Destroy Views");
@@ -443,7 +447,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(COMMAND, "destroy");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Destroy (delete) a network view");
+			props.setProperty(COMMAND_DESCRIPTION, "Destroy the selected network views");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Destroys all selected network views. If no views are selected, this command does nothing.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, DestroyNetworkViewTaskFactory.class, props);
 		}

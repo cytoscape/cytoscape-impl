@@ -1,12 +1,49 @@
 package org.cytoscape.task.internal.creation;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkCollectionTask;
+import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +61,6 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkCollectionTask;
-import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class CreateNetworkViewTask extends AbstractNetworkCollectionTask 
                                    implements ObservableTask  {
 
@@ -74,12 +77,22 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyNetworkView sourceView;
-	private	List<CyNetworkView> result;
+	private	List<CyNetworkView> networkViews;
 
-	@Tunable(description = "Network to create a view for", context = "nogui")
+	@Tunable(
+			description = "Network to create a view for",
+			longDescription = "The network to create a view for, or leave it empty to use the current network.",
+			exampleStringValue = "SUID:52",
+			context = "nogui"
+	)
 	public CyNetwork network;
 
-	@Tunable(description = "Layout the resulting view?", context = "nogui")
+	@Tunable(
+			description = "Layout the resulting view?",
+			longDescription = "If true (default), the preferred layout will be applied to the new view. If false, no layout will be applied.",
+			exampleStringValue = "false",
+			context = "nogui"
+	)
 	public boolean layout = true;
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport,
@@ -90,8 +103,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final VisualMappingManager vmMgr,
 								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
-								 final Set<NetworkViewRenderer> viewRenderers) {
-		this(undoSupport, networks, null, netViewMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr, null);
+								 final Set<NetworkViewRenderer> viewRenderers,
+								 final CyServiceRegistrar serviceRegistrar) {
+		this(undoSupport, networks, null, netViewMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
+				serviceRegistrar);
 		
 		if (viewRenderers != null) {
 			this.viewRenderers.addAll(viewRenderers);
@@ -124,7 +139,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
 		this.serviceRegistrar = serviceRegistrar;
-		this.result = new ArrayList<>();
+		this.networkViews = new ArrayList<>();
 		this.viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
 			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
@@ -148,14 +163,14 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		
 		final Collection<CyNetwork> netList = network != null ? Collections.singletonList(network) : networks;
 		final int total = netList.size();
 		
-		taskMonitor.setTitle("Creating Network View" + (total == 1 ? "" : "s"));
-		taskMonitor.setStatusMessage("Creating " + total + " network view" + (total == 1 ? "" : "s") + "...");
+		tm.setTitle("Creating Network View" + (total == 1 ? "" : "s"));
+		tm.setStatusMessage("Creating " + total + " network view" + (total == 1 ? "" : "s") + "...");
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first
@@ -174,23 +189,23 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				if (netViewMgr.viewExists(n))
 					continue;
 				
-				final CyNetworkView view = createView(n, style, taskMonitor);
-				result.add(view);
+				final CyNetworkView view = createView(n, style, tm);
+				networkViews.add(view);
 				
 				if (curView == null && n.equals(curNet))
 					curView = view;
 				
-				taskMonitor.setStatusMessage("Network view successfully created for:  "
+				tm.setStatusMessage("Network view successfully created for:  "
 						+ n.getRow(n).get(CyNetwork.NAME, String.class));
 				i++;
-				taskMonitor.setProgress((i / (double) viewCount));
+				tm.setProgress((i / (double) viewCount));
 			}
 			
 			final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
 			final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
 			boolean setSelectedViews = false;
 			
-			for (CyNetworkView view : result) {
+			for (CyNetworkView view : networkViews) {
 				if (selectedNetworks.contains(view.getModel())) {
 					selectedViews.add(view);
 					setSelectedViews = true;
@@ -207,7 +222,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				appMgr.setCurrentNetworkView(curView);
 		}
 		
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 	private final CyNetworkView createView(final CyNetwork network, final VisualStyle style, TaskMonitor tm)
@@ -248,7 +263,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			return view;
 		} catch (Exception e) {
 			throw new Exception("Could not create network view for network: "
-					+ network.getRow(network).get(CyNetwork.NAME, String.class), e);
+					+ (network != null ? network.getRow(network).get(CyNetwork.NAME, String.class) : "null"), e);
 		} finally {
 			if (undoSupport != null)
 				undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
@@ -282,21 +297,30 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object getResults(Class requestedType) {
-		// Support Collection<CyNetwork> or String
-		if (requestedType.equals(String.class)) {
+	public Object getResults(Class type) {
+		if (type == String.class) {
 			String strRes = "";
 			
-			for (CyNetworkView nv : result)
+			for (CyNetworkView nv : networkViews)
 				strRes += nv.toString() + "\n";
 			
 			if (strRes.length() > 0)
-				return strRes.substring(0, strRes.length() - 1); // This strips the trailing tab
+				return strRes.substring(0, strRes.length() - 1); // This strips the trailing line break
 			else
 				return strRes;
-		} else {
-			return result;
+		} else if (type == JSONResult.class) {
+			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
+			JSONResult res = () -> { return json; };
+			
+			return res;
 		}
+		
+		return new ArrayList<>(networkViews);
+	}
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}
 
 //	private static final class ApplyVisualStyleTask implements Runnable {
