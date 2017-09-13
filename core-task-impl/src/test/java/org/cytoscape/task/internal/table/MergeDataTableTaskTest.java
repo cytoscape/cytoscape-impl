@@ -64,7 +64,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -194,13 +194,15 @@ public class MergeDataTableTaskTest {
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1, support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(),
-				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager);
-		
+		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1,
+				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
+				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
+				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
+				mock(CyServiceRegistrar.class));
+
 		assertNotNull(newNetTask);
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
 		newNetTask.run(mock(TaskMonitor.class));
-		
 		
 		List<CyNetwork> secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
 		secondNetList.removeAll(firstnetlist);
@@ -242,17 +244,17 @@ public class MergeDataTableTaskTest {
 		//creating another subnetwork (subnet2) to check that bot virtual columns will be added
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1, support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(),
-				netMgr, mock(CyNetworkViewManager.class) , mock(CyNetworkNaming.class), mock(VisualMappingManager.class), mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager);
-		
+		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1,
+				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
+				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
+				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
+				mock(CyServiceRegistrar.class));
+
 		assertNotNull(newNetTask2);
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));
 		newNetTask2.run(mock(TaskMonitor.class));
-		
-	
-		
-		
-		List<CyNetwork> thirdNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+
+		List<CyNetwork> thirdNetList = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
 		thirdNetList.removeAll(secondNetList);
 		assertEquals(1, thirdNetList.size());
 		subnet2 = thirdNetList.get(0);		

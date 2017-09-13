@@ -6,10 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.cytoscape.model.json.CyJSONUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewCollectionTask;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -55,7 +55,9 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 
 	@Tunable(
 			description = "Style:",
-			longDescription = "Name of Style to be applied to the selected views."
+			longDescription = "Name of Style to be applied to the selected views.",
+			exampleStringValue = "Minimal",
+			required = true
 	)
 	public ListSingleSelection<VisualStyle> styles;
 	

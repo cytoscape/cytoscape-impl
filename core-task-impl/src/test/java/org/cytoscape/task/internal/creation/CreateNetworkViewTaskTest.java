@@ -1,12 +1,44 @@
 package org.cytoscape.task.internal.creation;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.ding.NetworkViewTestSupport;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,36 +56,6 @@ package org.cytoscape.task.internal.creation;
  * #L%
  */
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-
 public class CreateNetworkViewTaskTest {
 	
 	private final NetworkTestSupport support = new NetworkTestSupport();
@@ -68,6 +70,7 @@ public class CreateNetworkViewTaskTest {
 	@Mock private VisualMappingManager vmm;
 	@Mock private CyApplicationManager appManager;
 	@Mock private VisualStyle currentStyle;
+	@Mock private CyServiceRegistrar serviceRegistrar;
 
 	@Before
 	public void setUp() throws Exception {
@@ -81,8 +84,9 @@ public class CreateNetworkViewTaskTest {
 		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(support.getNetwork());
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
+				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
 
+		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
 		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class), eq(false));
 	}
@@ -98,6 +102,7 @@ public class CreateNetworkViewTaskTest {
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
 				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 		
+		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
 		verify(networkViewManager, times(2)).addNetworkView(any(CyNetworkView.class), eq(false));
 		verify(vmm, times(2)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));

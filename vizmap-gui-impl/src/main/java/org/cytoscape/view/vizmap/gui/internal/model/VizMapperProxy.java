@@ -58,6 +58,30 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
 import org.puremvc.java.multicore.patterns.proxy.Proxy;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("unchecked")
 public class VizMapperProxy extends Proxy
 							implements VisualStyleAddedListener, VisualStyleAboutToBeRemovedListener,
@@ -81,7 +105,7 @@ public class VizMapperProxy extends Proxy
 	
 	public VizMapperProxy(final ServicesUtil servicesUtil) {
 		// Create the data object--a SortedSet that will store all the Visual Styles
-		super(NAME, new TreeSet<VisualStyle>(
+		super(NAME, new TreeSet<>(
 				new Comparator<VisualStyle>() {
 					
 					@Override
@@ -103,7 +127,7 @@ public class VizMapperProxy extends Proxy
 	
 	public SortedSet<VisualStyle> getVisualStyles() {
 		synchronized (lock) {
-			return new TreeSet<VisualStyle>(visualStyles);
+			return new TreeSet<>(visualStyles);
 		}
 	}
 	
@@ -216,7 +240,7 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public Set<View<CyNode>> getSelectedNodeViews(final CyNetworkView netView) {
-		final Set<View<CyNode>> views = new HashSet<View<CyNode>>();
+		final Set<View<CyNode>> views = new HashSet<>();
 		
 		if (netView != null) {
 			final List<CyNode> nodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
@@ -233,7 +257,7 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public Set<View<CyEdge>> getSelectedEdgeViews(final CyNetworkView netView) {
-		final Set<View<CyEdge>> views = new HashSet<View<CyEdge>>();
+		final Set<View<CyEdge>> views = new HashSet<>();
 		
 		if (netView != null) {
 			final List<CyEdge> edges = CyTableUtil.getEdgesInState(netView.getModel(), CyNetwork.SELECTED, true);
@@ -250,7 +274,7 @@ public class VizMapperProxy extends Proxy
 	}
 	
 	public Set<CyNetworkView> getNetworkViewsWithStyle(final VisualStyle style) {
-		final Set<CyNetworkView> views = new HashSet<CyNetworkView>();
+		final Set<CyNetworkView> views = new HashSet<>();
 		
 		if (style != null) {
 			final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
@@ -329,6 +353,11 @@ public class VizMapperProxy extends Proxy
 	
 	@Override
 	public void handleEvent(final VisualStyleChangedEvent e) {
+		synchronized (lock) {
+			if (ignoreStyleEvents)
+				return;
+		}
+		
 		if (cytoscapeStarted && !loadingSession)
 			sendNotification(VISUAL_STYLE_UPDATED, e.getSource());
 	}

@@ -38,6 +38,7 @@ import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -71,13 +72,14 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private final VisualMappingManager vmMgr;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	private final CyNetworkView sourceView;
 	private	List<CyNetworkView> result;
 
-	@Tunable(description="Network to create a view for", context="nogui")
+	@Tunable(description = "Network to create a view for", context = "nogui")
 	public CyNetwork network;
 
-	@Tunable(description="Layout the resulting view?", context="nogui")
+	@Tunable(description = "Layout the resulting view?", context = "nogui")
 	public boolean layout = true;
 
 	public CreateNetworkViewTask(final UndoSupport undoSupport,
@@ -108,7 +110,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final VisualMappingManager vmMgr,
 								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
-								 final CyNetworkView sourceView) {
+								 final CyNetworkView sourceView,
+								 final CyServiceRegistrar serviceRegistrar) {
 		super(networks);
 
 		this.undoSupport = undoSupport;
@@ -120,6 +123,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
 		this.sourceView = sourceView;
+		this.serviceRegistrar = serviceRegistrar;
 		this.result = new ArrayList<>();
 		this.viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
@@ -137,9 +141,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final CyEventHelper eventHelper,
 								 final VisualMappingManager vmMgr,
 								 final RenderingEngineManager renderingEngineMgr,
-								 final CyApplicationManager appMgr) {
+								 final CyApplicationManager appMgr,
+								 final CyServiceRegistrar serviceRegistrar) {
 		this(undoSupport, networks, viewFactory, netViewMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
-				null);
+				null, serviceRegistrar);
 	}
 
 	@Override
@@ -205,7 +210,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		taskMonitor.setProgress(1.0);
 	}
 
-	private final CyNetworkView createView(final CyNetwork network, final VisualStyle style, TaskMonitor tMonitor) throws Exception {
+	private final CyNetworkView createView(final CyNetwork network, final VisualStyle style, TaskMonitor tm)
+			throws Exception {
 		final long start = System.currentTimeMillis();
 
 		try {
@@ -232,10 +238,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			if (sourceView != null) {
 				insertTasksAfterCurrentTask(
 						new CopyExistingViewTask(renderingEngineMgr, view, sourceView, style, null, null, true));
-			} else if (layoutMgr != null && layout == true) {
+			} else if (layout == true) {
 				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
-				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, layoutMgr));
+				insertTasksAfterCurrentTask(new ApplyPreferredLayoutTask(views, serviceRegistrar));
 //				executeInParallel(view, style, new ApplyPreferredLayoutTask(views, layoutMgr), tMonitor);
 			}
 			
@@ -275,19 +281,22 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 //	}
 	
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class requestedType) {
 		// Support Collection<CyNetwork> or String
 		if (requestedType.equals(String.class)) {
 			String strRes = "";
-			for (CyNetworkView nv: result) {
-				strRes += nv.toString()+"\n";
-			}
-			if(strRes.length() > 0)
-				return strRes.substring(0, strRes.length()-1); // This strips the trailing tab
+			
+			for (CyNetworkView nv : result)
+				strRes += nv.toString() + "\n";
+			
+			if (strRes.length() > 0)
+				return strRes.substring(0, strRes.length() - 1); // This strips the trailing tab
 			else
 				return strRes;
-		} else
+		} else {
 			return result;
+		}
 	}
 
 //	private static final class ApplyVisualStyleTask implements Runnable {

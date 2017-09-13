@@ -1,5 +1,8 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,14 +27,12 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -41,13 +42,16 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class AddEdgeTask extends AbstractTask implements ObservableTask {
+	
 	CyEdge newEdge;
 	CyEventHelper cyEventHelper;
 	CyNetworkViewManager networkViewManager;
 	VisualMappingManager visualMappingManager;
-
+	CyServiceRegistrar serviceRegistrar;
+	
 	@Tunable(description="Network to add a edge to", context="nogui")
 	public CyNetwork network = null;
 
@@ -63,10 +67,11 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Name of the edge to add", context="nogui")
 	public String name = null;
 
-	public AddEdgeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+	public AddEdgeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper, CyServiceRegistrar serviceRegistrar) {
 		cyEventHelper = eventHelper;
 		networkViewManager = viewManager;
 		visualMappingManager = vmm;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -139,7 +144,19 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 			if (newEdge == null)
 				return "<none>";
 			return newEdge.toString();
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (newEdge == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(newEdge);
+			}};
+			return res;
 		}
 		return newEdge;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyEdge.class, String.class, JSONResult.class);
 	}
 }

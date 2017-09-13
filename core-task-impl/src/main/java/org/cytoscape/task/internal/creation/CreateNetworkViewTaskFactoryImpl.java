@@ -34,6 +34,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -55,6 +56,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 	private final VisualMappingManager vmm;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	private final Set<NetworkViewRenderer> viewRenderers;
 
 	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport,
@@ -63,7 +65,8 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 											final CyEventHelper eventHelper,
 											final VisualMappingManager vmm,
 											final RenderingEngineManager renderingEngineMgr,
-											final CyApplicationManager appMgr) {
+											final CyApplicationManager appMgr,
+											final CyServiceRegistrar serviceRegistrar) {
 		this.undoSupport = undoSupport;
 		this.netViewMgr = netViewMgr;
 		this.layoutMgr = layoutMgr;
@@ -71,6 +74,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		this.vmm = vmm;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		viewRenderers = new HashSet<>();
 	}
 
@@ -80,7 +84,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
 
 		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(undoSupport, networks, factory, netViewMgr,
-				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr));
+				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, serviceRegistrar));
 	}
 	
 	@Override

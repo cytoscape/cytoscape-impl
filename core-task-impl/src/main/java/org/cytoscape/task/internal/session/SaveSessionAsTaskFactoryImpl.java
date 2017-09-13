@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,46 +34,24 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
 public class SaveSessionAsTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionAsTaskFactory {
 
-	private CySessionManager sessionMgr;
-	private CySessionWriterManager writerMgr;
-	private final RecentlyOpenedTracker tracker;
-	private final CyEventHelper cyEventHelper;
-	private final TunableSetter tunableSetter;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SaveSessionAsTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper, TunableSetter tunableSetter) {
-		this.sessionMgr = sessionMgr;
-		this.writerMgr = writerMgr;
-		this.tracker = tracker;
-		this.cyEventHelper = cyEventHelper;
-		this.tunableSetter = tunableSetter;
+	public SaveSessionAsTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+		return new TaskIterator(2, new SaveSessionAsTask(serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("file", file);
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+		return serviceRegistrar.getService(TunableSetter.class).createTaskIterator(createTaskIterator(), m);
 	}
 }

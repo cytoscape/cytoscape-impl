@@ -1,12 +1,19 @@
 package org.cytoscape.task.internal.layout;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +31,18 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-
 public class GetPreferredLayoutTask extends AbstractTask implements ObservableTask {
 
-	private final CyLayoutAlgorithmManager layouts;
 	private CyLayoutAlgorithm preferredLayout;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public GetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
-		this.layouts = layouts;
+	public GetPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) {
-		preferredLayout = layouts.getDefaultLayout();
+		preferredLayout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 
 		if (preferredLayout != null)
 			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout is " + preferredLayout.getName());
@@ -50,6 +51,7 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (preferredLayout == null)
 			return null;

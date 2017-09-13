@@ -1,12 +1,18 @@
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.task.write.SaveSessionTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +30,23 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.write.SaveSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class SaveSessionTaskFactoryImpl extends AbstractTaskFactory implements SaveSessionTaskFactory {
 
-	private final CySessionManager sessionMgr;
-	private final CySessionWriterManager writerMgr;
-	private final RecentlyOpenedTracker tracker;
-	private final CyEventHelper cyEventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public SaveSessionTaskFactoryImpl(CySessionWriterManager writerMgr, CySessionManager sessionMgr,
-			final RecentlyOpenedTracker tracker, final CyEventHelper cyEventHelper) {
-		this.sessionMgr = sessionMgr;
-		this.writerMgr = writerMgr;
-		this.tracker = tracker;
-		this.cyEventHelper = cyEventHelper;
+	public SaveSessionTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
 		// Check session file name is set or not.
-		final String sessionFileName = sessionMgr.getCurrentSessionFileName();		
+		final String sessionFileName = serviceRegistrar.getService(CySessionManager.class).getCurrentSessionFileName();		
 		
 		// If there is no file name, use Save As task.  Otherwise, overwrite the current session.
 		if (sessionFileName == null)
-			return new TaskIterator(new SaveSessionAsTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+			return new TaskIterator(new SaveSessionAsTask(serviceRegistrar));
 		else
-			return new TaskIterator(new SaveSessionTask(writerMgr, sessionMgr, tracker, cyEventHelper));
+			return new TaskIterator(new SaveSessionTask(serviceRegistrar));
 	}
 }

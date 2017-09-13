@@ -3,7 +3,6 @@ package org.cytoscape.filter.internal.filters.column;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JComboBox;
@@ -11,8 +10,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.cytoscape.filter.internal.ModelMonitor;
 import org.cytoscape.filter.internal.filters.column.ColumnElement.SelectedColumnType;
@@ -190,21 +187,22 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		private JComboBox<ComboItem<Predicate>> predicateComboBox;
 		private ColumnChooser columnChooser;
 		private JPanel spacerPanel;
-		private JPanel predicatePanel;
 		
 		private RangeChooser<Integer> intRangeChooser;
 		private RangeChooser<Double>  doubleRangeChooser;
 		
 		private BooleanComboBox numericNegateComboBox;
 		private BooleanComboBox booleanComboBox;
+		private BooleanComboBox anyMatchComboBox;
 		private JLabel booleanLabel;
 		private JPanel booleanPanel;
 		
-		private DocumentListener textFieldDocumentListener;
+		private DocumentListenerAdapter textFieldDocumentListener;
 		private ActionListener predicateComboBoxActionListener;
 		private ActionListener nameComboBoxActionListener;
 		private StateChangeListener numericNegateComboBoxStateChangeListener;
 		private StateChangeListener booleanComboBoxStateChangeListener;
+		private StateChangeListener anyMatchComboBoxStateChangeListener;
 		
 		
 		public View(Controller controller, ColumnFilter filter) {
@@ -226,6 +224,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			numericNegateComboBox = new BooleanComboBox(style, "is", "is not");
 			booleanComboBox = new BooleanComboBox(style, "true", "false");
+			anyMatchComboBox = new BooleanComboBox(style, "any element", "every element");
 			
 			booleanLabel = style.createLabel("is");
 			booleanPanel = new JPanel();
@@ -236,10 +235,6 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			spacerPanel = new JPanel();
 			spacerPanel.setOpaque(false);
-			
-			predicatePanel = new JPanel();
-			predicatePanel.setOpaque(false);
-			predicatePanel.setLayout(new GridBagLayout());
 			
 			intRangeChooser    = controller.intChooserController.getRangeChooser();
 			doubleRangeChooser = controller.doubleChooserController.getRangeChooser();
@@ -278,7 +273,12 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			case STRING:
 				textField.setText((String)criterion);
 				predicateComboBox.setSelectedItem(new ComboItem<>(filter.getPredicate()));
-				handleStringColumnSelected();
+				if(column.isList()) {
+					anyMatchComboBox.setState(filter.getAnyMatch());
+					handleStringListColumnSelected();
+				} else {
+					handleStringColumnSelected();
+				}
 				break;
 			case INTEGER:
 				refreshRangeUI(true,  (Number[])criterion, column, controller.intChooserController);
@@ -313,7 +313,12 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			
 			numericNegateComboBox.setState(filter.getPredicate() != Predicate.IS_NOT_BETWEEN);
 			
-			handleNumericColumnSelected(isInt);
+			if(column.isList()) {
+				anyMatchComboBox.setState(filter.getAnyMatch());
+				handleNumericListColumnSelected(isInt);
+			} else {
+				handleNumericColumnSelected(isInt);
+			}
 		}
 		
 		private void handleColumnSelected() {
@@ -367,35 +372,29 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 		
 		
 		private void addListeners() {
-			textField.getDocument().addDocumentListener(textFieldDocumentListener = new DocumentListenerAdapter() {
-				public void update(DocumentEvent event) {
-					filter.setCriterion(textField.getText());
-				}
+			textField.getDocument().addDocumentListener(textFieldDocumentListener = (event) -> {
+				filter.setCriterion(textField.getText());
 			});
 			
-			predicateComboBox.addActionListener(predicateComboBoxActionListener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
-					filter.setPredicate(selected.getValue());
-				}
+			predicateComboBox.addActionListener(predicateComboBoxActionListener = (event) -> {
+				ComboItem<Predicate> selected = predicateComboBox.getItemAt(predicateComboBox.getSelectedIndex());
+				filter.setPredicate(selected.getValue());
 			});
 			
-			columnChooser.addActionListener(nameComboBoxActionListener = new ActionListener() {
-				public void actionPerformed(ActionEvent event) {
-					handleColumnSelected();
-				}
+			columnChooser.addActionListener(nameComboBoxActionListener = (event) -> {
+				handleColumnSelected();
 			});
 			
-			numericNegateComboBox.addStateChangeListener(numericNegateComboBoxStateChangeListener = new StateChangeListener() {
-				public void stateChanged(boolean is) {
-					filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
-				}
+			numericNegateComboBox.addStateChangeListener(numericNegateComboBoxStateChangeListener = (is) -> {
+				filter.setPredicate(is ? Predicate.BETWEEN : Predicate.IS_NOT_BETWEEN);
 			});
 			
-			booleanComboBox.addStateChangeListener(booleanComboBoxStateChangeListener = new StateChangeListener() {
-				public void stateChanged(boolean isTrue) {
-					filter.setCriterion(isTrue);
-				}
+			booleanComboBox.addStateChangeListener(booleanComboBoxStateChangeListener = (isTrue) -> {
+				filter.setCriterion(isTrue);
+			});
+			
+			anyMatchComboBox.addStateChangeListener(anyMatchComboBoxStateChangeListener = (isTrue) -> {
+				filter.setAnyMatch(isTrue);
 			});
 		}
 		
@@ -406,6 +405,7 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			columnChooser.removeActionListener(nameComboBoxActionListener);
 			numericNegateComboBox.removeStateChangeListener(numericNegateComboBoxStateChangeListener);
 			booleanComboBox.removeStateChangeListener(booleanComboBoxStateChangeListener);
+			anyMatchComboBox.removeStateChangeListener(anyMatchComboBoxStateChangeListener);
 		}
 		
 		void handleNumericColumnSelected(boolean isInt) {
@@ -420,16 +420,54 @@ public class ColumnFilterViewFactory implements TransformerViewFactory {
 			validate();
 			repaint();
 		}
+		
+		void handleNumericListColumnSelected(boolean isInt) {
+			RangeChooser<?> rangeChooser = isInt ? intRangeChooser : doubleRangeChooser;
+			RangeChooserController<?> chooserController = isInt ? controller.intChooserController : controller.doubleChooserController;
+			removeAll();
+			JPanel predicatePanel = new JPanel();
+			predicatePanel.setOpaque(false);
+			predicatePanel.setLayout(new GridBagLayout());
+			predicatePanel.add(anyMatchComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(numericNegateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(spacerPanel, new GridBagConstraints(2, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			
+			add(columnChooser, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(predicatePanel, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(rangeChooser, new GridBagConstraints(0, 2, 2, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 3, 3), 0, 0));
+			chooserController.setInteractive(isInteractive);
+			revalidate();
+			validate();
+			repaint();
+		}
 
 		void handleStringColumnSelected() {
 			removeAll();
-			predicatePanel.removeAll();
+			JPanel predicatePanel = new JPanel();
+			predicatePanel.setOpaque(false);
+			predicatePanel.setLayout(new GridBagLayout());
 			predicatePanel.add(columnChooser, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			predicatePanel.add(predicateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			predicatePanel.add(spacerPanel, new GridBagConstraints(2, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			add(predicatePanel, new GridBagConstraints(0, 0, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			add(textField, new GridBagConstraints(0, 1, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.invalidate();
+			validate();
+		}
+		
+		void handleStringListColumnSelected() {
+			removeAll();
+			JPanel predicatePanel = new JPanel();
+			predicatePanel.setOpaque(false);
+			predicatePanel.setLayout(new GridBagLayout());
+			predicatePanel.add(anyMatchComboBox, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(predicateComboBox, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			predicatePanel.add(spacerPanel, new GridBagConstraints(2, 0, 1, 1, Double.MIN_VALUE, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			
+			add(columnChooser, new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			add(predicatePanel, new GridBagConstraints(0, 1, 2, 1, 1, 0, GridBagConstraints.LINE_START, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			add(textField, new GridBagConstraints(0, 2, 1, 1, 1, 0, GridBagConstraints.BASELINE_LEADING, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			predicatePanel.invalidate();
 			validate();
 		}
