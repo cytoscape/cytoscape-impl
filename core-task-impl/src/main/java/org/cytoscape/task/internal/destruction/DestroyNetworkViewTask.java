@@ -36,11 +36,19 @@ import org.cytoscape.work.Tunable;
 public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 
 	@Tunable(
+			description = "Deprecated",
+			longDescription = "Deprecated since version 3.6.",
+			context = "nogui"
+	)
+	@Deprecated
+	public boolean destroyCurrentNetworkView = true;
+	
+	@Tunable(
 			description = "<html>The selected views will be lost.<br />Do you want to continue?</html>",
-			params = "ForceSetDirectly=true",
+			params = "ForceSetDirectly=true;ForceSetTitle=Destroy Views",
 			context = "gui"
 	)
-	public boolean destroyCurrentNetworkView = true;
+	public boolean confirm = true;
 
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -54,7 +62,7 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask {
 		int i = 0;
 		int viewCount;
 		
-		if (destroyCurrentNetworkView) {
+		if (confirm && destroyCurrentNetworkView) { // Also checks destroyCurrentNetworkView for backwards compatibility
 			tm.setProgress(0.0);
 			final CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 			viewCount = networkViews.size();
