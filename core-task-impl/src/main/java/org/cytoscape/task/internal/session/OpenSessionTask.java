@@ -97,7 +97,7 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 	
 	public final class OpenSessionWithoutWarningTask extends AbstractTask {
 		
-		@Tunable(description="Session file to load:", params="fileCategory=session;input=true")
+		@Tunable(description="Session file to load:", params="fileCategory=session;input=true", context="gui")
 		public File file;
 		
 		@Override
@@ -165,8 +165,11 @@ public class OpenSessionTask extends AbstractOpenSessionTask {
 	
 	public final class OpenSessionWithWarningTask extends AbstractTask {
 		
-		@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>",
-				 params="ForceSetDirectly=true;ForceSetTitle=Open Session")
+		@Tunable(
+				description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>",
+				params = "ForceSetDirectly=true;ForceSetTitle=Open Session",
+				context = "gui"
+		)
 		public boolean loadSession;
 		
 		@Override
