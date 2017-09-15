@@ -76,6 +76,38 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 		throw new RuntimeException("Property "+propertyName+" doesn't exist");
 	}
 
+	protected class VisualPropertyObjectTuple {
+		public VisualProperty<Object> visualProperty;
+		public Object object;
+		
+		public VisualPropertyObjectTuple(VisualProperty<Object> visualProperty, Object object) {
+			this.visualProperty = visualProperty;
+			this.object = object;
+		}
+	}
+	
+	public static String getVisualPropertyJSON(VisualProperty<Object> vp, Object object) {
+		StringBuilder output = new StringBuilder("{\n");
+		output.append("   \"visualProperty\":\"" + vp.getIdString() + "\",\n");
+		output.append("   \"value\":");
+	final Class<?> type = vp.getRange().getType();
+		
+		if (type == String.class) {
+			output.append("\"" + object.toString() + "\"");
+		} else if (type == Boolean.class
+				|| type == Double.class
+				|| type == Integer.class
+				|| type == Long.class
+				|| type == Float.class
+				) {
+			output.append(object.toString());
+		} else {
+			output.append("\"" + vp.toSerializableString(object) + "\"");
+		}
+		output.append("\n}");
+		return output.toString(); 
+	}
+	
 	public Object getPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp) {
 		CyNetworkView networkView = getViewForNetwork(network);
 		Class<? extends CyIdentifiable> vpTargetType = vp.getTargetDataType();

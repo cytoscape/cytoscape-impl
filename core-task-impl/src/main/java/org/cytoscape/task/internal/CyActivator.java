@@ -1121,6 +1121,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the visual properties for edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
