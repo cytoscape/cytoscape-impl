@@ -40,8 +40,20 @@ public class NewSessionTask extends AbstractTask {
 		return "New Session";
 	}
 	
-	@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true;ForceSetTitle=New Session")
+	@Tunable(
+			description = "Deprecated",
+			longDescription = "Deprecated since version 3.6.",
+			context = "nogui"
+	)
+	@Deprecated
 	public boolean destroyCurrentSession = true;
+	
+	@Tunable(
+			description = "<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>",
+			params = "ForceSetDirectly=true;ForceSetTitle=New Session",
+			context = "gui"
+	)
+	public boolean confirm = true;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -51,7 +63,7 @@ public class NewSessionTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if (destroyCurrentSession) {
+		if (confirm && destroyCurrentSession) { // Also checks destroyCurrentSession for backwards compatibility
 			tm.setTitle("Create New Session");
 			tm.setProgress(0.0);
 			

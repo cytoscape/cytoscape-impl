@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.layout;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewCollectionTask;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +39,21 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.Collections;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkViewCollectionTask;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
-	private final CyLayoutAlgorithmManager layouts;
-	private final CyNetworkViewManager viewMgr;
+	@Tunable(description = "Network view to apply layout to", context = "nogui")
+	public CyNetwork networkSelected;
 
-	@Tunable(description="Network view to apply layout to", context="nogui")
-	public CyNetwork networkSelected = null;
-
-	public ApplyPreferredLayoutTask(final Collection<CyNetworkView> networkViews,
-			final CyLayoutAlgorithmManager layouts) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public ApplyPreferredLayoutTask(Collection<CyNetworkView> networkViews, CyServiceRegistrar serviceRegistrar) {
 		super(networkViews);
-		this.layouts = layouts;
-		this.viewMgr = null;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public ApplyPreferredLayoutTask(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, 
-	                                CyLayoutAlgorithmManager layouts) {
-		super(Collections.singletonList(appMgr.getCurrentNetworkView()));
-		this.layouts = layouts;
-		this.viewMgr = viewMgr;
+	public ApplyPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
+		this(Collections.singletonList(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()),
+				serviceRegistrar);
 	}
 
 	@Override
@@ -68,12 +61,14 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		tm.setProgress(0.0d);
 		tm.setStatusMessage("Applying Default Layout...");
 
+		final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 		Collection<CyNetworkView> views = networkViews;
 		
 		if (networkSelected != null)
 			views = viewMgr.getNetworkViews(networkSelected);
 		
-		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
+		final CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+		final CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
 		tm.setProgress(0.2);
 		
 		int i = 0;
@@ -84,7 +79,9 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 				//clearEdgeBends(view);
 				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
 						CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
-				insertTasksAfterCurrentTask(itr);
+				
+				if (itr != null) // For unit tests...
+					insertTasksAfterCurrentTask(itr);
 			} else {
 				throw new IllegalArgumentException("Couldn't find default layout algorithm");
 			}
@@ -96,24 +93,24 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		tm.setProgress(1.0);
 	}
 
-	/**
-	 * Clears edge bend values ASSIGNED TO EACH EDGE. Default Edge Bend value
-	 * will not be cleared.
-	 * 
-	 * TODO: should we clear mapping, too?
-	 */
-	private final void clearEdgeBends(final CyNetworkView networkView) {
-		final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
-		if (edgeViews.isEmpty())
-			return;
-
-		final View<CyEdge> first = edgeViews.iterator().next();
-		if (first.isSet(BasicVisualLexicon.EDGE_BEND) == false)
-			return;
-
-		for (final View<CyEdge> edgeView : edgeViews) {
-			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
-			edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
-		}
-	}
+//	/**
+//	 * Clears edge bend values ASSIGNED TO EACH EDGE. Default Edge Bend value
+//	 * will not be cleared.
+//	 * 
+//	 * TODO: should we clear mapping, too?
+//	 */
+//	private final void clearEdgeBends(final CyNetworkView networkView) {
+//		final Collection<View<CyEdge>> edgeViews = networkView.getEdgeViews();
+//		if (edgeViews.isEmpty())
+//			return;
+//
+//		final View<CyEdge> first = edgeViews.iterator().next();
+//		if (first.isSet(BasicVisualLexicon.EDGE_BEND) == false)
+//			return;
+//
+//		for (final View<CyEdge> edgeView : edgeViews) {
+//			edgeView.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
+//			edgeView.clearValueLock(BasicVisualLexicon.EDGE_BEND);
+//		}
+//	}
 }

@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.proxysettings;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +28,28 @@ package org.cytoscape.task.internal.proxysettings;
  * #L%
  */
 
-
-import java.util.Properties;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
-
 /**
  * Dialog for assigning proxy settings.
  */
 public class ProxySettingsTask extends AbstractTask {
 
-	private CyProperty<Properties> proxyProperties;
-	private final StreamUtil streamUtil;
-	private final CyEventHelper eventHelper;
-	
-	public ProxySettingsTask(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil, final CyEventHelper eventHelper) {
-		this.proxyProperties = proxyProperties;
-		this.streamUtil = streamUtil;
-		this.eventHelper = eventHelper;
-	}
-	
-	public void run(TaskMonitor taskMonitor) {
-		taskMonitor.setProgress(0.01);
-		taskMonitor.setTitle("Set proxy server");
-		taskMonitor.setStatusMessage("Setting proxy server...");
-	
-		// We run ProxySeting in another task, because TunableValidator is used. If we run
-		// it in the same task, Cytoscape will be frozen during validating process
-		ProxySettingsTask2 task = new ProxySettingsTask2(proxyProperties, this.streamUtil, this.eventHelper);
-		
-		this.insertTasksAfterCurrentTask(task);
+	private final CyServiceRegistrar serviceRegistrar;
 
-		taskMonitor.setProgress(1.0);
+	public ProxySettingsTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
+	@Override
+	public void run(TaskMonitor tm) {
+		tm.setProgress(0.01);
+		tm.setTitle("Set proxy server");
+		tm.setStatusMessage("Setting proxy server...");
+
+		// We run ProxySeting in another task, because TunableValidator is used.
+		// If we run it in the same task, Cytoscape will be frozen during validating process
+		ProxySettingsTask2 task = new ProxySettingsTask2(serviceRegistrar);
+		insertTasksAfterCurrentTask(task);
+
+		tm.setProgress(1.0);
 	}
 }
-

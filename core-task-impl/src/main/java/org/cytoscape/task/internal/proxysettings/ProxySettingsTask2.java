@@ -1,30 +1,5 @@
 package org.cytoscape.task.internal.proxysettings;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.io.IOException;
 import java.net.ProtocolException;
 import java.net.URL;
@@ -45,6 +20,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.PropertyUpdatedEvent;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -52,6 +28,29 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Dialog for assigning proxy settings.
@@ -71,59 +70,56 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	
 	private static final List<String> KEYS = Arrays.asList(PROXY_HOST, PROXY_PORT, PROXY_TYPE, PROXY_USERNAME, PROXY_PASSWORD);
 
-    private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
+	private static final List<String> PROXY_TYPES = Arrays.asList("direct", "http", "socks");
 
-	@Tunable(description="Type:")
-	public ListSingleSelection<String> type = new ListSingleSelection<String>(PROXY_TYPES);
+	@Tunable(description = "Type:")
+	public ListSingleSelection<String> type = new ListSingleSelection<>(PROXY_TYPES);
 
-	@Tunable(description="Proxy Server:",groups={"Options"},dependsOn="type!=direct")
-	public String hostname="";
+	@Tunable(description = "Proxy Server:", groups = { "Options" }, dependsOn = "type!=direct")
+	public String hostname = "";
 
-	@Tunable(description="Port:",groups={"Options"},dependsOn="type!=direct")
-	public int port=0;
+	@Tunable(description = "Port:", groups = { "Options" }, dependsOn = "type!=direct")
+	public int port;
 
-	@Tunable(description="User Name:", groups={"Options"},dependsOn="type!=direct")
+	@Tunable(description = "User Name:", groups = { "Options" }, dependsOn = "type!=direct")
 	public String userName;
-	
-	@Tunable(description="Password:", groups={"Options"},dependsOn="type!=direct")
+
+	@Tunable(description = "Password:", groups = { "Options" }, dependsOn = "type!=direct")
 	public String password;
 	
-	private final StreamUtil streamUtil;
-	private final CyEventHelper eventHelper;
+	private final Map<String, String> oldSettings;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private final Map<String,String> oldSettings;
-	private final CyProperty<Properties> proxyProperties;
-	private final Properties properties;
-
-
-	public ProxySettingsTask2(CyProperty<Properties> proxyProperties, final StreamUtil streamUtil, final CyEventHelper eventHelper) {
-		this.proxyProperties = proxyProperties;
-		this.streamUtil = streamUtil;
-		this.eventHelper = eventHelper;
-		oldSettings = new HashMap<String,String>();
-		properties = proxyProperties.getProperties();
+	public ProxySettingsTask2(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		oldSettings = new HashMap<>();
+		
 		try {
-            final String proxyType = properties.getProperty(PROXY_TYPE);
-            if (PROXY_TYPES.contains(proxyType)) {
-                type.setSelectedValue(proxyType);
-            } else {
-                type.setSelectedValue("direct");
-            }
-			hostname = properties.getProperty(PROXY_HOST);
-			port = Integer.parseInt(properties.getProperty(PROXY_PORT));
-			userName = properties.getProperty(PROXY_USERNAME);
+			final CyProperty<Properties> proxyProps = getProxyProperties();
+			final Properties props = proxyProps.getProperties();
+			final String proxyType = props.getProperty(PROXY_TYPE);
+			
+			if (PROXY_TYPES.contains(proxyType))
+				type.setSelectedValue(proxyType);
+			else
+				type.setSelectedValue("direct");
+
+			hostname = props.getProperty(PROXY_HOST);
+			port = Integer.parseInt(props.getProperty(PROXY_PORT));
+			userName = props.getProperty(PROXY_USERNAME);
+
 			try {
-				password = decode(properties.getProperty(PROXY_PASSWORD, null));
+				password = decode(props.getProperty(PROXY_PASSWORD, null));
 			} catch (IOException e) {
 				password = null;
 			}
 		} catch (IllegalArgumentException e) {
-            type.setSelectedValue("direct");
+			type.setSelectedValue("direct");
 			hostname = "";
 			port = 0;
 		}
 
-        assignSystemProperties();
+		assignSystemProperties();
 	}
 
     public void assignSystemProperties() {
@@ -146,26 +142,29 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
     }
 
 	private static String encode(String text) throws IOException {
-		if (text == null) {
+		if (text == null)
 			return null;
-		}
+		
 		return DatatypeConverter.printBase64Binary(text.getBytes("UTF-8"));
 	}
 	
 	private static String decode(String text) throws IOException {
-		if (text == null) {
+		if (text == null)
 			return null;
-		}
+		
 		return new String(DatatypeConverter.parseBase64Binary(text), "UTF-8");
 	}
 	
 	@Override
 	public ValidationState getValidationState(final Appendable errMsg) {
-	
-		storeProxySettings();
-
-		FutureTask<Exception> task = new FutureTask<Exception>(new TestProxySettings(streamUtil));
+		final CyProperty<Properties> proxyProps = getProxyProperties();
+		final Properties props = proxyProps.getProperties();
+		storeProxySettings(props);
+		
+		final StreamUtil streamUtil = serviceRegistrar.getService(StreamUtil.class);
+		final FutureTask<Exception> task = new FutureTask<>(new TestProxySettings(streamUtil));
 		Exception result = null;
+		
 		try {
 			new Thread(task).start();
 			result = task.get(10, TimeUnit.SECONDS);
@@ -177,7 +176,7 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 			result = e;
 		}
 
-		revertProxySettings();
+		revertProxySettings(props);
 
 		if (result == null)
 			return ValidationState.OK;
@@ -192,39 +191,51 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) {
-		taskMonitor.setProgress(0.0);
-		storeProxySettings();
-		for(String key: oldSettings.keySet()) {
-			if(!oldSettings.get(key).equals(properties.get(key))) {
-				eventHelper.fireEvent(new PropertyUpdatedEvent(proxyProperties));
+	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
+		
+		final CyProperty<Properties> proxyProps = getProxyProperties();
+		final Properties props = proxyProps.getProperties();
+		storeProxySettings(props);
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		
+		for (String key : oldSettings.keySet()) {
+			if (!oldSettings.get(key).equals(props.get(key))) {
+				eventHelper.fireEvent(new PropertyUpdatedEvent(proxyProps));
 				break;
 			}
 		}
-		oldSettings.clear();
 		
-		taskMonitor.setProgress(1.0);
+		oldSettings.clear();
+
+		tm.setProgress(1.0);
 	}
 
-	void storeProxySettings() {
+	private void storeProxySettings(Properties props) {
 		oldSettings.clear();
+		
 		for (String key : KEYS) {
-			if (properties.getProperty(key) != null)
-				oldSettings.put(key, properties.getProperty(key));
-			properties.remove(key);
+			if (props.getProperty(key) != null)
+				oldSettings.put(key, props.getProperty(key));
+			
+			props.remove(key);
 		}
 		
 		String proxyType = type.getSelectedValue(); 
+		
 		if ("direct".equals(proxyType)) {
-			properties.setProperty(PROXY_TYPE, proxyType);
+			props.setProperty(PROXY_TYPE, proxyType);
 		} else if ("http".equals(proxyType) || "socks".equals(proxyType)) {
-			properties.setProperty(PROXY_TYPE, proxyType);
-			properties.setProperty(PROXY_HOST, hostname);
-			properties.setProperty(PROXY_PORT, Integer.toString(port));
+			props.setProperty(PROXY_TYPE, proxyType);
+			props.setProperty(PROXY_HOST, hostname);
+			props.setProperty(PROXY_PORT, Integer.toString(port));
+			
 			if (userName != null && !userName.isEmpty() && password != null && !password.isEmpty()) {
-				properties.setProperty(PROXY_USERNAME, userName);
+				props.setProperty(PROXY_USERNAME, userName);
+				
 				try {
-					properties.setProperty(PROXY_PASSWORD, encode(password));
+					props.setProperty(PROXY_PASSWORD, encode(password));
 				} catch (IOException e) {
 					throw new IllegalArgumentException(e);
 				}
@@ -234,28 +245,26 @@ public class ProxySettingsTask2 extends AbstractTask implements TunableValidator
         assignSystemProperties();
 	}
 
-	void revertProxySettings() {
+	private void revertProxySettings(Properties props) {
 		for (String key : KEYS) {
-			properties.remove(key);
+			props.remove(key);
 			
 			if (oldSettings.containsKey(key))
-				properties.setProperty(key, oldSettings.get(key));
+				props.setProperty(key, oldSettings.get(key));
 		}
+		
 		oldSettings.clear();
-        
         assignSystemProperties();
 	}
-
-	void dumpSettings(String title) {
-		System.out.println(title);
-		for (String key : KEYS)
-			System.out.println(String.format("%s: %s", key, properties.getProperty(key)));
+	
+	@SuppressWarnings("unchecked")
+	private CyProperty<Properties> getProxyProperties() {
+		return serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 	}
 }
 
-
 final class TestProxySettings implements Callable<Exception> {
-	
+
 	static final String TEST_URL = "http://www.google.com/";
 	final StreamUtil streamUtil;
 
@@ -269,7 +278,9 @@ final class TestProxySettings implements Callable<Exception> {
 			final URL url = new URL(TEST_URL);
 			streamUtil.getInputStream(url).close();
 		} catch (ProtocolException e) {
-			return new IOException("Unable to validate proxy settings.  Please ensure your user name and password are correct (if required).", e);
+			return new IOException(
+					"Unable to validate proxy settings.  Please ensure your user name and password are correct (if required).",
+					e);
 		} catch (final Exception ex) {
 			return ex;
 		}
@@ -277,4 +288,3 @@ final class TestProxySettings implements Callable<Exception> {
 		return null;
 	}
 }
-
