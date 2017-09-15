@@ -52,6 +52,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -104,9 +105,9 @@ public class BrowserTableTest {
 	}
 	
 	void createTable() {
-		sharedTable = new CyTableImpl("shared table", CyNetwork.SUID, Long.class, false, true, SavePolicy.DO_NOT_SAVE, eventHelper, mock(Interpreter.class), 0);
+		sharedTable = new CyTableImpl("shared table", CyNetwork.SUID, Long.class, false, true, SavePolicy.DO_NOT_SAVE, eventHelper, ColumnDataFactory.createDefaultFactory(), mock(Interpreter.class), 0);
 		sharedTable.createColumn(SHARED_NAME, String.class, true);
-		table = new CyTableImpl("test table", CyNetwork.SUID, Long.class, true, true, SavePolicy.DO_NOT_SAVE , eventHelper, mock(Interpreter.class), 0);
+		table = new CyTableImpl("test table", CyNetwork.SUID, Long.class, true, true, SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), mock(Interpreter.class), 0);
 		table.createColumn(CyNetwork.NAME, String.class, true);
 		table.createColumn(CyNetwork.SELECTED, Boolean.class, true, false);
 		table.addVirtualColumn(SHARED_NAME, SHARED_NAME, sharedTable, CyNetwork.SUID, true);

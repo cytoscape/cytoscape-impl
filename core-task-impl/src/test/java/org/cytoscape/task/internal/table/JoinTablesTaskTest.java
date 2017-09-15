@@ -23,12 +23,7 @@ package org.cytoscape.task.internal.table;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -49,6 +44,7 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
@@ -201,7 +197,7 @@ public class JoinTablesTaskTest {
 
 	private final CyTable createTable(String col, String listCol) {
 		CyTable table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, SavePolicy.DO_NOT_SAVE,
-				eventHelper, new InterpreterImpl(), 2);
+				eventHelper, ColumnDataFactory.createDefaultFactory(), new InterpreterImpl(), 2);
 		table1.createColumn(col, String.class, false);
 
 		CyRow row1 = table1.getRow(node1Name);

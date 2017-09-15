@@ -16,13 +16,12 @@ import it.unimi.dsi.fastutil.longs.LongArrayList;
 
 public class FastUtilColumnDataFactory implements ColumnDataFactory {
 
-	private CanonicalStringPool stringPool;
+	private final CanonicalStringPool stringPool = new CanonicalStringPool();
 	
-	private synchronized CanonicalStringPool getStringPool() {
-		if(stringPool == null) {
-			stringPool = new CanonicalStringPool();
-		}
-		return stringPool;
+	@Override
+	public void clearCache() {
+		System.out.println("FastUtilColumnDataFactory.clearCache()");
+		stringPool.clear();
 	}
 	
 	@Override
@@ -38,7 +37,7 @@ public class FastUtilColumnDataFactory implements ColumnDataFactory {
 			} else if(Double.class.equals(type)) {
 				return new EquationSupport(new MapColumn((Map)new Long2DoubleOpenHashMap()));
 			} else if(String.class.equals(type)) {
-				return new StringSupport(getStringPool(), new MapColumn((Map)new Long2ObjectOpenHashMap()));
+				return new CanonicalStringPoolFilter(stringPool, new MapColumn((Map)new Long2ObjectOpenHashMap()));
 			} else if(Boolean.class.equals(type)) {
 				return new EquationSupport(new LongToBooleanColumn());
 			}
@@ -62,7 +61,6 @@ public class FastUtilColumnDataFactory implements ColumnDataFactory {
 			List<Object> canonData = new ArrayList<>(data.size());
 			for(Object value : data) {
 				if(value instanceof String) {
-					CanonicalStringPool stringPool = getStringPool();
 					value = stringPool.canonicalize((String)value);
 				}
 				canonData.add(value);
@@ -72,5 +70,5 @@ public class FastUtilColumnDataFactory implements ColumnDataFactory {
 		
 		return new ArrayList<>(data);
 	}
-	
+
 }

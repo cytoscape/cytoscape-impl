@@ -58,7 +58,6 @@ import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TableTitleChangedEvent;
 import org.cytoscape.model.internal.column.ColumnData;
 import org.cytoscape.model.internal.column.ColumnDataFactory;
-import org.cytoscape.model.internal.column.FastUtilColumnDataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +116,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						final boolean isMutable,
 						SavePolicy savePolicy,
 						final CyEventHelper eventHelper,
+						ColumnDataFactory columnFactory,
 						final Interpreter interpreter,
 						final int defaultInitSize) {
 		this.title = title;
@@ -126,6 +126,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		this.isImmutable = !isMutable;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.eventHelper = eventHelper;
+		this.columnFactory = columnFactory;
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
 		this.fireEvents = false;
@@ -133,7 +134,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		currentlyActiveAttributes = new HashSet<>();
 		attributes = new HashMap<>();
-		columnFactory = new FastUtilColumnDataFactory();
 		
 		rows = new ConcurrentHashMap<>(defaultInitSize, 0.5f, 2);
 		types = new ConcurrentHashMap<>(16, 0.75f, 2);
@@ -164,6 +164,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	}
 
 
+	void clearDuplicateStringCache() {
+		
+	}
+	
 	@Override
 	public void swap(final CyTable otherTable) {
 		synchronized (lock) {

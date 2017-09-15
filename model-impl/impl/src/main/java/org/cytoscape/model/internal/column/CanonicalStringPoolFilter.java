@@ -6,12 +6,12 @@ import java.util.Set;
 
 import org.cytoscape.model.CyRow;
 
-public class StringSupport implements ColumnData {
+public class CanonicalStringPoolFilter implements ColumnData {
 
 	private final CanonicalStringPool stringPool;
 	private final ColumnData delegate;
 	
-	public StringSupport(CanonicalStringPool stringPool, ColumnData delegate) {
+	public CanonicalStringPoolFilter(CanonicalStringPool stringPool, ColumnData delegate) {
 		this.stringPool = stringPool;
 		this.delegate = delegate;
 	}

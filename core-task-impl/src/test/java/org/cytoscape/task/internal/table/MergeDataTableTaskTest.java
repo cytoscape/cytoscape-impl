@@ -1,9 +1,6 @@
 package org.cytoscape.task.internal.table;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,6 +35,7 @@ import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
 import org.cytoscape.model.internal.CySubNetworkImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
@@ -174,7 +172,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 2);
 		table1.createColumn(table1sCol, String.class, false);
 		
 		CyRow row1 = table1.getRow(node1Name);
@@ -221,7 +219,7 @@ public class MergeDataTableTaskTest {
 				
 		//creating another table to map to the net1 only
 		table2 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 2);
 		table2.createColumn(table2sCol, String.class, false);
 		
 		CyRow row3 = table2.getRow(node1Name);
@@ -272,7 +270,7 @@ public class MergeDataTableTaskTest {
 		
 		//creating another table to map to the net1 only
 		table3 = new CyTableImpl("dummy table 3", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 2);
 		table3.createColumn(table2sCol, String.class, false);
 		table3.createColumn(table3sCol, String.class, false);
 		CyRow rowTemp;
@@ -285,7 +283,7 @@ public class MergeDataTableTaskTest {
 		
 		
 		table4 = new CyTableImpl("dummy table 4", "ID", String.class, true, true, 
-				SavePolicy.DO_NOT_SAVE , eventHelper, interpreter, 2);
+				SavePolicy.DO_NOT_SAVE , eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 2);
 		table4.createColumn(table2sCol, String.class, false);
 		table4.createColumn(table4sCol, String.class, false);
 		
