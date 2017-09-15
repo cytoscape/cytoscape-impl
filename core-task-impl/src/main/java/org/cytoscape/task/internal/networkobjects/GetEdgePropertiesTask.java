@@ -44,7 +44,6 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.EdgeTunable;
-import org.cytoscape.util.json.CyJSONUtil;
 
 public class GetEdgePropertiesTask extends AbstractPropertyTask implements ObservableTask {
 	
