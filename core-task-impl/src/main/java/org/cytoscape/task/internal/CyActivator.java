@@ -469,7 +469,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, "Export Network Image to File");
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Export a view to a graphics file");
+			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Exports the current view to a graphics file. "
+					+ "PNG and JPEG formats have options for scaling, while other formats only have the option 'exportTextAsFont'. "
+					+ "For the PDF format, exporting text as font does not work for two-byte characters such as Chinese or Japanese. "
+					+ "To avoid corrupted texts in the exported PDF, please set false to 'exportTextAsFont' "
+					+ "when exporting networks including those non-English characters."
+			);
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkImageTaskFactory.class, props);
 		}
