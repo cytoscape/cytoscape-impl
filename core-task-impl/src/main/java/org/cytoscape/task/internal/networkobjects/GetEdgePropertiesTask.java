@@ -106,31 +106,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 		}
 		else if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				StringBuilder output = new StringBuilder("[\n");
-				int count =  edgePropertiesMap.size();
-				for (Map.Entry<CyEdge, Map<String, VisualPropertyObjectTuple>> entry : edgePropertiesMap.entrySet()) {
-					output.append("   {\"SUID\":" + entry.getKey().getSUID() + ",\n");
-					output.append("    \"visualProperties\": [");
-					int count2 = entry.getValue().size();
-					for (Map.Entry<String, VisualPropertyObjectTuple> entry2 : entry.getValue().entrySet()) {
-						output.append(getVisualPropertyJSON(entry2.getValue().visualProperty, entry2.getValue().object).replace((CharSequence)"   ", (CharSequence)"         "));
-						if (count2 > 1) {
-							output.append(",");
-						}
-						output.append("\n");
-						count2--;
-					}
-					output.append("      ]");
-					output.append("   }\n");
-					if (count > 1) {
-						output.append(",");
-					}
-					output.append("\n");
-					count--;
-				}
-				output.append("]\n");
-				System.out.println("JSON Output: " + output.toString());
-				return output.toString();
+				return getVisualPropertiesJSON(edgePropertiesMap);
 			};
 			return res;
 		} else if (requestedType.equals(Map.class)) {
