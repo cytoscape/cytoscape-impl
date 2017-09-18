@@ -43,7 +43,10 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 	
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
-	@Tunable(description="Export text as font:")
+	@Tunable(
+			description = "Export text as font:",
+			longDescription = "If true (the default value), texts will be exported as fonts."
+	)
 	public boolean exportTextAsFont = true;
 
 	@ProvidesTitle

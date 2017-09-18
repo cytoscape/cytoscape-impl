@@ -97,14 +97,6 @@ import org.cytoscape.task.hide.HideUnselectedTaskFactory;
 import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
-import org.cytoscape.task.internal.creation.CloneNetworkTaskFactoryImpl;
-import org.cytoscape.task.internal.creation.CreateNetworkViewTaskFactoryImpl;
-import org.cytoscape.task.internal.creation.NewEmptyNetworkTaskFactoryImpl;
-import org.cytoscape.task.internal.creation.NewNetworkCommandTaskFactory;
-import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesEdgesTaskFactoryImpl;
-import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTaskFactoryImpl;
-import org.cytoscape.task.internal.destruction.DestroyNetworkTaskFactoryImpl;
-import org.cytoscape.task.internal.destruction.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
@@ -141,6 +133,12 @@ import org.cytoscape.task.internal.layout.GetPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.layout.SetPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.loaddatatable.LoadTableFileTaskFactoryImpl;
 import org.cytoscape.task.internal.loaddatatable.LoadTableURLTaskFactoryImpl;
+import org.cytoscape.task.internal.network.CloneNetworkTaskFactoryImpl;
+import org.cytoscape.task.internal.network.DestroyNetworkTaskFactoryImpl;
+import org.cytoscape.task.internal.network.NewEmptyNetworkTaskFactoryImpl;
+import org.cytoscape.task.internal.network.NewNetworkCommandTaskFactory;
+import org.cytoscape.task.internal.network.NewNetworkSelectedNodesEdgesTaskFactoryImpl;
+import org.cytoscape.task.internal.network.NewNetworkSelectedNodesOnlyTaskFactoryImpl;
 import org.cytoscape.task.internal.networkobjects.AddEdgeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.AddNodeTaskFactory;
 import org.cytoscape.task.internal.networkobjects.AddTaskFactory;
@@ -205,6 +203,8 @@ import org.cytoscape.task.internal.table.SetNetworkAttributeTaskFactory;
 import org.cytoscape.task.internal.table.SetTableTitleTaskFactory;
 import org.cytoscape.task.internal.table.SetValuesTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
+import org.cytoscape.task.internal.view.CreateNetworkViewTaskFactoryImpl;
+import org.cytoscape.task.internal.view.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.GetCurrentNetworkViewTaskFactory;
 import org.cytoscape.task.internal.view.ListNetworkViewsTaskFactory;
 import org.cytoscape.task.internal.view.SetCurrentNetworkViewTaskFactory;
@@ -469,7 +469,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, "Export Network Image to File");
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Export a view to a graphics file");
+			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Exports the current view to a graphics file. "
+					+ "PNG and JPEG formats have options for scaling, while other formats only have the option 'exportTextAsFont'. "
+					+ "For the PDF format, exporting text as font does not work for two-byte characters such as Chinese or Japanese. "
+					+ "To avoid corrupted texts in the exported PDF, please set false to 'exportTextAsFont' "
+					+ "when exporting networks including those non-English characters."
+			);
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkImageTaskFactory.class, props);
 		}
@@ -533,6 +542,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "fit selected");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit the selected nodes and edges into the view");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the view area.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
@@ -551,7 +563,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "fit content");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit all of the nodes and edges into the view");
-			registerService(bc,factory,NetworkTaskFactory.class, props);
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
 			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(cyApplicationManagerServiceRef);
