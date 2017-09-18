@@ -593,12 +593,14 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetCurrentNetworkViewTaskFactory factory = new SetCurrentNetworkViewTaskFactory(
-					cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+			SetCurrentNetworkViewTaskFactory factory = new SetCurrentNetworkViewTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set current");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Set the current view");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the current view, which can also be null.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
