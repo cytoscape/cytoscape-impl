@@ -569,20 +569,27 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
-			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(cyApplicationManagerServiceRef);
+			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get current");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the current view");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the current view or null if there is none.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "136");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNetworkViewsTaskFactory factory = new ListNetworkViewsTaskFactory(cyApplicationManagerServiceRef,
-					cyNetworkViewManagerServiceRef);
+			ListNetworkViewsTaskFactory factory = new ListNetworkViewsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "List all views");
+			props.setProperty(COMMAND_DESCRIPTION, "List views");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Returns a list with the passed network's views or an empty list if there are no views. "
+					+ "If a network is not specified, it assumes the current network.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 90, 136 ]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
