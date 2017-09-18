@@ -6,18 +6,23 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.cytoscape.model.CyRow;
 
 import com.google.common.collect.Sets;
 
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-
 public class LongToBooleanColumn implements ColumnData {
 
 	// need to track both true and false because cell values can also be unset
-	private final Set<Long> trueKeys  = new LongOpenHashSet();
-	private final Set<Long> falseKeys = new LongOpenHashSet();
+	private final Set<Long> trueKeys;
+	private final Set<Long> falseKeys;
+	
+	
+	LongToBooleanColumn(Supplier<Set<Long>> setFactory) {
+		trueKeys = setFactory.get();
+		falseKeys = setFactory.get();
+	}
 	
 	
 	@Override

@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.longs.Long2IntOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
 public class FastUtilColumnDataFactory implements ColumnDataFactory {
 
@@ -39,7 +40,7 @@ public class FastUtilColumnDataFactory implements ColumnDataFactory {
 			} else if(String.class.equals(type)) {
 				return new CanonicalStringPoolFilter(stringPool, new MapColumn((Map)new Long2ObjectOpenHashMap()));
 			} else if(Boolean.class.equals(type)) {
-				return new EquationSupport(new LongToBooleanColumn());
+				return new EquationSupport(new LongToBooleanColumn(() -> new LongOpenHashSet()));
 			}
 		}
 		
