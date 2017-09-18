@@ -542,6 +542,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "fit selected");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit the selected nodes and edges into the view");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the view area.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
@@ -560,7 +563,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "fit content");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit all of the nodes and edges into the view");
-			registerService(bc,factory,NetworkTaskFactory.class, props);
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
 			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(cyApplicationManagerServiceRef);
