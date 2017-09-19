@@ -1061,7 +1061,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyNode.class);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1152,20 +1152,22 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListEdgesTaskFactory factory = new ListEdgesTaskFactory(cyApplicationManagerServiceRef);
+			ListEdgesTaskFactory factory = new ListEdgesTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyEdge.class);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1175,6 +1177,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1655,7 +1658,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyNetwork.class);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "network");
