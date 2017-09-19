@@ -1,5 +1,8 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,19 +27,14 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
-public class RenameEdgeTask extends AbstractGetTask {
+public class RenameEdgeTask extends AbstractGetTask implements ObservableTask {
 	@Tunable(description="Network edge is in", context="nogui")
 	public CyNetwork network = null;
 
@@ -69,5 +67,19 @@ public class RenameEdgeTask extends AbstractGetTask {
 		CyEdge renamedEdge = getEdge(network, edge);
 		network.getRow(renamedEdge).set(CyNetwork.NAME, newName);
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Edge "+renamedEdge+" renamed to "+newName);
+	}
+	
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
 	}
 }

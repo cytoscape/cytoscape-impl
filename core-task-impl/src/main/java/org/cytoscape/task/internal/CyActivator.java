@@ -1111,6 +1111,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1186,6 +1187,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename an edge");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1195,6 +1197,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change edge table values for an edge or set of edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1204,6 +1207,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change visual properties for a set of edges");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
