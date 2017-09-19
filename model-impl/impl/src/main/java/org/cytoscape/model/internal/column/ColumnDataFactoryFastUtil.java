@@ -15,13 +15,12 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 
-public class FastUtilColumnDataFactory implements ColumnDataFactory {
+public class ColumnDataFactoryFastUtil implements ColumnDataFactory {
 
 	private final CanonicalStringPool stringPool = new CanonicalStringPool();
 	
 	@Override
 	public void clearCache() {
-		System.out.println("FastUtilColumnDataFactory.clearCache()");
 		stringPool.clear();
 	}
 	

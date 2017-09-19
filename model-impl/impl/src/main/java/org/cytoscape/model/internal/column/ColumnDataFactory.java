@@ -9,9 +9,9 @@ public interface ColumnDataFactory {
 	List<?> createList(Class<?> elementType, List<?> data);
 
 	void clearCache();
-	
+
 	
 	public static ColumnDataFactory createDefaultFactory() {
-		return new FastUtilColumnDataFactory();
+		return new ColumnDataFactoryFastUtil();
 	}
 }
