@@ -1,5 +1,8 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,24 +27,16 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.EdgeTunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
@@ -100,6 +95,19 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 				}
 			}
 		}
+	}
 	
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
 	}
 }

@@ -50,23 +50,23 @@ public class SaveSessionTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		CySession session = null;
 		File file = null;
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		
 		try {
 			final CySessionManager sessionMgr = serviceRegistrar.getService(CySessionManager.class);
-			taskMonitor.setProgress(0.05);
+			tm.setProgress(0.05);
 	
 			session = sessionMgr.getCurrentSession();
 			final String fileName = sessionMgr.getCurrentSessionFileName();
 			
 			file = new File(fileName);
 			writer = new CySessionWriter(session, file, serviceRegistrar);
-			writer.run(taskMonitor);
+			writer.run(tm);
 			
-			taskMonitor.setProgress(1.0);
+			tm.setProgress(1.0);
 			
 			// Add this session file URL as the most recent file.
 			if (!file.getName().endsWith(".cys"))

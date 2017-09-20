@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.export;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +16,30 @@ import org.cytoscape.work.swing.TunableUIHelper;
 import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * An abstract utility implementation of a Task that writes a user defined file
@@ -63,16 +63,18 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	public ListSingleSelection<String> options;
 
 	@ContainsTunables(offset = 1.0)
-	public CyWriter writer = null;
+	public CyWriter writer;
 	
 	@Override
 	public CyWriter getWriter() {
-		if(writer == null) {
+		if (writer == null) {
 			try {
 				writer = getWriter(getFileFilter(getExportFileFormat()));
+			} catch (Exception e) {
+				/* Intentionally empty. */
 			}
-			catch(Exception e) {}
 		}
+		
 		return writer;
 	}
 	
@@ -85,11 +87,12 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	 */
 	@Override
 	public final void setOutputFile(File f) {
-		if(f == null || fileExtensionIsOk(f))
+		if (f == null || fileExtensionIsOk(f)) {
 			outputFile = f;
-		else {
+		} else {
 			outputFile = addOrReplaceExtension(f);
-			if(helper != null)
+			
+			if (helper != null)
 				helper.update(this);
 		}
 	}
@@ -99,7 +102,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 		return options.getSelectedValue();
 	}
 	
-	protected TunableUIHelper helper = null;
+	protected TunableUIHelper helper;
 
 	/**
 	 * @param writerManager
@@ -116,9 +119,10 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 			public void selectionChanged(ListSelection<String> source) {
 				try {
 					writer = getWriter(getFileFilter(getExportFileFormat()));
-					if(outputFile != null)
+					
+					if (outputFile != null)
 						outputFile = addOrReplaceExtension(outputFile);
-					if(helper != null)
+					if (helper != null)
 						helper.refresh(TunableAbstractCyWriter.this);
 				} catch (Exception e) {
 					e.printStackTrace();

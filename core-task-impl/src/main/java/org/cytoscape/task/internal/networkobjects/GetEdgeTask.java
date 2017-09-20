@@ -44,16 +44,16 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	CyApplicationManager appMgr;
 	CyServiceRegistrar serviceRegistrar;
 	
-	@Tunable(description="Network to get edge from", context="nogui", longDescription="If this parameter isn't set, the current network used.", exampleStringValue="current")
+	@Tunable(description="Network to get edge from", context="nogui", longDescription="Selects a network by matching its name. If this parameter isn't set, the current network is used.", exampleStringValue="current")
 	public CyNetwork network = null;
 
-	@Tunable(description="Edge name to match", context="nogui", longDescription="If this parameter is set, all other matching parameters are ignored.", exampleStringValue="Node 1 (interacts with) Node 2")
+	@Tunable(description="Edge to match", context="nogui", longDescription="Selects an edge by name, or, if the parameter has the prefix ```suid:```, selects an edge by SUID. If this parameter is set, all other matching parameters are ignored.", exampleStringValue="Node 1 (interacts with) Node 2")
 	public String edge = null;
 
-	@Tunable(description="Name of source node to match", context="nogui", longDescription="Specifies that the edge matched must have this node as its source. This parameter must be used with the ```targetNode``` parameter to produce results.", exampleStringValue="Node 1")
+	@Tunable(description="Name of source node to match", context="nogui", longDescription="Selects a node by name, or, if the parameter has the prefix ```suid:```, selects a node by SUID. Specifies that the edge matched must have this node as its source. This parameter must be used with the ```targetNode``` parameter to produce results.", exampleStringValue="Node 1")
 	public String sourceNode = null;
 
-	@Tunable(description="Name of target node to match", context="nogui", longDescription="Specifies that the edge matched must have this node as its target. This parameter must be used with the ```sourceNode``` parameter to produce results.", exampleStringValue="Node 2")
+	@Tunable(description="Name of target node to match", context="nogui", longDescription="Selects a node by name, or, if the parameter has the prefix ```suid:```, selects a node by SUID. Specifies that the edge matched must have this node as its target. This parameter must be used with the ```sourceNode``` parameter to produce results.", exampleStringValue="Node 2")
 	public String targetNode = null;
 
 	@Tunable(description="Edge type to match", context="nogui", longDescription="Specifies that the edge matched must be of the specified type. This parameter must be used with the ```sourceNode``` and ```targetNode``` parameters to produce results.", exampleStringValue="any")

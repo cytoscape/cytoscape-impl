@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.view;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +36,39 @@ package org.cytoscape.task.internal.view;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+public class GetCurrentNetworkViewTask extends AbstractTask implements ObservableTask {
+	
+	private CyNetworkView view;
+	private final CyServiceRegistrar serviceRegistrar;
 
-public class GetCurrentNetworkViewTask extends AbstractTask 
-                                       implements ObservableTask  {
-	final CyApplicationManager appMgr;
-
-	public GetCurrentNetworkViewTask(CyApplicationManager appMgr) {
-		this.appMgr = appMgr;
+	public GetCurrentNetworkViewTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Current network view is "+appMgr.getCurrentNetworkView());
+		view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Current network view is " + view);
 	}
 
 	@Override
-	public Object getResults(Class requestedType) {
-		// Support Collection<CyNetwork> or String
-		if (requestedType.equals(String.class)) {
-			return appMgr.getCurrentNetworkView().toString();
-		} else
-			return appMgr.getCurrentNetworkView();
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object getResults(Class type) {
+		if (type == String.class)
+			return view != null ? view.toString() : null;
+		
+		if (type == JSONResult.class) {
+			String json = view != null ? serviceRegistrar.getService(CyJSONUtil.class).toJson(view) : null;
+			JSONResult res = () -> { return json; };
+			
+			return res;
+		}
+		
+		return view;
 	}
-
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNetworkView.class, String.class, JSONResult.class);
+	}
 }

@@ -43,7 +43,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.task.internal.creation.NewNetworkSelectedNodesOnlyTask;
+import org.cytoscape.task.internal.network.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;

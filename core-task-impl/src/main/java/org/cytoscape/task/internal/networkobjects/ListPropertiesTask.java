@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -37,7 +38,9 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListPropertiesTask extends AbstractPropertyTask implements ObservableTask {
 	Class <? extends CyIdentifiable> type;
@@ -68,6 +71,26 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 	}
 
 	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				StringBuilder stringBuilder = new StringBuilder("[");
+				int count = resultList.size();
+				for (String column : resultList) {
+					stringBuilder.append("\"" + column + "\"");
+					if (count > 1) {
+						stringBuilder.append(",");
+					}
+					count--;
+				}
+				stringBuilder.append("]");
+				return stringBuilder.toString();
+			};
+			return res;
+		}
 		return resultList;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
 }
