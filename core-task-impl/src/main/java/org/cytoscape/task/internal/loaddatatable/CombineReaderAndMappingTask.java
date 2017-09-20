@@ -38,9 +38,7 @@ import org.cytoscape.work.TunableValidator;
 public class CombineReaderAndMappingTask extends AbstractTask implements TunableValidator {
 
 	@ProvidesTitle
-	public String getTitle() {
-		return "Import Columns From Table";
-	}
+	public String getTitle() {		return "Import Columns From Table";	}
 
 	@ContainsTunables
 	public ImportTableDataTask importTableDataTask;
@@ -58,18 +56,13 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	public ValidationState getValidationState(Appendable errMsg) {
 		if (tableReader instanceof TunableValidator) {
 			ValidationState readVS = ((TunableValidator) tableReader).getValidationState(errMsg);
-
-			if (readVS != OK)
-				return readVS;
+			if (readVS != OK)		return readVS;
 		}
 
 		if (importTableDataTask instanceof TunableValidator) {
 			ValidationState readVS = ((TunableValidator) importTableDataTask).getValidationState(errMsg);
-
-			if (readVS != OK)
-				return readVS;
+			if (readVS != OK)		return readVS;
 		}
-
 		return OK;
 	}
 

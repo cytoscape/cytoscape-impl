@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -35,23 +36,27 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.RowTunable;
 
 public class ListRowsTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyRow> rowList = null;
 
 	@ContainsTunables
 	public RowTunable rowTunable = null;
 
-	public ListRowsTask(CyApplicationManager appMgr, CyTableManager tableMgr) {
+	public ListRowsTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
+		serviceRegistrar =reg;
 		rowTunable = new RowTunable(tableMgr);
 	}
 
@@ -83,12 +88,14 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, message);
 		}
 	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
 
 	public Object getResults(Class requestedType) {
 		if (rowList == null || rowList.size() == 0) return null;
-		if (requestedType.equals(String.class)) {
-			return DataUtils.convertData(rowList);
-		}
+		if (requestedType.equals(String.class)) 	return DataUtils.convertData(rowList);
+		if (requestedType.equals(JSONResult.class)) 	return DataUtils.convertData(rowList);
+
+		
 		return rowList;
 	}
 

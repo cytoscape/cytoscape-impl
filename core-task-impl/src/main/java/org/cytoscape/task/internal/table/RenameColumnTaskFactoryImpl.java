@@ -60,7 +60,5 @@ public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 	}
 
 	@Override
-	public boolean isReady(CyColumn column) {
-		return !column.isImmutable();
-	}
+	public boolean isReady(CyColumn column) {		return !column.isImmutable();	}
 }

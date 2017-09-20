@@ -44,7 +44,6 @@ public class DiscArrow extends AbstractArrow {
 		// create the arrow
 		final Ellipse2D.Double arrowE = new Ellipse2D.Double();
 		arrowE.setFrame(-1.0, -0.5, 1.0d, 1.0d);
-
 		arrow = arrowE;
 
 		// cap is calculated dynamically below!

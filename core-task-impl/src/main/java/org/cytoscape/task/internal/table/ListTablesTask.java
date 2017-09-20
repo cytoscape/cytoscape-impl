@@ -32,6 +32,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -42,6 +43,7 @@ import org.cytoscape.task.internal.utils.DataUtils;
 public class ListTablesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	final CyNetworkTableManager networkTableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyTable> tables;
 
 	@Tunable(description="Type of table", context="nogui")
@@ -54,10 +56,11 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 	public boolean includePrivate = true;
 
 	public ListTablesTask(CyApplicationManager appMgr, CyTableManager tableMgr, 
-	                      CyNetworkTableManager networkTableMgr) {
+	                      CyNetworkTableManager networkTableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
 		this.networkTableMgr = networkTableMgr;
+		serviceRegistrar =reg;
 		type = new ListSingleSelection<String>("network", "node", "edge", "unattached", "all");
 		type.setSelectedValue("all");
 	}

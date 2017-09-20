@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -33,26 +34,31 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListColumnsTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	final CyNetworkTableManager networkTableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyColumn> columns;
 
 	@ContainsTunables
 	public TableTunable table = null;
 
 	public ListColumnsTask(CyApplicationManager appMgr, CyTableManager tableMgr, 
-	                       CyNetworkTableManager networkTableMgr) {
+	                       CyNetworkTableManager networkTableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
+		serviceRegistrar =reg;
 		this.networkTableMgr = networkTableMgr;
 		table = new TableTunable(tableMgr);
 	}
@@ -61,33 +67,34 @@ public class ListColumnsTask extends AbstractTableDataTask implements Observable
 	public void run(final TaskMonitor taskMonitor) {
 		CyTable requestedTable = table.getTable();
 		if (requestedTable == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to find table '"+table.getTableString()+"'");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+table.getTableString()+"'");
 			return;
 		}
 
 		columns = new ArrayList<CyColumn> (requestedTable.getColumns());
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-		                        "Columns for table "+getTableDescription(requestedTable)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO,   "Columns for table "+getTableDescription(requestedTable)+":");
 		for (CyColumn column: columns)
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "         "+column.toString());
 	}
 
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class) && columns != null) {
-			return DataUtils.convertData(columns);
+		if (requestedType.equals(String.class) && columns != null)  return DataUtils.convertData(columns);
+		
+		if (requestedType.equals(JSONResult.class)) {
+			if (columns == null) 		return "{}";
+			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			return cyJSONUtil.cyColumnsToJson(columns);
 		}
 		return columns;
+	
 	}
 
 	private String getTableDescription(CyTable table) {
 		String result = "["+table.getSUID()+"]";
 		int rows = table.getRowCount();
 		int cols = table.getColumns().size();
-		if (table.isPublic())
-			result += " is a public table with ";
-		else
-			result += " is a private table with ";
+		result += " is a " + (table.isPublic() ? "public" : "private") + " table with ";
 		result += ""+rows+" rows and "+cols+" columns with title:\n";
 		result += "        "+table.getTitle();
 		return result;

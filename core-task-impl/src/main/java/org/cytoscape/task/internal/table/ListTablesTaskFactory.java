@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.table;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -34,18 +35,20 @@ public class ListTablesTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final CyNetworkTableManager cyNetworkTableManager;
-	
+	private final CyServiceRegistrar serviceRegistrar;
+
 	public ListTablesTaskFactory(CyApplicationManager appMgr, CyTableManager mgr,
-	                             CyNetworkTableManager networkTableManager) { 
+	                             CyNetworkTableManager networkTableManager, CyServiceRegistrar reg) { 
 		cyAppManager = appMgr;
 		cyTableManager = mgr;
 		cyNetworkTableManager = networkTableManager;
+		serviceRegistrar = reg;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ListTablesTask(cyAppManager, cyTableManager, cyNetworkTableManager));
+		return new TaskIterator(new ListTablesTask(cyAppManager, cyTableManager, cyNetworkTableManager, serviceRegistrar));
 	}
 
 }

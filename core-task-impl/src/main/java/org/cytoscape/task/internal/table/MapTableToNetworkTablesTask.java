@@ -94,9 +94,7 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 
 	@ProvidesTitle
-	public String getTitle() {
-		return "Import Data ";
-	}
+	public String getTitle() {	return "Import Data ";	}
 
 
 	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader, final CyRootNetworkManager rootNetworkManager ){
@@ -180,20 +178,16 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 		for (CyRootNetwork root: rootNetworkList ){
 			CyTable targetTable = getTable(root, tableType, CyNetwork.DEFAULT_ATTRS);
-			if (targetTable != null){
+			if (targetTable != null)
 				applyMapping(targetTable);
-			}
 		}
 	}
 
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace){
-		if (tableType == TableType.NODE_ATTR)
-			return network.getTable(CyNode.class, namespace);
-		if (tableType == TableType.EDGE_ATTR)
-			return network.getTable(CyEdge.class, namespace);
-		if (tableType == TableType.NETWORK_ATTR)
-			return network.getTable(CyNetwork.class, namespace);
+		if (tableType == TableType.NODE_ATTR)			return network.getTable(CyNode.class, namespace);
+		if (tableType == TableType.EDGE_ATTR)			return network.getTable(CyEdge.class, namespace);
+		if (tableType == TableType.NETWORK_ATTR)		return network.getTable(CyNetwork.class, namespace);
 
 		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR  + ", "+ TableType.NETWORK_ATTR +" or "+TableType.GLOBAL +".");
 		return null;
