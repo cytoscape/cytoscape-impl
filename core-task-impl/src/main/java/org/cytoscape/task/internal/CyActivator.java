@@ -1323,6 +1323,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From File");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a network from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			// props.setProperty(COMMAND, "load file");
 			// props.setProperty(COMMAND_NAMESPACE, "table");
 			// props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
@@ -1342,6 +1344,8 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(COMMAND, "load url");
 			// props.setProperty(COMMAND_NAMESPACE, "table");
 			// props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a network from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableURLTaskFactory.class, props);
 		}
@@ -1383,6 +1387,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "merge");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Merge tables together");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Merge tables together");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, MergeTablesTaskFactory.class, props);
 		}
@@ -1446,6 +1452,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Export a table to a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Creates a file with name <FILE> and writes the table there.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1455,6 +1464,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create table");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a new table to the network.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1464,35 +1476,46 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "destroy");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Destroy (delete) an entire table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the specified table from the network. ");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef);
+			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Delete column");
 			props.setProperty(COMMAND, "delete column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove a column from a table, specified by its name.  Returns the name of the column removed.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
 		{
-			RenameColumnTaskFactoryImpl factory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef,
-					tunableSetterServiceRef);
+			RenameColumnTaskFactoryImpl factory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Rename column");
 			props.setProperty(COMMAND, "rename column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a column in a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of a specified column in the table.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, RenameColumnTaskFactory.class, props);
 		}
 		{
-			AddRowTaskFactory factory = new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
+			AddRowTaskFactory factory = new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "add row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Add a new row to a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional row of empty cells to the current table");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1501,95 +1524,128 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column in a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional column of attribute values to the current table");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			DeleteColumnCommandTaskFactory factory = new DeleteColumnCommandTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "delete column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the specified column <col> ");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			DeleteRowTaskFactory factory = new DeleteRowTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "delete row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a row from a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			GetColumnTaskFactory factory = new GetColumnTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the information about a table column");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetRowTaskFactory factory = new GetRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef);
+			GetRowTaskFactory factory = new GetRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Return all values in a table row");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			GetValueTaskFactory factory = new GetValueTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get value");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Return a single value from a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ListColumnsTaskFactory factory = new ListColumnsTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef);
+					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list columns");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns in a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ListRowsTaskFactory factory = new ListRowsTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list rows");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			ListTablesTaskFactory factory = new ListTablesTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef);
+					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			SetTableTitleTaskFactory factory = new SetTableTitleTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set title");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			SetValuesTaskFactory factory = new SetValuesTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+					cyTableManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set values");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: network
@@ -1774,6 +1830,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "load url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML) from a url");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Loads a network over THE network.  Takes a valid URL and returns the SUID of the resulting table.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadNetworkURLTaskFactory.class, props);
 		}
