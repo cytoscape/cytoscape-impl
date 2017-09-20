@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;

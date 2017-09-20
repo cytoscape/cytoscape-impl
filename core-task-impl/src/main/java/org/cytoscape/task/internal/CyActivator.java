@@ -1111,6 +1111,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Creates a new edge column. If multiple edges are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
+			
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}

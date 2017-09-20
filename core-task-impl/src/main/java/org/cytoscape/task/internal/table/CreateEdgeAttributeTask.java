@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -57,6 +56,8 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 	@ContainsTunables
 	public ColumnTypeTunable columnTypeTunable;
 
+	private boolean success = false;
+	
 	public CreateEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
 		super(mgr);
 		this.appMgr = appMgr;
@@ -74,7 +75,7 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 			createColumn(edgeTable, columnTunable.getColumnName(), 
 		               columnTypeTunable.getColumnType(), 
 		               columnTypeTunable.getListElementType());
-
+			success = true;
 			if (columnTypeTunable.getColumnType() == "list")
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getListElementType()+" list column: "+columnTunable.getColumnName());
 			else
@@ -87,7 +88,12 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 	public Object getResults(Class type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				return "{\"columnName\": \"" + columnTunable.getColumnName()+"\"}";
+				if (success) {
+					return "{\"columnName\": \"" + columnTunable.getColumnName()+"\"}";
+				}
+				else {
+					return "{}";
+				}
 			};
 			return res;
 		}
