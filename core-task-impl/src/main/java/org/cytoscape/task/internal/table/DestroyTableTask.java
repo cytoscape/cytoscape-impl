@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
 
@@ -54,21 +56,26 @@ public class DestroyTableTask extends AbstractTableDataTask {
 		this.appMgr = appMgr;
 		tableTunable = new TableTunable(tableMgr);
 	}
-
+	String title;
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		CyTable table = tableTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to find table '"+tableTunable.getTableString()+"'");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
-		String title = table.getTitle()+" (suid:"+table.getSUID()+")";
+		title = table.getTitle();
+		String withId = title +" (suid:"+table.getSUID()+")";
 		cyTableManager.deleteTable(table.getSUID());
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-			                      "Deleted table '"+title+"'");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO,  "Deleted table '" + withId + "'");
 
 	}
 
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class)) 		return title;
+		if (requestedType.equals(JSONResult.class)) 	return title;
+		return null;
+	}
 }

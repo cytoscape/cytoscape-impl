@@ -137,24 +137,23 @@ public class DataUtils {
 			return "[]";
 
 		String result = "[";
-		for (Object v: data) {
-			result += v.toString()+",";
-		}
+		for (Object v: data)
+			result += v.toString() + ",";
 		return result.substring(0, result.length()-1)+"]";
 	}
 
 	public static Class getType(String type) {
 		if ("double".equalsIgnoreCase(type))
 			return Double.class;
-		else if ("integer".equalsIgnoreCase(type))
+		if ("integer".equalsIgnoreCase(type))
 			return Integer.class;
-		else if ("long".equalsIgnoreCase(type))
+		if ("long".equalsIgnoreCase(type))
 			return Long.class;
-		else if ("boolean".equalsIgnoreCase(type))
+		if ("boolean".equalsIgnoreCase(type))
 			return Boolean.class;
-		else if ("string".equalsIgnoreCase(type))
+		if ("string".equalsIgnoreCase(type))
 			return String.class;
-		else if ("list".equalsIgnoreCase(type))
+		if ("list".equalsIgnoreCase(type))
 			return List.class;
 
 		return String.class;
@@ -163,18 +162,17 @@ public class DataUtils {
 	public static String getType(Class type) {
 		if (type.equals(Double.class))
 			return "double";
-		else if (type.equals(Integer.class))
+		if (type.equals(Integer.class))
 			return "integer";
-		else if (type.equals(Long.class))
+		if (type.equals(Long.class))
 			return "long";
-		else if (type.equals(Boolean.class))
+		if (type.equals(Boolean.class))
 			return "boolean";
-		else if (type.equals(String.class))
+		if (type.equals(String.class))
 			return "string";
-		else if (type.equals(List.class))
+		if (type.equals(List.class))
 			return "list";
-		else 
-			return type.getName();
+		return type.getName();
 	}
 
 	public static String getIdentifiableType(Class <? extends CyIdentifiable> type) {
@@ -187,9 +185,9 @@ public class DataUtils {
 	public static Class<? extends CyIdentifiable> getIdentifiableClass(CyIdentifiable obj) {
 		if (obj instanceof CyNetwork)
 			return CyNetwork.class;
-		else if (obj instanceof CyNode)
+		if (obj instanceof CyNode)
 			return CyNode.class;
-		else if (obj instanceof CyEdge)
+		if (obj instanceof CyEdge)
 			return CyEdge.class;
 		return CyIdentifiable.class;
 	}

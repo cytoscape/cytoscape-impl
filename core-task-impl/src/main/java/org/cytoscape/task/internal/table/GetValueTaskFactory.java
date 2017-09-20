@@ -26,22 +26,25 @@ package org.cytoscape.task.internal.table;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class GetValueTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
-	
-	public GetValueTaskFactory(CyApplicationManager appMgr, CyTableManager mgr) { 
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public GetValueTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, CyServiceRegistrar reg) { 
 		cyAppManager = appMgr;
 		cyTableManager = mgr;
+		serviceRegistrar = reg;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GetValueTask(cyAppManager, cyTableManager));
+		return new TaskIterator(new GetValueTask(cyAppManager, cyTableManager, serviceRegistrar));
 	}
 
 }

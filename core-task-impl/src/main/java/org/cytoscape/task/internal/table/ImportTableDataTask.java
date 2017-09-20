@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.table;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -60,6 +61,7 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
@@ -116,13 +118,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			groups = { "Target Table Data" },
 			xorChildren = true
 	)
-	public ListSingleSelection<String> getWhereImportTable() {
-		return whereImportTable;
-	}
-
-	public void setWhereImportTable(ListSingleSelection<String> chooser) {
-		this.whereImportTable = chooser;
-	}
+	public ListSingleSelection<String> getWhereImportTable() {	return whereImportTable;	}
+	public void setWhereImportTable(ListSingleSelection<String> chooser) {	this.whereImportTable = chooser; }
 
 	/* --- [ NETWORK_COLLECTION ]------------------------------------------------------------------------------------ */
 	
@@ -134,9 +131,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			gravity = 2.0,
 			xorKey = NETWORK_COLLECTION
 	)
-	public ListSingleSelection<String> getTargetNetworkCollection() {
-		return targetNetworkCollection;
-	}
+	public ListSingleSelection<String> getTargetNetworkCollection() {	return targetNetworkCollection;	}
 
 	public void setTargetNetworkCollection(ListSingleSelection<String> roots) {
 		targetNetworkCollection = roots;
@@ -195,9 +190,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			gravity = 3.1,
 			xorKey = NETWORK_SELECTION
 	)
-	public ListMultipleSelection<String> getTargetNetworkList() {
-		return targetNetworkList;
-	}
+	public ListMultipleSelection<String> getTargetNetworkList() {	return targetNetworkList;	}
 
 	public void setTargetNetworkList(ListMultipleSelection<String> list) {
 		this.targetNetworkList = list;
@@ -212,9 +205,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			gravity = 3.2,
 			xorKey = NETWORK_SELECTION
 	)
-	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {
-		return dataTypeTargetForNetworkList;
-	}
+	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {	return dataTypeTargetForNetworkList;	}
 
 	public void setDataTypeTargetForNetworkList(ListSingleSelection<TableType> options) {
 		dataTypeTargetForNetworkList = options;
@@ -230,13 +221,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			xorKey = NETWORK_SELECTION,
 			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }
 	)
-	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {
-		return keyColumnForMappingNetworkList;
-	}
+	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	return keyColumnForMappingNetworkList;	}
 	
-	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {
-		this.keyColumnForMappingNetworkList = colList;
-	}
+	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {	keyColumnForMappingNetworkList = colList;	}
 	
 	@Tunable(
 			description = "Case Sensitive Key Values:",
@@ -264,15 +251,12 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<NetworkViewRenderer> renderers;
 	
 	@ProvidesTitle
-	public String getTitle() {
-		return "Import Data";
-	}
+	public String getTitle() {		return "Import Data";	}
 
 	public ImportTableDataTask(final CyTableReader reader, final CyServiceRegistrar serviceRegistrar) {
 		this.reader = reader;
 		this.serviceRegistrar = serviceRegistrar;
 		this.byReader = true;
-
 		init();
 	}
 
@@ -301,11 +285,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 		
 		if (byReader) {
-			if (this.reader != null && this.reader.getTables() != null)
+			if (reader != null && reader.getTables() != null)
 				newTableName = reader.getTables()[0].getTitle();
-		} else {
+		} else 
 			newTableName = globalTable.getTitle();
-		}
+		
 
 		if (networksPresent) {
 			final List<TableType> options = new ArrayList<>();
@@ -684,7 +668,15 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			tableMgr.addTable(globalTable);
 		}
 	}
-	
+
+public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
+public Object getResults(Class requestedType) {
+	if (requestedType.equals(CyColumn.class)) 		return globalTable;
+	if (requestedType.equals(String.class)) 		return newTableName;
+	if (requestedType.equals(JSONResult.class)) 	return newTableName;
+	return null;
+}
+
 	private TableType getDataTypeOptions() {
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
 			return dataTypeTargetForNetworkCollection.getSelectedValue();

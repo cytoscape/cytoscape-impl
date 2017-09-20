@@ -43,6 +43,8 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.DoubleVisualProperty;
+import org.cytoscape.view.presentation.property.IntegerVisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
@@ -630,10 +632,20 @@ public class GenericXGMMLWriter extends AbstractTask implements CyWriter {
     	Object value = view.getVisualProperty(vp);
     	
     	try {
+     		if (value instanceof Double && vp instanceof IntegerVisualProperty)
+    		{
+    			int val = (int) Math.round((Double) value);
+    			value = new Integer(val);
+    		}
+     		else if (value instanceof Integer && vp instanceof DoubleVisualProperty)
+    		{
+    			value = new Double((double) value);
+    		}
 	        value = vp.toSerializableString(value);
     	} catch (final ClassCastException e) {
         	logger.error("Error getting serializable string of Visual Property \"" + vp.getIdString() + "\" (value: " +
         			value + ")", e);
+        	System.err.println("Error getting serializable string of Visual Property \"" + vp.getIdString() + "\" (value: " + value + ")");
         	return;
         }
 	        

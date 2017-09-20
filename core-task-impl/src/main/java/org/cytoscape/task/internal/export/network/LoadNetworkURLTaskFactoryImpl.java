@@ -2,14 +2,18 @@ package org.cytoscape.task.internal.export.network;
 
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -79,4 +83,5 @@ public class LoadNetworkURLTaskFactoryImpl extends AbstractTaskFactory implement
 
 		return new TaskIterator(2, new LoadNetworkTask(reader, name, serviceRegistrar));
 	}
+	
 }

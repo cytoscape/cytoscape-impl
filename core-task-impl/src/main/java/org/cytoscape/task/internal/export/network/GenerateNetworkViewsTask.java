@@ -84,12 +84,8 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 			// Use original name if exists
 			String networkName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			
-			if (networkName == null || networkName.trim().length() == 0) {
-				networkName = name;
-				
-				if (networkName == null)
-					networkName = "? (Name is missing)";
-			}
+			if (networkName == null || networkName.trim().length() == 0) 
+				networkName = (name != null) ? name : "? (Name is missing)";
 			
 			net.getRow(net).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(networkName));
 			

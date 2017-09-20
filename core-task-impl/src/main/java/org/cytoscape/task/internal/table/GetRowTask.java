@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -34,16 +35,20 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class GetRowTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	CyRow row = null;
 
 	@ContainsTunables
@@ -52,9 +57,10 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 	@Tunable(description="Key value for row", context="nogui")
 	public String keyValue = null;
 
-	public GetRowTask(CyApplicationManager appMgr, CyTableManager tableMgr) {
+	public GetRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
+		serviceRegistrar = reg;
 		tableTunable = new TableTunable(tableMgr);
 	}
 
@@ -62,14 +68,12 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 	public void run(final TaskMonitor taskMonitor) {
 		CyTable table = tableTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to find table '"+tableTunable.getTableString()+"'");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
 		if (keyValue == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Key of desired row must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Key of desired row must be specified");
 			return;
 		}
 
@@ -80,20 +84,17 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 		try {
 			key = DataUtils.convertString(keyValue, keyType);
 		} catch (NumberFormatException nfe) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to convert "+keyValue+" to a "+keyType.getName()+": "+nfe.getMessage());
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to convert "+keyValue+" to a "+keyType.getName()+": "+nfe.getMessage());
 			return;
 		}
 
 		if (key == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to convert "+keyValue+" to a "+keyType.getName());
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to convert "+keyValue+" to a "+keyType.getName());
 			return;
 		}
 
 		if (!table.rowExists(key)) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Row "+keyValue+" doesn't exist");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Row "+keyValue+" doesn't exist");
 			return;
 		}
 
@@ -108,23 +109,26 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 				Class elementType = column.getListElementType();
 				List<?> valueList = row.getList(columnName, elementType);
 				if (valueList == null) continue;
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      "     "+columnName+"="+DataUtils.convertData(valueList));
+				taskMonitor.showMessage(TaskMonitor.Level.INFO,   "     "+columnName+"="+DataUtils.convertData(valueList));
 			} else {
 				Object value = row.get(columnName, columnType);
 				if (value == null) continue;
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      "     "+columnName+"="+DataUtils.convertData(value));
+				taskMonitor.showMessage(TaskMonitor.Level.INFO,  "     "+columnName+"="+DataUtils.convertData(value));
 			}
 			
 		}
 
 	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyRow.class, String.class, JSONResult.class);	}
 
 	public Object getResults(Class requestedType) {
 		if (row == null) return null;
-		if (requestedType.equals(String.class)) {
-			return row.toString();
+		if (requestedType.equals(String.class)) 			return row.toString();
+		if (row.equals(JSONResult.class)) {
+				JSONResult res = () -> {	if (row == null) 		return "{}";
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(row);
+			};
 		}
 		return row;
 	}

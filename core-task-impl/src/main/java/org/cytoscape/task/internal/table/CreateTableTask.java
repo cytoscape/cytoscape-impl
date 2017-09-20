@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -40,6 +41,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.cytoscape.task.internal.utils.DataUtils;
 
@@ -67,42 +69,36 @@ public class CreateTableTask extends AbstractTableDataTask implements Observable
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		if (keyColumn == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Name of key column must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Name of key column must be specified");
 			return;
 		}
 
 		Class keyType = DataUtils.getType(keyColumnType.getSelectedValue());
 		if (keyType == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Key column type must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Key column type must be specified");
 			return;
 		}
 
 		if (title == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Table title must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Table title must be specified");
 			return;
 		}
 
 		table = tableFactory.createTable(title, keyColumn, keyType, true, true);
 		if (table != null) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-				                      "Created table '"+table.toString()+"' (suid:"+table.getSUID()+")");
+			taskMonitor.showMessage(TaskMonitor.Level.INFO,  "Created table '"+table.toString()+"' (suid:"+table.getSUID()+")");
 			cyTableManager.addTable(table);
-		} else {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-				                      "Unable to create table'"+title+"'");
-		}
+		} else 
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to create table'"+title+"'");
+		
 
 	}
-
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyTable.class, String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (table == null) return null;
-		if (requestedType.equals(String.class)) {
-			return table.toString();
-		}
-		return table;
+		if (requestedType.equals(CyTable.class)) 				return table;
+		if (requestedType.equals(String.class)) 			return "" + table.getSUID();
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return "" + table.getSUID();	};	}
+		return null;
 	}
-
 }
