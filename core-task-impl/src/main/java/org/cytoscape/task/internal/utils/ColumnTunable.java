@@ -24,19 +24,16 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 
 public class ColumnTunable {
 	
-	@Tunable (description="Namespace for table", context="nogui")
+	@Tunable (description="Namespace for table", longDescription="Node, Edge, and Network objects support the '''default''', '''local''', and '''hidden''' namespaces. Root networks also support the '''shared''' namespace. Custom namespaces may be specified by Apps.", exampleStringValue="default", context="nogui")
 	public String namespace = "default";
 
-	@Tunable (description="Name of column", context="nogui")
+	@Tunable (description="Name of column", longDescription="Unique name of column", exampleStringValue="name", context="nogui")
 	public String column = null;
 
 	public ColumnTunable() {
