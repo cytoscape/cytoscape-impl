@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -32,6 +34,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class CollapseGroupTask extends AbstractGroupTask {
 	private List<CyGroup> groups;
@@ -91,6 +94,12 @@ public class CollapseGroupTask extends AbstractGroupTask {
 			tm.showMessage(TaskMonitor.Level.INFO, "Expanded "+collapsed+" groups");
 
 		tm.setProgress(1.0d);
+	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class))			return groupList;
+		if (requestedType.equals(JSONResult.class))  	return groupList;
+		return null;
 	}
 
 }

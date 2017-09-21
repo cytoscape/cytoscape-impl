@@ -32,6 +32,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -44,13 +45,15 @@ import org.cytoscape.work.undo.UndoSupport;
 public class RenameGroupTaskFactory extends AbstractTaskFactory {
 	private CyApplicationManager appMgr;
 	private CyGroupManager mgr;
+	private CyServiceRegistrar serviceRegistrar;
 
-	public RenameGroupTaskFactory(CyApplicationManager appMgr, CyGroupManager mgr) {
+	public RenameGroupTaskFactory(CyApplicationManager appMgr, CyGroupManager mgr, CyServiceRegistrar reg) {
 		this.appMgr = appMgr;
 		this.mgr = mgr;
+		serviceRegistrar = reg;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new RenameGroupTask(appMgr, mgr));
+		return new TaskIterator(new RenameGroupTask(appMgr, mgr, serviceRegistrar));
 	}
 }

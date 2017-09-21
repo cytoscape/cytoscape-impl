@@ -76,22 +76,16 @@ public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory
 		// Get all of the selected nodes
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-		if (selNodes.size() > 1)
-			return true;
-		return false; 
+		return (selNodes.size() > 1);
 	}
 
 	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
-		if (nodeView == null || netView == null) {
+		if (nodeView == null || netView == null) 
 			return false;
-		}
-
 		// Get all of the selected nodes
 		CyNetwork net = netView.getModel();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-		if (selNodes.size() > 1)
-			return true;
-		return false; 
+		return (selNodes.size() > 1);
 	}
 
 	public boolean isReady() { return true; }

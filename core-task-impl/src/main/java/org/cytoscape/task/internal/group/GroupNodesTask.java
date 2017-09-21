@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -45,6 +47,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
 import org.cytoscape.task.internal.utils.NodeTunable;
@@ -120,10 +123,11 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 
 	public Object getResults(Class requestedType) {
 		if (newGroup == null) return null;
-		if (requestedType.equals(String.class)) {
-			return newGroup.toString();
-		}
-		return newGroup;
+		if (requestedType.equals(CyGroup.class))		return newGroup;
+		if (requestedType.equals(String.class))			return newGroup.toString();
+		if (requestedType.equals(JSONResult.class))  	return "{" + newGroup.toString() + "}";
+		return null;
 	}
-	
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
+
 }

@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -36,16 +38,18 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class RenameGroupTask extends AbstractGroupTask {
+
+	private CyServiceRegistrar serviceRegistrar;
 
 	@Tunable (description="Network", context="nogui")
 	public CyNetwork network;
@@ -56,9 +60,10 @@ public class RenameGroupTask extends AbstractGroupTask {
 	@Tunable (description="New name", context="nogui")
 	public String newName;
 
-	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager) {
+	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar reg) {
 		this.net = appMgr.getCurrentNetwork();
 		this.groupMgr = manager;
+		serviceRegistrar = reg;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -85,6 +90,13 @@ public class RenameGroupTask extends AbstractGroupTask {
 		groupRow.set(CyRootNetwork.SHARED_NAME, newName);
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Renamed group from "+oldName+" to "+newName);
+	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
+		if (requestedType.equals(String.class))			return groupName;
+		if (requestedType.equals(JSONResult.class))  	return groupName;
+		return null;
 	}
 
 }

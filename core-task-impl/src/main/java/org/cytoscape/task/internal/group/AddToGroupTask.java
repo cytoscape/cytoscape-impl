@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -35,6 +37,7 @@ import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class AddToGroupTask extends AbstractGroupTask {
 
@@ -81,14 +84,20 @@ public class AddToGroupTask extends AbstractGroupTask {
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Adding "+nodes+" nodes and "+edges+" edges to group "+getGroupDesc(grp));
 
-		if (edgeList != null && edgeList.size() > 0) {
+		if (edgeList != null && edgeList.size() > 0) 
 			grp.addEdges(edgeList);
-		}
-		if (nodeList != null && nodeList.size() > 0) {
+		
+		if (nodeList != null && nodeList.size() > 0) 
 			grp.addNodes(nodeList);
-		}
-
+		
 		tm.showMessage(TaskMonitor.Level.INFO, "Added "+nodes+" nodes and "+edges+" edges to group "+getGroupDesc(grp));
+	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
+		if (requestedType.equals(String.class))			return groupName;
+		if (requestedType.equals(JSONResult.class))  	return groupName;
+		return null;
 	}
 
 }

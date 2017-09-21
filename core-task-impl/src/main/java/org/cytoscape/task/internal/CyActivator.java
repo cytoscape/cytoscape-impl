@@ -1234,6 +1234,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new group of nodes");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Group Selected Nodes to the nodes context also
@@ -1317,6 +1318,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "expand");
 			props.setProperty(COMMAND_NAMESPACE, "group");  // TODO right namespace?
 			props.setProperty(COMMAND_DESCRIPTION, "Expand a collapsed group");  // TODO right namespace?
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Shows the contents of a currently collapsed group"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1325,14 +1328,18 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "add");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Add nodes or edges to a group");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Includes the currently selected nodes and edges to the specified group"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListGroupsTaskFactory factory = new ListGroupsTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+			ListGroupsTaskFactory factory = new ListGroupsTaskFactory(cyApplicationManagerServiceRef, cyGroupManager,serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1341,14 +1348,18 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "remove");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Remove nodes or edges from a group");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove the selected nodes and edges from their current group"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			RenameGroupTaskFactory factory = new RenameGroupTaskFactory(cyApplicationManagerServiceRef, cyGroupManager);
+			RenameGroupTaskFactory factory = new RenameGroupTaskFactory(cyApplicationManagerServiceRef, cyGroupManager,serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a group");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of the selected group or groups"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 
@@ -1586,7 +1597,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the specified column <col> ");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1598,7 +1609,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a row from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1621,7 +1632,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Return all values in a table row");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1633,7 +1644,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Return a single value from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1645,7 +1656,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1657,7 +1668,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1669,7 +1680,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1681,7 +1692,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1693,7 +1704,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
