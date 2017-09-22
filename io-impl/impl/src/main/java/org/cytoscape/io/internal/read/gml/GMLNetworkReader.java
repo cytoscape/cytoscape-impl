@@ -308,36 +308,32 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 			final String label = nodeLabels.get(idx);
 
-			if (nodeNameSet.add(label)) {
-				final CyNode node;
+			nodeNameSet.add(label);
 
-				if (nMap.get(label) != null) {
-					// node already existed
-					node = nMap.get(label);
+			final CyNode node;
+			if (nMap.get(label) != null) {
+				// node already existed
+				node = nMap.get(label);
 
-					if (!network.containsNode(node)) {
-						network.addNode(node);
-					}
-				} else {
-					// node is new
-					node = network.addNode();
+				if (!network.containsNode(node)) {
+					network.addNode(node);
 				}
-
-				// Set node attributes
-				final CyRow row = network.getRow(node);
-				row.set(CyNetwork.NAME, label);
-				// This is duplicate of name, but necessary top keep original attr.
-				row.set(LABEL, label);
-
-				setAttributes(node, network, nodeAttributes.get(idx));
-
-				nodeIDMap.put(label, node);
-				gml_id2order.put(nodes.get(idx), idx);
-				nodeRootIndexPairs.get(idx).value = node.getSUID();
 			} else {
-				throw new RuntimeException("GML id " + nodes.get(idx)
-						+ " has a duplicated label: " + label);
+				// node is new
+				node = network.addNode();
 			}
+
+			// Set node attributes
+			final CyRow row = network.getRow(node);
+			row.set(CyNetwork.NAME, label);
+			// This is duplicate of name, but necessary top keep original attr.
+			row.set(LABEL, label);
+
+			setAttributes(node, network, nodeAttributes.get(idx));
+
+			nodeIDMap.put(label, node);
+			gml_id2order.put(nodes.get(idx), idx);
+			nodeRootIndexPairs.get(idx).value = node.getSUID();
 		}
 
 		nodeNameSet = null;
