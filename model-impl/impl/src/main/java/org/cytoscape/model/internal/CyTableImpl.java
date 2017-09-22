@@ -574,15 +574,31 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				return virtColumn.getMatchingRows(value);
 	
 			if (normalizedColName.equals(normalizeColumnName(primaryKey))) {
-				final ArrayList<CyRow> matchingRows = new ArrayList<CyRow>(1);
 				final CyRow matchingRow = rows.get(value);
-				if (matchingRow != null)
-					matchingRows.add(matchingRow);
-				return matchingRows;
+				return matchingRow == null ? Collections.emptyList() : Collections.singletonList(matchingRow);
 			}
 			
 			final ColumnData keyToValueMap = attributes.get(normalizedColName);
 			return keyToValueMap.getMatchingRows(rows, value);
+		}
+	}
+	
+	@Override
+	public <T> Collection<T> getMatchingKeys(String columnName, Object value, Class<T> type) {
+		synchronized (lock) {
+			final String normalizedColName = normalizeColumnName(columnName);
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			
+			if (virtColumn != null)
+				return virtColumn.getMatchingKeys(value, type);
+	
+			if (normalizedColName.equals(normalizeColumnName(primaryKey))) {
+				final CyRow matchingRow = rows.get(value);
+				return matchingRow == null ? Collections.emptyList() : Collections.singletonList(type.cast(value));
+			}
+			
+			final ColumnData keyToValueMap = attributes.get(normalizedColName);
+			return keyToValueMap.getMatchingKeys(value, type);
 		}
 	}
 

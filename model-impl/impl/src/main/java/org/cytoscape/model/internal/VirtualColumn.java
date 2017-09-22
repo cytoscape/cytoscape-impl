@@ -119,9 +119,15 @@ final class VirtualColumn implements VirtualColumnInfo {
 		}
 		return targetRows;
 	}
+	
+	<T> Collection<T> getMatchingKeys(Object value, Class<T> type) {
+		Collection<T> keys = sourceTable.getMatchingKeys(sourceColumn.getName(), value, type);
+		keys.retainAll(targetJoinColumn.getValues(targetJoinColumn.getType()));
+		return keys;
+	}	
 
 	int countMatchingRows(final Object value) {
-		return sourceTable.countMatchingRows(sourceColumn.getName(), value);
+		return getMatchingKeys(value, sourceColumn.getType()).size();
 	}
 
 	
