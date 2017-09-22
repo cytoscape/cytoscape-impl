@@ -425,12 +425,19 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
 		}
 
-		if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
-			mapTableToDefaultAttrs(getDataTypeOptions());
-		else if (whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
-			mapTableToLocalAttrs(getDataTypeOptions());
-		else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
-			mapTableToUnassignedTable();
+		try {
+			if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
+				mapTableToDefaultAttrs(getDataTypeOptions());
+			else if (whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
+				mapTableToLocalAttrs(getDataTypeOptions());
+			else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
+				mapTableToUnassignedTable();
+		} catch(Exception e) {
+			throw new IllegalArgumentException(
+					"Could not execute table merge. " +
+							"Please check your parameters and try again.\n\n  (Reason: "
+							+ e.getMessage() + ")", e);
+		}
 	}
 	
 	private boolean isMappableColumn(final CyColumn col) {
