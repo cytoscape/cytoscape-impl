@@ -292,6 +292,11 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		Map<Integer, Integer> gml_id2order = new HashMap<Integer, Integer>(nodes.size());
 		Set<String> nodeNameSet = new HashSet<String>(nodes.size());
 
+		// Row for label.
+		if(network.getDefaultNodeTable().getColumn(LABEL) == null) {
+			network.getDefaultNodeTable().createColumn(LABEL, String.class, false);
+		}
+
 		// Add All Nodes to Network
 		for (int idx = 0; idx < nodes.size(); idx++) {
 			// Report Status Value
@@ -319,7 +324,11 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 				}
 
 				// Set node attributes
-				network.getRow(node).set(CyNetwork.NAME, label);
+				final CyRow row = network.getRow(node);
+				row.set(CyNetwork.NAME, label);
+				// This is duplicate of name, but necessary top keep original attr.
+				row.set(LABEL, label);
+
 				setAttributes(node, network, nodeAttributes.get(idx));
 
 				nodeIDMap.put(label, node);
@@ -793,8 +802,15 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 						vpValue = vp.parseSerializableString(value.toString());
 
 					if (vpValue != null) {
-						if (isLockedVisualProperty(model, key))
-							view.setLockedValue(vp, vpValue);
+
+
+						if (isLockedVisualProperty(model, key)) {
+							// Label assignment should be flexible,
+							// so we should avoid bypass.
+							if(vp != BasicVisualLexicon.NODE_LABEL) {
+								view.setLockedValue(vp, vpValue);
+							}
+						}
 						else
 							view.setVisualProperty(vp, vpValue);
 					}
