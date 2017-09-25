@@ -111,21 +111,7 @@ public class StreamUtilImpl implements StreamUtil {
 		if(source == null)
 			throw new NullPointerException("Source URL is null");
 		
-		final InputStream newIs;
-		
-		final InputStream proxyIs;
-		proxyIs = getURLConnection(source).getInputStream();
-		
-		// These are mainly for Session loading.
-		if (source.toString().toLowerCase().endsWith(GZIP))
-			newIs = new GZIPInputStream(proxyIs);
-		else if (source.toString().toLowerCase().endsWith(ZIP))
-			newIs = new ZipInputStream(proxyIs);
-		else if (source.toString().toLowerCase().endsWith(JAR))
-			newIs = new JarInputStream(proxyIs);
-		else
-			newIs = proxyIs;
-		return newIs;
+		return getURLConnection(source).getInputStream();
 	}
 
 	@SuppressWarnings("unchecked")
