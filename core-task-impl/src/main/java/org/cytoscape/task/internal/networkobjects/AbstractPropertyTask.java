@@ -133,7 +133,7 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 			count--;
 		}
 		output.append("]\n");
-		System.out.println("JSON Output: " + output.toString());
+		
 		return output.toString();
 	}
 	

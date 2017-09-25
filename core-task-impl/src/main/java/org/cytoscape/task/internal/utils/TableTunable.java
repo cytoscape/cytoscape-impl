@@ -24,8 +24,6 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.List;
-
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.Tunable;
@@ -33,7 +31,7 @@ import org.cytoscape.work.Tunable;
 public class TableTunable {
 	CyTableManager tableManager;
 
-	@Tunable(description="Table", context="nogui")
+	@Tunable(description="Table", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="defaultNode")
 	public String table;
 
 	public TableTunable(CyTableManager tableManager) {
