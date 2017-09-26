@@ -19,6 +19,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -300,15 +301,20 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (type == String.class) {
-			String strRes = "";
+			String res = "";
 			
-			for (CyNetworkView nv : networkViews)
-				strRes += nv.toString() + "\n";
+			if (networkViews != null && !networkViews.isEmpty()) {
+				res += "Created views:\n";
+				
+				for (CyNetworkView view : networkViews)
+					res += DataUtils.getViewTitle(view) + " (SUID: " + view.getSUID() + ")" + "\n";
 			
-			if (strRes.length() > 0)
-				return strRes.substring(0, strRes.length() - 1); // This strips the trailing line break
-			else
-				return strRes;
+				res = res.substring(0, res.length() - 1); // This strips the trailing line break
+			} else {
+				res = "No views were created.";
+			}
+			
+			return res;
 		} else if (type == JSONResult.class) {
 			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
 			JSONResult res = () -> { return json; };
