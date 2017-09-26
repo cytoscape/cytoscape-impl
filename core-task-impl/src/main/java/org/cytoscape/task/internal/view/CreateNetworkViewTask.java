@@ -13,6 +13,7 @@ import java.util.TreeSet;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -80,8 +81,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	private	List<CyNetworkView> networkViews;
 
 	@Tunable(
-			description = "Network to create a view for",
-			longDescription = "The network to create a view for, or leave it empty to use the current network.",
+			description = "Network",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
 			exampleStringValue = "SUID:52",
 			context = "nogui"
 	)

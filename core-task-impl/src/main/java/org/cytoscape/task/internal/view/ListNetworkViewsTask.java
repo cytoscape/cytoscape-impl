@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
@@ -44,8 +45,8 @@ import org.cytoscape.work.json.JSONResult;
 public class ListNetworkViewsTask extends AbstractTask implements ObservableTask {
 	
 	@Tunable(
-			description = "Network of the views to list",
-			longDescription = "Optional network whose views must be listed. If not specified, it uses the current network.",
+			description = "Network",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
 			context = "nogui"
 	)
 	public CyNetwork network;

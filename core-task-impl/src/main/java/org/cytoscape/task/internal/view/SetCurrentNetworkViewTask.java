@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -39,8 +40,8 @@ import org.cytoscape.work.Tunable;
 public class SetCurrentNetworkViewTask extends AbstractTask {
 	
 	@Tunable(
-			description = "Network's view to set as 'current'",
-			longDescription = "Network whose view must be set as current. If no network is specified, the current view is set to null.",
+			description = "Network",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
 			context = "nogui"
 	)
 	public CyNetwork network;

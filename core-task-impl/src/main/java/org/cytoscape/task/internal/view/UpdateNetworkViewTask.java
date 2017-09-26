@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.view;
 import java.util.Collection;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -38,8 +39,8 @@ import org.cytoscape.work.Tunable;
 public class UpdateNetworkViewTask extends AbstractTask {
 
 	@Tunable(
-			description = "Network to update",
-			longDescription = "Network whose views must be updated. If this parameter isn't set, the current network is used.",
+			description = "Network",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
 			context = "nogui"
 	)
 	public CyNetwork network;
