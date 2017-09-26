@@ -146,16 +146,20 @@ public class LoadVizmapFileTask extends AbstractTask {
 				return styles != null ? new ArrayList<>(styles) : Collections.emptyList();
 			
 			if (type == String.class) {
-				String strRes = "";
+				String res = "";
 				
 				if (styles != null && !styles.isEmpty()) {
-					for (VisualStyle style : styles)
-						strRes += style.toString() + "\n";
+					res += "Loaded styles:\n";
 					
-					strRes = strRes.substring(0, strRes.length() - 1);
+					for (VisualStyle style : styles)
+						res += style.toString() + "\n";
+					
+					res = res.substring(0, res.length() - 1);
+				} else {
+					res = "No styles were loaded.";
 				}
 				
-				return strRes.substring(0, strRes.length() - 1);
+				return res;
 			}
 			
 			if (type == JSONResult.class) {
