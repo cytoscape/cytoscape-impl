@@ -97,7 +97,10 @@ public class RemoveFromGroupTask extends AbstractGroupTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
 		if (requestedType.equals(String.class))			return groupName;
-		if (requestedType.equals(JSONResult.class))  	return groupName;
+		if (requestedType.equals(JSONResult.class))  	{
+			JSONResult res = () -> {return groupName; };
+			return res;
+		}
 		return null;
 	}
 

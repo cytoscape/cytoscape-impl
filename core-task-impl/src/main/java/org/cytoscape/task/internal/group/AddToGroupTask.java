@@ -34,6 +34,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -95,8 +96,11 @@ public class AddToGroupTask extends AbstractGroupTask {
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
-		if (requestedType.equals(String.class))			return groupName;
-		if (requestedType.equals(JSONResult.class))  	return groupName;
+		if (requestedType.equals(String.class))		return groupName;
+		if (requestedType.equals(JSONResult.class))  	 {
+			JSONResult res = () -> {		return groupName;	};
+			return res;
+		}
 		return null;
 	}
 

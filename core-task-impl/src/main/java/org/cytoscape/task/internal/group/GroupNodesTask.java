@@ -32,16 +32,14 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
+import org.cytoscape.task.internal.utils.NodeTunable;
 import org.cytoscape.view.model.CyNetworkView;
-
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
@@ -49,8 +47,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
-
-import org.cytoscape.task.internal.utils.NodeTunable;
 
 public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	private CyNetworkView netView = null;
@@ -125,7 +121,10 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		if (newGroup == null) return null;
 		if (requestedType.equals(CyGroup.class))		return newGroup;
 		if (requestedType.equals(String.class))			return newGroup.toString();
-		if (requestedType.equals(JSONResult.class))  	return "{" + newGroup.toString() + "}";
+		if (requestedType.equals(JSONResult.class))  {
+			JSONResult res = () -> { return "{" + newGroup.toString() + "}"; };
+			return res;
+		}
 		return null;
 	}
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}

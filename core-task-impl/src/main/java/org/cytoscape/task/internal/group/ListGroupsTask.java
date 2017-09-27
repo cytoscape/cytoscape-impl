@@ -78,7 +78,10 @@ public class ListGroupsTask extends AbstractGroupTask implements ObservableTask 
 	public Object getResults(Class requestedType) {
 		if (groups == null) return null;
 		if (requestedType.equals(String.class)) 		return DataUtils.convertData(groups);
-		if (requestedType.equals(JSONResult.class))  	return "{ " + DataUtils.convertData(groups) + " }";
+		if (requestedType.equals(JSONResult.class))  {
+			JSONResult res = () -> {return "{ " + DataUtils.convertData(groups) + " }"; };
+			return res;
+		}
 		return groups;
 	}
 }

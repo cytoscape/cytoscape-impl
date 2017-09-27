@@ -102,7 +102,10 @@ public class UnGroupNodesTask extends AbstractGroupTask {
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return getGroupSetString();
-		if (requestedType.equals(JSONResult.class))  	return "{"  + getGroupSetString() + "}";
+		if (requestedType.equals(JSONResult.class))   {
+			JSONResult res = () -> {	 return "{"  + getGroupSetString() + "}"; };
+			return res;
+		}
 		return null;
 	}
 	
