@@ -24,29 +24,25 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListPropertiesTask extends AbstractPropertyTask implements ObservableTask {
 	Class <? extends CyIdentifiable> type;
 	List<String> resultList;
 
-	@Tunable(description="Network to get properties for", context="nogui")
+	@Tunable(description="Network to get properties for", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public ListPropertiesTask(CyApplicationManager appMgr, Class<? extends CyIdentifiable> type,
