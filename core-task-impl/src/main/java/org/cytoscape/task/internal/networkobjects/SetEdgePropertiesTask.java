@@ -38,6 +38,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetEdgePropertiesTask extends AbstractPropertyTask {
@@ -45,10 +46,10 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION)
 	public String propertyList = null;
 
-	@Tunable(description="Values to set for the properties", context="nogui")
+	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION)
 	public String valueList = null;
 
 	public SetEdgePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,

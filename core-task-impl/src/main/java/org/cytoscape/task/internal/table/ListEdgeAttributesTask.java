@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -41,6 +42,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListEdgeAttributesTask extends AbstractTableDataTask implements ObservableTask {
@@ -49,10 +51,10 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 	
 	Collection<CyColumn> columnList = null;
 
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable (description="Namespace for table", context="nogui")
+	@Tunable (description="Namespace for table", context="nogui", longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue=CoreImplDocumentationConstants.COLUMN_NAMESPACE_EXAMPLE_STRING)
 	public String namespace = "default";
 
 	public ListEdgeAttributesTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {

@@ -30,6 +30,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -43,7 +44,7 @@ public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 	@Tunable(description="Network to get node from", context="nogui", longDescription="If this parameter isn't set, the current network used.", exampleStringValue="current")
 	public CyNetwork network = null;
 
-	@Tunable(description="Node to get", context="nogui", longDescription="Specifies the name of the node to get. This parameter must be used with the ```node``` parameter to produce results.", exampleStringValue="Node 1")
+	@Tunable(description="Node to get", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION, exampleStringValue="Node 1")
 	public String node = null;
 
 	private CyNode returnedNode = null;
