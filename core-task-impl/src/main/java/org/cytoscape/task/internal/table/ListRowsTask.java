@@ -44,6 +44,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.RowTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListRowsTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
@@ -93,9 +94,10 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	public Object getResults(Class requestedType) {
 		if (rowList == null || rowList.size() == 0) return null;
 		if (requestedType.equals(String.class)) 	return DataUtils.convertData(rowList);
-		if (requestedType.equals(JSONResult.class)) 	return DataUtils.convertData(rowList);
-
-		
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return DataUtils.convertData(rowList);	};
+			return res;
+		}		
 		return rowList;
 	}
 

@@ -49,12 +49,14 @@ public class SetTableTitleTask extends AbstractTableDataTask {
 		table.setTitle(title);
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Changed title of table '"+oldTitle+"' to '"+title+"'");
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class)) 		return "";
+		if (requestedType.equals(String.class)) 		return title;
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "{}";	};	}
-		return null;
+			JSONResult res = () -> {		return title;	};	
+		return res;
 	}
+	return null;
+}
 
 }

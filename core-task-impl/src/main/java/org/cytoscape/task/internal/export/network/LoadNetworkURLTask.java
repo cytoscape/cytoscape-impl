@@ -6,10 +6,13 @@ import java.net.URL;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -87,6 +90,15 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 		loadNetwork(reader);
 	}
 	
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class)) 		return name;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {	return name;		};
+		return res;
+		}
+		return null;
+	}
+
 	protected CyNetwork[] getCyNetworks() {
 		return reader.getNetworks();
 	}

@@ -82,11 +82,15 @@ public class ListColumnsTask extends AbstractTableDataTask implements Observable
 		if (requestedType.equals(String.class) && columns != null)  return DataUtils.convertData(columns);
 		
 		if (requestedType.equals(JSONResult.class)) {
-			if (columns == null) 		return "{}";
-			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-			return cyJSONUtil.cyColumnsToJson(columns);
+			JSONResult res = () -> {
+				if (columns == null) 		return "{}";
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.cyColumnsToJson(columns);
+			};
+		return res;
 		}
-		return columns;
+		return null;
+		
 	
 	}
 

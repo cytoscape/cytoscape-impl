@@ -29,6 +29,7 @@ import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -50,11 +51,13 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
@@ -741,6 +744,17 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 			return dataTypeTargetForNetworkCollection.getSelectedValue();
 		else
 			return dataTypeTargetForNetworkList.getSelectedValue();
+	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class)) 		return getTitle();
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return getTitle();
+		};
+		return res;
+		}
+		return null;
 	}
 
 	@Override

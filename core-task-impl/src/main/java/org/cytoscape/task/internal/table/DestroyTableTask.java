@@ -75,7 +75,10 @@ public class DestroyTableTask extends AbstractTableDataTask {
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return title;
-		if (requestedType.equals(JSONResult.class)) 	return title;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return title;	};	
+			return res;
+			}
 		return null;
 	}
 }

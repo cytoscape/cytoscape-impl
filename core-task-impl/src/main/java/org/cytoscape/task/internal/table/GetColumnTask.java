@@ -65,6 +65,7 @@ public class GetColumnTask extends AbstractTableDataTask {
 			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
 			return cyJSONUtil.toJson(returnValue, true, true);
 		};
+		return res;
 		}
 		return returnValue;
 	}

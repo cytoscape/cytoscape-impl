@@ -56,6 +56,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
@@ -673,7 +674,10 @@ public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, 
 public Object getResults(Class requestedType) {
 	if (requestedType.equals(CyColumn.class)) 		return globalTable;
 	if (requestedType.equals(String.class)) 		return newTableName;
-	if (requestedType.equals(JSONResult.class)) 	return newTableName;
+	if (requestedType.equals(JSONResult.class)) {
+		JSONResult res = () -> {		return newTableName;	};
+		return res;
+	}
 	return null;
 }
 

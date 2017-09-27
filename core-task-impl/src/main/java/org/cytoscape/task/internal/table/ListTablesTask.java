@@ -37,8 +37,10 @@ import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListTablesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
@@ -94,9 +96,16 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertData(tables);
 		}
-		return tables;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {	if (tables == null) 		return "{}";
+			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			return cyJSONUtil.cyIdentifiablesToJson(tables);
+		};
+			return res;
+		}
+		return null;
 	}
-
+	
 	private String getTableDescription(CyTable table) {
 		String result = "["+table.getSUID()+"]";
 		int rows = table.getRowCount();

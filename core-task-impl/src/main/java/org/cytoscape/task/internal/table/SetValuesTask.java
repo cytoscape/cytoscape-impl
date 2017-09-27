@@ -41,8 +41,7 @@ public class SetValuesTask extends AbstractTableDataTask {
 	public void run(final TaskMonitor taskMonitor) {
 		CyTable table = rowTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to find table '"+rowTunable.getTableString()+"'");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+rowTunable.getTableString()+"'");
 			return;
 		}
 
@@ -112,7 +111,9 @@ public class SetValuesTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return "";
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "{}";	};	}
+			JSONResult res = () -> {		return "{}";	};	
+			return res;
+		}
 		return null;
 	}
 }

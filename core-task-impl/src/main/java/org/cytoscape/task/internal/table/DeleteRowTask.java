@@ -73,7 +73,10 @@ public class DeleteRowTask extends AbstractTableDataTask {
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return keyValue;
-		if (requestedType.equals(JSONResult.class))  	return keyValue;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return keyValue;	};	
+			return res;
+			}
 		return null;
 	}
 

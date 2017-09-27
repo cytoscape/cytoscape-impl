@@ -10,6 +10,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.ColumnTypeTunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -110,7 +111,12 @@ public class CreateColumnTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyColumn.class)) 		return tableTunable.getTable().getColumn(columnName);
 		if (requestedType.equals(String.class)) 		return columnName;
-		if (requestedType.equals(JSONResult.class)) 	return columnName;
+		if (requestedType.equals(JSONResult.class)) 
+		{
+			if (columnName == null) 		return "{}";
+			return columnName;
+		}
+	if (requestedType.equals(JSONResult.class)) 	return columnName;
 		return null;
 	}
 

@@ -73,7 +73,10 @@ public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory impleme
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyTable.class)) 		return table;
 		if (requestedType.equals(String.class)) 		return "" + table.getSUID();
-		if (requestedType.equals(JSONResult.class)) 	return "" + table.getSUID();	
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {		return "" + table.getSUID();	};	
+			return res;
+			}
 		return null;
 	}
 }
