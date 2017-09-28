@@ -25,10 +25,13 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -38,6 +41,9 @@ import org.cytoscape.task.internal.utils.NodeTunable;
 import org.cytoscape.task.internal.utils.ColumnListTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.ContainsTunables;
 
 import org.cytoscape.task.internal.utils.DataUtils;
@@ -52,18 +58,23 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 	@ContainsTunables
 	public ColumnListTunable columnTunable;
 
-	public GetNodeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public CyServiceRegistrar serviceRegistrar;
+
+	public CyTable nodeTable;
+
+	public GetNodeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
 		nodeTunable = new NodeTunable(appMgr);
 		columnTunable = new ColumnListTunable();
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		CyNetwork network = nodeTunable.getNetwork();
 
-		CyTable nodeTable = getNetworkTable(network, CyNode.class, columnTunable.getNamespace());
+		nodeTable = getNetworkTable(network, CyNode.class, columnTunable.getNamespace());
 
 		nodeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
 		
@@ -88,7 +99,36 @@ public class GetNodeAttributeTask extends AbstractTableDataTask implements Obser
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertMapToString(nodeDataMap);
 		}
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (nodeDataMap == null) 
+					return "[]";
+				else {
+					StringBuilder output = new StringBuilder("[");
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					
+					List<CyColumn> cyColumn = columnTunable.getColumnList(nodeTable);
+					CyColumn[] cyColumnArray = cyColumn.size() > 0 ? cyColumn.toArray(new CyColumn[0]) : new CyColumn[]{};
+					int count = nodeDataMap.size();
+					for (CyIdentifiable node : nodeDataMap.keySet()) {
+						CyRow row = nodeTable.getRow(node.getSUID());
+						output.append(" " + cyJSONUtil.toJson(row, cyColumnArray));
+						if (count > 1) {
+							output.append(",\n");
+						}
+						count--;
+					}
+					output.append("\n]");
+					return output.toString();
+				}
+			};
+			return res;
+		}
 		return nodeDataMap;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(Map.class, String.class, JSONResult.class);
 	}
 	
 }
