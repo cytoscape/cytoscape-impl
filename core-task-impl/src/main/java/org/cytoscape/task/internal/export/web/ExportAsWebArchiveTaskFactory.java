@@ -90,4 +90,8 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 			return new TaskIterator(exportTask);
 		}
 	}
+	@Override
+	public boolean isReady() {
+		return networkManager.getNetworkSet().size() > 0;
+	}
 }
