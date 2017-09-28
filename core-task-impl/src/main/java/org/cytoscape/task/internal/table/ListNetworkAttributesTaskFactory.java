@@ -53,11 +53,11 @@ public class ListNetworkAttributesTaskFactory extends AbstractTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new ListNetworkAttributesTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new ListNetworkAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyEdge.class))
 			return new TaskIterator(new ListEdgeAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new ListNodeAttributesTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new ListNodeAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		return null;
 	}
 
