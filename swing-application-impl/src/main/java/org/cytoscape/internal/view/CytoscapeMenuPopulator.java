@@ -16,6 +16,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 
 /*
@@ -154,7 +155,7 @@ public class CytoscapeMenuPopulator {
 	private void addFactory(TaskFactory factory, Map<String, String> props) {
 		CyAction action;
 		
-		if (props.containsKey("enableFor"))
+		if (props.containsKey(ServiceProperties.ENABLE_FOR))
 			action = new TaskFactoryTunableAction(factory, props, serviceRegistrar);
 		else
 			action = new TaskFactoryTunableAction(serviceRegistrar, factory, props);
