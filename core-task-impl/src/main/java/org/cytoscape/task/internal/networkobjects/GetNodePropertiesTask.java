@@ -24,8 +24,11 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
@@ -39,12 +42,13 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.NodeTunable;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 
 public class GetNodePropertiesTask extends AbstractPropertyTask implements ObservableTask {
-	Map<CyNode, Map<String, Object>> nodePropertiesMap;
+	Map<CyNode, Map<String, VisualPropertyObjectTuple>> nodePropertiesMap;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable;
@@ -60,7 +64,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		nodePropertiesMap = new HashMap<CyNode, Map<String, Object>>();
+		nodePropertiesMap = new HashMap<CyNode, Map<String, VisualPropertyObjectTuple>>();
 
 		CyNetwork network = nodeTunable.getNetwork();
 
@@ -74,7 +78,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 		for (CyNode node: nodeTunable.getNodeList()) {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
 			                        "   Node property values for node "+DataUtils.getNodeName(network.getDefaultNodeTable(), node)+":");
-			Map<String, Object> propertyMap = new HashMap<String, Object>();
+			Map<String, VisualPropertyObjectTuple> propertyMap = new HashMap<String, VisualPropertyObjectTuple>();
 
 			for (String property: props) {
 				try {
@@ -82,7 +86,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 					Object value = getPropertyValue(network, node, vp);
 					if (value != null) {
 						taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+vp.getDisplayName()+"="+value.toString());
-						propertyMap.put(vp.getIdString(), value);
+						propertyMap.put(vp.getIdString(), new VisualPropertyObjectTuple(vp,value));
 					}
 				} catch (Exception e) {
 					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
@@ -95,9 +99,23 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return DataUtils.convertMapToString(nodePropertiesMap);
+			 Map<CyNode, Map<String, Object>> nodeObjectMap = nodePropertiesMap.entrySet()
+				        .stream()
+				        .collect(Collectors.toMap(Map.Entry::getKey,
+				                                  e -> e.getValue().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e2 -> e2.getValue().object))));
+			return DataUtils.convertMapToString(nodeObjectMap);
+		} else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return getVisualPropertiesJSON(nodePropertiesMap);
+			};
+			return res;
+		} else if (requestedType.equals(Map.class)) {
+			return nodePropertiesMap;
 		}
 		return nodePropertiesMap;
 	}
-	
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(Map.class, String.class, JSONResult.class);
+	}
 }
