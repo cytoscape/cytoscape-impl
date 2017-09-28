@@ -42,6 +42,7 @@ import javax.swing.WindowConstants;
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
@@ -58,6 +59,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -421,12 +423,27 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
-		invokeOnEDT(() -> hideStarterPanel());
+		invokeOnEDT(() -> {
+			if (e.getNetwork() != null && !isCommandDocGenNetwork(e.getNetwork()))
+				hideStarterPanel();
+		});
 	}
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		invokeOnEDT(() -> hideStarterPanel());
+		invokeOnEDT(() -> {
+			if (e.getNetworkView() != null && !isCommandDocGenNetwork(e.getNetworkView().getModel()))
+				hideStarterPanel();
+		});
+	}
+	
+	private boolean isCommandDocGenNetwork(CyNetwork network) {
+		if (network != null) {
+			String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+			//Note: DO NOT CHANGE THE NETWORK NAME FROM "cy:command_documentation_generation", it is necessary for a workaround.
+			return name != null && name.equals("cy:command_documentation_generation");
+		}
+		return false;
 	}
 	
 	@Override
@@ -435,8 +452,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		
 		// It does not make sense to hide the Starter Panel when the table is private, because the user will not see it.
 		// Also apps can create private tables during initialization, which would hide the Starter Panel by accident.
-		if (table != null && table.isPublic())
-			invokeOnEDT(() -> hideStarterPanel());
+		if (table != null && table.isPublic()) {
+			CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network != null && !isCommandDocGenNetwork(network))
+				invokeOnEDT(() -> hideStarterPanel());
+		}
 	}
 	
 	@Override

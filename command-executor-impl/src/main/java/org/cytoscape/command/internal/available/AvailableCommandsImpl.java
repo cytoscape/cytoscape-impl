@@ -460,7 +460,8 @@ public class AvailableCommandsImpl implements AvailableCommands {
 
 		if (emptyNetwork == null) {
 			emptyNetwork = (serviceRegistrar.getService(CyNetworkFactory.class)).createNetwork(SavePolicy.DO_NOT_SAVE);
-			emptyNetwork.getRow(emptyNetwork).set(CyNetwork.NAME, "--empty--");
+			//Note: DO NOT CHANGE THE NETWORK NAME FROM "cy:command_documentation_generation", it is necessary for a workaround.
+			emptyNetwork.getRow(emptyNetwork).set(CyNetwork.NAME, "cy:command_documentation_generation");
 		}
 		return emptyNetwork;
 	}
