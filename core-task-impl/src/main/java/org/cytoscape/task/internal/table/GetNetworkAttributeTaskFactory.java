@@ -35,6 +35,12 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class GetNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	public static final String COMMAND_EXAMPLE_JSON = "["
+			+ "  { \"name\": \"Object 1\", \"SUID\": 101 }, "
+			+ "  { \"name\": \"Object 2\", \"SUID\": 102 }"
+			+ "]";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final Class<?> type;

@@ -34,6 +34,9 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class CreateNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	public static final String COMMAND_EXAMPLE_JSON = "{ \"columnName\": \"New Column\" }";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final Class type;

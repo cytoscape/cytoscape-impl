@@ -50,6 +50,7 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class GetEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask {
+	
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> edgeDataMap;
 

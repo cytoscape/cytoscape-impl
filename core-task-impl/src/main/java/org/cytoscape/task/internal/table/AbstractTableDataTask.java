@@ -43,6 +43,8 @@ import org.cytoscape.work.AbstractTask;
 
 public abstract class AbstractTableDataTask extends AbstractTask {
 	
+	
+	
 	CyTableManager cyTableManager;
 
 	AbstractTableDataTask(CyTableManager cyTableManager) {
