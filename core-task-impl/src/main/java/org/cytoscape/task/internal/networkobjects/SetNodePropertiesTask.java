@@ -24,6 +24,7 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,8 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.utils.NodeTunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
@@ -50,10 +53,10 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION)
 	public String propertyList = null;
 
-	@Tunable(description="Values to set for the properties", context="nogui")
+	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION)
 	public String valueList = null;
 
 	public SetNodePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
@@ -102,4 +105,19 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 		}
 	
 	}
+
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
+	}
+
 }

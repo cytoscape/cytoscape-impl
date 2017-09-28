@@ -839,6 +839,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "select from file");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes from a file");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectFromFileListTaskFactory.class, props);
 		}
