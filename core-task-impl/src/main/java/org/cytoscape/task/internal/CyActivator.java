@@ -1087,7 +1087,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
-			props.setProperty(COMMAND_DESCRIPTION, "List node visual properties");
+			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for nodes");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -2024,7 +2024,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
-			props.setProperty(COMMAND_DESCRIPTION, "List all of the network visual properties");
+			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for networks");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
