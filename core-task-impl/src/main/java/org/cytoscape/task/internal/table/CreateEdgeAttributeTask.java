@@ -43,9 +43,11 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class CreateEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask{
 	final CyApplicationManager appMgr;
+
 	Map<CyIdentifiable, Map<String, Object>> networkData;
 
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
@@ -57,11 +59,14 @@ public class CreateEdgeAttributeTask extends AbstractTableDataTask implements Ob
 	@ContainsTunables
 	public ColumnTypeTunable columnTypeTunable;
 
+	public CyServiceRegistrar serviceRegistrar;
+
 	private boolean success = false;
 	
-	public CreateEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public CreateEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		columnTunable = new ColumnTunable();
 		columnTypeTunable = new ColumnTypeTunable();
 	}

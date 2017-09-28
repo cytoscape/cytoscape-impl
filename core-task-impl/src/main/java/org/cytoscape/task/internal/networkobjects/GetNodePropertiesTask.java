@@ -41,6 +41,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.NodeTunable;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 
 public class GetNodePropertiesTask extends AbstractPropertyTask implements ObservableTask {
 	Map<CyNode, Map<String, Object>> nodePropertiesMap;
@@ -48,7 +49,7 @@ public class GetNodePropertiesTask extends AbstractPropertyTask implements Obser
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION)
 	public String propertyList = null;
 
 	public GetNodePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
