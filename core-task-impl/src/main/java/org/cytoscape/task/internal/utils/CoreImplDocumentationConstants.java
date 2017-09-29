@@ -18,7 +18,7 @@ public final class CoreImplDocumentationConstants {
 	 */
 	public static final String COLUMN_LIST_LONG_DESCRIPTION = "A list of column names, separated by commas.";
 	
-	public static final String COLUMN_LIST_EXAMPLE_STRING ="name,SUID";
+	public static final String COLUMN_LIST_EXAMPLE_STRING ="name,EdgeBetweenness";
 	
 	/**
 	 * See org.cytoscape.task.internal.networkobjects.AbstractGetTask#getNode(CyNetwork, String)
@@ -46,4 +46,11 @@ public final class CoreImplDocumentationConstants {
 	 * org.cytoscape.task.internal.networkobjects.SetNodePropertiesTask.run(TaskMonitor)
 	 */
 	public static final String PROPERTY_LIST_LONG_DESCRIPTION = "A list of property names separated by commas.";
+
+	/**
+	 * Renaming is the equivalent of a set/PUT, and doesn't need to return anything.
+	 */
+	public static final String RENAME_EXAMPLE_JSON = "{}";
+	
+
 }

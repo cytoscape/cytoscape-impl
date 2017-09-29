@@ -43,7 +43,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.task.internal.networkobjects.AbstractPropertyTask.VisualPropertyObjectTuple;
 import org.cytoscape.task.internal.utils.DataUtils;
 public abstract class AbstractPropertyTask extends AbstractTask {
 	protected CyApplicationManager appManager;

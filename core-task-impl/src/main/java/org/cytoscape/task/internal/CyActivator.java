@@ -203,6 +203,7 @@ import org.cytoscape.task.internal.table.SetNetworkAttributeTaskFactory;
 import org.cytoscape.task.internal.table.SetTableTitleTaskFactory;
 import org.cytoscape.task.internal.table.SetValuesTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.view.CreateNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.GetCurrentNetworkViewTaskFactory;
@@ -1099,6 +1100,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a node");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CoreImplDocumentationConstants.RENAME_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1109,6 +1111,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Change node table values for a node or set of nodes");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1119,6 +1122,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Set node visual properties");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: edge
@@ -1169,6 +1173,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the visual properties for edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ {\"SUID\": 92,\"visualProperties\": [{\"visualProperty\": \"EDGE_PAINT\",\"value\": \"#808080\"},{\"visualProperty\": \"EDGE_VISIBLE\",\"value\": true}]}]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1178,6 +1184,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1188,6 +1196,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"SUID\",\"name\"]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1198,6 +1208,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"Paint\",\"Visible\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1207,6 +1218,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename an edge");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CoreImplDocumentationConstants.RENAME_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1217,6 +1229,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change edge table values for an edge or set of edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1227,6 +1240,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change visual properties for a set of edges");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
@@ -1771,6 +1785,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set a value in the network table");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
@@ -2045,6 +2060,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set network visual properties");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}

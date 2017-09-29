@@ -53,7 +53,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION)
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION, exampleStringValue="Paint,Visible")
 	public String propertyList = null;
 
 	public GetEdgePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
