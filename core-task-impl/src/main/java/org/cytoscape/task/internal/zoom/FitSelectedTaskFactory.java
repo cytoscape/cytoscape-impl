@@ -1,12 +1,17 @@
 package org.cytoscape.task.internal.zoom;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,28 +28,17 @@ package org.cytoscape.task.internal.zoom;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- 
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
+public class FitSelectedTaskFactory extends AbstractNetworkViewTaskFactory {
 
+	private final CyServiceRegistrar serviceRegistrar;
 
-public class FitSelectedTaskFactory extends AbstractNetworkTaskFactory {
-	private final UndoSupport undoSupport;
-        private final CyApplicationManager cyApplicationManagerServiceRef;
-
-	public FitSelectedTaskFactory(final UndoSupport undoSupport, final CyApplicationManager cam) {
-		this.undoSupport = undoSupport;
-		this.cyApplicationManagerServiceRef = cam;
+	public FitSelectedTaskFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-
-	public TaskIterator createTaskIterator(CyNetwork network) {
-		CyNetworkView view = cyApplicationManagerServiceRef.getCurrentNetworkView();
-		return new TaskIterator(new FitSelectedTask(undoSupport, view));
-	} 
+	@Override
+	public TaskIterator createTaskIterator(CyNetworkView view) {
+		return new TaskIterator(new FitSelectedTask(view, serviceRegistrar));
+	}
 }
