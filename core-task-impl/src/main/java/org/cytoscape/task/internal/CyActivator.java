@@ -495,7 +495,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerServiceListener(bc, factory::registerFactory, factory::unregisterFactory, CySessionWriterFactory.class);
 		}
 		{
-			ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
+			ZoomInTaskFactory factory = new ZoomInTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom In");
@@ -508,10 +508,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom in");
 			// props.setProperty(COMMAND_NAMESPACE, "view");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ZoomOutTaskFactory factory = new ZoomOutTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
+			ZoomOutTaskFactory factory = new ZoomOutTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom Out");
@@ -525,7 +525,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom out");
 			// props.setProperty(COMMAND_NAMESPACE, "view");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
 			FitSelectedTaskFactory factory = new FitSelectedTaskFactory(serviceRegistrar);
@@ -548,8 +548,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			FitContentTaskFactory factory = new FitContentTaskFactory(undoSupportServiceRef,
-					cyApplicationManagerServiceRef);
+			FitContentTaskFactory factory = new FitContentTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
@@ -566,7 +565,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
 			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(serviceRegistrar);

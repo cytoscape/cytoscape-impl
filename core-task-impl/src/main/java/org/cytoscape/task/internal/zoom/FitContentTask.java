@@ -1,12 +1,18 @@
 package org.cytoscape.task.internal.zoom;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +30,23 @@ package org.cytoscape.task.internal.zoom;
  * #L%
  */
 
-
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class FitContentTask extends AbstractNetworkViewTask {
-	private final UndoSupport undoSupport;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public FitContentTask(final UndoSupport undoSupport, final CyNetworkView v) {
-		super(v);
-		this.undoSupport = undoSupport;
+	public FitContentTask(CyNetworkView view, CyServiceRegistrar serviceRegistrar) {
+		super(view);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Fit Content");
 		tm.setProgress(0.0);
-		undoSupport.postEdit(new FitContentEdit("Fit Content",
-		                                                                 view));
+		
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new FitContentEdit("Fit Content", view));
 		tm.setProgress(0.3);
+		
 		view.fitContent();
 		tm.setProgress(1.0);
 	}

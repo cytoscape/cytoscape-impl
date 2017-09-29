@@ -1,12 +1,15 @@
 package org.cytoscape.task.internal.zoom;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,14 +27,10 @@ package org.cytoscape.task.internal.zoom;
  * #L%
  */
 
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class ZoomInTask extends AbstractZoomTask {
-	public ZoomInTask(final UndoSupport undoSupport, final CyNetworkView view) {
-		super(undoSupport, view, /* factor = */ 1.1);
+	
+	public ZoomInTask(CyNetworkView view, CyServiceRegistrar serviceRegistrar) {
+		super(view, 1.1, serviceRegistrar);
 	}
 }
 
