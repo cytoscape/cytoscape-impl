@@ -404,7 +404,10 @@ class PopupMenuHelper {
 			if (last > 0) {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
-				// System.out.println("no title, pref = "+pref);
+
+				if (APPS_MENU.equals(title))
+					return;
+
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem, toolTip);
 				if (useCheckBoxMenuItem) {
@@ -419,6 +422,10 @@ class PopupMenuHelper {
 			// otherwise just use the preferred menu as the menuitem name
 			} else {
 				title = pref;
+				
+				if (APPS_MENU.equals(title))
+					return;
+				
 				// popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
