@@ -1,10 +1,10 @@
 package org.cytoscape.ding;
 
+import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -13,7 +13,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -31,26 +31,23 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class ShowGraphicsDetailsTaskFactory implements NetworkTaskFactory {
+public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
-	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ShowGraphicsDetailsTaskFactory(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll,
-			final CyServiceRegistrar serviceRegistrar){
+	public ShowGraphicsDetailsTaskFactory(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll) {
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
-		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
-	public TaskIterator createTaskIterator(CyNetwork network){
-		return new TaskIterator(new ShowGraphicsDetailsTask(dingGraphLOD, dingGraphLODAll, serviceRegistrar));
+	public TaskIterator createTaskIterator(CyNetworkView view) {
+		return new TaskIterator(new ShowGraphicsDetailsTask(view, dingGraphLOD, dingGraphLODAll));
 	}
 	
 	@Override
-	public boolean isReady(CyNetwork network){
-		return true;
+	public boolean isReady(CyNetworkView view) {
+		return view instanceof DGraphView;
 	}
 }
