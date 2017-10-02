@@ -343,11 +343,11 @@ class PopupMenuHelper {
 	 */
 	private void addMenuItem(View<?> view, JPopupMenu popup, NamedTaskFactory tf, Object tunableContext,
 			JMenuTracker tracker, Map props) {
-		String title = (String)(props.get(TITLE));
-		String pref = (String)(props.get(PREFERRED_MENU));
+		String title = (String) (props.get(TITLE));
+		String pref = (String) (props.get(PREFERRED_MENU));
 		String toolTip = (String) (props.get(TOOLTIP));
 		String menuGravity = (String) (props.get(MENU_GRAVITY));
-		String prefAction = (String)(props.get(PREFERRED_ACTION));
+		String prefAction = (String) (props.get(PREFERRED_ACTION));
 		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
 		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
@@ -371,28 +371,27 @@ class PopupMenuHelper {
 		}
 	
 		// otherwise create our own popup menus 
-		final Object targetVisualProperty = props.get("targetVP");
+		final Object targetVP = props.get("targetVP");
 		boolean isSelected = false;
 		
 		if (view != null) {
-			if (targetVisualProperty != null && targetVisualProperty instanceof String ) {
-				// TODO remove this at first opportunity whenever lookup gets refactored. 
+			if (targetVP != null && targetVP instanceof String) {
+				// TODO remove this at first opportunity whenever lookup gets refactored.
 				Class<?> clazz = CyNetwork.class;
-				
+
 				if (view.getModel() instanceof CyNode)
 					clazz = CyNode.class;
 				else if (view.getModel() instanceof CyEdge)
 					clazz = CyEdge.class;
 
-				final VisualProperty<?> vp = graphView.getVisualLexicon().lookup(clazz,
-						targetVisualProperty.toString());
-				
+				final VisualProperty<?> vp = graphView.getVisualLexicon().lookup(clazz, targetVP.toString());
+
 				if (vp == null)
 					isSelected = false;
 				else
 					isSelected = view.isValueLocked(vp);
-			} else if (targetVisualProperty instanceof VisualProperty) {
-				isSelected = view.isValueLocked((VisualProperty<?>) targetVisualProperty);
+			} else if (targetVP instanceof VisualProperty) {
+				isSelected = view.isValueLocked((VisualProperty<?>) targetVP);
 			}
 		}
 
@@ -409,18 +408,22 @@ class PopupMenuHelper {
 					return;
 
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem, toolTip);
+				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
+
 				if (useCheckBoxMenuItem) {
-					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
+					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem) item;
 					checkBox.setSelected(isSelected);
 				}
+
 				if (insertSepBefore)
-					gravityTracker.addMenuSeparator(gravity-.0001);
+					gravityTracker.addMenuSeparator(gravity - .0001);
+
 				gravityTracker.addMenuItem(item, gravity);
+
 				if (insertSepAfter)
-					gravityTracker.addMenuSeparator(gravity+.0001);
-			// otherwise just use the preferred menu as the menuitem name
+					gravityTracker.addMenuSeparator(gravity + .0001);
 			} else {
+				// otherwise just use the preferred menu as the menuitem name
 				title = pref;
 				
 				if (APPS_MENU.equals(title))
@@ -434,13 +437,15 @@ class PopupMenuHelper {
 
 		// title and preferred menu
 		} else {
-			// System.out.println("title, pref = "+pref);
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+			
 			if (insertSepBefore)
-				gravityTracker.addMenuSeparator(gravity-.0001);
-			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), gravity);
+				gravityTracker.addMenuSeparator(gravity - .0001);
+
+			gravityTracker.addMenuItem(createMenuItem(tf, title, useCheckBoxMenuItem, toolTip), gravity);
+
 			if (insertSepAfter)
-				gravityTracker.addMenuSeparator(gravity+.0001);
+				gravityTracker.addMenuSeparator(gravity + .0001);
 		}
 	}
 
