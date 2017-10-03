@@ -41,7 +41,7 @@ public class ColumnValueTunable {
 	@Tunable (description="List of columns to set", context="nogui", longDescription=CoreImplDocumentationConstants.COLUMN_LIST_LONG_DESCRIPTION, exampleStringValue=CoreImplDocumentationConstants.COLUMN_LIST_EXAMPLE_STRING)
 	public String columnList;
 
-	@Tunable (description="List of values", context="nogui", longDescription="A list of values, separated by commas. List values can be included using the format ```[value1,value2]```.", exampleStringValue="1,2")
+	@Tunable (description="List of values", context="nogui", longDescription="A list of values, separated by commas. List values can be included using the format ```[value1,value2]```.", exampleStringValue="New Name,2")
 	public String valueList;
 
 	public ColumnValueTunable() {

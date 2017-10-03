@@ -62,6 +62,7 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -334,7 +335,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	private void addFactory(final TaskFactory factory, final Map props) {
 		final CyAction action;
 		
-		if (props.containsKey("enableFor"))
+		if (props.containsKey(ServiceProperties.ENABLE_FOR))
 			action = new TaskFactoryTunableAction(factory, props, serviceRegistrar);
 		else
 			action = new TaskFactoryTunableAction(serviceRegistrar, factory, props);
@@ -352,7 +353,7 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			@Override
 			public void mousePressed(MouseEvent e) {
 				networkMainPanel.onMousePressedItem(e, item);
-			};
+			}
 		};
 		
 		// This mouse listener listens for the right-click events to show the pop-up window

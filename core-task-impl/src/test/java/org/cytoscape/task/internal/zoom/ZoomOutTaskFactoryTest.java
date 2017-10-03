@@ -1,12 +1,26 @@
 package org.cytoscape.task.internal.zoom;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +38,26 @@ package org.cytoscape.task.internal.zoom;
  * #L%
  */
 
-
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Test;
-
-
 public class ZoomOutTaskFactoryTest {
+	
+	@Mock private CyNetworkView view;
+	@Mock private UndoSupport undoSupport;
+	@Mock private CyServiceRegistrar serviceRegistrar;
+
+	@Before
+	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+	}
+	
 	@Test
 	public void testGetTaskIterator() {
-		UndoSupport undoSupport = mock(UndoSupport.class);
-                CyApplicationManager cyApplicationManagerServiceRef = mock(CyApplicationManager.class);
-                CyNetworkView cnv = mock(CyNetworkView.class);
-                when(cyApplicationManagerServiceRef.getCurrentNetworkView()).thenReturn(cnv);
-		ZoomOutTaskFactory factory = new ZoomOutTaskFactory(undoSupport, cyApplicationManagerServiceRef);
-		
-                CyNetwork network = mock(CyNetwork.class);
-		TaskIterator ti = factory.createTaskIterator(network);
+		ZoomOutTaskFactory factory = new ZoomOutTaskFactory(serviceRegistrar);
+		TaskIterator ti = factory.createTaskIterator(view);
 		assertNotNull(ti);
-		
-		assertTrue( ti.hasNext() );
+
+		assertTrue(ti.hasNext());
 		Task t = ti.next();
-		assertNotNull( t );		
+		assertNotNull(t);
 	}
 }

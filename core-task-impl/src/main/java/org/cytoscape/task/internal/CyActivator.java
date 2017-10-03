@@ -203,6 +203,7 @@ import org.cytoscape.task.internal.table.SetNetworkAttributeTaskFactory;
 import org.cytoscape.task.internal.table.SetTableTitleTaskFactory;
 import org.cytoscape.task.internal.table.SetValuesTaskFactory;
 import org.cytoscape.task.internal.title.EditNetworkTitleTaskFactoryImpl;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.view.CreateNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.DestroyNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.view.GetCurrentNetworkViewTaskFactory;
@@ -495,7 +496,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerServiceListener(bc, factory::registerFactory, factory::unregisterFactory, CySessionWriterFactory.class);
 		}
 		{
-			ZoomInTaskFactory factory = new ZoomInTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
+			ZoomInTaskFactory factory = new ZoomInTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom In");
@@ -508,10 +509,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom in");
 			// props.setProperty(COMMAND_NAMESPACE, "view");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ZoomOutTaskFactory factory = new ZoomOutTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
+			ZoomOutTaskFactory factory = new ZoomOutTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom Out");
@@ -525,10 +526,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom out");
 			// props.setProperty(COMMAND_NAMESPACE, "view");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			FitSelectedTaskFactory factory = new FitSelectedTaskFactory(undoSupportServiceRef, cyApplicationManagerServiceRef);
+			FitSelectedTaskFactory factory = new FitSelectedTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Selected");
@@ -545,11 +546,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the view area.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			FitContentTaskFactory factory = new FitContentTaskFactory(undoSupportServiceRef,
-					cyApplicationManagerServiceRef);
+			FitContentTaskFactory factory = new FitContentTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
@@ -566,7 +566,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
 			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(serviceRegistrar);
@@ -839,6 +839,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "select from file");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes from a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Selects nodes in the current network based on node names provided by a file.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "true");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectFromFileListTaskFactory.class, props);
 		}
@@ -1014,11 +1017,16 @@ public class CyActivator extends AbstractCyActivator {
 		// NAMESPACE: node
 		{
 			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
+            		props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Creates a new node column. If multiple nodes are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
+            		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+           		 props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1040,6 +1048,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Get values from the node table");
+            		props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Returns the attributes for the nodes passed as parameters.");
+            		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+            		props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1049,14 +1061,21 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Get visual properties for a node");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Returns the visual properties for the nodes that match the passed parameters.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ {\"SUID\": 92,\"visualProperties\": [{\"visualProperty\": \"NODE_PAINT\",\"value\": \"#808080\"},{\"visualProperty\": \"NODE_VISIBLE\",\"value\": true}]}]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNodesTaskFactory factory = new ListNodesTaskFactory(cyApplicationManagerServiceRef);
+			ListNodesTaskFactory factory = new ListNodesTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the nodes in a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the node SUIDs associated with the passed network parameter.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1065,7 +1084,10 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "node");
-			props.setProperty(COMMAND_DESCRIPTION, "List node columns");
+			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of column names assocated with nodes.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"SUID\",\"name\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1074,7 +1096,10 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
-			props.setProperty(COMMAND_DESCRIPTION, "List node visual properties");
+			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of visual properties available for nodes.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"Paint\",\"Visible\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1083,6 +1108,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a node");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of the name column for the passed node.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CoreImplDocumentationConstants.RENAME_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1092,6 +1120,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Change node table values for a node or set of nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified column for the passed node or set of nodes.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1101,20 +1132,23 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Set node visual properties");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified property for the passed node or set of nodes.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: edge
 		{
 			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Creates a new edge column. If multiple edges are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
-			
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1139,9 +1173,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Returns the attributes for the edges passed as parameters.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
-		
-			
+			props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1151,8 +1184,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the visual properties for edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+                    "Returns the visual properties for the edges that match the passed parameters.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ {\"SUID\": 92,\"visualProperties\": [{\"visualProperty\": \"EDGE_PAINT\",\"value\": \"#808080\"},{\"visualProperty\": \"EDGE_VISIBLE\",\"value\": true}]}]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1161,7 +1197,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the edge SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1171,7 +1210,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of column names assocated with edges.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"SUID\",\"name\"]");
+
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1181,7 +1223,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of visual properties available for edges.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"Paint\",\"Visible\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1190,7 +1234,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename an edge");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of the name column for the passed edge.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CoreImplDocumentationConstants.RENAME_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1200,7 +1246,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change edge table values for an edge or set of edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified column for the passed edge or set of edges.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1210,7 +1258,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Change visual properties for a set of edges");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified property for the passed edge or set of edges.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
@@ -1714,11 +1764,15 @@ public class CyActivator extends AbstractCyActivator {
 		// NAMESPACE: network
 		{
 			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class);
+					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column in the network table");
+            		props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Creates a new network column. If multiple networks are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
+            		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1728,6 +1782,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the value from a column for a network");
+                        props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Returns the attributes for the network passed as parameter.");
+                        props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1737,6 +1795,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for networks");
+                       	props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1746,6 +1805,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set a value in the network table");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
@@ -2000,7 +2060,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
-			props.setProperty(COMMAND_DESCRIPTION, "List all of the network visual properties");
+			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for networks");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -2019,6 +2080,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set network visual properties");
+			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}

@@ -25,6 +25,8 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -38,6 +40,8 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.json.JSONResult;
 
 public class CreateNetworkAttributeTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
@@ -52,9 +56,14 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public ColumnTypeTunable columnTypeTunable;
 
-	public CreateNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public CyServiceRegistrar serviceRegistrar;
+
+	private boolean success = false;
+
+	public CreateNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		columnTunable = new ColumnTunable();
 		columnTypeTunable = new ColumnTypeTunable();
 	}
@@ -69,7 +78,7 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask {
 			createColumn(networkTable, columnTunable.getColumnName(), 
 		               columnTypeTunable.getColumnType(), 
 		               columnTypeTunable.getListElementType());
-
+			success = true;
 			if (columnTypeTunable.getColumnType() == "list")
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new "+columnTypeTunable.getListElementType()+" list column: "+columnTunable.getColumnName());
 			else
@@ -80,4 +89,22 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask {
 
 	}
 
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (success) {
+					return "{\"columnName\": \"" + columnTunable.getColumnName()+"\"}";
+				}
+				else {
+					return "{}";
+				}
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
+}
 }

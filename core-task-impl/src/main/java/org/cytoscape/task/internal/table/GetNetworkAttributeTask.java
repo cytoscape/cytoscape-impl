@@ -24,10 +24,15 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
+import java.util.HashMap;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
@@ -36,8 +41,9 @@ import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.ColumnListTunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
@@ -51,9 +57,14 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 	@ContainsTunables
 	public ColumnListTunable columnTunable;
 
-	public GetNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public CyServiceRegistrar serviceRegistrar;
+
+	private CyTable networkTable;
+
+	public GetNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		columnTunable = new ColumnListTunable();
 	}
 
@@ -61,7 +72,8 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) network = appMgr.getCurrentNetwork();
 
-		CyTable networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
+		networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
+
 
 		networkData = getCyIdentifierData(networkTable, 
 		                                  network,
@@ -78,6 +90,28 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertMapToString(networkData);
 		}
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (networkData == null) 
+					return "[]";
+				else {
+					StringBuilder output = new StringBuilder("[");
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					
+					List<CyColumn> cyColumn = columnTunable.getColumnList(networkTable);
+					CyColumn[] cyColumnArray = cyColumn.size() > 0 ? cyColumn.toArray(new CyColumn[0]) : new CyColumn[]{};
+					CyRow row = networkTable.getRow(network.getSUID());
+					output.append(" " + cyJSONUtil.toJson(row, cyColumnArray));
+					output.append("\n]");
+					return output.toString();
+				}
+			};
+			return res;
+		}
 		return networkData;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(Map.class, String.class, JSONResult.class);
 	}
 }

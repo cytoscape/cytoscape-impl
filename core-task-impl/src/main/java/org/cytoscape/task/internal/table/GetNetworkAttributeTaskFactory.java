@@ -35,6 +35,12 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class GetNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	public static final String COMMAND_EXAMPLE_JSON = "["
+			+ "  { \"name\": \"Object 1\", \"SUID\": 101 }, "
+			+ "  { \"name\": \"Object 2\", \"SUID\": 102 }"
+			+ "]";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final Class<?> type;
@@ -51,11 +57,11 @@ public class GetNetworkAttributeTaskFactory extends AbstractTaskFactory {
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new GetNetworkAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new GetNetworkAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		else if (type.equals(CyEdge.class))
 			return new TaskIterator(new GetEdgeAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new GetNodeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new GetNodeAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		return null;
 	}
 

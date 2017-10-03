@@ -41,10 +41,10 @@ public class RenameEdgeTask extends AbstractGetTask implements ObservableTask {
 	@Tunable(description="Network edge is in", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Edge to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.EDGE_LONG_DESCRIPTION)
+	@Tunable(description="Edge to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.EDGE_LONG_DESCRIPTION, exampleStringValue="SUID:101")
 	public String edge = null;
 
-	@Tunable(description="New edge name", context="nogui", longDescription="New name of the edge")
+	@Tunable(description="New edge name", context="nogui", longDescription="New name of the edge", exampleStringValue="New Name")
 	public String newName = null;
 
 	public RenameEdgeTask() {

@@ -3,8 +3,11 @@ package org.cytoscape.internal.task;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -16,7 +19,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,20 +49,25 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 	 * This constructor forces the action to use the TaskFactory.isReady() method
 	 * to determine whether the action should be enabled.
 	 */
-	public TaskFactoryTunableAction(final CyServiceRegistrar serviceRegistrar, final TaskFactory factory,
-			final Map<String, String> serviceProps) {
-		super(serviceProps, factory);
+	public TaskFactoryTunableAction(CyServiceRegistrar serviceRegistrar, TaskFactory factory,
+			Map<String, String> props) {
+		super(props, factory);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
-	 * This constructor forces the action to use the "enableFor" property in serviceProps 
+	 * This constructor forces the action to use the {@link ServiceProperties#ENABLE_FOR} property in props
 	 * to determine whether the action should be enabled.
 	 */
-	public TaskFactoryTunableAction(final TaskFactory factory, final Map<String, String> serviceProps,
-			final CyServiceRegistrar serviceRegistrar) {
-		super(serviceProps, factory);
+	public TaskFactoryTunableAction(TaskFactory factory, Map<String, String> props,
+			CyServiceRegistrar serviceRegistrar) {
+		super(
+				props,
+				serviceRegistrar.getService(CyApplicationManager.class),
+				serviceRegistrar.getService(CyNetworkViewManager.class),
+				factory
+		);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
 	}

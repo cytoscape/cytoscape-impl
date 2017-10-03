@@ -24,10 +24,10 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -42,7 +42,7 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
-
+import org.cytoscape.work.json.JSONResult;
 
 public class SelectFromFileListTask extends AbstractSelectTask {
 	
@@ -53,7 +53,7 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		return "Select Nodes using ID File";
 	}
 	
-	@Tunable(description="Node selection file:", params="input=true")
+	@Tunable(description="Node selection file:", params="input=true", longDescription="Path to file containing list of nodes to select")
 	public File file;
 
 	public SelectFromFileListTask(final UndoSupport undoSupport, final CyNetwork net,
@@ -107,4 +107,19 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 		undoSupport.postEdit(edit);
 		tm.setProgress(1.0);
 	}
+
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
+	}
+
 }
