@@ -1516,7 +1516,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Export a table to a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Creates a file with name <FILE> and writes the table there.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1528,7 +1528,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a new table to the network.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1577,7 +1577,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Add a new row to a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional row of empty cells to the current table");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1588,7 +1588,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional column of attribute values to the current table");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1624,7 +1624,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the information about a table column");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "false");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
