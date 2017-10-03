@@ -222,6 +222,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).setCanvas(cnvs);
 		}
+
+		// Update network attributes
+		update();
 	}
 
 	@Override
