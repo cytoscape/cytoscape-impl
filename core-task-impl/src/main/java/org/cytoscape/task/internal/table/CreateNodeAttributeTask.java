@@ -45,7 +45,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.json.JSONResult;
 
-public class CreateNodeAttributeTask extends AbstractTableDataTask {
+public class CreateNodeAttributeTask extends AbstractTableDataTask implements ObservableTask{
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> networkData;
 
