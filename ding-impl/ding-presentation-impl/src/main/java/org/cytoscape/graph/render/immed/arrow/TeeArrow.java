@@ -30,14 +30,14 @@ import java.awt.geom.GeneralPath;
 
 public class TeeArrow extends AbstractArrow {
 	public TeeArrow() {
-		super(0.5);
+		super(1.0);
 
 		// create the arrow
 		GeneralPath arrowGP = new GeneralPath();
-		arrowGP.moveTo(-0.5f, -1.0f);
-		arrowGP.lineTo(-0.25f, -1.0f);
-		arrowGP.lineTo(-0.25f, 1.0f);
-		arrowGP.lineTo(-0.5f, 1.0f);
+		arrowGP.moveTo(-1.0f, -1.0f);
+		arrowGP.lineTo(-0.8f, -1.0f);
+		arrowGP.lineTo(-0.8f, 1.0f);
+		arrowGP.lineTo(-1.0f, 1.0f);
 		arrowGP.closePath();
 
 		arrow = arrowGP;

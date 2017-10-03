@@ -86,6 +86,7 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 			int valueIndex = 0;
 			for (String property: props) {
 				String value = values[valueIndex];
+				valueIndex++;
 				try {
 					VisualProperty vp = getProperty(network, edge, property.trim());
 					setPropertyValue(network, edge, vp, value);
