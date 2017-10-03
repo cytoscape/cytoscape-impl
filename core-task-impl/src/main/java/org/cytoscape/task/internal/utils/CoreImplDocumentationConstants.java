@@ -5,7 +5,7 @@ public final class CoreImplDocumentationConstants {
 	/**
 	 * See org.cytoscape.task.internal.table.AbstractTableDataTask.getNamespace(String)
 	 */
-	public static final String COLUMN_NAMESPACE_LONG_DESCRIPTION = "Node, Edge, and Network objects support the '''default''', '''local''', and '''hidden''' namespaces. Root networks also support the '''shared''' namespace. Custom namespaces may be specified by Apps.";
+	public static final String COLUMN_NAMESPACE_LONG_DESCRIPTION = "Node, Edge, and Network objects support the ```default```, ```local```, and ```hidden``` namespaces. Root networks also support the ```shared``` namespace. Custom namespaces may be specified by Apps.";
 	
 	public static final String COLUMN_NAMESPACE_EXAMPLE_STRING = "default";
 	
@@ -18,7 +18,7 @@ public final class CoreImplDocumentationConstants {
 	 */
 	public static final String COLUMN_LIST_LONG_DESCRIPTION = "A list of column names, separated by commas.";
 	
-	public static final String COLUMN_LIST_EXAMPLE_STRING ="name,EdgeBetweenness";
+	public static final String COLUMN_LIST_EXAMPLE_STRING ="name,Column B";
 	
 	/**
 	 * See org.cytoscape.task.internal.networkobjects.AbstractGetTask#getNode(CyNetwork, String)
