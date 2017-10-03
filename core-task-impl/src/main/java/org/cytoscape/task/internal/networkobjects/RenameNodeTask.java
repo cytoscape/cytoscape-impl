@@ -45,7 +45,7 @@ public class RenameNodeTask extends AbstractGetTask {
 	@Tunable(description="Network node is in", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Node to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION)
+	@Tunable(description="Node to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION, exampleStringValue="suid:123")
 	public String node = null;
 
 	@Tunable(description="New node name", context="nogui", longDescription="New name of the node")

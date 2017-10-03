@@ -53,10 +53,10 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION)
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION, exampleStringValue="Paint, Visible")
 	public String propertyList = null;
 
-	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION)
+	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION, exampleStringValue="#808080,true")
 	public String valueList = null;
 
 	public SetNodePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
