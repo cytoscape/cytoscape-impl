@@ -1020,10 +1020,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
-            props.setProperty(COMMAND_LONG_DESCRIPTION,
+            		props.setProperty(COMMAND_LONG_DESCRIPTION,
                                         "Creates a new node column. If multiple nodes are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
-            props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
+            		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+           		 props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1046,11 +1046,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Get values from the node table");
-            props.setProperty(COMMAND_LONG_DESCRIPTION,
+            		props.setProperty(COMMAND_LONG_DESCRIPTION,
                                         "Returns the attributes for the nodes passed as parameters.");
-            props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-            props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
-
+            		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+            		props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1060,7 +1059,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Get visual properties for a node");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+                                        "Returns the visual properties for a node that matches the passed parameters. If multiple nodes are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ {\"SUID\": 92,\"visualProperties\": [{\"visualProperty\": \"NODE_PAINT\",\"value\": \"#808080\"},{\"visualProperty\": \"NODE_VISIBLE\",\"value\": true}]}]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1069,7 +1071,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the nodes in a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the node SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1079,7 +1083,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of column names assocated with nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"SUID\",\"name\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1089,7 +1095,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the visual properties for nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of visual properties available for nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"Paint\",\"Visible\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1098,6 +1106,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "rename");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a node");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of the name column for the passed node.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, CoreImplDocumentationConstants.RENAME_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1109,6 +1118,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Change node table values for a node or set of nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified column for the passed node.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1120,6 +1130,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Set node visual properties");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified property for the passed node.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
