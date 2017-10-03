@@ -93,6 +93,7 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 			int valueIndex = 0;
 			for (String property: props) {
 				String value = values[valueIndex];
+				valueIndex++;
 				try {
 					VisualProperty vp = getProperty(network, node, property.trim());
 					setPropertyValue(network, node, vp, value);
