@@ -41,6 +41,7 @@ public class UpdateNetworkViewTask extends AbstractTask {
 	@Tunable(
 			description = "Network",
 			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
 			context = "nogui"
 	)
 	public CyNetwork network;
