@@ -86,15 +86,14 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	public void setZoom(BoundedDouble zf){
 		zoom = zf;
-		
-		//update height
-		heightInPixels = (int) ((zoom.getValue()/100) * initialHPixel);
-		//update width
-		widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
-		//update inch measures
+		// update height
+		heightInPixels = (int) ((zoom.getValue() / 100) * initialHPixel);
+		// update width
+		widthInPixels = (int) ((zoom.getValue() / 100) * initialWPixel);
+		// update inch measures
 		final double dpi = resolution.getSelectedValue().doubleValue();
-		widthInInches = new Double( widthInPixels/dpi);
-		heightInInches = new Double( heightInPixels/dpi);
+		widthInInches = new Double(widthInPixels / dpi);
+		heightInInches = new Double(heightInPixels / dpi);
 	}
 
 	// ----------------------------
@@ -152,13 +151,13 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		} else {
 			// update zoom
 			final double dpi = resolution.getSelectedValue().doubleValue();
-			zoom.setValue(( ((double)width * dpi) / initialWPixel) * 100.0);
+			zoom.setValue((((double) width * dpi) / initialWPixel) * 100.0);
 
 			widthInInches = width;
 			widthInPixels = (int) (widthInInches * dpi);
-			
-			heightInPixels = (int) ((zoom.getValue()/100) * initialHPixel);
-			heightInInches = heightInPixels/dpi;
+
+			heightInPixels = (int) ((zoom.getValue() / 100) * initialHPixel);
+			heightInInches = heightInPixels / dpi;
 		}
 	}
 	
@@ -195,13 +194,13 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 			heightInInches = heightInPixels / dpi;
 		} else {
 			final double dpi = resolution.getSelectedValue().doubleValue();
-			zoom.setValue(( ((double)height * dpi) / initialHPixel) * 100.0);
-			
+			zoom.setValue((((double) height * dpi) / initialHPixel) * 100.0);
+
 			heightInPixels = (int) (height * dpi);
 			heightInInches = height;
-			
-			widthInPixels = (int) ((zoom.getValue()/100) * initialWPixel);
-			widthInInches = widthInPixels/dpi;
+
+			widthInPixels = (int) ((zoom.getValue() / 100) * initialWPixel);
+			widthInInches = widthInPixels / dpi;
 		}
 	}
 	
