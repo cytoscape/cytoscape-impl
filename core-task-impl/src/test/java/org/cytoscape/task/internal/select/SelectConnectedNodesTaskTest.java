@@ -50,9 +50,9 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 		when(r1.get("selected", Boolean.class)).thenReturn(true);
 		when(r2.get("selected", Boolean.class)).thenReturn(false);
 
-		Set<CyRow> selectedEdges = new HashSet<CyRow>();
-		selectedEdges.add(r1);
-		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedEdges);
+		Set<Long> selectedEdges = new HashSet<>();
+		selectedEdges.add(r1.get(CyNetwork.SUID, Long.class));
+		when(edgeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedEdges);
 
 		when(e1.getSource()).thenReturn(e3);
 		when(e1.getTarget()).thenReturn(e4);
