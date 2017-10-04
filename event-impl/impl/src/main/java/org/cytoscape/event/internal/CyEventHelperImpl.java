@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -46,12 +45,15 @@ public class CyEventHelperImpl implements CyEventHelper {
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final Object DUMMY = new Object();
+	private static final int PAYLOAD_ACCUMULATOR_LIMIT = 100000;
+	private static final int PAYLOAD_FLUSH_CHECK_LIMIT = 3;
+	
+	private static final boolean alwaysForce = false;
 
 	private final CyListenerAdapter normal;
-	private final Map<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>> sourceAccMap;
+	private final Map<Object, Map<Class<?>, PayloadAccumulator<?,?,?>>> sourceAccMap;
 	private final ScheduledExecutorService payloadEventMonitor;
 	private final Map<Object, Object> silencedSources;
-	private boolean havePayload;
 
 	private final Object lock = new Object();
 
@@ -60,11 +62,11 @@ public class CyEventHelperImpl implements CyEventHelper {
 		sourceAccMap = new LinkedHashMap<>();
 		payloadEventMonitor = Executors.newSingleThreadScheduledExecutor();
 		silencedSources = new WeakHashMap<>();
-
+		
 		// This thread just flushes any accumulated payload events.
 		// It is scheduled to run repeatedly at a fixed interval.
 		payloadEventMonitor.scheduleAtFixedRate(
-				() -> flushPayloadEvents(),
+				() -> flushPayloadEvents(null, false),
 				CyEventHelper.DEFAULT_PAYLOAD_INTERVAL_MILLIS,
 				CyEventHelper.DEFAULT_PAYLOAD_INTERVAL_MILLIS, TimeUnit.MILLISECONDS
 		);
@@ -109,8 +111,7 @@ public class CyEventHelperImpl implements CyEventHelper {
 	@SuppressWarnings("unchecked")
 	public <S, P, E extends CyPayloadEvent<S, P>> void addEventPayload(S source, P payload, Class<E> eventType) {
 		if (payload == null || source == null || eventType == null) {
-			logger.warn("Improperly specified payload event with source: " + source + ";  with payload: " + payload
-					+ ";  with event type: " + eventType);
+			logger.warn("Improperly specified payload event with source: " + source + ";  with payload: " + payload + ";  with event type: " + eventType);
 			return;
 		}
 		
@@ -119,17 +120,15 @@ public class CyEventHelperImpl implements CyEventHelper {
 				return;
 
 			Map<Class<?>, PayloadAccumulator<?, ?, ?>> cmap = sourceAccMap.get(source);
-			
 			if (cmap == null) {
 				cmap = new LinkedHashMap<>();
 				sourceAccMap.put(source, cmap);
 			}
 
 			PayloadAccumulator<S, P, E> acc = (PayloadAccumulator<S, P, E>) cmap.get(eventType);
-
 			if (acc == null) {
 				try {
-					acc = new PayloadAccumulator<>(source, eventType);
+					acc = new PayloadAccumulator<>(source, eventType, PAYLOAD_ACCUMULATOR_LIMIT, PAYLOAD_FLUSH_CHECK_LIMIT);
 					cmap.put(eventType, acc);
 				} catch (NoSuchMethodException nsme) {
 					logger.warn("Unable to add payload to event, because of missing event constructor.", nsme);
@@ -138,49 +137,60 @@ public class CyEventHelperImpl implements CyEventHelper {
 			}
 
 			acc.addPayload(payload);
-			havePayload = true;
 		}
+	}
+
+	
+	@Override
+	public void flushPayloadEvents(Object source) {
+		flushPayloadEvents(source, true);
 	}
 
 	@Override
 	public void flushPayloadEvents() {
-		List<CyPayloadEvent<?, ?>> flushList;
-
+		flushPayloadEvents(null, true);
+	}
+	
+	private void flushPayloadEvents(Object source, boolean force) {
+		List<CyEvent<?>> flushList = new ArrayList<>();
+		
 		synchronized (lock) {
-			if (!havePayload)
-				return;
-
-			flushList = new ArrayList<>();
-			havePayload = false;
-
-			Iterator<Entry<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>>> iterator = sourceAccMap.entrySet()
-					.iterator();
-			
-			while (iterator.hasNext()) {
-				Entry<Object, Map<Class<?>, PayloadAccumulator<?, ?, ?>>> entry = iterator.next();
-				Object source = entry.getKey();
-				
-				for (PayloadAccumulator<?, ?, ?> acc : entry.getValue().values()) {
-					try {
-						CyPayloadEvent<?, ?> event = acc.newEventInstance(source);
-						
-						if (event != null)
-							flushList.add(event);
-					} catch (Exception ie) {
-						logger.warn("Couldn't instantiate event for source: " + source, ie);
-					}
+			if(source != null) {
+				Map<Class<?>, PayloadAccumulator<?,?,?>> cmap = sourceAccMap.remove(source);
+				if(cmap != null) {
+					createPayloadEvents(cmap, flushList, force);
 				}
-				
-				iterator.remove();
+			} else {
+				for(Map<Class<?>, PayloadAccumulator<?,?,?>> cmap : sourceAccMap.values()) {
+					createPayloadEvents(cmap, flushList, force);
+				}
 			}
-
 		}
 
 		// Actually fire the events outside of the synchronized block.
-		for (CyPayloadEvent<?, ?> event : flushList) {
+		for(CyEvent<?> event : flushList)
 			normal.fireEvent(event);
+	}
+	
+	
+	private void createPayloadEvents(Map<Class<?>, PayloadAccumulator<?,?,?>> cmap, List<CyEvent<?>> flushList, boolean force) {
+		Iterator<PayloadAccumulator<?,?,?>> iter = cmap.values().iterator();
+		while(iter.hasNext()) {
+			PayloadAccumulator<?,?,?> acc = iter.next();
+			
+			if(alwaysForce || force || acc.checkReady()) {
+				try {
+					CyEvent<?> event = acc.newEventInstance();
+					if (event != null)
+						flushList.add(event);
+				} catch (Exception ie) {
+					logger.warn("Couldn't instantiate event for source: " + acc.getSource(), ie);
+				}
+				iter.remove();
+			}
 		}
 	}
+	
 
 	/** 
 	 * Used only for unit testing to prevent the confusion of multiple threads running at once.
