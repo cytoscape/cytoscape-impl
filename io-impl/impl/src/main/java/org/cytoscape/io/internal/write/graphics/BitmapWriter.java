@@ -6,7 +6,8 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -51,7 +52,14 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final double MAX_ZOOM = 500;
+	
+	private static final int DEFAULT_RESOLUTION = 72;
+	private static final List<Integer> RESOLUTION_VALUES = Arrays.asList(
+			new Integer[] { DEFAULT_RESOLUTION, 100, 150, 300, 600 });
 
+	private static final String PIXELS = "pixels";
+	private static final String INCHES = "inches";
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Image Parameters";
@@ -62,7 +70,10 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	@Tunable(
 			description = "Zoom (%):",
-			longDescription = "The zoom value to proportionally scale the image. The default value is 100.0. Valid only for bitmap formats, such as PNG and JPEG.",
+			longDescription =
+					"The zoom value to proportionally scale the image. The default value is ```100.0```. "
+					+ "Valid only for bitmap formats, such as PNG and JPEG.",
+			exampleStringValue = "200.0",
 			groups = { "Image Size" },
 			params = "alignments=vertical;slider=true",
 			listenForChange = { "WidthInPixels", "HeightInPixels", "WidthInInches", "HeightInInches" },
@@ -87,11 +98,15 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	}
 
 	// ----------------------------
-	public ListSingleSelection<String> units = new ListSingleSelection<>("pixels", "inches");
+	public ListSingleSelection<String> units = new ListSingleSelection<>(PIXELS, INCHES);
 
 	@Tunable(
 			description = "Units:",
-			longDescription = "The units for the 'width' and 'height' values. Valid only for bitmap formats, such as PNG and JPEG.",
+			longDescription =
+					"The units for the 'width' and 'height' values. "
+					+ "Valid only for bitmap formats, such as PNG and JPEG. "
+					+ "The possible values are: ```" + PIXELS + "``` (default), ```" + INCHES + "```.",
+			exampleStringValue = INCHES,
 			groups = { "Image Size" },
 			gravity = 1.05
 	)
@@ -117,14 +132,14 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 			gravity = 1.1
 	)
 	public Double getWidth() {
-		if (units.getSelectedValue().equals("pixels"))
+		if (PIXELS.equals(units.getSelectedValue()))
 			return new Double(widthInPixels);
 		else
 			return widthInInches;
 	}
 
 	public void setWidth(Double width) {
-		if (units.getSelectedValue().equals("pixels")) {
+		if (PIXELS.equals(units.getSelectedValue())) {
 			// update zoom
 			zoom.setValue((((double) width.intValue()) / initialWPixel) * 100.0);
 
@@ -161,14 +176,14 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 			gravity = 1.2
 	)
 	public Double getHeight() {
-		if (units.getSelectedValue().equals("pixels"))
+		if (PIXELS.equals(units.getSelectedValue()))
 			return new Double(heightInPixels);
 		else
 			return heightInInches;
 	}
 
 	public void setHeight(Double height) {
-		if (units.getSelectedValue().equals("pixels")) {
+		if (PIXELS.equals(units.getSelectedValue())) {
 			// update zoom
 			zoom.setValue((((double) height.intValue()) / initialHPixel) * 100.0);
 
@@ -195,7 +210,11 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 	@Tunable(
 			description = "Resolution (DPI):",
-			longDescription = "The resolution of the exported image, in DPI. Valid only for bitmap formats, when the selected width and height 'units' is \"inches\".",
+			longDescription =
+					"The resolution of the exported image, in DPI. "
+					+ "Valid only for bitmap formats, when the selected width and height 'units' is ```" + INCHES + "```. "
+					+ "The possible values are: ```72``` (default), ```100```, ```150```, ```300```, ```600```.",
+			exampleStringValue = "" + DEFAULT_RESOLUTION,
 			groups = { "Image Size" },
 			params = "alignments=vertical",
 			dependsOn = "Units=inches",
@@ -228,15 +247,9 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 		widthInPixels = initialWPixel;
 		heightInPixels = initialHPixel;
-		ArrayList<Integer> values = new ArrayList<>();
-		values.add(72);
-		values.add(100);
-		values.add(150);
-		values.add(300);
-		values.add(600);
-		resolution = new ListSingleSelection<>(values);
-		resolution.setSelectedValue(72);
-		double dpi = 72.0 ;
+		resolution = new ListSingleSelection<>(RESOLUTION_VALUES);
+		resolution.setSelectedValue(DEFAULT_RESOLUTION);
+		double dpi = DEFAULT_RESOLUTION;
 		
 		widthInInches =  initialWPixel / dpi;
 		heightInInches = initialHPixel / dpi;
