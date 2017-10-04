@@ -433,7 +433,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Creates a new view for the passed network and returns the SUID of the new view. "
 					+ "If no networks are specified, it creates a view for the current network, if there is one.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "356");
 			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
 			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props); // for Commands
@@ -450,9 +450,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Destroy the selected network views");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Destroys all selected network views. If no views are selected, this command does nothing.");
+					"Destroys all selected network views and returns their SUIDs. If no views are selected, this command does nothing.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 343, 521, 770 ]");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, DestroyNetworkViewTaskFactory.class, props);
 		}

@@ -316,7 +316,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			
 			return res;
 		} else if (type == JSONResult.class) {
-			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
+			String json = networkViews != null && !networkViews.isEmpty() ?
+					serviceRegistrar.getService(CyJSONUtil.class).toJson(networkViews.get(0)) :
+					null;
+			
 			JSONResult res = () -> { return json; };
 			
 			return res;
