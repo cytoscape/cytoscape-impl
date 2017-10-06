@@ -1,8 +1,13 @@
 package org.cytoscape.application.internal;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -35,7 +40,9 @@ import org.osgi.framework.Constants;
  */
 
 public class CyActivator extends AbstractCyActivator {
-	
+
+	private static final String INSTALL_OPTIONS_FILE_NAME = "cytoscape.installoptions";
+
 	@Override
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
@@ -57,5 +64,27 @@ public class CyActivator extends AbstractCyActivator {
 		Properties viewFactoryProperties = new Properties();
 		viewFactoryProperties.put(Constants.SERVICE_RANKING, Integer.MAX_VALUE);
 		registerService(bc, viewFactory, CyNetworkViewFactory.class, viewFactoryProperties);
+
+		// For telemetry
+		final CyProperty<Properties> cyPropertyServiceRef = getService(bc, CyProperty.class,
+				"(cyPropertyName=cytoscape3.props)");
+
+	}
+
+	private void checkIsntallOptions(CyApplicationConfiguration appConfig) {
+		final File installationLocation = appConfig.getInstallationDirectoryLocation();
+		final File optionFile = new File(
+				installationLocation.getAbsolutePath(), INSTALL_OPTIONS_FILE_NAME);
+
+		if(optionFile.exists()) {
+			// Extract
+			final Properties prop = new Properties();
+			try {
+				final FileInputStream is = new FileInputStream(optionFile);
+				prop.load(is);
+			} catch(IOException e) {
+
+			}
+		}
 	}
 }
