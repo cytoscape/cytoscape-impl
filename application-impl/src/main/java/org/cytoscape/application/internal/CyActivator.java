@@ -115,7 +115,7 @@ public class CyActivator extends AbstractCyActivator {
 				cyPropertyServiceRef.getProperties().setProperty(PROP_PREFIX + "." + SHARE_STATISTICS_DATE_TAG, shareStatisticsDate);
 			} else {
 			    // Define date format.
-				final SimpleDateFormat parser = new SimpleDateFormat("yyyy/mm/dd hh:mm:ss");
+				final SimpleDateFormat parser = new SimpleDateFormat("yyyymmdd hhmmss");
 				try {
 					final Date oldDate = parser.parse(currentDate);
 					final Date newDate = parser.parse(shareStatisticsDate);
