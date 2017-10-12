@@ -1,6 +1,5 @@
 package org.cytoscape.jobs.internal;
 
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
@@ -71,7 +70,6 @@ public class CyActivator extends AbstractCyActivator {
 			Properties guiJobProperties = new Properties();
 			guiJobProperties.setProperty(TITLE, "Job Status Monitor");
 			guiJobProperties.setProperty(PREFERRED_MENU, "Tools");
-			guiJobProperties.setProperty(IN_TOOL_BAR, "true");
 			registerService(bc, jobMonitor, TaskFactory.class, guiJobProperties);
 		}
 
