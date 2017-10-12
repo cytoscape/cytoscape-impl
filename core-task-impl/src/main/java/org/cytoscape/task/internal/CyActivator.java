@@ -2251,7 +2251,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/help-32.png").toString());
 			props.setProperty(TITLE, "Help");
 			props.setProperty(TOOLTIP, "Link to context sensitive help");
-			props.setProperty(TOOL_BAR_GRAVITY, "65.5");
+			props.setProperty(TOOL_BAR_GRAVITY, "" + Float.MAX_VALUE);
 			props.setProperty(IN_TOOL_BAR, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
