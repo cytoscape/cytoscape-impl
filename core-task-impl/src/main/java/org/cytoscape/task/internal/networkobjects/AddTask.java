@@ -25,73 +25,72 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
-public class AddTask extends AbstractTask {
-	Set<CyEdge> newEdges;
-	Set<CyNode> newNodes;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 
-	@Tunable(description="Network to add to", context="nogui")
-	public CyNetwork network = null;
+public class AddTask extends AbstractTask implements ObservableTask {
+	final CyServiceRegistrar serviceRegistrar;
 
-	// Nodes
-	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="List of nodes to add (must be present in collection)", context="nogui")
-	public NodeList getnodeList() {
-		nodeList.setNetwork(((CySubNetwork)network).getRootNetwork());
-		return nodeList;
-	}
-	public void setnodeList(NodeList setValue) {}
+	@ContainsTunables
+	public NodeAndEdgeTunable nodesAndEdges;
 
-	// Edges
-	public EdgeList edgeList = new EdgeList(null);
-	@Tunable(description="List of edges to add (must be present in collection)", context="nogui")
-	public EdgeList getedgeList() {
-		edgeList.setNetwork(((CySubNetwork)network).getRootNetwork());
-		return edgeList;
-	}
-	public void setedgeList(EdgeList setValue) {}
+	List<CyNode> nodeList;
+	List<CyEdge> edgeList;
+	CyNetwork network;
 
-	public AddTask() {
+	public AddTask(final CyServiceRegistrar cyServiceRegistrar) {
+		serviceRegistrar = cyServiceRegistrar;
+		nodesAndEdges = new NodeAndEdgeTunable(cyServiceRegistrar);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
+		network = nodesAndEdges.getNetwork();
 		if (network == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
 			return;
 		}	
 
-		if ((nodeList.getValue() == null||nodeList.getValue().size() == 0) && 
-        (edgeList.getValue() == null||edgeList.getValue().size() == 0)) {
+		nodeList = nodesAndEdges.getNodeList(false);
+		edgeList = nodesAndEdges.getEdgeList(false);
+
+		if ((nodeList == null||nodeList.size() == 0) && 
+        (edgeList == null||edgeList.size() == 0)) {
 			taskMonitor.showMessage(TaskMonitor.Level.WARN, "Nothing to add");
 			return;
 		}	
 
-		int nodeCount= nodeList.getValue().size();
+		int nodeCount= nodeList.size();
 		int edgeCount= 0;
 
-		for (CyNode node: nodeList.getValue())
+		for (CyNode node: nodeList)
 			((CySubNetwork)network).addNode(node);
 
 		// To make this a little more sane, we only add an edge
 		// if the source and destination node are already in
 		// the target network.  This allows us to add a set of
 		// nodes and "all" edges
-		for (CyEdge edge: edgeList.getValue()) {
+		for (CyEdge edge: edgeList) {
 			if (network.containsNode(edge.getSource()) && network.containsNode(edge.getTarget())) {
 				((CySubNetwork)network).addEdge(edge);
 				edgeCount++;
@@ -99,5 +98,46 @@ public class AddTask extends AbstractTask {
 		}
 
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added "+nodeCount+" nodes and "+edgeCount+" edges to network "+network.toString());
+	}
+
+	public Object getResults(Class type) {
+		List<CyIdentifiable> identifiables = new ArrayList();
+		if (nodeList != null)
+			identifiables.addAll(nodeList);
+		if (edgeList != null)
+			identifiables.addAll(edgeList);
+		if (type.equals(List.class)) {
+			return identifiables;
+		} else if (type.equals(String.class)){
+			if (identifiables.size() == 0)
+				return "<none>";
+			String ret = "";
+			if (nodeList != null && nodeList.size() > 0) {
+				ret += "Nodes added: \n";
+				for (CyNode node: nodeList) {
+					ret += "   "+network.getRow(node).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			if (edgeList != null && edgeList.size() > 0) {
+				ret += "Edges added: \n";
+				for (CyEdge edge: edgeList) {
+					ret += "   "+network.getRow(edge).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			return ret;
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (identifiables == null || identifiables.size() == 0) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+			}};
+			return res;
+		}
+		return identifiables;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}
 }

@@ -27,10 +27,13 @@ import java.util.List;
  * #L%
  */
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -52,19 +55,39 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	VisualMappingManager visualMappingManager;
 	CyServiceRegistrar serviceRegistrar;
 	
-	@Tunable(description="Network to add a edge to", context="nogui")
+	@Tunable(description="Network", context="nogui", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Name of edge source node", context="nogui")
+	@Tunable(description="Name of edge source node", 
+	         longDescription="Enter the name of an existing node in the network "+
+					                 "to be the source of the edge.  Note that this is the "+
+													 "name as defined in the 'name' column of the network", 
+					 exampleStringValue="Node 1", context="nogui", required=true)
 	public String sourceName = null;
 
-	@Tunable(description="Name of edge target node", context="nogui")
+	@Tunable(description="Name of edge target node", 
+	         longDescription="Enter the name of an existing node in the network "+
+					                 "to be the target of the edge.  Note that this is the "+
+													 "name as defined in the 'name' column of the network", 
+					 exampleStringValue="Node 2", context="nogui", required=true)
 	public String targetName = null;
 
-	@Tunable(description="Is the edge directed?", context="nogui")
+	@Tunable(description="Is the edge directed?", 
+	         longDescription="Whether the edge should be directed or not.  Even though "+
+					                 "all edges in Cytoscape have a source and target, by default "+
+													 "they are treated as undirected.  Setting this to 'true' will "+
+													 "flag some algorithms to treat them as directed, although many "+
+													 "current implementations will ignore this flag.",
+					 exampleStringValue="false", context="nogui")
 	public boolean isDirected = false;
 
-	@Tunable(description="Name of the edge to add", context="nogui")
+	@Tunable(description="Name of the edge to add", 
+	         longDescription="Set the 'name' and 'shared name' columns for this edge to the "+
+					                 "provided value.",
+					 exampleStringValue="Sample Edge",
+	         context="nogui")
 	public String name = null;
 
 	public AddEdgeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper, CyServiceRegistrar serviceRegistrar) {
@@ -77,8 +100,11 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
-			return;
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
+				return;
+			}
 		}	
 
 		if (sourceName == null) {
@@ -119,6 +145,7 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 
 		if (name != null) {
 			network.getRow(newEdge).set(CyNetwork.NAME, name);
+			network.getRow(newEdge).set(CyRootNetwork.SHARED_NAME, name);
 		}
 		cyEventHelper.flushPayloadEvents();
 		if (networkViewManager.viewExists(network)) {
