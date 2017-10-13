@@ -87,7 +87,7 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 		if ( layout != null ) {
 			layoutMap.put(layout.getName(),layout);
 
-			if (serviceRegistrar != null) {
+			if (serviceRegistrar != null && !layout.getName().startsWith("yfiles.")) {
 				Properties layoutProps = new Properties();
 				layoutProps.setProperty(COMMAND, layout.getName());
 				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
