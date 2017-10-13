@@ -1,5 +1,29 @@
 package org.cytoscape.io.internal.util;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.CookieHandler;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
+import java.net.InetSocketAddress;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.Proxy.Type;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.Properties;
+
+import javax.xml.bind.DatatypeConverter;
+
+import org.apache.log4j.Logger;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
@@ -24,44 +48,10 @@ package org.cytoscape.io.internal.util;
  * #L%
  */
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.CookieHandler;
-import java.net.CookieManager;
-import java.net.CookiePolicy;
-import java.net.InetSocketAddress;
-import java.net.PasswordAuthentication;
-import java.net.Proxy;
-import java.net.Proxy.Type;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Properties;
-import java.util.jar.JarInputStream;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipInputStream;
-
-import javax.xml.bind.DatatypeConverter;
-
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.apache.log4j.Logger;
-
-/**
- * 
- */
 public class StreamUtilImpl implements StreamUtil {
 
 	private static final Logger logger = Logger.getLogger(CyUserLog.NAME);
 	
-	private static final String GZIP = ".gz";
-	private static final String ZIP = ".zip";
-	private static final String JAR = ".jar";
-
 	private static final int msConnectionTimeout = 2000;
 	
 	private String userName;
