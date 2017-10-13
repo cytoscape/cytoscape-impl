@@ -955,12 +955,16 @@ public class CyActivator extends AbstractCyActivator {
 		// ---------- COMMANDS ----------
 		// NAMESPACE: network
 		{
-			AddTaskFactory factory = new AddTaskFactory();
+			AddTaskFactory factory = new AddTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "add");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION,
 					"Add nodes and edges to a network (they must be in the current collection)");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Adds nodes and edges to an existing network.  The nodes and edges to be added "+
+					"must already exist in the network collection.  This command is most often used "+
+					"to populate a subnetwork with selected nodes and edges from a parent network.");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -970,24 +974,40 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "add edge");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Add an edge between two nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+				"Add a new edge between two existing nodes in a network.  The names of the "+
+				"nodes must be specified and much match the value in the 'name' column "+
+				"for each node");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			AddNodeTaskFactory factory = new AddNodeTaskFactory(visualMappingManagerServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+					cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "add node");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Add a new node to a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+				"Add a new node to an existing network.  The name of the "+
+				"node must be provided.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			SelectTaskFactory factory = new SelectTaskFactory(cyApplicationManagerServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+					cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "select");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes or edges in a network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+				"Select nodes and/or edges in a network.  This command provides options to invert the selection, "+
+				"add first neighbors, add adjacent edges of selected nodes, and add adjacent nodes of selected edges");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,122,495]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
