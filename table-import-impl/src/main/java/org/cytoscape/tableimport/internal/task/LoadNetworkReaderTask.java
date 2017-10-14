@@ -88,37 +88,80 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private URI uri;
 	private File tempFile;
 	private TaskMonitor taskMonitor;
+	private boolean nogui = false;
 	
-	@Tunable(description = "Text Delimiters:", context = "both")
+	@Tunable(description = "Text delimiters", 
+	         longDescription = "Select the delimiters to use to separate columns in the table, "+
+					                   "from the list '``,``',' ','``TAB``', or '``;``'.  ``TAB`` and '``,``' "+
+														 "are used by default",
+	         exampleStringValue = ";,\\,",
+	         context = "both")
 	public ListMultipleSelection<String> delimiters;
 
-	@Tunable(description = "Text Delimiters for data list type:", context = "both")
+	@Tunable(description = "Text delimiters for lists", 
+	         longDescription = "Select the delimiters to use to separate list entries in a list, "+
+					                   "from the list '``|``','``\\``','``/``', or '``,``'.  ``|`` is "+
+														 "used by default",
+	         exampleStringValue = "|,\\",
+	         context = "both")
 	public ListSingleSelection<String> delimitersForDataList;
 
-	@Tunable(description = "Start Load Row:", context = "both")
+	@Tunable(description = "Starting row", 
+	         longDescription = "The starting row of the import.  This is used to skip over comments and "+
+					                   "other non-data rows at the beginning of the file.",
+	         exampleStringValue = "1",
+	         context = "both")
 	public int startLoadRow = -1;
 
-	@Tunable(description = "First row used for column names:", context = "both")
+	@Tunable(description = "Column names in first row?", 
+	         exampleStringValue = "false",
+	         longDescription = "If this is ``true`` then the first row should contain the names of the columns. "+
+	                           "Note that ``startLoadRow`` must be set for this to work properly",
+	         context = "both")
 	public boolean firstRowAsColumnNames;
 
-	@Tunable(description = "Column for source interaction:", context = "both")
+	@Tunable(description = "Source column number", 
+	         exampleStringValue = "1",
+	         longDescription = "The column index that contains the source node identifiers.",
+	         required = true,
+	         context = "both")
 	public int indexColumnSourceInteraction = -1;
 
-	@Tunable(description = "Column for target interaction:", context = "both")
+	@Tunable(description = "Target column number", 
+	         longDescription = "The column index that contains the target node identifiers.  If this is not "+
+	                           "specified then the resulting network will have no edges",
+	         exampleStringValue = "3",
+	         context = "both")
 	public int indexColumnTargetInteraction = -1;
 
-	@Tunable(description = "Column for interaction type:", context = "both")
+	@Tunable(description = "Interaction column number", 
+	         longDescription = "The column index that contains the interaction type.  This is not required.",
+	         exampleStringValue = "2",
+	         context = "both")
 	public int indexColumnTypeInteraction = -1;
 
-	@Tunable(description = "Default interaction type:", context = "both")
+	@Tunable(description = "Default interaction type",
+	         longDescription = "Used to set the default interaction type to use when there is no interaction type column.",
+	         exampleStringValue = "pp",
+	         context = "both")
 	public String defaultInteraction = TypeUtil.DEFAULT_INTERACTION;
 	
-	@Tunable(description = "List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context = "nongui")
+	@Tunable(description = "Column data types",
+	         longDescription = "List of column data types ordered by "+
+					                   "column index (e.g. \"string,int,long,"+
+														 "double,boolean,intlist\" or just "+
+														 "\"s,i,l,d,b,il\"):", 
+	         exampleStringValue = "string,int,string,double,double",
+					 context = "nongui")
 	public String dataTypeList;
 	
 	private NetworkTableMappingParameters ntmp;
 
 	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar) {
+		this(serviceRegistrar, false);
+	}
+
+	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar, boolean nogui) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<>();
@@ -134,6 +177,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
 		tempList.add(TextDelimiter.COMMA.getDelimiter());
 		delimitersForDataList = new ListSingleSelection<>(tempList);
+		this.nogui = nogui;
 	}
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
@@ -176,6 +220,20 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	public void run(final TaskMonitor tm) throws Exception {
 		tm.setTitle("Loading network from table");
 		tm.setProgress(0.0);
+
+		if (nogui) {
+			// Handle the validation
+			nogui = false;
+			ValidationState state = getValidationState(new StringBuffer(80));
+			switch (state) {
+				case INVALID:
+					tm.showMessage(TaskMonitor.Level.ERROR, "Source column must be specified");
+					return;
+				case REQUEST_CONFIRMATION:
+					tm.showMessage(TaskMonitor.Level.WARN, "Target column is not specified.  No edges will be created");
+			}
+			nogui = true;
+		}
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
@@ -380,6 +438,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
+		// If we're in nogui mode, we really don't want to have this
+		// handled by the TunableValidation.  We'll call this method
+		// ourselves in the run method
+		if (nogui) return ValidationState.OK;
 		try {
 			if (indexColumnSourceInteraction <= 0) {
 				if (indexColumnTargetInteraction <= 0) {

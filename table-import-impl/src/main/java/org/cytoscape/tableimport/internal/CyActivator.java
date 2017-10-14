@@ -4,7 +4,10 @@ import static org.cytoscape.io.DataCategory.NETWORK;
 import static org.cytoscape.io.DataCategory.TABLE;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 
 import java.util.Properties;
 
@@ -177,6 +180,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "import file");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a network from a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+			                  "Import a new network from a tabular formatted file type "+
+                        "(e.g. ``csv``, ``tsv``, ``Excel``, etc.).  Use ``network load file`` "+
+                        "to load network formatted files.  This command will create a "+
+                        "new network collection if no current network collection is selected, otherwise "+
+                        "it will add the network to the current collection. The SUIDs of the new networks "+
+                        "and views are returned.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, ImportNoGuiNetworkReaderFactory.JSON_EXAMPLE);
 			// Register the service as a TaskFactory for commands
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -186,6 +198,15 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "import url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Import a network from a URL");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+			                  "Import a new network from a URL that points to a tabular formatted file type "+
+                        "(e.g. ``csv``, ``tsv``, ``Excel``, etc.).  Use ``network load url`` "+
+                        "to load network formatted files.  This command will create a "+
+                        "new network collection if no current network collection is selected, otherwise "+
+                        "it will add the network to the current collection. The SUIDs of the new networks "+
+                        "and views are returned.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, ImportNoGuiNetworkReaderFactory.JSON_EXAMPLE);
 			// Register the service as a TaskFactory for commands
 			registerService(bc, factory, TaskFactory.class, props);
 		}
