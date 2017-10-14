@@ -1,11 +1,13 @@
 package org.cytoscape.task.internal.network;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.event.CyEventHelper;
@@ -17,11 +19,14 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
 /*
@@ -48,15 +53,19 @@ import org.cytoscape.work.undo.UndoSupport;
  * #L%
  */
 
-public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
+public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask implements ObservableTask {
 	
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
+	private CyNetwork newNetwprk = null;
 
 	@Tunable(description = "Name of new network", gravity = 1.0, context = "nogui")
 	public String networkName = null;
 
-	@Tunable(description = "Source network", gravity = 2.0, context = "nogui")
+	@Tunable(description = "Source network", 
+	         longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+	         exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         gravity = 2.0, context = "nogui")
 	public CyNetwork getsource() {
 		return parentNetwork;
 	}
@@ -67,7 +76,10 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 
 	public NodeList nodeList = new NodeList(null);
 
-	@Tunable(description = "List of nodes for new network", gravity = 3.0, context = "nogui")
+	@Tunable(description = "List of nodes for new network", 
+	         longDescription = StringToModel.CY_NODE_LIST_LONG_DESCRIPTION,
+	         exampleStringValue = StringToModel.CY_NODE_LIST_EXAMPLE_STRING,
+	         gravity = 3.0, context = "nogui")
 	public NodeList getnodeList() {
 		nodeList.setNetwork(parentNetwork);
 		return nodeList;
@@ -78,7 +90,10 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 
 	public EdgeList edgeList = new EdgeList(null);
 
-	@Tunable(description = "List of edges for new network", gravity = 4.0, context = "nogui")
+	@Tunable(description = "List of edges for new network", 
+	         longDescription = StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION,
+	         exampleStringValue = StringToModel.CY_EDGE_LIST_EXAMPLE_STRING,
+	         gravity = 4.0, context = "nogui")
 	public EdgeList getedgeList() {
 		edgeList.setNetwork(parentNetwork);
 		return edgeList;
@@ -87,7 +102,10 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	public void setedgeList(EdgeList setValue) {
 	}
 
-	@Tunable(description = "Exclude connecting edges", gravity = 5.0, context = "nogui")
+	@Tunable(description = "Exclude connecting edges", 
+	         longDescription = "Unless this is set to true, edges that connect nodes in the nodeList "+
+					                   "are implicitly included",
+	         gravity = 5.0, context = "nogui")
 	public boolean excludeEdges = false;
 	
 	public NewNetworkCommandTask(final UndoSupport undoSupport, 
@@ -161,4 +179,28 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 		
 		return super.getNetworkName();
 	}
+
+	public Object getResults(Class type) {
+		if (type.equals(CyNetwork.class)) {
+			return newNet;
+		} else if (type.equals(String.class)){
+			if (newNet == null)
+				return "Network not created";
+			return "Created new network "+newNet.toString();
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (newNet == null)
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(newNet);
+			}};
+			return res;
+		}
+		return newNet;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNetwork.class, String.class, JSONResult.class);
+	}
+
 }

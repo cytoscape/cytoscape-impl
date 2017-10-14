@@ -100,6 +100,8 @@ public class AddTask extends AbstractTask implements ObservableTask {
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added "+nodeCount+" nodes and "+edgeCount+" edges to network "+network.toString());
 	}
 
+	@Override
+	@SuppressWarnings({"rawtypes","unchecked"})
 	public Object getResults(Class type) {
 		List<CyIdentifiable> identifiables = new ArrayList();
 		if (nodeList != null)

@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -32,24 +33,30 @@ import java.util.Set;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
+public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements ObservableTask {
 	
 	private CyNetwork network;
 	private final CyServiceRegistrar serviceRegistrar;
+	private List<CyNode> selectedNodes;
+	private Set<CyEdge> selectedEdges;
 
 	@ContainsTunables
 	public NodeAndEdgeTunable tunables;
@@ -65,8 +72,6 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 	public void run(final TaskMonitor taskMonitor) {
 		taskMonitor.setProgress(0.0);
 
-		final List<CyNode> selectedNodes;
-		final Set<CyEdge> selectedEdges;
 
 		List<CyNode> nodeList = tunables.getNodeList(false);
 		List<CyEdge> edgeList = tunables.getEdgeList(false);
@@ -120,5 +125,46 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask {
 			netView.updateView();
 		
 		taskMonitor.setProgress(1.0);
+	}
+
+	public Object getResults(Class type) {
+		List<CyIdentifiable> identifiables = new ArrayList();
+		if (selectedNodes != null)
+			identifiables.addAll(selectedNodes);
+		if (selectedEdges != null)
+			identifiables.addAll(selectedEdges);
+		if (type.equals(List.class)) {
+			return identifiables;
+		} else if (type.equals(String.class)){
+			if (identifiables.size() == 0)
+				return "<none>";
+			String ret = "";
+			if (selectedNodes != null && selectedNodes.size() > 0) {
+				ret += "Nodes deleted: \n";
+				for (CyNode node: selectedNodes) {
+					ret += "   "+network.getRow(node).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			if (selectedEdges != null && selectedEdges.size() > 0) {
+				ret += "Edges deleted: \n";
+				for (CyEdge edge: selectedEdges) {
+					ret += "   "+network.getRow(edge).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			return ret;
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (identifiables == null || identifiables.size() == 0) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+			}};
+			return res;
+		}
+		return identifiables;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}
 }

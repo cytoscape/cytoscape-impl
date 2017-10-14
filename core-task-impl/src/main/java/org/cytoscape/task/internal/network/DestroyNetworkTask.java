@@ -1,7 +1,12 @@
 package org.cytoscape.task.internal.network;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -9,8 +14,11 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -36,18 +44,24 @@ import org.cytoscape.work.Tunable;
  * #L%
  */
 
-public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
+public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements ObservableTask {
 	
 	@Tunable(description = "<html>The selected networks will be lost.<br />Do you want to continue?</html>", params = "ForceSetDirectly=true", context = "gui")
 	public boolean destroyCurrentNetwork = true;
 
-	@Tunable(description = "Network to destroy", context = "nogui")
+	@Tunable(description = "Network to destroy", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context = "nogui")
 	public CyNetwork network;
 	
 	private final CyServiceRegistrar serviceRegistrar;
+	private List<CyNetwork> localNets = null;
 
 	public DestroyNetworkTask(Collection<CyNetwork> nets, CyServiceRegistrar serviceRegistrar) {
 		super(nets);
+		if (nets != null && !nets.isEmpty())
+			localNets = new ArrayList<CyNetwork>(nets);
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -60,21 +74,21 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 			tm.setProgress(0.0);
 			CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			
-			if (networks == null || networks.isEmpty()) {
+			if (localNets == null || localNets.isEmpty()) {
 				if (network == null) {
 					tm.showMessage(TaskMonitor.Level.ERROR, "Need to specify network to destroy");
 					return;
+				} else {
+					localNets = Collections.singletonList(network);
 				}
+			}
+
+			networkCount = localNets.size();
 				
-				destroyNetwork(network, netManager);
-			} else {
-				networkCount = networks.size();
-				
-				for (CyNetwork n : networks) {
-					destroyNetwork(n, netManager);
-					i++;
-					tm.setProgress((i / (double) networkCount));
-				}
+			for (CyNetwork n : localNets) {
+				destroyNetwork(n, netManager);
+				i++;
+				tm.setProgress((i / (double) networkCount));
 			}
 			
 			tm.setProgress(1.0);
@@ -104,5 +118,36 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask {
 			if (destroyedSUID.equals(DataUtils.getParentNetworkSUID(sn)))
 				DataUtils.saveParentNetworkSUID(sn, newParentSUID);
 		}
+	}
+
+	@Override
+	public Object getResults(Class type) {
+		if (localNets == null) return null;
+		if (type.equals(String.class)) {
+			String res = "Destroyed network";
+			if (localNets.size() > 1) res += "s";
+			res += ":\n";
+			for (CyNetwork net: localNets)
+				res += "    "+net.toString()+"\n";
+			return res;
+		} else if (type.equals(CyNetwork.class)) {
+			return localNets.get(0);
+		} else if (type.equals(List.class)) {
+			return localNets;
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (localNets == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(localNets.get(0));
+			}};
+			return res;
+		}
+		return null;
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNetwork.class, List.class, String.class, JSONResult.class);
 	}
 }

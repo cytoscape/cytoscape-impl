@@ -41,6 +41,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -61,7 +62,8 @@ public class NewEmptyNetworkTaskTest {
 	private CyNetworkFactory netFactory = support.getNetworkFactory();
 	private CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
 	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
-	
+
+	@Mock private CyServiceRegistrar serviceRegistrar;
 	@Mock private CyNetworkManager netMgr;
 	@Mock private CyNetworkViewManager netViewMgr;
 	@Mock private CyNetworkNaming namingUtil;
@@ -81,7 +83,7 @@ public class NewEmptyNetworkTaskTest {
 	@Test
 	public void testNewEmptyNetworkTask() throws Exception {
 		final NewEmptyNetworkTask task = new NewEmptyNetworkTask(netFactory, netMgr, netViewMgr, namingUtil, vmm,
-				cyroot, appManager, Collections.singleton(netViewRenderer));
+				cyroot, appManager, Collections.singleton(netViewRenderer), serviceRegistrar);
 		final TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		task.run(taskMonitor);
 

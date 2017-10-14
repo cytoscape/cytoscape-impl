@@ -70,6 +70,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private final RenderingEngineManager renderingEngineMgr;
 	protected final CyGroupManager groupMgr;
 	protected final CyServiceRegistrar serviceRegistrar;
+	protected CySubNetwork newNet;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
@@ -131,7 +132,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		final CySubNetwork newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
+		newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
 		
 		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
 		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
