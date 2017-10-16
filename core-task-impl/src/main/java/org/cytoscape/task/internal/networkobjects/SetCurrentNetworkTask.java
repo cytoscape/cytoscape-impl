@@ -25,20 +25,27 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
-public class SetCurrentNetworkTask extends AbstractTask {
+public class SetCurrentNetworkTask extends AbstractTask implements ObservableTask {
 	CyApplicationManager appManager;
 
-	@Tunable(description="Network to make current", context="nogui")
+	@Tunable(description="Network to make current", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network;
 
 	public SetCurrentNetworkTask(CyApplicationManager appManager) {
@@ -49,6 +56,23 @@ public class SetCurrentNetworkTask extends AbstractTask {
 	public void run(final TaskMonitor taskMonitor) {
 		appManager.setCurrentNetwork(network);
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set current network to "+network.toString());
+	}
+
+	@Override
+	@SuppressWarnings({"rawtypes","unchecked"})
+	public Object getResults(Class type) {
+		if (type.equals(String.class)){
+			return "Set current network to "+network.toString();
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> { return "{}"; };
+			return res;
+		}
+		return null;
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, JSONResult.class);
 	}
 
 }

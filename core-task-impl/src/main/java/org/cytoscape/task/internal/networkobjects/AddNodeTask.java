@@ -25,12 +25,18 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -40,35 +46,48 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class AddNodeTask extends AbstractTask implements ObservableTask {
 	CyNode newNode;
 	CyEventHelper cyEventHelper;
 	CyNetworkViewManager networkViewManager;
 	VisualMappingManager visualMappingManager;
+	final CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="Network to add a node to", context="nogui")
+	@Tunable(description="Network", context="nogui", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Name of the node to add", context="nogui")
+	@Tunable(description="Name of the node to add", 
+	         longDescription="The name of the node, which will be assigned to both "+
+					                 "the 'name' and 'shared name' columns", 
+					 exampleStringValue="Node 1", context="nogui")
 	public String name = null;
 
-	public AddNodeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+	public AddNodeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper,
+	                   CyServiceRegistrar registrar) {
 		cyEventHelper = eventHelper;
 		networkViewManager = viewManager;
 		visualMappingManager = vmm;
+		this.serviceRegistrar = registrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
-			return;
-		}			
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network == null) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
+				return;
+			}
+		}
 
 		newNode = network.addNode();
 		if (name != null) {
 			network.getRow(newNode).set(CyNetwork.NAME, name);
+			network.getRow(newNode).set(CyRootNetwork.SHARED_NAME, name);
 		}
 		cyEventHelper.flushPayloadEvents();
 		if (networkViewManager.viewExists(network)) {
@@ -92,7 +111,19 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 			if (newNode == null)
 				return "<none>";
 			return newNode.toString();
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (newNode == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(newNode);
+			}};
+			return res;
 		}
 		return newNode;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNode.class, String.class, JSONResult.class);
 	}
 }

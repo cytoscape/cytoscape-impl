@@ -913,6 +913,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			} finally {
 				ignoreRowSetEvents = false;
 			}
+			
+			repaint();
 		}
 	}
 	

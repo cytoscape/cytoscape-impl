@@ -3,6 +3,7 @@ package org.cytoscape.view.layout.internal;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,12 +88,13 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 		if ( layout != null ) {
 			layoutMap.put(layout.getName(),layout);
 
-			if (serviceRegistrar != null) {
+			if (serviceRegistrar != null && !layout.getName().startsWith("yfiles.")) {
 				Properties layoutProps = new Properties();
 				layoutProps.setProperty(COMMAND, layout.getName());
 				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
 				layoutProps.setProperty(COMMAND_DESCRIPTION, "Execute the " + layout.toString() + " on a network");
-				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout);
+				layoutProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout, serviceRegistrar);
 				// Register the service as a TaskFactory for commands
 				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);
 				serviceMap.put(layout.getName(), service);

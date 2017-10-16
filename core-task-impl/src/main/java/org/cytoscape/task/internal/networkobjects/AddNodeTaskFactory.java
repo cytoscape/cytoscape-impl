@@ -28,6 +28,7 @@ package org.cytoscape.task.internal.networkobjects;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -35,17 +36,20 @@ import org.cytoscape.work.TaskIterator;
 
 
 public class AddNodeTaskFactory extends AbstractTaskFactory {
-	CyEventHelper cyEventHelper;
-	CyNetworkViewManager cyNetworkViewManager;
-	VisualMappingManager vmm;
+	final CyEventHelper cyEventHelper;
+	final CyNetworkViewManager cyNetworkViewManager;
+	final VisualMappingManager vmm;
+	final CyServiceRegistrar serviceRegistrar;
 
-	public AddNodeTaskFactory(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper) {
+	public AddNodeTaskFactory(VisualMappingManager vmm, CyNetworkViewManager viewManager, 
+	                          CyEventHelper eventHelper, CyServiceRegistrar serviceRegistrar) {
 		cyEventHelper = eventHelper;
 		cyNetworkViewManager = viewManager;
 		this.vmm = vmm;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new AddNodeTask(vmm, cyNetworkViewManager, cyEventHelper));
+		return new TaskIterator(new AddNodeTask(vmm, cyNetworkViewManager, cyEventHelper, serviceRegistrar));
 	}
 }

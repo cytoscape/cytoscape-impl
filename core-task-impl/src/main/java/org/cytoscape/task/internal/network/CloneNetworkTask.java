@@ -2,6 +2,7 @@ package org.cytoscape.task.internal.network;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 import java.util.WeakHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -27,8 +29,10 @@ import org.cytoscape.model.VirtualColumnInfo;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.view.CopyExistingViewTask;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -38,6 +42,8 @@ import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -81,7 +87,11 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
-	
+	private final CyServiceRegistrar serviceRegistrar;
+
+	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	public CyNetwork network = null;
+
 	private CyNetworkView result;
 
 	public CloneNetworkTask(final CyNetwork net,
@@ -97,7 +107,8 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 							final CyGroupManager groupMgr,
 							final CyGroupFactory groupFactory,
 							final RenderingEngineManager renderingEngineMgr,
-							final CyNetworkViewFactory nullNetworkViewFactory) {
+							final CyNetworkViewFactory nullNetworkViewFactory,
+							final CyServiceRegistrar registrar) {
 		super(net, netmgr, networkViewManager);
 
 		this.vmm = vmm;
@@ -111,10 +122,15 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		this.groupFactory = groupFactory;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.serviceRegistrar = registrar;
 	}
 
 	public void run(TaskMonitor tm) {
 		tm.setProgress(0.0);
+
+		// nogui?
+		if (network != null)
+			parentNetwork = network;
 		
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);
@@ -150,9 +166,25 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		if (result == null) return null;
 		if (type.equals(String.class))
 			return result.toString();
-		if (type.equals(CyNetwork.class))
+		else if (type.equals(CyNetwork.class))
 			return result.getModel();
-		return result;
+		else if (type.equals(CyNetworkView.class))
+			return result;
+		else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (result == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(result);
+			}};
+			return res;
+		}
+		return result.toString();
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNetworkView.class, CyNetwork.class, String.class, JSONResult.class);
 	}
 
 	private CyNetwork cloneNetwork(final CyNetwork origNet) {

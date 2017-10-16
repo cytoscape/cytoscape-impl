@@ -48,8 +48,10 @@ public class SetPreferredLayoutTask extends AbstractTask {
 		final List<String> layoutNames = new ArrayList<>();
 		final CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
 
-		for (CyLayoutAlgorithm alg : layoutManager.getAllLayouts())
-			layoutNames.add(alg.getName());
+		for (CyLayoutAlgorithm alg : layoutManager.getAllLayouts()) {
+			if (!alg.getName().startsWith("yfiles."))
+				layoutNames.add(alg.getName());
+		}
 
 		preferredLayout = new ListSingleSelection<>(layoutNames);
 	}

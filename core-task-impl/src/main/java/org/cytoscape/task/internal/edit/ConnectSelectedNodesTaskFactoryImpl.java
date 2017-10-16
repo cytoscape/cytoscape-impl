@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.edit;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
@@ -44,18 +45,21 @@ public class ConnectSelectedNodesTaskFactoryImpl extends AbstractNetworkTaskFact
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewManager netViewMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public ConnectSelectedNodesTaskFactoryImpl(final UndoSupport undoSupport, final CyEventHelper eventHelper,
-			final VisualMappingManager vmm, final CyNetworkViewManager netViewMgr) {
+			final VisualMappingManager vmm, final CyNetworkViewManager netViewMgr,
+			final CyServiceRegistrar serviceRegistrar) {
 		this.undoSupport = undoSupport;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
 		this.netViewMgr = netViewMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final CyNetwork network) {
-		return new TaskIterator(new ConnectSelectedNodesTask(undoSupport, network, eventHelper, vmm, netViewMgr));
+		return new TaskIterator(new ConnectSelectedNodesTask(undoSupport, network, eventHelper, vmm, netViewMgr, serviceRegistrar));
 	}
 
 	/**
@@ -63,7 +67,7 @@ public class ConnectSelectedNodesTaskFactoryImpl extends AbstractNetworkTaskFact
 	 */
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new ConnectSelectedNodesTask(undoSupport, networkView.getModel(), eventHelper, vmm, netViewMgr));
+		return new TaskIterator(new ConnectSelectedNodesTask(undoSupport, networkView.getModel(), eventHelper, vmm, netViewMgr, serviceRegistrar));
 	}
 
 	@Override

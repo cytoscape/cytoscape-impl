@@ -27,19 +27,22 @@ package org.cytoscape.task.internal.networkobjects;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class GetNetworkTaskFactory extends AbstractTaskFactory {
-	CyApplicationManager appMgr;
+	final private CyApplicationManager appMgr;
+	final private CyServiceRegistrar registrar;
 
-	public GetNetworkTaskFactory(CyApplicationManager appMgr) {
+	public GetNetworkTaskFactory(final CyApplicationManager appMgr, final CyServiceRegistrar registrar) {
 		this.appMgr = appMgr;
+		this.registrar = registrar;
 	}
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(
-			new GetNetworkTask(appMgr));
+			new GetNetworkTask(appMgr, registrar));
 	}
 }

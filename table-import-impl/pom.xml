@@ -135,6 +135,11 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>work-swing-api</artifactId>
 		</dependency>
+
+		<dependency>
+    		<groupId>org.cytoscape</groupId>
+    		<artifactId>util-api</artifactId>
+		</dependency>
     
 		<!-- Apache poi -->
 		<dependency>
