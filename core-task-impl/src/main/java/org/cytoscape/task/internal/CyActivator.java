@@ -1361,6 +1361,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, UnGroupTaskFactory.class, props);
 
@@ -1368,6 +1370,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "ungroup");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Ungroup a set of previously grouped nodes");
+			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Ungroup Selected Nodes to the nodes context also
@@ -1380,6 +1384,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "false");
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(PREFERRED_ACTION, "NEW");
+			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 			registerService(bc, factory, UnGroupNodesTaskFactory.class, props);
 		}
@@ -1400,6 +1406,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "collapse");
 			props.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace?
 			props.setProperty(COMMAND_DESCRIPTION, "Collapse a group"); // TODO right namespace?
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); // TODO right namespace?
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); // TODO right namespace?
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
