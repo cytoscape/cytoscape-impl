@@ -45,12 +45,12 @@ import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -234,34 +234,27 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
 			return;
 
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run () {
-					changeCanvas(cnvs);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (!(this instanceof ArrowAnnotationImpl)) {
+				for (ArrowAnnotation arrow: arrowList) {
+					if (arrow instanceof DingAnnotation)
+						((DingAnnotation)arrow).changeCanvas(cnvs);
 				}
-			});
-			return;
-		}
-
-		if (!(this instanceof ArrowAnnotationImpl)) {
-			for (ArrowAnnotation arrow: arrowList) {
-				if (arrow instanceof DingAnnotation)
-					((DingAnnotation)arrow).changeCanvas(cnvs);
 			}
-		}
 
-		// Remove ourselves from the current canvas
-		canvas.remove(this);
+			// Remove ourselves from the current canvas
+			canvas.remove(this);
 
-		canvas.repaint();  // update the canvas
+			canvas.repaint();  // update the canvas
 
-		// Set the new canvas
-		setCanvas(cnvs);
+			// Set the new canvas
+			setCanvas(cnvs);
 
-		// Add ourselves
-		canvas.add(this);
+			// Add ourselves
+			canvas.add(this);
 
-		canvas.repaint();  // update the canvas
+			canvas.repaint();  // update the canvas
+		});
 	}
 
 	@Override
@@ -284,25 +277,20 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void addComponent(final JComponent cnvs) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { addComponent(cnvs); }
-			});
-			return;
-		}
-
-		if (cnvs == null && canvas != null) {
-
-		} else if (cnvs == null) {
-			setCanvas(FOREGROUND);
-		} else {
-			if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
-				setCanvas(BACKGROUND);
-			else
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (cnvs == null && canvas != null) {
+	
+			} else if (cnvs == null) {
 				setCanvas(FOREGROUND);
-		}
-		canvas.add(this.getComponent());
-		canvas.setComponentZOrder(this, 0);
+			} else {
+				if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
+					setCanvas(BACKGROUND);
+				else
+					setCanvas(FOREGROUND);
+			}
+			canvas.add(this.getComponent());
+			canvas.setComponentZOrder(this, 0);
+		});
 	}
     
 	@Override
@@ -332,24 +320,16 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	public void setLocation(final int x, final int y) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setLocation(x, y); }
-			});
-			return;
-		}
-		super.setLocation(x, y);
-		canvas.modifyComponentLocation(x, y, this);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			super.setLocation(x, y);
+			canvas.modifyComponentLocation(x, y, this);
+		});
 	}
 
 	public void setSize(final int width, final int height) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setSize(width, height); }
-			});
-			return;
-		}
-		super.setSize(width, height);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			super.setSize(width, height);
+		});
 	}
 
 	public Point getLocation() { return super.getLocation(); }
@@ -361,23 +341,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	public void removeAnnotation() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { removeAnnotation(); }
-			});
-			return;
-		}
-
-		canvas.remove(this);
-		cyAnnotator.removeAnnotation(this);
-		for (ArrowAnnotation arrow: arrowList) {
-			if (arrow instanceof DingAnnotation)
-				((DingAnnotation)arrow).removeAnnotation();
-		}
-		if (parent != null)
-			parent.removeMember(this);
-
-		canvas.repaint();
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			canvas.remove(this);
+			cyAnnotator.removeAnnotation(this);
+			for (ArrowAnnotation arrow: arrowList) {
+				if (arrow instanceof DingAnnotation)
+					((DingAnnotation)arrow).removeAnnotation();
+			}
+			if (parent != null)
+				parent.removeMember(this);
+	
+			canvas.repaint();
+		});
 	}
 
 	public void resizeAnnotation(double width, double height) {};
