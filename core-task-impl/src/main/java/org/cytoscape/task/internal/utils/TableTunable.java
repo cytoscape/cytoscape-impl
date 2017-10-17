@@ -31,7 +31,7 @@ import org.cytoscape.work.Tunable;
 public class TableTunable {
 	CyTableManager tableManager;
 
-	@Tunable(description="Table", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="defaultNode")
+	@Tunable(description="Table", context="nogui", longDescription="Specifies a table by table name. If the prefix ```SUID:``` is used, the table corresponding the SUID will be returned.", exampleStringValue="galFiltered.sif default node")
 	public String table;
 
 	public TableTunable(CyTableManager tableManager) {
