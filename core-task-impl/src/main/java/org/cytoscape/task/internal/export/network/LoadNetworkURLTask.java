@@ -46,7 +46,8 @@ public class LoadNetworkURLTask extends AbstractLoadNetworkTask {
 	@Tunable(description="The URL to load:", 
 	         longDescription = "Select a URL that points to a network format file.  This command does not support "+
 					                   "csv or Excel files.  Use ``network import url`` for that.",
-	         params = "fileCategory=network;input=true")
+	         exampleStringValue = "http://www.mydomain.edu/exampleNetworks/galFiltered.sif",
+	         params = "fileCategory=network;input=true", required=true)
 	public URL url;
 	
 	static String BAD_INTERNET_SETTINGS_MSG = "<html><p>Cytoscape has failed to connect to the URL. Please ensure that:</p><p><ol><li>the URL is correct,</li><li>your computer is able to connect to the Internet, and</li><li>your proxy settings are correct.</li></ol></p><p>The reason for the failure is: %s</html>";

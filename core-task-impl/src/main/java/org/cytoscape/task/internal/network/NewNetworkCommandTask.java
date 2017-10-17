@@ -180,6 +180,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask impl
 		return super.getNetworkName();
 	}
 
+	@SuppressWarnings({"rawtypes","unchecked"})
 	public Object getResults(Class type) {
 		if (type.equals(CyNetwork.class)) {
 			return newNet;
@@ -191,8 +192,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask impl
 			JSONResult res = () -> {if (newNet == null)
 				return "{}";
 			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(newNet);
+				return ""+newNet.getSUID();
 			}};
 			return res;
 		}

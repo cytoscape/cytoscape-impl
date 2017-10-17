@@ -43,10 +43,11 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.json.JSONResult;
 
-public class UnHideCommandTask extends AbstractTask {
+public class UnHideCommandTask extends AbstractTask implements ObservableTask {
 
 	private CyServiceRegistrar serviceRegistrar;
 	private List<CyEdge> edges;

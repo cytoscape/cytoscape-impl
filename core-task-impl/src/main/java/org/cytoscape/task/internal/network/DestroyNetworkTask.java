@@ -138,8 +138,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			JSONResult res = () -> {if (localNets == null) 
 				return "{}";
 			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(localNets.get(0));
+				return ""+localNets.get(0).getSUID();
 			}};
 			return res;
 		}

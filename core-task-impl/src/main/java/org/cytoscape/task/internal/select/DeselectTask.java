@@ -84,8 +84,8 @@ public class DeselectTask extends AbstractSelectTask implements ObservableTask {
 		if(views.size() != 0)
 			view = views.iterator().next();
 
-		List<CyNode> deselectedNodes = nodesAndEdges.getNodeList(false);
-		List<CyEdge> deselectedEdges = nodesAndEdges.getEdgeList(false);
+		deselectedNodes = nodesAndEdges.getNodeList(false);
+		deselectedEdges = nodesAndEdges.getEdgeList(false);
 		int edgeCount = 0;
 		int nodeCount = 0;
 
@@ -107,10 +107,12 @@ public class DeselectTask extends AbstractSelectTask implements ObservableTask {
 
 	public Object getResults(Class type) {
 		List<CyIdentifiable> identifiables = new ArrayList<>();
-		if (deselectedNodes != null)
+		if (deselectedNodes != null && deselectedNodes.size() > 0) {
 			identifiables.addAll(deselectedNodes);
-		if (deselectedEdges != null)
+		}
+		if (deselectedEdges != null && deselectedEdges.size() > 0) {
 			identifiables.addAll(deselectedEdges);
+		}
 		if (type.equals(List.class)) {
 			return identifiables;
 		} else if (type.equals(String.class)){

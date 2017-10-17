@@ -90,6 +90,13 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 				return stringBuilder.toString();
 			};
 			return res;
+		} else if (type.equals(String.class)) {
+			StringBuilder stringBuilder = new StringBuilder("Properties for "+DataUtils.getIdentifiableType(type)+"s:");
+			int count = resultList.size();
+			for (String column : resultList) {
+				stringBuilder.append("    " + column + "\n");
+			}
+			return stringBuilder.toString();
 		}
 		return resultList;
 	}

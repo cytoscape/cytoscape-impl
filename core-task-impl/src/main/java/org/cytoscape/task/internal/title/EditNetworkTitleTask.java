@@ -1,9 +1,11 @@
 package org.cytoscape.task.internal.title;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTask;
@@ -47,10 +49,17 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		return "Rename Network";
 	}
 
-	@Tunable(description = "New title for network")
+	@Tunable(description = "New title for network", 
+	         longDescription="Enter a new title for the network",
+	         exampleStringValue="My network name",
+	         required=true)
 	public String name;
 
-	@Tunable(description = "Network to rename", context = "nogui")
+	@Tunable(description = "Network to rename", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         required=true,
+					 context = "nogui")
 	public CyNetwork sourceNetwork;
 
 	private final CyServiceRegistrar serviceRegistrar;
@@ -115,8 +124,7 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 			JSONResult res = () -> {if (sourceNetwork == null) 
 				return "{}";
 			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(sourceNetwork);
+				return ""+sourceNetwork.getSUID();
 			}};
 			return res;
 		}

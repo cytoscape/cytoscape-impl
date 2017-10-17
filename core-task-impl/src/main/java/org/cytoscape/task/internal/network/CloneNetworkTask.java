@@ -131,6 +131,11 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 		// nogui?
 		if (network != null)
 			parentNetwork = network;
+
+		if (parentNetwork == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "No network to clone");
+			return;
+		}
 		
 		// Create copied network model
 		final CyNetwork newNet = cloneNetwork(parentNetwork);

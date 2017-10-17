@@ -105,7 +105,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 	@Tunable(description = "Network View Renderer:", 
 	         longDescription = "Select the renderer to use for the new network view.  By default, "+
 					                   "the standard Cytoscape 2D renderer (Ding) will be used",
-	         exampleStringValue = "Ding",
+	         exampleStringValue = "Cytoscape 2D",
 	         gravity=3.0)
 	public ListSingleSelection<NetworkViewRenderer> renderers;
 
@@ -207,7 +207,14 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			rootNetwork.getRow(rootNetwork).set(CyNetwork.NAME, networkName);
 		}
 
-		NetworkViewRenderer nvRenderer = renderers.getSelectedValue();
+		NetworkViewRenderer nvRenderer = null;
+		
+		try {
+			nvRenderer = renderers.getSelectedValue();
+		} catch (ClassCastException cce) {
+			tm.showMessage(TaskMonitor.Level.WARN, "Unknown renderer: "+renderers.getSelectedValue()+
+			                                       " using default renderer.");
+		}
 
 		if (nvRenderer == null)
 			nvRenderer = appMgr.getDefaultNetworkViewRenderer();
@@ -284,8 +291,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			JSONResult res = () -> {if (subNetwork == null)
 				return "{}";
 			else {
-				CyJSONUtil cyJSONUtil = registrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(subNetwork);
+				return ""+subNetwork.getSUID();
 			}};
 			return res;
 		}

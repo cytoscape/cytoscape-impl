@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -43,13 +44,23 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetNetworkPropertiesTask extends AbstractPropertyTask {
-	@Tunable(description="Network to get properties for", context="nogui")
+	@Tunable(description="Network to set properties for", context="nogui",
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to set the values for", context="nogui", 
+	         longDescription="A comma-separated list of network properties", 
+					 exampleStringValue="background paint,title",
+	         required=true)
 	public String propertyList = null;
 
-	@Tunable(description="Values to set for the properties", context="nogui")
+	@Tunable(description="Values to set for the properties", context="nogui", required=true,
+	         longDescription="A comma-separated list of property values.  This list must have "+
+					                 "the same number of elements as the ``propertyList``.  Each value "+
+					                 "will be applied to the property specified in the same position "+
+					                 "in the ``propertyList``", 
+					 exampleStringValue="white,My network title")
 	public String valueList = null;
 
 	public SetNetworkPropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
