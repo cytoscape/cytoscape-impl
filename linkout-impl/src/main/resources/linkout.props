@@ -20,7 +20,7 @@ nodelinkouturl.Publications.OMIM=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?
 
 nodelinkouturl.Model\ Organism\ DB.MGI\ (mouse)=http://www.informatics.jax.org/javawi2/servlet/WIFetch?page=searchTool&query=%ID%&selectedQuery=Genes+and+Markers
 nodelinkouturl.Model\ Organism\ DB.WormBase\ (worm)=http://www.wormbase.org/db/gene/gene?name=%ID%
-nodelinkouturl.Model\ Organism\ DB.SGD\ (yeast)=https://www.yeastgenome.org/search?q=%ID%is_quick=true
+nodelinkouturl.Model\ Organism\ DB.SGD\ (yeast)=https://www.yeastgenome.org/search?q=%ID%&is_quick=true
 nodelinkouturl.Model\ Organism\ DB.FlyBase\ (fly)=http://flybase.org/cgi-bin/quicksearch_solr.cgi?context=%ID%&tab=basic_tab&view=sum
 nodelinkouturl.Model\ Organism\ DB.HGNC\ (human)=http://www.genenames.org/data/hgnc_data.php?hgnc_id=%ID%
 
