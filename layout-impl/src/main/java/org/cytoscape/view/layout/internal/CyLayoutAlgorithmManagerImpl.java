@@ -4,6 +4,7 @@ import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -94,6 +95,7 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 				layoutProps.setProperty(COMMAND_NAMESPACE, "layout");
 				layoutProps.setProperty(COMMAND_DESCRIPTION, "Execute the " + layout.toString() + " on a network");
 				layoutProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
+				layoutProps.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 				TaskFactory service = new LayoutTaskFactoryWrapper(appManager, viewManager, layout, serviceRegistrar);
 				// Register the service as a TaskFactory for commands
 				serviceRegistrar.registerService(service, TaskFactory.class, layoutProps);
