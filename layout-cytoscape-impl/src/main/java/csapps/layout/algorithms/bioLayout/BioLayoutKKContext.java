@@ -31,23 +31,23 @@ public class BioLayoutKKContext extends BioLayoutContext implements TunableValid
 	/**
 	 * The average number of iterations per Node
 	 */
-	@Tunable(description="Average number of iteratations for each node:")
+	@Tunable(description="Average number of iteratations for each node:", context="both", longDescription="Average number of iteratations for each node, in numeric value", exampleStringValue="40")
 	public double m_averageIterationsPerNode = 40;
-	@Tunable(description="Spring strength:")
+	@Tunable(description="Spring strength:", context="both", longDescription="Spring strength, in numeric value", exampleStringValue="15.0")
 	public double m_nodeDistanceStrengthConstant=15.0;
-	@Tunable(description="Spring rest length:")
+	@Tunable(description="Spring rest length:", context="both", longDescription="Spring rest length, in numeric value", exampleStringValue="45.0")
 	public double m_nodeDistanceRestLengthConstant=45.0;
-	@Tunable(description="Strength of a 'disconnected' spring:")
+	@Tunable(description="Strength of a 'disconnected' spring:", context="both", longDescription="Strength of a 'disconnected' spring, in numeric value", exampleStringValue="0.05")
 	public double m_disconnectedNodeDistanceSpringStrength=0.05;
-	@Tunable(description="Rest length of a 'disconnected' spring:")
+	@Tunable(description="Rest length of a 'disconnected' spring:", context="both", longDescription="Rest length of a 'disconnected' spring, in numeric value", exampleStringValue="2000.0")
 	public double m_disconnectedNodeDistanceSpringRestLength=2000.0;
-	@Tunable(description="Strength to apply to avoid collisions:")
+	@Tunable(description="Strength to apply to avoid collisions:", context="both", longDescription="Strength to apply to avoid collisions, in numeric value", exampleStringValue="0.0")
 	public double m_anticollisionSpringStrength;
-	@Tunable(description="Number of layout passes:")
+	@Tunable(description="Number of layout passes:", context="both", longDescription="Number of layout passes, in numeric value", exampleStringValue="2")
 	public int m_layoutPass = 2;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
 	public boolean singlePartition;
-	@Tunable(description="Use unweighted edges:", groups="Standard Settings")
+	@Tunable(description="Use unweighted edges:", groups="Standard Settings", context="both", longDescription="Use unweighted edges", exampleStringValue="```true``` or ```false```")
 	public boolean unweighted;
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {

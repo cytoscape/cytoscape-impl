@@ -31,17 +31,17 @@ public class CircularLayoutContext implements TunableValidator {
 	
 	//TODO: these are not used in current implementations.
 	
-	@Tunable(description="Horizontal spacing between nodes:")
+	@Tunable(description="Horizontal spacing between nodes:", context="both", longDescription="Horizontal spacing between nodes, in numeric value", exampleStringValue="64")
 	public int nodeHorizontalSpacing = 64;
-	@Tunable(description="Vertical spacing between nodes:")
+	@Tunable(description="Vertical spacing between nodes:", context="both", longDescription="Vertical spacing between nodes, in numeric value", exampleStringValue="32")
 	public int nodeVerticalSpacing = 32;
-	@Tunable(description="Left edge margin:")
+	@Tunable(description="Left edge margin:", context="both", longDescription="Left edge margin, in numeric value", exampleStringValue="32")
 	public int leftEdge = 32;
-	@Tunable(description="Top edge margin:")
+	@Tunable(description="Top edge margin:", context="both", longDescription="Top edge margin, in numeric value", exampleStringValue="32")
 	public int topEdge = 32;
-	@Tunable(description="Right edge margin:")
+	@Tunable(description="Right edge margin:", context="both", longDescription="Right edge margin, in numeric value", exampleStringValue="1000")
 	public int rightMargin = 1000;
-    @Tunable(description="Don't partition graph before layout:", groups="Standard Settings")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
 	public boolean singlePartition;
 
 	@Override //TODO how to validate these values?

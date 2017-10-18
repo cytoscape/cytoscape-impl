@@ -29,23 +29,23 @@ import org.cytoscape.work.TunableValidator;
 
 public class ISOMLayoutContext implements TunableValidator {
 	
-	@Tunable(description="Number of iterations:")
+	@Tunable(description="Number of iterations:", context="both", longDescription="Number of iterations, in numeric value", exampleStringValue="5000")
 	public int maxEpoch = 5000;
-	@Tunable(description="Radius constant:")
+	@Tunable(description="Radius constant:", context="both", longDescription="Radius constant, in numeric value", exampleStringValue="100")
 	public int radiusConstantTime = 100;
-	@Tunable(description="Radius:")
+	@Tunable(description="Radius:", context="both", longDescription="Radius, in numeric value", exampleStringValue="20")
 	public int radius = 20;
-	@Tunable(description="Minimum radius:")
+	@Tunable(description="Minimum radius:", context="both", longDescription="Minimum radius, in numeric value", exampleStringValue="1")
 	public int minRadius = 1;
-	@Tunable(description="Initial adaptation:")
+	@Tunable(description="Initial adaptation:", context="both", longDescription="Initial adaptation, in numeric value", exampleStringValue="0.9")
 	public double initialAdaptation = 90.0D / 100.0D;
-	@Tunable(description="Minimum adaptation value:")
+	@Tunable(description="Minimum adaptation value:", context="both", longDescription="Minimum adaptation value, in numeric value", exampleStringValue="0")
 	public double minAdaptation = 0;
-	@Tunable(description="Size factor:")
+	@Tunable(description="Size factor:", context="both", longDescription="Size factor, in numeric value", exampleStringValue="100")
 	public double sizeFactor = 100;
-	@Tunable(description="Cooling factor:")
+	@Tunable(description="Cooling factor:", context="both", longDescription="Cooling factor, in numeric value", exampleStringValue="2")
 	public double coolingFactor = 2;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
 	public boolean singlePartition;
 
 	@Override // TODO

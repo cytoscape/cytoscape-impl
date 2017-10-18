@@ -36,17 +36,17 @@ public class ForceDirectedLayoutContext implements TunableValidator {
 	@ContainsTunables
 	public EdgeWeighter edgeWeighter = new EdgeWeighter();
 	
-	@Tunable(description="Number of Iterations:")
+	@Tunable(description="Number of Iterations:", context="both", longDescription="Number of Iterations, in numeric value", exampleStringValue="100")
 	public int numIterations = 100;
-	@Tunable(description="Default Spring Coefficient:")
+	@Tunable(description="Default Spring Coefficient:", context="both", longDescription="Default Spring Coefficient, in numeric value", exampleStringValue="1e-4")
 	public double defaultSpringCoefficient = 1e-4;
-	@Tunable(description="Default Spring Length:")
+	@Tunable(description="Default Spring Length:", context="both", longDescription="Default Spring Length, in numeric value", exampleStringValue="50.0")
 	public double defaultSpringLength = 50.0;
-	@Tunable(description="Default Node Mass:")
+	@Tunable(description="Default Node Mass:", context="both", longDescription="Default Node Mass, in numeric value", exampleStringValue="3.0")
 	public double defaultNodeMass = 3.0;
-	@Tunable(description="Force deterministic layouts (slower):")
+	@Tunable(description="Force deterministic layouts (slower):", context="both", longDescription="Force deterministic layouts (slower)", exampleStringValue="```true``` or ```false```")
 	public boolean isDeterministic;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
 	public boolean singlePartition;
 
 	@Override
