@@ -1666,7 +1666,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
 		{
-			RenameColumnTaskFactoryImpl factory = new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef);
+			RenameColumnTaskFactoryImpl factory 
+							= new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Rename column");
 			props.setProperty(COMMAND, "rename column");
@@ -1674,9 +1675,11 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a column in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of a specified column in the table.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"name\": \"New name\", \"type\": \"String\", "+
+			                                        "\"immutable\": false, \"primaryKey\": false }");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, RenameColumnTaskFactory.class, props);
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			AddRowTaskFactory factory = new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar);

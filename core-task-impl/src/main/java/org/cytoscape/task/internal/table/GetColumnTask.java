@@ -11,11 +11,12 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
-public class GetColumnTask extends AbstractTableDataTask {
+public class GetColumnTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	CyColumn returnValue;
