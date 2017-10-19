@@ -421,12 +421,19 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyLayoutsServiceRef, cyEventHelperRef,
 					visualMappingManagerServiceRef, renderingEngineManagerServiceRef, cyApplicationManagerServiceRef,
 					serviceRegistrar);
+			// UI
 			Properties props = new Properties();
 			props.setProperty(ID, "createNetworkViewTaskFactory");
 			// No ENABLE_FOR because that is handled by the isReady() methdod of the task factory.
 			props.setProperty(PREFERRED_MENU, "Edit");
 			props.setProperty(TITLE, "Create Views");
 			props.setProperty(MENU_GRAVITY, "3.0");
+			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
+			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
+			
+			// Commands
+			props = new Properties();
+			props.setProperty(ID, "createNetworkViewTaskFactory");
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network");
@@ -435,9 +442,8 @@ public class CyActivator extends AbstractCyActivator {
 					+ "If no networks are specified, it creates a view for the current network, if there is one.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "356");
-			registerService(bc, factory, NetworkCollectionTaskFactory.class, props);
-			registerService(bc, factory, CreateNetworkViewTaskFactory.class, props);
-			registerService(bc, factory, TaskFactory.class, props); // for Commands
+			registerService(bc, factory, TaskFactory.class, props);
+			
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
