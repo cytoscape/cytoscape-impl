@@ -255,6 +255,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					jsonRes += cyJSONUtil.cyIdentifiablesToJson(networks);
 					jsonRes += ", \"views\":";
 					jsonRes += cyJSONUtil.cyIdentifiablesToJson(results);
+					jsonRes += "}";
 					return jsonRes;
 				}};
 				return res;

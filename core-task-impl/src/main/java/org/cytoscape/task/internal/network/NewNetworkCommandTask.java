@@ -105,7 +105,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	@Tunable(description = "Exclude connecting edges", 
 	         longDescription = "Unless this is set to true, edges that connect nodes in the nodeList "+
 					                   "are implicitly included",
-	         gravity = 5.0, context = "nogui")
+	         gravity = 5.0, context = "nogui", exampleStringValue="false")
 	public boolean excludeEdges = false;
 	
 	public NewNetworkCommandTask(final UndoSupport undoSupport, 

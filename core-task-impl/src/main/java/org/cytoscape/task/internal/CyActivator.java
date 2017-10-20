@@ -2145,7 +2145,7 @@ public class CyActivator extends AbstractCyActivator {
 			                  "Create a new network from a list of nodes and edges in an existing source network. "+
 			                  "The SUID of the network and view are returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":102,\"view\":500");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":102,\"view\":500}");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
