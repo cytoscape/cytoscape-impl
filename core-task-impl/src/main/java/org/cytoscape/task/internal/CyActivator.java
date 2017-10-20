@@ -418,7 +418,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			CreateNetworkViewTaskFactoryImpl factory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyLayoutsServiceRef, cyEventHelperRef,
+					cyNetworkViewManagerServiceRef, cyNetworkManagerServiceRef, cyLayoutsServiceRef, cyEventHelperRef,
 					visualMappingManagerServiceRef, renderingEngineManagerServiceRef, cyApplicationManagerServiceRef,
 					serviceRegistrar);
 			// UI
@@ -438,10 +438,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new view for a network");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Creates a new view for the passed network and returns the SUID of the new view. "
+					"Creates a new view for the passed network and returns the SUID of the new view and the original network. "
 					+ "If no networks are specified, it creates a view for the current network, if there is one.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "356");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101,\"view\":400}");
 			registerService(bc, factory, TaskFactory.class, props);
 			
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
@@ -1966,9 +1966,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
                         "Create a new network by cloning an existing network. The new network will "+
 												"be created as part of a new network collection.  The SUID of the new network "+
-												"is returned.");
+												"and view (if one is created) are returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101,\"view\":400}");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, CloneNetworkTaskFactory.class, props);
 		}
@@ -2142,9 +2142,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new network");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
-			                  "Create a new network from a list of nodes and edges in an existing source network");
+			                  "Create a new network from a list of nodes and edges in an existing source network. "+
+			                  "The SUID of the network and view are returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "102");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":102,\"view\":500");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{

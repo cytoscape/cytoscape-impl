@@ -185,9 +185,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 		
 		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
+			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager, networkManager,
 				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView,
 				                        serviceRegistrar);
+		insertTasksAfterCurrentTask(createViewTask);
+		/*
 		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
 			@Override
 			@SuppressWarnings("unchecked")
@@ -198,18 +200,18 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 				
 				if (!createdViews.isEmpty()) {
 					CyNetworkView nv = createdViews.get(createdViews.size() - 1);
+
 					if (nv != null) {
-						appMgr.setCurrentNetworkView(nv);
-						// Temporary workaround.  Since setting the current network view only
-						// changes the current network if we're on the EDT -- BUG!!! --
-						// change it explicitly here
-						appMgr.setCurrentNetwork(nv.getModel());
+						insertTasksAfterCurrentTask(new RegisterNetworkTask(nv, null, networkManager, vmMgr, appMgr, networkViewManager));
+						return;
 					}
 				}
+				insertTasksAfterCurrentTask(new RegisterNetworkTask(newNet, networkManager, vmMgr, appMgr, networkViewManager));
 				
 				tm.setProgress(1.0);
 			}
 		});
+		*/
 		
 		tm.setProgress(1.0);
 	}
