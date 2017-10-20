@@ -19,8 +19,10 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -386,7 +388,13 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 	
 	private void loadNetwork(final TaskMonitor tm) throws IOException {
-		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+		CyNetwork network;
+		if (this.rootNetwork == null) {
+			network = serviceRegistrar.getService(CyNetworkFactory.class).createNetwork();
+			rootNetwork = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(network);
+		} else {
+			network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+		}
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
 

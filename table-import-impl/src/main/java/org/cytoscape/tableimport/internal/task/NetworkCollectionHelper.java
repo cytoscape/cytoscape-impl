@@ -70,7 +70,12 @@ public class NetworkCollectionHelper extends AbstractTask {
 
 	public ListSingleSelection<String> rootNetworkList;
 	
-	@Tunable(description = "Network Collection:", groups = "Network", gravity = 1.0)
+	@Tunable(description = "Network Collection", 
+	         longDescription = "The name of the network collection (root network) that the imported network "+
+	                           "should be part of. A name of ``-- Create new network collection --`` will result in "+
+	                           "the creation of a new network collection for this import.",
+	         exampleStringValue = "-- Create new network collection --",
+	         groups = "Network", gravity = 1.0)
 	public ListSingleSelection<String> getRootNetworkList() {
 		return rootNetworkList;
 	}
@@ -96,8 +101,12 @@ public class NetworkCollectionHelper extends AbstractTask {
 	
 	public ListSingleSelection<String> targetColumnList;
 
-	@Tunable(description = "Node Identifier Mapping Column:", groups = "Network", gravity = 2.0, listenForChange = {
-			"RootNetworkList" })
+	@Tunable(description = "Node Identifier Mapping Column", 
+	         longDescription = "Enter the name of the column in the existing network collection "+
+	                           "(root network) that you want to map your input identifiers to.",
+	         exampleStringValue = "share name",
+	         groups = "Network", gravity = 2.0, 
+	         listenForChange = { "RootNetworkList" })
 	public ListSingleSelection<String> getTargetColumnList() {
 		return targetColumnList;
 	}
@@ -108,7 +117,12 @@ public class NetworkCollectionHelper extends AbstractTask {
 
 	public ListSingleSelection<NetworkViewRenderer> rendererList;
 
-	@Tunable(description = "Network View Renderer:", groups = "Network", gravity = 3.0)
+	@Tunable(description = "Network View Renderer:",
+	         longDescription = "Enter the network view renderer that this network should use.  "+
+	                           "This is only useful if multiple renderers have been installed, "+
+	                           "which is rare.",
+	         exampleStringValue = "Cytoscape 2D",
+	         groups = "Network", gravity = 3.0) 
 	public ListSingleSelection<NetworkViewRenderer> getNetworkViewRendererList() {
 		return rendererList;
 	}
@@ -215,6 +229,9 @@ public class NetworkCollectionHelper extends AbstractTask {
 			rootNetwork = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(newNet);
 		} else {
 			rootNetwork = name2RootMap.get(rootNetName);
+			if (rootNetwork == null) {
+				throw new RuntimeException("Can't find a network collection named '"+rootNetName+"'");
+			}
 		}
 
 		return rootNetwork;
