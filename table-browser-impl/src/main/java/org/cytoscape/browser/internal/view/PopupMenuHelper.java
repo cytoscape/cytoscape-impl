@@ -234,7 +234,8 @@ public class PopupMenuHelper {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
 			final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
-			taskManager.execute(tf.createTaskIterator());
+			if (taskManager != null && tf != null)
+				taskManager.execute(tf.createTaskIterator());
 		}
 	}
 	

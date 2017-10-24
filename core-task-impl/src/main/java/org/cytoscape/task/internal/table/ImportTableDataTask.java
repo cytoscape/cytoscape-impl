@@ -117,7 +117,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Where to Import Table Data:",
 			gravity = 1.0,
 			groups = { "Target Table Data" },
-			xorChildren = true
+			xorChildren = true, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<String> getWhereImportTable() {	return whereImportTable;	}
 	public void setWhereImportTable(ListSingleSelection<String> chooser) {	this.whereImportTable = chooser; }
@@ -130,7 +130,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Network Collection:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 2.0,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<String> getTargetNetworkCollection() {	return targetNetworkCollection;	}
 
@@ -145,7 +145,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Import Data as:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.1,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
@@ -164,6 +164,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			gravity = 3.2,
 			xorKey = NETWORK_COLLECTION,
 			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }
+			, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<String> getKeyColumnForMapping() {
 		return keyColumnForMapping;
@@ -177,7 +178,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.3,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = ""
 	)
 	public boolean caseSensitiveNetworCollectionKeys = true;
 
@@ -189,7 +190,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Network List:",
 			groups = { "Target Table Data","Select Networks" },
 			gravity = 3.1,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
 	)
 	public ListMultipleSelection<String> getTargetNetworkList() {	return targetNetworkList;	}
 
@@ -204,7 +205,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Import Data as:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.2,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {	return dataTypeTargetForNetworkList;	}
 
@@ -220,7 +221,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.3,
 			xorKey = NETWORK_SELECTION,
-			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }
+			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }, 
+			longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	return keyColumnForMappingNetworkList;	}
 	
@@ -230,7 +232,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.4,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
 	)
 	public boolean caseSensitiveNetworkKeys = true;
 	
@@ -240,14 +242,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "New Table Name:",
 			groups = { "Target Table Data", "Set New Table Name" },
 			gravity = 5.0,
-			xorKey = UNASSIGNED_TABLE
+			xorKey = UNASSIGNED_TABLE, longDescription="", exampleStringValue = ""
 	)
 	public String newTableName;
 	
 	@Tunable(
 			description = "Network View Renderer:",
 			groups = { "Target Table Data", "Select Renderer" },
-			gravity = 6.0
+			gravity = 6.0, longDescription="", exampleStringValue = ""
 	)
 	public ListSingleSelection<NetworkViewRenderer> renderers;
 	

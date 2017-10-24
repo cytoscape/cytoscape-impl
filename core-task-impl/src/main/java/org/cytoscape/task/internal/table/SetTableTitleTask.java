@@ -4,12 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.TableTunable;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -22,7 +21,8 @@ public class SetTableTitleTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="New table title", context="nogui")
+	@Tunable(description="New table title", context="nogui",
+			longDescription=StringToModel.TABLE_TITLE_LONG_DESCRIPTION, exampleStringValue = "Filtered Edges")
 	public String title = null;
 
 	public SetTableTitleTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

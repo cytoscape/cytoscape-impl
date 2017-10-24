@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
@@ -54,10 +55,10 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row", context="nogui")
+	@Tunable(description="Key value for row", context="nogui", longDescription=StringToModel.ROW_EXAMPLE, exampleStringValue = StringToModel.ROW_EXAMPLE)
 	public String keyValue = null;
 
-	@Tunable(description="Name of column", context="nogui")
+	@Tunable(description="Name of column", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String column = null;
 
 	public GetValueTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

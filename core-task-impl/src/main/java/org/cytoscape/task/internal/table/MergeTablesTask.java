@@ -108,7 +108,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	public ListSingleSelection<CyTable> sourceTable;
 
-	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" })
+	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<CyTable> getSourceTable() {
 		return sourceTable;
 	}
@@ -159,7 +159,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	public ListMultipleSelection<String> sourceMergeColumns;
 
-	@Tunable(description = "Select Columns:", gravity = 0.2, groups = { "Source", "Columns To Merge" }, listenForChange = { "SourceTable", "SelectAllColumns" })
+	@Tunable(description = "Select Columns:", gravity = 0.2, groups = { "Source", "Columns To Merge" }
+		, listenForChange = { "SourceTable", "SelectAllColumns" }, longDescription="", exampleStringValue = "")
 	public ListMultipleSelection<String> getSourceMergeColumns() {
 		return sourceMergeColumns;
 	}
@@ -170,7 +171,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListSingleSelection<String> sourceMergeKey;
 
-	@Tunable(description = "Key column to merge:", groups = { "Source" }, gravity = 0.4, listenForChange = { "SourceTable" })
+	@Tunable(description = "Key column to merge:", groups = { "Source" }, gravity = 0.4, 
+			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getSourceMergeKey() {
 		return sourceMergeKey;
 	}
@@ -179,12 +181,14 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.sourceMergeKey = key;
 	}
 
-	@Tunable(description = "Type of merge:", gravity = 0.5, groups = { "Source" }, listenForChange = { "SourceTable" })
+	@Tunable(description = "Type of merge:", gravity = 0.5, groups = { "Source" },
+			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> mergeType;
 
 	public ListSingleSelection<String> whereMergeTable;
 
-	@Tunable(description = "Merge table to:", gravity = 1.0, groups = { "Target" }, xorChildren = true)
+	@Tunable(description = "Merge table to:", gravity = 1.0, groups = { "Target" },
+			xorChildren = true, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getWhereMergeTable() {
 		return whereMergeTable;
 	}
@@ -195,7 +199,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListSingleSelection<String> targetNetworkCollection;
 
-	@Tunable(description = "Network Collection:", groups = { "Target", "Select Network Collection" }, gravity = 2.1, xorKey = NETWORK_COLLECTION)
+	@Tunable(description = "Network Collection:", groups = { "Target", "Select Network Collection" }, gravity = 2.1,
+			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
@@ -211,7 +216,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
-	@Tunable(description = "Merge data in:", groups = { "Target", "Select Network Collection" }, gravity = 2.2, xorKey = NETWORK_COLLECTION)
+	@Tunable(description = "Merge data in:", groups = { "Target", "Select Network Collection" }, gravity = 2.2, 
+			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
 	}
@@ -228,7 +234,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetKeyNetworkCollection;
 
 	@Tunable(description = "Key column for network:", groups = { "Target", "Select Network Collection" }, gravity = 2.3, xorKey = NETWORK_COLLECTION,
-			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" })
+			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getTargetKeyNetworkCollection() {
 		return targetKeyNetworkCollection;
 	}
@@ -239,7 +245,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListMultipleSelection<String> targetNetworkList;
 
-	@Tunable(description = "Networks:", groups = { "Target", "Select Networks" }, gravity = 3.1, xorKey = NETWORK_SELECTION)
+	@Tunable(description = "Networks:", groups = { "Target", "Select Networks" }, gravity = 3.1,
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = "")
 	public ListMultipleSelection<String> getTargetNetworkList() {
 		return targetNetworkList;
 	}
@@ -248,13 +255,15 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.targetNetworkList = list;
 	}
 
-	@Tunable(description = "Merge data in:", groups = { "Target", "Select Networks" }, gravity = 3.2, xorKey = NETWORK_SELECTION)
+	@Tunable(description = "Merge data in:", groups = { "Target", "Select Networks" }, gravity = 3.2,
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 
 	public ListSingleSelection<Object> unassignedTable;
 
-	@Tunable(description = "Unassigned table:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.1, xorKey = UNASSIGNED_TABLE,
-			listenForChange = { "SourceTable" })
+	@Tunable(description = "Unassigned table:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.1, 
+			xorKey = UNASSIGNED_TABLE,
+			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<Object> getUnassignedTable() {
 		return unassignedTable;
 	}
@@ -276,7 +285,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetMergeKey;
 
 	@Tunable(description = "Key column to merge:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.2,
-			listenForChange = { "UnassignedTable", "SourceTable" })
+			listenForChange = { "UnassignedTable", "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getTargetMergeKey() {
 		return targetMergeKey;
 	}
