@@ -29,7 +29,7 @@ import org.cytoscape.work.TunableValidator;
 
 public class DegreeSortedCircleContext implements TunableValidator {
 	
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout; boolean values only, ```true``` or ```false```; defaults to ```false```", exampleStringValue="false")
 	public boolean singlePartition;
 
 	@Override // TODO

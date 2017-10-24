@@ -79,10 +79,10 @@ public class BioLayoutFRContext extends BioLayoutContext implements TunableValid
 	@Tunable(description="Number of iterations:", context="both", longDescription="Number of iterations, in numeric value", exampleStringValue="500")
 	public int nIterations = 500;
 
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout; boolean values only, ```true``` or ```false```; defaults to ```false```", exampleStringValue="false")
 	public boolean singlePartition;
 	
-	@Tunable(description="Layout nodes in 3D:", context="both", longDescription="Layout nodes in 3D", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Layout nodes in 3D:", context="both", longDescription="Layout nodes in 3D; boolean values only, ```true``` or ```false```; defaults to ```true```", exampleStringValue="false")
 	public boolean layout3D;
 
 	@Override // TODO

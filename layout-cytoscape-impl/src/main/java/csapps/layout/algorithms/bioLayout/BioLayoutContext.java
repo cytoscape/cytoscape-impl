@@ -36,6 +36,6 @@ public abstract class BioLayoutContext {
 	/**
 	 * Whether or not to initialize by randomizing all points
 	 */
-	@Tunable(description="Randomize graph before layout:", groups="Standard Settings", context="both", longDescription="Randomize graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Randomize graph before layout:", groups="Standard Settings", context="both", longDescription="Randomize graph before layout; boolean values only, ```true``` or ```false```; defaults to ```true```", exampleStringValue="true")
 	public boolean randomize = true;
 }

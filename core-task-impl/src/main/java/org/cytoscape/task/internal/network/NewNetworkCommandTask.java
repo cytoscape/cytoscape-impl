@@ -53,7 +53,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * #L%
  */
 
-public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask implements ObservableTask {
+public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
@@ -105,7 +105,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask impl
 	@Tunable(description = "Exclude connecting edges", 
 	         longDescription = "Unless this is set to true, edges that connect nodes in the nodeList "+
 					                   "are implicitly included",
-	         gravity = 5.0, context = "nogui")
+	         gravity = 5.0, context = "nogui", exampleStringValue="false")
 	public boolean excludeEdges = false;
 	
 	public NewNetworkCommandTask(final UndoSupport undoSupport, 
@@ -178,29 +178,6 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask impl
 			return networkName;
 		
 		return super.getNetworkName();
-	}
-
-	@SuppressWarnings({"rawtypes","unchecked"})
-	public Object getResults(Class type) {
-		if (type.equals(CyNetwork.class)) {
-			return newNet;
-		} else if (type.equals(String.class)){
-			if (newNet == null)
-				return "Network not created";
-			return "Created new network "+newNet.toString();
-		}  else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (newNet == null)
-				return "{}";
-			else {
-				return ""+newNet.getSUID();
-			}};
-			return res;
-		}
-		return newNet;
-	}
-
-	public List<Class<?>> getResultClasses() {
-		return Arrays.asList(CyNetwork.class, String.class, JSONResult.class);
 	}
 
 }

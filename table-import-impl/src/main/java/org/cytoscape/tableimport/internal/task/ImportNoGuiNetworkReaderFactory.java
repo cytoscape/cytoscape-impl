@@ -245,14 +245,17 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					List<CyNetwork> networks = new ArrayList<>();
 					for (CyNetworkView view: results)
 						networks.add(view.getModel());
-					for (CyNetwork net: largeNetworks) {
-						if (!networks.contains(net))
-							networks.add(net);
+					if (largeNetworks != null && largeNetworks.size() > 0) {
+						for (CyNetwork net: largeNetworks) {
+							if (!networks.contains(net))
+								networks.add(net);
+						}
 					}
 					String jsonRes = "{ \"networks\":";
 					jsonRes += cyJSONUtil.cyIdentifiablesToJson(networks);
 					jsonRes += ", \"views\":";
 					jsonRes += cyJSONUtil.cyIdentifiablesToJson(results);
+					jsonRes += "}";
 					return jsonRes;
 				}};
 				return res;

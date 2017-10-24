@@ -69,7 +69,7 @@ import org.cytoscape.work.json.JSONResult;
  * #L%
  */
 
-public class CloneNetworkTask extends AbstractCreationTask implements ObservableTask {
+public class CloneNetworkTask extends AbstractCreationTask {
 	
 	private Map<CyNode, CyNode> orig2NewNodeMap;
 	private Map<CyNode, CyNode> new2OrigNodeMap;
@@ -92,7 +92,7 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	private CyNetworkView result;
+	private CyNetworkView result = null;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -154,42 +154,18 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 	        // Let the CopyExistingViewTask respond to the Observer (if any)
 			final CopyExistingViewTask copyExistingViewTask = new CopyExistingViewTask(renderingEngineMgr, newView,
 					origView, style, new2OrigNodeMap, new2OrigEdgeMap, false);
-			final RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newView, style);
+			final RegisterNetworkTask registerNetworkTask = 
+							new RegisterNetworkTask(newView, style, networkManager, vmm, appMgr, networkViewManager);
 			insertTasksAfterCurrentTask(copyExistingViewTask, registerNetworkTask);
 		} else {
-			final RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newNet);
+			final RegisterNetworkTask registerNetworkTask = 
+							new RegisterNetworkTask(newNet, networkManager, vmm, appMgr, networkViewManager);
 			insertTasksAfterCurrentTask(registerNetworkTask);
 			
 			result = nullNetworkViewFactory.createNetworkView(newNet);
 		}
 		
 		tm.setProgress(1.0);
-	}
-
-	@Override
-	public Object getResults(Class type) {
-		if (result == null) return null;
-		if (type.equals(String.class))
-			return result.toString();
-		else if (type.equals(CyNetwork.class))
-			return result.getModel();
-		else if (type.equals(CyNetworkView.class))
-			return result;
-		else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (result == null) 
-				return "{}";
-			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(result);
-			}};
-			return res;
-		}
-		return result.toString();
-	}
-
-	@Override
-	public List<Class<?>> getResultClasses() {
-		return Arrays.asList(CyNetworkView.class, CyNetwork.class, String.class, JSONResult.class);
 	}
 
 	private CyNetwork cloneNetwork(final CyNetwork origNet) {
@@ -481,60 +457,6 @@ public class CloneNetworkTask extends AbstractCreationTask implements Observable
 			// then we have to set the value, because the rows of the new root table may not have been copied yet
 			if (!info.isVirtual() || rootTables.containsValue(info.getSourceTable()))
 				to.set(name, from.getRaw(name));
-		}
-	}
-	
-	/**
-	 * Registers a new Network and/or Network View and set them as current.
-	 */
-	private class RegisterNetworkTask extends AbstractTask {
-
-		private final CyNetwork network;
-		private final CyNetworkView view;
-		private final VisualStyle style;
-		
-		public RegisterNetworkTask(final CyNetwork network) {
-			this.network = network;
-			this.view = null;
-			this.style = null;
-		}
-		
-		public RegisterNetworkTask(final CyNetworkView view, final VisualStyle style) {
-			this.network = view.getModel();
-			this.view = view;
-			this.style = style;
-		}
-		
-		@Override
-		public void run(TaskMonitor tm) throws Exception {
-			tm.setProgress(0.0);
-			
-			if (!networkManager.networkExists(network.getSUID()))
-				networkManager.addNetwork(network, false);
-			
-			tm.setProgress(0.1);
-			
-			if (view != null) {
-				networkViewManager.addNetworkView(view, false);
-				tm.setProgress(0.2);
-				
-				if (style != null) {
-					vmm.setVisualStyle(style, view);
-					tm.setProgress(0.8);
-				}
-			}
-			
-			if (view != null) {
-				appMgr.setCurrentNetworkView(view);
-				appMgr.setSelectedNetworkViews(Collections.singletonList(view));
-				tm.setProgress(0.9);
-				
-				view.updateView();
-			} else {
-				appMgr.setCurrentNetwork(network);
-			}
-			
-			tm.setProgress(1.0);
 		}
 	}
 }

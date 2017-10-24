@@ -41,7 +41,7 @@ public class CircularLayoutContext implements TunableValidator {
 	public int topEdge = 32;
 	@Tunable(description="Right edge margin:", context="both", longDescription="Right edge margin, in numeric value", exampleStringValue="1000")
 	public int rightMargin = 1000;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout; only boolean values are allowed: ```true``` or ```false```", exampleStringValue="false")
 	public boolean singlePartition;
 
 	@Override //TODO how to validate these values?
