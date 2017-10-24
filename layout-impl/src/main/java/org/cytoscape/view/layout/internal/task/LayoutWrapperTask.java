@@ -73,7 +73,7 @@ public class LayoutWrapperTask extends AbstractTask {
 	// If this layout algorithm supports edge attributes, pick that
 	// up here
 	ListSingleSelection<String> possibleEdgeAttributes = null;
-	@Tunable(description="Edge column to use to weight layout", context="nogui", longDescription="The name of the edge column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight,EdgeBetweenness")
+	@Tunable(description="Edge column to use to weight layout", context="nogui", longDescription="The name of the edge column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight")
 	public ListSingleSelection<String> getEdgeAttribute() {
 		// Make sure we know the network
 		if (network == null)
@@ -91,7 +91,7 @@ public class LayoutWrapperTask extends AbstractTask {
 	// If this layout algorithm supports node attributes, pick that
 	// up here
 	ListSingleSelection<String> possibleNodeAttributes = null;
-	@Tunable(description="Node column to use to weight layout", context="nogui", longDescription="The name of the node column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight,ClusteringCoefficient")
+	@Tunable(description="Node column to use to weight layout", context="nogui", longDescription="The name of the node column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight")
 	public ListSingleSelection<String> getNodeAttribute() {
 		// Make sure we know the network
 		if (network == null)

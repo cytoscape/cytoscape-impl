@@ -36,7 +36,7 @@ public class AttributeCircleLayoutContext  implements TunableValidator {
 	
 	@Tunable(description = "Circle size:", context="both", longDescription="Circle size, in numeric value", exampleStringValue="100.0")
 	public double spacing = 100.0;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout, only boolean values allowed: ```true``` or ```false```", exampleStringValue="false")
 	public boolean singlePartition;
 
 

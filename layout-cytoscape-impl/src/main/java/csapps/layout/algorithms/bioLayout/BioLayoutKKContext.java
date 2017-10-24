@@ -45,9 +45,9 @@ public class BioLayoutKKContext extends BioLayoutContext implements TunableValid
 	public double m_anticollisionSpringStrength;
 	@Tunable(description="Number of layout passes:", context="both", longDescription="Number of layout passes, in numeric value", exampleStringValue="2")
 	public int m_layoutPass = 2;
-	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Don't partition graph before layout:", groups="Standard Settings", context="both", longDescription="Don't partition graph before layout; boolean values only, ```true``` or ```false```; defaults to ```false```", exampleStringValue="false")
 	public boolean singlePartition;
-	@Tunable(description="Use unweighted edges:", groups="Standard Settings", context="both", longDescription="Use unweighted edges", exampleStringValue="```true``` or ```false```")
+	@Tunable(description="Use unweighted edges:", groups="Standard Settings", context="both", longDescription="Use unweighted edges; boolean values only, ```true``` or ```false```; defaults to ```false```", exampleStringValue="false")
 	public boolean unweighted;
 	@Override // TODO
 	public ValidationState getValidationState(final Appendable errMsg) {
