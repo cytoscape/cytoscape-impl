@@ -11,21 +11,15 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 
 import java.util.Properties;
 
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.idmapper.task.MapColumnTaskFactory;
-import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
-import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.io.WildCardCyFileFilter;
-import org.cytoscape.tableimport.internal.reader.ontology.OBONetworkReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportAttributeTableReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportNetworkTableReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportNoGuiNetworkReaderFactory;
 import org.cytoscape.tableimport.internal.task.ImportNoGuiTableReaderFactory;
-import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationAction;
 import org.cytoscape.tableimport.internal.tunable.AttributeMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.tunable.NetworkTableMappingParametersHandlerFactory;
 import org.cytoscape.tableimport.internal.util.ImportType;
@@ -99,21 +93,21 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, InputStreamTaskFactory.class, props);
 		}
 		{
-			BasicCyFileFilter filter = new BasicCyFileFilter(
-					new String[] { "obo" },
-					new String[] { "text/obo" },
-					"OBO",
-					NETWORK,
-					streamUtil
-			);
-			OBONetworkReaderFactory factory = new OBONetworkReaderFactory(filter, serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty("readerDescription", "Open Biomedical Ontology (OBO) file reader");
-			props.setProperty("readerId", "oboReader");
-			registerService(bc, factory, InputStreamTaskFactory.class, props);
-
-			ImportOntologyAndAnnotationAction action = new ImportOntologyAndAnnotationAction(factory, serviceRegistrar);
-			registerService(bc, action, CyAction.class);
+//			BasicCyFileFilter filter = new BasicCyFileFilter(
+//					new String[] { "obo" },
+//					new String[] { "text/obo" },
+//					"OBO",
+//					NETWORK,
+//					streamUtil
+//			);
+//			OBONetworkReaderFactory factory = new OBONetworkReaderFactory(filter, serviceRegistrar);
+//			Properties props = new Properties();
+//			props.setProperty("readerDescription", "Open Biomedical Ontology (OBO) file reader");
+//			props.setProperty("readerId", "oboReader");
+//			registerService(bc, factory, InputStreamTaskFactory.class, props);
+//
+//			ImportOntologyAndAnnotationAction action = new ImportOntologyAndAnnotationAction(factory, serviceRegistrar);
+//			registerService(bc, action, CyAction.class);
 		}
 		{
 			// "txt"
