@@ -12,8 +12,6 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import java.util.Properties;
 
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.idmapper.task.MapColumnTaskFactory;
-import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
