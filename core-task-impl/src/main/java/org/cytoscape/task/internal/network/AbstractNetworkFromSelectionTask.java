@@ -128,8 +128,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		final Set<CyNode> nodes = getNodes(parentNetwork);
 		tm.setProgress(0.2);
 
-		if (nodes.size() <= 0)  return;
-//			throw new IllegalArgumentException("No nodes are selected.");
+		if (nodes.size() <= 0) // return;
+			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
 		newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
