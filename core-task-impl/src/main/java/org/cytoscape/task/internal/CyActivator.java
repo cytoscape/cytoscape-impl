@@ -383,7 +383,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Executes the current preferred layout. "
 					+ "Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101}");;
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");;
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// ---------- COMMANDS ----------
@@ -398,6 +398,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Returns the name of the current preferred layout or empty string if not set. "
 					+ "Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"grid\"}");
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -411,7 +412,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Sets the preferred layout. Takes a specific name as defined in the API "
 					+ "Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "grid");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 	}
