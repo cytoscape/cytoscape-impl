@@ -32,7 +32,6 @@ import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
