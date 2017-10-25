@@ -398,7 +398,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Returns the name of the current preferred layout or empty string if not set. "
 					+ "Default is ```grid```.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"grid\"}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "\"grid\"");
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
