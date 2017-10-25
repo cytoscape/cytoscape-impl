@@ -12,6 +12,8 @@ import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import java.util.Properties;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.idmapper.task.MapColumnTaskFactory;
+import org.cytoscape.idmapper.task.MapColumnTaskFactoryImpl;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
@@ -178,6 +180,17 @@ public class CyActivator extends AbstractCyActivator {
 			// Register the service as a TaskFactory for commands
 			registerService(bc, importURLTableFactory, TaskFactory.class, props);
 		}
+//		{
+//			TaskFactory mapColumnTaskFactory = new ImportNoGuiTableReaderFactory(true, serviceRegistrar);
+//			Properties props = new Properties();
+//			props.setProperty(COMMAND, "map column");
+//			props.setProperty(COMMAND_NAMESPACE, "table");
+//			props.setProperty(COMMAND_DESCRIPTION, "Map column content from one namespace to another");
+//			props.setProperty(COMMAND_LONG_DESCRIPTION, "Uses the BridgeDB service to look up analogous identifiers from a wide selection of other databases");
+//			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+//			// Register the service as a TaskFactory for commands
+//			registerService(bc, mapColumnTaskFactory, MapColumnTaskFactory.class, props);
+//		}
 		{
 			TaskFactory factory = new ImportNoGuiNetworkReaderFactory(false, serviceRegistrar);
 			Properties props = new Properties();

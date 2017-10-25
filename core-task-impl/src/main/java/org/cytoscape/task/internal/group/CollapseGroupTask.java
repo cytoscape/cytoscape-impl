@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
@@ -40,10 +41,10 @@ public class CollapseGroupTask extends AbstractGroupTask {
 	private List<CyGroup> groups;
 	private boolean collapse;
 
-	@Tunable (description="Network", context="nogui")
+	@Tunable (description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network;
 
-	@Tunable (description="List of groups", context="nogui")
+	@Tunable (description="List of groups", context="nogui", longDescription=StringToModel.GROUP_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public String groupList;
 
 	public CollapseGroupTask(CyNetwork net, List<CyGroup> groups, CyGroupManager manager, boolean collapse) {

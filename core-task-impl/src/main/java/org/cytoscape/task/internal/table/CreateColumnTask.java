@@ -45,7 +45,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable;
 
-	@Tunable(description = "Name of column", context = "nogui")
+	@Tunable(description = "Name of column", context = "nogui", longDescription="", exampleStringValue = "")
 	public String columnName;
 
 	@ContainsTunables

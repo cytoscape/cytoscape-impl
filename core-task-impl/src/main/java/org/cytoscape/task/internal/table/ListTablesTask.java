@@ -48,13 +48,13 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyTable> tables;
 
-	@Tunable(description="Type of table", context="nogui")
+	@Tunable(description="Type of table", context="nogui", longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> type;
 
-	@Tunable(description="Table namespace", context="nogui")
+	@Tunable(description="Table namespace", context="nogui", longDescription="", exampleStringValue = "")
 	public String namespace = "default";
 
-	@Tunable(description="Include private tables?", context="nogui")
+	@Tunable(description="Include private tables?", context="nogui", longDescription="", exampleStringValue = "")
 	public boolean includePrivate = true;
 
 	public ListTablesTask(CyApplicationManager appMgr, CyTableManager tableMgr, 

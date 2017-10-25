@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -25,7 +26,9 @@ public class DeleteRowTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row to delete", context="nogui")
+	@Tunable(description="Key value for row to delete", context="nogui", 
+			longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
+
 	public String keyValue = null;
 
 	public DeleteRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

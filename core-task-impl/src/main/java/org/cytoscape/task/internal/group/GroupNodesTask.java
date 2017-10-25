@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -59,7 +60,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	@ContainsTunables
 	public NodeTunable nodeTunable = null;
 
-	@Tunable(description="Enter group name:")
+	@Tunable(description="Enter group name:", longDescription=StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING)
 	public String groupName = null;
 
 	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, 
@@ -122,7 +123,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		if (requestedType.equals(CyGroup.class))		return newGroup;
 		if (requestedType.equals(String.class))			return newGroup.toString();
 		if (requestedType.equals(JSONResult.class))  {
-			JSONResult res = () -> { return "{" + newGroup.toString() + "}"; };
+			JSONResult res = () -> { return "[ " + newGroup.toString() + " ]"; };
 			return res;
 		}
 		return null;

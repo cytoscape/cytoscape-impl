@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
@@ -24,10 +25,10 @@ public class SetValuesTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public RowTunable rowTunable = null;
 
-	@Tunable(description="Column to set", context="nogui")
+	@Tunable(description="Column to set", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String columnName = null;
 
-	@Tunable(description="Value to set", context="nogui")
+	@Tunable(description="Value to set", context="nogui", longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String value = null;
 
 	public SetValuesTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

@@ -1358,6 +1358,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new group of nodes");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replace the selected nodes with a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 
@@ -1393,7 +1394,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "ungroup");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Ungroup a set of previously grouped nodes");
-			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
 
@@ -1408,6 +1409,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 			registerService(bc, factory, UnGroupNodesTaskFactory.class, props);
@@ -1427,10 +1429,10 @@ public class CyActivator extends AbstractCyActivator {
 			
 			props = new Properties();
 			props.setProperty(COMMAND, "collapse");
-			props.setProperty(COMMAND_NAMESPACE, "group"); // TODO right namespace?
-			props.setProperty(COMMAND_DESCRIPTION, "Collapse a group"); // TODO right namespace?
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); // TODO right namespace?
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); // TODO right namespace?
+			props.setProperty(COMMAND_NAMESPACE, "group"); 
+			props.setProperty(COMMAND_DESCRIPTION, "Collapse a group");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); 
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1461,7 +1463,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Add nodes or edges to a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Includes the currently selected nodes and edges to the specified group"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Includes the listed nodes and edges to the specified group"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1472,6 +1475,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{1 2 3}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1482,6 +1486,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Remove nodes or edges from a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove the selected nodes and edges from their current group"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1492,6 +1497,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of the selected group or groups"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 

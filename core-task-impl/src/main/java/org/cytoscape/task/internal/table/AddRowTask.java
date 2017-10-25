@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
@@ -54,7 +55,8 @@ public class AddRowTask extends AbstractTableDataTask implements ObservableTask 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for new row", context="nogui")
+	@Tunable(description="Key value for new row", context="nogui",
+			longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String keyValue = null;
 
 	public AddRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

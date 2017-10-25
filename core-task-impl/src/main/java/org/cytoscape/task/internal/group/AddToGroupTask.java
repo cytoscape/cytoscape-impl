@@ -28,6 +28,7 @@ import java.util.Arrays;
 
 import java.util.List;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
@@ -42,7 +43,7 @@ import org.cytoscape.work.json.JSONResult;
 
 public class AddToGroupTask extends AbstractGroupTask {
 
-	@Tunable (description="Group", context="nogui")
+	@Tunable (description="Group", context="nogui", longDescription=StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING)
 	public String groupName;
 
 	@ContainsTunables

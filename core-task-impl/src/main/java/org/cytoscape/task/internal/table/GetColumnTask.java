@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -24,7 +25,8 @@ public class GetColumnTask extends AbstractTableDataTask implements ObservableTa
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Name of column", context="nogui")
+	@Tunable(description="Name of column", context="nogui", 
+			longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String column = null;
 
 	public GetColumnTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
