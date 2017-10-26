@@ -108,7 +108,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	public ListSingleSelection<CyTable> sourceTable;
 
-	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" }, longDescription="", exampleStringValue = "")
+	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" }, longDescription="The name of the table used as the base data in the merge", exampleStringValue = "default node table")
 	public ListSingleSelection<CyTable> getSourceTable() {
 		return sourceTable;
 	}
@@ -160,7 +160,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListMultipleSelection<String> sourceMergeColumns;
 
 	@Tunable(description = "Select Columns:", gravity = 0.2, groups = { "Source", "Columns To Merge" }
-		, listenForChange = { "SourceTable", "SelectAllColumns" }, longDescription="", exampleStringValue = "")
+		, listenForChange = { "SourceTable", "SelectAllColumns" }, longDescription="A list of columns that will be brought into the merged table", exampleStringValue = "[PrimaryKey SecondaryKey]")
 	public ListMultipleSelection<String> getSourceMergeColumns() {
 		return sourceMergeColumns;
 	}
@@ -170,9 +170,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public ListSingleSelection<String> sourceMergeKey;
-
 	@Tunable(description = "Key column to merge:", groups = { "Source" }, gravity = 0.4, 
-			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
+			listenForChange = { "SourceTable" }, longDescription="The name of the columns that exists in both tables and is used to correlate rows", exampleStringValue = "primary")
 	public ListSingleSelection<String> getSourceMergeKey() {
 		return sourceMergeKey;
 	}
@@ -182,13 +181,13 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	@Tunable(description = "Type of merge:", gravity = 0.5, groups = { "Source" },
-			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
+			listenForChange = { "SourceTable" }, longDescription="A choice between ''Copy Columns'' and ''Link To Columns'' that determines if replicates are created", exampleStringValue = "Copy Columns")
 	public ListSingleSelection<String> mergeType;
 
 	public ListSingleSelection<String> whereMergeTable;
 
 	@Tunable(description = "Merge table to:", gravity = 1.0, groups = { "Target" },
-			xorChildren = true, longDescription="", exampleStringValue = "")
+			xorChildren = true, longDescription="The destination path of the resultant merged table.  The choices are ''Network Collection'', ''Selected Networks'', or ''All Unassigned Tables''.", exampleStringValue = "Selected Networks")
 	public ListSingleSelection<String> getWhereMergeTable() {
 		return whereMergeTable;
 	}
@@ -200,7 +199,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetNetworkCollection;
 
 	@Tunable(description = "Network Collection:", groups = { "Target", "Select Network Collection" }, gravity = 2.1,
-			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = "")
+			xorKey = NETWORK_COLLECTION, longDescription="The group of networks that will be merged into the source table", exampleStringValue = "all")
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
@@ -217,7 +216,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
 	@Tunable(description = "Merge data in:", groups = { "Target", "Select Network Collection" }, gravity = 2.2, 
-			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = "")
+			xorKey = NETWORK_COLLECTION, longDescription="The collection of networks where the merged table will reside", exampleStringValue = "MyCollection")
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
 	}
@@ -234,7 +233,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetKeyNetworkCollection;
 
 	@Tunable(description = "Key column for network:", groups = { "Target", "Select Network Collection" }, gravity = 2.3, xorKey = NETWORK_COLLECTION,
-			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }, longDescription="", exampleStringValue = "")
+			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }, longDescription="The name of the primary column about which the merge is made", exampleStringValue = "primary")
 	public ListSingleSelection<String> getTargetKeyNetworkCollection() {
 		return targetKeyNetworkCollection;
 	}
@@ -246,7 +245,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListMultipleSelection<String> targetNetworkList;
 
 	@Tunable(description = "Networks:", groups = { "Target", "Select Networks" }, gravity = 3.1,
-			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = "")
+			xorKey = NETWORK_SELECTION, longDescription="The list of networks where the merged table will be added", exampleStringValue = "all")
 	public ListMultipleSelection<String> getTargetNetworkList() {
 		return targetNetworkList;
 	}
