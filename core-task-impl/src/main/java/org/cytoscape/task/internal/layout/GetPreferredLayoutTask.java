@@ -1,5 +1,9 @@
 package org.cytoscape.task.internal.layout;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -67,12 +71,16 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 				if (preferredLayout == null) { 
 					return "{ }";
 				} else {
-					return "" + preferredLayout.getName();	
+					return "\"" + preferredLayout.getName() + "\"";	
 			}};
 			return res;
 		}else if (preferredLayout == null) {
 			return null;
 		}
 		return preferredLayout;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, JSONResult.class);
 	}
 }
