@@ -63,15 +63,16 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 		if (type.equals(String.class))
 			return preferredLayout.getName();
 		else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (preferredLayout == null) 
-				return "{}";
-			else {
-				
-				return "" + preferredLayout.getName();	
+			JSONResult res = () -> {
+				if (preferredLayout == null) { 
+					return "{ }";
+				} else {
+					return "" + preferredLayout.getName();	
 			}};
 			return res;
-		}else if (preferredLayout == null)
+		}else if (preferredLayout == null) {
 			return null;
+		}
 		return preferredLayout;
 	}
 }
