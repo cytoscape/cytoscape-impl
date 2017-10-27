@@ -123,7 +123,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		if (requestedType.equals(CyGroup.class))		return newGroup;
 		if (requestedType.equals(String.class))			return newGroup.toString();
 		if (requestedType.equals(JSONResult.class))  {
-			JSONResult res = () -> { return "[ " + newGroup.toString() + " ]"; };
+			JSONResult res = () -> { return "\"[ " + newGroup.toString() + " ]\""; };
 			return res;
 		}
 		return null;
