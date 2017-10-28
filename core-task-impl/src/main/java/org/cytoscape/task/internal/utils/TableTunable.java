@@ -51,6 +51,8 @@ public class TableTunable {
 			return t;
 		} else {
 			for (CyTable t: tableManager.getAllTables(true)) {
+				String title = t.getTitle();
+				System.out.println(title);
 				if (t.getTitle().equalsIgnoreCase(table))
 					return t;
 			}

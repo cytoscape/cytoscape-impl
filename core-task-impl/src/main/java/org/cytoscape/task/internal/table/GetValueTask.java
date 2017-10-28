@@ -49,7 +49,6 @@ import org.cytoscape.util.json.CyJSONUtil;
 
 public class GetValueTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	private final CyServiceRegistrar serviceRegistrar;
 	Object resultValue = null;
 
 	@ContainsTunables
@@ -64,7 +63,6 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 	public GetValueTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
-		serviceRegistrar =reg;
 		tableTunable = new TableTunable(tableMgr);
 	}
 
@@ -103,7 +101,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 
 		CyColumn targetColumn = table.getColumn(column);
 		if (targetColumn == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find a '"+column+"' column in this table");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find the '"+column+"' column in this table");
 			return;
 		}
 

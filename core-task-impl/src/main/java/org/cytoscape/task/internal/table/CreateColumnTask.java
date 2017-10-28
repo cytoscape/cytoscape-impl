@@ -45,7 +45,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable;
 
-	@Tunable(description = "Name of column", context = "nogui", longDescription="", exampleStringValue = "")
+	@Tunable(description = "Name of column", context = "nogui", longDescription="The new column name", exampleStringValue = "Uncertainty")
 	public String columnName;
 
 	@ContainsTunables
@@ -114,7 +114,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 		if (requestedType.equals(JSONResult.class)) 
 		{
 			if (columnName == null) 		return "{}";
-			return columnName;
+			return "\" + columnName + \"";
 		}
 	if (requestedType.equals(JSONResult.class)) 	return columnName;
 		return null;

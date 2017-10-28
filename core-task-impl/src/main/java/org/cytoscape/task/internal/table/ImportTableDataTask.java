@@ -171,16 +171,16 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	public void setKeyColumnForMapping(ListSingleSelection<String> colList) {
-		this.keyColumnForMapping = colList;
+		keyColumnForMapping = colList;
 	}
 	
 	@Tunable(
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.3,
-			xorKey = NETWORK_COLLECTION, longDescription="", exampleStringValue = ""
+			xorKey = NETWORK_COLLECTION, longDescription="Differentiate between upper and lower case in matches", exampleStringValue = "false"
 	)
-	public boolean caseSensitiveNetworCollectionKeys = true;
+	public boolean caseSensitiveNetworkCollectionKeys = true;
 
 	/* --- [ NETWORK_SELECTION ]------------------------------------------------------------------------------------- */
 	
@@ -190,7 +190,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Network List:",
 			groups = { "Target Table Data","Select Networks" },
 			gravity = 3.1,
-			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
+			xorKey = NETWORK_SELECTION, longDescription="The list of networks into which the table is imported", exampleStringValue = "all"
 	)
 	public ListMultipleSelection<String> getTargetNetworkList() {	return targetNetworkList;	}
 
@@ -205,7 +205,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Import Data as:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.2,
-			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
+			xorKey = NETWORK_SELECTION, longDescription="The data type of the targets", exampleStringValue = "int"
 	)
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {	return dataTypeTargetForNetworkList;	}
 
@@ -222,7 +222,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			gravity = 3.3,
 			xorKey = NETWORK_SELECTION,
 			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }, 
-			longDescription="", exampleStringValue = ""
+			longDescription="The primary key used to ma", exampleStringValue = ""
 	)
 	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	return keyColumnForMappingNetworkList;	}
 	
@@ -232,7 +232,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.4,
-			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = ""
+			xorKey = NETWORK_SELECTION, longDescription="Determines whether capitalization is considered in matching and sorting", exampleStringValue = "false"
 	)
 	public boolean caseSensitiveNetworkKeys = true;
 	
@@ -242,16 +242,16 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "New Table Name:",
 			groups = { "Target Table Data", "Set New Table Name" },
 			gravity = 5.0,
-			xorKey = UNASSIGNED_TABLE, longDescription="", exampleStringValue = ""
+			xorKey = UNASSIGNED_TABLE, longDescription="The title of the new table", exampleStringValue = "Supplemental Info"
 	)
 	public String newTableName;
 	
-	@Tunable(
-			description = "Network View Renderer:",
-			groups = { "Target Table Data", "Select Renderer" },
-			gravity = 6.0, longDescription="", exampleStringValue = ""
-	)
-	public ListSingleSelection<NetworkViewRenderer> renderers;
+//	@Tunable(
+//			description = "Network View Renderer:",
+//			groups = { "Target Table Data", "Select Renderer" },
+//			gravity = 6.0, longDescription="", exampleStringValue = ""
+//	)
+//	public ListSingleSelection<NetworkViewRenderer> renderers;
 	
 	@ProvidesTitle
 	public String getTitle() {		return "Import Data";	}
@@ -504,7 +504,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		
 		if (targetTable != null)
-			applyMapping(targetTable, caseSensitiveNetworCollectionKeys);
+			applyMapping(targetTable, caseSensitiveNetworkCollectionKeys);
 	}
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
@@ -677,7 +677,7 @@ public Object getResults(Class requestedType) {
 	if (requestedType.equals(CyColumn.class)) 		return globalTable;
 	if (requestedType.equals(String.class)) 		return newTableName;
 	if (requestedType.equals(JSONResult.class)) {
-		JSONResult res = () -> {		return newTableName;	};
+		JSONResult res = () -> {		return "[" + newTableName + "]";	};
 		return res;
 	}
 	return null;
