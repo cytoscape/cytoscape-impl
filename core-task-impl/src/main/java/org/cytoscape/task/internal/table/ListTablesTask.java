@@ -48,7 +48,7 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyTable> tables;
 
-	@Tunable(description="Type of table", context="nogui", longDescription="", exampleStringValue = "")
+	@Tunable(description="Type of table", context="nogui", longDescription="One of ''network'', ''node'', ''edge'', ''unattached'', ''all'', to constrain the type of table listed", exampleStringValue = "all")
 	public ListSingleSelection<String> type;
 
 	@Tunable(description="Table namespace", context="nogui", longDescription="", exampleStringValue = "")
