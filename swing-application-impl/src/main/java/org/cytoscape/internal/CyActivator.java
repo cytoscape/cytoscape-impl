@@ -27,7 +27,6 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -83,8 +82,8 @@ import org.cytoscape.internal.view.GridViewToggleModel;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
-import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSearchBar;
+import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -488,9 +487,8 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {
+		// Set Look and Feel
 		final Properties props = getCy3Property(bc).getProperties();
-		
-		// Update look and feel
 		String lookAndFeel = props.getProperty("lookAndFeel");
 		
 		if (lookAndFeel == null) {
@@ -499,18 +497,36 @@ public class CyActivator extends AbstractCyActivator {
 			else // Use Nimbus on *nix systems
 				lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 		}
-		
+			
 		try {
 			logger.debug("Setting look and feel to: " + lookAndFeel);
 			UIManager.setLookAndFeel(lookAndFeel);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			logger.error("Unexpected error", e);
-		} catch (InstantiationException e) {
-			logger.error("Unexpected error", e);
-		} catch (IllegalAccessException e) {
-			logger.error("Unexpected error", e);
-		} catch (UnsupportedLookAndFeelException e) {
-			logger.error("Unexpected error", e);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			final boolean useScreenMenuBar;
+			String useScreenMenuBarVal = props.getProperty("useScreenMenuBar");
+			
+			if ("true".equalsIgnoreCase(useScreenMenuBarVal)) {
+				useScreenMenuBar = true;
+			} else if ("false".equalsIgnoreCase(useScreenMenuBarVal)) {
+				useScreenMenuBar = false;
+			} else {
+				// Use the regular window menu bar if it's High Sierra and the system is set to any other
+				// language other than English, to work around a bug in High Sierra where the screen menu
+				// disappears.
+				// See http://code.cytoscape.org/redmine/issues/3967 and
+				//     https://github.com/arduino/Arduino/issues/6548
+				String language = Locale.getDefault().getLanguage();
+				String version = System.getProperty("os.version");
+				boolean highSierra = version.startsWith("10.13");
+				boolean english = language.equals(new Locale("en").getLanguage());
+				useScreenMenuBar = !(highSierra && !english);
+			}
+			
+			System.setProperty("apple.laf.useScreenMenuBar", "" + useScreenMenuBar);
 		}
 		
 		try {
