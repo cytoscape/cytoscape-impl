@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -92,14 +93,20 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		}
 	}
 
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertData(tables);
 		}
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	if (tables == null) 		return "{}";
-			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-			return cyJSONUtil.cyIdentifiablesToJson(tables);
+			JSONResult res = () -> {	
+				if (tables == null) {
+					return "{}";} 
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return cyJSONUtil.cyIdentifiablesToJson(tables);
+			}
 		};
 			return res;
 		}
