@@ -1821,7 +1821,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Tables can be registered");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the table SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1833,7 +1833,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set title");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the visible identifier of a single table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1845,7 +1845,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set values");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Set all the values in the specified list of rows with a single value");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);

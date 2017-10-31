@@ -1,5 +1,10 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Arrays;
+import java.util.List;
+
+import javax.swing.SwingUtilities;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -26,20 +31,13 @@ package org.cytoscape.task.internal.table;
 
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.TunableValidator.ValidationState;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
-
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.SwingUtilities;
 
 
 public final class DeleteColumnTask extends AbstractTableColumnTask implements TunableValidator {
@@ -77,7 +75,7 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return column.getName();
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return column.getName();	};	
+			JSONResult res = () -> {		return "";	};
 			return res;
 			}
 		return null;

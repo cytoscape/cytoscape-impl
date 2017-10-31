@@ -111,13 +111,18 @@ public class CreateColumnTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyColumn.class)) 		return tableTunable.getTable().getColumn(columnName);
 		if (requestedType.equals(String.class)) 		return columnName;
-		if (requestedType.equals(JSONResult.class)) 
-		{
-			if (columnName == null) 		return "{}";
-			return "\" + columnName + \"";
-		}
-	if (requestedType.equals(JSONResult.class)) 	return columnName;
-		return null;
+//		if (requestedType.equals(JSONResult.class)) 
+//		{
+//			if (columnName == null) 		return "{}";
+//			return "\" + columnName + \"";
+//		}
+		 if (requestedType.equals(JSONResult.class)) {
+				JSONResult res = () -> {
+					if (columnName == null)		return "{}";
+					return columnName;
+				};
+				return res;
+			}		return null;
 	}
 
 }

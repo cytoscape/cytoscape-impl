@@ -126,7 +126,7 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 	public Object getResults(Class requestedType) {
 		if (row == null) return null;
 		if (requestedType.equals(String.class)) 			return row.toString();
-		if (row.getClass().equals(JSONResult.class)) {
+		if (requestedType.equals(JSONResult.class)) {
 				JSONResult res = () -> {	if (row == null) 		return "{}";
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
 				return "{" + cyJSONUtil.toJson(row) + "} ";

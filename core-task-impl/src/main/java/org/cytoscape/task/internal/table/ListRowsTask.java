@@ -92,13 +92,27 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
 
 	public Object getResults(Class requestedType) {
-		if (rowList == null || rowList.size() == 0) return null;
 		if (requestedType.equals(String.class)) 	return DataUtils.convertData(rowList);
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "\"{  " + DataUtils.convertData(rowList) + " }\"";	};
+			JSONResult res = () -> {	
+				String out = rowListAsJson();
+				return out;
+			};
 			return res;
 		}		
+		if (rowList == null || rowList.size() == 0) return "";
 		return rowList;
 	}
 
+	String rowListAsJson()
+	{
+		if (rowList == null || rowList.size() == 0) return "{}";
+		StringBuilder str = new StringBuilder("[ ");
+		for (CyRow row : rowList)
+			str.append(row.get("SUID", Long.class) + ",");
+		String out = str.toString();
+		out = out.substring(0, out.length()-1);
+		return out + " ]";
+		
+	}
 }
