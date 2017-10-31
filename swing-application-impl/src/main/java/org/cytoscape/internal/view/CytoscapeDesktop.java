@@ -10,6 +10,7 @@ import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -188,7 +189,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
 				
 				if (!CytoscapeDesktop.this.equals(window)) {
-					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+					if (window instanceof JFrame && !isScreenMenuBar()) {
 						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
 						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
 						((JFrame) window).setJMenuBar(dummyMenuBar);
@@ -196,7 +197,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 						window.repaint();
 					}
 					
-					if (LookAndFeelUtil.isAquaLAF())
+					if (isScreenMenuBar())
 						cyMenus.setMenuBarVisible(true);
 					
 					setJMenuBar(menuBar);
