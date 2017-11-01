@@ -1903,6 +1903,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns for networks");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of column names assocated with a network.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"SUID\",\"shared name\",\"name\",\"selected\",\"__Annotations\",\"publication\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
