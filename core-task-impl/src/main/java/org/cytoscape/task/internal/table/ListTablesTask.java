@@ -99,11 +99,12 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		}
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {	
-				if (tables == null) 		return "{}";
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				String foo = cyJSONUtil.cyIdentifiablesToJson(tables);
-				System.out.println(foo);
-				return foo;
+				if (tables == null) {
+					return "{}";} 
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return cyJSONUtil.cyIdentifiablesToJson(tables);
+			}
 		};
 			return res;
 		}
