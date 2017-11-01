@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
 import static org.cytoscape.internal.util.ViewUtil.getTitle;
+import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;
@@ -55,7 +56,6 @@ import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
 import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -397,7 +397,7 @@ public class NetworkViewMainPanel extends JPanel {
 		
 		viewFrames.put(vc.getName(), frame);
 		
-		if (!LookAndFeelUtil.isAquaLAF())
+		if (!isScreenMenuBar())
 			frame.setJMenuBar(cyMenus.createDummyMenuBar());
 		
 		frame.addWindowListener(new WindowAdapter() {
@@ -411,7 +411,7 @@ public class NetworkViewMainPanel extends JPanel {
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
 
 				if (!frame.equals(window)) {
-					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+					if (window instanceof JFrame && !isScreenMenuBar()) {
 						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
 						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
 						((JFrame) window).setJMenuBar(dummyMenuBar);
@@ -422,7 +422,7 @@ public class NetworkViewMainPanel extends JPanel {
 					frame.setJMenuBar(menuBar);
 				}
 				
-				if (LookAndFeelUtil.isAquaLAF() && menuBar.equals(frame.getJMenuBar()))
+				if (isScreenMenuBar() && menuBar.equals(frame.getJMenuBar()))
 					cyMenus.setMenuBarVisible(true);
 				
 				// Don't forget to update the UI, or it can cause some issues,
@@ -436,7 +436,7 @@ public class NetworkViewMainPanel extends JPanel {
 				// to prevent users from selecting them when a modal dialog is open from the detached view.
 				// The problem is that the menus are not automatically disabled on Mac/Aqua when that happens,
 				// as it should, though it works fine when the modal dialog is open from the main Cytoscape frame.
-				if (LookAndFeelUtil.isAquaLAF() && cyMenus.getJMenuBar().equals(frame.getJMenuBar()))
+				if (isScreenMenuBar() && cyMenus.getJMenuBar().equals(frame.getJMenuBar()))
 					cyMenus.setMenuBarVisible(false);
 			}
 			@Override
