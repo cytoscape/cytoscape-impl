@@ -119,7 +119,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 		 if (requestedType.equals(JSONResult.class)) {
 				JSONResult res = () -> {
 					if (columnName == null)		return "{}";
-					return columnName;
+					return "{ \"Column\" : \"" + columnName + "\" }";
 				};
 				return res;
 			}		return null;

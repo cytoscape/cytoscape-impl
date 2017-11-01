@@ -1,5 +1,6 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,6 +32,7 @@ import javax.swing.SwingUtilities;
 
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.util.json.CyJSONUtil;
@@ -73,11 +75,17 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 	}
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class)) 		return column.getName();
+		if (requestedType.equals(String.class)) 		return (column == null) ? "" : column.getName();
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "";	};
+			JSONResult res = () -> {  
+			
+				System.out.println("column is " + column.getName());
+				if (column == null) return "{}";
+			return   "{ \"column\": \"" + column.getName() + "\" }";
+		};
 			return res;
 			}
 		return null;
 	}
+	
 }

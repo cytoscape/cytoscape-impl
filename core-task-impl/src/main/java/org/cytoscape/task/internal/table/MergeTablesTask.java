@@ -758,7 +758,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return getTitle();
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return getTitle();
+//			JSONResult res = () -> {		return "{  \"title\" : \"" + getTitle() + "\" }";
+			JSONResult res = () -> {		return "{  " + getTitle() + " }";
 		};
 		return res;
 		}

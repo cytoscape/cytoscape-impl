@@ -77,7 +77,8 @@ public class DeleteRowTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return keyValue;
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return keyValue;	};	
+			JSONResult res = () -> {		return "{ " + keyValue + " }";	};	
+//			(CyJSONUtil.toJSON(CyRow cyRow, CyColumn ... columns)))
 			return res;
 			}
 		return null;
