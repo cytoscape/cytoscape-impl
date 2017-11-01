@@ -52,7 +52,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class SelectExportTableTask extends AbstractTask implements RequestsUIHelper, TunableValidator{
 
-	@Tunable(description = "Select a table to export:", gravity = 1.05)
+	@Tunable(description = "Select a table to export:", gravity = 1.05, longDescription="Specifies the name of the table to export")
 	public ListSingleSelection<String> selectTable;
 	
 	@ContainsTunables

@@ -76,7 +76,7 @@ public class DestroyTableTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return title;
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return title;	};	
+			JSONResult res = () -> {		return "{ \"title\": \"" + title + "\" }";	};	
 			return res;
 			}
 		return null;
