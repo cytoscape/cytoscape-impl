@@ -37,6 +37,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
+import org.cytoscape.task.internal.utils.DataUtils;
+
 public class CollapseGroupTask extends AbstractGroupTask {
 	private List<CyGroup> groups;
 	private boolean collapse;
@@ -96,11 +98,18 @@ public class CollapseGroupTask extends AbstractGroupTask {
 
 		tm.setProgress(1.0d);
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class, List.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class))			return groupList;
+		if (requestedType.equals(List.class))			return groups;
+		if (requestedType.equals(String.class)) {
+			if (collapse) {
+				return "Collapsed groups: "+DataUtils.convertData(groups);
+			} else {
+				return "Expanded groups: "+DataUtils.convertData(groups);
+			}
+		}
 		if (requestedType.equals(JSONResult.class))  
-			{ JSONResult res = () -> { return "[ " + groupList + " ]";	};
+			{ JSONResult res = () -> { return "["+getGroupSetString(groups)+"]"; };
 			return res;
 			}
 		return null;

@@ -45,6 +45,7 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.NodeTunable;
 
 public class UnGroupNodesTask extends AbstractGroupTask {
@@ -101,21 +102,12 @@ public class UnGroupNodesTask extends AbstractGroupTask {
 	}
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class))			return getGroupSetString();
+		if (requestedType.equals(String.class))			return "Ungrouped: "+DataUtils.convertData(groupSet);
 		if (requestedType.equals(JSONResult.class))   {
-			JSONResult res = () -> {	 return "{"  + getGroupSetString() + "}"; };
+			JSONResult res = () -> {	 return "["  + getGroupSetString(groupSet) + "]"; };
 			return res;
 		}
 		return null;
 	}
 	
-	String getGroupSetString()
-	{
-		StringBuilder buffer = new StringBuilder();
-		for (CyGroup group : groupSet)
-			buffer.append(group.getGroupNode().getSUID()).append(" ");
-		String out = buffer.toString();
-		return out.substring(0, out.length()-1);
-	}
-
 }

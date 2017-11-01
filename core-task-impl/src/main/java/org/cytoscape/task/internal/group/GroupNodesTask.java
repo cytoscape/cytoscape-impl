@@ -39,8 +39,10 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.NodeTunable;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
@@ -55,6 +57,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	private CyGroupFactory factory;
 	private UndoSupport undoSupport;
 	private CyGroup newGroup;
+	private CyServiceRegistrar serviceRegistrar;
 	private static int groupNumber = 1;
 
 	@ContainsTunables
@@ -64,11 +67,12 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	public String groupName = null;
 
 	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, 
-	                      CyGroupManager mgr, CyGroupFactory factory) {
+	                      CyGroupManager mgr, CyGroupFactory factory, CyServiceRegistrar serviceRegistrar) {
 		this.netView = netView;
 		this.mgr = mgr;
 		this.factory = factory;
 		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 		if (groupName == null) {
 			groupName = "Group "+groupNumber;
 			groupNumber++;
@@ -77,11 +81,12 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	}
 
 	public GroupNodesTask(UndoSupport undoSupport, CyApplicationManager appMgr, 
-	                      CyGroupManager mgr, CyGroupFactory factory) {
+	                      CyGroupManager mgr, CyGroupFactory factory, CyServiceRegistrar serviceRegistrar) {
 		this.netView = null;
 		this.mgr = mgr;
 		this.factory = factory;
 		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 		nodeTunable = new NodeTunable(appMgr);
 	}
 
@@ -123,7 +128,18 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		if (requestedType.equals(CyGroup.class))		return newGroup;
 		if (requestedType.equals(String.class))			return newGroup.toString();
 		if (requestedType.equals(JSONResult.class))  {
-			JSONResult res = () -> { return "\"[ " + newGroup.toString() + " ]\""; };
+			CyJSONUtil jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			JSONResult res = () -> { 
+				if (newGroup == null) return "{}";
+				return "{"+newGroup.getGroupNode().getSUID()+"}";
+				/*
+				String val = "{\"group\":"+newGroup.getGroupNode().getSUID();
+				List<CyNode> nodes = newGroup.getNodeList();
+				if (nodes != null && nodes.size() > 0)
+					val += "\"nodes\":"+jsonUtil.cyIdentifiablesToJson(nodes);
+				return val+"}";
+				*/
+			};
 			return res;
 		}
 		return null;

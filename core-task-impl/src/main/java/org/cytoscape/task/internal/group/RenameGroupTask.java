@@ -90,7 +90,7 @@ public class RenameGroupTask extends AbstractGroupTask {
 		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
 		if (requestedType.equals(String.class))			return groupName;
 		if (requestedType.equals(JSONResult.class))  	
-		{	JSONResult res = () -> {return groupName; };
+		{	JSONResult res = () -> {return "{}"; };
 			return res;
 		}		
 		return null;

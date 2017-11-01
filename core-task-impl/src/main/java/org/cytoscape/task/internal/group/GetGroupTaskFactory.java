@@ -38,58 +38,27 @@ import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory 
-                                       implements NodeViewTaskFactory, GroupNodesTaskFactory, TaskFactory {
+public class GetGroupTaskFactory extends AbstractTaskFactory {
 	private CyApplicationManager appMgr;
 	private CyGroupManager mgr;
-	private CyGroupFactory groupFactory;
-	private UndoSupport undoSupport;
 	private CyServiceRegistrar serviceRegistrar;
 
-	public GroupNodesTaskFactoryImpl(CyApplicationManager appMgr,
-	                                 CyGroupManager mgr, CyGroupFactory groupFactory, 
-	                                 UndoSupport undoSupport, CyServiceRegistrar serviceRegistrar) {
+	public GetGroupTaskFactory(CyApplicationManager appMgr,
+	                           CyGroupManager mgr, 
+	                           CyServiceRegistrar serviceRegistrar) {
 		super();
 		this.appMgr = appMgr;
 		this.mgr = mgr;
-		this.groupFactory = groupFactory;
-		this.undoSupport = undoSupport;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory, serviceRegistrar));
-	}
-
-	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory, serviceRegistrar));
-	}
-
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GroupNodesTask(undoSupport, appMgr, mgr, groupFactory, serviceRegistrar));
-	}
-
-	public boolean isReady(CyNetworkView netView) {
-		if (netView == null) 
-			return false;
-
-		// Get all of the selected nodes
-		CyNetwork net = netView.getModel();
-		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-		return (selNodes.size() > 1);
-	}
-
-	public boolean isReady(View<CyNode> nodeView, CyNetworkView netView) {
-		if (nodeView == null || netView == null) 
-			return false;
-		// Get all of the selected nodes
-		CyNetwork net = netView.getModel();
-		final List<CyNode> selNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
-		return (selNodes.size() > 1);
+		return new TaskIterator(new GetGroupTask(appMgr, mgr, serviceRegistrar));
 	}
 
 	public boolean isReady() { return true; }

@@ -111,6 +111,8 @@ import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryIm
 import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.web.ExportAsWebArchiveTaskFactory;
 import org.cytoscape.task.internal.group.AddToGroupTaskFactory;
+import org.cytoscape.task.internal.group.GetGroupTask;
+import org.cytoscape.task.internal.group.GetGroupTaskFactory;
 import org.cytoscape.task.internal.group.GroupNodeContextTaskFactoryImpl;
 import org.cytoscape.task.internal.group.GroupNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.group.ListGroupsTaskFactory;
@@ -1342,7 +1344,7 @@ public class CyActivator extends AbstractCyActivator {
 			CyGroupFactory cyGroupFactory, CyServiceRegistrar serviceRegistrar) {
 		{
 			GroupNodesTaskFactoryImpl factory = new GroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef,
-					cyGroupManager, cyGroupFactory, undoSupportServiceRef);
+					cyGroupManager, cyGroupFactory, undoSupportServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 			props.setProperty(TITLE, "Group Selected Nodes");
@@ -1359,8 +1361,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new group of nodes");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replace the selected nodes with a group");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Create a group from the specified nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{123}");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Group Selected Nodes to the nodes context also
@@ -1373,6 +1376,19 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
+		}
+		{
+			GetGroupTaskFactory factory = new GetGroupTaskFactory(cyApplicationManagerServiceRef,
+					cyGroupManager, serviceRegistrar);
+			// For commands
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "get");
+			props.setProperty(COMMAND_NAMESPACE, "group");
+			props.setProperty(COMMAND_DESCRIPTION, "Get a particular group");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get a group by providing a network and the group node identifier");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, GetGroupTask.EXAMPLE_JSON);
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			// UNGROUP
@@ -1395,8 +1411,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "ungroup");
 			props.setProperty(COMMAND_NAMESPACE, "group");
 			props.setProperty(COMMAND_DESCRIPTION, "Ungroup a set of previously grouped nodes");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Ungroups one or more groups, expanding them if "+
+			                                            "they are collapsed and removing the group nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Ungroup Selected Nodes to the nodes context also
@@ -1409,9 +1427,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "false");
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(PREFERRED_ACTION, "NEW");
-			props.setProperty(COMMAND_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the selected group nodes and replaces them with the members of the groups. ");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
 			registerService(bc, factory, UnGroupNodesTaskFactory.class, props);
 		}
@@ -1431,9 +1446,10 @@ public class CyActivator extends AbstractCyActivator {
 			props = new Properties();
 			props.setProperty(COMMAND, "collapse");
 			props.setProperty(COMMAND_NAMESPACE, "group"); 
-			props.setProperty(COMMAND_DESCRIPTION, "Collapse a group");
+			props.setProperty(COMMAND_DESCRIPTION, "Collapse groups");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); 
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1452,9 +1468,10 @@ public class CyActivator extends AbstractCyActivator {
 			props = new Properties();
 			props.setProperty(COMMAND, "expand");
 			props.setProperty(COMMAND_NAMESPACE, "group");  // TODO right namespace?
-			props.setProperty(COMMAND_DESCRIPTION, "Expand a collapsed group");  // TODO right namespace?
+			props.setProperty(COMMAND_DESCRIPTION, "Expand collapsed groups");  // TODO right namespace?
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the group node with member nodes for a set of groups");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Shows the contents of a currently collapsed group"); 
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1476,7 +1493,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network"); 
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{1 2 3}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124,126]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
