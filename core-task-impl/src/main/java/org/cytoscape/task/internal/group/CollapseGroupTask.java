@@ -100,7 +100,7 @@ public class CollapseGroupTask extends AbstractGroupTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return groupList;
 		if (requestedType.equals(JSONResult.class))  
-			{ JSONResult res = () -> { return groupList;	};
+			{ JSONResult res = () -> { return "[ " + groupList + " ]";	};
 			return res;
 			}
 		return null;
