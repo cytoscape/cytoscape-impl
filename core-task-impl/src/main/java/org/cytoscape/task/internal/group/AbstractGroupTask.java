@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;

@@ -36,6 +36,9 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.networkobjects.AbstractGetTask;
 import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
@@ -45,9 +48,9 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
-public class GetGroupTask extends AbstractGetTask implements ObservableTask {
+public class GetGroupTask extends AbstractGroupTask implements ObservableTask {
 	private CyApplicationManager appMgr;
-	private CyGroupManager mgr;
+	//private CyGroupManager mgr;
 	private CyGroup group = null;
 	private CyServiceRegistrar serviceRegistrar;
 	private CyJSONUtil jsonUtil;
@@ -62,7 +65,7 @@ public class GetGroupTask extends AbstractGetTask implements ObservableTask {
 	public GetGroupTask(CyApplicationManager appMgr, 
 	                    CyGroupManager mgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
-		this.mgr = mgr;
+		this.groupMgr = mgr;
 		this.serviceRegistrar = serviceRegistrar;
 		
 	}
@@ -70,14 +73,15 @@ public class GetGroupTask extends AbstractGetTask implements ObservableTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
 		if (network == null) network = appMgr.getCurrentNetwork();
+		net = network;
 
-		CyNode returnedNode = getNode(network, node);
-		if (returnedNode == null) {
+		group = getGroup(node);
+		if (group == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find a group with that group node "+node);
 			return;
 		}
 		// Now find the corresponding group
-		group = mgr.getGroup(returnedNode, network);
+		//group = mgr.getGroup(returnedNode.getGroupNode(), network);
 
 		// mgr.addGroup(group);
 		tm.setProgress(1.0d);
@@ -107,7 +111,8 @@ public class GetGroupTask extends AbstractGetTask implements ObservableTask {
 		List<CyNode> nodes = group.getNodeList();
 		List<CyEdge> internalEdges = group.getInternalEdgeList();
 		Set<CyEdge> externalEdges = group.getExternalEdgeList();
-		String name = network.getRow(group.getGroupNode()).get(CyNetwork.NAME, String.class);
+		CyRow groupRow = ((CySubNetwork)net).getRootNetwork().getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
+		String name = groupRow.get(CyRootNetwork.SHARED_NAME, String.class);
 		String result = "{\"group\":"+suid+","+"\"name\":\""+name+"\",";
 		result += "\"nodes\":"+jsonUtil.cyIdentifiablesToJson(nodes)+",";
 		result += "\"internalEdges\":"+jsonUtil.cyIdentifiablesToJson(internalEdges)+",";
