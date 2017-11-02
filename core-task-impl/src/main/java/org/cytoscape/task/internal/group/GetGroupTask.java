@@ -64,7 +64,7 @@ public class GetGroupTask extends AbstractGetTask implements ObservableTask {
 		this.appMgr = appMgr;
 		this.mgr = mgr;
 		this.serviceRegistrar = serviceRegistrar;
-		this.jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
+		
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -102,12 +102,13 @@ public class GetGroupTask extends AbstractGetTask implements ObservableTask {
 	                                    "\"externalEdges\":[201,202,203],\"internalEdges\":[300,301],\"collapsed\": false}";
 
 	public String groupJSON(CyNetwork network, CyGroup group) {
+		this.jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
 		long suid = group.getGroupNode().getSUID();
 		List<CyNode> nodes = group.getNodeList();
 		List<CyEdge> internalEdges = group.getInternalEdgeList();
 		Set<CyEdge> externalEdges = group.getExternalEdgeList();
 		String name = network.getRow(group.getGroupNode()).get(CyNetwork.NAME, String.class);
-		String result = "{\"group\":"+suid+","+"\"name\":"+name+",";
+		String result = "{\"group\":"+suid+","+"\"name\":\""+name+"\",";
 		result += "\"nodes\":"+jsonUtil.cyIdentifiablesToJson(nodes)+",";
 		result += "\"internalEdges\":"+jsonUtil.cyIdentifiablesToJson(internalEdges)+",";
 		result += "\"externalEdges\":"+jsonUtil.cyIdentifiablesToJson(externalEdges)+",";

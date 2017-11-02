@@ -123,6 +123,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		tm.setProgress(1.0d);
 	}
 
+	@Override
 	public Object getResults(Class requestedType) {
 		if (newGroup == null) return null;
 		if (requestedType.equals(CyGroup.class))		return newGroup;
@@ -131,7 +132,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 			CyJSONUtil jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
 			JSONResult res = () -> { 
 				if (newGroup == null) return "{}";
-				return "{"+newGroup.getGroupNode().getSUID()+"}";
+				return newGroup.getGroupNode().getSUID()+"";
 				/*
 				String val = "{\"group\":"+newGroup.getGroupNode().getSUID();
 				List<CyNode> nodes = newGroup.getNodeList();
@@ -144,6 +145,8 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		}
 		return null;
 	}
+	
+	@Override
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
 
 }

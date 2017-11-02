@@ -1363,7 +1363,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new group of nodes");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Create a group from the specified nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{123}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "123");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Group Selected Nodes to the nodes context also
@@ -1482,7 +1482,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Add nodes or edges to a group");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Includes the listed nodes and edges to the specified group"); 
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds the specified nodes and edges to the specified group"); 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
