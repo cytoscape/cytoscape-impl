@@ -209,6 +209,9 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	
 	@Override
 	public List<ValidationWarning> validate(CyNetwork context) {
+		if(context == null)
+			return Collections.emptyList();
+		
 		CyTable table;
 		String tableType;
 		Class<?> type = getTableType();
