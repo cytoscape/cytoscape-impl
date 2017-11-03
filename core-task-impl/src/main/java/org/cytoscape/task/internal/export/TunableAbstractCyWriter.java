@@ -64,6 +64,7 @@ public abstract class TunableAbstractCyWriter<S extends CyWriterFactory, T exten
 	@Tunable(
 			description = "Export File Format:",
 			longDescription = "The format of the output file.",
+			exampleStringValue = "CSV",
 			gravity = 1.0
 	)
 	public ListSingleSelection<String> options;

@@ -1761,7 +1761,7 @@ public class CyActivator extends AbstractCyActivator {
 			                  "Deletes a row from a table."+
 			                  "Requires the table name or SUID and the row key.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101,\"key\":\"62\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1774,7 +1774,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get the information about a table column.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"name\": \"New name\", \"type\": \"String\", "+
-			                                        "\"immutable\": false, \"primaryKey\": false }");
+			                                        "\"immutable\": false, \"primaryKey\": false \"values\":[\"EGFR\",\"BRCA1\",\"BRCA2\"]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{

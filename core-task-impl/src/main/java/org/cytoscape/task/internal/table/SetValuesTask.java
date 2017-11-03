@@ -32,7 +32,10 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 	@Tunable(description="Column to set", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String columnName = null;
 
-	@Tunable(description="Value to set", context="nogui", longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
+	@Tunable(description="Value to set", context="nogui", 
+	         longDescription="The value to set the columns in the selected rows to.  "+
+	                         "This should be a string value, which will be converted to the appropriate column type.", 
+	         exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String value = null;
 
 	public SetValuesTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
@@ -138,6 +141,7 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 				String xstring = "{\"table\":"+table.getSUID()+",\"rows\":[";
 				for (String key: rowKeys)
 					xstring += "\""+key+"\",";
+				// System.out.println("JSON output: "+xstring.substring(0, xstring.length()-1)+"]}");
 				return xstring.substring(0, xstring.length()-1)+"]}";
 			};
 			return res;

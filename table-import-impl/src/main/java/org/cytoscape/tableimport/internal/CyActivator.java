@@ -160,6 +160,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Import a table from a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "This uses a long list of input parameters to specify the attributes of the table, the mapping keys, and the destination table for the input.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"suid\":101}");
 			// Register the service as a TaskFactory for commands
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -171,6 +172,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Import a table from a URL");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Similar to Import Table this uses a long list of input parameters to specify the attributes of the table, the mapping keys, and the destination table for the input.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"suid\":101}");
 			// Register the service as a TaskFactory for commands
 			registerService(bc, importURLTableFactory, TaskFactory.class, props);
 		}

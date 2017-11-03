@@ -56,7 +56,8 @@ public class AddRowTask extends AbstractTableDataTask implements ObservableTask 
 	public TableTunable tableTunable = null;
 
 	@Tunable(description="Key value for new row", context="nogui",
-			longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
+	         longDescription=StringToModel.VALUE_LONG_DESCRIPTION+"  Note that network, node, and edge tables ``must`` have Long values as keys", 
+	         exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String keyValue = null;
 
 	public AddRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

@@ -66,7 +66,11 @@ public class CreateTableTask extends AbstractTableDataTask implements Observable
 		
 
 	}
+
+	@Override
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyTable.class, String.class, JSONResult.class);	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyTable.class)) 				return table;
 		if (requestedType.equals(String.class)) 			return "" + table.getSUID();

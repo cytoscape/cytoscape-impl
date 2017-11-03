@@ -40,7 +40,9 @@ public class RowTunable {
 
 	public RowList rowList = null;
 
-	@Tunable(description="List of rows", context="nogui" , longDescription=StringToModel.CY_ROW_LIST_LONG_DESCRIPTION)
+	@Tunable(description="List of rows", context="nogui" , 
+	         longDescription=StringToModel.CY_ROW_LIST_LONG_DESCRIPTION,
+	         exampleStringValue="name:BRCA1,name:BRCA2,name:EGFR")
 	public RowList getrowList() {
 		rowList.setTable(tableTunable.getTable());
 		return rowList;
