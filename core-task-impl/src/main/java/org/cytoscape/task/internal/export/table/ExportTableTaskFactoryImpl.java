@@ -37,14 +37,14 @@ import org.cytoscape.task.AbstractTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.json.JSONResult;
 
-public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory implements ExportTableTaskFactory {
-	
+public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory 
+                                        implements ExportTableTaskFactory {
+
 	private final CyTableWriterManager writerManager;
 	private final CyApplicationManager cyApplicationManager;
 	private final TunableSetter tunableSetter;
-	
+
 	public ExportTableTaskFactoryImpl(final CyTableWriterManager writerManager, final CyApplicationManager cyApplicationManager,
 			final TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
@@ -67,15 +67,5 @@ public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory impleme
 		writer.setDefaultFileFormatUsingFileExt(file);
 		
 		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);
-	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyTable.class, String.class, JSONResult.class);	}
-	public Object getResults(Class requestedType) {
-		if (requestedType.equals(CyTable.class)) 		return table;
-		if (requestedType.equals(String.class)) 		return "" + table.getSUID();
-		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "" + table.getSUID();	};	
-			return res;
-			}
-		return null;
 	}
 }

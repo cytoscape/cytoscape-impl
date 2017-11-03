@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -92,6 +93,12 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		}
 	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		System.out.println(requestedType + "---------------");
 		if (requestedType.equals(String.class)) {

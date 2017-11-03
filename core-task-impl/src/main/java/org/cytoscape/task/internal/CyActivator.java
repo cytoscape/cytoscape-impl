@@ -1539,11 +1539,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From File");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a network from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			// props.setProperty(COMMAND, "load file");
-			// props.setProperty(COMMAND_NAMESPACE, "table");
-			// props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
+			props.setProperty(COMMAND_EXAMPLE_JSON, "1233");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableFileTaskFactory.class, props);
 		}
@@ -1557,11 +1555,9 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-url-32.png").toString());
 			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From URL");
-			// props.setProperty(COMMAND, "load url");
-			// props.setProperty(COMMAND_NAMESPACE, "table");
-			// props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a network from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "1233");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableURLTaskFactory.class, props);
 		}
@@ -1603,8 +1599,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "merge");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Merge tables together");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Merge tables together joining around a designated key column");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Merge tables together joining around a designated key column.  Depending on the arguments, might merge into multiple local tables.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, MergeTablesTaskFactory.class, props);
 		}
@@ -1670,7 +1667,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Export a table to a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Creates a file with name <FILE> and writes the table there.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1694,7 +1691,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Destroy (delete) an entire table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the specified table from the network. ");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1706,19 +1703,13 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove a column from a table, specified by its name.  Returns the name of the column removed.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"column\": \"defunct\" }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101,\"column\":\"defunct\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Delete column");
-			props.setProperty(COMMAND, "delete column");
-			props.setProperty(COMMAND_NAMESPACE, "table");
-			props.setProperty(COMMAND_DESCRIPTION, "Delete a column from a table");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Remove a column from a table, specified by its name.  Returns the name of the column removed.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"column\": \"defunct\" }");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
@@ -1732,8 +1723,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a column in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the name of a specified column in the table.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"name\": \"New name\", \"type\": \"String\", "+
-			                                        "\"immutable\": false, \"primaryKey\": false }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101,\"column\":\"New Column\"}");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, RenameColumnTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1746,7 +1736,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Add a new row to a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional row of empty cells to the current table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101,\"row\":\"row key\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1757,7 +1747,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Appends an additional column of attribute values to the current table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"column\": \" uncertainty\" }");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"column\": \"uncertainty\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1767,7 +1757,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "delete row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a row from a table");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                  "Deletes a row from a table."+
+			                  "Requires the table name or SUID and the row key.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1779,9 +1771,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the information about a table column");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get the information about a table column.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"name\": \"New name\", \"type\": \"String\", "+
+			                                        "\"immutable\": false, \"primaryKey\": false }");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1790,9 +1783,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Return all values in a table row");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the JSON list of values in each column of the table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the values in each column of a row of a table.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 1 2 3 ]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101,\"SUID\":101,\"name\":\"mynode\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1816,7 +1809,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the columns in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the list of columns in the table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[name degree]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"name\",\"degree\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1828,7 +1821,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the list of primary keys for each of the rows in the specified table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 3 4 5] ");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,103]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1840,7 +1833,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the table SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,104]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1852,7 +1845,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the visible identifier of a single table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1864,7 +1857,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Set all the values in the specified list of rows with a single value");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"rows\":[\"key1\",\"key1\",\"key1\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: network

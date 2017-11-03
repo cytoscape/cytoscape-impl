@@ -121,8 +121,13 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 		}
 
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyRow.class, String.class, JSONResult.class);	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyRow.class, String.class, JSONResult.class);
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (row == null) return null;
 		if (requestedType.equals(String.class)) 			return row.toString();

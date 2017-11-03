@@ -103,19 +103,24 @@ public class AddRowTask extends AbstractTableDataTask implements ObservableTask 
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new row '"+keyValue+"'");
 	}
 
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyRow.class, String.class, JSONResult.class);	}
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyRow.class, String.class, JSONResult.class);	
+	}
+	
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyRow.class))			return row;
 		if (requestedType.equals(String.class))			return (row == null) ?  null : row.toString();
 		if (requestedType.equals(JSONResult.class)) 
 		{
-			JSONResult res = () -> { if (row == null) 		return "{}";
-//			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-			return "" + row.get("SUID", Long.class); //cyJSONUtil.toJson(row);
-		};
-		return res;
+			JSONResult res = () -> { 
+				if (row == null) 		return "{}";
+				return "{\"table\":"+tableTunable.getTable().getSUID()+", \"row\":\""+keyValue+"\"}";
+			};
+			return res;
 		}
 		return null;
-		}
+	}
 
 }

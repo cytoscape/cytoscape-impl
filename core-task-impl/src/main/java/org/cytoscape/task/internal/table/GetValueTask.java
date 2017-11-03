@@ -54,7 +54,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row", context="nogui", longDescription=StringToModel.ROW_EXAMPLE, exampleStringValue = StringToModel.ROW_EXAMPLE)
+	@Tunable(description="Key value for row", context="nogui", longDescription=StringToModel.ROW_LONG_DESCRIPTION, exampleStringValue = StringToModel.ROW_EXAMPLE)
 	public String keyValue = null;
 
 	@Tunable(description="Name of column", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)

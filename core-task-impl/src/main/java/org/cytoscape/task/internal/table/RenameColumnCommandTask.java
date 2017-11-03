@@ -48,6 +48,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 public final class RenameColumnCommandTask extends AbstractTask implements ObservableTask {
 	private final CyTableManager tableManager;
 	private final CyJSONUtil cyJSONUtil;
+	private CyTable table = null;
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -80,7 +81,7 @@ public final class RenameColumnCommandTask extends AbstractTask implements Obser
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
@@ -114,10 +115,10 @@ public final class RenameColumnCommandTask extends AbstractTask implements Obser
 			String res = "Renamed column "+columnName+" in table "+tableTunable.getTable()+" to "+newColumnName;
 			return (R)res;
 		} else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (column == null)
+			JSONResult res = () -> {if (table == null || column == null)
 				return "{}";
 			else {
-				return cyJSONUtil.toJson(column, true, false);
+				return "{\"table\":"+table.getSUID()+", \"column\":\""+newColumnName+"\"}";
 			}};
 			return (R)res;
 		}
@@ -125,5 +126,7 @@ public final class RenameColumnCommandTask extends AbstractTask implements Obser
 	}
 
 	@Override
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	
+	}
 }

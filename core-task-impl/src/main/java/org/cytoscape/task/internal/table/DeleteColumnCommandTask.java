@@ -4,24 +4,29 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
-public class DeleteColumnCommandTask extends AbstractTableDataTask {
+public class DeleteColumnCommandTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	CyServiceRegistrar serviceRegistrar;
+	private CyTable table = null;
 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Name of column to delete", context="nogui")
+	@Tunable(description="Name of column to delete", 
+	                      longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, 
+	                      exampleStringValue = StringToModel.COLUMN_EXAMPLE, context="nogui")
 	public String column = null;
 
 	public DeleteColumnCommandTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
@@ -33,7 +38,7 @@ public class DeleteColumnCommandTask extends AbstractTableDataTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Unable to find table '"+tableTunable.getTableString()+"'");
@@ -63,15 +68,19 @@ public class DeleteColumnCommandTask extends AbstractTableDataTask {
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Deleted column: "+column);
 
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return (column == null) ? "" : column;
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {  
-			
-				System.out.println("column is " + column);
-				if (column == null) return "{}";
-			return   "{ \"column\": \"" + column + "\" }";
+				if (table == null || column == null) return "{}";
+			return   "{\"table\":"+table.getSUID()+",\"column\":\"" + column + "\"}";
 		};
 			return res;
 			}

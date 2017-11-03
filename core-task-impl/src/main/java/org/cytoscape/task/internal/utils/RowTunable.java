@@ -42,7 +42,6 @@ public class RowTunable {
 
 	@Tunable(description="List of rows", context="nogui" , longDescription=StringToModel.CY_ROW_LIST_LONG_DESCRIPTION)
 	public RowList getrowList() {
-		System.out.println("getTable = "+tableTunable.getTable());
 		rowList.setTable(tableTunable.getTable());
 		return rowList;
 	}

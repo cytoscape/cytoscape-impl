@@ -21,6 +21,7 @@ import org.cytoscape.work.json.JSONResult;
 public class DeleteRowTask extends AbstractTableDataTask {
 	final CyApplicationManager appMgr;
 	CyRow row = null;
+	CyTable table = null;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	@ContainsTunables
@@ -40,7 +41,7 @@ public class DeleteRowTask extends AbstractTableDataTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
@@ -77,8 +78,10 @@ public class DeleteRowTask extends AbstractTableDataTask {
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return keyValue;
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "{ " + keyValue + " }";	};	
-//			(CyJSONUtil.toJSON(CyRow cyRow, CyColumn ... columns)))
+			JSONResult res = () -> {		
+				if (table == null || keyValue == null) return "{}";
+				return "{\"table\":"+table.getSUID()+",\"key\":\"" + keyValue + "\"}";	
+			};	
 			return res;
 			}
 		return null;

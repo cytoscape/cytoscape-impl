@@ -53,6 +53,7 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -63,7 +64,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MergeTablesTask extends AbstractTask implements TunableValidator {
+public class MergeTablesTask extends AbstractTask implements TunableValidator, ObservableTask {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -105,6 +106,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
+	private List<Long> tableSUIDs;
 	
 	public ListSingleSelection<CyTable> sourceTable;
 
@@ -309,6 +311,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.name2NetworkMap = new HashMap<>();
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
+		this.tableSUIDs = new ArrayList<Long>();
 		this.tableMgr = tableMgr;
 
 		initTunable(tableMgr, networkManager);
@@ -524,6 +527,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		
 		if (!isNewColumnVirtual())
 			copyRows(sourceTable.getSelectedValue(), columns, targetTable);
+
+		tableSUIDs.add(targetTable.getSUID());
 	}
 
 	private CyColumn getJoinTargetColumn(CyTable targetTable) {
@@ -753,17 +758,33 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		else
 			return dataTypeTargetForNetworkList.getSelectedValue();
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
-	
+
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(String.class, List.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class)) 		return getTitle();
-		if (requestedType.equals(JSONResult.class)) {
-//			JSONResult res = () -> {		return "{  \"title\" : \"" + getTitle() + "\" }";
-			JSONResult res = () -> {		return "{  " + getTitle() + " }";
-		};
-		return res;
+		if (requestedType.equals(String.class)) {
+			String res = "";
+			for (Long suid: tableSUIDs) {
+				res += suid.toString()+",";
+			}
+			return res.substring(0, res.length()-1);
 		}
-		return null;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (tableSUIDs == null || tableSUIDs.size() == 0) return "{}";
+				String strRes = "[";
+				for (Long suid: tableSUIDs) {
+					strRes += suid.toString()+",";
+				}
+				return strRes.substring(0, strRes.length()-1)+"]";
+			};
+			return res;
+		}
+		return tableSUIDs;
 	}
 
 	@Override

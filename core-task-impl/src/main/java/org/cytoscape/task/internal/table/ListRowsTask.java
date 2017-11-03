@@ -89,18 +89,25 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, message);
 		}
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class)) 	return DataUtils.convertData(rowList);
+		if (requestedType.equals(String.class))
+			return DataUtils.convertData(rowList);
+
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	
+			JSONResult res = () -> {
 				String out = rowListAsJson();
 				return out;
 			};
 			return res;
-		}		
-		if (rowList == null || rowList.size() == 0) return "";
+		}
+
 		return rowList;
 	}
 
