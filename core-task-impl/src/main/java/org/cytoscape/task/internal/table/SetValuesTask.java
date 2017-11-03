@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.table;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringJoiner;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
@@ -138,11 +139,12 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				if (table == null || rowTunable.getRowList() == null) return "{}";
-				String xstring = "{\"table\":"+table.getSUID()+",\"rows\":[";
+				String xstring = "{\"table\":"+table.getSUID()+",\"rows\": ";
+				StringJoiner joiner = new StringJoiner(", ", "[", "]");
 				for (String key: rowKeys)
-					xstring += "\""+key+"\",";
+					joiner.add("\""+key+"\"");
 				// System.out.println("JSON output: "+xstring.substring(0, xstring.length()-1)+"]}");
-				return xstring.substring(0, xstring.length()-1)+"]}";
+				return xstring.substring(0, xstring.length()-1) + joiner.toString() + "}";
 			};
 			return res;
 		}

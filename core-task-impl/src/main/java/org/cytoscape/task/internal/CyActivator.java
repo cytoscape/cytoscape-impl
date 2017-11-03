@@ -1772,7 +1772,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get the information about a table column.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"name\": \"New name\", \"type\": \"String\", "+
-			                                        "\"immutable\": false, \"primaryKey\": false \"values\":[\"EGFR\",\"BRCA1\",\"BRCA2\"]}");
+			                                        "\"immutable\": false, \"primaryKey\": false, \"values\":[\"EGFR\",\"BRCA1\",\"BRCA2\"]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1855,7 +1855,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Set values in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Set all the values in the specified list of rows with a single value");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"rows\":[\"key1\",\"key1\",\"key1\"]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"rows\":[\"key1\",\"key1\",\"key1\"]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: network
