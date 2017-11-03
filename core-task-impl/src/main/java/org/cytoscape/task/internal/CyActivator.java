@@ -1539,7 +1539,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, "Import Table From File");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "1233");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableFileTaskFactory.class, props);
 		}
@@ -1555,7 +1555,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, "Import Table From URL");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "1233");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableURLTaskFactory.class, props);
 		}
