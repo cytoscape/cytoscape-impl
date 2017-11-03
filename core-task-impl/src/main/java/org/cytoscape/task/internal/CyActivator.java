@@ -1095,9 +1095,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for nodes");
       props.setProperty(COMMAND_LONG_DESCRIPTION,
-                        "Creates a new node column. If multiple nodes are found, only one "+
-			                  "will be returned, and a warning will be reported in the Cytoscape Task "+
-			                  "History dialog.");
+                        "Creates a new node column.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 
@@ -1220,7 +1218,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Creates a new edge column. If multiple edges are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
+					"Creates a new edge column.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1869,7 +1867,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column in the network table");
             		props.setProperty(COMMAND_LONG_DESCRIPTION,
-                                        "Creates a new network column. If multiple networks are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
+                                        "Creates a new network column.");
             		props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
