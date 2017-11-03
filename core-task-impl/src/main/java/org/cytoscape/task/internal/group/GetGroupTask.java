@@ -40,7 +40,6 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.networkobjects.AbstractGetTask;
 import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ObservableTask;
@@ -50,7 +49,7 @@ import org.cytoscape.work.json.JSONResult;
 
 public class GetGroupTask extends AbstractGroupTask implements ObservableTask {
 	private CyApplicationManager appMgr;
-	//private CyGroupManager mgr;
+	
 	private CyGroup group = null;
 	private CyServiceRegistrar serviceRegistrar;
 	private CyJSONUtil jsonUtil;
