@@ -130,7 +130,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		if (resultValue == null) return null;
 		if (requestedType.equals(String.class)) 	return DataUtils.convertData(resultValue);
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	return DataUtils.convertData(resultValue); };
+			JSONResult res = () -> {	return DataUtils.convertDataJSON(resultValue); };
 			return res;
 		}
 		return resultValue;

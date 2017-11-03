@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -12,6 +13,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonPrimitive;
 
 /*
  * #%L
@@ -113,6 +119,41 @@ public class DataUtils {
 			return data.toString();
 	}
 
+	public static String convertDataJSON(Object object) {
+		if (object instanceof List) {
+			StringJoiner joiner = new StringJoiner(", ", "[", "]");
+			for (Object value : (List<?>)object) {
+				joiner.add(convertPrimitiveJSON(value));
+			}
+			return joiner.toString();
+		} else if (object instanceof Map) {
+			StringJoiner joiner = new StringJoiner(", ", "{", "}");
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>)object).entrySet()) {
+				if (entry.getKey() != null) {
+					joiner.add("\"" + entry.getKey().toString() + "\": "+  convertDataJSON(entry.getValue()));
+				}
+			}
+			return joiner.toString();
+		}
+		else {
+			return convertPrimitiveJSON(object);
+		}
+	}
+
+	private static String convertPrimitiveJSON(Object object) {
+		if ( object instanceof Number) {
+			return object.toString();
+		} else if (object instanceof String) {
+			return "\"" + (String) object + "\"";
+		} else if (object instanceof Boolean) {
+			return object.toString();
+		} else if (object == null) {
+			return "null";
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+	
 	public static String convertMapToString(Map data) {
 		if (data.size() == 0)
 			return "{}";
