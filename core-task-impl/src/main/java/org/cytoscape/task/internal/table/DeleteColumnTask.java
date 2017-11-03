@@ -79,7 +79,6 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {  
 			
-				System.out.println("column is " + column.getName());
 				if (column == null) return "{}";
 			return   "{ \"column\": \"" + column.getName() + "\" }";
 		};

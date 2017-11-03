@@ -14,11 +14,12 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
-public class DeleteRowTask extends AbstractTableDataTask {
+public class DeleteRowTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	CyRow row = null;
 	CyTable table = null;
@@ -27,7 +28,7 @@ public class DeleteRowTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row to delete", context="nogui", 
+	@Tunable(description="Key value for row to delete", context="nogui", required=true,
 			longDescription=StringToModel.VALUE_LONG_DESCRIPTION, exampleStringValue = StringToModel.VALUE_EXAMPLE)
 
 	public String keyValue = null;
@@ -74,7 +75,10 @@ public class DeleteRowTask extends AbstractTableDataTask {
 		taskMonitor.showMessage(TaskMonitor.Level.INFO,  "Deleted row '"+keyValue+"'");
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return keyValue;
 		if (requestedType.equals(JSONResult.class)) {

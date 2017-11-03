@@ -110,6 +110,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
 	private boolean networksPresent;
+	private List<CyTable> mappedTables;
 	
 	
 	public ListSingleSelection<String> whereImportTable ;
@@ -293,6 +294,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.name2NetworkMap = new HashMap<>();
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
+		this.mappedTables = new ArrayList<>();
 
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
@@ -512,8 +514,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		for (CyNetwork network : networks) {
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
 			
-			if (targetTable != null)
+			if (targetTable != null) {
+				mappedTables.add(targetTable);
 				applyMapping(targetTable, caseSensitiveNetworkKeys);
+			}
+
 		}
 	}
 
@@ -521,8 +526,10 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		final CyTable targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		
-		if (targetTable != null)
+		if (targetTable != null) {
 			applyMapping(targetTable, caseSensitiveNetworkCollectionKeys);
+			mappedTables.add(targetTable);
+		}
 	}
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
@@ -687,18 +694,32 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				globalTable.setTitle(newTableName);
 			
 			tableMgr.addTable(globalTable);
+			mappedTables.add(globalTable);
 		}
 	}
 
 	@Override
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyTable.class, String.class, JSONResult.class);	}
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);	
+	}
 
 	@Override
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(CyTable.class)) 		return globalTable;
-		if (requestedType.equals(String.class)) 		return newTableName;
+		if (requestedType.equals(List.class))
+			return mappedTables;
+		if (requestedType.equals(String.class)) {
+			String str = "Mapped to tables:\n";
+			for (CyTable table: mappedTables) {
+				str += "   "+table.toString()+"\n";
+			}
+			return str;
+		}
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "{\"suid\":" + globalTable.getSUID() + "}";	};
+			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			JSONResult res = () -> {		
+				if (mappedTables.isEmpty()) return "{}";
+				return "{\"mappedTables\":"+cyJSONUtil.cyIdentifiablesToJson(mappedTables)+"}";
+			};
 			return res;
 		}
 		return null;
