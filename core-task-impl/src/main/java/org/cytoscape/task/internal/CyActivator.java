@@ -1819,7 +1819,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the list of primary keys for each of the rows in the specified table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,103]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"101\",\"102\",\"103\"]");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
