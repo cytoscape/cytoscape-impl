@@ -44,9 +44,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 /**
  * Swing implementation of Object Position editor.
@@ -141,10 +141,10 @@ public class ObjectPositionValueEditor implements ValueEditor<ObjectPosition> {
 
 		if (initialValue == null) {
 			oldValue = null;
-			pos = new ObjectPositionImpl();
+			pos = new ObjectPosition();
 		} else {
 			oldValue = initialValue;
-			pos = new ObjectPositionImpl(initialValue);
+			pos = new ObjectPosition(initialValue);
 		}
 
 		control.setPosition(pos);

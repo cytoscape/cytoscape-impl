@@ -3,7 +3,6 @@ package org.cytoscape.work.internal.tunables;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
@@ -16,6 +15,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.util.ListChangeListener;
@@ -57,7 +57,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
                                   implements ActionListener, ListChangeListener<T> {
 	
 	private JComboBox<T> combobox;
-	private boolean isUpdating = false;
+	private final JLabel label = new JLabel(getDescription());
+	private boolean isUpdating;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type.
@@ -83,25 +84,35 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		try {
 			return (ListSingleSelection<T>)getValue();
 		} catch(final Exception e) {
-			throw new NullPointerException("bad ListSingleSelection object");	
+			throw new IllegalStateException("bad ListSingleSelection object", e);	
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private void init() {
 		//set Gui
-		final JLabel label = new JLabel(getDescription());
 		label.setVerticalTextPosition(SwingConstants.CENTER);
 
+		T[] values;
+		T selectedValue = null;
+
+		if (getSingleSelection() == null || getSingleSelection().getPossibleValues() == null) {
+			values = (T[])new Object[1];
+		} else {
+			values = (T[])getSingleSelection().getPossibleValues().toArray();
+			selectedValue = getSingleSelection().getSelectedValue();
+		}
+
 		//add list's items to the combobox
-		combobox = new JComboBox<>((T[])getSingleSelection().getPossibleValues().toArray());
-		combobox.getModel().setSelectedItem(getSingleSelection().getSelectedValue());
+		combobox = new JComboBox<>(values);
+		combobox.getModel().setSelectedItem(selectedValue);
 		combobox.addActionListener(this);
 		
 		updateFieldPanel(panel, label, combobox, horizontal);
 		setTooltip(getTooltip(), label, combobox);
 		
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
+		label.setEnabled(combobox.isEnabled());
 		panel.setVisible(combobox.getModel().getSize() > 0);
 		
 		final ListSingleSelection<T> singleSelection = getSingleSelection();
@@ -132,6 +143,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
+		label.setEnabled(combobox.isEnabled());
 		panel.setVisible(combobox.getModel().getSize() > 0);
 		isUpdating = false;
 	}
@@ -147,17 +159,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		final T selectedItem = (T) combobox.getSelectedItem();
 		
-		if (selectedItem != null){
+		if (selectedItem != null) {
 			ListSingleSelection<T> singleSelection = getSingleSelection();
 			singleSelection.setSelectedValue(selectedItem);
 			
 			try {
+				// TODO This is wrong! It should not set the same list of values again,
+				//      because only the selected value has changed. It can create infinite loops!
 				setValue(singleSelection);
 			} catch (final Exception e) {
-				combobox.setBackground(Color.RED);
+				combobox.setForeground(LookAndFeelUtil.getErrorColor());
 				e.printStackTrace();
 				JOptionPane.showMessageDialog(null, "The value entered cannot be set for " + getName() + "!", "Error", JOptionPane.ERROR_MESSAGE);
-				combobox.setBackground(UIManager.getColor("ComboBox.background"));
+				combobox.setForeground(UIManager.getColor("ComboBox.foreground"));
 				return;
 			}
 		}

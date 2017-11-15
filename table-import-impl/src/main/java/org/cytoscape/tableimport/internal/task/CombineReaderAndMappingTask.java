@@ -1,12 +1,37 @@
 package org.cytoscape.tableimport.internal.task;
 
+import static org.cytoscape.work.TunableValidator.ValidationState.OK;
+
+import java.io.InputStream;
+import java.util.Collections;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.io.read.AbstractCyNetworkReader;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,48 +49,35 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-import static org.cytoscape.work.TunableValidator.ValidationState.OK;
+public class CombineReaderAndMappingTask extends AbstractCyNetworkReader implements TunableValidator {
 
-import java.io.InputStream;
-
-import org.cytoscape.io.read.CyNetworkReader;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.util.ImportType;
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableValidator;
-
-public class CombineReaderAndMappingTask extends AbstractTask implements CyNetworkReader, TunableValidator {
-
-	private TaskMonitor taskMonitor;
-	private final CyServiceRegistrar serviceRegistrar;
-	
 	@ProvidesTitle
 	public String getTitle() {
 		return ImportType.NETWORK_IMPORT.getTitle();
 	}	
 
 	@ContainsTunables
-	public NetworkCollectionHelper networkCollectionHelperTask;
-	
-	@ContainsTunables
 	public ImportNetworkTableReaderTask importTask;
+	
+	private final NetworkCollectionHelper collectionHelper;
+	
+	private TaskMonitor taskMonitor;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName,
 			final CyServiceRegistrar serviceRegistrar) {
-		importTask = new ImportNetworkTableReaderTask(is, fileType, inputName, serviceRegistrar);
-		networkCollectionHelperTask = new NetworkCollectionHelper(serviceRegistrar);
+		super(
+				is,
+				serviceRegistrar.getService(CyApplicationManager.class),
+				serviceRegistrar.getService(CyNetworkFactory.class),
+				serviceRegistrar.getService(CyNetworkManager.class),
+				serviceRegistrar.getService(CyRootNetworkManager.class)
+		);
 		this.serviceRegistrar = serviceRegistrar;
+		importTask = new ImportNetworkTableReaderTask(is, fileType, inputName, serviceRegistrar);
+		collectionHelper = new NetworkCollectionHelper(serviceRegistrar);
 	}
-
+	
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
 		if (importTask instanceof TunableValidator) {
@@ -81,16 +93,47 @@ public class CombineReaderAndMappingTask extends AbstractTask implements CyNetwo
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
-		this.networkCollectionHelperTask.run(taskMonitor);
-		this.importTask.setNodeMap(networkCollectionHelperTask.getNodeMap());
-		this.importTask.setRootNetwork(networkCollectionHelperTask.getRootNetwork());
-		this.importTask.setNetworkViewFactory(networkCollectionHelperTask.getNetworkViewFactory());
-		this.importTask.run(taskMonitor);
+		
+		// Pass the tunable values from this task to the helper task
+		final String rootNetName = getRootNetworkList().getSelectedValue();
+		final String targetColumn = getTargetColumnList().getSelectedValue();
+		final NetworkViewRenderer renderer = getNetworkViewRendererList().getSelectedValue();
+		
+		if (rootNetName != null) {
+			ListSingleSelection<String> ls = new ListSingleSelection<>(Collections.singletonList(rootNetName));
+			ls.setSelectedValue(rootNetName);
+			collectionHelper.setRootNetworkList(ls);
+		} else {
+			collectionHelper.setRootNetworkList(new ListSingleSelection<>(Collections.emptyList()));
+			collectionHelper.setTargetColumnList(new ListSingleSelection<>(Collections.emptyList()));
+		}
+		
+		if (targetColumn != null) {
+			ListSingleSelection<String> ls = new ListSingleSelection<>(Collections.singletonList(targetColumn));
+			ls.setSelectedValue(targetColumn);
+			collectionHelper.setTargetColumnList(ls);
+		}
+		
+		if (renderer != null) {
+			ListSingleSelection<NetworkViewRenderer> ls =
+					new ListSingleSelection<>(Collections.singletonList(renderer));
+			ls.setSelectedValue(renderer);
+			collectionHelper.setNetworkViewRendererList(ls);
+		}
+		
+		// Run the helper task
+		collectionHelper.run(taskMonitor);
+		
+		// Run the Import task
+		importTask.setNodeMap(collectionHelper.getNodeMap());
+		importTask.setRootNetwork(collectionHelper.getRootNetwork());
+		importTask.setNetworkViewFactory(collectionHelper.getNetworkViewFactory());
+		importTask.run(taskMonitor);
 	}
 	
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
-		final CyNetworkView view = networkCollectionHelperTask.getNetworkViewFactory().createNetworkView(network);
+		final CyNetworkView view = collectionHelper.getNetworkViewFactory().createNetworkView(network);
 		final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
 				CyLayoutAlgorithm.ALL_NODE_VIEWS, "");

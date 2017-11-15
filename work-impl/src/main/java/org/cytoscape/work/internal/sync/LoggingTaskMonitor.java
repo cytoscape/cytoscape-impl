@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 
 class LoggingTaskMonitor implements TaskMonitor {
 	
-	private static final Logger logger = LoggerFactory.getLogger(LoggingTaskMonitor.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private static final String LOG_PREFIX = "TaskMonitor";
 	private Logger messageLogger = null;
 

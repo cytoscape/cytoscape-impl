@@ -70,7 +70,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class GraphMLParser extends DefaultHandler {
 	
-	private static final Logger logger = LoggerFactory.getLogger(GraphMLParser.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	// Map of data type to nodes or edges
 	private Map<String, String> datatypeMap;

@@ -1,12 +1,19 @@
 package org.cytoscape.task.internal.zoom;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
+
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.undo.AbstractCyEdit;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +31,11 @@ package org.cytoscape.task.internal.zoom;
  * #L%
  */
 
-
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
-
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.work.undo.AbstractCyEdit;
-
-
-/** An undoable edit that will undo and redo the fitting of the content of a network view. */ 
+/**
+ * An undoable edit that will undo and redo the fitting of the content of a network view.
+ */
 final class FitContentEdit extends AbstractCyEdit {
+	
 	private final CyNetworkView view;
 	private final double networkScaleFactor;
 	private final double networkCenterXLocation;
@@ -50,16 +50,14 @@ final class FitContentEdit extends AbstractCyEdit {
 		networkCenterYLocation = view.getVisualProperty(NETWORK_CENTER_Y_LOCATION);
 	}
 
+	@Override
 	public void redo() {
-		;
-
 		view.fitContent();
 		view.updateView();
 	}
 
+	@Override
 	public void undo() {
-		;
-
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, networkScaleFactor);
 		view.setVisualProperty(NETWORK_CENTER_X_LOCATION, networkCenterXLocation);
 		view.setVisualProperty(NETWORK_CENTER_Y_LOCATION, networkCenterYLocation);

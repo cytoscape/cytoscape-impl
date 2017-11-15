@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -49,7 +50,7 @@ import org.slf4j.LoggerFactory;
 public class StringToModelImpl implements StringToModel {
 
 	@SuppressWarnings("unused")
-	private final static Logger logger = LoggerFactory.getLogger(StringToModelImpl.class);
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final static String ALL = "all";
 	private final static String CURRENT = "current";

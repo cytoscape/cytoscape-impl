@@ -9,7 +9,7 @@ import javax.swing.Icon;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.manual.internal.Util;
+import org.cytoscape.view.manual.internal.util.Util;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;

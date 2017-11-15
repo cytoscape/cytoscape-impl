@@ -68,7 +68,7 @@ public class CreditScreen {
 	private ImageIcon image;
 	private List<String> lines;
 	private JDialog dialog; 
-	private static final Logger logger = LoggerFactory.getLogger(CreditScreen.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private static final String CREDIT_IMAGE = "/images/CytoscapeCredits.png";
 	private static final String CREDITS = "/credits.txt";
 	private final String version;

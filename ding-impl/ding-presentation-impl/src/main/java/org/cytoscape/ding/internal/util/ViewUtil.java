@@ -2,13 +2,15 @@ package org.cytoscape.ding.internal.util;
 
 import javax.swing.SwingUtilities;
 
+import org.slf4j.Logger;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,6 +39,25 @@ public final class ViewUtil {
 			runnable.run();
 		else
 			SwingUtilities.invokeLater(runnable);
+	}
+	
+	public static void invokeOnEDTAndWait(final Runnable runnable) {
+		invokeOnEDTAndWait(runnable, null);
+	}
+	
+	public static void invokeOnEDTAndWait(final Runnable runnable, final Logger logger) {
+		if (SwingUtilities.isEventDispatchThread()) {
+			runnable.run();
+		} else {
+			try {
+				SwingUtilities.invokeAndWait(runnable);
+			} catch (Exception e) {
+				if (logger != null)
+					logger.error("Unexpected error", e);
+				else
+					e.printStackTrace();
+			}
+		}
 	}
 	
 	private ViewUtil() {

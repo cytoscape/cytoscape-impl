@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.export.network;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.task.AbstractNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,44 +36,32 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.task.AbstractNetworkViewTaskFactory;
-import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
-public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory implements ExportNetworkViewTaskFactory {
+public class ExportNetworkViewTaskFactoryImpl extends AbstractNetworkViewTaskFactory
+		implements ExportNetworkViewTaskFactory {
 
 	private CyNetworkViewWriterManager writerManager;
 	private CyApplicationManager cyApplicationManager;
 	private final TunableSetter tunableSetter;
 
-	
-	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager, CyApplicationManager cyApplicationManager,
-			TunableSetter tunableSetter) {
+	public ExportNetworkViewTaskFactoryImpl(CyNetworkViewWriterManager writerManager,
+			CyApplicationManager cyApplicationManager, TunableSetter tunableSetter) {
 		this.writerManager = writerManager;
 		this.cyApplicationManager = cyApplicationManager;
 		this.tunableSetter = tunableSetter;
 	}
-	
+
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(2,new CyNetworkViewWriter(writerManager, cyApplicationManager, view));
+		return new TaskIterator(2, new CyNetworkViewWriter(writerManager, cyApplicationManager, view));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view, File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
+		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 
 		CyNetworkViewWriter writer = new CyNetworkViewWriter(writerManager, cyApplicationManager, view);
 		writer.setDefaultFileFormatUsingFileExt(file);
-		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
+		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);
 	}
 }

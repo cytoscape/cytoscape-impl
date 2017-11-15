@@ -40,9 +40,9 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 
-		DataSourceManager dataSourceManager = new DataSourceManagerImpl();
+		DataSourceManagerImpl dataSourceManager = new DataSourceManagerImpl();
 		registerService(bc, dataSourceManager, DataSourceManager.class, new Properties());
-		registerServiceListener(bc, dataSourceManager, "addDataSource", "removeDataSource", DataSource.class);
+		registerServiceListener(bc, dataSourceManager::addDataSource, dataSourceManager::removeDataSource, DataSource.class);
 
 		BookmarkDataSourceBuilder bkBuilder = new BookmarkDataSourceBuilder(serviceRegistrar);
 		final Set<DataSource> bkDataSources = bkBuilder.getDataSources();

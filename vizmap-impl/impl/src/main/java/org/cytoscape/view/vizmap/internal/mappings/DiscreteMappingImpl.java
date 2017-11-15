@@ -1,12 +1,26 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
+import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +38,6 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
-import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
-import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
-
 /**
  * Implements a lookup table mapping data to values of a particular class. The
  * data value is extracted from a bundle of attributes by using a specified data
@@ -46,25 +45,15 @@ import org.cytoscape.view.vizmap.mappings.DiscreteMapping;
  */
 public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements DiscreteMapping<K, V> {
 
-	// contains the actual map elements (sorted)
+	/** Contains the actual map elements (sorted) */
 	private final Map<K, V> attribute2visualMap;
+	
+	private final Object lock = new Object();
 
-	/**
-	 * Constructor.
-	 * 
-	 * @param attrName
-	 * @param attrType
-	 * @param vp
-	 */
 	public DiscreteMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
 			final CyEventHelper eventHelper) {
 		super(attrName, attrType, vp, eventHelper);
-		attribute2visualMap = new HashMap<K, V>();
-	}
-
-	@Override
-	public String toString() {
-		return DiscreteMapping.DISCRETE;
+		attribute2visualMap = new HashMap<>();
 	}
 
 	@Override
@@ -85,7 +74,10 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 					for (Object item : list) {
 						// TODO: should we convert other types to String?
 						String key = item.toString();
-						value = attribute2visualMap.get(key);
+						
+						synchronized (lock) {
+							value = attribute2visualMap.get(key);
+						}
 
 						if (value != null)
 							break;
@@ -94,8 +86,11 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 			} else {
 				K key = row.get(columnName, columnType);
 
-				if (key != null)
-					value = attribute2visualMap.get(key);
+				if (key != null) {
+					synchronized (lock) {
+						value = attribute2visualMap.get(key);
+					}
+				}
 			}
 		}
 
@@ -104,26 +99,63 @@ public class DiscreteMappingImpl<K, V> extends AbstractVisualMappingFunction<K, 
 
 	@Override
 	public V getMapValue(K key) {
-		return attribute2visualMap.get(key);
+		synchronized (lock) {
+			return attribute2visualMap.get(key);
+		}
 	}
 
 	@Override
 	public <T extends V> void putMapValue(final K key, final T value) {
-		attribute2visualMap.put(key, value);
-		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
-				VisualMappingFunctionChangedEvent.class);
+		boolean changed = false;
+
+		synchronized (lock) {
+			boolean containsKey = attribute2visualMap.containsKey(key);
+			V oldValue = attribute2visualMap.put(key, value);
+			changed = !containsKey || (value == null && oldValue != null) || (value != null && !value.equals(oldValue));
+		}
+
+		if (changed)
+			eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
+					VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
 	public <T extends V> void putAll(Map<K, T> map) {
-		attribute2visualMap.putAll(map);
-		VisualMappingFunction function = this;
-		eventHelper.addEventPayload(function, new VisualMappingFunctionChangeRecord(),
-				VisualMappingFunctionChangedEvent.class);
+		if (map != null) {
+			// Quick check to make sure it's not setting the same entries again
+			boolean changed = map.size() > attribute2visualMap.size();
+			
+			if (!changed) {
+				// The new map is not bigger, but may have different keys or values, of course
+				synchronized (lock) {
+					changed = map.entrySet().stream()
+							.anyMatch(me -> {
+								V v1 = attribute2visualMap.get(me.getKey());
+								T v2 = me.getValue();
+								return !attribute2visualMap.containsKey(me.getKey()) ||
+										(v1 == null && v2 != null) || (v1 != null && !v1.equals(v2));
+							});
+				}
+			}
+			
+			if (changed) {
+				synchronized (lock) {
+					attribute2visualMap.putAll(map);
+				}
+				
+				eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
+						VisualMappingFunctionChangedEvent.class);
+			}
+		}
 	}
 
 	@Override
 	public Map<K, V> getAll() {
 		return Collections.unmodifiableMap(attribute2visualMap);
+	}
+
+	@Override
+	public String toString() {
+		return DiscreteMapping.DISCRETE;
 	}
 }

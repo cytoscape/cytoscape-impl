@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class VizmapXMLFileFilter extends BasicCyFileFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(VizmapXMLFileFilter.class);
+    private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
     
     public VizmapXMLFileFilter(Set<String> extensions, Set<String> contentTypes,
             String description, DataCategory category, StreamUtil streamUtil) {

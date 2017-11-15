@@ -56,6 +56,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	protected Font font = null;
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
+
+	private static int instanceCount = 0;
 	
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
 		super(cyAnnotator, view, 100, 100, owner);
@@ -64,6 +66,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = "Text Annotation";
 		super.setSize(getTextWidth((Graphics2D)this.getGraphics())+4, 
 		              getTextHeight((Graphics2D)this.getGraphics())+4);
+		super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height,
@@ -72,6 +76,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
+		super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) { 
@@ -80,6 +86,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.textColor = c.getTextColor();
 		this.fontSize = (float)c.getFontSize();
 		this.font = c.getFont();
+		super.name = c.getName();
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
@@ -92,13 +99,15 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
+		super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
 	                                 Map<String, String> argMap, Window owner) {
 		super(cyAnnotator, view, argMap, owner);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		this.textColor = getColor(argMap, COLOR, Color.BLACK);
+		this.textColor = (Color)getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
@@ -107,6 +116,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
 			super.setSize(width, height);
 		}
+		super.name = "BoundedTextAnnotation_"+instanceCount;
+		instanceCount++;
 	}
 
 	public Map<String,String> getArgMap() {

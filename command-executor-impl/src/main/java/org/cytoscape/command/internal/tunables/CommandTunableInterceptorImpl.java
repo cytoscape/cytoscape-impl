@@ -29,20 +29,20 @@ import java.util.Map;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.StringTunableHandler;
 import org.cytoscape.command.StringTunableHandlerFactory;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.AbstractTunableInterceptor;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.TunableValidator.ValidationState;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<StringTunableHandler> {
 
-	private static final Logger logger = LoggerFactory.getLogger(CommandTunableInterceptorImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private String args = null;
 	private Map<String, Object> mapArgs = null;
 
@@ -131,10 +131,10 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 		return true;
 	}
 
-	public void addTunableHandlerFactory(StringTunableHandlerFactory f, Map p) {
+	public void addTunableHandlerFactory(StringTunableHandlerFactory<StringTunableHandler> f, Map<String,String> p) {
 		super.addTunableHandlerFactory(f,p);
 	}
-	public void removeTunableHandlerFactory(StringTunableHandlerFactory f, Map p) {
+	public void removeTunableHandlerFactory(StringTunableHandlerFactory<StringTunableHandler> f, Map<String,String> p) {
 		super.removeTunableHandlerFactory(f,p);
 	}
 }

@@ -34,6 +34,8 @@ import java.awt.Color;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -46,6 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -60,6 +63,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
 @SuppressWarnings("serial")
 public class ArrowAnnotationPanel extends JPanel {
 	
+	private JTextField nameField;
 	private PreviewPanel previewPanel;
 	private ArrowAnnotationImpl preview;
 	
@@ -73,12 +77,25 @@ public class ArrowAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
+	// We need to expose this in case the user just presses "return", which
+	// fires the OK button action in the parent dialog
+	public String getAnnotationName() {
+		return nameField.getText();
+	}
+
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
+		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Line Color:");
 		final JLabel label2 = new JLabel("Line Opacity:");
 		final JLabel label3 = new JLabel("Line Width:");
+
+		nameField = new JTextField(32);
+		if (annotation.getName() != null) {
+			nameField.setText(annotation.getName());
+		}
+		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
 		
 		final ColorButton lineColorButton = new ColorButton((Color) preview.getLineColor());
 		lineColorButton.setToolTipText("Select line color...");
@@ -220,6 +237,9 @@ public class ArrowAnnotationPanel extends JPanel {
 		preview.setArrowSize(ArrowEnd.TARGET, annotation.getArrowSize(ArrowEnd.TARGET));
 		preview.setArrowColor(ArrowEnd.TARGET, annotation.getArrowColor(ArrowEnd.TARGET));
 		preview.setAnchorType(ArrowEnd.TARGET, annotation.getAnchorType(ArrowEnd.TARGET));
+
+		// Name
+		preview.setName(annotation.getName());
 
 		previewPanel.repaint();
 	}

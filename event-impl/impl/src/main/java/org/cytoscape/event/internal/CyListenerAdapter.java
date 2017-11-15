@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * Some static utility methods that help you fire events.
  */
 public class CyListenerAdapter {
-	private static final Logger logger = LoggerFactory.getLogger(CyListenerAdapter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private static final ServiceComparator serviceComparator = new ServiceComparator(); 
 
 	private static final Object DUMMY = new Object();

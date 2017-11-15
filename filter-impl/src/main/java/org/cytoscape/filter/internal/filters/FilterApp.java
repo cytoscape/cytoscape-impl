@@ -65,7 +65,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	private final FilterWriter writer;
 	private final FilterModelLocator modelLocator;
 	
-	private static final Logger logger = LoggerFactory.getLogger(FilterApp.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public FilterApp(final FilterReader reader, final FilterWriter writer, final FilterModelLocator modelLocator) {
 		if (reader == null)

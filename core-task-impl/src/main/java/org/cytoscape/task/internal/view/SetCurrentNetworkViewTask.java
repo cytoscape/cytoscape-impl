@@ -1,12 +1,25 @@
 package org.cytoscape.task.internal.view;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +37,34 @@ package org.cytoscape.task.internal.view;
  * #L%
  */
 
-import java.util.Collection;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
 public class SetCurrentNetworkViewTask extends AbstractTask {
-	final CyApplicationManager appMgr;
-	private final CyNetworkViewManager viewMgr;
+	
+	@Tunable(
+			description = "Network",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+			context = "nogui"
+	)
+	public CyNetwork network;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="Network's view to set as 'current'", context="nogui")
-	public CyNetwork network = null;
-
-	public SetCurrentNetworkViewTask(CyApplicationManager appMgr,
-	                                 final CyNetworkViewManager viewMgr) {
-		this.appMgr = appMgr;
-		this.viewMgr = viewMgr;
+	public SetCurrentNetworkViewTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (network == null) network = appMgr.getCurrentNetwork();
-		Collection<CyNetworkView> views = viewMgr.getNetworkViews(network);
-		for (CyNetworkView view: views) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Setting current network view to "+view);
-			appMgr.setCurrentNetworkView(view);
-			return;
-		}
+	public void run(TaskMonitor tm) throws Exception {
+		CyNetworkView view = null;
+		
+		Collection<CyNetworkView> viewList = network != null
+				? serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network)
+				: Collections.emptyList();
+		
+		if (!viewList.isEmpty())
+			view = viewList.iterator().next();
+		
+		tm.showMessage(TaskMonitor.Level.INFO, "Setting current network view to " + view);
+		serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetworkView(view);
 	}
 }

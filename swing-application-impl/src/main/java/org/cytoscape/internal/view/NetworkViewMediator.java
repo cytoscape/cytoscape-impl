@@ -22,6 +22,7 @@ import java.util.WeakHashMap;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.Timer;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -45,11 +46,11 @@ import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -114,12 +115,12 @@ import org.slf4j.LoggerFactory;
 public class NetworkViewMediator
 		implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
-		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadCancelledListener, SessionLoadedListener,
-		ColumnDeletedListener, ColumnNameChangedListener, ViewChangedListener {
+		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener, ColumnDeletedListener,
+		ColumnNameChangedListener, ViewChangedListener {
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
-	private static final Logger logger = LoggerFactory.getLogger(NetworkViewMediator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final NetworkViewMainPanel networkViewMainPanel;
 	private final NetworkMediator networkMediator;
@@ -129,12 +130,14 @@ public class NetworkViewMediator
 	private final Map<CyNetworkView, RenderingEngine<CyNetwork>> presentationMap;
 	private final Set<CyNetworkView> viewUpdateRequired;
 
-	/** columnIdentifier -> { valueInfo -> [views] }*/
+	/** columnIdentifier -> { valueInfo -> [views] } */
 	private final Map<CyColumnIdentifier, Map<MappedVisualPropertyValueInfo, Set<View<?>>>> mappedValuesMap;
 	
+	private final Map<CyNetworkView, Timer> viewUpdateTimers;
 	private volatile boolean loadingSession;
 
 	private final CyServiceRegistrar serviceRegistrar;
+	private final Object lock = new Object();
 	
 	public NetworkViewMediator(
 			final NetworkViewMainPanel networkViewMainPanel,
@@ -150,6 +153,7 @@ public class NetworkViewMediator
 		presentationMap = new WeakHashMap<>();
 		viewUpdateRequired = new HashSet<>();
 		mappedValuesMap = new HashMap<>();
+		viewUpdateTimers = new WeakHashMap<>();
 		
 		initComponents();
 	}
@@ -218,6 +222,15 @@ public class NetworkViewMediator
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent nvde) {
 		final CyNetworkView view = nvde.getNetworkView();
+		Timer timer = null;
+		
+		synchronized (lock) {
+			timer = viewUpdateTimers.remove(view);
+		}
+		
+		if (timer != null)
+			timer.stop();
+		
 		removeView(view);
 	}
 	
@@ -251,7 +264,8 @@ public class NetworkViewMediator
 		final VisualStyle style = e.getVisualStyle();
 		
 		if (style != null) {
-			final CyNetworkView curView = getNetworkViewMainPanel().getCurrentNetworkView();
+			final CyNetworkView curView =
+					serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 			
 			if (curView != null) {
 				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
@@ -328,12 +342,6 @@ public class NetworkViewMediator
 	@Override
 	public void handleEvent(final SessionAboutToBeLoadedEvent e) {
 		loadingSession = true;
-	}
-	
-	@Override
-	public void handleEvent(final SessionLoadCancelledEvent e) {
-		loadingSession = false;
-		// TODO Destroy rendered views
 	}
 	
 	@Override
@@ -417,9 +425,7 @@ public class NetworkViewMediator
 				// Update views with styles affected by this RowsSetEvent
 				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
 				
-				for (final RowSetRecord record : e.getPayloadCollection()) {
-					final String columnName = record.getColumn();
-					
+				for (String columnName : e.getColumns()) {
 					// Reapply locked values that map to changed columns
 					final boolean lockedValuesApplyed = reapplyLockedValues(columnName, networkViews);
 					
@@ -738,19 +744,37 @@ public class NetworkViewMediator
 		return result;
 	}
 	
-	private void updateView(final CyNetworkView view, VisualStyle vs) {
+	private void updateView(final CyNetworkView view, final VisualStyle style) {
 		if (view == null)
 			return;
 		
 		if (getNetworkViewMainPanel().isGridVisible()
 				|| view.equals(getNetworkViewMainPanel().getCurrentNetworkView())) {
-			if (vs == null) {
-				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-				vs = vmm.getVisualStyle(view);
+			Timer timer = null;
+			
+			synchronized (lock) {
+				timer = viewUpdateTimers.get(view);
 			}
 			
-			vs.apply(view);
-			view.updateView();
+			if (timer == null) {
+				timer = new Timer(0, evt -> {
+					VisualStyle vs = style != null ?
+							style : serviceRegistrar.getService(VisualMappingManager.class).getVisualStyle(view);
+					vs.apply(view);
+					view.updateView();
+				});
+				timer.setRepeats(false);
+				timer.setCoalesce(true);
+				
+				synchronized (lock) {
+					viewUpdateTimers.put(view, timer);
+				}
+			} else {
+				timer.stop();
+			}
+			
+			timer.setInitialDelay(120);
+			timer.start();
 		} else {
 			viewUpdateRequired.add(view);
 		}
@@ -840,11 +864,8 @@ public class NetworkViewMediator
 			}
 			{
 				final JMenuItem mi = new JMenuItem("Detach View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						getNetworkViewMainPanel().detachNetworkViews(selectedViews);
-					}
+				mi.addActionListener(evt -> {
+					getNetworkViewMainPanel().detachNetworkViews(selectedViews);
 				});
 				popupMenu.add(mi);
 				
@@ -862,16 +883,34 @@ public class NetworkViewMediator
 			popupMenu.addSeparator();
 			{
 				final JMenuItem mi = new JMenuItem("Destroy View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						final DestroyNetworkViewTaskFactory factory = serviceRegistrar
-								.getService(DestroyNetworkViewTaskFactory.class);
-						taskMgr.execute(factory.createTaskIterator(selectedViews));
-					}
+				mi.addActionListener(evt -> {
+					DestroyNetworkViewTaskFactory factory = serviceRegistrar
+							.getService(DestroyNetworkViewTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews));
 				});
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());
+			}
+			popupMenu.addSeparator();
+			{
+				final JMenuItem mi = new JMenuItem("Export as Network...");
+				mi.addActionListener(evt -> {
+					ExportNetworkViewTaskFactory factory = serviceRegistrar
+							.getService(ExportNetworkViewTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews.get(0)));
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(selectedViews.size() == 1);
+			}
+			{
+				final JMenuItem mi = new JMenuItem("Export as Image...");
+				mi.addActionListener(evt -> {
+					ExportNetworkImageTaskFactory factory = serviceRegistrar
+							.getService(ExportNetworkImageTaskFactory.class);
+					taskMgr.execute(factory.createTaskIterator(selectedViews.get(0)));
+				});
+				popupMenu.add(mi);
+				mi.setEnabled(selectedViews.size() == 1);
 			}
 			
 			popupMenu.show(e.getComponent(), e.getX(), e.getY());

@@ -26,6 +26,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
@@ -89,7 +90,7 @@ import org.slf4j.LoggerFactory;
 public final class CustomGraphicsManagerImpl
 		implements CustomGraphicsManager, CyShutdownListener, SessionAboutToBeSavedListener, SessionLoadedListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(CustomGraphicsManagerImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final String IMAGE_DIR_NAME = "images3";
 	private static final String APP_NAME = "org.cytoscape.ding.customgraphicsmgr";

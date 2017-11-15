@@ -1,9 +1,8 @@
 package org.cytoscape.view.manual.internal.control.view;
 
-import java.awt.Dimension;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
-import javax.swing.Action;
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
@@ -12,13 +11,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.manual.internal.control.actions.align.HAlignCenter;
 import org.cytoscape.view.manual.internal.control.actions.align.HAlignLeft;
 import org.cytoscape.view.manual.internal.control.actions.align.HAlignRight;
 import org.cytoscape.view.manual.internal.control.actions.align.VAlignBottom;
 import org.cytoscape.view.manual.internal.control.actions.align.VAlignCenter;
 import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
+import org.cytoscape.view.manual.internal.util.Util;
 
 /*
  * #%L
@@ -26,7 +25,7 @@ import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -44,10 +43,6 @@ import org.cytoscape.view.manual.internal.control.actions.align.VAlignTop;
  * #L%
  */
 
-
-/**
- *
- */
 @SuppressWarnings("serial")
 public class AlignPanel extends JPanel {
 	
@@ -59,9 +54,6 @@ public class AlignPanel extends JPanel {
 	private JButton vabButton;
 	
 	public AlignPanel(CyApplicationManager app) {
-		if (LookAndFeelUtil.isAquaLAF())
-			setOpaque(false);
-		
 		ImageIcon hari = new ImageIcon(getClass().getResource("/images/H_ALIGN_RIGHT.gif"));
 		ImageIcon haci = new ImageIcon(getClass().getResource("/images/H_ALIGN_CENTER.gif"));
 		ImageIcon hali = new ImageIcon(getClass().getResource("/images/H_ALIGN_LEFT.gif"));
@@ -77,24 +69,21 @@ public class AlignPanel extends JPanel {
 		VAlignCenter vac = new VAlignCenter(vaci,app);
 		VAlignBottom vab = new VAlignBottom(vabi,app);
 
-		int HGHT = 32;
-		setMinimumSize(new Dimension(120, HGHT));
-		setPreferredSize(new Dimension(300, HGHT));
-		setMaximumSize(new Dimension(350, HGHT));
-
+		JLabel label = new JLabel("Align:");
+		makeSmall(label);
+		
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
-		JLabel algn = new JLabel("Align");
-		algn.setPreferredSize(new Dimension(105, 25));
-		algn.setMinimumSize(new Dimension(105, 25));
-		algn.setMaximumSize(new Dimension(105, 25));
-		add(Box.createRigidArea(new Dimension(25, 0)));
-	    add(algn);
-	    add(halButton = createJButton(hal, "Horizontal Align Left"));
-		add(hacButton = createJButton(hac, "Horizontal Align Center"));
-		add(harButton = createJButton(har, "Horizontal Align Right"));
-		add(vatButton = createJButton(vat, "Vertical Align Top"));
-		add(vacButton = createJButton(vac, "Vertical Align Center"));
-		add(vabButton = createJButton(vab, "Vertical Align Bottom"));
+	    add(label);
+	    add(Box.createHorizontalGlue());
+	    add(halButton = Util.createButton(hal, "Horizontal Align Left"));
+		add(hacButton = Util.createButton(hac, "Horizontal Align Center"));
+		add(harButton = Util.createButton(har, "Horizontal Align Right"));
+		add(vatButton = Util.createButton(vat, "Vertical Align Top"));
+		add(vacButton = Util.createButton(vac, "Vertical Align Center"));
+		add(vabButton = Util.createButton(vab, "Vertical Align Bottom"));
+		
+		if (isAquaLAF())
+			setOpaque(false);
 	}
 	
 	@Override
@@ -107,19 +96,5 @@ public class AlignPanel extends JPanel {
 		vabButton.setEnabled(enabled);
 		
 		super.setEnabled(enabled);
-	}
-
-	protected JButton createJButton(Action a, String tt) {
-		JButton b = new JButton(a);
-		b.setToolTipText(tt);
-		b.setPreferredSize(new Dimension(32, 24));
-		b.setMaximumSize(new Dimension(32, 24));
-		b.setMinimumSize(new Dimension(32, 24));
-		b.setBorder(BorderFactory.createEmptyBorder(3,3,3,3));
-		b.setBorderPainted(false);
-		b.setOpaque(false);
-		b.setContentAreaFilled(false);
-
-		return b;
 	}
 }

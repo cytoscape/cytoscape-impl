@@ -88,7 +88,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	private final NetworkMainPanel netPanel;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(SessionHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public SessionHandler(
 			final CytoscapeDesktop desktop,
@@ -309,7 +309,10 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 					}
 
 					try {
-						p.setSelectedIndex(Integer.parseInt(cytopanel.getSelectedPanel()));
+						int index = Integer.parseInt(cytopanel.getSelectedPanel());
+						
+						if (index >= 0 && index < p.getCytoPanelComponentCount())
+							p.setSelectedIndex(index);
 					} catch (Exception ex) {
 						logger.error("Cannot restore the selected index of panel \"" + panelName.getTitle() + "\"", ex);
 					}

@@ -1,12 +1,20 @@
 package org.cytoscape.tableimport.internal.task;
 
+import java.io.InputStream;
+
+import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +32,10 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-
-
-import java.io.InputStream;
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFactory {
 
     private final CyServiceRegistrar serviceRegistrar;
 
-	/**
-     * Creates a new ImportNetworkTableReaderFactory object.
-     */
     public ImportNetworkTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
         super(filter);
         this.serviceRegistrar = serviceRegistrar;
@@ -51,7 +45,7 @@ public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFact
     public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
         String fileFormat = FilenameUtils.getExtension(inputName);
         
-        if(!fileFormat.isEmpty()) 
+        if (!fileFormat.isEmpty()) 
         	fileFormat = "." + fileFormat; //"." is surprisingly required somewhere within CombineReaderAndMappingTask
         
         return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));

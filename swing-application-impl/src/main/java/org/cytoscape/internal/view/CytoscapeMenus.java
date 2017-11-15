@@ -26,7 +26,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -105,11 +105,11 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("Help", 9.0);
 
 		toolBar.addSeparator(2.0f);
-		toolBar.addSeparator(3.0f);
+//		toolBar.addSeparator(3.0f);
 		toolBar.addSeparator(4.0f);
 		toolBar.addSeparator(6.0f);
 		toolBar.addSeparator(8.0f);
-//		toolBar.addSeparator(10.0f);
+		toolBar.addSeparator(10.0f);
 	}
 
 	public JMenu getJMenu(String s) {
@@ -123,7 +123,7 @@ public class CytoscapeMenus {
 	public JToolBar getJToolBar() {
 		return toolBar;
 	}
-	
+
 	public JToolBar createViewFrameToolBar() {
 		JToolBar viewToolBar = null;
 		final int total = toolBar.getComponentCount();

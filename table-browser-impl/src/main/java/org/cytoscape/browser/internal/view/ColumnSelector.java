@@ -55,7 +55,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -376,12 +376,7 @@ public class ColumnSelector extends JPanel {
 				boolean hasFocus, int row, int column) {
 			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			
-			final boolean visible = (boolean) table.getValueAt(row, SELECTED_COL_IDX);
-			
-			if (!visible && column != SELECTED_COL_IDX)
-				setForeground(UIManager.getColor("TextField.inactiveForeground"));
-			else
-				setForeground(table.getForeground());
+			setForeground(table.getForeground());
 			
 			final Color bg = UIManager.getColor("Table.background");
 			setBackground(isSelected ? UIManager.getColor("Table.selectionBackground") : bg);

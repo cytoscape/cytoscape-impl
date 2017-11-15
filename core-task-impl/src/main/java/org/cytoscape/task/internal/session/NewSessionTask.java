@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.session;
 
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySessionManager;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +33,6 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-
 public class NewSessionTask extends AbstractTask {
 
 	@ProvidesTitle
@@ -43,35 +40,46 @@ public class NewSessionTask extends AbstractTask {
 		return "New Session";
 	}
 	
-	@Tunable(description="<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>", params="ForceSetDirectly=true;ForceSetTitle=New Session")
+	@Tunable(
+			description = "Deprecated",
+			longDescription = "Deprecated since version 3.6.",
+			context = "nogui"
+	)
+	@Deprecated
 	public boolean destroyCurrentSession = true;
+	
+	@Tunable(
+			description = "<html>Current session (all networks and tables) will be lost.<br />Do you want to continue?</html>",
+			params = "ForceSetDirectly=true;ForceSetTitle=New Session",
+			context = "gui"
+	)
+	public boolean confirm = true;
 
-	private final CySessionManager mgr;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	
-	public NewSessionTask(final CySessionManager mgr, final CyEventHelper eventHelper) {
-		this.mgr = mgr;
-		this.eventHelper = eventHelper;
+	public NewSessionTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (destroyCurrentSession) {
-			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
+	public void run(TaskMonitor tm) throws Exception {
+		if (confirm && destroyCurrentSession) { // Also checks destroyCurrentSession for backwards compatibility
+			tm.setTitle("Create New Session");
+			tm.setProgress(0.0);
 			
-			try {
-				mgr.setCurrentSession(null, null);
-			} catch (Exception e) {
-				eventHelper.fireEvent(new SessionLoadCancelledEvent(this, e));
-				throw e;
-			}
+			final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			final CySessionManager sessionManager = serviceRegistrar.getService(CySessionManager.class);
+			
+			// Let everybody know the current session will be destroyed
+			eventHelper.fireEvent(new SessionAboutToBeLoadedEvent(this));
+			tm.setProgress(0.1);
+			
+			// Dispose the current session before loading the new one
+			sessionManager.disposeCurrentSession();
+			tm.setProgress(0.2);
+			
+			sessionManager.setCurrentSession(null, null);
+			tm.setProgress(1.0);
 		}
-	}
-	
-	@Override
-	public void cancel() {
-		super.cancel();
-		eventHelper.fireEvent(new SessionLoadCancelledEvent(this));
 	}
 }

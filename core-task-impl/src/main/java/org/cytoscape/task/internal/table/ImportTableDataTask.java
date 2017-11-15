@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.table;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
@@ -54,17 +56,20 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ImportTableDataTask extends AbstractTask implements TunableValidator {
+public class ImportTableDataTask extends AbstractTask implements TunableValidator, ObservableTask {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -89,7 +94,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 	};
 
-	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String NO_NETWORKS = "No Networks Found";
 	
 	public static final String NETWORK_COLLECTION = "To a Network Collection";
@@ -105,37 +110,36 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
 	private boolean networksPresent;
+	private List<CyTable> mappedTables;
 	
 	
 	public ListSingleSelection<String> whereImportTable ;
 	
 	@Tunable(
-			description = "Where to Import Table Data:",
+			description = "Where to Import Table Data",
 			gravity = 1.0,
 			groups = { "Target Table Data" },
-			xorChildren = true
+			xorChildren = true, 
+			longDescription="Determines what network(s) the imported table will be associated with (if any).  "+
+			                "A table can be imported into a ```Network Collection```, ```Selected networks``` or ```to an unassigned table```.", 
+			exampleStringValue = "To a Network Collection"
 	)
-	public ListSingleSelection<String> getWhereImportTable() {
-		return whereImportTable;
-	}
-
-	public void setWhereImportTable(ListSingleSelection<String> chooser) {
-		this.whereImportTable = chooser;
-	}
+	public ListSingleSelection<String> getWhereImportTable() {	return whereImportTable;	}
+	public void setWhereImportTable(ListSingleSelection<String> chooser) {	this.whereImportTable = chooser; }
 
 	/* --- [ NETWORK_COLLECTION ]------------------------------------------------------------------------------------ */
 	
 	public ListSingleSelection<String> targetNetworkCollection;
 	
 	@Tunable(
-			description = "Network Collection:",
+			description = "Network Collection",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 2.0,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, 
+			longDescription="The network collection to use for the table import", 
+			exampleStringValue = "galFiltered.sif"
 	)
-	public ListSingleSelection<String> getTargetNetworkCollection() {
-		return targetNetworkCollection;
-	}
+	public ListSingleSelection<String> getTargetNetworkCollection() {	return targetNetworkCollection;	}
 
 	public void setTargetNetworkCollection(ListSingleSelection<String> roots) {
 		targetNetworkCollection = roots;
@@ -145,10 +149,12 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
 	@Tunable(
-			description = "Import Data as:",
+			description = "Import Data as",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.1,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, 
+			longDescription="Select whether to import the data as ```Node Table Columns```, ```Edge Table Columns```, or ```Network Table Columns```", 
+			exampleStringValue = "Node Table Columns"
 	)
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
@@ -166,23 +172,27 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.2,
 			xorKey = NETWORK_COLLECTION,
-			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }
+			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" },
+			longDescription="The column in the network to use as the merge key", 
+			exampleStringValue = "name"
 	)
 	public ListSingleSelection<String> getKeyColumnForMapping() {
 		return keyColumnForMapping;
 	}
 
 	public void setKeyColumnForMapping(ListSingleSelection<String> colList) {
-		this.keyColumnForMapping = colList;
+		keyColumnForMapping = colList;
 	}
 	
 	@Tunable(
 			description = "Case Sensitive Key Values:",
 			groups = { "Target Table Data", "Select a Network Collection" },
 			gravity = 3.3,
-			xorKey = NETWORK_COLLECTION
+			xorKey = NETWORK_COLLECTION, 
+			longDescription="Determines whether capitalization is considered in matching and sorting", 
+			exampleStringValue = "false"
 	)
-	public boolean caseSensitiveNetworCollectionKeys = true;
+	public boolean caseSensitiveNetworkCollectionKeys = true;
 
 	/* --- [ NETWORK_SELECTION ]------------------------------------------------------------------------------------- */
 	
@@ -192,11 +202,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "Network List:",
 			groups = { "Target Table Data","Select Networks" },
 			gravity = 3.1,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, 
+			longDescription="The list of networks into which the table is imported", 
+			exampleStringValue = "all"
 	)
-	public ListMultipleSelection<String> getTargetNetworkList() {
-		return targetNetworkList;
-	}
+	public ListMultipleSelection<String> getTargetNetworkList() {	return targetNetworkList;	}
 
 	public void setTargetNetworkList(ListMultipleSelection<String> list) {
 		this.targetNetworkList = list;
@@ -206,14 +216,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 	
 	@Tunable(
-			description = "Import Data as:",
+			description = "Import Data as",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.2,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, 
+			longDescription="The data type of the targets", 
+			exampleStringValue = "int"
 	)
-	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {
-		return dataTypeTargetForNetworkList;
-	}
+	public ListSingleSelection<TableType> getDataTypeTargetForNetworkList() {	return dataTypeTargetForNetworkList;	}
 
 	public void setDataTypeTargetForNetworkList(ListSingleSelection<TableType> options) {
 		dataTypeTargetForNetworkList = options;
@@ -223,25 +233,25 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public ListSingleSelection<String> keyColumnForMappingNetworkList;
 	
 	@Tunable(
-			description = "Key Column for Networks:",
+			description = "Key Column for Networks",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.3,
 			xorKey = NETWORK_SELECTION,
-			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }
+			listenForChange = { "DataTypeTargetForNetworkList", "TargetNetworkList" }, 
+			longDescription="The column in the network to use as the merge key", 
+			exampleStringValue = "name"
 	)
-	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {
-		return keyColumnForMappingNetworkList;
-	}
+	public ListSingleSelection<String> getKeyColumnForMappingNetworkList() {	return keyColumnForMappingNetworkList;	}
 	
-	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {
-		this.keyColumnForMappingNetworkList = colList;
-	}
+	public void setKeyColumnForMappingNetworkList(ListSingleSelection<String> colList) {	keyColumnForMappingNetworkList = colList;	}
 	
 	@Tunable(
-			description = "Case Sensitive Key Values:",
+			description = "Case Sensitive Key Values",
 			groups = { "Target Table Data", "Select Networks" },
 			gravity = 3.4,
-			xorKey = NETWORK_SELECTION
+			xorKey = NETWORK_SELECTION, 
+			longDescription="Determines whether capitalization is considered in matching and sorting", 
+			exampleStringValue = "false"
 	)
 	public boolean caseSensitiveNetworkKeys = true;
 	
@@ -251,27 +261,24 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			description = "New Table Name:",
 			groups = { "Target Table Data", "Set New Table Name" },
 			gravity = 5.0,
-			xorKey = UNASSIGNED_TABLE
+			xorKey = UNASSIGNED_TABLE, longDescription="The title of the new table", exampleStringValue = "Supplemental Info"
 	)
 	public String newTableName;
 	
-	@Tunable(
-			description = "Network View Renderer:",
-			groups = { "Target Table Data", "Select Renderer" },
-			gravity = 6.0
-	)
-	public ListSingleSelection<NetworkViewRenderer> renderers;
+//	@Tunable(
+//			description = "Network View Renderer:",
+//			groups = { "Target Table Data", "Select Renderer" },
+//			gravity = 6.0, longDescription="", exampleStringValue = ""
+//	)
+//	public ListSingleSelection<NetworkViewRenderer> renderers;
 	
 	@ProvidesTitle
-	public String getTitle() {
-		return "Import Data";
-	}
+	public String getTitle() {		return "Import Data";	}
 
 	public ImportTableDataTask(final CyTableReader reader, final CyServiceRegistrar serviceRegistrar) {
 		this.reader = reader;
 		this.serviceRegistrar = serviceRegistrar;
 		this.byReader = true;
-
 		init();
 	}
 
@@ -287,6 +294,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.name2NetworkMap = new HashMap<>();
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
+		this.mappedTables = new ArrayList<>();
 
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
@@ -300,11 +308,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 		
 		if (byReader) {
-			if (this.reader != null && this.reader.getTables() != null)
+			if (reader != null && reader.getTables() != null)
 				newTableName = reader.getTables()[0].getTitle();
-		} else {
+		} else 
 			newTableName = globalTable.getTitle();
-		}
+		
 
 		if (networksPresent) {
 			final List<TableType> options = new ArrayList<>();
@@ -506,8 +514,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		for (CyNetwork network : networks) {
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
 			
-			if (targetTable != null)
+			if (targetTable != null) {
+				mappedTables.add(targetTable);
 				applyMapping(targetTable, caseSensitiveNetworkKeys);
+			}
+
 		}
 	}
 
@@ -515,8 +526,10 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		final CyTable targetTable = getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), tableType,
 				CyRootNetwork.SHARED_DEFAULT_ATTRS);
 		
-		if (targetTable != null)
-			applyMapping(targetTable, caseSensitiveNetworCollectionKeys);
+		if (targetTable != null) {
+			applyMapping(targetTable, caseSensitiveNetworkCollectionKeys);
+			mappedTables.add(targetTable);
+		}
 	}
 
 	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
@@ -681,9 +694,37 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				globalTable.setTitle(newTableName);
 			
 			tableMgr.addTable(globalTable);
+			mappedTables.add(globalTable);
 		}
 	}
-	
+
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);	
+	}
+
+	@Override
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(List.class))
+			return mappedTables;
+		if (requestedType.equals(String.class)) {
+			String str = "Mapped to tables:\n";
+			for (CyTable table: mappedTables) {
+				str += "   "+table.toString()+"\n";
+			}
+			return str;
+		}
+		if (requestedType.equals(JSONResult.class)) {
+			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			JSONResult res = () -> {		
+				if (mappedTables.isEmpty()) return "{}";
+				return "{\"mappedTables\":"+cyJSONUtil.cyIdentifiablesToJson(mappedTables)+"}";
+			};
+			return res;
+		}
+		return null;
+	}
+
 	private TableType getDataTypeOptions() {
 		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
 			return dataTypeTargetForNetworkCollection.getSelectedValue();

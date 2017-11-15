@@ -1,12 +1,36 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.InputMap;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.KeyStroke;
+
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.CyColorCellRenderer;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
+
+import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
+import com.l2fprod.common.swing.ComponentFactory;
+import com.l2fprod.common.swing.PercentLayout;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +48,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-
-import javax.swing.AbstractAction;
-import javax.swing.ActionMap;
-import javax.swing.InputMap;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.gui.internal.view.cellrenderer.CyColorCellRenderer;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor.CyColorChooser;
-
-import com.l2fprod.common.beans.editor.AbstractPropertyEditor;
-import com.l2fprod.common.swing.ComponentFactory;
-import com.l2fprod.common.swing.PercentLayout;
-
-
 public class CyColorPropertyEditor extends AbstractPropertyEditor {
 
 	private CyColorCellRenderer label;
@@ -61,7 +61,7 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 	public CyColorPropertyEditor(final CyColorChooser chooser, final ServicesUtil servicesUtil) {
 		this.chooser = chooser;
 
-		SwingUtilities.invokeLater(() -> {
+		invokeOnEDT(() -> {
 			final IconManager iconManager = servicesUtil.get(IconManager.class);
 			
 			editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0));

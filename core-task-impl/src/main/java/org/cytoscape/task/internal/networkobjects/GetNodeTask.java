@@ -24,31 +24,35 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 	CyApplicationManager appMgr;
-
-	@Tunable(description="Network to get node from", context="nogui")
+	CyServiceRegistrar serviceRegistrar;
+	
+	@Tunable(description="Network to get node from", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Node to get", context="nogui")
+	@Tunable(description="Node to get", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION, exampleStringValue="Node 1")
 	public String node = null;
 
 	private CyNode returnedNode = null;
 
-	public GetNodeTask(CyApplicationManager appMgr) {
+	public GetNodeTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -72,7 +76,18 @@ public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 			if (returnedNode == null)
 				return "<none>";
 			return returnedNode.toString();
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (returnedNode == null) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(returnedNode);
+			}};
+			return res;
 		}
 		return returnedNode;
+	}
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNode.class, String.class, JSONResult.class);
 	}
 }

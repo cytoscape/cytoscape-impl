@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 
 public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	
-	private static Logger logger = LoggerFactory.getLogger(GroupAttributesLayoutTask.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private TaskMonitor taskMonitor;	
 	private CyNetwork network;

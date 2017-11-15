@@ -1,12 +1,43 @@
 package org.cytoscape.search.internal.ui;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.KeyEvent;
+
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
+import javax.swing.GroupLayout;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.KeyStroke;
+import javax.swing.UIManager;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.search.internal.EnhancedSearch;
+import org.cytoscape.search.internal.SearchTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,36 +55,10 @@ package org.cytoscape.search.internal.ui;
  * #L%
  */
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
-
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-
-import javax.swing.GroupLayout;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.search.internal.EnhancedSearch;
-import org.cytoscape.search.internal.SearchTaskFactory;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+@SuppressWarnings("serial")
 public class EnhancedSearchPanel extends JPanel {
 
-	private static final long serialVersionUID = 3748296514173533886L;
-	
-	private static final Logger logger = LoggerFactory.getLogger(EnhancedSearchPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final EnhancedSearch searchMgr;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -73,7 +78,7 @@ public class EnhancedSearchPanel extends JPanel {
 
 	// Do searching based on the query string from user on text-field
 	private void doSearching() {
-		final String queryStr = this.tfSearchText.getText().trim();
+		final String queryStr = tfSearchText.getText().trim();
 		
 		// Ignore if the search term is empty
 		if (queryStr == null || queryStr.length() == 0)
@@ -110,12 +115,7 @@ public class EnhancedSearchPanel extends JPanel {
 				tfSearchText.setFont(defFont);
 		}
 		
-		tfSearchText.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				tfSearchTextActionPerformed(evt);
-			}
-		});
+		tfSearchText.addActionListener(evt -> tfSearchTextActionPerformed(evt));
 		tfSearchText.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -134,6 +134,7 @@ public class EnhancedSearchPanel extends JPanel {
 				}
 			}
 		});
+		setKeyBindings(tfSearchText);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -147,5 +148,35 @@ public class EnhancedSearchPanel extends JPanel {
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(tfSearchText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+	}
+	
+	private void setKeyBindings(JComponent comp) {
+		final ActionMap actionMap = comp.getActionMap();
+		final InputMap inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
+
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
+				KeyAction.FOCUS);
+		actionMap.put(KeyAction.FOCUS, new KeyAction(KeyAction.FOCUS));
+	}
+	
+	private class KeyAction extends AbstractAction {
+
+		final static String FOCUS = "FOCUS";
+		
+		KeyAction(final String actionCommand) {
+			putValue(ACTION_COMMAND_KEY, actionCommand);
+		}
+
+		@Override
+		public void actionPerformed(final ActionEvent e) {
+			final String cmd = e.getActionCommand();
+			
+			if (cmd.equals(FOCUS)) {
+				if (tfSearchText.isVisible()) {
+					tfSearchText.requestFocusInWindow();
+					tfSearchText.selectAll();
+				}
+			}
+		}
 	}
 }

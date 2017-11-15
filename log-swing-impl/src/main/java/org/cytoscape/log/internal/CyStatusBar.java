@@ -39,7 +39,7 @@ import org.slf4j.Logger;
  * Handles the status bar at the bottom of the Cytoscape desktop
  */
 class CyStatusBar extends JPanel {
-    static final Logger logger = LoggerFactory.getLogger("CyUserMessages");
+    static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	static final int MEM_UPDATE_DELAY_MS = 2000;
 	static final int MEM_STATE_ICON_DIM_PX = 14;
 	static enum MemState {

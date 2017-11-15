@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class LinkoutTask extends AbstractTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(LinkoutTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final String link;
 	private final CyIdentifiable[] tableEntries;

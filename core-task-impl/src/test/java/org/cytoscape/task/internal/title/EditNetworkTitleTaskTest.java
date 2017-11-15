@@ -1,12 +1,29 @@
 package org.cytoscape.task.internal.title;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +41,33 @@ package org.cytoscape.task.internal.title;
  * #L%
  */
 
-
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Test;
-
-
 public class EditNetworkTitleTaskTest {
+
+	@Mock CyNetworkManager netMgr;
+	@Mock CyNetworkNaming netNaming;
+	@Mock UndoSupport undoSupport;
+	@Mock CyServiceRegistrar serviceRegistrar;
+	@Mock private TaskMonitor tm;
+	
+	@Before
+	public void initMocks() {
+		MockitoAnnotations.initMocks(this);
+
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(netNaming);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+	}
+	
 	@Test
 	public void testRun() throws Exception {
 		CyNetwork net = mock(CyNetwork.class);
-		TaskMonitor tm = mock(TaskMonitor.class);
-		CyNetworkManager netMgr = mock(CyNetworkManager.class);
-		CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
-		
-		CyRow r1 =  mock(CyRow.class);
-
+		CyRow r1 = mock(CyRow.class);
 		when(net.getRow(net)).thenReturn(r1);
-		when(r1.get("name",String.class)).thenReturn("title");
-		
-		UndoSupport undoSupport = mock(UndoSupport.class);
-					
-		EditNetworkTitleTask t = new EditNetworkTitleTask(undoSupport, net, netMgr,cyNetworkNaming);
-		
-		t.run(tm);
-		
-		verify(r1, times(1)).set("name", "title");
+		when(r1.get("name", String.class)).thenReturn("title");
 
+		EditNetworkTitleTask t = new EditNetworkTitleTask(net, serviceRegistrar);
+		t.run(tm);
+
+		verify(r1, times(1)).set("name", "title");
 	}
 }

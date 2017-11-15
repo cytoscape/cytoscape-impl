@@ -41,10 +41,19 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 public enum DArrowShape {
 	NONE("None", "NONE", ArrowShapeVisualProperty.NONE),
 	DIAMOND("Diamond", "DIAMOND", ArrowShapeVisualProperty.DIAMOND),
+	OPEN_DIAMOND("Open Diamond", "OPEN_DIAMOND", ArrowShapeVisualProperty.OPEN_DIAMOND),
 	DELTA("Delta", "DELTA", ArrowShapeVisualProperty.DELTA),
+	OPEN_DELTA("Open Delta", "OPEN_DELTA", ArrowShapeVisualProperty.OPEN_DELTA),
+	CROSS_DELTA("Cross Delta", "CROSS_DELTA", ArrowShapeVisualProperty.CROSS_DELTA),
+	CROSS_OPEN_DELTA("Cross Open Delta", "CROSS_OPEN_DELTA", ArrowShapeVisualProperty.CROSS_OPEN_DELTA),
 	ARROW("Arrow", "ARROW", ArrowShapeVisualProperty.ARROW),
 	T("T", "T", ArrowShapeVisualProperty.T),
 	CIRCLE("Circle", "CIRCLE", ArrowShapeVisualProperty.CIRCLE),
+	OPEN_CIRCLE("Open Circle", "OPEN_CIRCLE", ArrowShapeVisualProperty.OPEN_CIRCLE),
+	HALF_CIRCLE("Half Circle", "HALF_CIRCLE", ArrowShapeVisualProperty.HALF_CIRCLE),
+	OPEN_HALF_CIRCLE("Open Half Circle", "OPEN_HALF_CIRCLE", ArrowShapeVisualProperty.OPEN_HALF_CIRCLE),
+	SQUARE("Square", "SQUARE", ArrowShapeVisualProperty.SQUARE),
+	OPEN_SQUARE("Open Square", "OPEN_SQUARE", ArrowShapeVisualProperty.OPEN_SQUARE),
 	HALF_TOP("Half Top", "HALF_TOP", ArrowShapeVisualProperty.HALF_TOP),
 	HALF_BOTTOM("Half Top", "HALF_BOTTOM", ArrowShapeVisualProperty.HALF_BOTTOM),
 	DELTA_SHORT_1("Delta Short 1", "DELTA_SHORT_1", ArrowShapeVisualProperty.DELTA_SHORT_1),
@@ -134,11 +143,20 @@ public enum DArrowShape {
 		final String serializedString = arrowShape.getSerializableString();
 		// first try for an exact match
 		for (DArrowShape shape : values()) {
-			if (shape.serializableString.equals(serializedString))
+			if (easyStringCompart(shape.serializableString,serializedString))
 				return shape;
 		}
 
 		// if we can't match anything, just return NONE.
 		return NONE;
+	}
+
+	// remove spaces, underscores and case sensitivity
+	private static boolean easyStringCompart(String a, String b) {
+		if (a==null) return b==null;
+		if (b==null) return false;
+		String likeA = a.replace(" ", "").replace("_", "");
+		String likeB = b.replace(" ", "").replace("_", "");
+		return likeA.equalsIgnoreCase(likeB);
 	}
 }

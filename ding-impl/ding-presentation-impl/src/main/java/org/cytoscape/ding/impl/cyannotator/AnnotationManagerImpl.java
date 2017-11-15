@@ -69,17 +69,31 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 		DingAnnotation dAnnotation = (DingAnnotation)annotation;
 		CyNetworkView view = annotation.getNetworkView();
+
+		/*
+		 * Not sure why we're doing this.  We only care about the single view and we don't
+		 * necessarily need it added to the view manager
+		 *
 		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		
 		for (CyNetworkView networkView: viewManager.getNetworkViewSet()) {
 			if (view.equals(networkView)) {
 				((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
 				
-				if (dAnnotation.getCanvas() != null)
+				if (dAnnotation.getCanvas() != null) {
 					dAnnotation.getCanvas().add(dAnnotation.getComponent());
-				else
+				} else {
 					((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
+				}
 			}
+		}
+		*/
+
+		((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
+		if (dAnnotation.getCanvas() != null) {
+			dAnnotation.getCanvas().add(dAnnotation.getComponent());
+		} else {
+			((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
 		}
 	}
 
@@ -97,20 +111,16 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			return;
 		}
 		
-		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		for (CyNetworkView view: viewManager.getNetworkViewSet())
+		CyNetworkView view = annotation.getNetworkView();
+		if (view != null && view instanceof DGraphView)
 			((DGraphView)view).getCyAnnotator().removeAnnotation(annotation);
 	}
 
 	@Override
 	public List<Annotation> getAnnotations(final CyNetworkView networkView) {
 		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-		
-		for (CyNetworkView view: viewManager.getNetworkViewSet()) {
-			if (view.equals(networkView))
-				return ((DGraphView)view).getCyAnnotator().getAnnotations();
-		}
+		if (networkView != null && networkView instanceof DGraphView)
+			return ((DGraphView)networkView).getCyAnnotator().getAnnotations();
 		
 		return null;
 	}

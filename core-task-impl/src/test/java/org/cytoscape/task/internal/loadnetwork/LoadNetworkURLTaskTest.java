@@ -1,5 +1,25 @@
 package org.cytoscape.task.internal.loadnetwork;
 
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTask;
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTaskFactoryImpl;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskMonitor;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,50 +44,30 @@ package org.cytoscape.task.internal.loadnetwork;
  * #L%
  */
 
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLConnection;
-
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskMonitor;
-import org.junit.Before;
-import org.junit.Test;
-
 public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
+	URLConnection connection;
 	URL url;
 
 	@Before
 	public void setUp() throws Exception {
 		url = new URL("http://example.com");
 		uri = url.toURI();
+		
 		super.setUp();
+		
+		connection = mock(URLConnection.class);
+		when(streamUtil.getURLConnection(url)).thenReturn(connection);
 	}
 
 	@Test
 	public void testRun() throws Exception {
-		URLConnection con = mock(URLConnection.class);
-		StreamUtil streamUtil = mock(StreamUtil.class);
-		when(streamUtil.getURLConnection(url)).thenReturn(con);
-
-		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
-		assertNotNull(networkViewManager);
+		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
+		assertNotNull(netViewManager);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
+		
 		while (ti.hasNext()) {
 			Task t = ti.next();
 			if (first) {
@@ -76,22 +76,16 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 			}
 			t.run(tm);
 		}
-		verify(netmgr).addNetwork(net, false);
+		verify(netManager).addNetwork(net, false);
 		// verify(networkViewManager).addNetworkView(view);
 		verify(tm,atLeast(1)).setProgress(1.0);
 	}
 
 	@Test(expected = Exception.class)
 	public void testBadConnection() throws Exception {
-		URLConnection con = mock(URLConnection.class);
-		doThrow(new IOException("bad connection")).when(con).connect();
+		doThrow(new IOException("bad connection")).when(connection).connect();
 
-		StreamUtil streamUtil = mock(StreamUtil.class);
-		when(streamUtil.getURLConnection(url)).thenReturn(con);
-
-		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
+		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
@@ -107,16 +101,11 @@ public class LoadNetworkURLTaskTest extends AbstractLoadNetworkTaskTester {
 
 	@Test(expected = NullPointerException.class)
 	public void testNullURL() throws Exception {
-		URLConnection con = mock(URLConnection.class);
-		StreamUtil streamUtil = mock(StreamUtil.class);
-		when(streamUtil.getURLConnection(url)).thenReturn(con);
-
-		CyNetworkViewFactory nullNetworkViewFactory = mock(CyNetworkViewFactory.class);
-		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager, props, namingUtil,
-				streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
+		TaskFactory factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
 		TaskIterator ti = factory.createTaskIterator();
 		TaskMonitor tm = mock(TaskMonitor.class);
 		boolean first = true;
+		
 		while (ti.hasNext()) {
 			Task t = ti.next();
 			if (first) {

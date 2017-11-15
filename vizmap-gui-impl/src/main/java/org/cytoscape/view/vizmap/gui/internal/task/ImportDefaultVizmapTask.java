@@ -1,35 +1,12 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
 import org.cytoscape.view.model.VisualLexicon;
@@ -47,16 +24,40 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class ImportDefaultVizmapTask extends AbstractTask {
 
-	private static final Logger logger = LoggerFactory.getLogger(ImportDefaultVizmapTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final ServicesUtil servicesUtil;
 	private final File vizmapFile;
 
-	public ImportDefaultVizmapTask(final ServicesUtil servicesUtil) {
+	public ImportDefaultVizmapTask(ServicesUtil servicesUtil) {
 		this.servicesUtil = servicesUtil;
-
+		
 		final CyApplicationConfiguration config = servicesUtil.get(CyApplicationConfiguration.class);
 		this.vizmapFile = new File(config.getConfigurationDirectoryLocation(), VizMapperProxy.PRESET_VIZMAP_FILE);
 	}
@@ -79,28 +80,29 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		if (reader == null)
 			throw new NullPointerException("Failed to find Default Vizmap loader.");
 
-		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader, servicesUtil));
+		insertTasksAfterCurrentTask(reader, new AddVisualStylesTask(reader));
 	}
 
-	private static final class AddVisualStylesTask extends AbstractTask {
+	private final class AddVisualStylesTask extends AbstractTask {
 
 		private final VizmapReader reader;
-		private final ServicesUtil servicesUtil;
 
-		public AddVisualStylesTask(final VizmapReader reader, final ServicesUtil servicesUtil) {
+		public AddVisualStylesTask(VizmapReader reader) {
 			this.reader = reader;
-			this.servicesUtil = servicesUtil;
 		}
 
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
-			taskMonitor.setTitle("Loading preset Styles...");
+			taskMonitor.setTitle("Load Preset Styles");
+			taskMonitor.setProgress(0.0);
+			
 			final Set<VisualStyle> styles = reader.getVisualStyles();
 
 			if (styles != null) {
 				final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
 				final VisualStyle defStyle = vmMgr.getDefaultVisualStyle();
 				final String DEFAULT_STYLE_NAME = defStyle.getTitle();
+				
 				VisualStyle newDefStyle = null;
 				int count = 1;
 				int total = styles.size();
@@ -136,6 +138,9 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 					vmMgr.setCurrentVisualStyle(defStyle);
 				}
 				
+				// Flush style-related events now, when the Proxy is probably ignoring them, or these
+				// payload events could be fired later and cause unnecessary UI updates!
+				servicesUtil.get(CyEventHelper.class).flushPayloadEvents();
 				taskMonitor.setProgress(1.0);
 			}
 		}
@@ -147,14 +152,12 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		private void updateVisualStyle(final VisualStyle source, final VisualStyle target) {
 			// First clean up the target
-			final HashSet<VisualMappingFunction<?, ?>> mapingSet = 
-					new HashSet<VisualMappingFunction<?, ?>>(target.getAllVisualMappingFunctions());
-			
+			final HashSet<VisualMappingFunction<?, ?>> mapingSet = new HashSet<>(target.getAllVisualMappingFunctions());
+
 			for (final VisualMappingFunction<?, ?> mapping : mapingSet)
 				target.removeVisualMappingFunction(mapping.getVisualProperty());
-			
-			final Set<VisualPropertyDependency<?>> depList = 
-					new HashSet<VisualPropertyDependency<?>>(target.getAllVisualPropertyDependencies());
+
+			final Set<VisualPropertyDependency<?>> depList = new HashSet<>(target.getAllVisualPropertyDependencies());
 			
 			for (final VisualPropertyDependency<?> dep : depList)
 				target.removeVisualPropertyDependency(dep);

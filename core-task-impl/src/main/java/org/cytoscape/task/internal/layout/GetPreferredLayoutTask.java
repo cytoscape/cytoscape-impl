@@ -1,12 +1,26 @@
 package org.cytoscape.task.internal.layout;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +38,22 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-
 public class GetPreferredLayoutTask extends AbstractTask implements ObservableTask {
 
-	private final CyLayoutAlgorithmManager layouts;
 	private CyLayoutAlgorithm preferredLayout;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	@Tunable(description="Gets the name of the current preferred layout", context="nogui", longDescription="Gets the name of the current preferred layout")
+	public CyNetwork network = null;
 
-	public GetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
-		this.layouts = layouts;
+
+	public GetPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(TaskMonitor tm) {
-		preferredLayout = layouts.getDefaultLayout();
+		preferredLayout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
 
 		if (preferredLayout != null)
 			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout is " + preferredLayout.getName());
@@ -50,13 +62,25 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
-		if (preferredLayout == null)
-			return null;
-
 		if (type.equals(String.class))
 			return preferredLayout.getName();
-
+		else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (preferredLayout == null) { 
+					return "{ }";
+				} else {
+					return "\"" + preferredLayout.getName() + "\"";	
+			}};
+			return res;
+		}else if (preferredLayout == null) {
+			return null;
+		}
 		return preferredLayout;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, JSONResult.class);
 	}
 }

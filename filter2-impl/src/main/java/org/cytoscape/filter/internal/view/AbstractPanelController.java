@@ -105,7 +105,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		this.style = style;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		logger = LoggerFactory.getLogger(getClass());
+		logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 		
 		List<T> modelItems = new ArrayList<T>();
 		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);

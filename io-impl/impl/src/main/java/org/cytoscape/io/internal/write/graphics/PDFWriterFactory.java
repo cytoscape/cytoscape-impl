@@ -35,9 +35,6 @@ import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
 
 public class PDFWriterFactory extends AbstractCyWriterFactory implements PresentationWriterFactory{
 
-	private static final Logger logger = LoggerFactory.getLogger(PDFWriterFactory.class);
-
-	
 	public PDFWriterFactory(CyFileFilter fileFilter) {
 		super(fileFilter);
 	}

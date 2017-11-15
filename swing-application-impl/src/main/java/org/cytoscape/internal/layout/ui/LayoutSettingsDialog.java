@@ -39,6 +39,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -111,7 +112,8 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
     private JButton doneBtn;
 
 	private LayoutSettingsManager layoutSettingsMgr;
-	private LayoutAttributeTunable layoutAttrTunable;
+	private LayoutEdgeAttributeTunable layoutEdgeAttrTunable;
+	private LayoutNodeAttributeTunable layoutNodeAttrTunable;
 	private final SelectedTunable selectedTunable;
 	
 	private boolean initialized;
@@ -467,9 +469,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				@Override
 				public void itemStateChanged(ItemEvent e) {
 					if (initializing)
-						return;
-					
-					final CyLayoutAlgorithmManager layoutAlgorithmMgr = serviceRegistrar
+						return; final CyLayoutAlgorithmManager layoutAlgorithmMgr = serviceRegistrar
 							.getService(CyLayoutAlgorithmManager.class);
 					final CyLayoutAlgorithm layout = (CyLayoutAlgorithm) prefAlgorithmCmb.getSelectedItem();
 					
@@ -488,19 +488,33 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		if (layoutAttrPnl == null)
 			return;
 		
+		boolean haveNodeAttribute = (currentLayout.getSupportedNodeAttributeTypes() != null && currentLayout.getSupportedNodeAttributeTypes().size() > 0);
+		boolean haveEdgeAttribute = (currentLayout.getSupportedEdgeAttributeTypes() != null && currentLayout.getSupportedEdgeAttributeTypes().size() > 0);
 		layoutAttrPnl.removeAll();
-		layoutAttrTunable = new LayoutAttributeTunable();
+		if (currentLayout.getSupportedEdgeAttributeTypes() != null && currentLayout.getSupportedEdgeAttributeTypes().size() > 0)
+			layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
+		else if (currentLayout.getSupportedNodeAttributeTypes() != null && currentLayout.getSupportedNodeAttributeTypes().size() > 0)
+			layoutNodeAttrTunable = new LayoutNodeAttributeTunable();
 		
 		if (view != null) {
 			List<String> attributeList = getAttributeList(view.getModel(),
 					currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
 			
 			if (attributeList.size() > 0) {
-				layoutAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
-				layoutAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
-				
 				final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
-				JPanel panel = taskMgr.getConfiguration(null, layoutAttrTunable);
+				JPanel panel = null;
+				if (haveEdgeAttribute) {
+					layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
+					layoutEdgeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
+					layoutEdgeAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+					panel = taskMgr.getConfiguration(null, layoutEdgeAttrTunable);
+				} else if (haveNodeAttribute) {
+					layoutNodeAttrTunable = new LayoutNodeAttributeTunable();
+					layoutNodeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
+					layoutNodeAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+					panel = taskMgr.getConfiguration(null, layoutNodeAttrTunable);
+				}
+				
 				setPanelsTransparent(panel);
 				layoutAttrPnl.add(panel);
 				panel.invalidate();
@@ -521,9 +535,7 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	private List<String> getAttributeList(CyNetwork network, Set<Class<?>> allowedNodeAttributeTypes, Set<Class<?>> allowedEdgeAttributeTypes) {
 		List<String> attributes = new ArrayList<String>();
         Set<Class<?>> allowedTypes;
-		CyTable table;
-		if (allowedNodeAttributeTypes.size() > 0) {
-			allowedTypes = allowedNodeAttributeTypes;
+		CyTable table; if (allowedNodeAttributeTypes.size() > 0) { allowedTypes = allowedNodeAttributeTypes;
 			table = network.getDefaultNodeTable();
 		} else if (allowedEdgeAttributeTypes.size() > 0) {
 			allowedTypes = allowedEdgeAttributeTypes;
@@ -533,10 +545,16 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		}
 		
 		for (final CyColumn column : table.getColumns()) {
+						if (column.getName().equals(CyNetwork.SELECTED) ||
+						    column.getName().equals(CyNetwork.SUID))
+							continue;
+
             if (allowedTypes.contains(column.getType())) {
             	attributes.add(column.getName());
             }
 		}
+
+		Collections.sort(attributes);
 		
 		if (attributes.size()>0)
 			attributes.add(0, UNWEIGHTED);
@@ -544,12 +562,17 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private String getLayoutAttribute() {
-		if (layoutAttrTunable == null || layoutAttrTunable.layoutAttribute == null)
-			return null;
-		if (layoutAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
-			return null;
-		
-		return layoutAttrTunable.layoutAttribute.getSelectedValue();
+		if ((layoutEdgeAttrTunable != null && layoutEdgeAttrTunable.layoutAttribute != null)) {
+			if (layoutEdgeAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
+				return null;
+			return layoutEdgeAttrTunable.layoutAttribute.getSelectedValue();
+		} else if ((layoutNodeAttrTunable != null && layoutNodeAttrTunable.layoutAttribute != null)) {
+			if (layoutNodeAttrTunable.layoutAttribute.getSelectedValue().equals(UNWEIGHTED))
+				return null;
+			return layoutNodeAttrTunable.layoutAttribute.getSelectedValue();
+		}
+
+		return null;
 	}
 
 	private Set<View<CyNode>> getLayoutNodes(CyLayoutAlgorithm layout, CyNetworkView networkView) {
@@ -638,8 +661,13 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		public boolean selectedNodesOnly;
 	}
 	
-	public static class LayoutAttributeTunable {
-		@Tunable(description="Edge attribute that contains the weights:", gravity=1.0)
+	public static class LayoutEdgeAttributeTunable {
+		@Tunable(description="Edge column that contains the weights:", gravity=1.0)
+		public ListSingleSelection<String> layoutAttribute;
+	}
+	
+	public static class LayoutNodeAttributeTunable {
+		@Tunable(description="Node column to use:", gravity=1.0)
 		public ListSingleSelection<String> layoutAttribute;
 	}
 }

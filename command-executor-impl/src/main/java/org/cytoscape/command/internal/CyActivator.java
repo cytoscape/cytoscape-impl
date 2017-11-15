@@ -143,15 +143,15 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, argHandlerFactory, ArgHandlerFactory.class, new Properties());
 
 		ArgRecorder argRec = new ArgRecorder();
-		registerServiceListener(bc, argRec, "addTunableHandlerFactory", "removeTunableHandlerFactory", ArgHandlerFactory.class);
+		registerServiceListener(bc, argRec::addTunableHandlerFactory, argRec::removeTunableHandlerFactory, ArgHandlerFactory.class);
 
 		AvailableCommandsImpl availableCommandsImpl = new AvailableCommandsImpl(argRec, serviceRegistrar);
 		registerService(bc, availableCommandsImpl, AvailableCommands.class, new Properties());
-		registerServiceListener(bc, availableCommandsImpl, "addTaskFactory", "removeTaskFactory", TaskFactory.class);
-		registerServiceListener(bc, availableCommandsImpl, "addNetworkTaskFactory", "removeNetworkTaskFactory", NetworkTaskFactory.class);
-		registerServiceListener(bc, availableCommandsImpl, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class);
-		registerServiceListener(bc, availableCommandsImpl, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory", NetworkViewCollectionTaskFactory.class);
-		registerServiceListener(bc, availableCommandsImpl, "addTableTaskFactory", "removeTableTaskFactory", TableTaskFactory.class);
+		registerServiceListener(bc, availableCommandsImpl::addTaskFactory, availableCommandsImpl::removeTaskFactory, TaskFactory.class);
+		registerServiceListener(bc, availableCommandsImpl::addNetworkTaskFactory, availableCommandsImpl::removeNetworkTaskFactory, NetworkTaskFactory.class);
+		registerServiceListener(bc, availableCommandsImpl::addNetworkViewTaskFactory, availableCommandsImpl::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class);
+		registerServiceListener(bc, availableCommandsImpl::addNetworkViewCollectionTaskFactory, availableCommandsImpl::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc, availableCommandsImpl::addTableTaskFactory, availableCommandsImpl::removeTableTaskFactory, TableTaskFactory.class);
 
 		CommandExecutorImpl commandExecutor = new CommandExecutorImpl(interceptor, availableCommandsImpl, serviceRegistrar);
 		CommandExecutorTaskFactoryImpl commandExecutorTaskFactory = new CommandExecutorTaskFactoryImpl(commandExecutor, serviceRegistrar);
@@ -161,12 +161,12 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, commandExecutorTaskFactory, TaskFactory.class, commandExecutorTaskFactoryProps);
 		registerService(bc, commandExecutorTaskFactory, CommandExecutorTaskFactory.class, commandExecutorTaskFactoryProps);
 
-		registerServiceListener(bc, commandExecutor, "addTaskFactory", "removeTaskFactory", TaskFactory.class);
-		registerServiceListener(bc, commandExecutor, "addNetworkTaskFactory", "removeNetworkTaskFactory", NetworkTaskFactory.class);
-		registerServiceListener(bc, commandExecutor, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class);
-		registerServiceListener(bc, commandExecutor, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory", NetworkViewCollectionTaskFactory.class);
-		registerServiceListener(bc, commandExecutor, "addTableTaskFactory", "removeTableTaskFactory", TableTaskFactory.class);
+		registerServiceListener(bc, commandExecutor::addTaskFactory, commandExecutor::removeTaskFactory, TaskFactory.class);
+		registerServiceListener(bc, commandExecutor::addNetworkTaskFactory, commandExecutor::removeNetworkTaskFactory, NetworkTaskFactory.class);
+		registerServiceListener(bc, commandExecutor::addNetworkViewTaskFactory, commandExecutor::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class);
+		registerServiceListener(bc, commandExecutor::addNetworkViewCollectionTaskFactory, commandExecutor::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc, commandExecutor::addTableTaskFactory, commandExecutor::removeTableTaskFactory, TableTaskFactory.class);
 
-		registerServiceListener(bc, interceptor, "addTunableHandlerFactory", "removeTunableHandlerFactory", StringTunableHandlerFactory.class);
+		registerServiceListener(bc, interceptor::addTunableHandlerFactory, interceptor::removeTunableHandlerFactory, StringTunableHandlerFactory.class);
 	}
 }

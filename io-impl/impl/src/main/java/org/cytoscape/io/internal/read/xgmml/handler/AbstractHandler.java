@@ -39,7 +39,7 @@ public abstract class AbstractHandler implements Handler {
 	
 	ObjectTypeMap typeMap;
 	
-	protected static final Logger logger = LoggerFactory.getLogger(AbstractHandler.class);
+	protected static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public AbstractHandler() {
 	    typeMap = new ObjectTypeMap();

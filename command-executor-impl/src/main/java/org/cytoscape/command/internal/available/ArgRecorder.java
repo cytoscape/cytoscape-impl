@@ -28,6 +28,7 @@ import java.util.*;
 
 import javax.swing.JPanel;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.work.AbstractTunableInterceptor;
 import org.cytoscape.work.Tunable;
 
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class ArgRecorder extends AbstractTunableInterceptor<ArgHandler> {
 
-	private static final Logger logger = LoggerFactory.getLogger(ArgRecorder.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public List<String> findArgs(Object o) {
 		List<String> desc = new ArrayList<String>();

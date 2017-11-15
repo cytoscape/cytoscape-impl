@@ -1,12 +1,25 @@
 package org.cytoscape.view.vizmap.gui.internal.task;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.view.vizmap.VisualMappingFunction;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.AbstractCyEdit;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,19 +36,6 @@ package org.cytoscape.view.vizmap.gui.internal.task;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.AbstractCyEdit;
-import org.cytoscape.work.undo.UndoSupport;
 
 /**
  * Removes {@link VisualMappingFunction} objects from a {@link VisualStyle}.
@@ -62,21 +62,18 @@ public class RemoveVisualMappingsTask extends AbstractTask {
 	@Override
 	public void run(final TaskMonitor monitor) throws Exception {
 		if (mappings != null && !mappings.isEmpty()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					for (final VisualMappingFunction<?, ?> vm : mappings) {
-						// Make sure the current style has these visual mappings
-						if (vm != null && vm.equals(style.getVisualMappingFunction(vm.getVisualProperty())))
-							validMappings.add(vm);
-					}
+			invokeOnEDT(() -> {
+				for (final VisualMappingFunction<?, ?> vm : mappings) {
+					// Make sure the current style has these visual mappings
+					if (vm != null && vm.equals(style.getVisualMappingFunction(vm.getVisualProperty())))
+						validMappings.add(vm);
+				}
+				
+				if (!validMappings.isEmpty()) {
+					removeMappings();
 					
-					if (!validMappings.isEmpty()) {
-						removeMappings();
-						
-						final UndoSupport undo = servicesUtil.get(UndoSupport.class);
-						undo.postEdit(new RemoveVisualMappingEdit());
-					}
+					final UndoSupport undo = servicesUtil.get(UndoSupport.class);
+					undo.postEdit(new RemoveVisualMappingEdit());
 				}
 			});
 		}

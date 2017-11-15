@@ -1,5 +1,8 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,25 +27,18 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetEdgePropertiesTask extends AbstractPropertyTask {
@@ -50,10 +46,10 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION, exampleStringValue="Paint, Visible")
 	public String propertyList = null;
 
-	@Tunable(description="Values to set for the properties", context="nogui")
+	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION, exampleStringValue="#808080,true")
 	public String valueList = null;
 
 	public SetEdgePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
@@ -90,6 +86,7 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 			int valueIndex = 0;
 			for (String property: props) {
 				String value = values[valueIndex];
+				valueIndex++;
 				try {
 					VisualProperty vp = getProperty(network, edge, property.trim());
 					setPropertyValue(network, edge, vp, value);
@@ -100,6 +97,19 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 				}
 			}
 		}
+	}
 	
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
 	}
 }

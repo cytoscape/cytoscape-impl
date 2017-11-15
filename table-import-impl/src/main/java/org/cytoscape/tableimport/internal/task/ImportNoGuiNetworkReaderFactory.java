@@ -27,7 +27,9 @@ package org.cytoscape.tableimport.internal.task;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -39,6 +41,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -47,15 +50,19 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 
 
 public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
-	
+
 	private final boolean fromURL;
 	private final CyServiceRegistrar serviceRegistrar;
+	public static final String JSON_EXAMPLE = "{ \"networks\":[101,102,103],\"views\":[200,201,204] }";
+
 
 	public ImportNoGuiNetworkReaderFactory(final boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
 		this.fromURL = fromURL;
@@ -64,10 +71,10 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(serviceRegistrar);
+		final LoadNetworkReaderTask readerTask = new LoadNetworkReaderTask(serviceRegistrar, true);
 		final NetworkCollectionHelper networkCollectionHelperTask = new NetworkCollectionHelper(readerTask, serviceRegistrar);
 		final GenerateNetworkViewsTask generateViewTask = new GenerateNetworkViewsTask(readerTask);
-		
+
 		if (fromURL) {
 			return new TaskIterator(new SelectURLTableTask(readerTask, serviceRegistrar), networkCollectionHelperTask,
 					readerTask, generateViewTask);
@@ -76,14 +83,15 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					networkCollectionHelperTask, readerTask, generateViewTask);
 		}
 	}
-	
-	class GenerateNetworkViewsTask extends AbstractTask {
-		
+
+	class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
+
 		private String name;
 		private final CyNetworkReader netReader;
 		private int viewThreshold;
-		private	Collection<CyNetworkView> results;
-		
+		private	List<CyNetworkView> results;
+		private List<CyNetwork> largeNetworks;
+
 		private final String VIEW_THRESHOLD = "viewThreshold";
 		private static final int DEF_VIEW_THRESHOLD = 3000;
 
@@ -95,7 +103,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 		@Override
 		public void run(final TaskMonitor taskMonitor) throws Exception {
 			taskMonitor.setProgress(0.0);
-			
+
 			final VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
 			final CyNetworkNaming netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
 			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
@@ -107,36 +115,36 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 			final CyNetwork[] networks = netReader.getNetworks();
 			double numNets = (double)(networks.length);
 			int i = 0;
-			
+
 			if (netReader instanceof LoadNetworkReaderTask)
 				name = ((LoadNetworkReaderTask)netReader).getName();
-			
+
 			viewThreshold = getViewThreshold();
 			results = new ArrayList<CyNetworkView>();
-			
+
 			for (CyNetwork network : networks) {
 				// Use original name if exists
 				String networkName = network.getRow(network).get(CyNetwork.NAME, String.class);
-				
+
 				if (networkName == null || networkName.trim().length() == 0) {
 					networkName = name;
-					
+
 					if (networkName == null)
 						networkName = "? (Name is missing)";
-					
+
 					network.getRow(network).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 				}
-				
+
 				netManager.addNetwork(network, false);
 
 				final int numGraphObjects = network.getNodeCount() + network.getEdgeCount();
-				
+
 				if (numGraphObjects < viewThreshold) {
 					final CyNetworkView view = netReader.buildCyNetworkView(network);
 					netViewManager.addNetworkView(view, false);
 					vmManager.setVisualStyle(style, view);
 					style.apply(view);
-					
+
 					if (!view.isSet(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)
 							&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)
 							&& !view.isSet(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION))
@@ -144,8 +152,9 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					results.add(view);
 				} else {
 					results.add(nullNetViewFactory.createNetworkView(network));
+					largeNetworks.add(network);
 				}
-				
+
 				taskMonitor.setProgress((double)(++i)/numNets);
 			}
 
@@ -156,7 +165,7 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					CySubNetwork subnet = (CySubNetwork) networks[0];
 					final CyRootNetwork rootNet = subnet.getRootNetwork();
 					String rootNetName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-					
+
 					if (rootNetName == null || rootNetName.trim().length() == 0){
 						// The root network does not have a name yet, set it the same as the base subnetwork
 						rootNet.getRow(rootNet).set(
@@ -164,28 +173,28 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 					}
 				}
 			}
-			
-			
+
+
 			// Make sure rootNetwork has a name
 			for (CyNetwork network : networks) {
 				if (network instanceof CySubNetwork){
 					CySubNetwork subNet = (CySubNetwork) network;
 					CyRootNetwork rootNet = subNet.getRootNetwork();
 					String networkName = rootNet.getRow(rootNet).get(CyNetwork.NAME, String.class);
-					
+
 					if (networkName == null || networkName.trim().length() == 0) {
 						networkName = name;
-						
+
 						if (networkName == null)
 							networkName = "? (Name is missing)";
-						
+
 						rootNet.getRow(rootNet).set(CyNetwork.NAME, netNaming.getSuggestedNetworkTitle(networkName));
 					}
-				}			
+				}
 			}
-			
+
 			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-			
+
 			if (!results.isEmpty()) {
 				applicationManager.setCurrentNetworkView(results.iterator().next());
 			} else {
@@ -197,14 +206,14 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 				}
 			}
 		}
-		
+
 		@SuppressWarnings("unchecked")
 		private int getViewThreshold() {
 			final CyProperty<Properties> cyProperties =
 					serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 			final String vts = cyProperties.getProperties().getProperty(VIEW_THRESHOLD);
 			int threshold;
-			
+
 			try {
 				threshold = Integer.parseInt(vts);
 			} catch (Exception e) {
@@ -212,6 +221,51 @@ public class ImportNoGuiNetworkReaderFactory extends AbstractTaskFactory {
 			}
 
 			return threshold;
+		}
+
+		private Object getStringResults() {
+			String strRes = "";
+
+			for (CyNetworkView view: results)
+				strRes += (view.toString() + "\n");
+
+			return strRes.isEmpty() ? null : strRes.substring(0, strRes.length()-1);
+		}
+
+		@Override
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		public Object getResults(Class expectedType) {
+			if (expectedType.equals(String.class))
+				return getStringResults();
+			else if (expectedType.equals(JSONResult.class)) {
+				JSONResult res = () -> {if (results == null && largeNetworks.isEmpty()) 
+					return "{}";
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					List<CyNetwork> networks = new ArrayList<>();
+					for (CyNetworkView view: results)
+						networks.add(view.getModel());
+					if (largeNetworks != null && largeNetworks.size() > 0) {
+						for (CyNetwork net: largeNetworks) {
+							if (!networks.contains(net))
+								networks.add(net);
+						}
+					}
+					String jsonRes = "{ \"networks\":";
+					jsonRes += cyJSONUtil.cyIdentifiablesToJson(networks);
+					jsonRes += ", \"views\":";
+					jsonRes += cyJSONUtil.cyIdentifiablesToJson(results);
+					jsonRes += "}";
+					return jsonRes;
+				}};
+				return res;
+			}
+			return results;
+		}
+		
+		@Override
+		public List<Class<?>> getResultClasses() {
+			return Arrays.asList(List.class, String.class, JSONResult.class);
 		}
 	}
 }

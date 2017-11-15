@@ -6,7 +6,7 @@
 	<parent>
 		<artifactId>parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.1</version>
+		<version>3.6.0</version>
 		<relativePath>../parent</relativePath>
 	</parent>
 
@@ -16,8 +16,8 @@
 	<name>Cytoscape Implementation Parent Project POM</name>
 
 	<properties>
-		<cytoscape.api.version>3.5.0</cytoscape.api.version>
-		<cytoscape.support.version>3.5.0</cytoscape.support.version>
+		<cytoscape.api.version>3.6.0</cytoscape.api.version>
+		<cytoscape.support.version>3.6.0</cytoscape.support.version>
 	</properties>
 
 
@@ -215,6 +215,16 @@
 			<dependency>
 				<groupId>org.cytoscape</groupId>
 				<artifactId>service-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>ci-api</artifactId>
+				<version>${cytoscape.api.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.cytoscape</groupId>
+				<artifactId>util-api</artifactId>
 				<version>${cytoscape.api.version}</version>
 			</dependency>
 

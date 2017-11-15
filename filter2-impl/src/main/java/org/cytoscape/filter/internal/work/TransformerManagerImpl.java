@@ -132,11 +132,11 @@ public class TransformerManagerImpl implements TransformerManager {
 		return new DefaultBuffer<C, E>(contextType, source.getElementType(), source.getElementCount(context), 4);
 	}
 	
-	public void registerTransformerSource(TransformerSource<?, ?> source, Map<String, String> properties) {
+	public void registerTransformerSource(TransformerSource<?,?> source, Map<String,String> properties) {
 		sources.put(source.getContextType(), source);
 	}
 	
-	public void unregisterTransformerSource(TransformerSource<?, ?> source, Map<String, String> properties) {
+	public void unregisterTransformerSource(TransformerSource<?,?> source, Map<String,String> properties) {
 		sources.remove(source.getContextType());
 	}
 

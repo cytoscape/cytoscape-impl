@@ -79,22 +79,40 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	
 	TextTableReader reader;
 	
-	@Tunable(description="Text Delimiters:", context="both")
+	@Tunable(description="Text Delimiters", 
+	         longDescription="The list of delimiters that separate columns in the table.",
+	         exampleStringValue="\',\',\'\\t\'",
+	         context="both")
 	public ListMultipleSelection<String> delimiters;
 	
-	@Tunable(description="Text Delimiters for data list type:", context="both")
+	@Tunable(description="Text Delimiters for data list type", 
+	         longDescription="The delimiters between elements of list columns in the table.",
+	         exampleStringValue="\'|\'",
+	         context="both")
 	public ListSingleSelection<String> delimitersForDataList;
 	
-	@Tunable(description="Start Load Row:", context="both")
+	@Tunable(description="Start Load Row", 
+	         longDescription="The first row of the input table to load.  This allows the skipping of headers that are not part of the import.",
+	         exampleStringValue="10",
+	         context="both")
 	public int startLoadRow = -1;
 	
-	@Tunable(description="Key Column Index", context="both")
+	@Tunable(description="Key Column Index", 
+	         longDescription="The column that contains the key values for this import.  These values will be used to match with the key values in the network.",
+	         exampleStringValue="1",
+	         context="both")
 	public int keyColumnIndex = -1;
 	
-	@Tunable(description="First row used for column names:", context="both")
+	@Tunable(description="First row used for column names", 
+	         longDescription="If the first imported row contains column names, set this to ```true```.",
+	         exampleStringValue="true",
+	         context="both")
 	public boolean firstRowAsColumnNames;
 	
-	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
+	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\")", 
+	         longDescription="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\")",
+	         exampleStringValue="s,s,i",
+	         context="nongui")
 	public String dataTypeList;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -127,7 +145,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.fileType = fileType;
 		this.inputName = inputName;
 		this.isStart = is;
-		
+
+
 		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, serviceRegistrar.getService(IconManager.class));
 				
 		try {
@@ -157,7 +176,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		}
 		
 		List<String> tempList = new ArrayList<>();
-		tempList.add(TextDelimiter.TAB.getDelimiter());
+		if (fileType.equals(".csv"))
+			tempList.add(TextDelimiter.COMMA.getDelimiter());
+		else
+			tempList.add(TextDelimiter.TAB.getDelimiter());
 		delimiters.setSelectedValues(tempList);
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}

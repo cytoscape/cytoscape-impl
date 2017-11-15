@@ -1,22 +1,44 @@
 package org.cytoscape.browser.internal.view;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.dnd.DropTarget;
+import java.awt.dnd.DropTargetDragEvent;
+import java.awt.dnd.DropTargetDropEvent;
+import java.awt.dnd.DropTargetEvent;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.TransferHandler;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -33,7 +55,14 @@ import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -41,7 +70,7 @@ import org.cytoscape.util.swing.ColumnResizer;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -67,27 +96,27 @@ public abstract class AbstractTableBrowser extends JPanel
 										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
 										   			  SessionAboutToBeSavedListener{
 
-	static final int SELECTOR_WIDTH = 400;
+	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
+	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
 	
-	protected final CyServiceRegistrar serviceRegistrar;
-	
-	protected AttributeBrowserToolBar attributeBrowserToolBar;
-		
-	protected CyTable currentTable;
-	protected Class<? extends CyIdentifiable> currentTableType;
+	private TableBrowserToolBar toolBar;
+	private JPanel dropPanel;
+	private final JScrollPane scrollPane = new JScrollPane();
+	private final JLabel dropIconLabel = new JLabel();
+	private final JLabel dropLabel = new JLabel("Drag table files here");
 	private final PopupMenuHelper popupMenuHelper; 
-	
 
-	// Tab title for the CytoPanel
 	private final String tabTitle;
-	private final Map<BrowserTable, JScrollPane> scrollPanes;
+	protected CyTable currentTable;
 	private final Map<CyTable, BrowserTable> browserTables;
-	private JScrollPane currentScrollPane;
 	protected final String appFileName;
+	protected Class<? extends CyIdentifiable> currentTableType;
 
-
+	protected final CyServiceRegistrar serviceRegistrar;
+	private final Object lock = new Object();
+	
 	AbstractTableBrowser(
 			final String tabTitle,
 			final CyServiceRegistrar serviceRegistrar,
@@ -96,21 +125,29 @@ public abstract class AbstractTableBrowser extends JPanel
 		this.serviceRegistrar = serviceRegistrar;
 		this.tabTitle = tabTitle;
 		this.popupMenuHelper = popupMenuHelper;
-		this.appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
-
-		this.scrollPanes = new HashMap<>();
-		this.browserTables = new HashMap<>();
 		
-		this.setLayout(new BorderLayout());
-		this.setOpaque(!isAquaLAF());
-		this.setPreferredSize(PANEL_SIZE);
-		this.setSize(PANEL_SIZE);
+		appFileName  = tabTitle.replaceAll(" ", "").concat(".props");
+		browserTables = new HashMap<>();
 		
-		new CyDropListener(this, serviceRegistrar);
+		setLayout(new BorderLayout());
+		setOpaque(!isAquaLAF());
+		setPreferredSize(PANEL_SIZE);
+		setSize(PANEL_SIZE);
+		
+		add(scrollPane, BorderLayout.CENTER);
+		showDropPanel();
+		
+		BrowserDropListener dropListener = new BrowserDropListener();
+		setTransferHandler(dropListener);
+		new DropTarget(this, dropListener);
+		
+		update();
 	}
 
 	@Override
-	public Component getComponent() { return this; }
+	public Component getComponent() {
+		return this;
+	}
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
@@ -118,24 +155,30 @@ public abstract class AbstractTableBrowser extends JPanel
 	}
 
 	@Override
-	public String getTitle() { return tabTitle; }
+	public String getTitle() {
+		return tabTitle;
+	}
 
 	@Override
-	public Icon getIcon() { return null; }
+	public Icon getIcon() {
+		return null;
+	}
 	
 	/**
 	 * Delete the given table from the JTable
-	 * @param cyTable
 	 */
-	public void deleteTable(final CyTable cyTable) {
-		final BrowserTable table = browserTables.remove(cyTable);
+	public void removeTable(final CyTable cyTable) {
+		BrowserTable table = null;
+		
+		synchronized (lock) {
+			table = browserTables.remove(cyTable);
+		}
 		
 		if (table == null)
 			return;
 		
 		table.setVisible(false);
 		
-		scrollPanes.remove(table);
 		TableModel model = table.getModel();
 		serviceRegistrar.unregisterAllServices(table);
 		serviceRegistrar.unregisterAllServices(model);
@@ -144,91 +187,155 @@ public abstract class AbstractTableBrowser extends JPanel
 			currentTable = null;
 			currentTableType = null;
 		}
+		
+		update();
 	}
 	
-	synchronized void showSelectedTable() {
-		if (currentScrollPane != null)
-			remove(currentScrollPane);
+	/**
+	 * @return true if it contains no tables
+	 */
+	protected boolean isEmpty() {
+		synchronized (lock) {
+			return browserTables.isEmpty();
+		}
+	}
+	
+	protected void update() {
+		updateToolBar();
+	}
 
-		final BrowserTable currentBrowserTable = getCurrentBrowserTable();
-		final JScrollPane newScrollPane = getScrollPane(currentBrowserTable);
+	private void updateToolBar() {
+		if (toolBar != null)
+			toolBar.setVisible(currentTable != null);
+	}
+	
+	private void showDropPanel() {
+		scrollPane.setViewportView(getDropPanel());
+	}
+	
+	private JPanel getDropPanel() {
+		if (dropPanel == null) {
+			dropPanel = new JPanel();
+			dropPanel.setBackground(UIManager.getColor("Table.background"));
+			
+			Color fg = UIManager.getColor("Label.disabledForeground");
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 60);
+			
+			dropPanel.setBorder(BorderFactory.createCompoundBorder(
+					BorderFactory.createEmptyBorder(3, 3, 3, 3),
+					BorderFactory.createDashedBorder(fg, 2, 2, 2, true)
+			));
+			
+			dropIconLabel.setIcon(
+					new ImageIcon(getClass().getClassLoader().getResource("/images/drop-table-file-56.png")));
+			dropIconLabel.setForeground(fg);
+			
+			dropLabel.setFont(dropLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
+			dropLabel.setForeground(fg);
+			
+			final GroupLayout layout = new GroupLayout(dropPanel);
+			dropPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addGroup(layout.createParallelGroup(CENTER, true)
+							.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(0, 0, Short.MAX_VALUE)
+					.addComponent(dropIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(dropLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
+			);
+		}
 		
-		if (newScrollPane != null) {
-			add(newScrollPane, BorderLayout.CENTER);
-			ColumnResizer.adjustColumnPreferredWidths(currentBrowserTable, false);
+		return dropPanel;
+	}
+	
+	void showSelectedTable() {
+		final BrowserTable browserTable = getCurrentBrowserTable();
+		
+		if (browserTable != null) {
+			scrollPane.setViewportView(browserTable);
 		} else {
+			showDropPanel();
 			repaint();
 		}
 
-		currentScrollPane = newScrollPane;
-		attributeBrowserToolBar.setBrowserTable(currentBrowserTable);
-	}
-
-	private JScrollPane getScrollPane(final BrowserTable browserTable) {
-		JScrollPane scrollPane = null;
-		
-		if (browserTable != null) {
-			scrollPane = scrollPanes.get(browserTable);
-			
-			if (scrollPane == null) {
-				BrowserTableModel browserTableModel = (BrowserTableModel) browserTable.getModel();
-				serviceRegistrar.registerAllServices(browserTable, new Properties());
-				serviceRegistrar.registerAllServices(browserTableModel, new Properties());
-				browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-				browserTable.setModel(browserTableModel);
-				
-				//move and hide SUID and selected by default
-				final List<String> attrList = browserTableModel.getAllAttributeNames();
-
-				BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
-				
-				if (attrList.contains(CyNetwork.SUID))
-					columnModel.moveColumn(browserTable.convertColumnIndexToView(
-							browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
-				
-				if (attrList.contains(CyNetwork.SELECTED))
-					columnModel.moveColumn(browserTable.convertColumnIndexToView(
-							browserTableModel.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
-				
-				attrList.remove(CyNetwork.SUID);
-				attrList.remove(CyNetwork.SELECTED);
-				browserTable.setVisibleAttributeNames(attrList);
-				
-				scrollPane = new JScrollPane(browserTable);
-				scrollPanes.put(browserTable, scrollPane);
-				
-				// So the drop event can go straight through the table to the drop target associated with this panel
-				if (browserTable.getDropTarget() != null)
-					browserTable.getDropTarget().setActive(false);
-			}
-		}
-
-		return scrollPane;
+		update();
+		getToolBar().setBrowserTable(browserTable);
 	}
 
 	protected BrowserTable getCurrentBrowserTable() {
-		BrowserTable table = browserTables.get(currentTable);
+		BrowserTable browserTable = null;
 		
-		if (table == null && currentTable != null) {
-			final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
-			
-			table = new BrowserTable(compiler, popupMenuHelper, serviceRegistrar);
-			BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
-			table.setModel(model);
-			browserTables.put(currentTable, table);
-			
-			return table;
+		synchronized (lock) {
+			browserTable = browserTables.get(currentTable);
 		}
 		
-		return table;
+		if (browserTable == null && currentTable != null)
+			browserTable = createBrowserTable();
+		
+		return browserTable;
+	}
+
+	private BrowserTable createBrowserTable() {
+		BrowserTable browserTable;
+		final EquationCompiler compiler = serviceRegistrar.getService(EquationCompiler.class);
+		
+		browserTable = new BrowserTable(compiler, popupMenuHelper, serviceRegistrar);
+		BrowserTableModel model = new BrowserTableModel(currentTable, currentTableType, compiler);
+		browserTable.setModel(model);
+		
+		synchronized (lock) {
+			browserTables.put(currentTable, browserTable);
+		}
+		
+		serviceRegistrar.registerAllServices(browserTable, new Properties());
+		serviceRegistrar.registerAllServices(model, new Properties());
+		browserTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		browserTable.setModel(model);
+		
+		//move and hide SUID and selected by default
+		final List<String> attrList = model.getAllAttributeNames();
+
+		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) browserTable.getColumnModel();
+		
+		if (attrList.contains(CyNetwork.SUID))
+			columnModel.moveColumn(browserTable.convertColumnIndexToView(
+					model.mapColumnNameToColumnIndex(CyNetwork.SUID)), 0);
+		
+		if (attrList.contains(CyNetwork.SELECTED))
+			columnModel.moveColumn(browserTable.convertColumnIndexToView(
+					model.mapColumnNameToColumnIndex(CyNetwork.SELECTED)), 1);
+		
+		attrList.remove(CyNetwork.SUID);
+		attrList.remove(CyNetwork.SELECTED);
+		browserTable.setVisibleAttributeNames(attrList);
+		
+		// So the drop event can go straight through the table to the drop target associated with this panel
+		if (browserTable.getDropTarget() != null)
+			browserTable.getDropTarget().setActive(false);
+		
+		ColumnResizer.adjustColumnPreferredWidths(browserTable, false);
+		update();
+		
+		return browserTable;
 	}
 	
 	public BrowserTable getBrowserTable(final CyTable table) {
-		return browserTables.get(table);
+		synchronized (lock) {
+			return browserTables.get(table);
+		}
 	}
 	
 	protected Map<CyTable, BrowserTable> getAllBrowserTablesMap() {
-		return browserTables;
+		return new HashMap<>(browserTables);
 	}
 
 	@Override
@@ -243,21 +350,21 @@ public abstract class AbstractTableBrowser extends JPanel
 		if (tscMap == null || tscMap.isEmpty())
 			return;
 		
-		Map<CyTable, BrowserTable>  browserTableModels = getAllBrowserTablesMap();
+		Map<CyTable, BrowserTable> browserTablesMap = getAllBrowserTablesMap();
 		
-		for (CyTable table : browserTableModels.keySet()){
+		for (CyTable table : browserTablesMap.keySet()){
 			if (! tscMap.containsKey(table.getTitle()))
 				continue;
 			
 			final TableColumnStat tcs = tscMap.get(table.getTitle());
 			
-			final BrowserTable browserTable = browserTables.get(table);
+			final BrowserTable browserTable = getBrowserTable(table);
 			BrowserTableModel model = (BrowserTableModel) browserTable.getModel();
 			final BrowserTableColumnModel colM = (BrowserTableColumnModel)browserTable.getColumnModel();
 			colM.setAllColumnsVisible();
 			final List<String> orderedCols = tcs.getOrderedCol();
 			
-			for (int i = 0; i < orderedCols.size(); i++){
+			for (int i = 0; i < orderedCols.size(); i++) {
 				final String colName = orderedCols.get(i);
 				colM.moveColumn(browserTable.convertColumnIndexToView(model.mapColumnNameToColumnIndex(colName)), i);
 			}
@@ -271,7 +378,7 @@ public abstract class AbstractTableBrowser extends JPanel
 		Map<CyTable, BrowserTable>  browserTables = getAllBrowserTablesMap();
 		List<TableColumnStat> tableColumnStatList = new ArrayList<>();
 
-		for (CyTable table :  browserTables.keySet()){
+		for (CyTable table : browserTables.keySet()){
 			TableColumnStat tcs = new TableColumnStat(table.getTitle());
 
 			BrowserTable browserTable = browserTables.get(table);
@@ -290,7 +397,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			tableColumnStatList.add(tcs);
 		}
 		
-		TableColumnStatFileIO.write(tableColumnStatList, e, this.appFileName );	
+		TableColumnStatFileIO.write(tableColumnStatList, e, appFileName );	
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -299,5 +406,129 @@ public abstract class AbstractTableBrowser extends JPanel
 				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		
 		return cyProp != null && "true".equalsIgnoreCase(cyProp.getProperties().getProperty("showPrivateTables"));
+	}
+	
+	protected TableBrowserToolBar getToolBar() {
+		return toolBar;
+	}
+	
+	protected void setToolBar(TableBrowserToolBar toolBar) {
+		if (toolBar == null && this.toolBar != null)
+			remove(this.toolBar);
+		else if (toolBar != null)
+			add(toolBar, BorderLayout.NORTH);
+			
+		this.toolBar = toolBar;
+		updateToolBar();
+	}
+	
+	private class BrowserDropListener extends TransferHandler implements DropTargetListener {
+
+		private Border originalBorder;
+		
+		@Override
+		public void dragEnter(DropTargetDragEvent evt) {
+			originalBorder = getDropTarget().getBorder();
+			getDropTarget().setBorder(BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 2));
+		}
+
+		@Override
+		public void dragExit(DropTargetEvent evt) {
+			getDropTarget().setBorder(originalBorder);
+		}
+
+		@Override
+		public void dragOver(DropTargetDragEvent evt) {
+		}
+		
+		@Override
+		public void dropActionChanged(DropTargetDragEvent evt) {
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public void drop(DropTargetDropEvent evt) {
+			getDropTarget().setBorder(originalBorder);
+	        
+			if (!isAcceptable(evt)) {
+				evt.rejectDrop();
+	        	return;
+			}
+			
+			evt.acceptDrop(evt.getDropAction());
+			final Transferable t = evt.getTransferable();
+			
+			if (evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {       
+	            // Get the fileList that is being dropped.
+		        List<File> data;
+		        
+		        try {
+		            data = (List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+		        } catch (Exception e) { 
+		        	logger.error("Cannot load table files by Drag-and-Drop.", e);
+		        	return; 
+		        }
+		        
+		        new Thread(() -> {
+		        	loadFiles(data);
+		        }).start();
+	        }
+		}
+		
+		@Override
+        public boolean canImport(TransferHandler.TransferSupport info) {
+        	return isAcceptable(info);
+        }
+		
+        @Override
+        public boolean importData(TransferHandler.TransferSupport info) {
+            return info.isDrop() && !isAcceptable(info);
+        }
+		
+		private void loadFiles(final List<File> data) {
+			final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+			final LoadTableFileTaskFactory factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
+
+			if (factory != null)
+				loadFiles(data.iterator(), taskManager, factory);
+		}
+		
+		private void loadFiles(final Iterator<File> iterator, final DialogTaskManager taskManager,
+				final LoadTableFileTaskFactory factory) {
+			while (iterator.hasNext()) {
+				final File file = iterator.next();
+				
+				if (!file.isDirectory()) {
+					try {
+						taskManager.execute(factory.createTaskIterator(file), new TaskObserver() {
+							@Override
+							public void taskFinished(ObservableTask task) {
+							}
+							@Override
+							public void allFinished(FinishStatus finishStatus) {
+								// Load the other files recursively
+								loadFiles(iterator, taskManager, factory);
+							}
+						});
+					} catch (Exception e) {
+						logger.error("Cannot load table file by Drag-and-Drop.", e);
+					}
+					
+					return;
+				}
+			}
+		}
+
+		private boolean isAcceptable(DropTargetDropEvent evt) {
+			return evt.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+		}
+
+		private boolean isAcceptable(TransferHandler.TransferSupport info) {
+			return info.isDataFlavorSupported(DataFlavor.javaFileListFlavor);
+		}
+		
+		private JComponent getDropTarget() {
+			return currentTable == null ? scrollPane : AbstractTableBrowser.this;
+		}
 	}
 }

@@ -44,8 +44,8 @@ public class CyActivator extends AbstractCyActivator {
 		renderingEngineManagerProps.setProperty("service.type", "manager");
 		registerAllServices(bc, renderingEngineManager, renderingEngineManagerProps);
 
-		registerServiceListener(bc, renderingEngineManager, "addRenderingEngineFactory",
-				"removeRenderingEngineFactory", RenderingEngineFactory.class);
+		registerServiceListener(bc, renderingEngineManager::addRenderingEngineFactory,
+				renderingEngineManager::removeRenderingEngineFactory, RenderingEngineFactory.class);
 		
 		CyColumnIdentifierFactory cyColumnIdentifierFactory = new CyColumnIdentifierFactoryImpl();
 		registerAllServices(bc, cyColumnIdentifierFactory, new Properties());

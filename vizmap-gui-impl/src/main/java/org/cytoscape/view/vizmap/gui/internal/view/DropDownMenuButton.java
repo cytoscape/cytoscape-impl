@@ -1,12 +1,25 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.event.ActionListener;
+
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPopupMenu;
+import javax.swing.UIManager;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,20 +36,6 @@ package org.cytoscape.view.vizmap.gui.internal.view;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Insets;
-import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JPopupMenu;
-import javax.swing.UIManager;
 
 /**
  * Button with drop down menu.
@@ -72,19 +71,16 @@ public class DropDownMenuButton extends JButton {
 		super("");
 		this.showMenuArrowIcon = showMenuArrowIcon;
 		
-		defaultActionListener = new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final JPopupMenu pm = getPopupMenu();
-				
-				if (pm != null) {
-//					if (showPopup) {
-						pm.show(DropDownMenuButton.this, 0, DropDownMenuButton.this.getHeight());
-						pm.requestFocusInWindow();
-//					} else {
-//						showPopup = true;
-//					}
-				}
+		defaultActionListener = (evt) -> {
+			final JPopupMenu pm = getPopupMenu();
+			
+			if (pm != null) {
+//				if (showPopup) {
+					pm.show(DropDownMenuButton.this, 0, DropDownMenuButton.this.getHeight());
+					pm.requestFocusInWindow();
+//				} else {
+//					showPopup = true;
+//				}
 			}
 		};
 		// FIXME

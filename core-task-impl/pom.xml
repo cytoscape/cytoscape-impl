@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.5.1</version>
+		<version>3.6.0</version>
 	</parent>
 
 	<properties>
@@ -61,6 +61,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>gson</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -129,6 +130,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>datasource-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>util-api</artifactId>
+		</dependency>
 
 		<!-- 3rd party library -->
 		<dependency>
@@ -136,6 +141,11 @@
 			<artifactId>commons-io</artifactId>
 			<version>2.1</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.3</version>
 		</dependency>
 
 		<!-- Test Dependencies -->

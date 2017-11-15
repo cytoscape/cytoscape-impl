@@ -33,10 +33,10 @@ import org.cytoscape.work.Tunable;
 
 public class ColumnListTunable {
 	
-	@Tunable (description="Namespace for table", context="nogui")
+	@Tunable (description="Namespace for table", context="nogui",longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue="default")
 	public String namespace = "default";
 
-	@Tunable (description="Column list", context="nogui")
+	@Tunable (description="Column list", context="nogui", longDescription=CoreImplDocumentationConstants.COLUMN_LIST_LONG_DESCRIPTION, exampleStringValue=CoreImplDocumentationConstants.COLUMN_LIST_EXAMPLE_STRING)
 	public String columnList = "all";
 
 	public ColumnListTunable() {

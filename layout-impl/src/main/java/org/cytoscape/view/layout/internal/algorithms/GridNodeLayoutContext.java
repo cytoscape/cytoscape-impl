@@ -30,10 +30,10 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
 public class GridNodeLayoutContext implements TunableValidator {
-	@Tunable(description="Vertical spacing between nodes:")
+	@Tunable(description="Vertical spacing between nodes:", context="both", longDescription="Vertical spacing between nodes, in numeric value", exampleStringValue="40.0")
 	public double nodeVerticalSpacing = 40.0;
 
-	@Tunable(description="Horizontal spacing between nodes:")
+	@Tunable(description="Horizontal spacing between nodes:", context="both", longDescription="Horizontal spacing between nodes, in numeric value", exampleStringValue="80.0")
 	public double nodeHorizontalSpacing = 80.0;
 
 	@Override

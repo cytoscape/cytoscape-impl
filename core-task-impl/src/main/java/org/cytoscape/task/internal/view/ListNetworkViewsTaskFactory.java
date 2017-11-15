@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.view;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +28,16 @@ package org.cytoscape.task.internal.view;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class ListNetworkViewsTaskFactory extends AbstractTaskFactory {
 
-	private final CyApplicationManager appMgr;
-	private final CyNetworkViewManager viewMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public ListNetworkViewsTaskFactory(final CyApplicationManager appMgr, 
-	                                   final CyNetworkViewManager viewMgr) {
-		this.appMgr = appMgr;
-		this.viewMgr = viewMgr;
+	public ListNetworkViewsTaskFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ListNetworkViewsTask(appMgr, viewMgr));
+		return new TaskIterator(new ListNetworkViewsTask(serviceRegistrar));
 	}
-
 }

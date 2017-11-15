@@ -6,7 +6,7 @@ package org.cytoscape.ding;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -25,7 +25,6 @@ package org.cytoscape.ding;
  */
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -39,8 +38,6 @@ import java.awt.print.Printable;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JLayeredPane;
-
 import org.cytoscape.ding.impl.DEdgeView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -51,7 +48,6 @@ import org.cytoscape.view.model.CyNetworkView;
 
 /**
  * Ding version of network view.
- * 
  */
 public interface GraphView {
 
@@ -95,30 +91,27 @@ public interface GraphView {
 	public void disableEdgeSelection();
 
 	/**
-	 * @return an int array of the graph perspective indices of the selected
-	 *         nodes
+	 * @return An int array of the graph perspective indices of the selected nodes.
 	 */
 	public long[] getSelectedNodeIndices();
 
 	/**
-	 * @return a list of the selected NodeView
+	 * @return A list of the selected NodeView.
 	 */
 	public List<CyNode> getSelectedNodes();
 
 	/**
-	 * @return an int array of the graph perspective indices of the selected
-	 *         edges
+	 * @return An int array of the graph perspective indices of the selected edges.
 	 */
 	public long[] getSelectedEdgeIndices();
 
 	/**
-	 * @return a list of the selected EdgeView
+	 * @return A list of the selected EdgeView.
 	 */
 	public List<CyEdge> getSelectedEdges();
 
 	/**
-	 * @param paint
-	 *            the new Paint for the background
+	 * @param paint The new Paint for the background.
 	 */
 	public void setBackgroundPaint(Paint paint);
 
@@ -128,83 +121,90 @@ public interface GraphView {
 	public Paint getBackgroundPaint();
 
 	/**
-	 * @return the java.awt.Component that can be added to most screen thingys
+	 * @return the java.awt.Component that can be added to most screen things
 	 */
 	public Component getComponent();
 
 	/**
-	 * @param node_index
-	 *            the index of a node to have a view created for it
-	 * @return a new NodeView based on the node with the given index
+	 * @param node The CyNode from which the new NodeView must be created.
+	 * @return The newly created NodeView.
 	 */
-	public NodeView addNodeView(CyNode n);
+	public NodeView addNodeView(CyNode node);
 
 	/**
-	 * @param edge_index
-	 *            the index of an edge
-	 * @return the newly created edgeview
+	 * @param edge The CyEdge from which the new EdgeView must be created.
+	 * @return The newly created EdgeView.
 	 */
-	public EdgeView addEdgeView(CyEdge e);
-
-	/**
-	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
-	 * different than
-	 * 
-	 * @see #hideGraphObject as that method simply stops showing the node/edge.
-	 *      This method will destroy the object. It will be returned though, so
-	 *      that a reference can be kept for undo purposes.
-	 */
-	public NodeView removeNodeView(NodeView node_view);
+	public EdgeView addEdgeView(CyEdge edge);
 
 	/**
 	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
 	 * different than
-	 * 
 	 * @see #hideGraphObject as that method simply stops showing the node/edge.
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
+	 * 
+	 * @param nodeView The NodeView to be removed.
+	 * @return The NodeView object that was removed.
+	 */
+	public NodeView removeNodeView(NodeView nodeView);
+
+	/**
+	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
+	 * different than
+	 * @see #hideGraphObject as that method simply stops showing the node/edge.
+	 *      This method will destroy the object. It will be returned though, so
+	 *      that a reference can be kept for undo purposes.
+	 * 
+	 * @param node The CyNode of the NodeView to be removed.
+	 * @return The NodeView that was removed.
 	 */
 	public NodeView removeNodeView(CyNode node);
 
 	/**
-	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
-	 * different than
-	 * 
+	 * This will entirely remove a NodeView/EdgeView from the GraphView based on a specified node SUID.
+	 * This is different than
 	 * @see #hideGraphObject as that method simply stops showing the node/edge.
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
+	 *      
+	 * @param suid The SUID of the CyEdge associated with the NodeView to be removed.
+	 * @return The NodeView object that was removed.
 	 */
-	public NodeView removeNodeView(long node);
+	public NodeView removeNodeView(long suid);
 
 	/**
 	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
 	 * different than
-	 * 
 	 * @see #hideGraphObject as that method simply stops showing the node/edge.
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
+	 * 
+	 * @param edgeView The EdgeView to be removed.
+	 * @return The EdgeView object that was removed.
 	 */
-	public EdgeView removeEdgeView(EdgeView edge_view);
+	public EdgeView removeEdgeView(EdgeView edgeView);
 
 	/**
 	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
 	 * different than
-	 * 
 	 * @see #hideGraphObject as that method simply stops showing the node/edge.
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
+	 * 
+	 * @param edge The CyEdge of the EdgeView to be removed.
+	 * @return The EdgeView that was removed.
 	 */
 	public EdgeView removeEdgeView(CyEdge edge);
 
 	/**
-	 * This will entirely remove a NodeView/EdgeView from the GraphView. This is
-	 * different than
-	 * 
+	 * This will entirely remove an EdgeView from the GraphView based on a specified edge SUID.
+	 * This is different than
 	 * @see #hideGraphObject as that method simply stops showing the node/edge.
 	 *      This method will destroy the object. It will be returned though, so
 	 *      that a reference can be kept for undo purposes.
 	 */
-	public EdgeView removeEdgeView(long edge);
+	public EdgeView removeEdgeView(long suid);
 
 	/**
 	 * @return The Unique Identifier of this GraphView
@@ -212,10 +212,9 @@ public interface GraphView {
 	public Long getIdentifier();
 
 	/**
-	 * @param new_identifier
-	 *            The New Identifier for this GraphView
+	 * @param newIdentifier The New Identifier for this GraphView.
 	 */
-	public void setIdentifier(Long new_identifier);
+	public void setIdentifier(Long newIdentifier);
 
 	/**
 	 * @return The Current Zoom Level
@@ -250,56 +249,53 @@ public interface GraphView {
 	public int getNodeViewCount();
 
 	/**
-	 * @return the number of EdgeViews present
+	 * @return The number of EdgeViews present.
 	 */
 	public int getEdgeViewCount();
 
 	/**
-	 * @param node
-	 *            The Node whose view is requested
+	 * @param node The Node whose view is requested.
 	 * 
-	 * @return The NodeView of the given Node
+	 * @return The NodeView of the given Node.
 	 */
 	public DNodeView getDNodeView(CyNode node);
 
 	/**
-	 * @param index
-	 *            the index of the node whose view is requested
-	 * @return The NodeView of the given Node
+	 * @param suid The SUID of the CyNode whose view is requested.
+	 * @return The NodeView of the given Node.
 	 */
-	public DNodeView getDNodeView(long index);
+	public DNodeView getDNodeView(long suid);
 
 	/**
-	 * Return all of the EdgeViews in this GraphView
+	 * Return All of the EdgeViews in this GraphView.
 	 */
-	public java.util.List<EdgeView> getEdgeViewsList();
+	public List<EdgeView> getEdgeViewsList();
 
 	/**
-	 * Note that this will return a list of Edge objects, the other one will
-	 * return indices
+	 * Note that this will return a list of Edge objects, the other one will return indices.
 	 * 
 	 * @return The list of EdgeViews connecting these two nodes. Possibly null.
 	 */
-	public java.util.List<EdgeView> getEdgeViewsList(CyNode oneNode, CyNode otherNode);
+	public List<EdgeView> getEdgeViewsList(CyNode oneNode, CyNode otherNode);
 
 	/**
-	 * @return a List of indicies
+	 * @return A List of edge views.
 	 */
-	public java.util.List<EdgeView> getEdgeViewsList(long from_node_index, long to_node_index,
-			boolean include_undirected_edges);
+	public List<EdgeView> getEdgeViewsList(long oneNodeSUID, long otherNodeSUID, boolean includeUndirectedEdges);
 
 	/**
-	 * @return the EdgeView that corresponds to the given index
+	 * @param suid The SUID of the CyEdge whose view is requested.
+	 * @return The EdgeView that corresponds to the given SUID.
 	 */
-	public DEdgeView getDEdgeView(long edge_index);
+	public DEdgeView getDEdgeView(long suid);
 
 	/**
-	 * Return all of the EdgeViews in this GraphView
+	 * Return all of the EdgeViews in this GraphView.
 	 */
 	public Iterator<EdgeView> getEdgeViewsIterator();
 
 	/**
-	 * @return the EdgeView that corresponds to the given Edge
+	 * @return the EdgeView that corresponds to the given Edge.
 	 */
 	public DEdgeView getDEdgeView(CyEdge edge);
 
@@ -309,7 +305,7 @@ public interface GraphView {
 	public int edgeCount();
 
 	/**
-	 * @return The number of Nodes, same number as the perspective
+	 * @return The number of Nodes, same number as the perspective.
 	 */
 	public int nodeCount();
 
@@ -345,29 +341,8 @@ public interface GraphView {
 	 */
 	public String getTitle();
 
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param layout
-	 *            DOCUMENT ME!
-	 * @param vizmap
-	 *            DOCUMENT ME!
-	 */
 	// public void redrawGraph(boolean layout, boolean vizmap);
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @param VSName
-	 *            DOCUMENT ME!
-	 */
 	// public void setVisualStyle(String VSName);
-
-	/**
-	 * DOCUMENT ME!
-	 * 
-	 * @return DOCUMENT ME!
-	 */
 	// public VisualStyle getVisualStyle();
 
 	public void setPrintingTextAsShape(boolean textAsShape);

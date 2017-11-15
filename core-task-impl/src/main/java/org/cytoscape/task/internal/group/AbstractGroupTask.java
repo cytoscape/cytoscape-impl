@@ -25,17 +25,18 @@ package org.cytoscape.task.internal.group;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 
@@ -52,6 +53,10 @@ public abstract class AbstractGroupTask extends AbstractTask {
 		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
 		if (groupList.equalsIgnoreCase("all")) {
 			return new ArrayList<CyGroup>(allGroups);
+		} else if (groupList.equalsIgnoreCase("selected")) {
+			return getSelectedGroups();
+		} else if (groupList.equalsIgnoreCase("unselected")) {
+			return getUnselectedGroups();
 		}
 		String[] groups = DataUtils.getCSV(groupList);
 		List<CyGroup> returnGroups = new ArrayList<CyGroup>();
@@ -72,10 +77,35 @@ public abstract class AbstractGroupTask extends AbstractTask {
 		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
 		for (CyGroup group: allGroups) {
 			CyRow groupRow = rootNet.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
-			if (groupName.equals(groupRow.get(CyRootNetwork.SHARED_NAME, String.class)))
+			if (groupName.length() > 5 && groupName.substring(0, 5).equalsIgnoreCase("suid:")) {
+				String suidString = groupRow.get(CyNetwork.SUID, Long.class).toString();
+				if (suidString != null && groupName.substring(5).equals(suidString))
+					return group;
+			} else if (groupName.equals(groupRow.get(CyRootNetwork.SHARED_NAME, String.class)))
 				return group;
 		}
 		return null;
+	}
+
+	protected List<CyGroup> getSelectedGroups() {
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
+		return getGroupsFromNodes(selectedNodes);
+	}
+
+	protected List<CyGroup> getUnselectedGroups() {
+		List<CyNode> selectedNodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, false);
+		return getGroupsFromNodes(selectedNodes);
+	}
+
+	protected List<CyGroup> getGroupsFromNodes(List<CyNode> nodes) {
+		List<CyGroup> groups = new ArrayList<>();
+		for (CyNode node: nodes) {
+			CyGroup group = groupMgr.getGroup(node, net);
+			if (group != null)
+				groups.add(group);
+		}
+
+		return groups;
 	}
 
 	protected String getGroupName(CyGroup group) {
@@ -106,4 +136,14 @@ public abstract class AbstractGroupTask extends AbstractTask {
 		}
 		return groupList;
 	}
+	
+	protected String getGroupSetString(Collection<CyGroup> groups)
+	{
+		StringBuilder buffer = new StringBuilder();
+		for (CyGroup group : groups)
+			buffer.append(group.getGroupNode().getSUID()).append(",");
+		String out = buffer.toString();
+		return out.substring(0, out.length()-1);
+	}
+
 }

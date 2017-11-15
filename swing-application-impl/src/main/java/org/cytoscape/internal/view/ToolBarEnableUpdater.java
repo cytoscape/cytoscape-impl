@@ -1,12 +1,45 @@
 package org.cytoscape.internal.view;
 
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.events.NetworkAddedEvent;
+import org.cytoscape.model.events.NetworkAddedListener;
+import org.cytoscape.model.events.NetworkDestroyedEvent;
+import org.cytoscape.model.events.NetworkDestroyedListener;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.session.events.SessionSaveCancelledEvent;
+import org.cytoscape.session.events.SessionSaveCancelledListener;
+import org.cytoscape.session.events.SessionSavedEvent;
+import org.cytoscape.session.events.SessionSavedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
+import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,50 +57,15 @@ package org.cytoscape.internal.view;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
-import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
-import org.cytoscape.application.events.SetCurrentNetworkViewListener;
-import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.model.events.NetworkAddedEvent;
-import org.cytoscape.model.events.NetworkAddedListener;
-import org.cytoscape.model.events.NetworkDestroyedEvent;
-import org.cytoscape.model.events.NetworkDestroyedListener;
-import org.cytoscape.model.events.RowsSetEvent;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
-import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.session.events.SessionLoadCancelledEvent;
-import org.cytoscape.session.events.SessionLoadCancelledListener;
-import org.cytoscape.session.events.SessionSaveCancelledEvent;
-import org.cytoscape.session.events.SessionSaveCancelledListener;
-import org.cytoscape.session.events.SessionSavedEvent;
-import org.cytoscape.session.events.SessionSavedListener;
-import org.cytoscape.view.model.events.NetworkViewAddedEvent;
-import org.cytoscape.view.model.events.NetworkViewAddedListener;
-import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
-import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
-import org.cytoscape.view.model.events.UpdateNetworkPresentationListener;
-
-import javax.swing.SwingUtilities;
-
 /**
  * A utility class that listens for various events and then updates the enable
  * state for the toolbar icons. Menus do this check every time that a menu is
  * selected, but since toolbars are always visible, we need to listen for the
  * actual events. This is less than ideal.
  */
-public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener,
-		NetworkViewAddedListener, NetworkViewDestroyedListener, SetCurrentNetworkListener,
-		SetCurrentNetworkViewListener, RowsSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener,
-		SessionAboutToBeSavedListener, SessionSavedListener, SessionLoadCancelledListener,
+public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestroyedListener, NetworkViewAddedListener,
+		NetworkViewDestroyedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, RowsSetListener,
+		SessionAboutToBeLoadedListener, SessionLoadedListener, SessionAboutToBeSavedListener, SessionSavedListener,
 		SessionSaveCancelledListener, UpdateNetworkPresentationListener {
 
 	private final CytoscapeToolBar toolbar;
@@ -113,16 +111,12 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 	 */
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		updateToolbar();
+		if (e.containsColumn(CyNetwork.SELECTED))
+			updateToolbar();
 	}
 	
 	@Override
 	public void handleEvent(SessionAboutToBeLoadedEvent e) {
-		updateToolbar();
-	}
-	
-	@Override
-	public void handleEvent(SessionLoadCancelledEvent e) {
 		updateToolbar();
 	}
 	
@@ -151,13 +145,12 @@ public class ToolBarEnableUpdater implements NetworkAddedListener, NetworkDestro
 		if (e.getSource().equals(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()))
 			updateToolbar();
 	}
-	
+
 	private void updateToolbar() {
-		SwingUtilities.invokeLater( new Runnable() {
-			public void run() {
-				for (final CyAction action : toolbar.getAllToolBarActions())
-					action.updateEnableState();
-			}
+		// TODO Timer/coalesce
+		SwingUtilities.invokeLater(() -> {
+			for (final CyAction action : toolbar.getAllToolBarActions())
+				action.updateEnableState();
 		});
 	}
 }

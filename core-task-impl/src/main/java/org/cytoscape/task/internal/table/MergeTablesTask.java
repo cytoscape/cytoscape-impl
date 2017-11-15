@@ -29,6 +29,7 @@ import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -37,6 +38,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -49,17 +51,20 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MergeTablesTask extends AbstractTask implements TunableValidator {
+public class MergeTablesTask extends AbstractTask implements TunableValidator, ObservableTask {
 	
 	enum TableType {
 		NODE_ATTR("Node Table Columns", CyNode.class),
@@ -84,7 +89,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		}
 	};
 	
-	private static final Logger logger = LoggerFactory.getLogger(MapTableToNetworkTablesTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String NO_NETWORKS = "No Networks Found";
 	public static final String NO_TABLES = "No Tables Found";
@@ -101,10 +106,11 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
+	private List<Long> tableSUIDs;
 	
 	public ListSingleSelection<CyTable> sourceTable;
 
-	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" })
+	@Tunable(description = "Source Table:", gravity = 0.1, groups = { "Source" }, longDescription="The name of the table used as the base data in the merge", exampleStringValue = "default node table")
 	public ListSingleSelection<CyTable> getSourceTable() {
 		return sourceTable;
 	}
@@ -155,7 +161,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	
 	public ListMultipleSelection<String> sourceMergeColumns;
 
-	@Tunable(description = "Select Columns:", gravity = 0.2, groups = { "Source", "Columns To Merge" }, listenForChange = { "SourceTable", "SelectAllColumns" })
+	@Tunable(description = "Select Columns:", gravity = 0.2, groups = { "Source", "Columns To Merge" }
+		, listenForChange = { "SourceTable", "SelectAllColumns" }, longDescription="A list of columns that will be brought into the merged table", exampleStringValue = "[PrimaryKey SecondaryKey]")
 	public ListMultipleSelection<String> getSourceMergeColumns() {
 		return sourceMergeColumns;
 	}
@@ -165,8 +172,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	}
 
 	public ListSingleSelection<String> sourceMergeKey;
-
-	@Tunable(description = "Key column to merge:", groups = { "Source" }, gravity = 0.4, listenForChange = { "SourceTable" })
+	@Tunable(description = "Key column to merge:", groups = { "Source" }, gravity = 0.4, 
+			listenForChange = { "SourceTable" }, longDescription="The name of the columns that exists in both tables and is used to correlate rows", exampleStringValue = "primary")
 	public ListSingleSelection<String> getSourceMergeKey() {
 		return sourceMergeKey;
 	}
@@ -175,12 +182,14 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.sourceMergeKey = key;
 	}
 
-	@Tunable(description = "Type of merge:", gravity = 0.5, groups = { "Source" }, listenForChange = { "SourceTable" })
+	@Tunable(description = "Type of merge:", gravity = 0.5, groups = { "Source" },
+			listenForChange = { "SourceTable" }, longDescription="A choice between ''Copy Columns'' and ''Link To Columns'' that determines if replicates are created", exampleStringValue = "Copy Columns")
 	public ListSingleSelection<String> mergeType;
 
 	public ListSingleSelection<String> whereMergeTable;
 
-	@Tunable(description = "Merge table to:", gravity = 1.0, groups = { "Target" }, xorChildren = true)
+	@Tunable(description = "Merge table to:", gravity = 1.0, groups = { "Target" },
+			xorChildren = true, longDescription="The destination path of the resultant merged table.  The choices are ''Network Collection'', ''Selected Networks'', or ''All Unassigned Tables''.", exampleStringValue = "Selected Networks")
 	public ListSingleSelection<String> getWhereMergeTable() {
 		return whereMergeTable;
 	}
@@ -191,7 +200,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListSingleSelection<String> targetNetworkCollection;
 
-	@Tunable(description = "Network Collection:", groups = { "Target", "Select Network Collection" }, gravity = 2.1, xorKey = NETWORK_COLLECTION)
+	@Tunable(description = "Network Collection:", groups = { "Target", "Select Network Collection" }, gravity = 2.1,
+			xorKey = NETWORK_COLLECTION, longDescription="The group of networks that will be merged into the source table", exampleStringValue = "all")
 	public ListSingleSelection<String> getTargetNetworkCollection() {
 		return targetNetworkCollection;
 	}
@@ -207,7 +217,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkCollection;
 
-	@Tunable(description = "Merge data in:", groups = { "Target", "Select Network Collection" }, gravity = 2.2, xorKey = NETWORK_COLLECTION)
+	@Tunable(description = "Merge data in:", groups = { "Target", "Select Network Collection" }, gravity = 2.2, 
+			xorKey = NETWORK_COLLECTION, longDescription="The collection of networks where the merged table will reside", exampleStringValue = "MyCollection")
 	public ListSingleSelection<TableType> getDataTypeTargetForNetworkCollection() {
 		return dataTypeTargetForNetworkCollection;
 	}
@@ -224,7 +235,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetKeyNetworkCollection;
 
 	@Tunable(description = "Key column for network:", groups = { "Target", "Select Network Collection" }, gravity = 2.3, xorKey = NETWORK_COLLECTION,
-			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" })
+			listenForChange = { "DataTypeTargetForNetworkCollection", "TargetNetworkCollection" }, longDescription="The name of the primary column about which the merge is made", exampleStringValue = "primary")
 	public ListSingleSelection<String> getTargetKeyNetworkCollection() {
 		return targetKeyNetworkCollection;
 	}
@@ -235,7 +246,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 
 	public ListMultipleSelection<String> targetNetworkList;
 
-	@Tunable(description = "Networks:", groups = { "Target", "Select Networks" }, gravity = 3.1, xorKey = NETWORK_SELECTION)
+	@Tunable(description = "Networks:", groups = { "Target", "Select Networks" }, gravity = 3.1,
+			xorKey = NETWORK_SELECTION, longDescription="The list of networks where the merged table will be added", exampleStringValue = "all")
 	public ListMultipleSelection<String> getTargetNetworkList() {
 		return targetNetworkList;
 	}
@@ -244,13 +256,15 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.targetNetworkList = list;
 	}
 
-	@Tunable(description = "Merge data in:", groups = { "Target", "Select Networks" }, gravity = 3.2, xorKey = NETWORK_SELECTION)
+	@Tunable(description = "Merge data in:", groups = { "Target", "Select Networks" }, gravity = 3.2,
+			xorKey = NETWORK_SELECTION, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<TableType> dataTypeTargetForNetworkList;
 
 	public ListSingleSelection<Object> unassignedTable;
 
-	@Tunable(description = "Unassigned table:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.1, xorKey = UNASSIGNED_TABLE,
-			listenForChange = { "SourceTable" })
+	@Tunable(description = "Unassigned table:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.1, 
+			xorKey = UNASSIGNED_TABLE,
+			listenForChange = { "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<Object> getUnassignedTable() {
 		return unassignedTable;
 	}
@@ -272,7 +286,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 	public ListSingleSelection<String> targetMergeKey;
 
 	@Tunable(description = "Key column to merge:", groups = { "Target", "Select Unassigned Table" }, gravity = 4.2,
-			listenForChange = { "UnassignedTable", "SourceTable" })
+			listenForChange = { "UnassignedTable", "SourceTable" }, longDescription="", exampleStringValue = "")
 	public ListSingleSelection<String> getTargetMergeKey() {
 		return targetMergeKey;
 	}
@@ -297,6 +311,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		this.name2NetworkMap = new HashMap<>();
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
+		this.tableSUIDs = new ArrayList<Long>();
 		this.tableMgr = tableMgr;
 
 		initTunable(tableMgr, networkManager);
@@ -424,12 +439,19 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 						+ "Keys must be of type Integer, Long, or String, and must be the same type for a soft merge.");
 		}
 
-		if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
-			mapTableToDefaultAttrs(getDataTypeOptions());
-		else if (whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
-			mapTableToLocalAttrs(getDataTypeOptions());
-		else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
-			mapTableToUnassignedTable();
+		try {
+			if (whereMergeTable.getSelectedValue().matches(NETWORK_COLLECTION))
+				mapTableToDefaultAttrs(getDataTypeOptions());
+			else if (whereMergeTable.getSelectedValue().matches(NETWORK_SELECTION))
+				mapTableToLocalAttrs(getDataTypeOptions());
+			else if (whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE))
+				mapTableToUnassignedTable();
+		} catch(Exception e) {
+			throw new IllegalArgumentException(
+					"Could not execute table merge. " +
+							"Please check your parameters and try again.\n\n  (Reason: "
+							+ e.getMessage() + ")", e);
+		}
 	}
 	
 	private boolean isMappableColumn(final CyColumn col) {
@@ -505,6 +527,8 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 		
 		if (!isNewColumnVirtual())
 			copyRows(sourceTable.getSelectedValue(), columns, targetTable);
+
+		tableSUIDs.add(targetTable.getSUID());
 	}
 
 	private CyColumn getJoinTargetColumn(CyTable targetTable) {
@@ -733,6 +757,34 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator {
 			return dataTypeTargetForNetworkCollection.getSelectedValue();
 		else
 			return dataTypeTargetForNetworkList.getSelectedValue();
+	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(String.class, List.class, JSONResult.class);	
+	}
+
+	@Override
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class)) {
+			String res = "";
+			for (Long suid: tableSUIDs) {
+				res += suid.toString()+",";
+			}
+			return res.substring(0, res.length()-1);
+		}
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (tableSUIDs == null || tableSUIDs.size() == 0) return "{}";
+				String strRes = "[";
+				for (Long suid: tableSUIDs) {
+					strRes += suid.toString()+",";
+				}
+				return strRes.substring(0, strRes.length()-1)+"]";
+			};
+			return res;
+		}
+		return tableSUIDs;
 	}
 
 	@Override

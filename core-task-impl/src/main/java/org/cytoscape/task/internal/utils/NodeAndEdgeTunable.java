@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.utils;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyEdge;
@@ -38,11 +39,11 @@ public class NodeAndEdgeTunable {
 	
 	final CyServiceRegistrar serviceRegistrar;
 	
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public NodeList nodeList = null;
-	@Tunable(description="List of nodes", context="nogui")
+	@Tunable(description="List of nodes", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList getnodeList() {
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
@@ -55,7 +56,7 @@ public class NodeAndEdgeTunable {
   public void setnodeList(NodeList setValue) {}
 
 	public EdgeList edgeList = null;
-	@Tunable(description="List of edges", context="nogui")
+	@Tunable(description="List of edges", context="nogui", longDescription=StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_EDGE_LIST_EXAMPLE_STRING)
 	public EdgeList getedgeList() {
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();

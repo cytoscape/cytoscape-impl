@@ -40,7 +40,7 @@ public class NumberContinuousCellRenderer extends DefaultCellRenderer {
 
 	private static final long serialVersionUID = -6734053848878359286L;
 	
-	private static final Logger logger = LoggerFactory.getLogger(NumberContinuousCellRenderer.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 
 	private final ContinuousMappingEditor<?, ?> editor;

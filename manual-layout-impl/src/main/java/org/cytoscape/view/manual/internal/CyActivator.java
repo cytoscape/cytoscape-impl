@@ -1,6 +1,6 @@
 package org.cytoscape.view.manual.internal;
 
-import static org.cytoscape.view.manual.internal.Util.invokeOnEDTAndWait;
+import static org.cytoscape.view.manual.internal.util.Util.invokeOnEDTAndWait;
 
 import java.util.Properties;
 
@@ -8,8 +8,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.manual.internal.control.ControlPanel;
-import org.cytoscape.view.manual.internal.control.ControlPanelAction;
+import org.cytoscape.view.manual.internal.control.actions.ControlPanelAction;
+import org.cytoscape.view.manual.internal.control.view.ControlPanel;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 	private ControlPanel controlPanel;
 	private ControlPanelAction controlPanelAction;
 	
-	private static Logger logger = LoggerFactory.getLogger(CyActivator.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	@Override
 	public void start(BundleContext bc) {

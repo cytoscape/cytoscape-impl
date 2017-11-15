@@ -1,12 +1,32 @@
 package org.cytoscape.view.vizmap.internal.mappings;
 
+import java.awt.Color;
+import java.awt.Paint;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
+import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
+import org.cytoscape.view.vizmap.internal.mappings.interpolators.FlatInterpolator;
+import org.cytoscape.view.vizmap.internal.mappings.interpolators.Interpolator;
+import org.cytoscape.view.vizmap.internal.mappings.interpolators.LinearNumberToColorInterpolator;
+import org.cytoscape.view.vizmap.internal.mappings.interpolators.LinearNumberToNumberInterpolator;
+import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
+
 /*
  * #%L
  * Cytoscape VizMap Impl (vizmap-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +44,6 @@ package org.cytoscape.view.vizmap.internal.mappings;
  * #L%
  */
 
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.vizmap.VisualMappingFunction;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangeRecord;
-import org.cytoscape.view.vizmap.events.VisualMappingFunctionChangedEvent;
-import org.cytoscape.view.vizmap.internal.mappings.interpolators.FlatInterpolator;
-import org.cytoscape.view.vizmap.internal.mappings.interpolators.Interpolator;
-import org.cytoscape.view.vizmap.internal.mappings.interpolators.LinearNumberToColorInterpolator;
-import org.cytoscape.view.vizmap.internal.mappings.interpolators.LinearNumberToNumberInterpolator;
-import org.cytoscape.view.vizmap.mappings.AbstractVisualMappingFunction;
-import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
-
-
 /**
  * Implements an interpolation table mapping data to values of a particular
  * class. The data value is extracted from a bundle of attributes by using a
@@ -61,21 +58,24 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
  */
 public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K, V> implements ContinuousMapping<K, V> {
 	
-	// used to interpolate between boundaries
+	/** used to interpolate between boundaries */
 	private Interpolator<K, V> interpolator;
 
-	// Contains List of Data Points
+	/** Contains List of Data Points */
 	private List<ContinuousMappingPoint<K, V>> points;
+	
+	private final Object lock = new Object();
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp, final CyEventHelper eventHelper) {
+	public ContinuousMappingImpl(final String attrName, final Class<K> attrType, final VisualProperty<V> vp,
+			final CyEventHelper eventHelper) {
 		super(attrName, attrType, vp, eventHelper);
 		
 		// Validate type.  K is always a number.
 		if (Number.class.isAssignableFrom(attrType) == false)
 			throw new IllegalArgumentException("Column type should be Number.");
 		
-		this.points = new ArrayList<ContinuousMappingPoint<K, V>>();
+		this.points = new ArrayList<>();
 
 		// TODO FIXME use factory here.
 		// Create Interpolator
@@ -88,26 +88,27 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 	}
 
 	@Override
-	public String toString() {
-		return ContinuousMapping.CONTINUOUS;
-	}
-
-	@Override
 	public List<ContinuousMappingPoint<K, V>> getAllPoints() {
 		return Collections.unmodifiableList(points);
 	}
 
 	@Override
 	public void addPoint(K value, BoundaryRangeValues<V> brv) {
-		points.add(new ContinuousMappingPoint<K, V>(value, brv, this, eventHelper));
-		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+		synchronized (lock) {
+			points.add(new ContinuousMappingPoint<>(value, brv, this, eventHelper));
+		}
+
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
 				VisualMappingFunctionChangedEvent.class);
 	}
 
 	@Override
 	public void removePoint(int index) {
-		points.remove(index);
-		eventHelper.addEventPayload((VisualMappingFunction) this, new VisualMappingFunctionChangeRecord(),
+		synchronized (lock) {
+			points.remove(index);
+		}
+		
+		eventHelper.addEventPayload(this, new VisualMappingFunctionChangeRecord(),
 				VisualMappingFunctionChangedEvent.class);
 	}
 
@@ -118,13 +119,13 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 
 	@Override
 	public ContinuousMappingPoint<K, V> getPoint(int index) {
-		if(points.isEmpty())
+		if (points.isEmpty())
 			return null;
-		else if(points.size()>index)
+		
+		if (points.size() > index)
 			return points.get(index);
-		else {
+		else
 			throw new IllegalArgumentException("Invalid Index: " + index + ".  There are " + points.size() + " points.");
-		}
 	}
 
 	@Override
@@ -271,5 +272,10 @@ public class ContinuousMappingImpl<K, V> extends AbstractVisualMappingFunction<K
 			return 1;
 		else
 			return 0;
+	}
+	
+	@Override
+	public String toString() {
+		return ContinuousMapping.CONTINUOUS;
 	}
 }

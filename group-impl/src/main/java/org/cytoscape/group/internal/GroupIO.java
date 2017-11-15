@@ -84,7 +84,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	private final LockedVisualPropertiesManager lvpMgr;
 	private final ObjectMapper mapper;
 	
-	private static final Logger logger = LoggerFactory.getLogger(GroupIO.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public GroupIO(final CyGroupManagerImpl groupMgr,
 					 final LockedVisualPropertiesManager lvpMgr,

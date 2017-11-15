@@ -9,7 +9,6 @@ import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TunableHandlerFactory;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
@@ -55,7 +54,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -143,37 +142,37 @@ public class CyActivator extends AbstractCyActivator {
 				UserActionHandler.class, UserAction.class);
 
 		URLHandlerFactory urlHandlerFactory = new URLHandlerFactory(serviceRegistrar);
-		registerService(bc, urlHandlerFactory, GUITunableHandlerFactory.class, new Properties());
+		registerService(bc, urlHandlerFactory, GUITunableHandlerFactory.class);
 
 		FileHandlerFactory fileHandlerFactory = new FileHandlerFactory(supportedFileTypesManager, serviceRegistrar);
-		registerService(bc, fileHandlerFactory, GUITunableHandlerFactory.class, new Properties());
+		registerService(bc, fileHandlerFactory, GUITunableHandlerFactory.class);
 
-		registerService(bc, jDialogTaskManager, DialogTaskManager.class, new Properties());
-		registerService(bc, jDialogTaskManager, TaskManager.class, new Properties());
+		registerService(bc, jDialogTaskManager, DialogTaskManager.class);
+		registerService(bc, jDialogTaskManager, TaskManager.class);
 		
-		registerService(bc, jPanelTaskManager, PanelTaskManager.class, new Properties());
+		registerService(bc, jPanelTaskManager, PanelTaskManager.class);
 
-		registerService(bc, integerHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, floatHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, doubleHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, longHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, booleanHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, stringHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, boundedIntegerHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, boundedFloatHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, boundedDoubleHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, boundedLongHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, listSingleSelectionHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, listMultipleSelectionHandlerFactory, GUITunableHandlerFactory.class, new Properties());
-		registerService(bc, userActionHandlerFactory, GUITunableHandlerFactory.class, new Properties());
+		registerService(bc, integerHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, floatHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, doubleHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, longHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, booleanHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, stringHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, boundedIntegerHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, boundedFloatHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, boundedDoubleHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, boundedLongHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, listSingleSelectionHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, listMultipleSelectionHandlerFactory, GUITunableHandlerFactory.class);
+		registerService(bc, userActionHandlerFactory, GUITunableHandlerFactory.class);
 
-		registerServiceListener(bc,supportedFileTypesManager,"addInputStreamTaskFactory","removeInputStreamTaskFactory",InputStreamTaskFactory.class);
-		registerServiceListener(bc,supportedFileTypesManager,"addCyWriterTaskFactory","removeCyWriterTaskFactory",CyWriterFactory.class);
+		registerServiceListener(bc,supportedFileTypesManager::addInputStreamTaskFactory,supportedFileTypesManager::removeInputStreamTaskFactory,InputStreamTaskFactory.class);
+		registerServiceListener(bc,supportedFileTypesManager::addCyWriterTaskFactory,supportedFileTypesManager::removeCyWriterTaskFactory,CyWriterFactory.class);
 
-		registerServiceListener(bc,jDialogTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+		registerServiceListener(bc,jDialogTaskManager::addTunableRecorder,jDialogTaskManager::removeTunableRecorder,TunableRecorder.class);
 
-		registerServiceListener(bc,jPanelTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
-		registerServiceListener(bc,jDialogTunableMutator,"addTunableHandlerFactory","removeTunableHandlerFactory",GUITunableHandlerFactory.class, TunableHandlerFactory.class);
+		registerServiceListener(bc,jPanelTunableMutator::addTunableHandlerFactory,jPanelTunableMutator::removeTunableHandlerFactory,GUITunableHandlerFactory.class);
+		registerServiceListener(bc,jDialogTunableMutator::addTunableHandlerFactory,jDialogTunableMutator::removeTunableHandlerFactory,GUITunableHandlerFactory.class);
 	}
 
 	static Properties ezProps(String... args) {

@@ -112,7 +112,7 @@ public class VisualPropertySheetItemModel<T> extends AbstractVizMapperModel {
 		if ((value == null && lockedValue != null) || (value != null && (!value.equals(lockedValue)||value instanceof Bend) ))
 		{
 			//TODO: This seems like a sort of hack. To prevent firePropertyChange from being suppressed in the case of a Bend, pretend like the old value was null.
-			if( value instanceof Bend)
+			if (value instanceof Bend)
 				propChangeSupport.firePropertyChange("lockedValue", null, lockedValue = value);
 			else
 				propChangeSupport.firePropertyChange("lockedValue", lockedValue, lockedValue = value);

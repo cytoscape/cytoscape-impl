@@ -42,6 +42,8 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private StringPredicateDelegate stringDelegate;
 	
 	private boolean caseSensitive;
+	private boolean anyMatch = true;
+	
 	private String columnName;
 
 	private Object rawCriterion;
@@ -49,7 +51,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private Number upperBound;
 	private String stringCriterion;
 	private String lowerCaseCriterion;
-	private Boolean booleanCriterion;
+	private Boolean booleanCriterion = true;
 	
 	public ColumnFilter() {
 		type = new ListSingleSelection<String>(NODES, EDGES, NODES_AND_EDGES);
@@ -71,6 +73,16 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	
 	public void setCaseSensitive(boolean caseSensitive) {
 		this.caseSensitive = caseSensitive;
+		notifyListeners();
+	}
+	
+	@Tunable
+	public boolean getAnyMatch() {
+		return anyMatch;
+	}
+	
+	public void setAnyMatch(boolean anyMatch) {
+		this.anyMatch = anyMatch;
 		notifyListeners();
 	}
 
@@ -197,6 +209,9 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	
 	@Override
 	public List<ValidationWarning> validate(CyNetwork context) {
+		if(context == null)
+			return Collections.emptyList();
+		
 		CyTable table;
 		String tableType;
 		Class<?> type = getTableType();
@@ -268,22 +283,10 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			Class<?> listElementType = column.getListElementType();
 			if (String.class.equals(listElementType)) {
 				List<String> list = row.getList(columnName, String.class);
-				if (list != null) {
-					for (String item : list) {
-						if (stringDelegate.accepts(stringCriterion, lowerCaseCriterion, item, caseSensitive)) {
-							return true;
-						}
-					}
-				}
+				return listMatch(anyMatch, list, item -> stringDelegate.accepts(stringCriterion, lowerCaseCriterion, item, caseSensitive));
 			} else if (Number.class.isAssignableFrom(listElementType)) {
 				List<Number> list = (List<Number>) row.getList(columnName, listElementType);
-				if (list != null) {
-					for (Number number : list) {
-						if (numericDelegate.accepts(lowerBound, upperBound, number)) {
-							return true;
-						}
-					}
-				}
+				return listMatch(anyMatch, list, number -> numericDelegate.accepts(lowerBound, upperBound, number));
 			} else if (Boolean.class.equals(listElementType)) {
 				List<Boolean> list = (List<Boolean>) row.getList(columnName, listElementType);
 				if (list != null) {
@@ -305,6 +308,31 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 			return booleanCriterion.equals(value);
 		}
 		return false;
+	}
+	
+	
+	private static <T> boolean listMatch(boolean anyMatch, List<T> list, java.util.function.Predicate<T> predicate) {
+		if(list == null)
+			return false;
+		return anyMatch ? anyMatch(list, predicate) : allMatch(list, predicate);
+	}
+	
+	private static <T> boolean anyMatch(List<T> list, java.util.function.Predicate<T> predicate) {
+		for(T t : list) {
+			if(predicate.test(t)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private static <T> boolean allMatch(List<T> list, java.util.function.Predicate<T> predicate) {
+		for(T t : list) {
+			if(!predicate.test(t)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.Taggable;
@@ -65,7 +66,7 @@ import org.slf4j.LoggerFactory;
 
 public class RestoreImageTask implements Task {
 
-	private static final Logger logger = LoggerFactory.getLogger(RestoreImageTask.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final CustomGraphicsManager manager;
 
@@ -110,7 +111,8 @@ public class RestoreImageTask implements Task {
 
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {		
-		taskMonitor.setStatusMessage("Loading image library from local disk.");
+		taskMonitor.setTitle("Load Image Library");
+		taskMonitor.setStatusMessage("Loading image library from local disk...");
 		taskMonitor.setProgress(0.0);
 
 		final long startTime = System.currentTimeMillis();

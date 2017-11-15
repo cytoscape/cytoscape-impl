@@ -42,8 +42,6 @@ import java.awt.TexturePaint;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Arc2D;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
@@ -54,6 +52,7 @@ import java.util.Map;
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrowShort;
+import org.cytoscape.graph.render.immed.arrow.CrossDeltaArrow;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrow;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort1;
 import org.cytoscape.graph.render.immed.arrow.DeltaArrowShort2;
@@ -62,8 +61,10 @@ import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort1;
 import org.cytoscape.graph.render.immed.arrow.DiamondArrowShort2;
 import org.cytoscape.graph.render.immed.arrow.DiscArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfBottomArrow;
+import org.cytoscape.graph.render.immed.arrow.HalfCircleArrow;
 import org.cytoscape.graph.render.immed.arrow.HalfTopArrow;
 import org.cytoscape.graph.render.immed.arrow.NoArrow;
+import org.cytoscape.graph.render.immed.arrow.SquareArrow;
 import org.cytoscape.graph.render.immed.arrow.TeeArrow;
 import org.cytoscape.graph.render.immed.nodeshape.DiamondNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.EllipseNodeShape;
@@ -194,20 +195,33 @@ public final class GraphGraphics {
 		arrows.put(ArrowShapeVisualProperty.ARROW_SHORT, new ArrowheadArrowShort());
 		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_1, new DiamondArrowShort1());
 		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_2, new DiamondArrowShort2());
+		
+		// added v3.6
+		arrows.put(ArrowShapeVisualProperty.OPEN_CIRCLE, new DiscArrow());
+		arrows.put(ArrowShapeVisualProperty.OPEN_DELTA, new DeltaArrow());
+		arrows.put(ArrowShapeVisualProperty.OPEN_DIAMOND, new DiamondArrow());
+		arrows.put(ArrowShapeVisualProperty.HALF_CIRCLE, new HalfCircleArrow(true));
+		arrows.put(ArrowShapeVisualProperty.OPEN_HALF_CIRCLE, new HalfCircleArrow(false));
+		arrows.put(ArrowShapeVisualProperty.SQUARE, new SquareArrow());
+		arrows.put(ArrowShapeVisualProperty.OPEN_SQUARE, new SquareArrow());
+		arrows.put(ArrowShapeVisualProperty.CROSS_DELTA, new CrossDeltaArrow());
+		arrows.put(ArrowShapeVisualProperty.CROSS_OPEN_DELTA, new CrossDeltaArrow());
+
 	}
 
 	private static final float DEF_SHAPE_SIZE = 32;
 
-	/**
+	/** 
 	 * The image that was passed into the constructor.
 	 */
 	public final Image image;
+	
 	private final boolean m_debug;
 	private final AffineTransform m_currXform = new AffineTransform();
 	private final AffineTransform m_currNativeXform = new AffineTransform();
 	private final AffineTransform m_xformUtil = new AffineTransform();
-	private final Arc2D.Double m_arc2d = new Arc2D.Double();
-	private final Ellipse2D.Double m_ellp2d = new Ellipse2D.Double();
+//	private final Arc2D.Double m_arc2d = new Arc2D.Double();
+//	private final Ellipse2D.Double m_ellp2d = new Ellipse2D.Double();
 	private final GeneralPath m_path2d = new GeneralPath();
 	private final GeneralPath m_path2dPrime = new GeneralPath();
 	private final Line2D.Double m_line2d = new Line2D.Double();
@@ -1054,6 +1068,22 @@ public final class GraphGraphics {
 	 * <td>Draws a line the width of the stroke away from the node at the midpoint 
 	 * between the edge and the node on the "bottom" of the edge.</td>
 	 * </tr>
+	 * <tr>
+	 * <td>NEW: OPEN_CIRCLE & OPEN_DELTA</td>
+	 * <td>Unfilled versions of existing arrows.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>NEW: SQUARE & OPEN_SQUARE</td>
+	 * <td>Draws a square at the end of the edge.</td>
+	 * </tr>
+	 * <tr>
+	 * <td>NEW: HALF_CIRCLE & OPEN_HALF_CIRCLE</td>
+	 * <td>Draws a 180 degree arc, filled or open</td>
+	 * </tr>
+	 * <tr>
+	 * <td>NEW: CROSS_DELTA & OPEN_CROSS_DELTA</td>
+	 * <td>Draws a cross hatch line behind the arrow head.  Comes in flavors: filled or open</td>
+	 * </tr>
 	 * </table></blockquote>
 	 * <p>
 	 * Note that if the edge segment length is zero then nothing gets rendered.
@@ -1215,7 +1245,6 @@ public final class GraphGraphics {
 			// Render arrow cap at origin of poly path.
 			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type,
 					((double) arrow0Size) / edgeThickness);
-
 			if (arrow0Cap != null) {
 				m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0,
 						cosTheta0, m_edgePtsBuff[2], m_edgePtsBuff[3]);
@@ -1238,7 +1267,7 @@ public final class GraphGraphics {
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
-				m_g2d.fill(arrow1Cap);
+					m_g2d.fill(arrow1Cap);
 				m_g2d.setTransform(m_currNativeXform);
 			}
 		}
@@ -1252,8 +1281,16 @@ public final class GraphGraphics {
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
-			m_g2d.fill(arrow0);
-			m_g2d.setTransform(m_currNativeXform);
+			boolean filled = arrow0Type.isFilled();
+			if (filled)
+				m_g2d.fill(arrow0);
+			else 
+			{
+				float strokeWidth = 0.25f;
+				m_g2d.setStroke(new BasicStroke(0.25f));
+				m_g2d.draw(arrow0);
+			}
+		m_g2d.setTransform(m_currNativeXform);
 		}
 
 		// Render arrow at end of poly path.
@@ -1261,14 +1298,20 @@ public final class GraphGraphics {
 
 		if (arrow1 != null) {
 				
-			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1,
-				cosTheta1,
+			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1, cosTheta1,
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 2],
 				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 1]);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow1Size, arrow1Size);
 			m_g2d.setPaint(arrow1Paint);
-			m_g2d.fill(arrow1);
+			boolean filled = arrow1Type.isFilled();
+			if (filled)
+				m_g2d.fill(arrow1);
+			else 
+			{
+				m_g2d.setStroke(new BasicStroke(0.025f));
+				m_g2d.draw(arrow1);
+			}
 			m_g2d.setTransform(m_currNativeXform);
 		}
 	}
@@ -1363,7 +1406,7 @@ public final class GraphGraphics {
 			simpleSegment = 0; // Did not render segment.
 		}
 
-		// End rendering of line segment.
+		// End rendering of line segment."
 
 		// Using x0, x1, y0, and y1 instead of the "adjusted" endpoints is
 		// accurate enough in computation of cosine and sine because the
@@ -1393,7 +1436,8 @@ public final class GraphGraphics {
 					((double) arrow1Size) / edgeThickness);
 
 			if (arrow1Cap != null) {
-				m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
+
+					m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
 						-cosTheta, x1Adj, y1Adj);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
@@ -1412,7 +1456,16 @@ public final class GraphGraphics {
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
-			m_g2d.fill(arrow0);
+			boolean filled = arrow0Type.isFilled();
+			if (filled)
+				m_g2d.fill(arrow0);
+			else
+			{
+				m_g2d.setStroke(new BasicStroke(0.25f));
+				if ( arrow0Type == ArrowShapeVisualProperty.OPEN_CIRCLE )
+					m_g2d.setStroke(new BasicStroke(0.1f));
+				m_g2d.draw(arrow0);
+			}
 			m_g2d.setTransform(m_currNativeXform);
 		}
 
@@ -1425,8 +1478,17 @@ public final class GraphGraphics {
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow1Size, arrow1Size);
 			m_g2d.setPaint(arrow1Paint);
-			m_g2d.fill(arrow1);
-			m_g2d.setTransform(m_currNativeXform);
+			boolean filled = arrow1Type.isFilled();
+			if (filled)	
+				m_g2d.fill(arrow1);
+			else
+			{
+				m_g2d.setStroke(new BasicStroke(0.25f));
+				if ( arrow1Type  == ArrowShapeVisualProperty.OPEN_CIRCLE )
+					m_g2d.setStroke(new BasicStroke(0.1f));
+				m_g2d.draw(arrow1);
+			}
+		m_g2d.setTransform(m_currNativeXform);
 		}
 	}
 

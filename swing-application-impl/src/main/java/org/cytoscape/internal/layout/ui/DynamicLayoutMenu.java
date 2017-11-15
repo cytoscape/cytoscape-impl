@@ -27,6 +27,7 @@ package org.cytoscape.internal.layout.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,10 +64,14 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
     private final boolean usesNodeAttrs;
     private final boolean usesEdgeAttrs;
     private final boolean supportsSelectedOnly;
-    private final CyNetwork network;
     private final CyApplicationManager appMgr;
+    
+    // There is a memory leak on Mac, the Mac LAF holds on to this menu 
+    // for too long, allow the network to be garbage collected if this happens.
+    private final WeakReference<CyNetwork> networkRef;
+    
 
-	private static final String UNWEIGHTED = "(none)";
+    private static final String UNWEIGHTED = "(none)";
 
 
     /**
@@ -75,10 +80,10 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
      * @param layout  DOCUMENT ME!
      */
     public DynamicLayoutMenu(CyLayoutAlgorithm layout, CyNetwork network, boolean enabled, CyApplicationManager appMgr, DialogTaskManager tm,
-    		                 boolean usesNodeAttrs, boolean usesEdgeAttrs, boolean supportsSelectedOnly) {
+                         boolean usesNodeAttrs, boolean usesEdgeAttrs, boolean supportsSelectedOnly) {
         super(layout.toString());
         this.layout = layout;
-        this.network = network;
+        this.networkRef = new WeakReference<>(network);
         this.tm = tm;
         this.appMgr = appMgr;
         addMenuListener(this);
@@ -106,23 +111,29 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
             // Add edge attributes menus
             addEdgeAttributeMenus(this, false);
         } else {
-        	throw new RuntimeException("Layout algorithm expected valid table columns or selected");
+            throw new RuntimeException("Layout algorithm expected valid table columns or selected");
         }
     }
 
     private void addNodeAttributeMenus(final JMenu parent, final boolean selectedOnly) {
-        final CyTable nodeAttributes = network.getDefaultNodeTable();
-        addAttributeMenus(parent, nodeAttributes, layout.getSupportedNodeAttributeTypes(), selectedOnly);
+        CyNetwork network = networkRef.get();
+        if(network != null) {
+            final CyTable nodeAttributes = network.getDefaultNodeTable();
+            addAttributeMenus(parent, nodeAttributes, layout.getSupportedNodeAttributeTypes(), selectedOnly);
+        }
     }
 
     private void addEdgeAttributeMenus(final JMenu parent, final boolean selectedOnly) {
-        final CyTable edgeAttributes = network.getDefaultEdgeTable();
-        addAttributeMenus(parent, edgeAttributes, layout.getSupportedEdgeAttributeTypes(), selectedOnly);
+        CyNetwork network = networkRef.get();
+        if(network != null) {
+            final CyTable edgeAttributes = network.getDefaultEdgeTable();
+            addAttributeMenus(parent, edgeAttributes, layout.getSupportedEdgeAttributeTypes(), selectedOnly);
+        }
     }
 
     private void addAttributeMenus(JMenu parent, CyTable attributes, Set<Class<?>> typeSet, boolean selectedOnly) {
         parent.add(new LayoutAttributeMenuItem(UNWEIGHTED, selectedOnly));
-    	for (final CyColumn column : attributes.getColumns())
+        for (final CyColumn column : attributes.getColumns())
             if (typeSet.contains(column.getType()))
                 parent.add(new LayoutAttributeMenuItem(column.getName(), selectedOnly));
     }
@@ -162,7 +173,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
         }
 
         public void actionPerformed(ActionEvent e) {
-        	// NOTE: We iterate over all selected networks, not just the current network!
+            // NOTE: We iterate over all selected networks, not just the current network!
             List<CyNetworkView> views = appMgr.getSelectedNetworkViews();
             for (final CyNetworkView netView : views) {
                 Set<View<CyNode>> nodeViews;
@@ -173,24 +184,24 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
 
                 String layoutAttribute = null;
                 if (layout.getSupportedNodeAttributeTypes().size() > 0 || layout.getSupportedEdgeAttributeTypes().size() > 0){
-                	layoutAttribute = e.getActionCommand();
-                	if (layoutAttribute.equals(UNWEIGHTED))
-                		layoutAttribute = null;
+                    layoutAttribute = e.getActionCommand();
+                    if (layoutAttribute.equals(UNWEIGHTED))
+                        layoutAttribute = null;
                 }
                 tm.execute(layout.createTaskIterator(netView,layout.getDefaultLayoutContext(),nodeViews,layoutAttribute));
             }
         }
         
         private Set<View<CyNode>> getSelectedNodeViews(final CyNetworkView view) {
-        	List<CyNode> selectedNodes = CyTableUtil.getNodesInState(view.getModel(), CyNetwork.SELECTED, true);
+            List<CyNode> selectedNodes = CyTableUtil.getNodesInState(view.getModel(), CyNetwork.SELECTED, true);
             if ( selectedNodes.isEmpty() )
                 return CyLayoutAlgorithm.ALL_NODE_VIEWS;
 
             Set<View<CyNode>> nodeViews = new HashSet<View<CyNode>>();
             for ( CyNode n : selectedNodes ) {
-            	View<CyNode> nodeView = view.getNodeView(n);
-            	if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))
-            		nodeViews.add(nodeView);
+            View<CyNode> nodeView = view.getNodeView(n);
+            if (nodeView.getVisualProperty(BasicVisualLexicon.NODE_VISIBLE))
+                nodeViews.add(nodeView);
             }
             return nodeViews;
         }

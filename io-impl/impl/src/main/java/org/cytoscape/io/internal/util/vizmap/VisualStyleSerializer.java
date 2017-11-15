@@ -76,7 +76,7 @@ public class VisualStyleSerializer {
 
 	private VisualLexicon lexicon;
 
-	private static final Logger logger = LoggerFactory.getLogger(VisualStyleSerializer.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public VisualStyleSerializer(final CalculatorConverterFactory calculatorConverterFactory,
 								 final CyServiceRegistrar serviceRegistrar) {
@@ -96,22 +96,22 @@ public class VisualStyleSerializer {
 		lexicon = renderingEngineManager.getDefaultVisualLexicon();
 
 		if (styles != null) {
-			for (VisualStyle vs : styles) {
+			for (VisualStyle style : styles) {
 				org.cytoscape.io.internal.util.vizmap.model.VisualStyle vsModel = new org.cytoscape.io.internal.util.vizmap.model.VisualStyle();
 				vizmap.getVisualStyle().add(vsModel);
 
-				vsModel.setName(vs.getTitle());
+				vsModel.setName(style.getTitle());
 
 				vsModel.setNetwork(new Network());
 				vsModel.setNode(new Node());
 				vsModel.setEdge(new Edge());
 
-				createVizmapProperties(vs, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
-				createVizmapProperties(vs, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
-				createVizmapProperties(vs, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
+				createVizmapProperties(style, BasicVisualLexicon.NETWORK, vsModel.getNetwork().getVisualProperty());
+				createVizmapProperties(style, BasicVisualLexicon.NODE, vsModel.getNode().getVisualProperty());
+				createVizmapProperties(style, BasicVisualLexicon.EDGE, vsModel.getEdge().getVisualProperty());
 				
 				// Create Dependencies
-				createDependencies(vs, vsModel);
+				createDependencies(style, vsModel);
 			}
 		}
 
@@ -246,13 +246,15 @@ public class VisualStyleSerializer {
 	
 					vpModelList.add(vpModel);
 	
+					try {
 					if (defValue != null) {
 						String sValue = vp.toSerializableString(defValue);
 						
 						if (sValue != null)
 							vpModel.setDefault(sValue);
 					}
-	
+					} catch (final Exception e) 	{System.out.println("CCE in VisualStyleSerielizer");}
+					
 					if (mapping instanceof PassthroughMapping<?, ?>) {
 						PassthroughMapping<?, ?> pm = (PassthroughMapping<?, ?>) mapping;
 						AttributeType attrType = toAttributeType(pm.getMappingColumnType());
@@ -281,6 +283,7 @@ public class VisualStyleSerializer {
 							try {
 								DiscreteMappingEntry entryModel = new DiscreteMappingEntry();
 								entryModel.setAttributeValue(entry.getKey().toString());
+//								System.out.println("DiscreteMapEntry: " + entry.getKey().toString() + " = " + value);
 								entryModel.setValue(vp.toSerializableString(value));
 								dmModel.getDiscreteMappingEntry().add(entryModel);
 							} catch (Exception e) {

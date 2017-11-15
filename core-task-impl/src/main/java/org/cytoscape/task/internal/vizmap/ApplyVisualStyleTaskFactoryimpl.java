@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.vizmap;
 
+import java.util.Collection;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
+import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +32,17 @@ package org.cytoscape.task.internal.vizmap;
  * #L%
  */
 
-import java.util.Collection;
+public class ApplyVisualStyleTaskFactoryimpl extends AbstractNetworkViewCollectionTaskFactory
+		implements ApplyVisualStyleTaskFactory {
 
-import org.cytoscape.task.AbstractNetworkViewCollectionTaskFactory;
-import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskIterator;
+	private final CyServiceRegistrar serviceRegistrar;
 
-public class ApplyVisualStyleTaskFactoryimpl extends AbstractNetworkViewCollectionTaskFactory implements ApplyVisualStyleTaskFactory {
-
-	private final VisualMappingManager vmm;
-
-	public ApplyVisualStyleTaskFactoryimpl(final VisualMappingManager vmm) {
-		super();
-		this.vmm = vmm;
+	public ApplyVisualStyleTaskFactoryimpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
-
 
 	@Override
 	public TaskIterator createTaskIterator(Collection<CyNetworkView> networkViews) {
-		return new TaskIterator(new ApplyVisualStyleTask(networkViews, vmm));
+		return new TaskIterator(new ApplyVisualStyleTask(networkViews, serviceRegistrar));
 	}
-
 }

@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.networkobjects;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -42,7 +43,6 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.work.AbstractTask;
-
 import org.cytoscape.task.internal.utils.DataUtils;
 public abstract class AbstractPropertyTask extends AbstractTask {
 	protected CyApplicationManager appManager;
@@ -76,6 +76,66 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 		throw new RuntimeException("Property "+propertyName+" doesn't exist");
 	}
 
+	protected class VisualPropertyObjectTuple {
+		public VisualProperty<Object> visualProperty;
+		public Object object;
+		
+		public VisualPropertyObjectTuple(VisualProperty<Object> visualProperty, Object object) {
+			this.visualProperty = visualProperty;
+			this.object = object;
+		}
+	}
+	
+	public static String getVisualPropertyJSON(VisualProperty<Object> vp, Object object) {
+		StringBuilder output = new StringBuilder("{\n");
+		output.append("   \"visualProperty\":\"" + vp.getIdString() + "\",\n");
+		output.append("   \"value\":");
+	final Class<?> type = vp.getRange().getType();
+		
+		if (type == String.class) {
+			output.append("\"" + object.toString() + "\"");
+		} else if (type == Boolean.class
+				|| type == Double.class
+				|| type == Integer.class
+				|| type == Long.class
+				|| type == Float.class
+				) {
+			output.append(object.toString());
+		} else {
+			output.append("\"" + vp.toSerializableString(object) + "\"");
+		}
+		output.append("\n}");
+		return output.toString(); 
+	}
+	
+	protected static String getVisualPropertiesJSON(Map<? extends CyIdentifiable, Map<String, VisualPropertyObjectTuple>> map) {
+		StringBuilder output = new StringBuilder("[\n");
+		int count =  map.size();
+		for (Map.Entry<? extends CyIdentifiable, Map<String, VisualPropertyObjectTuple>> entry : map.entrySet()) {
+			output.append("   {\"SUID\":" + entry.getKey().getSUID() + ",\n");
+			output.append("    \"visualProperties\": [");
+			int count2 = entry.getValue().size();
+			for (Map.Entry<String, VisualPropertyObjectTuple> entry2 : entry.getValue().entrySet()) {
+				output.append(getVisualPropertyJSON(entry2.getValue().visualProperty, entry2.getValue().object).replace((CharSequence)"   ", (CharSequence)"         "));
+				if (count2 > 1) {
+					output.append(",");
+				}
+				output.append("\n");
+				count2--;
+			}
+			output.append("      ]");
+			output.append("   }\n");
+			if (count > 1) {
+				output.append(",");
+			}
+			output.append("\n");
+			count--;
+		}
+		output.append("]\n");
+		
+		return output.toString();
+	}
+	
 	public Object getPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp) {
 		CyNetworkView networkView = getViewForNetwork(network);
 		Class<? extends CyIdentifiable> vpTargetType = vp.getTargetDataType();

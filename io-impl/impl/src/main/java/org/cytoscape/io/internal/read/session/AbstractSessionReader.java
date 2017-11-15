@@ -102,7 +102,7 @@ public abstract class AbstractSessionReader extends AbstractTask implements CySe
 		this.groupUtil = groupUtil;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		this.logger = LoggerFactory.getLogger(this.getClass());
+		this.logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	}
 
 	/**

@@ -6,14 +6,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.Collator;
 import java.util.Collection;
 import java.util.Collections;
@@ -46,8 +42,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
@@ -61,6 +55,30 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.util.PropertySheetUtil;
+
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class VisualPropertySheet extends JPanel{
@@ -163,17 +181,11 @@ public class VisualPropertySheet extends JPanel{
 							updateCollapseExpandButtons();
 						}
 					});
-					i.addPropertyChangeListener("enabled", new PropertyChangeListener() {
-						@Override
-						public void propertyChange(final PropertyChangeEvent e) {
-							updateCollapseExpandButtons();
-						}
+					i.addPropertyChangeListener("enabled", evt -> {
+						updateCollapseExpandButtons();
 					});
-					i.addPropertyChangeListener("expanded", new PropertyChangeListener() {
-						@Override
-						public void propertyChange(final PropertyChangeEvent e) {
-							updateCollapseExpandButtons();
-						}
+					i.addPropertyChangeListener("expanded", evt -> {
+						updateCollapseExpandButtons();
 					});
 					i.getPropSheetPnl().getTable().addMouseListener(new MouseAdapter() {
 						@Override
@@ -205,9 +217,7 @@ public class VisualPropertySheet extends JPanel{
 			getVpListScr().setViewportView(p);
 			
 			minWidth = Math.min((minWidth += 10), 400);
-			getVpListScr().setMinimumSize(new Dimension(minWidth, getVpListScr().getMinimumSize().height));
-			setMinimumSize(new Dimension(minWidth, getMinimumSize().height));
-			setPreferredSize(new Dimension(minWidth, getPreferredSize().height));
+			getVpListScr().setMinimumSize(new Dimension(minWidth, 140));
 			
 			if (getParent() != null) {
 				minWidth = Math.max(minWidth + 8, getParent().getMinimumSize().width);
@@ -235,7 +245,7 @@ public class VisualPropertySheet extends JPanel{
 	}
 	
 	public synchronized Set<VisualPropertySheetItem<?>> getSelectedItems() {
-		 final Set<VisualPropertySheetItem<?>> set = new HashSet<VisualPropertySheetItem<?>>();
+		 final Set<VisualPropertySheetItem<?>> set = new HashSet<>();
 		 
 		 for (final VisualPropertySheetItem<?> i : items) {
 			 if (i.isSelected())
@@ -331,12 +341,9 @@ public class VisualPropertySheet extends JPanel{
 			// Make redrawing the icons less expensive when scrolling
 			vpListScr.getVerticalScrollBar().setUnitIncrement(8);
 			// Try to fit sheet items to viewport's width when the scroll bar becomes visible
-			vpListScr.getViewport().addChangeListener(new ChangeListener() {
-				@Override
-				public void stateChanged(final ChangeEvent e) {
-					for (final VisualPropertySheetItem<?> item : getItems())
-						item.fitToWidth(vpListScr.getViewport().getWidth());
-				}
+			vpListScr.getViewport().addChangeListener(evt -> {
+				for (final VisualPropertySheetItem<?> item : getItems())
+					item.fitToWidth(vpListScr.getViewport().getWidth());
 			});
 		}
 		
@@ -388,12 +395,7 @@ public class VisualPropertySheet extends JPanel{
 			expandAllBtn.setFont(iconManager.getIconFont(17.0f));
 			expandAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
-			expandAllBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					expandAllMappings();
-				}
-			});
+			expandAllBtn.addActionListener(evt -> expandAllMappings());
 		}
 		
 		return expandAllBtn;
@@ -411,12 +413,7 @@ public class VisualPropertySheet extends JPanel{
 			collapseAllBtn.setFont(iconManager.getIconFont(17.0f));
 			collapseAllBtn.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
 			
-			collapseAllBtn.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(final ActionEvent e) {
-					collapseAllMappings();
-				}
-			});
+			collapseAllBtn.addActionListener(evt -> collapseAllMappings());
 		}
 		
 		return collapseAllBtn;
@@ -440,7 +437,7 @@ public class VisualPropertySheet extends JPanel{
 		// Menu Items for showing/hiding each VP Sheet Item
 		// ------------------------------------------------
 		// -- Visual Properties --
-		final Queue<VisualLexiconNode> queue = new PriorityQueue<VisualLexiconNode>(50,
+		final Queue<VisualLexiconNode> queue = new PriorityQueue<>(50,
 				new Comparator<VisualLexiconNode>() {
 					@Override
 					public int compare(final VisualLexiconNode n1, final VisualLexiconNode n2) {
@@ -454,11 +451,11 @@ public class VisualPropertySheet extends JPanel{
 				});
 		queue.addAll(rootNode.getChildren());
 		
-		final Map<VisualLexiconNode, JComponent> menuMap = new HashMap<VisualLexiconNode, JComponent>();
+		final Map<VisualLexiconNode, JComponent> menuMap = new HashMap<>();
 		menuMap.put(rootNode, rootMenu);
 
 		final VisualStyle style = model.getVisualStyle();
-		final Set<VisualProperty<?>> disabledProps = new HashSet<VisualProperty<?>>();
+		final Set<VisualProperty<?>> disabledProps = new HashSet<>();
 //		final Set<VisualPropertyDependency<?>> depSet = style.getAllVisualPropertyDependencies();
 		
 //		for (final VisualPropertyDependency<?> dep : depSet) {
@@ -473,7 +470,7 @@ public class VisualPropertySheet extends JPanel{
 //				disabledProps.add(dep.getParentVisualProperty());
 //		}
 		
-		final Set<VisualLexiconNode> nextNodes = new HashSet<VisualLexiconNode>();
+		final Set<VisualLexiconNode> nextNodes = new HashSet<>();
 
 		while (!queue.isEmpty()) {
 			final VisualLexiconNode curNode = queue.poll();
@@ -502,12 +499,9 @@ public class VisualPropertySheet extends JPanel{
 					
 					if (vpSheetItem != null) {
 						final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(label, vpSheetItem.isVisible());
-						mi.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(final ActionEvent e) {
-								// Show/hide the Visual Property Sheet Item
-								setVisible(vpSheetItem, !vpSheetItem.isVisible());
-							}
+						mi.addActionListener(evt -> {
+							// Show/hide the Visual Property Sheet Item
+							setVisible(vpSheetItem, !vpSheetItem.isVisible());
 						});
 					
 						menuMap.get(parentNode).add(mi);
@@ -528,15 +522,12 @@ public class VisualPropertySheet extends JPanel{
 		}
 		
 		// -- Visual Property Dependencies --
-		final TreeSet<VisualPropertyDependency<?>> depTreeSet = new TreeSet<VisualPropertyDependency<?>>(
-				new Comparator<VisualPropertyDependency<?>>() {
-					@Override
-					public int compare(final VisualPropertyDependency<?> d1, final VisualPropertyDependency<?> d2) {
-						final Collator collator = Collator.getInstance(Locale.getDefault());
-						collator.setStrength(Collator.PRIMARY);
-						
-						return collator.compare(d1.getDisplayName(), d2.getDisplayName());
-					}
+		final TreeSet<VisualPropertyDependency<?>> depTreeSet =
+				new TreeSet<>((VisualPropertyDependency<?> d1, VisualPropertyDependency<?> d2) -> {
+					final Collator collator = Collator.getInstance(Locale.getDefault());
+					collator.setStrength(Collator.PRIMARY);
+					
+					return collator.compare(d1.getDisplayName(), d2.getDisplayName());
 				});
 		depTreeSet.addAll(style.getAllVisualPropertyDependencies());
 		
@@ -545,12 +536,9 @@ public class VisualPropertySheet extends JPanel{
 			
 			if (vpSheetItem != null) {
 				final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(dep.getDisplayName(), vpSheetItem.isVisible());
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						// Show/hide the Visual Property Sheet Item
-						setVisible(vpSheetItem, !vpSheetItem.isVisible());
-					}
+				mi.addActionListener(evt -> {
+					// Show/hide the Visual Property Sheet Item
+					setVisible(vpSheetItem, !vpSheetItem.isVisible());
 				});
 			
 				final VisualLexiconNode parentNode = lexicon.getVisualLexiconNode(dep.getParentVisualProperty());
@@ -571,25 +559,17 @@ public class VisualPropertySheet extends JPanel{
 			
 			{
 				final JMenuItem mi = new JMenuItem("Show All");
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
-							setVisible(entry.getKey(), true);
-						}
-					}
+				mi.addActionListener(evt -> {
+					for (Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet())
+						setVisible(entry.getKey(), true);
 				});
 				rootMenu.add(mi);
 			}
 			{
 				final JMenuItem mi = new JMenuItem("Hide All");
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(final ActionEvent e) {
-						for (final Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet()) {
-							setVisible(entry.getKey(), false);
-						}
-					}
+				mi.addActionListener(evt -> {
+					for (Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet())
+						setVisible(entry.getKey(), false);
 				});
 				rootMenu.add(mi);
 			}

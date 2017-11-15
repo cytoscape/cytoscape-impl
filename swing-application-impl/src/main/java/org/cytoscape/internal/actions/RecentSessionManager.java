@@ -1,34 +1,11 @@
 package org.cytoscape.internal.actions;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
@@ -36,7 +13,6 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -54,13 +30,37 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Update "Open Recent Session" menu.
  */
 @SuppressWarnings("serial")
 public class RecentSessionManager implements SessionLoadedListener, CyShutdownListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger(RecentSessionManager.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String MENU_CATEGORY = "File.Open Recent";
 
@@ -76,12 +76,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 		clearMenuAction = new ClearMenuAction();
 		serviceRegistrar.registerAllServices(clearMenuAction, new Properties());
 		
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateMenuItems();
-			}
-		});
+		invokeOnEDT(() -> updateMenuItems());
 	}
 
 	private void updateMenuItems() {
@@ -101,8 +96,8 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 			try {
 				URI uri = url.toURI();
 				file = new File(uri);
-			} catch (URISyntaxException e) {
-				logger.error("Invalid file URL.", e);
+			} catch (Exception e) {
+				logger.error("Invalid recent file URL.", e);
 				continue;
 			}
 			
@@ -116,12 +111,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
-		SwingUtilities.invokeLater(new Runnable() {
-			@Override
-			public void run() {
-				updateMenuItems();
-			}
-		});
+		invokeOnEDT(() -> updateMenuItems());
 	}
 	
 	@Override

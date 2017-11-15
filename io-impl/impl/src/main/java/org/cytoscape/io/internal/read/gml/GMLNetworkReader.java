@@ -154,7 +154,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private VisualLexicon visualLexicon;
 
 	protected static final Logger logger = LoggerFactory
-			.getLogger(GMLNetworkReader.class);
+			.getLogger("org.cytoscape.application.userlog");
 
 	static {
 		legacyArrowShapes.put("0", ArrowShapeVisualProperty.NONE); // NO_END
@@ -292,6 +292,11 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		Map<Integer, Integer> gml_id2order = new HashMap<Integer, Integer>(nodes.size());
 		Set<String> nodeNameSet = new HashSet<String>(nodes.size());
 
+		// Row for label.
+		if(network.getDefaultNodeTable().getColumn(LABEL) == null) {
+			network.getDefaultNodeTable().createColumn(LABEL, String.class, false);
+		}
+
 		// Add All Nodes to Network
 		for (int idx = 0; idx < nodes.size(); idx++) {
 			// Report Status Value
@@ -303,32 +308,32 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 
 			final String label = nodeLabels.get(idx);
 
-			if (nodeNameSet.add(label)) {
-				final CyNode node;
+			nodeNameSet.add(label);
 
-				if (nMap.get(label) != null) {
-					// node already existed
-					node = nMap.get(label);
+			final CyNode node;
+			if (nMap.get(label) != null) {
+				// node already existed
+				node = nMap.get(label);
 
-					if (!network.containsNode(node)) {
-						network.addNode(node);
-					}
-				} else {
-					// node is new
-					node = network.addNode();
+				if (!network.containsNode(node)) {
+					network.addNode(node);
 				}
-
-				// Set node attributes
-				network.getRow(node).set(CyNetwork.NAME, label);
-				setAttributes(node, network, nodeAttributes.get(idx));
-
-				nodeIDMap.put(label, node);
-				gml_id2order.put(nodes.get(idx), idx);
-				nodeRootIndexPairs.get(idx).value = node.getSUID();
 			} else {
-				throw new RuntimeException("GML id " + nodes.get(idx)
-						+ " has a duplicated label: " + label);
+				// node is new
+				node = network.addNode();
 			}
+
+			// Set node attributes
+			final CyRow row = network.getRow(node);
+			row.set(CyNetwork.NAME, label);
+			// This is duplicate of name, but necessary top keep original attr.
+			row.set(LABEL, label);
+
+			setAttributes(node, network, nodeAttributes.get(idx));
+
+			nodeIDMap.put(label, node);
+			gml_id2order.put(nodes.get(idx), idx);
+			nodeRootIndexPairs.get(idx).value = node.getSUID();
 		}
 
 		nodeNameSet = null;
@@ -793,8 +798,15 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 						vpValue = vp.parseSerializableString(value.toString());
 
 					if (vpValue != null) {
-						if (isLockedVisualProperty(model, key))
-							view.setLockedValue(vp, vpValue);
+
+
+						if (isLockedVisualProperty(model, key)) {
+							// Label assignment should be flexible,
+							// so we should avoid bypass.
+							if(vp != BasicVisualLexicon.NODE_LABEL) {
+								view.setLockedValue(vp, vpValue);
+							}
+						}
 						else
 							view.setVisualProperty(vp, vpValue);
 					}

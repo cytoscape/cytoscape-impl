@@ -3,6 +3,7 @@ package org.cytoscape.ding.customgraphics.bitmap;
 import java.io.IOException;
 import java.net.URL;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphicsFactory;
@@ -41,7 +42,7 @@ public class URLImageCustomGraphicsFactory implements CyCustomGraphicsFactory {
 
 	private final CustomGraphicsManager manager;
 	
-	private static final Logger logger = LoggerFactory.getLogger(URLImageCustomGraphicsFactory.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public URLImageCustomGraphicsFactory(final CustomGraphicsManager manager) {
 		this.manager = manager;

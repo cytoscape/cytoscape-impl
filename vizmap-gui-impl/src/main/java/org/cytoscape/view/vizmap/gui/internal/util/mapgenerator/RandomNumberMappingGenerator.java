@@ -1,12 +1,24 @@
 package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDTAndWait;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+
+import javax.swing.JOptionPane;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +36,9 @@ package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
- *
- */
 public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerator<Number> {
 
-	private static final Logger logger = LoggerFactory.getLogger(RandomNumberMappingGenerator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public RandomNumberMappingGenerator() {
 		super(Number.class);
@@ -48,7 +46,7 @@ public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerat
 
 	@Override
 	public <T> Map<T, Number> generateMap(Set<T> attributeSet) {
-		final Map<T, Number> valueMap = new HashMap<T, Number>();
+		final Map<T, Number> valueMap = new HashMap<>();
 		
 		// Error if attributeSet is empty or null
 		if ((attributeSet == null) || (attributeSet.size() == 0))
@@ -56,21 +54,9 @@ public class RandomNumberMappingGenerator extends AbstractDiscreteMappingGenerat
 
 		final String[] range = new String[2];
 		
-		if (SwingUtilities.isEventDispatchThread()) {
+		invokeOnEDTAndWait(() -> {
 			getRange(range);
-		} else {
-			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						getRange(range);
-					}
-				});
-			} catch (Exception e) {
-				logger.error("Error getting range", e);
-				return valueMap;
-			}
-		}
+		}, logger);
 		
 		final Double min;
 		final Double max;

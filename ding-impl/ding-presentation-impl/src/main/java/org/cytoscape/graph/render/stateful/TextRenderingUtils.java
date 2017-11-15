@@ -32,6 +32,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.Rectangle2D;
 import java.util.StringTokenizer;
 
+import org.cytoscape.view.presentation.property.values.Justification;
 
 final class TextRenderingUtils {
 	// No constructor.
@@ -91,7 +92,7 @@ final class TextRenderingUtils {
 	                                              final MeasuredLineCreator measuredText,
 	                                              final Font font, final double fontScaleFactor,
 	                                              final float textXCenter, final float textYCenter,
-	                                              final byte textJustify, final Paint paint,
+	                                              final Justification textJustify, final Paint paint,
 	                                              final boolean textAsShape) {
 
 		double currHeight = measuredText.getTotalHeight() / -2.0d;
@@ -101,11 +102,11 @@ final class TextRenderingUtils {
 			final double yCenter = currHeight + textYCenter + (line.getHeight() / 2.0d);
 			final double xCenter;
 
-			if (textJustify == NodeDetails.LABEL_WRAP_JUSTIFY_CENTER)
+			if (textJustify == Justification.JUSTIFY_CENTER)
 				xCenter = textXCenter;
-			else if (textJustify == NodeDetails.LABEL_WRAP_JUSTIFY_LEFT)
+			else if (textJustify == Justification.JUSTIFY_LEFT)
 				xCenter = (-0.5d * (overallWidth - line.getWidth())) + textXCenter;
-			else if (textJustify == NodeDetails.LABEL_WRAP_JUSTIFY_RIGHT)
+			else if (textJustify == Justification.JUSTIFY_RIGHT)
 				xCenter = (0.5d * (overallWidth - line.getWidth())) + textXCenter;
 			else
 				throw new IllegalStateException("textJustify value unrecognized");

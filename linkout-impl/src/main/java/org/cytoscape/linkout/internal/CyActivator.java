@@ -48,7 +48,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, linkoutProps, CyProperty.class, props);
 			registerService(bc, linkout, PropertyUpdatedListener.class, props);
 			
-			registerServiceListener(bc, linkout, "addCommanLineLinkOut", "removeCommanLineLinkOut", CyProperty.class);
+			registerServiceListener(bc, linkout::addCommanLineLinkOut, linkout::removeCommanLineLinkOut, CyProperty.class);
 		}
 	}
 }

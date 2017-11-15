@@ -26,11 +26,9 @@ package org.cytoscape.command.internal.tunables;
 
 import org.cytoscape.command.AbstractStringTunableHandler;
 import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 
 public class CyNetworkTunableHandler extends AbstractStringTunableHandler implements CyIdentifiableTunableHandler {
 		private StringToModel stringHandler;

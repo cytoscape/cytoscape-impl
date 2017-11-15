@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 
 class EqnSupport {
 	
-	private static final Logger logger = LoggerFactory.getLogger(EqnSupport.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private EqnSupport() { } // Don't ever create an instance of this class!
 

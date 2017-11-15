@@ -63,7 +63,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 	protected CyNetwork network;
 	
-	private static final Logger logger = LoggerFactory.getLogger(NetworkTableReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public NetworkTableReader(final String networkName,
 							  final InputStream is,

@@ -155,14 +155,10 @@ public class MergeTablesTaskFactoryImpl extends AbstractTaskFactory implements M
 	}
 
 	private TableType getTableType( Class<? extends CyIdentifiable> type) {
-		if (type.equals(TableType.GLOBAL.getType()))
-			return TableType.GLOBAL;
-		if (type.equals(TableType.EDGE_ATTR.getType()))
-			return TableType.EDGE_ATTR;
-		if (type.equals(TableType.NETWORK_ATTR.getType()))
-			return TableType.NETWORK_ATTR;
-		if (type.equals(TableType.NODE_ATTR.getType()))
-			return TableType.NODE_ATTR;
+		if (type.equals(TableType.GLOBAL.getType()))		return TableType.GLOBAL;
+		if (type.equals(TableType.EDGE_ATTR.getType()))		return TableType.EDGE_ATTR;
+		if (type.equals(TableType.NETWORK_ATTR.getType()))	return TableType.NETWORK_ATTR;
+		if (type.equals(TableType.NODE_ATTR.getType()))		return TableType.NODE_ATTR;
 		return null;
 	}
 }

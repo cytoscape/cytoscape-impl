@@ -25,34 +25,42 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListEdgeAttributesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	Collection<CyColumn> columnList = null;
 
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable (description="Namespace for table", context="nogui")
+	@Tunable (description="Namespace for table", context="nogui", longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue=CoreImplDocumentationConstants.COLUMN_NAMESPACE_EXAMPLE_STRING)
 	public String namespace = "default";
 
-	public ListEdgeAttributesTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	public ListEdgeAttributesTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -63,7 +71,7 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge columns for network "+DataUtils.getNetworkTitle(network)+":");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge columns for network "+DataUtils.getNetworkName(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
@@ -81,7 +89,18 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 				returnString += col.getName()+",";
 			}
 			return returnString.substring(0, returnString.length()-1)+"]";
+		} else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.cyColumnsToJson(columnList);
+			};
+			return res;
 		}
+		
 		return new ArrayList<CyColumn>(columnList);
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
 }

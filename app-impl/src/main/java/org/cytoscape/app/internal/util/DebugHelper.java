@@ -1,5 +1,6 @@
 package org.cytoscape.app.internal.util;
 
+import org.cytoscape.application.CyUserLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * A class used to manage print commands for aiding in debugging
  */
 public class DebugHelper {
-	private static final Logger sysLogger = LoggerFactory.getLogger(DebugHelper.class);
+	private static final Logger sysLogger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static boolean debug = false;
 //	private static boolean debug = true;

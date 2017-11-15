@@ -30,30 +30,34 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class ListNetworkAttributesTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	private final Class type;
 	
 	public ListNetworkAttributesTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, 
+											CyServiceRegistrar serviceRegistrar,
 	                                        Class <? extends CyIdentifiable> type) {
 		cyAppManager = appMgr;
 		cyTableManager = mgr;
 		this.type = type;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new ListNetworkAttributesTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new ListNetworkAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyEdge.class))
-			return new TaskIterator(new ListEdgeAttributesTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new ListEdgeAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new ListNodeAttributesTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new ListNodeAttributesTask(cyTableManager, cyAppManager, serviceRegistrar));
 		return null;
 	}
 

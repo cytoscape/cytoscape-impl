@@ -24,13 +24,13 @@ package org.cytoscape.command.internal.available;
  * #L%
  */
 
-import java.util.Properties;
-
 import org.cytoscape.work.TunableHandler;
 
 
 public interface ArgHandler extends TunableHandler {
 	String getDesc();
+	default String getLongDesc() {return null;};
+	default String getExampleStringValue() {return null;};
 	String getContext();
 	boolean getRequired();
 	String getTooltip();

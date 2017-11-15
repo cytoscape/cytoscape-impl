@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.layout;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,44 +36,52 @@ package org.cytoscape.task.internal.layout;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.view.layout.CyLayoutAlgorithm;
-import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListSingleSelection;
-
 public class SetPreferredLayoutTask extends AbstractTask {
 
-	private final CyLayoutAlgorithmManager layouts;
-
-	@Tunable(description="Layout to use as preferred", context="nogui")
+	@Tunable(description = "Layout to use as preferred", context = "nogui", longDescription="Layout to use as preferred, for allowed names see Layout API", exampleStringValue="grid")
 	public ListSingleSelection<String> preferredLayout;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SetPreferredLayoutTask(final CyLayoutAlgorithmManager layouts) {
-		this.layouts = layouts;
-		List<String> layoutNames = new ArrayList<String>();
+	public SetPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
-		for (CyLayoutAlgorithm alg: layouts.getAllLayouts()) {
-			layoutNames.add(alg.getName());
+		final List<String> layoutNames = new ArrayList<>();
+		final CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+
+		for (CyLayoutAlgorithm alg : layoutManager.getAllLayouts()) {
+			if (!alg.getName().startsWith("yfiles."))
+				layoutNames.add(alg.getName());
 		}
-		
-		preferredLayout = new ListSingleSelection<String>(layoutNames);
+
+		preferredLayout = new ListSingleSelection<>(layoutNames);
 	}
 
 	@Override
 	public void run(TaskMonitor tm) {
+		final CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
 		final String prefName = preferredLayout.getSelectedValue();
-		final CyLayoutAlgorithm prefLayout = layouts.getLayout(prefName);
+		final CyLayoutAlgorithm prefLayout = layoutManager.getLayout(prefName);
 
 		if (prefLayout != null) {
-			layouts.setDefaultLayout(prefLayout);
+			layoutManager.setDefaultLayout(prefLayout);
 			tm.showMessage(TaskMonitor.Level.INFO, "Preferred layout set to " + prefName);
 		} else {
 			tm.showMessage(TaskMonitor.Level.WARN, "Can't set preferred layout -- invalid layout name");
 		}
 	}
+	
+
+	@SuppressWarnings({ "rawtypes"})
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}else if (preferredLayout == null)
+			return null;
+		return preferredLayout;
+	}
+
 }

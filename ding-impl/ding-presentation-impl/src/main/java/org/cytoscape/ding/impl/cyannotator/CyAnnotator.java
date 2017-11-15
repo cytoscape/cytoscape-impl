@@ -1,5 +1,4 @@
 package org.cytoscape.ding.impl.cyannotator;
-
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -41,7 +40,6 @@ import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 
 import java.awt.Component;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 
 import javax.swing.SwingUtilities;
@@ -51,6 +49,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -428,6 +427,12 @@ public class CyAnnotator {
 		}
 		// Save it in the network attributes
 		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
+
+		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
+			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE,
+			                                   String.class,false,Collections.EMPTY_LIST);
+		}
+
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 
@@ -437,11 +442,17 @@ public class CyAnnotator {
 		if (networkAnnotations == null || networkAnnotations.size() == 0) return result;
 
 		for (Map<String,String> map: networkAnnotations) {
-			String entry = "";
-			for (String key: map.keySet()) {
-				entry += "|"+key+"="+map.get(key);
+			StringBuilder props = new StringBuilder();
+			Iterator<Map.Entry<String,String>> iter = map.entrySet().iterator();
+			if(iter.hasNext()) {
+				Map.Entry<String,String> entry = iter.next();
+				props.append(entry.getKey()).append('=').append(entry.getValue());
 			}
-			result.add(entry.substring(1));
+			while(iter.hasNext()) {
+				Map.Entry<String,String> entry = iter.next();
+				props.append('|').append(entry.getKey()).append('=').append(entry.getValue());
+			}
+			result.add(props.toString());
 		}
 		return result;
 	}

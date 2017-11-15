@@ -2,7 +2,6 @@ package org.cytoscape.internal.actions;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -70,7 +69,7 @@ public class PreferenceAction extends AbstractCyAction {
 		return !dialogFactory.isDialogVisible();
 	}
 	
-	public void addCyProperty(CyProperty<?> p, Dictionary d){
+	public void addCyProperty(CyProperty<?> p, Map<?,?> d){
 		String propertyName = p.getName();
 		Object obj = p.getProperties();
 		
@@ -84,7 +83,7 @@ public class PreferenceAction extends AbstractCyAction {
 		}
 	}
 	
-	public void removeCyProperty(CyProperty<?> p, Dictionary d){
+	public void removeCyProperty(CyProperty<?> p, Map<?,?> d){
 		String propertyName = p.getName();
 		Object obj = p.getProperties();
 		

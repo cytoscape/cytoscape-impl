@@ -86,7 +86,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	private VisualLexicon visualLexicon;
 	
 	private static final Map<String, String> legacyArrowShapes = new HashMap<>();
-	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	static {
 		legacyArrowShapes.put("0", "NONE"); // NO_END
@@ -329,7 +329,8 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 						else
 							view.setVisualProperty(vp, parsedValue);
 					}
-				} else {
+				} else if (!(readDataMgr.isSessionFormat() && readDataMgr.getDocumentVersion() < 3.0)) {
+					// No need to save unrecognized properties if loading old session format
 					unrecognizedVisualPropertyMgr.addUnrecognizedVisualProperty(netView, view, attName, attValue);
 				}
 			}

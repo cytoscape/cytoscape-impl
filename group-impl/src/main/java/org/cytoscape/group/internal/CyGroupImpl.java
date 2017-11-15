@@ -89,7 +89,7 @@ public class CyGroupImpl implements CyGroup {
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedLocalValuesMap;
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedHiddenValuesMap;
 
-	private static final Logger logger = LoggerFactory.getLogger(CyGroupImpl.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final Object lock = new Object();
 
@@ -140,8 +140,6 @@ public class CyGroupImpl implements CyGroup {
 			                                "GroupNodeProvided", Boolean.class);
 			this.rootNetwork.getRow(groupNode, CyNetwork.HIDDEN_ATTRS).set("GroupNodeProvided", nodeProvided);
 		}
-
-		// System.out.println("Creating new group: "+this.groupNode);
 
 		this.externalEdges = new HashSet<CyEdge>();
 		this.metaEdges = new HashMap<CyEdge, CyEdge>();
@@ -316,7 +314,7 @@ public class CyGroupImpl implements CyGroup {
 			if (!rootNetwork.containsEdge(edge))
 				throwIllegalArgumentException("Can only add an edge in the same network tree");
 			if (!externalEdges.contains(edge)) {
-				// System.out.println("Adding external edge "+edge+" to group "+this);
+				// System.out.println("Adding external edge "+edge+" to group "+this.toString());
 				externalEdges.add(edge);
 			}
 		}
@@ -395,6 +393,11 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			boolean updateMeta = false;
 			for (CyEdge edge: edges) {
+				// First, make sure we aren't the ones who added the edge!
+				/*
+				if (metaEdges.containsKey(edge) || externalEdges.contains(edge) || metaEdges.values().contains(edge))
+					continue;
+				*/
 				CyNode source = edge.getSource();
 				CyNode target = edge.getTarget();
 				if(getGroupNetwork().containsNode(source) && getGroupNetwork().containsNode(target)) {
@@ -545,6 +548,12 @@ public class CyGroupImpl implements CyGroup {
 
 		synchronized (lock) {
 			// System.out.println("collapse "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
+			// System.out.println("External edges: ");
+			// for (CyEdge edge: externalEdges)
+			// 	System.out.println("    "+edge);
+			// System.out.println("Meta edges: ");
+			// for (CyEdge edge: metaEdges.values())
+			// 	System.out.println("    "+edge);
 
 			// printGroup();
 			if (isCollapsed(net))
@@ -598,6 +607,11 @@ public class CyGroupImpl implements CyGroup {
 				if (net.containsEdge(edge))
 					net.getRow(edge).set(CyNetwork.SELECTED, Boolean.FALSE);
 			}
+		}
+
+		// Make sure to restore any of our existing metaEdges
+		for (CyEdge e: metaEdges.values()) {
+			rootNetwork.restoreEdge(e);
 		}
 
 		List<CyNode> nodes;
@@ -718,7 +732,8 @@ public class CyGroupImpl implements CyGroup {
 			// If we have member edges, or the node already exists in
 			// the network, then the group node didn't
 			// go away so we don't have to add it back in here
-			// System.out.println("Adding group node.  memberEdges.size() = "+memberEdges.size()+" and nodeShownSet = "+nodeShownSet.contains(net.getSUID()));
+			// System.out.println("Adding group node.  memberEdges.size() = "+
+			//                    memberEdges.size()+" and nodeShownSet = "+nodeShownSet.contains(net.getSUID()));
 			if (memberEdges.size() == 0 && !nodeShownSet.contains(net.getSUID())) {
 				subnet.addNode(groupNode);
 				addedElements.add(groupNode);
@@ -733,6 +748,7 @@ public class CyGroupImpl implements CyGroup {
 						lvpMgr.saveLockedValues(e, netViewList);
 						saveLocalAttributes(net, e);
 						subnet.removeEdges(Collections.singletonList(e));
+						rootNetwork.restoreEdge(e); // But don't loose track of it...
 					}
 
 					if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
@@ -744,15 +760,17 @@ public class CyGroupImpl implements CyGroup {
 
 			// Add the meta-edges
 			for (CyEdge e: getMetaEdgeList()) {
+				// System.out.println("Adding metaedge: "+e);
 				// The same meta-edge might represent multiple edges
-				if (subnet.containsEdge(e)) 
+				if (subnet.containsEdge(e)) {
 					continue;
+				}
 				if (subnet.containsNode(e.getSource()) && subnet.containsNode(e.getTarget())) {
 					subnet.addEdge(e);
 					addedElements.add(e);
 					nameMetaEdge(e, e.getSource(), e.getTarget());
 					copyEdgeName(subnet, e);
-				}
+				} 
 			}
 
 			collapseSet.add(net.getSUID());
@@ -781,6 +799,12 @@ public class CyGroupImpl implements CyGroup {
 	public void expand(CyNetwork net) {
 		synchronized (lock) {
 			// System.out.println("expand "+this.toString()+" in net "+net.toString()+": isCollapsed = "+isCollapsed(net));
+			// System.out.println("External edges: ");
+			// for (CyEdge edge: externalEdges)
+			// 	System.out.println("    "+edge);
+			// System.out.println("Meta edges: ");
+			// for (CyEdge edge: metaEdges.values())
+			// 	System.out.println("    "+edge);
 
 			if (!isCollapsed(net))
 				return; // Already expanded
@@ -846,8 +870,13 @@ public class CyGroupImpl implements CyGroup {
 				}
 
 				// Remove the group node, if we're supposed to
-				if (!nodeShownSet.contains(subnet.getSUID()))
+				if (!nodeShownSet.contains(subnet.getSUID())) {
+					List<CyEdge> groupNodeEdges = subnet.getAdjacentEdgeList(groupNode, CyEdge.Type.ANY);
 					subnet.removeNodes(Collections.singletonList(groupNode));
+					rootNetwork.restoreNode(groupNode);
+					for (CyEdge e: groupNodeEdges)
+						rootNetwork.restoreEdge(e);
+				}
 			}
 
 			// Add all of the member nodes and edges in
@@ -1077,8 +1106,8 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			metaEdges = new HashMap<CyEdge, CyEdge>();
 			Set<CyGroup> partnersSeen = new HashSet<CyGroup>();
-			// System.out.println("Updating metaEdges: ignoreMetaEdges = "+ignoreMetaEdges);
 
+		// System.out.println("Updating metaEdges: ignoreMetaEdges = "+ignoreMetaEdges);
 //			long simpleMeta = 0L;
 //			long recursiveMeta1 = 0L;
 //			long recursiveMeta2 = 0L;
@@ -1229,9 +1258,9 @@ public class CyGroupImpl implements CyGroup {
 		CyEdge metaEdge = null;
 		CyNode source = null;
 		CyNode target = null;
+
 		if (isIncoming(edge)) {
 			if (rootNetwork.containsEdge(node, groupNode)) {
-				// System.out.println("Found metaEdge(s): "+rootNetwork.getConnectingEdgeList(node, groupNode, CyEdge.Type.ANY));
 				return rootNetwork.getConnectingEdgeList(node, groupNode, CyEdge.Type.ANY).get(0);
 			}
 			metaEdge = rootNetwork.addEdge(node, groupNode, edge.isDirected());
@@ -1239,7 +1268,6 @@ public class CyGroupImpl implements CyGroup {
 			target = groupNode;
 		} else {
 			if (rootNetwork.containsEdge(groupNode, node)) {
-				// System.out.println("Found metaEdge(s): "+rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY));
 				return rootNetwork.getConnectingEdgeList(groupNode, node, CyEdge.Type.ANY).get(0);
 			}
 			metaEdge = rootNetwork.addEdge(groupNode, node, edge.isDirected());

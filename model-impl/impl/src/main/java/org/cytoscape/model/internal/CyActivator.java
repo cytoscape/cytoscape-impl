@@ -1,7 +1,5 @@
 package org.cytoscape.model.internal;
 
-import java.util.Properties;
-
 import org.cytoscape.equations.event.EquationFunctionAddedListener;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -19,7 +17,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -53,13 +51,13 @@ public class CyActivator extends AbstractCyActivator {
 				networkTableManager, tableFactory, serviceRegistrar);
 		CyRootNetworkManagerImpl rootNetworkFactory = new CyRootNetworkManagerImpl();
 
-		registerService(bc, networkFactory, CyNetworkFactory.class, new Properties());
-		registerService(bc, tableFactory, CyTableFactory.class, new Properties());
-		registerService(bc, rootNetworkFactory, CyRootNetworkManager.class, new Properties());
-		registerService(bc, tableManager, CyTableManager.class, new Properties());
-		registerAllServices(bc, networkTableManager, new Properties());
-		registerService(bc, tableManager, NetworkAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, tableManager, EquationFunctionAddedListener.class, new Properties());
-		registerService(bc, networkManager, CyNetworkManager.class, new Properties());
+		registerService(bc, networkFactory, CyNetworkFactory.class);
+		registerService(bc, tableFactory, CyTableFactory.class);
+		registerService(bc, rootNetworkFactory, CyRootNetworkManager.class);
+		registerService(bc, tableManager, CyTableManager.class);
+		registerAllServices(bc, networkTableManager);
+		registerService(bc, tableManager, NetworkAboutToBeDestroyedListener.class);
+		registerService(bc, tableManager, EquationFunctionAddedListener.class);
+		registerService(bc, networkManager, CyNetworkManager.class);
 	}
 }

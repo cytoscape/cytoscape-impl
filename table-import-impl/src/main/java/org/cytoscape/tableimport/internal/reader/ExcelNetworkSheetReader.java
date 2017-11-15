@@ -55,7 +55,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	private final Sheet sheet;
 	private final DataFormatter formatter;
 	private final FormulaEvaluator evaluator;
-	private static final Logger logger = LoggerFactory.getLogger(ExcelNetworkSheetReader.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	/*
 	 * Reader will read entries from this line.

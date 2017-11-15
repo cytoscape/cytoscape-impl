@@ -58,6 +58,6 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, gridNodeLayout, CyLayoutAlgorithm.class, props);
 		}
 
-		registerServiceListener(bc, layoutManager, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
+		registerServiceListener(bc, layoutManager::addLayout, layoutManager::removeLayout, CyLayoutAlgorithm.class);
 	}
 }

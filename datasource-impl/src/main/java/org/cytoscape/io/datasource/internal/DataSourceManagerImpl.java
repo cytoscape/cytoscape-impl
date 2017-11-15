@@ -50,7 +50,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 	 * Will be used by OSGi services
 	 * @param datasource
 	 */
-	public void addDataSource(final DataSource datasource, Map metadata) {
+	public void addDataSource(DataSource datasource, Map<String,String> metadata) {
 		if(datasource == null)
 			return;
 
@@ -69,7 +69,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 	}
 	
 	
-	public void removeDataSource(final DataSource datasource, Map metadata) {
+	public void removeDataSource(DataSource datasource, Map<String,String> metadata) {
 		if(datasource == null)
 			return;
 

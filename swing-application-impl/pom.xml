@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.cytoscape</groupId>
 		<artifactId>impl-parent</artifactId>
-		<version>3.5.1</version>
+		<version>3.6.0</version>
 	</parent>
 
 	<properties>
@@ -13,7 +13,6 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>swing-application-impl</artifactId>
-  <version>3.5.1</version>
 	<name>Cytoscape Swing Application Impl (${project.artifactId})</name>
 	<packaging>bundle</packaging>
 
@@ -202,6 +201,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>command-executor-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>app-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>cytoscape-sun</groupId>

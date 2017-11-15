@@ -1,5 +1,7 @@
 package org.cytoscape.view.vizmap.gui.internal.event;
 
+import static org.cytoscape.view.vizmap.gui.internal.util.ViewUtil.invokeOnEDT;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
@@ -29,8 +31,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
@@ -96,14 +96,8 @@ public class VizMapEventHandlerManagerImpl implements VizMapEventHandlerManager,
 
 		final VizMapEventHandler handler = getHandler(handlerKey.toUpperCase());
 		
-		if (handler != null) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					handler.processEvent(e);
-				}
-			});
-		}
+		if (handler != null)
+			invokeOnEDT(() -> handler.processEvent(e));
 	}
 
 	private void createHandlers(final VizMapPropertyBuilder vizMapPropertyBuilder,

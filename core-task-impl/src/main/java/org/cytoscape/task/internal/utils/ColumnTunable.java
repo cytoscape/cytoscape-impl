@@ -24,19 +24,16 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 
 public class ColumnTunable {
 	
-	@Tunable (description="Namespace for table", context="nogui")
+	@Tunable (description="Namespace for table", longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue="default", context="nogui")
 	public String namespace = "default";
 
-	@Tunable (description="Name of column", context="nogui")
+	@Tunable (description="Name of column", longDescription="Unique name of column", exampleStringValue="NewColumn", context="nogui")
 	public String column = null;
 
 	public ColumnTunable() {

@@ -8,6 +8,7 @@ import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
+import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
@@ -87,6 +88,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JPanel toolBar;
 	private JButton detachViewButton;
 	private JButton reattachViewButton;
+	private JButton exportButton;
 	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
@@ -103,6 +105,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep5 = new JSeparator(JSeparator.VERTICAL);
 	
     private boolean detached;
     private boolean comparing;
@@ -196,6 +199,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
 		sep2.setVisible(!isComparing());
+		getExportButton().setVisible(!isComparing());
+		sep3.setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
@@ -364,8 +369,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -379,8 +388,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -406,6 +417,16 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		return reattachViewButton;
+	}
+	
+	JButton getExportButton() {
+		if (exportButton == null) {
+			exportButton = new JButton(ICON_SHARE_SQUARE_O);
+			exportButton.setToolTipText("Export to File...");
+			styleToolBarButton(exportButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+		}
+		
+		return exportButton;
 	}
 	
 	JLabel getCurrentLabel() {
@@ -467,6 +488,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
+					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -474,6 +496,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getHiddenLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(0, 0, Short.MAX_VALUE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)

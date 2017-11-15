@@ -10,8 +10,7 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.internal.NullCyNetworkViewFactory;
+import org.cytoscape.task.internal.export.network.LoadNetworkURLTaskFactoryImpl;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
@@ -33,18 +32,16 @@ public class LoadNetworkURLTaskFactoryTest extends AbstractLoadNetworkTaskTester
 	
 	@Test
 	public void testObserver() throws Exception {
-
 		URLConnection con = mock(URLConnection.class);
 		StreamUtil streamUtil = mock(StreamUtil.class);
 		when(streamUtil.getURLConnection(url)).thenReturn(con);
 
-		CyNetworkViewFactory nullNetworkViewFactory = new NullCyNetworkViewFactory();
-		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(mgr, netmgr, networkViewManager,
-				props, namingUtil, streamUtil, vmm, nullNetworkViewFactory, serviceRegistrar);
+		LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
 
 		TaskMonitor taskMonitor = mock(TaskMonitor.class);
 		TaskObserver observer = mock(TaskObserver.class);
 		TaskIterator iterator = factory.createTaskIterator(url, observer);
+		
 		while (iterator.hasNext()) {
 			Task t = iterator.next();
 			t.run(taskMonitor);

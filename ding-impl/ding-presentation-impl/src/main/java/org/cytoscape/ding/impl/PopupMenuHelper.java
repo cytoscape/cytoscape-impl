@@ -1,9 +1,28 @@
 package org.cytoscape.ding.impl;
 
 import static org.cytoscape.work.ServiceProperties.APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_APPS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
@@ -55,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -324,16 +343,19 @@ class PopupMenuHelper {
 	 */
 	private void addMenuItem(View<?> view, JPopupMenu popup, NamedTaskFactory tf, Object tunableContext,
 			JMenuTracker tracker, Map props) {
-		String title = (String)(props.get(TITLE));
-		String pref = (String)(props.get(PREFERRED_MENU));
+		String title = (String) (props.get(TITLE));
+		String pref = (String) (props.get(PREFERRED_MENU));
 		String toolTip = (String) (props.get(TOOLTIP));
 		String menuGravity = (String) (props.get(MENU_GRAVITY));
-		String prefAction = (String)(props.get(PREFERRED_ACTION));
+		String prefAction = (String) (props.get(PREFERRED_ACTION));
 		boolean insertSepBefore = getBooleanProperty(props, INSERT_SEPARATOR_BEFORE);
 		boolean insertSepAfter = getBooleanProperty(props, INSERT_SEPARATOR_AFTER);
 		boolean useCheckBoxMenuItem = getBooleanProperty(props, "useCheckBoxMenuItem");
 		double gravity;
 
+		if ("View".equalsIgnoreCase(pref))
+			return; // TODO Should we show 'View' options here (e.g. zoom in/out, fit selected)?
+		
 		if (menuGravity != null) {
 			gravity = Double.parseDouble(menuGravity);
 		} else  {
@@ -349,28 +371,27 @@ class PopupMenuHelper {
 		}
 	
 		// otherwise create our own popup menus 
-		final Object targetVisualProperty = props.get("targetVP");
+		final Object targetVP = props.get("targetVP");
 		boolean isSelected = false;
 		
 		if (view != null) {
-			if (targetVisualProperty != null && targetVisualProperty instanceof String ) {
-				// TODO remove this at first opportunity whenever lookup gets refactored. 
+			if (targetVP != null && targetVP instanceof String) {
+				// TODO remove this at first opportunity whenever lookup gets refactored.
 				Class<?> clazz = CyNetwork.class;
-				
+
 				if (view.getModel() instanceof CyNode)
 					clazz = CyNode.class;
 				else if (view.getModel() instanceof CyEdge)
 					clazz = CyEdge.class;
 
-				final VisualProperty<?> vp = graphView.getVisualLexicon().lookup(clazz,
-						targetVisualProperty.toString());
-				
+				final VisualProperty<?> vp = graphView.getVisualLexicon().lookup(clazz, targetVP.toString());
+
 				if (vp == null)
 					isSelected = false;
 				else
 					isSelected = view.isValueLocked(vp);
-			} else if (targetVisualProperty instanceof VisualProperty) {
-				isSelected = view.isValueLocked((VisualProperty<?>) targetVisualProperty);
+			} else if (targetVP instanceof VisualProperty) {
+				isSelected = view.isValueLocked((VisualProperty<?>) targetVP);
 			}
 		}
 
@@ -382,21 +403,32 @@ class PopupMenuHelper {
 			if (last > 0) {
 				title = pref.substring(last + 1);
 				pref = pref.substring(0, last);
-				// System.out.println("no title, pref = "+pref);
+
+				if (APPS_MENU.equals(title))
+					return;
+
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
-				final JMenuItem item = createMenuItem(tf, title,useCheckBoxMenuItem, toolTip);
+				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
+
 				if (useCheckBoxMenuItem) {
-					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem)item; 
+					final JCheckBoxMenuItem checkBox = (JCheckBoxMenuItem) item;
 					checkBox.setSelected(isSelected);
 				}
+
 				if (insertSepBefore)
-					gravityTracker.addMenuSeparator(gravity-.0001);
+					gravityTracker.addMenuSeparator(gravity - .0001);
+
 				gravityTracker.addMenuItem(item, gravity);
+
 				if (insertSepAfter)
-					gravityTracker.addMenuSeparator(gravity+.0001);
-			// otherwise just use the preferred menu as the menuitem name
+					gravityTracker.addMenuSeparator(gravity + .0001);
 			} else {
+				// otherwise just use the preferred menu as the menuitem name
 				title = pref;
+				
+				if (APPS_MENU.equals(title))
+					return;
+				
 				// popup.add( createMenuItem(tf, title, useCheckBoxMenuItem, toolTip) );
 				final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
 				final JMenuItem item = createMenuItem(tf, title, useCheckBoxMenuItem, toolTip);
@@ -405,13 +437,15 @@ class PopupMenuHelper {
 
 		// title and preferred menu
 		} else {
-			// System.out.println("title, pref = "+pref);
 			final GravityTracker gravityTracker = tracker.getGravityTracker(pref);
+			
 			if (insertSepBefore)
-				gravityTracker.addMenuSeparator(gravity-.0001);
-			gravityTracker.addMenuItem(createMenuItem(tf, title,useCheckBoxMenuItem, toolTip), gravity);
+				gravityTracker.addMenuSeparator(gravity - .0001);
+
+			gravityTracker.addMenuItem(createMenuItem(tf, title, useCheckBoxMenuItem, toolTip), gravity);
+
 			if (insertSepAfter)
-				gravityTracker.addMenuSeparator(gravity+.0001);
+				gravityTracker.addMenuSeparator(gravity + .0001);
 		}
 	}
 
@@ -448,46 +482,47 @@ class PopupMenuHelper {
 	// some very unfortunate order effects if a bundle doesn't
 	// use the right context menu specifiers
 	private void initializeNetworkTracker(JMenuTracker tracker) {
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU);
-		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_LAYOUT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU);
+		tracker.getGravityTracker(NETWORK_ADD_MENU);
+		tracker.getGravityTracker(NETWORK_DELETE_MENU);
+		tracker.getGravityTracker(NETWORK_EDIT_MENU);
+		tracker.getGravityTracker(NETWORK_SELECT_MENU);
+		tracker.getGravityTracker(NETWORK_GROUP_MENU);
+		// tracker.getGravityTracker(NETWORK_LAYOUT_MENU);
+		tracker.getGravityTracker(NETWORK_APPS_MENU);
+		tracker.getGravityTracker(NETWORK_PREFERENCES_MENU);
 	}
 	
 	// We need to "seed" the tracker menu or we wind up with
 	// some very unfortunate order effects if a bundle doesn't
 	// use the right context menu specifiers
 	private void initializeNodeTracker(JMenuTracker tracker) {
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_APPS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU);
-		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_DYNAMIC_LINKOUTS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU);
+		tracker.getGravityTracker(NODE_EDIT_MENU);
+		tracker.getGravityTracker(NODE_SELECT_MENU);
+		tracker.getGravityTracker(NODE_GROUP_MENU);
+		tracker.getGravityTracker(NODE_NESTED_NETWORKS_MENU);
+		tracker.getGravityTracker(NODE_APPS_MENU);
+		tracker.getGravityTracker(NODE_LINKOUTS_MENU);
+		// tracker.getGravityTracker(NODE_DYNAMIC_LINKOUTS_MENU);
+		tracker.getGravityTracker(NODE_PREFERENCES_MENU);
 	}
 	
 	// We need to "seed" the tracker menu or we wind up with
 	// some very unfortunate order effects if a bundle doesn't
 	// use the right context menu specifiers
 	private void initializeEdgeTracker(JMenuTracker tracker) {
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU);
-		// tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_DYNAMIC_LINKOUTS_MENU);
-		tracker.getGravityTracker(org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU);
+		tracker.getGravityTracker(EDGE_EDIT_MENU);
+		tracker.getGravityTracker(EDGE_SELECT_MENU);
+		tracker.getGravityTracker(EDGE_APPS_MENU);
+		tracker.getGravityTracker(EDGE_LINKOUTS_MENU);
+		// tracker.getGravityTracker(EDGE_DYNAMIC_LINKOUTS_MENU);
+		tracker.getGravityTracker(EDGE_PREFERENCES_MENU);
 	}
 
 	private JMenuItem createMenuItem(TaskFactory tf, String title, boolean useCheckBoxMenuItem, String toolTipText) {
 		JMenuItem item;
 		PopupAction action = new PopupAction(tf, title);
-		if ( useCheckBoxMenuItem )
+		
+		if (useCheckBoxMenuItem)
 			item = new JCheckBoxMenuItem(action);
 		else
 			item = new JMenuItem(action);
@@ -497,6 +532,7 @@ class PopupMenuHelper {
 		action.setEnabled(ready);
 
 		item.setToolTipText(toolTipText);
+		
 		return item;
 	}
 

@@ -55,7 +55,7 @@ public class CompositeFilter implements CyFilter {
 	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<CompositeFilter, Boolean>();
 	protected CyApplicationManager applicationManager;
 	
-	private static Logger logger = LoggerFactory.getLogger(CompositeFilter.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public CompositeFilter(CyApplicationManager applicationManager) {
 		advancedSetting = new AdvancedSetting();

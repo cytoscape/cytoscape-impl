@@ -12,6 +12,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -237,9 +238,13 @@ public class NullNetworkViewPanel extends JPanel {
 	private JLabel getInfoLabel() {
 		if (infoLabel == null) {
 			infoLabel = new JLabel("No networks selected");
-			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f));
+			infoLabel.setFont(infoLabel.getFont().deriveFont(18.0f).deriveFont(Font.BOLD));
 			infoLabel.setEnabled(false);
 			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			
+			Color c = UIManager.getColor("Label.disabledForeground");
+			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
+			infoLabel.setForeground(c);
 		}
 		
 		return infoLabel;

@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.awt.Component;
+import java.util.Collections;
 import java.util.Properties;
 
 import javax.swing.Icon;
@@ -15,6 +16,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.io.util.RecentlyOpenedTracker;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -36,6 +38,7 @@ public class CytoscapeDesktopTest {
 	@Mock CyEventHelper eh;
 	@Mock DialogTaskManager taskMgr;
 	@Mock StatusBarPanelFactory taskStatusPanelFactory;
+	@Mock RecentlyOpenedTracker fileTracker;
 	@Mock IconManager icoMgr;
 	
 	@Before
@@ -44,12 +47,14 @@ public class CytoscapeDesktopTest {
 		when(registrar.getService(CyShutdown.class)).thenReturn(shut);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(eh);
 		when(registrar.getService(DialogTaskManager.class)).thenReturn(taskMgr);
+		when(registrar.getService(RecentlyOpenedTracker.class)).thenReturn(fileTracker);
 		when(registrar.getService(IconManager.class)).thenReturn(icoMgr);
 		
 		final JPanel panel = new JPanel();
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);
+		when(fileTracker.getRecentlyOpenedURLs()).thenReturn(Collections.emptyList());
 		
-		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(), new CytoscapeToolBar());
+		CytoscapeMenus menus = new CytoscapeMenus(new CytoscapeMenuBar(registrar), new CytoscapeToolBar(registrar));
 		
 		desktop = new CytoscapeDesktop(menus, netViewMediator, registrar);
 	}

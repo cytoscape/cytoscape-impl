@@ -33,6 +33,7 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ class TFExecutor implements Executor {
 	private final TaskFactory tf;
 	private final CommandTunableInterceptorImpl interceptor; 
 	private final OutTaskMonitor tm = new OutTaskMonitor(); 
-	private static final Logger logger = LoggerFactory.getLogger(TFExecutor.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public TFExecutor(TaskFactory tf, CommandTunableInterceptorImpl interceptor) {
 		this.tf = tf;
@@ -126,7 +127,7 @@ class TFExecutor implements Executor {
 
 		public void setTask(final Task newTask) {
 			this.task = newTask;
-			this.messageLogger = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
+			this.messageLogger = LoggerFactory.getLogger(CyUserLog.NAME);
 			// System.out.println("OutTaskMonitor: logging to "+LOG_PREFIX+"."+newTask.getClass().getName());
 			// this.messageLogger = LoggerFactory.getLogger(LOG_PREFIX);
 			// System.out.println("OutTaskMonitor: logging to "+LOG_PREFIX);

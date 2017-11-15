@@ -6,3 +6,7 @@ target/
 .classpath
 bin/
 *node_modules/
+
+# for JetBrains IDE
+*.iml
+.idea/*

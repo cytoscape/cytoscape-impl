@@ -61,17 +61,17 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SyncTaskManager syncTaskManager = new SyncTaskManager(mutatorFactory.createMutator());
 		registerService(bc,syncTaskManager,SynchronousTaskManager.class, syncFactoryProp);
-		registerServiceListener(bc,syncTaskManager,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+		registerServiceListener(bc,syncTaskManager::addTunableRecorder,syncTaskManager::removeTunableRecorder,TunableRecorder.class);
 		
 		TunableRecorderManager trm = new TunableRecorderManager();
-		registerServiceListener(bc,trm,"addTunableRecorder","removeTunableRecorder",TunableRecorder.class);
+		registerServiceListener(bc,trm::addTunableRecorder,trm::removeTunableRecorder,TunableRecorder.class);
 
 		TunableSetterImpl tsi = new TunableSetterImpl(mutatorFactory,trm);
 		registerService(bc,tsi,TunableSetter.class);		
 		
 		TunablePropertySerializerFactoryImpl tpsf = new TunablePropertySerializerFactoryImpl();
 		registerService(bc, tpsf, TunablePropertySerializerFactory.class);
-		registerServiceListener(bc, tpsf, "addTunableHandlerFactory", "removeTunableHandlerFactory", TunablePropertyHandlerFactory.class);
+		registerServiceListener(bc, tpsf::addTunableHandlerFactory, tpsf::removeTunableHandlerFactory, TunablePropertyHandlerFactory.class);
 		
 		TunablePropertyHandlerFactory<BasicTypePropertyHandler> simpleHandler = new SimpleTunablePropertyHandlerFactory<>(BasicTypePropertyHandler.class, BasicTypePropertyHandler.supportedTypes());
 		TunablePropertyHandlerFactory<ListSinglePropertyHandler> listSingleHandler = new SimpleTunablePropertyHandlerFactory<>(ListSinglePropertyHandler.class, ListSingleSelection.class);

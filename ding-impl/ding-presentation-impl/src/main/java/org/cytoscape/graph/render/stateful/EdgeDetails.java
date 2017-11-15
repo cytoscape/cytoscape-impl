@@ -10,6 +10,8 @@ import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.Position;
 
 /*
  * #%L
@@ -45,21 +47,23 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
  */
 public abstract class EdgeDetails {
 	/**
+	 * ******* This is not used anymore *************
 	 * Specifies that an anchor point lies at the midpoint of an edge.
-	 */
+	 *
 	public static final byte EDGE_ANCHOR_MIDPOINT = 16;
 
 	/**
 	 * Specifies that an anchor point lies at an edge's endpoint at source
 	 * node.
-	 */
+	 *
 	public static final byte EDGE_ANCHOR_SOURCE = 17;
 
 	/**
 	 * Specifies that an anchor point lies at an edge's endpoint at target
 	 * node.
-	 */
+	 *
 	public static final byte EDGE_ANCHOR_TARGET = 18;
+	*/
 
 
 	/**
@@ -278,8 +282,8 @@ public abstract class EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte getLabelTextAnchor(final CyEdge edge, final int labelInx) {
-		return NodeDetails.ANCHOR_CENTER;
+	public Position getLabelTextAnchor(final CyEdge edge, final int labelInx) {
+		return Position.CENTER;
 	}
 
 	/**
@@ -299,8 +303,8 @@ public abstract class EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte getLabelEdgeAnchor(final CyEdge edge, final int labelInx) {
-		return EDGE_ANCHOR_MIDPOINT;
+	public Position getLabelEdgeAnchor(final CyEdge edge, final int labelInx) {
+		return Position.CENTER;
 	}
 
 	/**
@@ -355,8 +359,8 @@ public abstract class EdgeDetails {
 	 * multiple lines.
 	 * @see NodeDetails#LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public byte getLabelJustify(final CyEdge edge, final int labelInx) {
-		return NodeDetails.LABEL_WRAP_JUSTIFY_CENTER;
+	public Justification getLabelJustify(final CyEdge edge, final int labelInx) {
+		return Justification.JUSTIFY_CENTER;
 	}
 
 	/**

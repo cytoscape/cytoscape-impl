@@ -24,18 +24,17 @@ package org.cytoscape.ding.impl.visualproperty;
  * #L%
  */
 
-import org.cytoscape.ding.ObjectPosition;
-import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.view.model.AbstractVisualProperty;
 import org.cytoscape.view.model.ContinuousRange;
 import org.cytoscape.view.model.Range;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectPosition> {
 	
 	private static final Range<ObjectPosition> OBJECT_POSITION_RANGE;
 	
-	private static final ObjectPosition MIN_OBJECT = ObjectPositionImpl.DEFAULT_POSITION;
+	private static final ObjectPosition MIN_OBJECT = ObjectPosition.DEFAULT_POSITION;
 
 	static {
 		OBJECT_POSITION_RANGE = new ContinuousRange<ObjectPosition>(ObjectPosition.class, MIN_OBJECT, MIN_OBJECT, true, true);
@@ -54,7 +53,7 @@ public class ObjectPositionVisualProperty extends AbstractVisualProperty<ObjectP
 
 	@Override
 	public ObjectPosition parseSerializableString(final String objectPositionString) {
-		return ObjectPositionImpl.parse(objectPositionString);
+		return ObjectPosition.parse(objectPositionString);
 	}
 
 }

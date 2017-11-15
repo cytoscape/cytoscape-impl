@@ -56,7 +56,7 @@ import com.lowagie.text.List;
 import com.lowagie.text.pdf.codec.Base64.OutputStream;
 
 public class BitmapWriterTest {
-	private static final Logger logger = LoggerFactory.getLogger(PDFWriterTest.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	protected BitmapWriter bw;
 	int initHP, initWP;

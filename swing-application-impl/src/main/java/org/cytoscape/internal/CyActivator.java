@@ -27,7 +27,6 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownListener;
@@ -37,6 +36,7 @@ import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CreateNetworkViewsAction;
@@ -45,11 +45,14 @@ import org.cytoscape.internal.actions.DestroyNetworkViewsAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
 import org.cytoscape.internal.actions.DetachedViewToolBarAction;
 import org.cytoscape.internal.actions.ExitAction;
+import org.cytoscape.internal.actions.ExportImageAction;
+import org.cytoscape.internal.actions.ExportNetworkAction;
 import org.cytoscape.internal.actions.FullScreenAction;
 import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
+import org.cytoscape.internal.actions.StarterPanelAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
@@ -61,6 +64,8 @@ import org.cytoscape.internal.select.RowsSetViewUpdater;
 import org.cytoscape.internal.select.SelectEdgeViewUpdater;
 import org.cytoscape.internal.select.SelectNodeViewUpdater;
 import org.cytoscape.internal.shutdown.ConfigDirPropertyWriter;
+import org.cytoscape.internal.tunable.CyPropertyConfirmation;
+import org.cytoscape.internal.tunable.CyPropertyConfirmationHandler;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
@@ -77,6 +82,8 @@ import org.cytoscape.internal.view.GridViewToggleModel;
 import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
+import org.cytoscape.internal.view.NetworkSearchBar;
+import org.cytoscape.internal.view.NetworkSearchMediator;
 import org.cytoscape.internal.view.NetworkSelectionMediator;
 import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -103,6 +110,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +122,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -135,11 +144,13 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
-	private static Logger logger = LoggerFactory.getLogger(CyActivator.class);
+	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private CytoscapeMenus cytoscapeMenus;
 	private ToolBarEnableUpdater toolBarEnableUpdater;
 	
+	private NetworkSearchBar netSearchBar;
+	private NetworkSearchMediator netSearchMediator;
 	private NetworkMainPanel netMainPanel;
 	private NetworkMediator netMediator;
 	private ViewComparator viewComparator;
@@ -177,7 +188,7 @@ public class CyActivator extends AbstractCyActivator {
 	private RowsSetViewUpdater rowsSetViewUpdater;
 	
 	private RecentSessionManager recentSessionManager;
-	private NetworkSelectionMediator networkSelectionMediator;
+	private NetworkSelectionMediator netSelectionMediator;
 	
 	///// CyActions ////
 	private UndoAction undoAction;
@@ -194,11 +205,14 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoPanelAction cytoPanelEastAction;
 	private CytoPanelAction cytoPanelSouthWestAction;
 
+	private StarterPanelAction starterPanelAction;
 	private DetachedViewToolBarAction detachedViewToolBarAction;
 	private CloseWindowAction closeWindowAction;
 	private CreateNetworkViewsAction createNetworkViewsAction;
 	private DestroyNetworkViewsAction destroyNetworkViewsAction;
 	private DestroyNetworksAction destroyNetworksAction;
+	private ExportNetworkAction exportNetworkAction;
+	private ExportImageAction exportImageAction;
 	
 	@Override
 	public void start(final BundleContext bc) throws Exception {
@@ -210,33 +224,38 @@ public class CyActivator extends AbstractCyActivator {
 		
 		//////////////
 		ConfigDirPropertyWriter configDirPropertyWriter = new ConfigDirPropertyWriter(serviceRegistrar);
-		registerService(bc, configDirPropertyWriter, CyShutdownListener.class, new Properties());
+		registerService(bc, configDirPropertyWriter, CyShutdownListener.class);
 		
 		CyHelpBrokerImpl cyHelpBroker = new CyHelpBrokerImpl();
-		registerService(bc, cyHelpBroker, CyHelpBroker.class, new Properties());
-		registerServiceListener(bc, configDirPropertyWriter, "addCyProperty", "removeCyProperty", CyProperty.class);
+		registerService(bc, cyHelpBroker, CyHelpBroker.class);
+		registerServiceListener(bc, configDirPropertyWriter::addCyProperty, configDirPropertyWriter::removeCyProperty, CyProperty.class);
+		
+		SimpleGUITunableHandlerFactory<CyPropertyConfirmationHandler> cyPropConfirmHandlerFactory =
+				new SimpleGUITunableHandlerFactory<>(CyPropertyConfirmationHandler.class, CyPropertyConfirmation.class);
+		registerService(bc, cyPropConfirmHandlerFactory, GUITunableHandlerFactory.class);
 		
 		invokeOnEDTAndWait(() -> {
 			initComponents(bc, serviceRegistrar);
 		});
 		
-		registerService(bc, undoAction, CyAction.class, new Properties());
-		registerService(bc, redoAction, CyAction.class, new Properties());
-		registerService(bc, printAction, CyAction.class, new Properties());
-		registerService(bc, preferenceAction, CyAction.class, new Properties());
-		registerService(bc, bookmarkAction, CyAction.class, new Properties());
-		registerService(bc, settingsAction, CyAction.class, new Properties());
-		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class, new Properties());
-		registerService(bc, cytoPanelWestAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelSouthAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelEastAction, CyAction.class, new Properties());
-		registerService(bc, cytoPanelSouthWestAction, CyAction.class, new Properties());
-		registerService(bc, detachedViewToolBarAction, CyAction.class, new Properties());
-		registerService(bc, closeWindowAction, CyAction.class, new Properties());
+		registerService(bc, undoAction, CyAction.class);
+		registerService(bc, redoAction, CyAction.class);
+		registerService(bc, printAction, CyAction.class);
+		registerService(bc, preferenceAction, CyAction.class);
+		registerService(bc, bookmarkAction, CyAction.class);
+		registerService(bc, settingsAction, CyAction.class);
+		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class);
+		registerService(bc, cytoPanelWestAction, CyAction.class);
+		registerService(bc, cytoPanelSouthAction, CyAction.class);
+		registerService(bc, cytoPanelEastAction, CyAction.class);
+		registerService(bc, cytoPanelSouthWestAction, CyAction.class);
+		registerService(bc, starterPanelAction, CyAction.class);
+		registerService(bc, detachedViewToolBarAction, CyAction.class);
+		registerService(bc, closeWindowAction, CyAction.class);
 		
-		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class, new Properties());
+		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class);
 		
-		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class, new Properties());
+		registerService(bc, bookmarkDialogFactory, SessionLoadedListener.class);
 
 		{
 			Properties props = new Properties();
@@ -308,61 +327,57 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 			registerAllServices(bc, destroyNetworksAction, props);
 		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, exportNetworkAction, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, exportImageAction, props);
+		}
 		
-		registerAllServices(bc, cytoscapeDesktop, new Properties());
-		registerAllServices(bc, netMainPanel, new Properties());
-		registerAllServices(bc, netMediator, new Properties());
-		registerAllServices(bc, netViewMediator, new Properties());
-		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class, new Properties());
-		registerService(bc, undoMonitor, NetworkDestroyedListener.class, new Properties());
-		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class, new Properties());
-		registerAllServices(bc, rowViewTracker, new Properties());
-		registerAllServices(bc, selecteEdgeViewUpdater, new Properties());
-		registerAllServices(bc, selecteNodeViewUpdater, new Properties());
+		registerAllServices(bc, cytoscapeDesktop);
+		registerAllServices(bc, netMainPanel);
+		registerAllServices(bc, netMediator);
+		registerAllServices(bc, netViewMediator);
+		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class);
+		registerService(bc, undoMonitor, NetworkDestroyedListener.class);
+		registerService(bc, undoMonitor, NetworkViewDestroyedListener.class);
+		registerAllServices(bc, rowViewTracker);
+		registerAllServices(bc, selecteEdgeViewUpdater);
+		registerAllServices(bc, selecteNodeViewUpdater);
 
-		registerAllServices(bc, rowsSetViewUpdater, new Properties());
+		registerAllServices(bc, rowsSetViewUpdater);
 		
-		registerAllServices(bc, sessionHandler, new Properties());
-		registerAllServices(bc, toolBarEnableUpdater, new Properties());
-		registerAllServices(bc, recentSessionManager, new Properties());
-		registerAllServices(bc, networkSelectionMediator, new Properties());
+		registerAllServices(bc, sessionHandler);
+		registerAllServices(bc, toolBarEnableUpdater);
+		registerAllServices(bc, recentSessionManager);
+		registerAllServices(bc, netSelectionMediator);
+		registerAllServices(bc, netSearchMediator);
 
-		registerServiceListener(bc, cytoscapeDesktop, "addAction", "removeAction", CyAction.class);
-		registerServiceListener(bc, preferenceAction, "addCyProperty", "removeCyProperty",
-		                        CyProperty.class);
-		registerServiceListener(bc, cytoscapeDesktop, "addCytoPanelComponent",
-		                        "removeCytoPanelComponent", CytoPanelComponent.class);
-		registerServiceListener(bc, cytoscapeDesktop, "addToolBarComponent",
-		                        "removeToolBarComponent", ToolBarComponent.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addTaskFactory", "removeTaskFactory",
-		                        TaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkTaskFactory",
-		                        "removeNetworkTaskFactory", NetworkTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkViewTaskFactory",
-		                        "removeNetworkViewTaskFactory", NetworkViewTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkCollectionTaskFactory",
-		                        "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addNetworkViewCollectionTaskFactory",
-		                        "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class);
-		registerServiceListener(bc, cytoscapeMenuPopulator, "addTableTaskFactory",
-		                        "removeTableTaskFactory", TableTaskFactory.class);
-		registerServiceListener(bc, layoutSettingsManager, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
-		registerServiceListener(bc, settingsAction, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
+		registerServiceListener(bc, cytoscapeDesktop::addAction, cytoscapeDesktop::removeAction, CyAction.class);
+		registerServiceListener(bc, preferenceAction::addCyProperty, preferenceAction::removeCyProperty, CyProperty.class);
+		registerServiceListener(bc, cytoscapeDesktop::addCytoPanelComponent, cytoscapeDesktop::removeCytoPanelComponent, CytoPanelComponent.class);
+		registerServiceListener(bc, cytoscapeDesktop::addToolBarComponent, cytoscapeDesktop::removeToolBarComponent, ToolBarComponent.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addTaskFactory, cytoscapeMenuPopulator::removeTaskFactory, TaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkTaskFactory, cytoscapeMenuPopulator::removeNetworkTaskFactory, NetworkTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewTaskFactory, cytoscapeMenuPopulator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addTableTaskFactory, cytoscapeMenuPopulator::removeTableTaskFactory, TableTaskFactory.class);
+		registerServiceListener(bc, layoutSettingsManager::addLayout, layoutSettingsManager::removeLayout, CyLayoutAlgorithm.class);
+		registerServiceListener(bc, settingsAction::addLayout, settingsAction::removeLayout, CyLayoutAlgorithm.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, netMediator, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
-				                NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkTaskFactory", "removeNetworkTaskFactory",
-				                NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkViewCollectionTaskFactory", "removeNetworkViewCollectionTaskFactory",
-		                        NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addNetworkCollectionTaskFactory", "removeNetworkCollectionTaskFactory",
-		                        NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
-		registerServiceListener(bc, netMediator, "addCyAction", "removeCyAction", CyAction.class, CONTEXT_MENU_FILTER);
-		
-		registerServiceListener(bc, layoutMenuPopulator, "addLayout", "removeLayout", CyLayoutAlgorithm.class);
+		registerServiceListener(bc, netMediator::addNetworkViewTaskFactory, netMediator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkTaskFactory, netMediator::removeNetworkTaskFactory, NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkViewCollectionTaskFactory, netMediator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addNetworkCollectionTaskFactory, netMediator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addCyAction, netMediator::removeCyAction, CyAction.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netSearchMediator::addNetworkSearchTaskFactory, netSearchMediator::removeNetworkSearchTaskFactory, NetworkSearchTaskFactory.class);
+		registerServiceListener(bc, layoutMenuPopulator::addLayout, layoutMenuPopulator::removeLayout, CyLayoutAlgorithm.class);
 		
 		if (LookAndFeelUtil.isMac()) {
 			try {
@@ -373,38 +388,37 @@ public class CyActivator extends AbstractCyActivator {
 		} else {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Help");
-			props.setProperty(TITLE, "About...");
+			props.setProperty(TITLE, "About");
 			props.setProperty(MENU_GRAVITY,"10.0");
 			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
 			
-			registerService(bc, exitAction, CyAction.class, new Properties());
+			registerService(bc, exitAction, CyAction.class);
 		}
 	
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
 		
-		if (LookAndFeelUtil.isMac()) {
-			if (MacFullScreenEnabler.supportsNativeFullScreenMode())
-				fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
-			else
-				fullScreenAction = new FullScreenAction(cytoscapeDesktop);
-		} else {
+		if (LookAndFeelUtil.isMac() && MacFullScreenEnabler.supportsNativeFullScreenMode())
+			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
+		else
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
-		}
 		
-		registerService(bc, fullScreenAction, CyAction.class, new Properties());
+		registerService(bc, fullScreenAction, CyAction.class);
 	}
 
 	private void initComponents(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
 		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 		
-		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar();
-		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar();
+		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar(serviceRegistrar);
+		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
 		cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
 		toolBarEnableUpdater = new ToolBarEnableUpdater(cytoscapeToolBar, serviceRegistrar);
 		
-		netMainPanel = new NetworkMainPanel(serviceRegistrar);
+		netSearchBar = new NetworkSearchBar(serviceRegistrar);
+		netSearchMediator = new NetworkSearchMediator(netSearchBar, serviceRegistrar);
+		
+		netMainPanel = new NetworkMainPanel(netSearchBar, serviceRegistrar);
 		netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
 		
 		viewComparator = new ViewComparator(netMainPanel);
@@ -444,7 +458,7 @@ public class CyActivator extends AbstractCyActivator {
 		rowsSetViewUpdater = new RowsSetViewUpdater(rowViewTracker, netViewMediator, serviceRegistrar);
 
 		recentSessionManager = new RecentSessionManager(serviceRegistrar);
-		networkSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
+		netSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
 		
 		///// CyActions ////
 		undoAction = new UndoAction(serviceRegistrar);
@@ -461,17 +475,20 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
 		cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
 		
-		detachedViewToolBarAction = new DetachedViewToolBarAction(1.4f, netViewMediator);
+		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
+		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
+		
 		closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
 		createNetworkViewsAction = new CreateNetworkViewsAction(3.0f, serviceRegistrar);
 		destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);
 		destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
+		exportNetworkAction = new ExportNetworkAction(1000.1f, serviceRegistrar);
+		exportImageAction = new ExportImageAction(1000.2f, serviceRegistrar);
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {
+		// Set Look and Feel
 		final Properties props = getCy3Property(bc).getProperties();
-		
-		// Update look and feel
 		String lookAndFeel = props.getProperty("lookAndFeel");
 		
 		if (lookAndFeel == null) {
@@ -480,18 +497,36 @@ public class CyActivator extends AbstractCyActivator {
 			else // Use Nimbus on *nix systems
 				lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 		}
-		
+			
 		try {
 			logger.debug("Setting look and feel to: " + lookAndFeel);
 			UIManager.setLookAndFeel(lookAndFeel);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			logger.error("Unexpected error", e);
-		} catch (InstantiationException e) {
-			logger.error("Unexpected error", e);
-		} catch (IllegalAccessException e) {
-			logger.error("Unexpected error", e);
-		} catch (UnsupportedLookAndFeelException e) {
-			logger.error("Unexpected error", e);
+		}
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			final boolean useScreenMenuBar;
+			String useScreenMenuBarVal = props.getProperty("useScreenMenuBar");
+			
+			if ("true".equalsIgnoreCase(useScreenMenuBarVal)) {
+				useScreenMenuBar = true;
+			} else if ("false".equalsIgnoreCase(useScreenMenuBarVal)) {
+				useScreenMenuBar = false;
+			} else {
+				// Use the regular window menu bar if it's High Sierra and the system is set to any other
+				// language other than English, to work around a bug in High Sierra where the screen menu
+				// disappears.
+				// See http://code.cytoscape.org/redmine/issues/3967 and
+				//     https://github.com/arduino/Arduino/issues/6548
+				String language = Locale.getDefault().getLanguage();
+				String version = System.getProperty("os.version");
+				boolean highSierra = version.startsWith("10.13");
+				boolean english = language.equals(new Locale("en").getLanguage());
+				useScreenMenuBar = !(highSierra && !english);
+			}
+			
+			System.setProperty("apple.laf.useScreenMenuBar", "" + useScreenMenuBar);
 		}
 		
 		try {

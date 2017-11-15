@@ -18,7 +18,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -65,13 +65,13 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty("service.type", "factory");
 			props.setProperty("mapping.type", "passthrough");
 			registerService(bc, pmFactory, VisualMappingFunctionFactory.class, props);
-			registerServiceListener(bc, pmFactory, "addValueTranslator", "removeValueTranslator", ValueTranslator.class);
+			registerServiceListener(bc, pmFactory::addValueTranslator, pmFactory::removeValueTranslator, ValueTranslator.class);
 		}
 		
 		final VisualStyleFactoryImpl visualStyleFactory = new VisualStyleFactoryImpl(serviceRegistrar, pmFactory);
-		registerService(bc, visualStyleFactory, VisualStyleFactory.class, new Properties());
+		registerService(bc, visualStyleFactory, VisualStyleFactory.class);
 		
 		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
-		registerAllServices(bc, visualMappingManager, new Properties());
+		registerAllServices(bc, visualMappingManager);
 	}
 }

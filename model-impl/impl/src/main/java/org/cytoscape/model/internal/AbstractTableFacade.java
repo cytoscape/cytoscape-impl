@@ -27,7 +27,6 @@ package org.cytoscape.model.internal;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +49,7 @@ import com.google.common.collect.MapMaker;
  */
 public abstract class AbstractTableFacade implements CyTable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(AbstractTableFacade.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private final CyTable actual;
 	private final CyEventHelper cyEventHelper;
@@ -58,6 +57,8 @@ public abstract class AbstractTableFacade implements CyTable {
 	private final Map<CyRow,CyRow> facadeRows;
 	private final Map<CyColumn,CyColumn> facadeColumns;
 	private boolean isPublic = true;
+	
+	private final Object lock = new Object();
 
 	public AbstractTableFacade(final CyTable actual, final CyEventHelper eventHelper) {
 		this.actual = actual;
@@ -117,13 +118,16 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	private final CyColumn getFacadeColumn(final CyColumn actualColumn) {
-		CyColumn ret = facadeColumns.get(actualColumn);
-		if ( ret == null ) {
-			ret = new ColumnFacade(actualColumn);
-			facadeColumns.put(actualColumn,ret);
+		synchronized (lock) {
+			CyColumn ret = facadeColumns.get(actualColumn);
+			
+			if (ret == null) {
+				ret = new ColumnFacade(actualColumn);
+				facadeColumns.put(actualColumn, ret);
+			}
+			
+			return ret;
 		}
-		
-		return ret;
 	}
 
 	@Override
@@ -132,9 +136,11 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	private final Collection<CyColumn> getFacadeColumns(final Collection<CyColumn> columns) {
-		List<CyColumn> facadeColumns = new ArrayList<CyColumn>( columns.size() ); 
-		for ( CyColumn column : columns )
-			facadeColumns.add( getFacadeColumn(column) ); 
+		List<CyColumn> facadeColumns = new ArrayList<>(columns.size());
+		
+		synchronized (lock) {
+			columns.forEach(c -> facadeColumns.add(getFacadeColumn(c)));
+		}
 
 		return facadeColumns;
 	}
@@ -142,20 +148,24 @@ public abstract class AbstractTableFacade implements CyTable {
 	@Override
 	public CyRow getRow(final Object primaryKey) {
 		CyRow actualRow = actual.getRow(primaryKey);
-		if ( actualRow == null )
+		
+		if (actualRow == null)
 			return null;
 		
 		return getFacadeRow(actualRow);
 	}
 
 	private final CyRow getFacadeRow(final CyRow actualRow) {
-		CyRow ret = facadeRows.get(actualRow);
-		if ( ret == null ) { 
-			ret = new RowFacade(actualRow,this);
-			facadeRows.put(actualRow,ret);
+		synchronized (lock) {
+			CyRow ret = facadeRows.get(actualRow);
+			
+			if (ret == null) {
+				ret = new RowFacade(actualRow, this);
+				facadeRows.put(actualRow, ret);
+			}
+	
+			return ret;
 		}
-
-		return ret; 
 	}
 	
 	@Override
@@ -166,16 +176,21 @@ public abstract class AbstractTableFacade implements CyTable {
 	@Override
 	public boolean deleteRows(Collection<?> primaryKeys) {
 		// First, remove the rows from the facade table
-		for (Object primaryKey: primaryKeys) {
-			CyRow row = actual.getRow(primaryKey);
-			if (row != null && facadeRows.containsKey(row))
-				facadeRows.remove(row);
+		for (Object pk : primaryKeys) {
+			CyRow row = actual.getRow(pk);
+
+			synchronized (lock) {
+				if (row != null && facadeRows.containsKey(row))
+					facadeRows.remove(row);
+			}
 		}
 
 		// Now delete the rows from the actual table
 		boolean changed = actual.deleteRows(primaryKeys); 
-		if(changed)
-			cyEventHelper.fireEvent(new RowsDeletedEvent( this,  (Collection<Object>) primaryKeys));
+		
+		if (changed)
+			cyEventHelper.fireEvent(new RowsDeletedEvent(this, (Collection<Object>) primaryKeys));
+		
 		return changed;
 	}
 
@@ -195,9 +210,10 @@ public abstract class AbstractTableFacade implements CyTable {
 	}
 
 	private final List<CyRow> getFacadeRows(final Collection<CyRow> rows) {
-		final List<CyRow> frows = new ArrayList<CyRow>( rows.size() ); 
+		final List<CyRow> frows = new ArrayList<>(rows.size());
+
 		for (final CyRow r : rows)
-			frows.add( getFacadeRow(r) ); 
+			frows.add(getFacadeRow(r));
 
 		return frows;
 	}

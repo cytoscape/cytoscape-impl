@@ -25,24 +25,34 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 public class GetNetworkTask extends AbstractTask implements ObservableTask{
 	CyApplicationManager appMgr;
+	CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="Network to return", context="nogui")
+	@Tunable(description="Network to return", 
+	         longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+					 exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network;
 
-	public GetNetworkTask(CyApplicationManager appMgr) {
+	public GetNetworkTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -50,6 +60,8 @@ public class GetNetworkTask extends AbstractTask implements ObservableTask{
 		if (network == null) network = appMgr.getCurrentNetwork();
 	}
 
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(CyNetwork.class)) {
 			return network;
@@ -57,7 +69,20 @@ public class GetNetworkTask extends AbstractTask implements ObservableTask{
 			if (network == null)
 				return "<none>";
 			return network.toString();
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (network == null)
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.toJson(network);
+			}};
+			return res;
 		}
 		return network;
+	}
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}
 }

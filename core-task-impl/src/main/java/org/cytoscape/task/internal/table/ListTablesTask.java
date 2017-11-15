@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -32,32 +33,37 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListTablesTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	final CyNetworkTableManager networkTableMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyTable> tables;
 
-	@Tunable(description="Type of table", context="nogui")
+	@Tunable(description="Type of table", context="nogui", longDescription="One of ''network'', ''node'', ''edge'', ''unattached'', ''all'', to constrain the type of table listed", exampleStringValue = "all")
 	public ListSingleSelection<String> type;
 
-	@Tunable(description="Table namespace", context="nogui")
+	@Tunable(description="Table namespace", context="nogui", longDescription="An optional argument to contrain output to a single namespace, or ALL", exampleStringValue = "all")
 	public String namespace = "default";
 
-	@Tunable(description="Include private tables?", context="nogui")
+	@Tunable(description="Include private tables?", context="nogui", longDescription="A boolean value determining whether to return private as well as public tables", exampleStringValue = "true")
 	public boolean includePrivate = true;
 
 	public ListTablesTask(CyApplicationManager appMgr, CyTableManager tableMgr, 
-	                      CyNetworkTableManager networkTableMgr) {
+	                      CyNetworkTableManager networkTableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
 		this.networkTableMgr = networkTableMgr;
+		serviceRegistrar =reg;
 		type = new ListSingleSelection<String>("network", "node", "edge", "unattached", "all");
 		type.setSelectedValue("all");
 	}
@@ -87,13 +93,31 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		}
 	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
+		System.out.println(requestedType + "---------------");
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertData(tables);
 		}
-		return tables;
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {	
+				if (tables == null) {
+					return "{}";} 
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return cyJSONUtil.cyIdentifiablesToJson(tables);
+			}
+		};
+			return res;
+		}
+		return null;
 	}
-
+	
 	private String getTableDescription(CyTable table) {
 		String result = "["+table.getSUID()+"]";
 		int rows = table.getRowCount();

@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -25,6 +27,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -32,17 +35,22 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.task.internal.utils.ColumnListTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.ContainsTunables;
 
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class GetEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask {
+	
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> edgeDataMap;
 
@@ -51,19 +59,24 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 
 	@ContainsTunables
 	public ColumnListTunable columnTunable;
+	
+	public CyServiceRegistrar serviceRegistrar;
 
-	public GetEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
+	private CyTable edgeTable;
+	
+	public GetEdgeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		super(mgr);
 		this.appMgr = appMgr;
 		edgeTunable = new EdgeTunable(appMgr);
 		columnTunable = new ColumnListTunable();
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		CyNetwork network = edgeTunable.getNetwork();
 
-		CyTable edgeTable = getNetworkTable(network, CyEdge.class, columnTunable.getNamespace());
+		edgeTable = getNetworkTable(network, CyEdge.class, columnTunable.getNamespace());
 
 		edgeDataMap = new HashMap<CyIdentifiable, Map<String, Object>>();
 
@@ -89,7 +102,35 @@ public class GetEdgeAttributeTask extends AbstractTableDataTask implements Obser
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertMapToString(edgeDataMap);
 		}
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (edgeDataMap == null) 
+					return "[]";
+				else {
+					StringBuilder output = new StringBuilder("[");
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					
+					List<CyColumn> cyColumn = columnTunable.getColumnList(edgeTable);
+					CyColumn[] cyColumnArray = cyColumn.size() > 0 ? cyColumn.toArray(new CyColumn[0]) : new CyColumn[]{};
+					int count = edgeDataMap.size();
+					for (CyIdentifiable edge : edgeDataMap.keySet()) {
+						CyRow row = edgeTable.getRow(edge.getSUID());
+						output.append(" " + cyJSONUtil.toJson(row, cyColumnArray));
+						if (count > 1) {
+							output.append(",\n");
+						}
+						count--;
+					}
+					output.append("\n]");
+					return output.toString();
+				}
+			};
+			return res;
+		}
 		return edgeDataMap;
 	}
 	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(Map.class, String.class, JSONResult.class);
+	}
 }

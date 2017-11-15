@@ -79,7 +79,7 @@ public class VizMapPropertyBuilder {
 	public static final String MAPPING_TYPE = "Mapping Type";
 	public static final String GRAPHICAL_MAP_VIEW = "Graphical View";
 	
-	private static final Logger logger = LoggerFactory.getLogger(VizMapPropertyBuilder.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final DefaultTableCellRenderer defaultTableCellRenderer;
 

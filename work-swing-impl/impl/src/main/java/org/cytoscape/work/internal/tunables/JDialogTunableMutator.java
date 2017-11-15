@@ -67,7 +67,7 @@ import org.cytoscape.work.swing.TunableUIHelper;
 public class JDialogTunableMutator extends JPanelTunableMutator implements TunableUIHelper {
 
 	/** Provides an initialised logger. */
-	private Logger logger = LoggerFactory.getLogger(JDialogTunableMutator.class);
+	private Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Window parent;
 
@@ -139,7 +139,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 
 			// If the tunables panel has no visible controls, it means the user can't do anything with it,
 			// so just validate it and continue; no need to show the dialog.
-			if (panel instanceof SimplePanel && !((SimplePanel)panel).hasVisibleControls(panel))
+			if (panel instanceof SimplePanel && !((SimplePanel)panel).hasEnabledControls(panel))
 				return super.validateAndWriteBack(objectWithTunables);
 			
 			return displayGUI(panel, objectWithTunables);

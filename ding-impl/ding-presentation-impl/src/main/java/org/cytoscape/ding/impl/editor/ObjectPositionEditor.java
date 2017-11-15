@@ -1,9 +1,9 @@
 package org.cytoscape.ding.impl.editor;
 
 import org.cytoscape.ding.CyObjectPositionPropertyEditor;
-import org.cytoscape.ding.ObjectPosition;
 import org.cytoscape.ding.ObjectPositionCellRenderer;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.vizmap.gui.editor.AbstractVisualPropertyEditor;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;

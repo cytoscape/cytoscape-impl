@@ -52,7 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Parser {
-	private static final Logger logger = LoggerFactory.getLogger(Parser.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final String[] args;
 	private final Options options;

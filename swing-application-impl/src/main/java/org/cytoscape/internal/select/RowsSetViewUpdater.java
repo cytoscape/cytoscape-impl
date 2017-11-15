@@ -65,8 +65,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	private final RowViewTracker tracker;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public RowsSetViewUpdater(final RowViewTracker tracker, final NetworkViewMediator netViewMediator,
-			final CyServiceRegistrar serviceRegistrar) {
+	public RowsSetViewUpdater(final RowViewTracker tracker, final NetworkViewMediator netViewMediator, final CyServiceRegistrar serviceRegistrar) {
 		this.netViewMediator = netViewMediator;
 		this.tracker = tracker;
 		this.serviceRegistrar = serviceRegistrar;
@@ -90,14 +89,20 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		boolean refreshView = false;
 		boolean refreshOtherViews = false;
 		
-		final CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		// Acquire services once to avoid performance overhead of repeated lookup
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyColumnIdentifierFactory columnIdentifierFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
+		final CyNetworkViewManager networkViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final VisualMappingManager visualMappingManager = serviceRegistrar.getService(VisualMappingManager.class);
+		final RenderingEngine<CyNetwork> renderer = applicationManager.getCurrentRenderingEngine();
+		
+		final CyNetwork network = applicationManager.getCurrentNetwork();
 		
 		if (network == null)
 			return;
 		
 		// 1: Update current network view
-		final CyNetworkViewManager netViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-		final Collection<CyNetworkView> views = netViewManager.getNetworkViews(network);
+		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
 		CyNetworkView networkView = null;
 		
 		if (views.isEmpty())
@@ -105,8 +110,7 @@ public class RowsSetViewUpdater implements RowsSetListener {
 		else
 			networkView = views.iterator().next();
 
-		final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-		final VisualStyle vs = vmm.getVisualStyle(networkView);
+		final VisualStyle vs = visualMappingManager.getVisualStyle(networkView);
 		Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = tracker.getRowViewMap(networkView);
 		
 		for (final RowSetRecord record : e.getPayloadCollection()) {
@@ -127,14 +131,14 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			if (v.getModel() instanceof CyNode) {
 				final CyNode node = (CyNode) v.getModel();
 				
-				if (network.containsNode(node) && isStyleAffected(vs, columnName)) {
+				if (network.containsNode(node) && isStyleAffected(vs, columnName, renderer, columnIdentifierFactory)) {
 					vs.apply(row, v);
 					refreshView = false;
 				}
 			} else if (v.getModel() instanceof CyEdge) {
 				final CyEdge edge = (CyEdge) v.getModel();
 				
-				if (network.containsEdge(edge) && isStyleAffected(vs, columnName)) {
+				if (network.containsEdge(edge) && isStyleAffected(vs, columnName, renderer, columnIdentifierFactory)) {
 					vs.apply(row, v);
 					refreshView = false;
 				}
@@ -154,11 +158,11 @@ public class RowsSetViewUpdater implements RowsSetListener {
 			
 			if (refreshOtherViews) {
 				// Check other views. If update is required, set the flag.
-				for (final CyNetworkView view : netViewManager.getNetworkViewSet()) {
+				for (final CyNetworkView view : networkViewManager.getNetworkViewSet()) {
 					if (view == networkView)
 						continue;
 
-					final VisualStyle style = vmm.getVisualStyle(view);
+					final VisualStyle style = visualMappingManager.getVisualStyle(view);
 					
 					if (style == vs) {
 						// Same style is in use. Need to apply.
@@ -175,14 +179,11 @@ public class RowsSetViewUpdater implements RowsSetListener {
 	 * @param columnName
 	 * @return
 	 */
-	private boolean isStyleAffected(final VisualStyle vs, final String columnName) {
+	private static boolean isStyleAffected(final VisualStyle vs, final String columnName, RenderingEngine<CyNetwork> renderer, CyColumnIdentifierFactory columnIdentifierFactory) {
 		boolean result = false;
-		final RenderingEngine<CyNetwork> renderer = serviceRegistrar.getService(CyApplicationManager.class)
-				.getCurrentRenderingEngine();
 		
 		if (renderer != null) {
-			final CyColumnIdentifierFactory colIdFactory = serviceRegistrar.getService(CyColumnIdentifierFactory.class);
-			final CyColumnIdentifier colId = colIdFactory.createColumnIdentifier(columnName);
+			final CyColumnIdentifier colId = columnIdentifierFactory.createColumnIdentifier(columnName);
 			final Set<VisualProperty<?>> properties = renderer.getVisualLexicon().getAllVisualProperties();
 			
 			for (final VisualProperty<?> vp : properties) {

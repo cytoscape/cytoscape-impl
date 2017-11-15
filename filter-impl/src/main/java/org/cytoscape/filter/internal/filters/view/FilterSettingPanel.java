@@ -100,7 +100,7 @@ public class FilterSettingPanel extends JPanel {
 	
 	private final QuickFind quickFind;
 	
-	private static final Logger logger = LoggerFactory.getLogger(FilterSettingPanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public FilterSettingPanel(final QuickFind quickFind, final FilterMainPanel pParent,
 							  final Object pFilterObj,

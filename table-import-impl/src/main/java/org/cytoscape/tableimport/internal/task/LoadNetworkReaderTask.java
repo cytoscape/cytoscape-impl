@@ -1,29 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,9 +19,10 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -75,6 +52,29 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkReader, TunableValidator {
 	
@@ -90,37 +90,80 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private URI uri;
 	private File tempFile;
 	private TaskMonitor taskMonitor;
+	private boolean nogui = false;
 	
-	@Tunable(description="Text Delimiters:", context="both")
+	@Tunable(description = "Text delimiters", 
+	         longDescription = "Select the delimiters to use to separate columns in the table, "+
+					                   "from the list '``,``',' ','``TAB``', or '``;``'.  ``TAB`` and '``,``' "+
+														 "are used by default",
+	         exampleStringValue = ";,\\,",
+	         context = "both")
 	public ListMultipleSelection<String> delimiters;
-	
-	@Tunable(description="Text Delimiters for data list type:", context="both")
+
+	@Tunable(description = "Text delimiters for lists", 
+	         longDescription = "Select the delimiters to use to separate list entries in a list, "+
+					                   "from the list '``|``','``\\``','``/``', or '``,``'.  ``|`` is "+
+														 "used by default",
+	         exampleStringValue = "|,\\",
+	         context = "both")
 	public ListSingleSelection<String> delimitersForDataList;
-	
-	@Tunable(description="Start Load Row:", context="both")
+
+	@Tunable(description = "Starting row", 
+	         longDescription = "The starting row of the import.  This is used to skip over comments and "+
+					                   "other non-data rows at the beginning of the file.",
+	         exampleStringValue = "1",
+	         context = "both")
 	public int startLoadRow = -1;
-	
-	@Tunable(description="First row used for column names:", context="both")
+
+	@Tunable(description = "Column names in first row?", 
+	         exampleStringValue = "false",
+	         longDescription = "If this is ``true`` then the first row should contain the names of the columns. "+
+	                           "Note that ``startLoadRow`` must be set for this to work properly",
+	         context = "both")
 	public boolean firstRowAsColumnNames;
-	
-	@Tunable(description="Column for source interaction:", context="both")
+
+	@Tunable(description = "Source column number", 
+	         exampleStringValue = "1",
+	         longDescription = "The column index that contains the source node identifiers.",
+	         required = true,
+	         context = "both")
 	public int indexColumnSourceInteraction = -1;
-	
-	@Tunable(description="Column for target interaction:", context="both")
+
+	@Tunable(description = "Target column number", 
+	         longDescription = "The column index that contains the target node identifiers.  If this is not "+
+	                           "specified then the resulting network will have no edges",
+	         exampleStringValue = "3",
+	         context = "both")
 	public int indexColumnTargetInteraction = -1;
-	
-	@Tunable(description="Column for interaction type:", context="both")
+
+	@Tunable(description = "Interaction column number", 
+	         longDescription = "The column index that contains the interaction type.  This is not required.",
+	         exampleStringValue = "2",
+	         context = "both")
 	public int indexColumnTypeInteraction = -1;
-	
-	@Tunable(description="Default interaction type:", context="both")
+
+	@Tunable(description = "Default interaction type",
+	         longDescription = "Used to set the default interaction type to use when there is no interaction type column.",
+	         exampleStringValue = "pp",
+	         context = "both")
 	public String defaultInteraction = TypeUtil.DEFAULT_INTERACTION;
 	
-	@Tunable(description="List of column data types ordered by column index (e.g. \"string,int,long,double,boolean,intlist\" or just \"s,i,l,d,b,il\"):", context="nongui")
+	@Tunable(description = "Column data types",
+	         longDescription = "List of column data types ordered by "+
+					                   "column index (e.g. \"string,int,long,"+
+														 "double,boolean,intlist\" or just "+
+														 "\"s,i,l,d,b,il\"):", 
+	         exampleStringValue = "string,int,string,double,double",
+					 context = "nongui")
 	public String dataTypeList;
 	
 	private NetworkTableMappingParameters ntmp;
 
 	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar) {
+		this(serviceRegistrar, false);
+	}
+
+	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar, boolean nogui) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<>();
@@ -136,6 +179,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
 		tempList.add(TextDelimiter.COMMA.getDelimiter());
 		delimitersForDataList = new ListSingleSelection<>(tempList);
+		this.nogui = nogui;
 	}
 	
 	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
@@ -178,6 +222,20 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	public void run(final TaskMonitor tm) throws Exception {
 		tm.setTitle("Loading network from table");
 		tm.setProgress(0.0);
+
+		if (nogui) {
+			// Handle the validation
+			nogui = false;
+			ValidationState state = getValidationState(new StringBuffer(80));
+			switch (state) {
+				case INVALID:
+					tm.showMessage(TaskMonitor.Level.ERROR, "Source column must be specified");
+					return;
+				case REQUEST_CONFIRMATION:
+					tm.showMessage(TaskMonitor.Level.WARN, "Target column is not specified.  No edges will be created");
+			}
+			nogui = true;
+		}
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
@@ -330,7 +388,13 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	}
 	
 	private void loadNetwork(final TaskMonitor tm) throws IOException {
-		final CyNetwork network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+		CyNetwork network;
+		if (this.rootNetwork == null) {
+			network = serviceRegistrar.getService(CyNetworkFactory.class).createNetwork();
+			rootNetwork = serviceRegistrar.getService(CyRootNetworkManager.class).getRootNetwork(network);
+		} else {
+			network = this.rootNetwork.addSubNetwork(); //CytoscapeServices.cyNetworkFactory.createNetwork();
+		}
 		tm.setProgress(0.10);
 		this.reader.setNetwork(network);
 
@@ -382,6 +446,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
+		// If we're in nogui mode, we really don't want to have this
+		// handled by the TunableValidation.  We'll call this method
+		// ourselves in the run method
+		if (nogui) return ValidationState.OK;
 		try {
 			if (indexColumnSourceInteraction <= 0) {
 				if (indexColumnTargetInteraction <= 0) {

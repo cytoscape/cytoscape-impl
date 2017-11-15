@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.export.network;
 
+import java.io.File;
+
+import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +39,11 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
-
-import java.io.File;
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Tunable;
-
-
 /**
  * A utility Task implementation specifically for writing a {@link org.cytoscape.view.model.CyNetworkView}.
  */
 public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
-	// the view to be written
+	
 	private final CyNetworkView view;
 
 	/**
@@ -75,19 +73,16 @@ public final class CyNetworkViewWriter extends TunableAbstractCyWriter<CyNetwork
 		String ext = FilenameUtils.getExtension(file.getName());
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
-		//Use the EXT to determine the default file format
-		for(String fileTypeDesc: this.getFileFilterDescriptions() )
-			if(fileTypeDesc.contains(searchDesc) )
-			{
+		
+		// Use the EXT to determine the default file format
+		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
+			if (fileTypeDesc.contains(searchDesc)) {
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
+		}
 	}
-
-
-	/**
-	 * {@inheritDoc}  
-	 */
+	
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter)  throws Exception{
 		return writerManager.getWriter(view,filter,outputStream);

@@ -37,6 +37,8 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.property.values.Justification;
+import org.cytoscape.view.presentation.property.values.Position;
 
 
 /**
@@ -51,81 +53,83 @@ import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 public class NodeDetails {
 	
 	/**
+	 * ******************* These are no longer used **********************
 	 * Specifies that an anchor point lies at the center of a bounding box.
-	 */
+	 *
 	public static final byte ANCHOR_CENTER = 0;
 
 	/**
 	 * Specifies that an anchor point lies on the north edge of a bounding box,
 	 * halfway between the east and west edges.
-	 */
+	 *
 	public static final byte ANCHOR_NORTH = 1;
 
 	/**
 	 * Specifies that an anchor point lies on the northeast corner of a bounding
 	 * box.
-	 */
+	 *
 	public static final byte ANCHOR_NORTHEAST = 2;
 
 	/**
 	 * Specifies that an anchor point lies on the east edge of a bounding box,
 	 * halfway between the north and south edges.
-	 */
+	 *
 	public static final byte ANCHOR_EAST = 3;
 
 	/**
 	 * Specifies that an anchor point lies on the southeast corner of a bounding
 	 * box.
-	 */
+	 *
 	public static final byte ANCHOR_SOUTHEAST = 4;
 
 	/**
 	 * Specifies that an anchor point lies on the south edge of a bounding box,
 	 * halfway between the east and west edges.
-	 */
+	 *
 	public static final byte ANCHOR_SOUTH = 5;
 
 	/**
 	 * Specifies that an anchor point lies on the southwest corner of a bounding
 	 * box.
-	 */
+	 *
 	public static final byte ANCHOR_SOUTHWEST = 6;
 
 	/**
 	 * Specifies that an anchor point lies on the west edge of a bounding box,
 	 * halfway between the north and south edges.
-	 */
+	 *
 	public static final byte ANCHOR_WEST = 7;
 
 	/**
 	 * Specifies that an anchor point lies on the northwest corner of a bounding
 	 * box.
-	 */
+	 *
 	public static final byte ANCHOR_NORTHWEST = 8;
 
 	/**
 	 * Used for range checking the anchor values.
-	 */
+	 *
 	// Seems like these values should really be an enum...:
 	public static final byte MAX_ANCHOR_VAL = 8;
 
 	/**
 	 * Specifies that the lines in a multi-line node label should each have a
 	 * center point with similar X coordinate.
-	 */
+	 *
 	public static final byte LABEL_WRAP_JUSTIFY_CENTER = 64;
 
 	/**
 	 * Specifies that the lines of a multi-line node label should each have a
 	 * leftmost point with similar X coordinate.
-	 */
+	 *
 	public static final byte LABEL_WRAP_JUSTIFY_LEFT = 65;
 
 	/**
 	 * Specifies that the lines of a multi-line node label should each have a
 	 * rightmost point with similar X coordinate.
-	 */
+	 *
 	public static final byte LABEL_WRAP_JUSTIFY_RIGHT = 66;
+	*/
 	
 	private static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
@@ -282,8 +286,8 @@ public class NodeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte getLabelTextAnchor(final CyNode node, final int labelInx) {
-		return ANCHOR_CENTER;
+	public Position getLabelTextAnchor(final CyNode node, final int labelInx) {
+		return Position.CENTER;
 	}
 
 	/**
@@ -306,8 +310,8 @@ public class NodeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public byte getLabelNodeAnchor(final CyNode node, final int labelInx) {
-		return ANCHOR_CENTER;
+	public Position getLabelNodeAnchor(final CyNode node, final int labelInx) {
+		return Position.CENTER;
 	}
 
 	/**
@@ -368,8 +372,8 @@ public class NodeDetails {
 	 * 
 	 * @see #LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public byte getLabelJustify(final CyNode node, final int labelInx) {
-		return LABEL_WRAP_JUSTIFY_CENTER;
+	public Justification getLabelJustify(final CyNode node, final int labelInx) {
+		return Justification.JUSTIFY_CENTER;
 	}
 
 	@SuppressWarnings("unchecked")

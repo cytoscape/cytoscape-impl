@@ -1,6 +1,5 @@
 package org.cytoscape.jobs.internal;
 
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
@@ -71,13 +70,12 @@ public class CyActivator extends AbstractCyActivator {
 			Properties guiJobProperties = new Properties();
 			guiJobProperties.setProperty(TITLE, "Job Status Monitor");
 			guiJobProperties.setProperty(PREFERRED_MENU, "Tools");
-			guiJobProperties.setProperty(IN_TOOL_BAR, "true");
 			registerService(bc, jobMonitor, TaskFactory.class, guiJobProperties);
 		}
 
 		// Our job manager also needs to handle the registration of jobs handlers and job session handlers
-		registerServiceListener(bc, jobManager, "addJobMonitor", "removeJobMonitor", CyJobMonitor.class);
-		registerServiceListener(bc, jobManager, "addExecutionService", "removeExecutionService", CyJobExecutionService.class);
+		registerServiceListener(bc, jobManager::addJobMonitor, jobManager::removeJobMonitor, CyJobMonitor.class);
+		registerServiceListener(bc, jobManager::addExecutionService, jobManager::removeExecutionService, CyJobExecutionService.class);
 
 		// Our job manager also needs to know about session load and save
 		registerService(bc, jobManager, SessionAboutToBeSavedListener.class, new Properties());

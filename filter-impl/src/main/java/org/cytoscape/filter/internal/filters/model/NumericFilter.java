@@ -88,7 +88,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 			objectCount = edges_list.size();
 			edge_bits = new BitSet(objectCount); // all the bits are false initially
 		} else {
-			LoggerFactory.getLogger(NumericFilter.class).error("StringFilter: Index_type is undefined.");
+			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("StringFilter: Index_type is undefined.");
 			return;
 		}
 

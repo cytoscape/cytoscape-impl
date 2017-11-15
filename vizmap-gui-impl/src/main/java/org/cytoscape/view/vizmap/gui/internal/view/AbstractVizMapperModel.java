@@ -1,5 +1,29 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 import java.beans.PropertyChangeListener;
 
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -39,32 +63,4 @@ public abstract class AbstractVizMapperModel {
 	public boolean hasListeners(String propertyName) {
 		return propChangeSupport.hasListeners(propertyName);
 	}
-	
-//	public void fireIndexedPropertyChange(String propertyName, int index, boolean oldValue, boolean newValue) {
-//		propChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-//	}
-//
-//	public void fireIndexedPropertyChange(String propertyName, int index, int oldValue, int newValue) {
-//		propChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-//	}
-//
-//	public void fireIndexedPropertyChange(String propertyName, int index, Object oldValue, Object newValue) {
-//		propChangeSupport.fireIndexedPropertyChange(propertyName, index, oldValue, newValue);
-//	}
-//
-//	public void firePropertyChange(PropertyChangeEvent evt) {
-//		propChangeSupport.firePropertyChange(evt);
-//	}
-//
-//	public void firePropertyChange(String propertyName, boolean oldValue, boolean newValue) {
-//		propChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-//	}
-//
-//	public void firePropertyChange(String propertyName, int oldValue, int newValue) {
-//		propChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-//	}
-//
-//	public void firePropertyChange(String propertyName, Object oldValue, Object newValue) {
-//		propChangeSupport.firePropertyChange(propertyName, oldValue, newValue);
-//	}
 }

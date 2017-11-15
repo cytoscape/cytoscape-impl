@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
 public class SessionFileFilter extends BasicCyFileFilter {
 
 	private static final String DEFAULT_VERSION = "2.0.0";
-	private static final Logger logger = LoggerFactory.getLogger(SessionFileFilter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private String requiredVersion;
 

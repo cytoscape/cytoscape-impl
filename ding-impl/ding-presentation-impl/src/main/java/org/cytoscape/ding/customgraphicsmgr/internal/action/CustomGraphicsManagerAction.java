@@ -50,7 +50,7 @@ public class CustomGraphicsManagerAction extends AbstractCyAction {
 	        final CustomGraphicsBrowser browser,
 	        final CyServiceRegistrar serviceRegistrar
 	) {
-		super("Open Image Manager...");
+		super("Open Image Manager");
 		setPreferredMenu("View");
 		setMenuGravity(10.0f);
 		

@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FilterSettingsManager implements SessionAboutToBeSavedListener, SessionAboutToBeLoadedListener, SessionLoadedListener {
-	static final Logger logger = LoggerFactory.getLogger(FilterSettingsManager.class);
+	static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	static final String SESSION_NAMESPACE = "org.cytoscape.filter";
 	
 	final FilterPanel filterPanel;

@@ -30,8 +30,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.LinearGradientPaint;
 import java.awt.Paint;
 import java.awt.Point;
+import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.geom.Point2D;
@@ -43,12 +45,12 @@ import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -63,6 +65,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
+
 	private DGraphView.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
@@ -73,6 +76,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected ArbitraryGraphicsCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
+	protected String name;
 
 	protected static final String ID = "id";
 	protected static final String TYPE = "type";
@@ -133,6 +137,11 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.view = view;
 		Point2D coords = getComponentCoordinates(argMap);
 		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
+		if (argMap.containsKey(NAME)) {
+			this.name = argMap.get(NAME);
+		} else {
+			this.name = null;
+		}
 		String canvasString = getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
@@ -213,6 +222,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).setCanvas(cnvs);
 		}
+
+		// Update network attributes
+		update();
 	}
 
 	@Override
@@ -222,34 +234,27 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
 			return;
 
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run () {
-					changeCanvas(cnvs);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (!(this instanceof ArrowAnnotationImpl)) {
+				for (ArrowAnnotation arrow: arrowList) {
+					if (arrow instanceof DingAnnotation)
+						((DingAnnotation)arrow).changeCanvas(cnvs);
 				}
-			});
-			return;
-		}
-
-		if (!(this instanceof ArrowAnnotationImpl)) {
-			for (ArrowAnnotation arrow: arrowList) {
-				if (arrow instanceof DingAnnotation)
-					((DingAnnotation)arrow).changeCanvas(cnvs);
 			}
-		}
 
-		// Remove ourselves from the current canvas
-		canvas.remove(this);
+			// Remove ourselves from the current canvas
+			canvas.remove(this);
 
-		canvas.repaint();  // update the canvas
+			canvas.repaint();  // update the canvas
 
-		// Set the new canvas
-		setCanvas(cnvs);
+			// Set the new canvas
+			setCanvas(cnvs);
 
-		// Add ourselves
-		canvas.add(this);
+			// Add ourselves
+			canvas.add(this);
 
-		canvas.repaint();  // update the canvas
+			canvas.repaint();  // update the canvas
+		});
 	}
 
 	@Override
@@ -272,25 +277,20 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void addComponent(final JComponent cnvs) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { addComponent(cnvs); }
-			});
-			return;
-		}
-
-		if (cnvs == null && canvas != null) {
-
-		} else if (cnvs == null) {
-			setCanvas(FOREGROUND);
-		} else {
-			if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
-				setCanvas(BACKGROUND);
-			else
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (cnvs == null && canvas != null) {
+	
+			} else if (cnvs == null) {
 				setCanvas(FOREGROUND);
-		}
-		canvas.add(this.getComponent());
-		canvas.setComponentZOrder(this, 0);
+			} else {
+				if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
+					setCanvas(BACKGROUND);
+				else
+					setCanvas(FOREGROUND);
+			}
+			canvas.add(this.getComponent());
+			canvas.setComponentZOrder(this, 0);
+		});
 	}
     
 	@Override
@@ -320,24 +320,16 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	public void setLocation(final int x, final int y) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setLocation(x, y); }
-			});
-			return;
-		}
-		super.setLocation(x, y);
-		canvas.modifyComponentLocation(x, y, this);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			super.setLocation(x, y);
+			canvas.modifyComponentLocation(x, y, this);
+		});
 	}
 
 	public void setSize(final int width, final int height) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { setSize(width, height); }
-			});
-			return;
-		}
-		super.setSize(width, height);
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			super.setSize(width, height);
+		});
 	}
 
 	public Point getLocation() { return super.getLocation(); }
@@ -349,26 +341,24 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	public void removeAnnotation() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable () {
-				public void run() { removeAnnotation(); }
-			});
-			return;
-		}
-
-		canvas.remove(this);
-		cyAnnotator.removeAnnotation(this);
-		for (ArrowAnnotation arrow: arrowList) {
-			if (arrow instanceof DingAnnotation)
-				((DingAnnotation)arrow).removeAnnotation();
-		}
-		if (parent != null)
-			parent.removeMember(this);
-
-		canvas.repaint();
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			canvas.remove(this);
+			cyAnnotator.removeAnnotation(this);
+			for (ArrowAnnotation arrow: arrowList) {
+				if (arrow instanceof DingAnnotation)
+					((DingAnnotation)arrow).removeAnnotation();
+			}
+			if (parent != null)
+				parent.removeMember(this);
+	
+			canvas.repaint();
+		});
 	}
 
 	public void resizeAnnotation(double width, double height) {};
+
+	public String getName() { return name; }
+	public void setName(String name) { this.name = name; }
 
 	public double getZoom() { return globalZoom; }
 	public void setZoom(double zoom) { 
@@ -399,6 +389,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = new HashMap<String, String>();
+		if (name != null)
+			argMap.put(NAME, this.name);
 		addNodeCoordinates(argMap);
 		argMap.put(ZOOM,Double.toString(this.globalZoom));
 		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))
@@ -482,25 +474,104 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			return null;
 		if (clr instanceof Color)
 			return Integer.toString(((Color)clr).getRGB());
+		if (clr instanceof LinearGradientPaint) {
+			String lg = "lingrad(";
+			LinearGradientPaint lingrad = (LinearGradientPaint)clr;
+			Point2D start = lingrad.getStartPoint();
+			Point2D end = lingrad.getEndPoint();
+			lg += convertPoint(start)+";";
+			lg += convertPoint(end)+";";
+			float[] fractions = lingrad.getFractions();
+			Color[] colors = lingrad.getColors();
+			lg += convertStops(fractions, colors)+")";
+			return lg;
+		}
+		if (clr instanceof RadialGradientPaint) {
+			String rg = "radgrad(";
+			RadialGradientPaint radgrad = (RadialGradientPaint)clr;
+			Point2D center = radgrad.getCenterPoint();
+			Point2D focus = radgrad.getFocusPoint();
+			float radius = radgrad.getRadius();
+			rg += convertPoint(center)+";";
+			rg += convertPoint(focus)+";";
+			rg += radius+";";
+			float[] fractions = radgrad.getFractions();
+			Color[] colors = radgrad.getColors();
+			rg += convertStops(fractions, colors)+")";
+			return rg;
+		}
 		return clr.toString();
   }
 
-  protected Color getColor(String strColor) {
+	protected String convertPoint(Point2D point) {
+		if (point == null)
+			return "";
+		return point.getX()+","+point.getY();
+	}
+
+	protected String convertStops(float[] fractions, Color[] colors) {
+		String stops = null;
+		for (int i = 0; i < fractions.length; i++) {
+			if (stops != null)
+				stops += ";";
+			else
+				stops = "";
+			stops += fractions[i]+","+Integer.toString(colors[i].getRGB());
+		}
+		return stops;
+	}
+
+  protected Paint getColor(String strColor) {
 		if (strColor == null)
 			return null;
-		return new Color(Integer.parseInt(strColor));
+		if (strColor.startsWith("lingrad")) {
+			String[] tokens = strColor.split("[(;)]");
+			Point2D start = getPoint2D(tokens[1]);
+			Point2D end = getPoint2D(tokens[2]);
+			float[] fractions = new float[tokens.length-3];
+			Color[] colors = new Color[tokens.length-3];
+			getStops(tokens, 3, fractions, colors);
+			return new LinearGradientPaint(start, end, fractions, colors);
+		} else if (strColor.startsWith("radgrad")) {
+			String[] tokens = strColor.split("[(;)]");
+			Point2D center = getPoint2D(tokens[1]);
+			Point2D focus = getPoint2D(tokens[2]);
+			float radius = getFloat(tokens[3]);
+			float[] fractions = new float[tokens.length-4];
+			Color[] colors = new Color[tokens.length-4];
+			getStops(tokens, 4, fractions, colors);
+		}
+		return new Color(Integer.parseInt(strColor), true);
   }
 
-  protected Color getColor(Map<String, String> argMap, String key, Color defValue) {
+  protected Paint getColor(Map<String, String> argMap, String key, Color defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
-		return new Color(Integer.parseInt(argMap.get(key)));
+		return getColor(argMap.get(key));
+	}
+
+	protected void getStops(String[] tokens, int stopStart, float[] fractions, Color[] colors) {
+		for (int i = stopStart; i < tokens.length; i++) {
+			String[] stop = tokens[i].split(",");
+			fractions[i-stopStart] = getFloat(stop[0]);
+			colors[i-stopStart] = new Color(Integer.parseInt(stop[1]), true);
+		}
+	}
+
+	protected Point2D getPoint2D(String point) {
+		if (point.length() == 0) return null;
+		String[] xy = point.split(",");
+		return new Point2D.Double(getDouble(xy[0]), getDouble(xy[1]));
 	}
 
   protected String getString(Map<String, String> argMap, String key, String defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		return argMap.get(key);
+	}
+
+  protected Float getFloat(String fValue) {
+		return Float.parseFloat(fValue);
 	}
 
   protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
@@ -513,6 +584,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
 			return defValue;
 		return Integer.parseInt(argMap.get(key));
+	}
+
+	protected Double getDouble(String dValue) {
+		return Double.parseDouble(dValue);
 	}
 
   protected Double getDouble(Map<String, String> argMap, String key, double defValue) {

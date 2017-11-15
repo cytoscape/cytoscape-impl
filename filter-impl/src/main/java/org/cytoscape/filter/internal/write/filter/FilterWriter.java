@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 
 public class FilterWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger(FilterWriter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	public void write(Collection<CompositeFilter> filters, File file) {
 		// Because one filter may depend on the other, CompositeFilters must

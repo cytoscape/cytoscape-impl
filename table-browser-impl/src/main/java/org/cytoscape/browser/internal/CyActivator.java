@@ -30,6 +30,7 @@ import java.awt.event.ActionListener;
 import java.util.Properties;
 
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
@@ -77,13 +78,19 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, globalTableBrowser, RowsSetListener.class, globalTableProp);
 		registerService(bc, globalTableBrowser, RowsDeletedListener.class, globalTableProp);
 
-		registerServiceListener(bc, popupMenuHelper, "addTableColumnTaskFactory", "removeTableColumnTaskFactory", TableColumnTaskFactory.class);
-		registerServiceListener(bc, popupMenuHelper, "addTableCellTaskFactory", "removeTableCellTaskFactory", TableCellTaskFactory.class);
+		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
+		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
 		
 		{
 			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Clear all errors");
+			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
+		}
+		{
+			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(TITLE, "Format column...");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 	}

@@ -30,29 +30,38 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class GetNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	public static final String COMMAND_EXAMPLE_JSON = "["
+			+ "  { \"name\": \"Object 1\", \"SUID\": 101 }, "
+			+ "  { \"name\": \"Object 2\", \"SUID\": 102 }"
+			+ "]";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
-	private final Class type;
+	private final Class<?> type;
+	private final CyServiceRegistrar cyServiceRegistrar;
 	
-	public GetNetworkAttributeTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, Class <? extends CyIdentifiable> type) {
+	public GetNetworkAttributeTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, Class <? extends CyIdentifiable> type, CyServiceRegistrar cyServiceRegistrar) {
 		cyAppManager = appMgr;
 		cyTableManager = mgr;
 		this.type = type;
+		this.cyServiceRegistrar = cyServiceRegistrar;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new GetNetworkAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new GetNetworkAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		else if (type.equals(CyEdge.class))
-			return new TaskIterator(new GetEdgeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new GetEdgeAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new GetNodeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new GetNodeAttributeTask(cyTableManager, cyAppManager, cyServiceRegistrar));
 		return null;
 	}
 

@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -25,30 +27,33 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.EdgeTunable;
 
 public class GetEdgePropertiesTask extends AbstractPropertyTask implements ObservableTask {
-	Map<CyEdge, Map<String, Object>> edgePropertiesMap;
+	
+	Map<CyEdge, Map<String, VisualPropertyObjectTuple>> edgePropertiesMap;
 
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	@Tunable(description="Properties to get the value for", context="nogui")
+	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION, exampleStringValue="Paint,Visible")
 	public String propertyList = null;
 
 	public GetEdgePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
@@ -59,7 +64,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		edgePropertiesMap = new HashMap<CyEdge, Map<String, Object>>();
+		edgePropertiesMap = new HashMap<CyEdge, Map<String, VisualPropertyObjectTuple>>();
 
 		CyNetwork network = edgeTunable.getNetwork();
 
@@ -73,7 +78,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 		for (CyEdge edge: edgeTunable.getEdgeList()) {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, 
 			                        "   Edge property values for edge "+DataUtils.getEdgeName(network.getDefaultEdgeTable(), edge)+":");
-			Map<String, Object> propertyMap = new HashMap<String, Object>();
+			Map<String, VisualPropertyObjectTuple> propertyMap = new HashMap<String, VisualPropertyObjectTuple>();
 
 			for (String property: props) {
 				try {
@@ -81,7 +86,7 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 					Object value = getPropertyValue(network, edge, vp);
 					if (value != null) {
 						taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+vp.getDisplayName()+"="+value.toString());
-						propertyMap.put(vp.getIdString(), value);
+						propertyMap.put(vp.getIdString(), new VisualPropertyObjectTuple(vp, value));
 					}
 				} catch (Exception e) {
 					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
@@ -94,9 +99,24 @@ public class GetEdgePropertiesTask extends AbstractPropertyTask implements Obser
 
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
-			return DataUtils.convertMapToString(edgePropertiesMap);
+			 Map<CyEdge, Map<String, Object>> edgeObjectMap = edgePropertiesMap.entrySet()
+				        .stream()
+				        .collect(Collectors.toMap(Map.Entry::getKey,
+				                                  e -> e.getValue().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e2 -> e2.getValue().object))));
+			return DataUtils.convertMapToString(edgeObjectMap);
+		}
+		else if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return getVisualPropertiesJSON(edgePropertiesMap);
+			};
+			return res;
+		} else if (requestedType.equals(Map.class)) {
+			return edgePropertiesMap;
 		}
 		return edgePropertiesMap;
 	}
 	
+	public List<Class<?>> getResultClasses() {
+	return Arrays.asList(Map.class, String.class, JSONResult.class);
+	}
 }

@@ -39,7 +39,7 @@ public class FilterModelLocator {
 	private Vector<CompositeFilter> filters = new Vector<CompositeFilter>();
 	private List<FiltersChangedListener> filtersChangedListeners = new ArrayList<FiltersChangedListener>();
 	
-	private static final Logger logger = LoggerFactory.getLogger(FilterModelLocator.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public void addFilters(Collection<CompositeFilter> filters) {
 		if (filters != null) {

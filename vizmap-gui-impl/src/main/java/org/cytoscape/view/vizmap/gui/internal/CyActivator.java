@@ -74,7 +74,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -104,15 +104,15 @@ public class CyActivator extends AbstractCyActivator {
 		
 		final EditorManagerImpl editorManager = new EditorManagerImpl(attributeSetProxy, mappingFactoryProxy, servicesUtil);
 		// These listeners must be registered before the ValueEditors and VisualPropertyEditors:
-		registerServiceListener(bc, editorManager, "addValueEditor", "removeValueEditor", ValueEditor.class);
-		registerServiceListener(bc, editorManager, "addVisualPropertyValueEditor", "removeVisualPropertyValueEditor", VisualPropertyValueEditor.class);
-		registerServiceListener(bc, editorManager, "addVisualPropertyEditor", "removeVisualPropertyEditor", VisualPropertyEditor.class);
-		registerServiceListener(bc, editorManager, "addRenderingEngineFactory", "removeRenderingEngineFactory", RenderingEngineFactory.class);
-		registerAllServices(bc, editorManager, new Properties());
+		registerServiceListener(bc, editorManager::addValueEditor, editorManager::removeValueEditor, ValueEditor.class);
+		registerServiceListener(bc, editorManager::addVisualPropertyValueEditor, editorManager::removeVisualPropertyValueEditor, VisualPropertyValueEditor.class);
+		registerServiceListener(bc, editorManager::addVisualPropertyEditor, editorManager::removeVisualPropertyEditor, VisualPropertyEditor.class);
+		registerServiceListener(bc, editorManager::addRenderingEngineFactory, editorManager::removeRenderingEngineFactory, RenderingEngineFactory.class);
+		registerAllServices(bc, editorManager);
 		
 		final MappingFunctionFactoryManagerImpl mappingFunctionFactoryManager = new MappingFunctionFactoryManagerImpl();
-		registerServiceListener(bc, mappingFunctionFactoryManager, "addFactory", "removeFactory", VisualMappingFunctionFactory.class);
-		registerAllServices(bc, mappingFunctionFactoryManager, new Properties());
+		registerServiceListener(bc, mappingFunctionFactoryManager::addFactory, mappingFunctionFactoryManager::removeFactory, VisualMappingFunctionFactory.class);
+		registerAllServices(bc, mappingFunctionFactoryManager);
 		
 		final NumericValueEditor<Double> doubleValueEditor = new NumericValueEditor<>(Double.class);
 		final NumericValueEditor<Integer> integerValueEditor = new NumericValueEditor<>(Integer.class);
@@ -149,26 +149,26 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Register ValueEditors and VisualPropertyEditors
 		// -------------------------------------------------------------------------------------------------------------
-		registerAllServices(bc, attributeSetProxy, new Properties());
-		registerAllServices(bc, editorManager.getNodeEditor(), new Properties());
-		registerAllServices(bc, editorManager.getEdgeEditor(), new Properties());
-		registerAllServices(bc, editorManager.getNetworkEditor(), new Properties());
-		registerAllServices(bc, colorChooser, new Properties());
-		registerAllServices(bc, doubleValueEditor, new Properties());
-		registerAllServices(bc, integerValueEditor, new Properties());
-		registerAllServices(bc, floatValueEditor, new Properties());
-		registerAllServices(bc, stringValueEditor, new Properties());
-		registerAllServices(bc, booleanValueEditor, new Properties());
-		registerAllServices(bc, fontValueEditor, new Properties());
+		registerAllServices(bc, attributeSetProxy);
+		registerAllServices(bc, editorManager.getNodeEditor());
+		registerAllServices(bc, editorManager.getEdgeEditor());
+		registerAllServices(bc, editorManager.getNetworkEditor());
+		registerAllServices(bc, colorChooser);
+		registerAllServices(bc, doubleValueEditor);
+		registerAllServices(bc, integerValueEditor);
+		registerAllServices(bc, floatValueEditor);
+		registerAllServices(bc, stringValueEditor);
+		registerAllServices(bc, booleanValueEditor);
+		registerAllServices(bc, fontValueEditor);
 		
-		registerAllServices(bc, colorPropertyEditor, new Properties());
-		registerAllServices(bc, doublePropertyEditor, new Properties());
-		registerAllServices(bc, floatPropertyEditor, new Properties());
-		registerAllServices(bc, integerPropertyEditor, new Properties());
+		registerAllServices(bc, colorPropertyEditor);
+		registerAllServices(bc, doublePropertyEditor);
+		registerAllServices(bc, floatPropertyEditor);
+		registerAllServices(bc, integerPropertyEditor);
 		
-		registerAllServices(bc, fontVisualPropertyEditor, new Properties());
-		registerAllServices(bc, stringPropertyEditor, new Properties());
-		registerAllServices(bc, booleanVisualPropertyEditor, new Properties());
+		registerAllServices(bc, fontVisualPropertyEditor);
+		registerAllServices(bc, stringPropertyEditor);
+		registerAllServices(bc, booleanVisualPropertyEditor);
 		
 		// Tasks
 		// -------------------------------------------------------------------------------------------------------------
@@ -317,21 +317,21 @@ public class CyActivator extends AbstractCyActivator {
 																 vizMapperMenuMediator,
 																 servicesUtil);
 		
-		registerAllServices(bc, vizMapperProxy, new Properties());
-		registerAllServices(bc, mappingFactoryProxy, new Properties());
-		registerAllServices(bc, propsProxy, new Properties());
+		registerAllServices(bc, vizMapperProxy);
+		registerAllServices(bc, mappingFactoryProxy);
+		registerAllServices(bc, propsProxy);
 		
-		registerAllServices(bc, vizMapperMediator, new Properties());
+		registerAllServices(bc, vizMapperMediator);
 		
-		registerServiceListener(bc, vizMapperMediator, "onCyActionRegistered", "onCyActionUnregistered", CyAction.class);
-		registerServiceListener(bc, vizMapperMediator, "onTaskFactoryRegistered", "onTaskFactoryUnregistered", TaskFactory.class);
-		registerServiceListener(bc, vizMapperMediator, "onMappingGeneratorRegistered", "onMappingGeneratorUnregistered", DiscreteMappingGenerator.class);
+		registerServiceListener(bc, vizMapperMediator::onCyActionRegistered, vizMapperMediator::onCyActionUnregistered, CyAction.class);
+		registerServiceListener(bc, vizMapperMediator::onTaskFactoryRegistered, vizMapperMediator::onTaskFactoryUnregistered, TaskFactory.class);
+		registerServiceListener(bc, vizMapperMediator::onMappingGeneratorRegistered, vizMapperMediator::onMappingGeneratorUnregistered, DiscreteMappingGenerator.class);
 		
-		registerServiceListener(bc, vizMapperMenuMediator, "onRenderingEngineFactoryRegistered", "onRenderingEngineFactoryUnregistered", RenderingEngineFactory.class);
+		registerServiceListener(bc, vizMapperMenuMediator::onRenderingEngineFactoryRegistered, vizMapperMenuMediator::onRenderingEngineFactoryUnregistered, RenderingEngineFactory.class);
 		
 		final VizMapEventHandlerManagerImpl vizMapEventHandlerManager = new VizMapEventHandlerManagerImpl(editorManager,
 				attributeSetProxy, servicesUtil, vizMapPropertyBuilder, vizMapperMediator);
-		registerServiceListener(bc, vizMapEventHandlerManager, "registerPCL", "unregisterPCL", RenderingEngineFactory.class);
+		registerServiceListener(bc, vizMapEventHandlerManager::registerPCL, vizMapEventHandlerManager::unregisterPCL, RenderingEngineFactory.class);
 		
 		// Startup the framework
 		new ApplicationFacade(startupCommand).startup();

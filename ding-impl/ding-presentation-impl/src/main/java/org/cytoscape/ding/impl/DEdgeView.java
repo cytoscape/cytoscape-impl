@@ -89,20 +89,18 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		return graphView;
 	}
 
-
 	@Override
 	public void setStrokeWidth(final float width) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideSegmentThickness(model, width);
+			graphView.m_edgeDetails.overrideWidth(model, width);
 			graphView.setContentChanged();
 		}
 	}
 
-
 	@Override
 	public void setStroke(Stroke stroke) {
 		synchronized (graphView.m_lock) {
-			graphView.m_edgeDetails.overrideSegmentStroke(model, stroke);
+			graphView.m_edgeDetails.overrideStroke(model, stroke);
 			graphView.setContentChanged();
 			if (stroke instanceof AnimatedStroke) {
 				graphView.addAnimatedEdge(this);
@@ -214,6 +212,20 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			}
 		}
 	}
+	
+	private void setSourceArrowSize(final double size) {
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.overrideSourceArrowSize(model, size);
+			graphView.setContentChanged();
+		}
+	}
+	
+	private void setTargetArrowSize(final double size) {
+		synchronized (graphView.m_lock) {
+			graphView.m_edgeDetails.overrideTargetArrowSize(model, size);
+			graphView.setContentChanged();
+		}
+	}
 
 	private final void select() {
 		final boolean somethingChanged;
@@ -236,6 +248,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 		graphView.m_selectedEdges.insert(model.getSUID());
 
 		List<Handle> handles = graphView.m_edgeDetails.getBend(model).getAllHandles();
+		
 		for (int j = 0; j < handles.size(); j++) {
 			final Handle handle = handles.get(j);
 			final Point2D newPoint = handle.calculateHandleLocation(graphView.getViewModel(),this);
@@ -250,6 +263,7 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			if (selectAnchors)
 				graphView.m_selectedAnchors.insert((model.getSUID() << 6) | j);
 		}
+		
 		return true;
 	}
 
@@ -676,6 +690,10 @@ public class DEdgeView extends AbstractDViewModel<CyEdge> implements EdgeView, L
 			setSourceEdgeEndPaint((Paint) value);
 		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT) {
 			setTargetEdgeEndPaint((Paint) value);
+		} else if (vp == DVisualLexicon.EDGE_SOURCE_ARROW_SIZE) {
+			setSourceArrowSize(((Number) value).doubleValue());
+		} else if (vp == DVisualLexicon.EDGE_TARGET_ARROW_SIZE) {
+			setTargetArrowSize(((Number) value).doubleValue());
 		} else if (vp == BasicVisualLexicon.EDGE_SELECTED) {
 			setSelected((Boolean) value);
 		} else if (vp == BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE) {

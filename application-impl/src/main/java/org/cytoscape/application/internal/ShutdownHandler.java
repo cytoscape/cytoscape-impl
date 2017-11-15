@@ -1,6 +1,13 @@
 package org.cytoscape.application.internal;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -35,7 +42,7 @@ import org.slf4j.LoggerFactory;
 
 public class ShutdownHandler implements CyShutdown {
 
-	private static final Logger logger = LoggerFactory.getLogger(ShutdownHandler.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final Bundle rootBundle;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -57,6 +64,9 @@ public class ShutdownHandler implements CyShutdown {
 
 		if (ev.actuallyShutdown()) {
 			try {
+				logger.info("#CiaoBello", rootBundle);
+				CyApplicationConfiguration c = serviceRegistrar.getService(CyApplicationConfiguration.class);
+				removeFailSafeFile(c.getConfigurationDirectoryLocation().getAbsolutePath());
 				rootBundle.stop();
 			} catch (BundleException e) {
 				logger.error("Error while shutting down", e);
@@ -65,4 +75,29 @@ public class ShutdownHandler implements CyShutdown {
 			logger.info("NOT shutting down, per listener instruction: " + ev.abortShutdownReason());
 		}
 	}
-}
+
+	/*
+	 *  This is the close routine that pairs with CyApplicationConfigurationImpl's constructor
+	 *  It removes a hidden file in the Cytoscape installation directory to show a graceful exit
+	 */
+	final String activeSessionFilename = "tracker.active.session";
+
+	private void removeFailSafeFile(String configPath) {
+		Path path = Paths.get(configPath, activeSessionFilename);
+		if (path != null && path.toFile().exists())
+		{
+			// eventually we may want to report this contents. Now its just the version 
+			try {
+				Files.delete(path);
+			} catch (IOException e) {
+				logger.error("Could not clean up " + activeSessionFilename + " in " + configPath);
+			}
+		}
+		else
+		{
+			// the file called .failsafe didn't exist in the right directory
+			// implying the check was turned off (or perhaps configPath changed)
+			logger.info(activeSessionFilename + " did not exist in " + configPath);
+		}
+	}
+}	

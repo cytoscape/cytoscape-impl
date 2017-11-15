@@ -1,5 +1,10 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.command.StringToModel;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,26 +29,22 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
-public class RenameEdgeTask extends AbstractGetTask {
-	@Tunable(description="Network edge is in", context="nogui")
+public class RenameEdgeTask extends AbstractGetTask implements ObservableTask {
+	@Tunable(description="Network edge is in", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
-	@Tunable(description="Edge to be renamed", context="nogui")
+	@Tunable(description="Edge to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.EDGE_LONG_DESCRIPTION, exampleStringValue="SUID:101")
 	public String edge = null;
 
-	@Tunable(description="New edge name", context="nogui")
+	@Tunable(description="New edge name", context="nogui", longDescription="New name of the edge", exampleStringValue="New Name")
 	public String newName = null;
 
 	public RenameEdgeTask() {
@@ -69,5 +70,19 @@ public class RenameEdgeTask extends AbstractGetTask {
 		CyEdge renamedEdge = getEdge(network, edge);
 		network.getRow(renamedEdge).set(CyNetwork.NAME, newName);
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Edge "+renamedEdge+" renamed to "+newName);
+	}
+	
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
 	}
 }

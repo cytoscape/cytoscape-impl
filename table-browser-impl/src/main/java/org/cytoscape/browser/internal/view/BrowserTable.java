@@ -74,6 +74,7 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -110,7 +111,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 													 ColumnCreatedListener, ColumnDeletedListener,
 													 ColumnNameChangedListener, RowsSetListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(BrowserTable.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	private static final String LINE_BREAK = "\n";
 	private static final String CELL_BREAK = "\t";
@@ -142,7 +143,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		this.popupMenuHelper = popupMenuHelper;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class));
+		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class), serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)"));
 		
 		init();
 		setAutoCreateColumnsFromModel(false);
@@ -598,11 +599,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private JPopupMenu getHeaderPopupMenu() {
-		if (rightClickHeaderPopupMenu != null)
-			return rightClickHeaderPopupMenu;
-
-		rightClickHeaderPopupMenu = new JPopupMenu();
-
+		if (rightClickHeaderPopupMenu == null)
+			rightClickHeaderPopupMenu = new JPopupMenu();
 		return rightClickHeaderPopupMenu;
 	}
 	
@@ -915,6 +913,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			} finally {
 				ignoreRowSetEvents = false;
 			}
+			
+			repaint();
 		}
 	}
 	

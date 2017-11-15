@@ -54,6 +54,7 @@ import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.work.TaskMonitor;
@@ -88,7 +89,7 @@ public class WebQuerier {
 	 */
 	private static final String COMPATIBLE_RELEASE_REGEX = "(^\\s*|.*,)\\s*3(\\..*)?\\s*(\\s*$|,.*)";
 	
-	private static final Logger logger = LoggerFactory.getLogger(WebQuerier.class);
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private StreamUtil streamUtil;
 

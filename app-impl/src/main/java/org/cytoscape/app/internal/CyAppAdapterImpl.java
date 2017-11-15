@@ -1,28 +1,6 @@
 package org.cytoscape.app.internal;
 
-/*
- * #%L
- * Cytoscape App Impl (app-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
+import java.util.Properties;
 
 import org.cytoscape.app.AbstractCyApp;
 import org.cytoscape.app.swing.CySwingAppAdapter;
@@ -32,6 +10,7 @@ import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.command.util.EdgeList;
@@ -52,13 +31,22 @@ import org.cytoscape.group.data.CyGroupAggregationManager;
 import org.cytoscape.group.events.GroupAboutToBeDestroyedListener;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.datasource.DataSourceManager;
-import org.cytoscape.io.read.*;
+import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.io.read.CyNetworkReaderManager;
+import org.cytoscape.io.read.CyPropertyReaderManager;
+import org.cytoscape.io.read.CySessionReaderManager;
+import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.io.webservice.NetworkImportWebServiceClient;
 import org.cytoscape.io.webservice.client.AbstractWebServiceClient;
 import org.cytoscape.io.webservice.events.DataImportFinishedEvent;
 import org.cytoscape.io.webservice.swing.WebServiceGUI;
-import org.cytoscape.io.write.*;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyPropertyWriterManager;
+import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.io.write.PresentationWriterManager;
 import org.cytoscape.jobs.CyJobManager;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -74,15 +62,61 @@ import org.cytoscape.session.CySessionManager;
 import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.analyze.AnalyzeNetworkCollectionTaskFactory;
-import org.cytoscape.task.create.*;
-import org.cytoscape.task.destroy.*;
-import org.cytoscape.task.edit.*;
-import org.cytoscape.task.hide.*;
-import org.cytoscape.task.read.*;
-import org.cytoscape.task.select.*;
+import org.cytoscape.task.create.CloneNetworkTaskFactory;
+import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
+import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesAndEdgesTaskFactory;
+import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.task.create.NewSessionTaskFactory;
+import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
+import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
+import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.task.destroy.DestroyNetworkTaskFactory;
+import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
+import org.cytoscape.task.edit.CollapseGroupTaskFactory;
+import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
+import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
+import org.cytoscape.task.edit.ExpandGroupTaskFactory;
+import org.cytoscape.task.edit.GroupNodesTaskFactory;
+import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
+import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
+import org.cytoscape.task.edit.RenameColumnTaskFactory;
+import org.cytoscape.task.edit.UnGroupNodesTaskFactory;
+import org.cytoscape.task.edit.UnGroupTaskFactory;
+import org.cytoscape.task.hide.HideSelectedEdgesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedNodesTaskFactory;
+import org.cytoscape.task.hide.HideSelectedTaskFactory;
+import org.cytoscape.task.hide.UnHideAllEdgesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
+import org.cytoscape.task.hide.UnHideAllTaskFactory;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
+import org.cytoscape.task.read.LoadTableURLTaskFactory;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
+import org.cytoscape.task.select.DeselectAllNodesTaskFactory;
+import org.cytoscape.task.select.DeselectAllTaskFactory;
+import org.cytoscape.task.select.InvertSelectedEdgesTaskFactory;
+import org.cytoscape.task.select.InvertSelectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectAdjacentEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllEdgesTaskFactory;
+import org.cytoscape.task.select.SelectAllNodesTaskFactory;
+import org.cytoscape.task.select.SelectAllTaskFactory;
+import org.cytoscape.task.select.SelectConnectedNodesTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsNodeViewTaskFactory;
+import org.cytoscape.task.select.SelectFirstNeighborsTaskFactory;
+import org.cytoscape.task.select.SelectFromFileListTaskFactory;
 import org.cytoscape.task.visualize.ApplyPreferredLayoutTaskFactory;
 import org.cytoscape.task.visualize.ApplyVisualStyleTaskFactory;
-import org.cytoscape.task.write.*;
+import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
+import org.cytoscape.task.write.ExportNetworkViewTaskFactory;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
+import org.cytoscape.task.write.ExportVizmapTaskFactory;
+import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -106,6 +140,7 @@ import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -115,13 +150,35 @@ import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.BoundedDouble;
 
-import java.util.Properties;
-
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2017 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 
 /**
  * An implementation of CyAppAdapter
  */
+@SuppressWarnings("unused")
 public class CyAppAdapterImpl implements CySwingAppAdapter {
 
 	//
@@ -224,8 +281,10 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 	private Transformers transformers;
 	private TransformerViewFactory transformerViewFactory;
 	private CyJobManager cyjobManager;
+	private JSONResult jsonResult;
 	private EquationFunctionAddedEvent equationFunctionAddedEvent;
 	private EquationFunctionRemovedEvent equationFunctionRemovedEvent;
+	private NetworkSearchTaskFactory networkSearchTaskFactory;
 
 /// from core-task api
 	private LoadVizmapFileTaskFactory loadVizmapFileTaskFactory;
@@ -305,6 +364,8 @@ public class CyAppAdapterImpl implements CySwingAppAdapter {
 
 	private LoadTableFileTaskFactory loadAttributesFileTaskFactory;
 	private LoadTableURLTaskFactory loadAttributesURLTaskFactory;
+	
+	private CyJSONUtil jsonUtil;
 
 	//
 	// Since this is implementation code, there shouldn't be a

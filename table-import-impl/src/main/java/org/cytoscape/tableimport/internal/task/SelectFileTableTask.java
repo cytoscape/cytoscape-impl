@@ -44,7 +44,12 @@ import org.slf4j.LoggerFactory;
 
 public class SelectFileTableTask extends AbstractTask {
 	
-	@Tunable(description="Data Table file:", params="fileCategory=table;input=true", gravity=0.0)
+	@Tunable(description="Data table file", 
+	         longDescription="The path to the file that contains the table or network to be imported.",
+	         exampleStringValue="myFile.csv",
+	         params="fileCategory=table;input=true", 
+	         required=true, 
+	         gravity=0.0)
 	public File file;
 	
 	private LoadTableReaderTask tableReader;
@@ -52,7 +57,7 @@ public class SelectFileTableTask extends AbstractTask {
 	private InputStream stream;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(SelectFileTableTask.class); 
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
 
 	public SelectFileTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {

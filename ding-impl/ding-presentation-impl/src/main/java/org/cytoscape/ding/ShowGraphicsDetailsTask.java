@@ -1,14 +1,10 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -18,7 +14,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -38,33 +34,27 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ShowGraphicsDetailsTask extends AbstractTask {
 
+	private final CyNetworkView view;
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
-	private final CyServiceRegistrar serviceRegistrar;
 
-	public ShowGraphicsDetailsTask(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll,
-			final CyServiceRegistrar serviceRegistrar){
+	public ShowGraphicsDetailsTask(CyNetworkView view, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
+		this.view = view;
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
-		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		final RenderingEngine<CyNetwork> engine = applicationManager.getCurrentRenderingEngine();
-
-		if (engine instanceof DGraphView == false)
-			return;
-
-		final GraphLOD lod = ((DGraphView) engine).getGraphLOD();
-
-		if (lod instanceof DingGraphLODAll) {
-			((DGraphView) engine).setGraphLOD(dingGraphLOD);
-		} else {
-			((DGraphView) engine).setGraphLOD(dingGraphLODAll);
+		if (view instanceof DGraphView) {
+			final GraphLOD lod = ((DGraphView) view).getGraphLOD();
+	
+			if (lod instanceof DingGraphLODAll)
+				((DGraphView) view).setGraphLOD(dingGraphLOD);
+			else
+				((DGraphView) view).setGraphLOD(dingGraphLODAll);
+			
+			view.updateView();
 		}
-		
-		((CyNetworkView) engine.getViewModel()).updateView();
 	}
 }

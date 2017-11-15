@@ -68,7 +68,7 @@ import org.slf4j.LoggerFactory;
  */
 public class LinkOut implements PropertyUpdatedListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(LinkOut.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	// keywords that marks properties that should be added to LinkOut
 	public static final String NODEMARKER = "nodelinkouturl.";
@@ -189,8 +189,8 @@ public class LinkOut implements PropertyUpdatedListener {
 		return dict;
 	}
 
-	public void addCommanLineLinkOut(CyProperty<Properties> commandline, Map<?, ?> p ){
-		if (!p.get("cyPropertyName").equals("commandline.props"))
+	public void addCommanLineLinkOut(CyProperty<Properties> commandline, Map<?, ?> p) {
+		if (!"commandline.props".equals(p.get("cyPropertyName")))
 			return;
 		
 		Properties props = commandline.getProperties();

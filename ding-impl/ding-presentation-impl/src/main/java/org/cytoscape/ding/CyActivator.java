@@ -1,6 +1,5 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
@@ -97,7 +96,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -124,7 +122,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -248,8 +246,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		// Annotations
-		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
-		                        AnnotationFactory.class);
+		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
 		registerService(bc, annotationManager, AnnotationManager.class, new Properties());
 
 		// Arrow
@@ -465,36 +462,34 @@ public class CyActivator extends AbstractCyActivator {
 		SelectModeAction selectNodesAndEdgesAction = new SelectModeAction(SelectModeAction.ALL, 0.7f, serviceRegistrar);
 		registerAllServices(bc, selectNodesAndEdgesAction, new Properties());
 		
-		//
-		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(dingGraphLOD, dingGraphLODAll, serviceRegistrar);
-		Properties showGraphicsDetailsTaskFactoryProps = new Properties();
-		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "11.0");
-		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		showGraphicsDetailsTaskFactoryProps.setProperty(TITLE, "Show/Hide Graphics Details");
-		showGraphicsDetailsTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");		
-		registerService(bc, showGraphicsDetailsTaskFactory, NetworkTaskFactory.class, showGraphicsDetailsTaskFactoryProps);
+		{
+			// Toggle Graphics Details
+			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory(dingGraphLOD, dingGraphLODAll);
+			Properties props = new Properties();
+			props.setProperty(ID, "showGraphicsDetailsTaskFactory");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props); // Used at least by cyREST
+			
+			// Main menu
+			GraphicsDetailAction mainMenuAction = new GraphicsDetailAction(5.0f, "View", factory, serviceRegistrar);
+			registerAllServices(bc, mainMenuAction);
+			
+			// Network tab's context menu
+			GraphicsDetailAction networkMenuAction = new GraphicsDetailAction(11.0f, null, factory, serviceRegistrar);
+			props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, networkMenuAction, props);
+		}
 
 		final String vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true
-		registerServiceListener(bc, vtfListener, "addNodeViewTaskFactory", "removeNodeViewTaskFactory",
-				NodeViewTaskFactory.class, vtfFilter);
-		registerServiceListener(bc, vtfListener, "addEdgeViewTaskFactory", "removeEdgeViewTaskFactory",
-				EdgeViewTaskFactory.class, vtfFilter);
-		registerServiceListener(bc, vtfListener, "addNetworkViewTaskFactory", "removeNetworkViewTaskFactory",
-				NetworkViewTaskFactory.class, vtfFilter);
-		registerServiceListener(bc, vtfListener, "addNetworkViewLocationTaskFactory",
-				"removeNetworkViewLocationTaskFactory", NetworkViewLocationTaskFactory.class);
-		registerServiceListener(bc, vtfListener, "addCyEdgeViewContextMenuFactory",
-				"removeCyEdgeViewContextMenuFactory", CyEdgeViewContextMenuFactory.class);
-		registerServiceListener(bc, vtfListener, "addCyNodeViewContextMenuFactory",
-				"removeCyNodeViewContextMenuFactory", CyNodeViewContextMenuFactory.class);
-		registerServiceListener(bc, vtfListener, "addCyNetworkViewContextMenuFactory",
-				"removeCyNetworkViewContextMenuFactory", CyNetworkViewContextMenuFactory.class);
+		registerServiceListener(bc, vtfListener::addNodeViewTaskFactory, vtfListener::removeNodeViewTaskFactory, NodeViewTaskFactory.class, vtfFilter);
+		registerServiceListener(bc, vtfListener::addEdgeViewTaskFactory, vtfListener::removeEdgeViewTaskFactory, EdgeViewTaskFactory.class, vtfFilter);
+		registerServiceListener(bc, vtfListener::addNetworkViewTaskFactory, vtfListener::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, vtfFilter);
+		registerServiceListener(bc, vtfListener::addNetworkViewLocationTaskFactory, vtfListener::removeNetworkViewLocationTaskFactory, NetworkViewLocationTaskFactory.class);
+		registerServiceListener(bc, vtfListener::addCyEdgeViewContextMenuFactory, vtfListener::removeCyEdgeViewContextMenuFactory, CyEdgeViewContextMenuFactory.class);
+		registerServiceListener(bc, vtfListener::addCyNodeViewContextMenuFactory, vtfListener::removeCyNodeViewContextMenuFactory, CyNodeViewContextMenuFactory.class);
+		registerServiceListener(bc, vtfListener::addCyNetworkViewContextMenuFactory, vtfListener::removeCyNetworkViewContextMenuFactory, CyNetworkViewContextMenuFactory.class);
 
-		registerServiceListener(bc, annotationFactoryManager, "addAnnotationFactory", "removeAnnotationFactory",
-				AnnotationFactory.class);
-
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(dingGraphLOD, dingGraphLODAll, serviceRegistrar);
-		registerAllServices(bc, graphicsDetailAction, new Properties());
+		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
 
 		BendFactory bendFactory = new BendFactoryImpl();
 		registerService(bc, bendFactory, BendFactory.class, new Properties());
@@ -553,13 +548,14 @@ public class CyActivator extends AbstractCyActivator {
 		cgManager.addCustomGraphicsFactory(rectangleFactory, new Properties());
 
 		// Register this service listener so that app writers can provide their own CustomGraphics factories
-		registerServiceListener(bc, cgManager, "addCustomGraphicsFactory", "removeCustomGraphicsFactory",
+		registerServiceListener(bc, cgManager::addCustomGraphicsFactory, cgManager::removeCustomGraphicsFactory,
 				CyCustomGraphicsFactory.class);
 		
 		// Register this service listener so that app writers can provide their own CyCustomGraphics2 factories
 		cg2Manager = CyCustomGraphics2ManagerImpl.getInstance();
 		registerAllServices(bc, cg2Manager, new Properties());
-		registerServiceListener(bc, cg2Manager, "addFactory", "removeFactory", CyCustomGraphics2Factory.class);
+		registerServiceListener(bc, ((CyCustomGraphics2ManagerImpl)cg2Manager)::addFactory, 
+				((CyCustomGraphics2ManagerImpl)cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
 	}
 	
 	private void startCharts(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {

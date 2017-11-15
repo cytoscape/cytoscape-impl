@@ -11,7 +11,6 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsRange;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.impl.DLineType;
-import org.cytoscape.ding.impl.ObjectPositionImpl;
 import org.cytoscape.ding.impl.strokes.AnimatedDashDotStroke;
 import org.cytoscape.ding.impl.strokes.AnimatedEqualDashStroke;
 import org.cytoscape.ding.impl.strokes.AnimatedLongDashStroke;
@@ -43,6 +42,7 @@ import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.cytoscape.view.presentation.property.PaintVisualProperty;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 
 /*
  * #%L
@@ -95,7 +95,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			CyNetwork.class);
 
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION, "NODE_LABEL_POSITION",
+			ObjectPosition.DEFAULT_POSITION, "NODE_LABEL_POSITION",
 			"Node Label Position", CyNode.class);
 
 	// Range object for custom graphics.
@@ -187,39 +187,39 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	// Location of custom graphics
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_1 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_1",
 			"Node Image/Chart Position 1", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_2 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_2",
 			"Node Image/Chart Position 2", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_3 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_3",
 			"Node Image/Chart Position 3", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_4 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_4",
 			"Node Image/Chart Position 4", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_5 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_5",
 			"Node Image/Chart Position 5", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_6 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_6",
 			"Node Image/Chart Position 6", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_7 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_7",
 			"Node Image/Chart Position 7", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_8 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_8",
 			"Node Image/Chart Position 8", CyNode.class);
 	public static final VisualProperty<ObjectPosition> NODE_CUSTOMGRAPHICS_POSITION_9 = new ObjectPositionVisualProperty(
-			ObjectPositionImpl.DEFAULT_POSITION,
+			ObjectPosition.DEFAULT_POSITION,
 			"NODE_CUSTOMGRAPHICS_POSITION_9",
 			"Node Image/Chart Position 9", CyNode.class);
 
@@ -254,7 +254,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 	// TODO: Implement if possible (in rendering engine)
 //	public static final VisualProperty<ObjectPosition> EDGE_LABEL_POSITION = new ObjectPositionVisualProperty(
-//			ObjectPositionImpl.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
+//			ObjectPosition.DEFAULT_POSITION, "EDGE_LABEL_POSITION",
 //			"Edge Label Position", CyEdge.class);
 
 	// Ding-local line types

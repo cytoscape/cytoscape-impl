@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,69 +34,34 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.io.read.CySessionReaderManager;
-import org.cytoscape.io.util.RecentlyOpenedTracker;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.session.CySessionManager;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
-
 public class OpenSessionTaskFactoryImpl extends AbstractTaskFactory implements OpenSessionTaskFactory {
 
-	private final CySessionManager mgr;
-	private final CySessionReaderManager rmgr;
-	private final CyNetworkManager netManager;
-	private final CyTableManager tableManager;
-	private final CyNetworkTableManager netTableManager;
-	private final CyGroupManager grManager;
-	private final RecentlyOpenedTracker tracker;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private final TunableSetter tunableSetter; 
-	
-
-	public OpenSessionTaskFactoryImpl(final CySessionManager mgr,
-									  final CySessionReaderManager rmgr,
-									  final CyNetworkManager netManager,
-									  final CyTableManager tableManager,
-									  final CyNetworkTableManager netTableManager,
-									  final CyGroupManager grManager,
-									  final RecentlyOpenedTracker tracker,
-									  final TunableSetter tunableSetter,
-									  final CyEventHelper eventHelper) {
-		this.mgr = mgr;
-		this.rmgr = rmgr;
-		this.netManager = netManager;
-		this.tableManager = tableManager;
-		this.netTableManager = netTableManager;
-		this.grManager = grManager;
-		this.tracker = tracker;
-		this.tunableSetter = tunableSetter;
-		this.eventHelper = eventHelper;
+	public OpenSessionTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public synchronized TaskIterator createTaskIterator() {
-		OpenSessionTask task = new OpenSessionTask(mgr, rmgr, netManager, tableManager, netTableManager, grManager, tracker, eventHelper);
-		return new TaskIterator(2, task);
+		return new TaskIterator(2, new OpenSessionTask(serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
-		final Map<String, Object> m = new HashMap<String, Object>();
-		m.put("file", file);
-		m.put("loadSession", true);
+		return createTaskIterator(file, false);
+	}
 
-		return tunableSetter.createTaskIterator(this.createTaskIterator(), m); 
+	@Override
+	public TaskIterator createTaskIterator(File file, boolean confirm) {
+		if (confirm) {
+			return new TaskIterator(2, new OpenSessionTask(file, serviceRegistrar));
+		} else {
+			final Map<String, Object> m = new HashMap<>();
+			m.put("file", file);
+			m.put("loadSession", true);
+	
+			return serviceRegistrar.getService(TunableSetter.class).createTaskIterator(createTaskIterator(), m);
+		}
 	}
 }

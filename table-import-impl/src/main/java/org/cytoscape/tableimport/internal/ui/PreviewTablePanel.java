@@ -170,7 +170,7 @@ public class PreviewTablePanel extends JPanel {
 	
 	private final Object lock = new Object();
 
-	private static final Logger logger = LoggerFactory.getLogger(PreviewTablePanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	/**
 	 * Creates a new PreviewTablePanel object.

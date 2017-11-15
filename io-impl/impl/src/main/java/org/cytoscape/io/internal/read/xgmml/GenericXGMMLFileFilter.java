@@ -44,7 +44,7 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 			.compile("<graph[\\s]+[^<>]*[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>|"     // XGMML namespace
 					+ "<!DOCTYPE[\\s]+graph[\\s]+[^<>]*[\\'\"][^<>]*xgmml.dtd[\\'\"][^<>]*>"); // or XGMML DTD
 	
-	private static final Logger logger = LoggerFactory.getLogger(GenericXGMMLFileFilter.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 
 	public GenericXGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,

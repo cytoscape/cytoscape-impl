@@ -37,7 +37,7 @@ import org.slf4j.LoggerFactory;
 
 public class OpenBrowserImpl implements OpenBrowser {
 
-	private final Logger logger = LoggerFactory.getLogger(OpenBrowserImpl.class);
+	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private static String[] BROWSERS =
         { "xdg-open", "htmlview", "firefox", "mozilla", "konqueror", "chrome", "chromium" };
 

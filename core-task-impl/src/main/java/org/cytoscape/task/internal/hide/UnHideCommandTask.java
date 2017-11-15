@@ -24,14 +24,18 @@ package org.cytoscape.task.internal.hide;
  * #L%
  */
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -39,12 +43,16 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
+public class UnHideCommandTask extends AbstractTask implements ObservableTask {
 
-public class UnHideCommandTask extends AbstractTask {
-	
 	private CyServiceRegistrar serviceRegistrar;
+	private List<CyEdge> edges;
+	private	List<CyNode> nodes;
+	private CyNetwork network;
 
 	@ContainsTunables
 	public NodeAndEdgeTunable tunable;
@@ -58,19 +66,20 @@ public class UnHideCommandTask extends AbstractTask {
 	public void run(TaskMonitor e) {
 		e.setProgress(0.0);
 
-		List<CyEdge> edges = tunable.getEdgeList();
-		List<CyNode> nodes = tunable.getNodeList();
-		CyNetwork net = tunable.getNetwork();
+		edges = tunable.getEdgeList();
+		nodes = tunable.getNodeList();
+		network = tunable.getNetwork();
 
 		if ((edges == null||edges.size() == 0) && (nodes == null||nodes.size() == 0)) {
 			e.showMessage(TaskMonitor.Level.ERROR, "Must specify nodes or edges to show");
 			return;
 		}
 
-		Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(net);
-		
+		Collection<CyNetworkView> views = 
+						serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network);
+
 		if (views == null || views.size() == 0) {
-			e.showMessage(TaskMonitor.Level.ERROR, "Network "+net.toString()+" doesn't have a view");
+			e.showMessage(TaskMonitor.Level.ERROR, "Network "+network.toString()+" doesn't have a view");
 			return;
 		}
 
@@ -79,16 +88,16 @@ public class UnHideCommandTask extends AbstractTask {
 		int nodeCount = 0;
 		int edgeCount = 0;
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
-		
+
 		for (CyNetworkView view: views) {
 			VisualStyle style = vmMgr.getVisualStyle(view);
-			
+
 			if (nodes != null) {
 				HideUtils.setVisibleNodes(nodes, true, view);
 				nodeCount = nodes.size();
 				for (CyNode node: nodes) {
 					View<CyNode> nodeView = view.getNodeView(node);
-					style.apply(net.getRow(node), nodeView);
+					style.apply(network.getRow(node), nodeView);
 				}
 			}
 			if (edges != null) {
@@ -96,15 +105,56 @@ public class UnHideCommandTask extends AbstractTask {
 				edgeCount = edges.size();
 				for (CyEdge edge: edges) {
 					View<CyEdge> edgeView = view.getEdgeView(edge);
-					style.apply(net.getRow(edge), edgeView);
+					style.apply(network.getRow(edge), edgeView);
 				}
 			}
-			
+
 			view.updateView();
 		}
 
 		e.showMessage(TaskMonitor.Level.INFO, "Showed "+nodeCount+" nodes and "+edgeCount+" edges");
 
 		e.setProgress(1.0);
+	}
+
+	public Object getResults(Class type) {
+		List<CyIdentifiable> identifiables = new ArrayList<>();
+		if (nodes != null)
+			identifiables.addAll(nodes);
+		if (edges != null)
+			identifiables.addAll(edges);
+		if (type.equals(List.class)) {
+			return identifiables;
+		} else if (type.equals(String.class)){
+			if (identifiables.size() == 0)
+				return "<none>";
+			String ret = "";
+			if (nodes != null && nodes.size() > 0) {
+				ret += "Nodes unhidden: \n";
+				for (CyNode node: nodes) {
+					ret += "   "+network.getRow(node).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			if (edges != null && edges.size() > 0) {
+				ret += "Edges unhidden: \n";
+				for (CyEdge edge: edges) {
+					ret += "   "+network.getRow(edge).get(CyNetwork.NAME, String.class)+"\n";
+				}
+			}
+			return ret;
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (identifiables == null || identifiables.size() == 0) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+			}};
+			return res;
+		}
+		return identifiables;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}
 }

@@ -147,7 +147,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class ImportTablePanel extends JPanel implements PropertyChangeListener, DataEvents {
 	
-	private static final Logger logger = LoggerFactory.getLogger(ImportTablePanel.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private static final String ID = CyNetwork.NAME;
 

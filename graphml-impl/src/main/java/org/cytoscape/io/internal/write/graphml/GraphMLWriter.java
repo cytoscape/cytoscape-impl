@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
 public class GraphMLWriter implements CyWriter {
 
 	private static final Logger logger = LoggerFactory
-			.getLogger(GraphMLWriter.class);
+			.getLogger("org.cytoscape.application.userlog");
 
 	private static final String GRAPHML = "graphml";
 	private static final String GRAPH = "graph";
@@ -105,7 +105,7 @@ public class GraphMLWriter implements CyWriter {
 		DocumentBuilder builder = factory.newDocumentBuilder();
 
 		Document document = builder.newDocument();
-		Element root = document.createElement(GRAPHML);
+		Element root = document.createElementNS("http://graphml.graphdrawing.org/xmlns",GRAPHML);
 
 		document.appendChild(root);
 		Element graphElm = document.createElement(GRAPH);
@@ -115,9 +115,9 @@ public class GraphMLWriter implements CyWriter {
 		graphElm.setAttribute(ID,network.getRow(network).get(CyNetwork.NAME, String.class));
 
 		// Add Column data types
-		writeAttributes(network.getDefaultNodeTable(), document, root);
-		writeAttributes(network.getDefaultEdgeTable(), document, root);
-		writeAttributes(network.getDefaultNetworkTable(), document, root);
+		writeAttributes(network.getDefaultNodeTable(), document, root, NODE);
+		writeAttributes(network.getDefaultEdgeTable(), document, root, EDGE);
+		writeAttributes(network.getDefaultNetworkTable(), document, root, GRAPH);
 		
 		// Add Graph element
 		root.appendChild(graphElm);
@@ -135,7 +135,7 @@ public class GraphMLWriter implements CyWriter {
 	 * @param doc
 	 * @param parent
 	 */
-	private void writeAttributes(CyTable attr, Document doc, Element parent) {
+	private void writeAttributes(CyTable attr, Document doc, Element parent, String forType) {
 		for (final CyColumn column : attr.getColumns()) {
 			final Class<?> type = column.getType();
 			String tag = GraphMLAttributeDataTypes.getTag(type);
@@ -146,7 +146,7 @@ public class GraphMLWriter implements CyWriter {
 
 			final String attrName = column.getName();
 			Element keyElm = doc.createElement("key");
-			keyElm.setAttribute("for", NODE);
+			keyElm.setAttribute("for", forType);
 			keyElm.setAttribute("attr.name", attrName);
 			keyElm.setAttribute("attr.type", tag);
 			keyElm.setAttribute(ID, attrName);

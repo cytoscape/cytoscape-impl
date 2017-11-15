@@ -60,7 +60,7 @@ public class CoSELayoutAlgorithmTask extends AbstractPartitionLayoutTask {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger(CoSELayoutAlgorithmTask.class);
+	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
 	public CoSELayoutAlgorithmTask(
 			final String displayName,

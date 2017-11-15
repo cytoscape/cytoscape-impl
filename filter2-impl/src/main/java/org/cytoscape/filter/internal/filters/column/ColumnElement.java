@@ -11,7 +11,7 @@ public class ColumnElement implements Comparable<ColumnElement> {
 	private final SelectedColumnType colType;
 	private final String name;
 	private final String description;
-	
+	private final boolean list;
 	
 	public static enum SelectedColumnType {
 		NONE,
@@ -35,12 +35,18 @@ public class ColumnElement implements Comparable<ColumnElement> {
 				return STRING;
 			return NONE;
 		}
+		
+		private static boolean isList(CyColumn col) {
+			Class<?> colType = col.getType();
+			return colType.isAssignableFrom(List.class);
+		}
 	}
 	
 	
 	public ColumnElement(Class<?> tableType, CyColumn col) {
 		this.tableType = tableType;
 		this.colType = SelectedColumnType.fromColumn(col);
+		this.list = SelectedColumnType.isList(col);
 		this.name = col.getName();
 		
 		if (CyNode.class.equals(tableType)) {
@@ -57,6 +63,7 @@ public class ColumnElement implements Comparable<ColumnElement> {
 		this.colType = SelectedColumnType.NONE;
 		this.name = "";
 		this.description = description;
+		this.list = false;
 	}
 	
 	public Class<?> getTableType() {
@@ -68,6 +75,9 @@ public class ColumnElement implements Comparable<ColumnElement> {
 		return colType;
 	}
 
+	public boolean isList() {
+		return list;
+	}
 
 	public String getName() {
 		return name;

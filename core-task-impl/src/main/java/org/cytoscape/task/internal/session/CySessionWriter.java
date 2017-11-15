@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.session;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.write.CySessionWriterManager;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.CySession;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,53 +39,34 @@ package org.cytoscape.task.internal.session;
  * #L%
  */
 
-
-import org.cytoscape.session.CySession;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CySessionWriterManager;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.AbstractTask;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-
 /**
  * A utility Task implementation that writes a {@link org.cytoscape.session.CySession} to a file.
- * @CyAPI.Final.Class
  */
 public final class CySessionWriter extends AbstractTask implements CyWriter {
+	
 	private final CySession session;
-	private final CySessionWriterManager writerMgr;
 	private CyWriter writer;
 	private File outputFile;
 	private File tmpFile;
 
-	Logger logger = LoggerFactory.getLogger(CySessionWriter.class);
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/**
 	 * Constructs this CySessionWriter.
-	 * @param writerMgr The {@link org.cytoscape.io.write.CySessionWriterManager} contains single expected
-	 * {@link org.cytoscape.io.write.CySessionWriterFactory} to use to write the file.
 	 * @param session The {@link org.cytoscape.session.CySession} to be written out. 
 	 * @param outputFile The file the {@link org.cytoscape.session.CySession} should be written to.
  	 */
-	public CySessionWriter(CySessionWriterManager writerMgr, CySession session, File outputFile) {
-		if (writerMgr == null)
-			throw new NullPointerException("Writer Manager is null");
-		this.writerMgr = writerMgr;
-
+	public CySessionWriter(CySession session, File outputFile, CyServiceRegistrar serviceRegistrar) {
 		if (session == null)
 			throw new NullPointerException("Session Manager is null");
-		this.session = session;
-
 		if (outputFile == null)
 			throw new NullPointerException("Output File is null");
+		
+		this.session = session;
 		this.outputFile = outputFile;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
@@ -80,6 +76,7 @@ public final class CySessionWriter extends AbstractTask implements CyWriter {
 	 */
 	@Override
 	public final void run(final TaskMonitor tm) throws Exception {
+		final CySessionWriterManager writerMgr = serviceRegistrar.getService(CySessionWriterManager.class);
 		final List<CyFileFilter> filters = writerMgr.getAvailableWriterFilters();
 		
 		if (filters == null || filters.size() < 1)

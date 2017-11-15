@@ -64,6 +64,9 @@ public interface DingAnnotation extends Annotation {
 	public double getZoom();
 	public void setZoom(double zoom);
 
+	public String getName();
+	public void setName(String name);
+
 	public double getSpecificZoom();
 	public void setSpecificZoom(double zoom);
 

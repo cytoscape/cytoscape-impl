@@ -138,7 +138,7 @@ public class TopologyFilter extends CompositeFilter {
 				}
 			}			
 		} else {
-			LoggerFactory.getLogger(TopologyFilter.class).error("objectType is undefined.");
+			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("objectType is undefined.");
 			return;
 		}
 

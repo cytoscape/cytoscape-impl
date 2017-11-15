@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.select;
 
 
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -33,16 +34,19 @@ import org.cytoscape.work.TaskIterator;
 
 public class DeselectTaskFactory extends AbstractTaskFactory {
 	private CyNetworkViewManager networkViewManager;
+	private CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
 
 	public DeselectTaskFactory(final CyNetworkViewManager networkViewManager,
-	                           final CyEventHelper eventHelper)
+	                           final CyEventHelper eventHelper,
+	                           final CyServiceRegistrar registrar)
 	{
 		this.networkViewManager = networkViewManager;
 		this.eventHelper        = eventHelper;
+		this.serviceRegistrar   = registrar;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DeselectTask(networkViewManager, eventHelper));
+		return new TaskIterator(new DeselectTask(networkViewManager, eventHelper, serviceRegistrar));
 	}
 }
