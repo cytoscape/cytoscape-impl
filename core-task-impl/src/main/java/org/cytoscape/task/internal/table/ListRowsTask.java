@@ -50,6 +50,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyRow> rowList = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public RowTunable rowTunable = null;
@@ -63,7 +64,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = rowTunable.getTable();
+		table = rowTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Unable to find table '"+rowTunable.getTableString()+"'");
@@ -114,12 +115,13 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	String rowListAsJson()
 	{
 		if (rowList == null || rowList.size() == 0) return "{}";
-		StringBuilder str = new StringBuilder("[ ");
+		String primaryKey = table.getPrimaryKey().getName();
+		StringBuilder str = new StringBuilder("\"table\":"+table.getSUID()+", \"rows\":[ ");
 		for (CyRow row : rowList)
-			str.append(row.get("SUID", Long.class) + ",");
+			str.append("\""+row.getRaw(primaryKey).toString()+"\""+",");
 		String out = str.toString();
 		out = out.substring(0, out.length()-1);
-		return out + " ]";
+		return out + " ]}";
 		
 	}
 }

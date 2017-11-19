@@ -80,7 +80,7 @@ public class ListEdgesTask extends AbstractTask implements ObservableTask {
 		} else if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(edges);
+				return "{\"edges\": "+cyJSONUtil.cyIdentifiablesToJson(edges)+"}";
 			};
 			return res;
 		}

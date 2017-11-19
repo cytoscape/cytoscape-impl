@@ -63,7 +63,7 @@ public class SetTableTitleTask extends AbstractTableDataTask implements Observab
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				if (table == null) return "{}";
-				return ""+table.getSUID();	
+				return "{\"table\":"+table.getSUID()+", \"title\":\""+title+"\"}";	
 			};
 		return res;
 	}
