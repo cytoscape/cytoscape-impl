@@ -116,7 +116,7 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(newNode);
+				return "{\"node\":"+cyJSONUtil.toJson(newNode)+"}";
 			}};
 			return res;
 		}

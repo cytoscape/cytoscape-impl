@@ -124,7 +124,7 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 			JSONResult res = () -> {if (sourceNetwork == null) 
 				return "{}";
 			else {
-				return ""+sourceNetwork.getSUID();
+				return "{\"network\":"+sourceNetwork.getSUID()+", \"title\":\""+name+"\"}";
 			}};
 			return res;
 		}

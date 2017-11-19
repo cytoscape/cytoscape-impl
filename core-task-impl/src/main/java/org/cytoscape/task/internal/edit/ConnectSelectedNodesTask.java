@@ -180,7 +180,7 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(newEdges);
+				return "{\"edges\":"+cyJSONUtil.cyIdentifiablesToJson(newEdges)+"}";
 			}};
 			return res;
 		}

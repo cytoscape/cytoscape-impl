@@ -75,7 +75,7 @@ public class CreateTableTask extends AbstractTableDataTask implements Observable
 		if (requestedType.equals(CyTable.class)) 				return table;
 		if (requestedType.equals(String.class)) 			return "" + table.getSUID();
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return "" + table.getSUID();	};
+			JSONResult res = () -> {		return "{\"table\":" + table.getSUID() + "}";	};
 			return res;
 }
 		return null;

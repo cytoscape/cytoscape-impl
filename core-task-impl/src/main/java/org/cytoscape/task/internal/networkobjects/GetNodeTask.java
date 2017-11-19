@@ -81,7 +81,7 @@ public class GetNodeTask extends AbstractGetTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(returnedNode);
+				return "{\"node\":"+cyJSONUtil.toJson(returnedNode)+"}";
 			}};
 			return res;
 		}

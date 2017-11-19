@@ -120,7 +120,7 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 		
 		if (type == JSONResult.class) {
 			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
-			JSONResult res = () -> { return json; };
+			JSONResult res = () -> { return "{\"views\":"+json+"}"; };
 			
 			return res;
 		}

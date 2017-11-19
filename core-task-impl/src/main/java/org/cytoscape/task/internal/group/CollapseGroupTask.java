@@ -109,7 +109,7 @@ public class CollapseGroupTask extends AbstractGroupTask {
 			}
 		}
 		if (requestedType.equals(JSONResult.class))  
-			{ JSONResult res = () -> { return "["+getGroupSetString(groups)+"]"; };
+			{ JSONResult res = () -> { return "{\"groups\": ["+getGroupSetString(groups)+"]}"; };
 			return res;
 			}
 		return null;

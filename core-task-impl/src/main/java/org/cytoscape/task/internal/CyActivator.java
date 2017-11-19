@@ -601,7 +601,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Get the current view");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the current view or null if there is none.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "136");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"view\": 136}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -614,7 +614,7 @@ public class CyActivator extends AbstractCyActivator {
 					"Returns a list with the passed network's views or an empty list if there are no views. "
 					+ "If a network is not specified, it assumes the current network.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 90, 136 ]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"views\":[ 90, 136 ]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -665,7 +665,7 @@ public class CyActivator extends AbstractCyActivator {
 			                  "nodes or edges are provides, the selected nodes and edges.  "+
 												"When deleting nodes, adjacent edges are also deleted.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,103]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\":[101,102,103], \"edges\":[201,202]}");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, DeleteSelectedNodesAndEdgesTaskFactory.class, props);
 		}
@@ -1011,7 +1011,7 @@ public class CyActivator extends AbstractCyActivator {
 				"nodes must be specified and much match the value in the 'name' column "+
 				"for each node");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"edge\":101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1025,7 +1025,7 @@ public class CyActivator extends AbstractCyActivator {
 				"Add a new node to an existing network.  The name of the "+
 				"node must be provided.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"node\":101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1110,7 +1110,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Returns the SUID of a node that matches the passed parameters. If multiple nodes are found, only one will be returned, and a warning will be printed.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"node\":101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1147,7 +1147,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the nodes in a network");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the node SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\": [101,102]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1232,7 +1232,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Returns the SUID of an edge that matches the passed parameters. If multiple edges are found, only one will be returned, and a warning will be reported in the Cytoscape Task History dialog.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"edge\": 101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1271,7 +1271,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List edges");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the edge SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"edges\": [101,102]}");
 
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -1361,7 +1361,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new group of nodes");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Create a group from the specified nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "123");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"group\":123}");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Group Selected Nodes to the nodes context also
@@ -1412,7 +1412,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Ungroups one or more groups, expanding them if "+
 			                                            "they are collapsed and removing the group nodes.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124]}");
 			registerService(bc, factory, TaskFactory.class, props);
 
 			// Add Ungroup Selected Nodes to the nodes context also
@@ -1447,7 +1447,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Collapse groups");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the representation of all of the nodes and edges in a group with a single node"); 
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true"); 
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1469,7 +1469,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Expand collapsed groups");  // TODO right namespace?
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Replaces the group node with member nodes for a set of groups");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1491,7 +1491,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the groups in a network");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Lists the SUIDs of all of the groups in a network"); 
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[123,124,126]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"groups\": [123,124,126]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1599,7 +1599,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Merge tables together");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Merge tables together joining around a designated key column.  Depending on the arguments, might merge into multiple local tables.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"tables\":[101,102]}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, MergeTablesTaskFactory.class, props);
 		}
@@ -1665,7 +1665,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Export a table to a file");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Creates a file with name <FILE> and writes the table there.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"file\": \"myfile.csv\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1677,7 +1677,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Adds a new table to the network.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1689,7 +1689,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Destroy (delete) an entire table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Removes the specified table from the network. ");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\": 101}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1795,7 +1795,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Return a single value from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the value from a cell as specified by row and column ids");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "1");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":123, \"row\":\"123\", \"column\":\"degree\", \"value\":1");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1819,7 +1819,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the rows in a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the list of primary keys for each of the rows in the specified table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[\"101\",\"102\",\"103\"]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\": 123, \"rows\":[\"101\",\"102\",\"103\"]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1831,7 +1831,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the registered tables");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of the table SUIDs associated with the passed network parameter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,104]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"tables\":[101,102,104]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1843,7 +1843,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the visible identifier of a single table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"title\": \"My Title\"");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1937,7 +1937,7 @@ public class CyActivator extends AbstractCyActivator {
                         "Create a new, empty network. The new network may be created as part "+
 												"of an existing network collection or a new network collection.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, NewEmptyNetworkViewFactory.class, props);
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
@@ -2023,7 +2023,7 @@ public class CyActivator extends AbstractCyActivator {
                          "Destroy (delete) a network. The SUID of the destroyed network "+
 											 	 "is returned.");
 			props2.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props2.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props2.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101}");
 			registerService(bc, factory, TaskFactory.class, props2);
 		}
 		{ 
@@ -2104,7 +2104,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
 			                  "Rename an existing network.  The SUID of the network is returned");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "101");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101, \"title\":\"My title\"}");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, EditNetworkTitleTaskFactory.class, props);
 		}
@@ -2126,7 +2126,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
 			                  "Export a network to a network file (e.g. ``XGMML``, ``SIF``, etc.)");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "/tmp/foo.sif");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"file\":\"/tmp/foo.sif\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportSelectedNetworkTaskFactory.class, props);
 		}
@@ -2157,7 +2157,7 @@ public class CyActivator extends AbstractCyActivator {
 			props2.setProperty(COMMAND_DESCRIPTION, "Create new edges that connect a list of nodes");
 			props2.setProperty(COMMAND_LONG_DESCRIPTION, "Create new edges that connect a list of nodes");
 			props2.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props2.setProperty(COMMAND_EXAMPLE_JSON, "[102,103]");
+			props2.setProperty(COMMAND_EXAMPLE_JSON, "{\"edges\": [102,103]}");
 			registerService(bc, factory, NetworkTaskFactory.class, props2);
 		}
 		// ---------- COMMANDS ----------
@@ -2202,7 +2202,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "List all of the available networks");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "List all of the networks in the current session.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[102,103]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"networks\": [102,103]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -2353,7 +2353,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Apply a style");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Applies the specified style to the selected views and returns the SUIDs of the affected views.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 322, 420 ]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"views\": [ 322, 420 ]}");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyVisualStyleTaskFactory.class, props);
 		}
