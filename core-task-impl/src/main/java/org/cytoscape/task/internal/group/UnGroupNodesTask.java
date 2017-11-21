@@ -40,6 +40,7 @@ import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
@@ -48,7 +49,7 @@ import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.NodeTunable;
 
-public class UnGroupNodesTask extends AbstractGroupTask {
+public class UnGroupNodesTask extends AbstractGroupTask implements ObservableTask {
 	private CyApplicationManager appMgr = null;
 	private CyGroupFactory factory = null;
 	private	Set<CyGroup>groupSet = null;

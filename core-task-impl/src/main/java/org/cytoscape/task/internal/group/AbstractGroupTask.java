@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
@@ -140,10 +141,10 @@ public abstract class AbstractGroupTask extends AbstractTask {
 	protected String getGroupSetString(Collection<CyGroup> groups)
 	{
 		StringBuilder buffer = new StringBuilder();
+		StringJoiner joiner = new StringJoiner(",");
 		for (CyGroup group : groups)
-			buffer.append(group.getGroupNode().getSUID()).append(",");
-		String out = buffer.toString();
-		return out.substring(0, out.length()-1);
+			joiner.add(group.getGroupNode().getSUID().toString());
+		return joiner.toString();
 	}
 
 }

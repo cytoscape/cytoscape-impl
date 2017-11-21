@@ -29,8 +29,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.EdgeList;
 import org.cytoscape.command.util.NodeList;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -50,6 +52,7 @@ import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
 
 public class AddTask extends AbstractTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
+	final CyEventHelper eventHelper;
 
 	@ContainsTunables
 	public NodeAndEdgeTunable nodesAndEdges;
@@ -60,7 +63,8 @@ public class AddTask extends AbstractTask implements ObservableTask {
 
 	public AddTask(final CyServiceRegistrar cyServiceRegistrar) {
 		serviceRegistrar = cyServiceRegistrar;
-		nodesAndEdges = new NodeAndEdgeTunable(cyServiceRegistrar);
+		eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		nodesAndEdges = new NodeAndEdgeTunable(cyServiceRegistrar, true);
 	}
 
 	@Override
@@ -97,6 +101,8 @@ public class AddTask extends AbstractTask implements ObservableTask {
 			}
 		}
 
+		eventHelper.flushPayloadEvents();
+
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added "+nodeCount+" nodes and "+edgeCount+" edges to network "+network.toString());
 	}
 
@@ -132,7 +138,20 @@ public class AddTask extends AbstractTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+				String result = "{\"nodes\":";
+				if (nodeList == null || nodeList.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(nodeList);
+
+				result += ", \"edges\":";
+				if (edgeList == null || edgeList.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(edgeList);
+
+				result += "}";
+				return result;
 			}};
 			return res;
 		}
