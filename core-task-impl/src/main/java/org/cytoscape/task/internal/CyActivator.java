@@ -477,7 +477,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_LONG_DESCRIPTION,
 					"Destroys all selected network views and returns their SUIDs. If no views are selected, this command does nothing.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "[ 343, 521, 770 ]");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"views\":[ 343, 521, 770 ]}");
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, DestroyNetworkViewTaskFactory.class, props);
 		}
@@ -996,7 +996,7 @@ public class CyActivator extends AbstractCyActivator {
 					"must already exist in the network collection.  This command is most often used "+
 					"to populate a subnetwork with selected nodes and edges from a parent network.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,102,103]");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\":[101,102,103],\"edges\":[201,202,203]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1039,7 +1039,7 @@ public class CyActivator extends AbstractCyActivator {
 				"Select nodes and/or edges in a network.  This command provides options to invert the selection, "+
 				"add first neighbors, add adjacent edges of selected nodes, and add adjacent nodes of selected edges");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,122,495]");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\": [101,122,495], \"edges\": [201,202,203]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1053,7 +1053,7 @@ public class CyActivator extends AbstractCyActivator {
 				"Deselect nodes and/or edges in a network.  A list of nodes and/or edges may be provided and "+
 				"those nodes and edges will be deselected.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,122,495]");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\": [101,122,495], \"edges\": [201,202,203]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1068,7 +1068,7 @@ public class CyActivator extends AbstractCyActivator {
 				"Note that the network '''must''' have a view.  The SUIDs of the hidden nodes and/or edges "+
 				"are returned.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,122,495]");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\": [101,122,495], \"edges\": [201,202,203]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -1083,7 +1083,7 @@ public class CyActivator extends AbstractCyActivator {
 				"Note that the network '''must''' have a view.  The SUIDs of the unhidden nodes and/or edges "+
 				"are returned.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "[101,122,495]");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"nodes\": [101,122,495], \"edges\": [201,202,203]}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		// NAMESPACE: node
@@ -1843,7 +1843,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Set the title of a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the visible identifier of a single table");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"title\": \"My Title\"");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":101, \"title\": \"My Title\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{

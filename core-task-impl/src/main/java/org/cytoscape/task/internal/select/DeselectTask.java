@@ -136,7 +136,18 @@ public class DeselectTask extends AbstractSelectTask implements ObservableTask {
 			JSONResult res = () -> {if (identifiables == null || identifiables.size() == 0) 
 				return "{}";
 			else {
-				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+				String result = "{\"nodes\":";
+				if (deselectedNodes == null || deselectedNodes.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(deselectedNodes);
+
+				result += ", \"edges\":";
+				if (deselectedEdges == null || deselectedEdges.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(deselectedEdges);
+				return result+"}";
 			}};
 			return res;
 		}

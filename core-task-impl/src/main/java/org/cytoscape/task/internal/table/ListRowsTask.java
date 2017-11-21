@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -116,12 +117,10 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	{
 		if (rowList == null || rowList.size() == 0) return "{}";
 		String primaryKey = table.getPrimaryKey().getName();
-		StringBuilder str = new StringBuilder("\"table\":"+table.getSUID()+", \"rows\":[ ");
+		StringJoiner rows = new StringJoiner(",", "[","]");
 		for (CyRow row : rowList)
-			str.append("\""+row.getRaw(primaryKey).toString()+"\""+",");
-		String out = str.toString();
-		out = out.substring(0, out.length()-1);
-		return out + " ]}";
-		
+			rows.add("\""+row.getRaw(primaryKey).toString()+"\"");
+
+		return "{\"table\":"+table.getSUID()+", \"rows\": "+rows.toString()+"}";
 	}
 }

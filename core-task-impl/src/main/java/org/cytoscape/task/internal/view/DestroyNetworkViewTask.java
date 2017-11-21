@@ -20,6 +20,7 @@ import org.cytoscape.work.json.JSONResult;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
 /*
@@ -122,14 +123,17 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask im
 		
 		if (type == JSONResult.class) {
 			JsonArray jsonArr = new JsonArray();
+			JsonObject jsonObject = new JsonObject();
 			
 			if (destroyedSUIDs != null && !destroyedSUIDs.isEmpty()) {
 				destroyedSUIDs.keySet().forEach(suid -> {
 					jsonArr.add(new JsonPrimitive(suid));
 				});
 			}
+
+			jsonObject.add("views", jsonArr);
 			
-			String json = new Gson().toJson(jsonArr);
+			String json = new Gson().toJson(jsonObject);
 			JSONResult res = () -> { return json; };
 			
 			return res;
