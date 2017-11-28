@@ -10,6 +10,7 @@ import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -40,6 +41,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
@@ -56,7 +60,10 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -98,9 +105,9 @@ import org.slf4j.LoggerFactory;
  * The CytoscapeDesktop is the central Window for working with Cytoscape.
  */
 @SuppressWarnings("serial")
-public class CytoscapeDesktop extends JFrame
-		implements CySwingApplication, CyStartListener, SessionLoadedListener, SessionSavedListener,
-		SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener, CytoPanelStateChangedListener {
+public class CytoscapeDesktop extends JFrame implements CySwingApplication, CyStartListener,
+		AppsFinishedStartingListener, SessionLoadedListener, SessionSavedListener, SetCurrentNetworkListener,
+		SetCurrentNetworkViewListener, TableAddedListener, CytoPanelStateChangedListener {
 
 	private static final String TITLE_PREFIX_STRING ="Session: ";
 	private static final String NEW_SESSION_NAME ="New Session";
@@ -182,7 +189,7 @@ public class CytoscapeDesktop extends JFrame
 				final Window window = SwingUtilities.getWindowAncestor(menuBar);
 				
 				if (!CytoscapeDesktop.this.equals(window)) {
-					if (window instanceof JFrame && !LookAndFeelUtil.isAquaLAF()) {
+					if (window instanceof JFrame && !isScreenMenuBar()) {
 						// Do this first, or the user could see the menu disappearing from the out-of-focus windows
 						final JMenuBar dummyMenuBar = cyMenus.createDummyMenuBar();
 						((JFrame) window).setJMenuBar(dummyMenuBar);
@@ -190,7 +197,7 @@ public class CytoscapeDesktop extends JFrame
 						window.repaint();
 					}
 					
-					if (LookAndFeelUtil.isAquaLAF())
+					if (isScreenMenuBar())
 						cyMenus.setMenuBarVisible(true);
 					
 					setJMenuBar(menuBar);
@@ -380,6 +387,19 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	@Override
+	public void handleEvent(AppsFinishedStartingEvent e) {
+		invokeOnEDT(() -> {
+			// Only show Starter Panel the first time if the initial session is empty
+			// (for instance, Cystoscape can start up with a session file specified through the terminal)
+			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
+			
+			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
+				showStarterPanel();
+		});
+	}
+	
+	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Update window title
 		String sessionName = e.getLoadedFileName();
@@ -399,20 +419,32 @@ public class CytoscapeDesktop extends JFrame
 	public void handleEvent(SessionSavedEvent e) {
 		// Update window title
 		final String sessionName = e.getSavedFileName();
-		
-		invokeOnEDT(() -> {
-			setTitle(TITLE_PREFIX_STRING + sessionName);
-		});
+		invokeOnEDT(() -> setTitle(TITLE_PREFIX_STRING + sessionName));
 	}
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkEvent e) {
-		hideStarterPanel();
+		invokeOnEDT(() -> {
+			if (e.getNetwork() != null && !isCommandDocGenNetwork(e.getNetwork()))
+				hideStarterPanel();
+		});
 	}
 	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
-		hideStarterPanel();
+		invokeOnEDT(() -> {
+			if (e.getNetworkView() != null && !isCommandDocGenNetwork(e.getNetworkView().getModel()))
+				hideStarterPanel();
+		});
+	}
+	
+	private boolean isCommandDocGenNetwork(CyNetwork network) {
+		if (network != null) {
+			String name = network.getRow(network).get(CyNetwork.NAME, String.class);
+			//Note: DO NOT CHANGE THE NETWORK NAME FROM "cy:command_documentation_generation", it is necessary for a workaround.
+			return name != null && name.equals("cy:command_documentation_generation");
+		}
+		return false;
 	}
 	
 	@Override
@@ -421,8 +453,11 @@ public class CytoscapeDesktop extends JFrame
 		
 		// It does not make sense to hide the Starter Panel when the table is private, because the user will not see it.
 		// Also apps can create private tables during initialization, which would hide the Starter Panel by accident.
-		if (table != null && table.isPublic())
-			hideStarterPanel();
+		if (table != null && table.isPublic()) {
+			CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			if (network != null && !isCommandDocGenNetwork(network))
+				invokeOnEDT(() -> hideStarterPanel());
+		}
 	}
 	
 	@Override
@@ -447,17 +482,13 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	public void showStarterPanel() {
-		invokeOnEDT(() -> {
-			getStarterPanel().update();
-			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
-		});
+		getStarterPanel().update();
+		((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
 	}
 	
 	public void hideStarterPanel() {
-		invokeOnEDT(() -> {
-			if (isStarterPanelVisible())
-				((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
-		});
+		if (isStarterPanelVisible())
+			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
 	}
 	
 	public boolean isStarterPanelVisible() {
@@ -632,10 +663,11 @@ public class CytoscapeDesktop extends JFrame
 			centerPanel = new JPanel();
 			centerPanel.setLayout(new CardLayout());
 			
-			centerPanel.add(getStarterPanel(), StarterPanel.NAME);
-			
-			if (netViewMediator.getNetworkViewMainPanel() != null) // Just for unit tests
+			// Null check is just for unit tests, because it's very hard to mock up the UI
+			if (netViewMediator.getNetworkViewMainPanel() != null)
 				centerPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
+			
+			centerPanel.add(getStarterPanel(), StarterPanel.NAME);
 		}
 		
 		return centerPanel;

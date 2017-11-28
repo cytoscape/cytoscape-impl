@@ -27,6 +27,7 @@ package org.cytoscape.task.internal.utils;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -35,11 +36,11 @@ import org.cytoscape.work.Tunable;
 public class NodeTunable {
 	CyApplicationManager appMgr;
 	
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="List of nodes", context="nogui")
+	@Tunable(description="List of nodes", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList getnodeList() {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();

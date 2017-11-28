@@ -1,11 +1,18 @@
 package org.cytoscape.task.internal.layout;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -35,6 +42,10 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 
 	private CyLayoutAlgorithm preferredLayout;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	@Tunable(description="Gets the name of the current preferred layout", context="nogui", longDescription="Gets the name of the current preferred layout")
+	public CyNetwork network = null;
+
 
 	public GetPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -53,12 +64,23 @@ public class GetPreferredLayoutTask extends AbstractTask implements ObservableTa
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
-		if (preferredLayout == null)
-			return null;
-
 		if (type.equals(String.class))
 			return preferredLayout.getName();
-
+		else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (preferredLayout == null) { 
+					return "{ }";
+				} else {
+					return "\"" + preferredLayout.getName() + "\"";	
+			}};
+			return res;
+		}else if (preferredLayout == null) {
+			return null;
+		}
 		return preferredLayout;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, JSONResult.class);
 	}
 }

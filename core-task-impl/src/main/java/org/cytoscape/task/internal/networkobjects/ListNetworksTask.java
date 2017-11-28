@@ -25,21 +25,27 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 public class ListNetworksTask extends AbstractTask implements ObservableTask{
 	CyNetworkManager networkManager;
 	Set<CyNetwork> networks;
+	final CyServiceRegistrar registrar;
 
-	public ListNetworksTask(final CyNetworkManager networkManager) {
+	public ListNetworksTask(final CyNetworkManager networkManager, final CyServiceRegistrar registrar) {
 		this.networkManager = networkManager;
+		this.registrar = registrar;
 	}
 
 	@Override
@@ -48,6 +54,8 @@ public class ListNetworksTask extends AbstractTask implements ObservableTask{
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Found "+networks.size()+" networks.");
 	}
 
+	@SuppressWarnings({"unchecked","rawtypes"})
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(List.class)) {
 			return  new ArrayList<CyNetwork>(networks);
@@ -59,7 +67,20 @@ public class ListNetworksTask extends AbstractTask implements ObservableTask{
 				res += network.toString()+"\n";
 			}
 			return res.substring(0, res.length()-1);
+		} else if (type.equals(JSONResult.class)){
+			JSONResult res = () -> {if (networks == null || networks.size() == 0) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = registrar.getService(CyJSONUtil.class);
+				return "{\"networks\":"+cyJSONUtil.cyIdentifiablesToJson(networks)+"}";
+			}};
+			return res;
 		}
 		return networks;
+	}
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(List.class, Set.class, String.class, JSONResult.class);
 	}
 }

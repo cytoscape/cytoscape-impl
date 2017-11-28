@@ -102,25 +102,25 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (type == String.class) {
-			String strRes = "";
+			String res = "";
 			
 			if (networkViews != null && !networkViews.isEmpty()) {
-				strRes += "Style applied to views:\n";
+				res += "Style applied to views:\n";
 				
 				for (CyNetworkView view : networkViews)
-					strRes += DataUtils.getViewTitle(view) + "\n";
+					res += DataUtils.getViewTitle(view) + " (SUID: " + view.getSUID() + ")" + "\n";
 				
-				strRes = strRes.substring(0, strRes.length() - 1);
+				res = res.substring(0, res.length() - 1);
 			} else {
-				strRes = "Please select one or more views before applying a style.";
+				res = "Please select one or more views before applying a style.";
 			}
 			
-			return strRes;
+			return res;
 		}
 		
 		if (type == JSONResult.class) {
 			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(networkViews);
-			JSONResult res = () -> { return json; };
+			JSONResult res = () -> { return "{\"views\":"+json+"}"; };
 			
 			return res;
 		}

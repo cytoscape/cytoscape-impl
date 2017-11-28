@@ -26,7 +26,7 @@ package org.cytoscape.task.internal.utils;
 
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.RowList;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -40,9 +40,10 @@ public class RowTunable {
 
 	public RowList rowList = null;
 
-	@Tunable(description="List of rows", context="nogui")
+	@Tunable(description="List of rows", context="nogui" , 
+	         longDescription=StringToModel.CY_ROW_LIST_LONG_DESCRIPTION,
+	         exampleStringValue="name:BRCA1,name:BRCA2,name:EGFR")
 	public RowList getrowList() {
-		System.out.println("getTable = "+tableTunable.getTable());
 		rowList.setTable(tableTunable.getTable());
 		return rowList;
 	}

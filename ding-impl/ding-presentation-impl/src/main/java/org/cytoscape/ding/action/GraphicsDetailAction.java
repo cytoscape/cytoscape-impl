@@ -11,15 +11,13 @@ import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
  * #%L
@@ -53,12 +51,15 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	protected static String SHOW = "Show";
 	protected static String HIDE = "Hide";
 
-	private final DingGraphLOD dingGraphLOD;
-	private final DingGraphLODAll dingGraphLODAll;
+	private ShowGraphicsDetailsTaskFactory taskFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public GraphicsDetailAction(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll,
-			final CyServiceRegistrar serviceRegistrar) {
+	public GraphicsDetailAction(
+			float gravity,
+			String preferredMenu,
+			ShowGraphicsDetailsTaskFactory taskFactory,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(
 				SHOW + " " + GraphicsDetails,
 				serviceRegistrar.getService(CyApplicationManager.class),
@@ -66,36 +67,28 @@ public class GraphicsDetailAction extends AbstractCyAction {
 				serviceRegistrar.getService(CyNetworkViewManager.class)
 		);
 
-		this.dingGraphLOD = dingGraphLOD;
-		this.dingGraphLODAll = dingGraphLODAll;
+		this.taskFactory = taskFactory;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		setPreferredMenu("View");
-		setMenuGravity(5.0f);
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_D,
-				Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.SHIFT_MASK));
+		if (preferredMenu != null) {
+			setPreferredMenu(preferredMenu);
+			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_D,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.SHIFT_MASK));
+		}
+		
+		setMenuGravity(gravity);
 	}
-
+	
 	/**
 	 * Toggles the Show/Hide state.
 	 * @param ev Triggering event - not used.
 	 */
 	@Override
 	public void actionPerformed(ActionEvent ev) {
-		final RenderingEngine<CyNetwork> engine =
-				serviceRegistrar.getService(CyApplicationManager.class).getCurrentRenderingEngine();
-
-		if (engine instanceof DGraphView == false)
-			return;
-
-		final GraphLOD lod = ((DGraphView) engine).getGraphLOD();
-
-		if (lod instanceof DingGraphLODAll)
-			((DGraphView) engine).setGraphLOD(dingGraphLOD);
-		else
-			((DGraphView) engine).setGraphLOD(dingGraphLODAll);
-
-		((CyNetworkView) engine.getViewModel()).updateView();
+		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (taskFactory.isReady(view))
+			serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator(view));
 	}
 
 	/**
@@ -103,24 +96,26 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	 */
 	@Override
 	public void menuSelected(MenuEvent me) {
-		if (isDetailShown())
+		updateEnableState();
+	}
+	
+	@Override
+	public void updateEnableState() {
+		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (isDetailShown(view))
 			putValue(Action.NAME, HIDE + " " + GraphicsDetails);
 		else
 			putValue(Action.NAME, SHOW + " " + GraphicsDetails);
+		
+		setName(getValue(Action.NAME).toString());
+		setEnabled(taskFactory.isReady(view));
 	}
 
-	public boolean isDetailShown() {
-		final RenderingEngine<CyNetwork> engine =
-				serviceRegistrar.getService(CyApplicationManager.class).getCurrentRenderingEngine();
+	private boolean isDetailShown(CyNetworkView view) {
+		if (view instanceof DGraphView)
+			return ((DGraphView) view).getGraphLOD() instanceof DingGraphLODAll;
 		
-		if (engine instanceof DGraphView == false)
-			return false;
-
-		final GraphLOD lod = ((DGraphView) engine).getGraphLOD();
-
-		if (lod instanceof DingGraphLODAll)
-			return true;
-		else
-			return false;
+		return false;
 	}
 }

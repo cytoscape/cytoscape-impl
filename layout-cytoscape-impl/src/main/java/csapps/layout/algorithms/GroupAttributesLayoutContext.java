@@ -26,7 +26,7 @@ package csapps.layout.algorithms;
 
 import org.cytoscape.work.Tunable;
 
-public class GroupAttributesLayoutContext  {
+public class GroupAttributesLayoutContext  {	
 	/*
 	  Layout parameters:
 	    - spacingx: Horizontal spacing (on the x-axis) between two partitions in a row.
@@ -36,14 +36,14 @@ public class GroupAttributesLayoutContext  {
 	    - radmult:  The scale of the radius of the partition. Increasing this value
 	                will increase the size of the partition proportionally.
 	 */
-	@Tunable(description="Horizontal spacing between two partitions in a row:")
+	@Tunable(description="Horizontal spacing between two partitions in a row:", context="both", longDescription="Horizontal spacing between two partitions in a row, in numeric value", exampleStringValue="400.0")
 	public double spacingx = 400.0;
-	@Tunable(description="Vertical spacing between the largest partitions of two rows:")
+	@Tunable(description="Vertical spacing between the largest partitions of two rows:", context="both", longDescription="Vertical spacing between the largest partitions of two rows, in numeric value", exampleStringValue="400.0")
 	public double spacingy = 400.0;
-	@Tunable(description="Maximum width of a row:")
+	@Tunable(description="Maximum width of a row:", context="both", longDescription="Maximum width of a row, in numeric value", exampleStringValue="5000.0")
 	public double maxwidth = 5000.0;
-	@Tunable(description="Minimum width of a partition:")
+	@Tunable(description="Minimum width of a partition:", longDescription="Minimum width of a partition, in numeric value", exampleStringValue="100.0")
 	public double minrad = 100.0;
-	@Tunable(description="Scale of the radius of the partition:")
+	@Tunable(description="Scale of the radius of the partition:", longDescription="Minimum width of a partition, in numeric value", exampleStringValue="50.0")
 	public double radmult = 50.0;
 }

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewCollectionTask;
@@ -14,6 +15,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -41,7 +43,7 @@ import org.cytoscape.work.Tunable;
 
 public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask {
 
-	@Tunable(description = "Network view to apply layout to", context = "nogui")
+	@Tunable(description = "Network view to apply the layout currently set as default to", context = "nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork networkSelected;
 
 	private final CyServiceRegistrar serviceRegistrar;
@@ -92,6 +94,16 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 
 		tm.setProgress(1.0);
 	}
+	
+	@SuppressWarnings({"rawtypes"})
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> { return "{}"; };
+			return res;
+		}
+		return null;
+	}
+
 
 //	/**
 //	 * Clears edge bend values ASSIGNED TO EACH EDGE. Default Edge Bend value

@@ -1,5 +1,8 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Arrays;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -27,7 +30,6 @@ package org.cytoscape.task.internal.table;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -37,10 +39,11 @@ import org.cytoscape.task.internal.utils.EdgeTunable;
 import org.cytoscape.task.internal.utils.ColumnValueTunable;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.task.internal.utils.DataUtils;
 
-public class SetEdgeAttributeTask extends AbstractTableDataTask {
+public class SetEdgeAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> edgeData;
 
@@ -72,4 +75,17 @@ public class SetEdgeAttributeTask extends AbstractTableDataTask {
 		}
 	}
 
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(JSONResult.class);
+	}
 }

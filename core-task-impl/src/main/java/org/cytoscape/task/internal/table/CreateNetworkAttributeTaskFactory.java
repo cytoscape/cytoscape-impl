@@ -32,27 +32,33 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class CreateNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	public static final String COMMAND_EXAMPLE_JSON = "{ \"columnName\": \"New Column\" }";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final Class type;
+	final private CyServiceRegistrar serviceRegistrar;
 	
-	public CreateNetworkAttributeTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, Class <? extends CyIdentifiable> type) {
+	public CreateNetworkAttributeTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, Class <? extends CyIdentifiable> type, CyServiceRegistrar serviceRegistrar) {
 		cyAppManager = appMgr;
 		cyTableManager = mgr;
 		this.type = type;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new CreateNetworkAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new CreateNetworkAttributeTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyEdge.class))
-			return new TaskIterator(new CreateEdgeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new CreateEdgeAttributeTask(cyTableManager, cyAppManager, serviceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new CreateNodeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new CreateNodeAttributeTask(cyTableManager, cyAppManager, serviceRegistrar));
 		return null;
 	}
 

@@ -1,6 +1,7 @@
 package org.cytoscape.task.internal.export.network;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -11,6 +12,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -21,6 +23,7 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -46,13 +49,15 @@ import org.cytoscape.work.Tunable;
  * #L%
  */
 
-class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
+public class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 	
 	private final String name;
 	private final CyNetworkReader viewReader;
 	private final int viewThreshold;
 	private final CyServiceRegistrar serviceRegistrar;
 	private	List<CyNetworkView> results;
+	private	List<CyNetwork> largeNetworks;
+	public static final String JSON_EXAMPLE = "{ \"networks\":[101,102,103],\"views\":[200,201,204] }";
 
 	public GenerateNetworkViewsTask(
 			final String name,
@@ -78,18 +83,14 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		double numNets = (double) networks.length;
 		int i = 0;
 		results = new ArrayList<>();
-		final List<CyNetwork> largeNetworks = new ArrayList<>();
+		largeNetworks = new ArrayList<>();
 		
 		for (CyNetwork net : networks) {
 			// Use original name if exists
 			String networkName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			
-			if (networkName == null || networkName.trim().length() == 0) {
-				networkName = name;
-				
-				if (networkName == null)
-					networkName = "? (Name is missing)";
-			}
+			if (networkName == null || networkName.trim().length() == 0) 
+				networkName = (name != null) ? name : "? (Name is missing)";
 			
 			net.getRow(net).set(CyNetwork.NAME, networkNaming.getSuggestedNetworkTitle(networkName));
 			
@@ -142,15 +143,6 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		
 		if (!largeNetworks.isEmpty())
 			insertTasksAfterCurrentTask(new ConfirmCreateNetworkViewsTask(largeNetworks));
-	}
-	
-	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object getResults(Class expectedType) {
-		if (expectedType.equals(String.class))
-			return getStringResults();
-	
-		return results;
 	}
 
 	private Object getStringResults() {
@@ -206,6 +198,36 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		if (!currentViewSet)
 			applicationManager.setCurrentNetwork(network);
 	}
+		
+	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class))
+			return getStringResults();
+		else if (expectedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (results == null && largeNetworks.isEmpty()) 
+				return "{}";
+			else {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				List<CyNetwork> networks = new ArrayList<>();
+				for (CyNetworkView view: results)
+					networks.add(view.getModel());
+				networks.addAll(largeNetworks);
+				String jsonRes = "{ \"networks\":";
+				jsonRes += cyJSONUtil.cyIdentifiablesToJson(networks);
+				jsonRes += ", \"views\":";
+				jsonRes += cyJSONUtil.cyIdentifiablesToJson(results) + "}";
+				return jsonRes;
+			}};
+			return res;
+		}
+		return results;
+	}
+	
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(List.class, String.class, JSONResult.class);
+	}
 	
 	public class ConfirmCreateNetworkViewsTask extends AbstractTask implements ObservableTask {
 
@@ -247,8 +269,32 @@ class GenerateNetworkViewsTask extends AbstractTask implements ObservableTask {
 		public Object getResults(Class expectedType) {
 			if (expectedType.equals(String.class))
 				return getStringResults();
-			
+			else if (expectedType.equals(JSONResult.class)) {
+				JSONResult res = () -> {if (results == null && largeNetworks.isEmpty()) 
+					return "{}";
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					List<CyNetwork> networks = new ArrayList<>();
+					for (CyNetworkView view: results)
+						networks.add(view.getModel());
+					for (CyNetwork net: largeNetworks) {
+						if (!networks.contains(net))
+							networks.add(net);
+					}
+					String jsonRes = "{ \"networks\":";
+					jsonRes += cyJSONUtil.cyIdentifiablesToJson(networks);
+					jsonRes += ", \"views\":";
+					jsonRes += cyJSONUtil.cyIdentifiablesToJson(results);
+					return jsonRes;
+				}};
+				return res;
+			}
 			return results;
+		}
+		
+		@Override
+		public List<Class<?>> getResultClasses() {
+			return Arrays.asList(List.class, String.class, JSONResult.class);
 		}
 	}
 }

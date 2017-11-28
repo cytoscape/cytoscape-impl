@@ -274,6 +274,13 @@ public final class ViewUtil {
 		}
 	}
 	
+	/**
+	 * @return true if Aqua LAF and system property to "use Screen Menu Bar" is "true".
+	 */
+	public static boolean isScreenMenuBar() {
+		return LookAndFeelUtil.isAquaLAF() && "true".equals(System.getProperty("apple.laf.useScreenMenuBar"));
+	}
+	
 	private ViewUtil() {
 	}
 }

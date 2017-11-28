@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -38,13 +40,16 @@ import org.cytoscape.view.model.CyNetworkView;
 
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.NodeTunable;
 
-public class UnGroupNodesTask extends AbstractGroupTask {
+public class UnGroupNodesTask extends AbstractGroupTask implements ObservableTask {
 	private CyApplicationManager appMgr = null;
 	private CyGroupFactory factory = null;
 	private	Set<CyGroup>groupSet = null;
@@ -96,4 +101,14 @@ public class UnGroupNodesTask extends AbstractGroupTask {
 		tm.showMessage(TaskMonitor.Level.INFO, "Ungrouped "+groupSet.size()+" groups");
 		tm.setProgress(1.0d);
 	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(String.class))			return "Ungrouped: "+DataUtils.convertData(groupSet);
+		if (requestedType.equals(JSONResult.class))   {
+			JSONResult res = () -> {	 return "{\"groups\": ["  + getGroupSetString(groupSet) + "]}"; };
+			return res;
+		}
+		return null;
+	}
+	
 }

@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.networkobjects;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -36,19 +37,24 @@ import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.json.JSONResult;
 
 import org.cytoscape.task.internal.utils.NodeTunable;
 
 public class ListNodesTask extends AbstractTask implements ObservableTask {
 	private final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyNode> nodes = null;
 	CyNetwork network = null;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
-	public ListNodesTask(CyApplicationManager appMgr) {
+	public ListNodesTask(CyApplicationManager appMgr, final  CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 		nodeTunable = new NodeTunable(appMgr);
 	}
 
@@ -75,10 +81,20 @@ public class ListNodesTask extends AbstractTask implements ObservableTask {
 				res += node.toString()+" ["+getName(network, node)+"]\n";
 			}
 			return res.substring(0, res.length()-1);
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return "{\"nodes\":"+cyJSONUtil.cyIdentifiablesToJson(nodes)+"}";
+			};
+			return res;
 		}
 		return nodes;
 	}
 
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNode.class, String.class, JSONResult.class);
+	}
+	
 	String getName(CyNetwork network, CyNode node) {
 		return network.getRow(node).get(CyNetwork.NAME, String.class);
 	}

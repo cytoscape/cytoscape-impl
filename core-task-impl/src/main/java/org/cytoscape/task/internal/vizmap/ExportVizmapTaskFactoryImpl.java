@@ -36,7 +36,7 @@ import org.cytoscape.work.TunableSetter;
  * #L%
  */
 
-public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements ExportVizmapTaskFactory{
+public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements ExportVizmapTaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar; 
 	

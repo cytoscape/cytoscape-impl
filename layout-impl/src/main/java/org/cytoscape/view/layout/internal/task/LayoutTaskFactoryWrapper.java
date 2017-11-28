@@ -26,6 +26,7 @@ package org.cytoscape.view.layout.internal.task;
 
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -35,14 +36,16 @@ public class LayoutTaskFactoryWrapper extends AbstractTaskFactory {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkViewManager viewMgr;
 	private final CyLayoutAlgorithm alg;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public LayoutTaskFactoryWrapper(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, CyLayoutAlgorithm alg) {
+	public LayoutTaskFactoryWrapper(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, CyLayoutAlgorithm alg, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
 		this.viewMgr = viewMgr;
 		this.alg = alg;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new LayoutWrapperTask(appMgr, viewMgr, alg));
+		return new TaskIterator(new LayoutWrapperTask(appMgr, viewMgr, alg, serviceRegistrar));
 	}
 }

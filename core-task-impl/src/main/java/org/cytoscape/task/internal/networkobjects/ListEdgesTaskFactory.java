@@ -26,17 +26,21 @@ package org.cytoscape.task.internal.networkobjects;
 
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 
 public class ListEdgesTaskFactory extends AbstractTaskFactory {
 	private final CyApplicationManager appMgr;
-	public ListEdgesTaskFactory(CyApplicationManager appMgr) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public ListEdgesTaskFactory(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new ListEdgesTask(appMgr));
+		return new TaskIterator(new ListEdgesTask(appMgr, serviceRegistrar));
 	}
 }

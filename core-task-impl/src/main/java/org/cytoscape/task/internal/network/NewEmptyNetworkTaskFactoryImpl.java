@@ -10,6 +10,7 @@ import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.create.NewEmptyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -53,6 +54,7 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 	private final VisualMappingManager vmMgr;
 	private final CyRootNetworkManager rootNetMgr;
 	private final CyApplicationManager appMgr;
+	private final CyServiceRegistrar registrar;
 	private final Set<NetworkViewRenderer> viewRenderers;
 	
 	public NewEmptyNetworkTaskFactoryImpl(final CyNetworkFactory netFactory,
@@ -62,7 +64,8 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 										  final SynchronousTaskManager<?> syncTaskMgr,
 										  final VisualMappingManager vmMgr,
 										  final CyRootNetworkManager rootNetMgr,
-										  final CyApplicationManager appMgr) {
+										  final CyApplicationManager appMgr,
+											final CyServiceRegistrar registrar) {
 		this.netFactory = netFactory;
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
@@ -71,6 +74,7 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 		this.vmMgr = vmMgr;
 		this.rootNetMgr = rootNetMgr;
 		this.appMgr = appMgr;
+		this.registrar = registrar;
 		viewRenderers = new TreeSet<>(new Comparator<NetworkViewRenderer>() {
 			@Override
 			public int compare(NetworkViewRenderer r1, NetworkViewRenderer r2) {
@@ -86,10 +90,10 @@ public class NewEmptyNetworkTaskFactoryImpl extends AbstractTaskFactory implemen
 
 	private NewEmptyNetworkTask createTask() {
 		if (viewRenderers.isEmpty())
-			throw new RuntimeException("Unnable to create Network View: There is no NetworkViewRenderer.");
+			throw new RuntimeException("Unable to create Network View: There is no NetworkViewRenderer.");
 		
 		return new NewEmptyNetworkTask(netFactory, netMgr, netViewMgr, namingUtil, vmMgr, rootNetMgr,
-				appMgr, viewRenderers);
+				appMgr, viewRenderers, registrar);
 	}
 	
 	@Override

@@ -2,6 +2,8 @@ package org.cytoscape.group.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
@@ -77,10 +79,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyGroupManagerImpl cyGroupManager = new CyGroupManagerImpl(serviceRegistrar);
 		CyGroupFactoryImpl cyGroupFactory = new CyGroupFactoryImpl(cyGroupManager, lockedVisualPropertiesManager);
-		registerService(bc, cyGroupManager, CyGroupManager.class, new Properties());
-		registerService(bc, cyGroupManager, AddedEdgesListener.class, new Properties());
-		registerService(bc, cyGroupManager, AboutToRemoveEdgesListener.class, new Properties());
-		registerService(bc, cyGroupFactory, CyGroupFactory.class, new Properties());
+		registerService(bc, cyGroupManager, CyGroupManager.class);
+		registerService(bc, cyGroupManager, AddedEdgesListener.class);
+		registerService(bc, cyGroupManager, AboutToRemoveEdgesListener.class);
+		registerService(bc, cyGroupFactory, CyGroupFactory.class);
 
 		// Create the aggregation manager
 		CyGroupAggregationManagerImpl cyAggMgr = new CyGroupAggregationManagerImpl(cyGroupManager);
@@ -90,7 +92,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyGroupSettingsImpl cyGroupSettings = new CyGroupSettingsImpl(cyGroupManager, cyAggMgr, serviceRegistrar);
 
 		GroupIO groupIO = new GroupIO(cyGroupManager, lockedVisualPropertiesManager, cyGroupSettings);
-		registerAllServices(bc, groupIO, new Properties());
+		registerAllServices(bc, groupIO);
 
 		// Register our settings menu
 		CyGroupSettingsTaskFactory settingsFactory = new CyGroupSettingsTaskFactory(cyGroupManager, cyAggMgr,
@@ -128,15 +130,21 @@ public class CyActivator extends AbstractCyActivator {
 		NodeChangeListener nodeChangeListener = new NodeChangeListener(cyGroupManager, cyGroupSettings);
 		registerService(bc, nodeChangeListener, ViewChangedListener.class, new Properties());
 
+		settingsProps = new Properties();
+		settingsProps.setProperty(ID, "groupViewCollapseFactory");
+		settingsProps.setProperty(TITLE, "Collapse Group View");
+		settingsProps.setProperty(COMMAND, "groupViewCollapseFactory");
+		settingsProps.setProperty(COMMAND_NAMESPACE, "network-view");
+		settingsProps.setProperty(COMMAND_SUPPORTS_JSON, "true");
 		GroupViewCollapseHandler gvcHandler = new GroupViewCollapseHandler(cyGroupManager, cyGroupSettings,
 				nodeChangeListener);
 
-		registerService(bc, gvcHandler, GroupAboutToCollapseListener.class, new Properties());
-		registerService(bc, gvcHandler, GroupAboutToBeDestroyedListener.class, new Properties());
-		registerService(bc, gvcHandler, GroupCollapsedListener.class, new Properties());
-		registerService(bc, gvcHandler, SessionLoadedListener.class, new Properties());
-		registerService(bc, gvcHandler, GroupAddedListener.class, new Properties());
-		registerService(bc, gvcHandler, GroupViewTypeChangedListener.class, new Properties());
+		registerService(bc, gvcHandler, GroupAboutToCollapseListener.class, settingsProps);
+		registerService(bc, gvcHandler, GroupAboutToBeDestroyedListener.class, settingsProps);
+		registerService(bc, gvcHandler, GroupCollapsedListener.class,settingsProps);
+		registerService(bc, gvcHandler, SessionLoadedListener.class, settingsProps);
+		registerService(bc, gvcHandler, GroupAddedListener.class, settingsProps);
+		registerService(bc, gvcHandler, GroupViewTypeChangedListener.class, settingsProps);
 
 		GroupDataCollapseHandler gdcHandler = new GroupDataCollapseHandler(cyGroupManager, cyGroupSettings);
 		registerService(bc, gdcHandler, GroupAboutToCollapseListener.class, new Properties());

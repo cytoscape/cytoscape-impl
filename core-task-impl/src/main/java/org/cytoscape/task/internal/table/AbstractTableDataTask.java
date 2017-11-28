@@ -43,6 +43,8 @@ import org.cytoscape.work.AbstractTask;
 
 public abstract class AbstractTableDataTask extends AbstractTask {
 	
+	
+	
 	CyTableManager cyTableManager;
 
 	AbstractTableDataTask(CyTableManager cyTableManager) {
@@ -127,21 +129,15 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public String getNamespace(String namespace) {
-		if (namespace == null || 
-		    namespace.equalsIgnoreCase(CyNetwork.DEFAULT_ATTRS) || 
-		    namespace.equalsIgnoreCase("default"))
+		if (namespace == null || namespace.equalsIgnoreCase(CyNetwork.DEFAULT_ATTRS) ||  namespace.equalsIgnoreCase("default"))
 			return CyNetwork.DEFAULT_ATTRS;
-		else if (namespace.equalsIgnoreCase("hidden") ||
-		         namespace.equalsIgnoreCase(CyNetwork.HIDDEN_ATTRS))
+		if (namespace.equalsIgnoreCase("hidden") || namespace.equalsIgnoreCase(CyNetwork.HIDDEN_ATTRS))
 			return CyNetwork.HIDDEN_ATTRS;
-		else if (namespace.equalsIgnoreCase("local") ||
-		         namespace.equalsIgnoreCase(CyNetwork.LOCAL_ATTRS))
+		if (namespace.equalsIgnoreCase("local") || namespace.equalsIgnoreCase(CyNetwork.LOCAL_ATTRS))
 			return CyNetwork.LOCAL_ATTRS;
-		else if (namespace.equalsIgnoreCase("shared") ||
-		         namespace.equalsIgnoreCase(CyRootNetwork.SHARED_ATTRS))
+		if (namespace.equalsIgnoreCase("shared") || namespace.equalsIgnoreCase(CyRootNetwork.SHARED_ATTRS))
 			return CyRootNetwork.SHARED_ATTRS;
-		else
-			return namespace;
+		return namespace;
 	}
 
 }

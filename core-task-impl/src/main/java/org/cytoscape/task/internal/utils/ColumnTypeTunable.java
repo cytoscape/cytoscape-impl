@@ -24,21 +24,16 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class ColumnTypeTunable {
 	
-	@Tunable (description="Type of column", context="nogui")
+	@Tunable (description="Type of column", context="nogui", longDescription="Can be one of `integer`, `long`, `double`, `string`, or `list`.", exampleStringValue="string")
 	public ListSingleSelection<String> type =  
 		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean", "list");
 
-	@Tunable (description="Type of list elements", context="nogui")
+	@Tunable (description="Type of list elements", context="nogui", longDescription="Can be one of `integer`, `long`, `double`, or `string`.", exampleStringValue="string")
 	public ListSingleSelection<String> listType = 
 		new ListSingleSelection<String>("integer", "long", "double", "string", "boolean");
 

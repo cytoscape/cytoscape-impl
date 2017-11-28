@@ -25,37 +25,43 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class GetValueTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Object resultValue = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row", context="nogui")
+	@Tunable(description="Key value for row", context="nogui", longDescription=StringToModel.ROW_LONG_DESCRIPTION, exampleStringValue = StringToModel.ROW_EXAMPLE)
 	public String keyValue = null;
 
-	@Tunable(description="Name of column", context="nogui")
+	@Tunable(description="Name of column", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String column = null;
 
-	public GetValueTask(CyApplicationManager appMgr, CyTableManager tableMgr) {
+	public GetValueTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
 		tableTunable = new TableTunable(tableMgr);
@@ -63,22 +69,19 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to find table '"+tableTunable.getTableString()+"'");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
 		if (keyValue == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Key of desired row must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Key of desired row must be specified");
 			return;
 		}
 
 		if (column == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Column name must be specified");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Column name must be specified");
 			return;
 		}
 
@@ -89,27 +92,23 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		try {
 			key = DataUtils.convertString(keyValue, keyType);
 		} catch (NumberFormatException nfe) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to convert "+keyValue+" to a "+keyType.getName()+": "+nfe.getMessage());
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to convert "+keyValue+" to a "+keyType.getName()+": "+nfe.getMessage());
 			return;
 		}
 		if (key == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Unable to convert "+keyValue+" to a "+keyType.getName());
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to convert "+keyValue+" to a "+keyType.getName());
 			return;
 		}
 
 		CyColumn targetColumn = table.getColumn(column);
 		if (targetColumn == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Can't find a '"+column+"' column in this table");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find the '"+column+"' column in this table");
 			return;
 		}
 
 		CyRow row = table.getRow(key);
 		if (row == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-			                        "Can't find a '"+keyValue+"' row in this table");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find a '"+keyValue+"' row in this table");
 			return;
 		}
 		
@@ -117,30 +116,28 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		if (targetColumn.getType().equals(List.class)) {
 			Class elementType = targetColumn.getListElementType();
 			List<?> valueList = row.getList(column, elementType);
-			if (valueList == null) 
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      " "+column+"=<null>");
-			else
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      " "+column+"="+DataUtils.convertData(valueList));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO, " " + column + "=" + ((valueList == null) ? "<null>" : DataUtils.convertData(valueList)));
 			resultValue = valueList;
 		} else {
 			Object value = row.get(column, columnType);
-			if (value == null)
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      " "+column+"=<null>");
-			else
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
-					                      " "+column+"="+DataUtils.convertData(value));
+			taskMonitor.showMessage(TaskMonitor.Level.INFO,  " " + column + "="  + ((value == null) ? "<null>" : DataUtils.convertData(value)));
 			resultValue = value;
 		}
 
 	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
 
 	public Object getResults(Class requestedType) {
 		if (resultValue == null) return null;
-		if (requestedType.equals(String.class)) {
-			return DataUtils.convertData(resultValue);
+		if (requestedType.equals(String.class)) 	return DataUtils.convertData(resultValue);
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {	
+				return "{ \"table\": "+table.getSUID()+
+				       ", \"column\":"+column+
+							 ", \"row\":"+keyValue+
+							 " \"value\":"+DataUtils.convertDataJSON(resultValue)+"}"; 
+			};
+			return res;
 		}
 		return resultValue;
 	}

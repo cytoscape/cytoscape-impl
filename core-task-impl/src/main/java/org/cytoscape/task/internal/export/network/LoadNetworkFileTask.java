@@ -5,6 +5,7 @@ import java.io.File;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -38,7 +39,10 @@ import org.cytoscape.work.Tunable;
  */
 public class LoadNetworkFileTask extends AbstractLoadNetworkTask {
 	
-	@Tunable(description = "Network file to load", params = "fileCategory=network;input=true")
+	@Tunable(description = "Network file to load", 
+	         longDescription = "Select a network format file.  This command does not support "+
+					                   "csv or Excel files.  Use ``network import file`` for that.",
+	         params = "fileCategory=network;input=true", required=true)
 	public File file;
 
 	@ProvidesTitle

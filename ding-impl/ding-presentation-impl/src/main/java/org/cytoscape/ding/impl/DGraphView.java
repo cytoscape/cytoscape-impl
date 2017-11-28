@@ -589,7 +589,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 			// Update the view after listener events are fired because listeners
 			// may change something in the graph.
-			updateView(false);
+			// updateView(false);
 		}
 	}
 

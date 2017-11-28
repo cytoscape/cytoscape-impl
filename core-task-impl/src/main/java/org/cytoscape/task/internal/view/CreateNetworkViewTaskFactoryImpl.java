@@ -10,6 +10,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTaskFactory;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
@@ -51,6 +52,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 
 	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;
+	private final CyNetworkManager netMgr;
 	private final CyLayoutAlgorithmManager layoutMgr;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
@@ -61,6 +63,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 
 	public CreateNetworkViewTaskFactoryImpl(final UndoSupport undoSupport,
 											final CyNetworkViewManager netViewMgr,
+											final CyNetworkManager netMgr,
 											final CyLayoutAlgorithmManager layoutMgr,
 											final CyEventHelper eventHelper,
 											final VisualMappingManager vmm,
@@ -69,6 +72,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 											final CyServiceRegistrar serviceRegistrar) {
 		this.undoSupport = undoSupport;
 		this.netViewMgr = netViewMgr;
+		this.netMgr = netMgr;
 		this.layoutMgr = layoutMgr;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
@@ -84,7 +88,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
 
 		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(undoSupport, networks, factory, netViewMgr,
-				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, serviceRegistrar));
+				netMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, serviceRegistrar));
 	}
 	
 	@Override
@@ -96,7 +100,7 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
 		
 		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(undoSupport, networks, netViewMgr,
-				layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, viewRenderers, serviceRegistrar));
+				netMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, viewRenderers, serviceRegistrar));
 	}
 	
 	@Override

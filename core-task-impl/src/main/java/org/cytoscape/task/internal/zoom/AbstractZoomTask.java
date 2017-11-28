@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.zoom;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +32,30 @@ package org.cytoscape.task.internal.zoom;
  * #L%
  */
 
-
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
-
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 abstract class AbstractZoomTask extends AbstractNetworkViewTask {
-	private final UndoSupport undoSupport;
+	
 	private final double factor;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	AbstractZoomTask(final UndoSupport undoSupport, final CyNetworkView v, final double factor) {
-		super(v);
-		this.undoSupport = undoSupport;
+	AbstractZoomTask(CyNetworkView view, double factor, CyServiceRegistrar serviceRegistrar) {
+		super(view);
 		this.factor = factor;
+		this.serviceRegistrar = serviceRegistrar;
 	}
-
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Zoom View");
 		tm.setProgress(0.0);
+		
 		final double oldFactor = view.getVisualProperty(NETWORK_SCALE_FACTOR).doubleValue();
 		view.setVisualProperty(NETWORK_SCALE_FACTOR, oldFactor * factor);
 		tm.setProgress(0.2);
+		
 		view.updateView();
 		tm.setProgress(0.4);
-		undoSupport.postEdit(
-			new ZoomEdit(view, factor));
 		
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new ZoomEdit(view, factor));
 		tm.setProgress(1.0);
 	}
 }

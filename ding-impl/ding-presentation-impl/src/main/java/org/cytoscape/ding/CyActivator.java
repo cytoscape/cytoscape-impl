@@ -1,6 +1,5 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
@@ -97,7 +96,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
-import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -124,7 +122,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -464,14 +462,23 @@ public class CyActivator extends AbstractCyActivator {
 		SelectModeAction selectNodesAndEdgesAction = new SelectModeAction(SelectModeAction.ALL, 0.7f, serviceRegistrar);
 		registerAllServices(bc, selectNodesAndEdgesAction, new Properties());
 		
-		//
-		ShowGraphicsDetailsTaskFactory showGraphicsDetailsTaskFactory = new ShowGraphicsDetailsTaskFactory(dingGraphLOD, dingGraphLODAll, serviceRegistrar);
-		Properties showGraphicsDetailsTaskFactoryProps = new Properties();
-		showGraphicsDetailsTaskFactoryProps.setProperty(MENU_GRAVITY, "11.0");
-		showGraphicsDetailsTaskFactoryProps.setProperty(ENABLE_FOR,"networkAndView");
-		showGraphicsDetailsTaskFactoryProps.setProperty(TITLE, "Show/Hide Graphics Details");
-		showGraphicsDetailsTaskFactoryProps.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU,"true");		
-		registerService(bc, showGraphicsDetailsTaskFactory, NetworkTaskFactory.class, showGraphicsDetailsTaskFactoryProps);
+		{
+			// Toggle Graphics Details
+			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory(dingGraphLOD, dingGraphLODAll);
+			Properties props = new Properties();
+			props.setProperty(ID, "showGraphicsDetailsTaskFactory");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props); // Used at least by cyREST
+			
+			// Main menu
+			GraphicsDetailAction mainMenuAction = new GraphicsDetailAction(5.0f, "View", factory, serviceRegistrar);
+			registerAllServices(bc, mainMenuAction);
+			
+			// Network tab's context menu
+			GraphicsDetailAction networkMenuAction = new GraphicsDetailAction(11.0f, null, factory, serviceRegistrar);
+			props = new Properties();
+			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
+			registerAllServices(bc, networkMenuAction, props);
+		}
 
 		final String vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true
 		registerServiceListener(bc, vtfListener::addNodeViewTaskFactory, vtfListener::removeNodeViewTaskFactory, NodeViewTaskFactory.class, vtfFilter);
@@ -483,9 +490,6 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, vtfListener::addCyNetworkViewContextMenuFactory, vtfListener::removeCyNetworkViewContextMenuFactory, CyNetworkViewContextMenuFactory.class);
 
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
-
-		GraphicsDetailAction graphicsDetailAction = new GraphicsDetailAction(dingGraphLOD, dingGraphLODAll, serviceRegistrar);
-		registerAllServices(bc, graphicsDetailAction, new Properties());
 
 		BendFactory bendFactory = new BendFactoryImpl();
 		registerService(bc, bendFactory, BendFactory.class, new Properties());

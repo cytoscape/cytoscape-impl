@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,32 +26,33 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
 
 public class ListEdgesTask extends AbstractTask implements ObservableTask {
+
 	private final CyApplicationManager appMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyEdge> edges = null;
 	CyNetwork network = null;
 
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	public ListEdgesTask(CyApplicationManager appMgr) {
+	public ListEdgesTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
 		edgeTunable = new EdgeTunable(appMgr);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -74,8 +77,18 @@ public class ListEdgesTask extends AbstractTask implements ObservableTask {
 				res += edge.toString()+" ["+getName(network, edge)+"]\n";
 			}
 			return res.substring(0, res.length()-1);
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+				return "{\"edges\": "+cyJSONUtil.cyIdentifiablesToJson(edges)+"}";
+			};
+			return res;
 		}
 		return edges;
+	}
+
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}
 
 	String getName(CyNetwork network, CyEdge edge) {

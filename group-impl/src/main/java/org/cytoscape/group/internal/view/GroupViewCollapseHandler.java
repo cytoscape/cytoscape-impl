@@ -121,13 +121,11 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 		if (group == null || oldType.equals(newType))
 			return;
 
-		if (oldType == GroupViewType.COMPOUND) {
+		if (oldType == GroupViewType.COMPOUND || oldType == GroupViewType.SINGLENODE) 
 			removeCompoundNode(group);
-		} else if (oldType == GroupViewType.SINGLENODE) {
-			removeCompoundNode(group);
-		} else if (oldType == GroupViewType.SHOWGROUPNODE) {
+		else if (oldType == GroupViewType.SHOWGROUPNODE) 
 			((CyGroupImpl)group).removeMemberEdges();
-		}
+		
 
 		for (CyNetwork net: group.getNetworkSet()) {
 			// Careful -- the network set includes the root
@@ -153,12 +151,10 @@ public class GroupViewCollapseHandler implements GroupAboutToCollapseListener,
 				// For all of the other visualization types,
 				// do a collapse (if necessary)/expand to make sure
 				// the group is appropriately restyled
-				if (!group.isCollapsed(net)) {
+				if (!group.isCollapsed(net)) 
 					group.collapse(net);
-					group.expand(net);
-				} else {
-					group.expand(net);
-				}
+				group.expand(net);
+				
 			}
 		}
 

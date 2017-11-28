@@ -34,6 +34,10 @@ import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 public class SetNetworkAttributeTaskFactory extends AbstractTaskFactory {
+	
+	//Set statements don't have to return anything, much like a RESTful PUT.
+	public static final String COMMAND_EXAMPLE_JSON = "{}";
+	
 	private final CyApplicationManager cyAppManager;
 	private final CyTableManager cyTableManager;
 	private final Class type;

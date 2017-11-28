@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.6.0-SNAPSHOT</version>
+		<version>3.7.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -14,7 +14,7 @@
 
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>app-impl</artifactId>
-  <version>3.6.0-SNAPSHOT</version>
+  <version>3.7.0-SNAPSHOT</version>
 
 	<name>Cytoscape App Impl (${project.artifactId})</name>
 
@@ -67,7 +67,7 @@
                     <argLine>-Dsun.net.http.allowRestrictedHeaders=true</argLine>
                 </configuration>
             </plugin>
-		</plugins>
+        </plugins>
 	</build>
 
 	<repositories>
@@ -236,6 +236,10 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>util-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>swing-util-api</artifactId>
 		</dependency>
 
 		<dependency>

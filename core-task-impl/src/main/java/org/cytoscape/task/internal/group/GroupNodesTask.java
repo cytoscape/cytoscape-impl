@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -27,27 +29,27 @@ package org.cytoscape.task.internal.group;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeTunable;
 import org.cytoscape.view.model.CyNetworkView;
-
+import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
-
-import org.cytoscape.task.internal.utils.NodeTunable;
 
 public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	private CyNetworkView netView = null;
@@ -55,20 +57,22 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	private CyGroupFactory factory;
 	private UndoSupport undoSupport;
 	private CyGroup newGroup;
+	private CyServiceRegistrar serviceRegistrar;
 	private static int groupNumber = 1;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable = null;
 
-	@Tunable(description="Enter group name:")
+	@Tunable(description="Enter group name:", longDescription=StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING)
 	public String groupName = null;
 
 	public GroupNodesTask(UndoSupport undoSupport, CyNetworkView netView, 
-	                      CyGroupManager mgr, CyGroupFactory factory) {
+	                      CyGroupManager mgr, CyGroupFactory factory, CyServiceRegistrar serviceRegistrar) {
 		this.netView = netView;
 		this.mgr = mgr;
 		this.factory = factory;
 		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 		if (groupName == null) {
 			groupName = "Group "+groupNumber;
 			groupNumber++;
@@ -77,11 +81,12 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 	}
 
 	public GroupNodesTask(UndoSupport undoSupport, CyApplicationManager appMgr, 
-	                      CyGroupManager mgr, CyGroupFactory factory) {
+	                      CyGroupManager mgr, CyGroupFactory factory, CyServiceRegistrar serviceRegistrar) {
 		this.netView = null;
 		this.mgr = mgr;
 		this.factory = factory;
 		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 		nodeTunable = new NodeTunable(appMgr);
 	}
 
@@ -118,12 +123,30 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 		tm.setProgress(1.0d);
 	}
 
+	@Override
 	public Object getResults(Class requestedType) {
 		if (newGroup == null) return null;
-		if (requestedType.equals(String.class)) {
-			return newGroup.toString();
+		if (requestedType.equals(CyGroup.class))		return newGroup;
+		if (requestedType.equals(String.class))			return newGroup.toString();
+		if (requestedType.equals(JSONResult.class))  {
+			CyJSONUtil jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
+			JSONResult res = () -> { 
+				if (newGroup == null) return "{}";
+				return "{\"group\":"+newGroup.getGroupNode().getSUID()+"}";
+				/*
+				String val = "{\"group\":"+newGroup.getGroupNode().getSUID();
+				List<CyNode> nodes = newGroup.getNodeList();
+				if (nodes != null && nodes.size() > 0)
+					val += "\"nodes\":"+jsonUtil.cyIdentifiablesToJson(nodes);
+				return val+"}";
+				*/
+			};
+			return res;
 		}
-		return newGroup;
+		return null;
 	}
 	
+	@Override
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
+
 }

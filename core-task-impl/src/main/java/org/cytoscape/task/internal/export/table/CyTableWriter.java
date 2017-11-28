@@ -88,7 +88,10 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 		return writerManager.getWriter(table, filter, outputStream);
 	}
 
-	@Tunable(description="Save Table as:", params="fileCategory=table;input=false", dependsOn="options!=", gravity = 1.1)
+	@Tunable(description="Save Table as", params="fileCategory=table;input=false", dependsOn="options!=", 
+	         longDescription="The path of the file to export the table to.  Note that the file will be overwritten if it exists.",
+					 exampleStringValue="myfile.csv",
+					 gravity = 1.1)
 	public File getOutputFile() {
 		return outputFile;
 	}

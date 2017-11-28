@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
 import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.QUERY_PROPERTY;
+import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.SEARCH_REQUESTED_PROPERTY;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.makeSmall;
 import static org.cytoscape.internal.util.ViewUtil.recursiveDo;
@@ -88,6 +89,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 						if (qc != null) {
 							queryComponents.put(factory, qc);
 							qc.addPropertyChangeListener(QUERY_PROPERTY, new QueryChangeListener(factory));
+							qc.addPropertyChangeListener(SEARCH_REQUESTED_PROPERTY, new SearchRequestedListener(factory));
 						}
 						
 						JComponent oc = factory.getOptionsComponent();
@@ -249,6 +251,21 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 		public void propertyChange(PropertyChangeEvent evt) {
 			if (factory.equals(networkSearchBar.getSelectedProvider()))
 				invokeOnEDT(() -> networkSearchBar.updateSearchButton());
+		}
+	}
+	
+	private class SearchRequestedListener implements PropertyChangeListener {
+		
+		private NetworkSearchTaskFactory factory;
+		
+		public SearchRequestedListener(NetworkSearchTaskFactory factory) {
+			this.factory = factory;
+		}
+		
+		@Override
+		public void propertyChange(PropertyChangeEvent evt) {
+			if (factory.equals(networkSearchBar.getSelectedProvider()) && factory.isReady())
+				runSearch();
 		}
 	}
 }

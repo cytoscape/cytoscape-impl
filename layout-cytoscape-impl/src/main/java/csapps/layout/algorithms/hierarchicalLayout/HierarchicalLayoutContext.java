@@ -29,19 +29,19 @@ import org.cytoscape.work.TunableValidator;
 
 public class HierarchicalLayoutContext implements TunableValidator {
 	
-	@Tunable(description="Horizontal spacing between nodes:")
+	@Tunable(description="Horizontal spacing between nodes:", context="both", longDescription="Horizontal spacing between nodes, in numeric value", exampleStringValue="64")
 	public int nodeHorizontalSpacing = 64;
-	@Tunable(description="Vertical spacing between nodes:")
+	@Tunable(description="Vertical spacing between nodes:", context="both", longDescription="Vertical spacing between nodes, in numeric value", exampleStringValue="32")
 	public int nodeVerticalSpacing = 32;
-	@Tunable(description="Component spacing:")
+	@Tunable(description="Component spacing:", context="both", longDescription="Component spacing, in numeric value", exampleStringValue="64")
 	public int componentSpacing = 64;
-	@Tunable(description="Band gap:")
+	@Tunable(description="Band gap:", context="both", longDescription="Band gap, in numeric value", exampleStringValue="64")
 	public int bandGap = 64;
-	@Tunable(description="Left edge margin:")
+	@Tunable(description="Left edge margin:", context="both", longDescription="Left edge margin, in numeric value", exampleStringValue="32")
 	public int leftEdge = 32;
-	@Tunable(description="Top edge margin:")
+	@Tunable(description="Top edge margin:", context="both", longDescription="Top edge margin, in numeric value", exampleStringValue="32")
 	public int topEdge = 32;
-	@Tunable(description="Right edge margin:")
+	@Tunable(description="Right edge margin:", context="both", longDescription="Right edge margin, in numeric value", exampleStringValue="7000")
 	public int rightMargin = 7000;
 
 	@Override // TODO

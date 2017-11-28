@@ -599,11 +599,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private JPopupMenu getHeaderPopupMenu() {
-		if (rightClickHeaderPopupMenu != null)
-			return rightClickHeaderPopupMenu;
-
-		rightClickHeaderPopupMenu = new JPopupMenu();
-
+		if (rightClickHeaderPopupMenu == null)
+			rightClickHeaderPopupMenu = new JPopupMenu();
 		return rightClickHeaderPopupMenu;
 	}
 	
@@ -916,6 +913,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			} finally {
 				ignoreRowSetEvents = false;
 			}
+			
+			repaint();
 		}
 	}
 	

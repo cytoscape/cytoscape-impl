@@ -26,6 +26,7 @@ package org.cytoscape.task.internal.table;
 
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
 import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -34,16 +35,18 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public final class DeleteColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory implements DeleteColumnTaskFactory{
 	private final UndoSupport undoSupport;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public DeleteColumnTaskFactoryImpl(final UndoSupport undoSupport) {
+	public DeleteColumnTaskFactoryImpl(final UndoSupport undoSupport, CyServiceRegistrar reg) {
 		this.undoSupport = undoSupport;
+		serviceRegistrar = reg;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
-		return new TaskIterator(new DeleteColumnTask(undoSupport, column));
+		return new TaskIterator(new DeleteColumnTask(undoSupport, column, serviceRegistrar));
 	}
 
 	@Override

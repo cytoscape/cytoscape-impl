@@ -32,6 +32,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.create.CloneNetworkTaskFactory;
@@ -55,6 +56,7 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
 	private final CyGroupFactory groupFactory;
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyNetworkViewFactory nullNetworkViewFactory;
+	private final CyServiceRegistrar registrar;
 
     public CloneNetworkTaskFactoryImpl(final CyNetworkManager networkMgr,
     								   final CyNetworkViewManager networkViewMgr,
@@ -68,7 +70,8 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
     								   final CyGroupManager groupMgr,
     								   final CyGroupFactory groupFactory,
     								   final RenderingEngineManager renderingEngineMgr,
-    								   final CyNetworkViewFactory nullNetworkViewFactory) {
+    								   final CyNetworkViewFactory nullNetworkViewFactory,
+											 final CyServiceRegistrar registrar) {
     	this.networkMgr = networkMgr;
 		this.networkViewMgr = networkViewMgr;
 		this.vmm = vmm;
@@ -82,11 +85,12 @@ public class CloneNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory impl
 		this.groupFactory = groupFactory;
 		this.renderingEngineMgr = renderingEngineMgr;
 		this.nullNetworkViewFactory = nullNetworkViewFactory;
+		this.registrar = registrar;
     }
 
     @Override
     public TaskIterator createTaskIterator(CyNetwork network) {
     	return new TaskIterator(2,new CloneNetworkTask(network, networkMgr, networkViewMgr, vmm, netFactory, 
-    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory));
+    			netViewFactory, naming, appMgr, netTableMgr, rootNetMgr, groupMgr, groupFactory, renderingEngineMgr, nullNetworkViewFactory, registrar));
     }
 }

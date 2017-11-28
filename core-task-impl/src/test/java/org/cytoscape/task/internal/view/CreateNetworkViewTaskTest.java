@@ -15,6 +15,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -63,6 +64,7 @@ public class CreateNetworkViewTaskTest {
 	private CyNetworkViewFactory viewFactory = viewSupport.getNetworkViewFactory();
 
 	@Mock private CyNetworkViewManager networkViewManager;
+	@Mock private CyNetworkManager networkManager;
 	@Mock private RenderingEngineManager renderingEngineManager;
 	@Mock private UndoSupport undoSupport;
 	@Mock private TaskMonitor tm;
@@ -84,7 +86,7 @@ public class CreateNetworkViewTaskTest {
 		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(support.getNetwork());
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
+				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
 
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
@@ -100,7 +102,7 @@ public class CreateNetworkViewTaskTest {
 		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
 		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
+				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
 		
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);

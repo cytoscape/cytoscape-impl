@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -12,6 +13,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonPrimitive;
 
 /*
  * #%L
@@ -113,6 +119,41 @@ public class DataUtils {
 			return data.toString();
 	}
 
+	public static String convertDataJSON(Object object) {
+		if (object instanceof List) {
+			StringJoiner joiner = new StringJoiner(", ", "[", "]");
+			for (Object value : (List<?>)object) {
+				joiner.add(convertPrimitiveJSON(value));
+			}
+			return joiner.toString();
+		} else if (object instanceof Map) {
+			StringJoiner joiner = new StringJoiner(", ", "{", "}");
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>)object).entrySet()) {
+				if (entry.getKey() != null) {
+					joiner.add("\"" + entry.getKey().toString() + "\": "+  convertDataJSON(entry.getValue()));
+				}
+			}
+			return joiner.toString();
+		}
+		else {
+			return convertPrimitiveJSON(object);
+		}
+	}
+
+	private static String convertPrimitiveJSON(Object object) {
+		if ( object instanceof Number) {
+			return object.toString();
+		} else if (object instanceof String) {
+			return "\"" + (String) object + "\"";
+		} else if (object instanceof Boolean) {
+			return object.toString();
+		} else if (object == null) {
+			return "null";
+		} else {
+			throw new IllegalArgumentException();
+		}
+	}
+	
 	public static String convertMapToString(Map data) {
 		if (data.size() == 0)
 			return "{}";
@@ -137,24 +178,23 @@ public class DataUtils {
 			return "[]";
 
 		String result = "[";
-		for (Object v: data) {
-			result += v.toString()+",";
-		}
+		for (Object v: data)
+			result += v.toString() + ",";
 		return result.substring(0, result.length()-1)+"]";
 	}
 
 	public static Class getType(String type) {
 		if ("double".equalsIgnoreCase(type))
 			return Double.class;
-		else if ("integer".equalsIgnoreCase(type))
+		if ("integer".equalsIgnoreCase(type))
 			return Integer.class;
-		else if ("long".equalsIgnoreCase(type))
+		if ("long".equalsIgnoreCase(type))
 			return Long.class;
-		else if ("boolean".equalsIgnoreCase(type))
+		if ("boolean".equalsIgnoreCase(type))
 			return Boolean.class;
-		else if ("string".equalsIgnoreCase(type))
+		if ("string".equalsIgnoreCase(type))
 			return String.class;
-		else if ("list".equalsIgnoreCase(type))
+		if ("list".equalsIgnoreCase(type))
 			return List.class;
 
 		return String.class;
@@ -163,18 +203,17 @@ public class DataUtils {
 	public static String getType(Class type) {
 		if (type.equals(Double.class))
 			return "double";
-		else if (type.equals(Integer.class))
+		if (type.equals(Integer.class))
 			return "integer";
-		else if (type.equals(Long.class))
+		if (type.equals(Long.class))
 			return "long";
-		else if (type.equals(Boolean.class))
+		if (type.equals(Boolean.class))
 			return "boolean";
-		else if (type.equals(String.class))
+		if (type.equals(String.class))
 			return "string";
-		else if (type.equals(List.class))
+		if (type.equals(List.class))
 			return "list";
-		else 
-			return type.getName();
+		return type.getName();
 	}
 
 	public static String getIdentifiableType(Class <? extends CyIdentifiable> type) {
@@ -187,9 +226,9 @@ public class DataUtils {
 	public static Class<? extends CyIdentifiable> getIdentifiableClass(CyIdentifiable obj) {
 		if (obj instanceof CyNetwork)
 			return CyNetwork.class;
-		else if (obj instanceof CyNode)
+		if (obj instanceof CyNode)
 			return CyNode.class;
-		else if (obj instanceof CyEdge)
+		if (obj instanceof CyEdge)
 			return CyEdge.class;
 		return CyIdentifiable.class;
 	}

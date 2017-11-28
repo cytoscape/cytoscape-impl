@@ -1,6 +1,7 @@
 package org.cytoscape.task.internal.table;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -8,6 +9,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.util.ListSingleSelection;
 
 /*
  * #%L
@@ -42,7 +44,8 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 		return "Rename Column";
 	}
 	
-	@Tunable(description="New Column Name:")
+	@Tunable(description="New Column Name",
+	         required=true)
 	public String newColumnName;
 
 	RenameColumnTask(final UndoSupport undoSupport, final CyColumn column) {

@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.Arrays;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -27,38 +29,35 @@ package org.cytoscape.task.internal.group;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
-
-import org.cytoscape.view.model.CyNetworkView;
-
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-
-import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.json.JSONResult;
 
 public class RenameGroupTask extends AbstractGroupTask {
 
-	@Tunable (description="Network", context="nogui")
+	private CyServiceRegistrar serviceRegistrar;
+
+	@Tunable (description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network;
 
-	@Tunable (description="Group to rename", context="nogui")
+	@Tunable (description="Group to rename", context="nogui", longDescription=StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING)
 	public String groupName;
 
-	@Tunable (description="New name", context="nogui")
+	@Tunable (description="New name", context="nogui", longDescription="Specifies the NEW name used to identify the group. ", exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING2)
 	public String newName;
 
-	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager) {
+	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar reg) {
 		this.net = appMgr.getCurrentNetwork();
 		this.groupMgr = manager;
+		serviceRegistrar = reg;
 	}
 
 	public void run(TaskMonitor tm) throws Exception {
@@ -85,6 +84,16 @@ public class RenameGroupTask extends AbstractGroupTask {
 		groupRow.set(CyRootNetwork.SHARED_NAME, newName);
 
 		tm.showMessage(TaskMonitor.Level.INFO, "Renamed group from "+oldName+" to "+newName);
+	}
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, CyGroup.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
+		if (requestedType.equals(String.class))			return groupName;
+		if (requestedType.equals(JSONResult.class))  	
+		{	JSONResult res = () -> {return "{}"; };
+			return res;
+		}		
+		return null;
 	}
 
 }

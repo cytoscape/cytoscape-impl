@@ -1,14 +1,18 @@
 package org.cytoscape.task.internal.export.network;
 
 import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
 import org.cytoscape.io.read.CyNetworkReader;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -40,9 +44,7 @@ import org.cytoscape.work.TaskMonitor;
 abstract public class AbstractLoadNetworkTask extends AbstractTask {
 	
 	@ProvidesTitle
-	public String getTitle() {
-		return "Import Network";
-	}
+	public String getTitle() {		return "Import Network";	}
 	
 	private final String VIEW_THRESHOLD = "viewThreshold";
 	private static final int DEF_VIEW_THRESHOLD = 3000;
@@ -70,8 +72,7 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 			taskMonitor.setStatusMessage("Creating Cytoscape Network...");
 		}
 		
-		GenerateNetworkViewsTask generateViewsTask =
-				new GenerateNetworkViewsTask(name, reader, viewThreshold, serviceRegistrar);
+		GenerateNetworkViewsTask generateViewsTask = new GenerateNetworkViewsTask(name, reader, viewThreshold, serviceRegistrar);
 		insertTasksAfterCurrentTask(reader, generateViewsTask);
 		
 		if (taskMonitor != null)
@@ -92,4 +93,13 @@ abstract public class AbstractLoadNetworkTask extends AbstractTask {
 
 		return threshold;
 	}
+	
+	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	public Object getResults(Class requestedType) {
+		if (interrupted) return null;
+		if (requestedType.equals(String.class)) 		return name;
+		if (requestedType.equals(JSONResult.class)) 	return name;
+		return null;
+	}
+
 }

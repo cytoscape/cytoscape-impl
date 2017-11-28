@@ -1,11 +1,19 @@
 package org.cytoscape.app.internal;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Properties;
-
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.cytoscape.app.CyAppAdapter;
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.action.CitationsAction;
+import org.cytoscape.app.internal.action.YFilesAction;
+import org.cytoscape.app.internal.event.AppsChangedEvent;
+import org.cytoscape.app.internal.event.AppsChangedListener;
+import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebQuerier;
@@ -103,6 +111,7 @@ import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -116,7 +125,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
-import org.osgi.framework.BundleContext;
+import org.osgi.framework.*;
 import org.osgi.service.startlevel.StartLevel;
 
 /*
@@ -411,15 +420,46 @@ public class CyActivator extends AbstractCyActivator {
         httpd.addResponder(appGetResponder.new InstallResponder());
         httpd.start();
 
-//		Object o = cyPropertyRef;
-//		cyPropertyRef.getProperties().put("testkey1", "testval1");
-//		cyPropertyRef.getProperties().setProperty("testkey2", "testval2");
-		
-		/*
-		for (DownloadSite site : WebQuerier.DEFAULT_DOWNLOAD_SITES) {
-			System.out.println(site.getSiteName());
+        // Special case: handle yFiles app options
+		final OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
+		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
+		bc.addBundleListener(checker);
+		registerAllServices(bc, checker, new Properties());
+	}
+
+
+	private class YFilesChecker implements BundleListener, AppsFinishedStartingListener {
+
+		private static final String YFILES_TAG = "yfiles";
+
+		private final AppManager manager;
+		private final CyServiceRegistrar serviceRegistrar;
+		private final CyAction installAction;
+
+		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
+			this.manager = manager;
+			this.serviceRegistrar = serviceRegistrar;
+			this.installAction = new YFilesAction(openBrowser);
 		}
-		*/
+
+		@Override
+		public void handleEvent(AppsFinishedStartingEvent event) {
+			final Set<App> installed = manager.getInstalledApps();
+			final Set<App> filtered = installed.stream()
+					.filter(app -> app.getAppName().toLowerCase().contains(YFILES_TAG)).collect(Collectors.toSet());
+
+			if(filtered.isEmpty()) {
+				serviceRegistrar.registerService(this.installAction, CyAction.class, new Properties());
+			}
+		}
+
+		@Override
+		public void bundleChanged(BundleEvent bundleEvent) {
+			final String bundleName = bundleEvent.getBundle().getSymbolicName();
+			if(bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
+				serviceRegistrar.unregisterAllServices(this.installAction);
+			}
+		}
 	}
 }
 

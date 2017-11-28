@@ -29,22 +29,34 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTaskFactory;
 import org.cytoscape.task.edit.RenameColumnTaskFactory;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 import org.cytoscape.work.undo.UndoSupport;
 
 
-public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory implements RenameColumnTaskFactory{
+public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory 
+                                               implements RenameColumnTaskFactory, TaskFactory {
 	private final UndoSupport undoSupport;
 
 	private final TunableSetter tunableSetter; 
 
-	public RenameColumnTaskFactoryImpl(final UndoSupport undoSupport, TunableSetter tunableSetter) {
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public RenameColumnTaskFactoryImpl(final UndoSupport undoSupport, TunableSetter tunableSetter, 
+	                                   final CyServiceRegistrar registrar) {
 		this.undoSupport = undoSupport;
 		this.tunableSetter = tunableSetter;
+		this.serviceRegistrar = registrar;
 	}
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new RenameColumnCommandTask(serviceRegistrar));
+	}
+
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
@@ -60,7 +72,8 @@ public final class RenameColumnTaskFactoryImpl extends AbstractTableColumnTaskFa
 	}
 
 	@Override
-	public boolean isReady(CyColumn column) {
-		return !column.isImmutable();
-	}
+	public boolean isReady(CyColumn column) {	return !column.isImmutable();	}
+
+	@Override
+	public boolean isReady() {return true;}
 }
