@@ -1,10 +1,6 @@
 package org.cytoscape.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,6 +25,7 @@ import org.cytoscape.model.internal.CyNetworkManagerImpl;
 import org.cytoscape.model.internal.CyNetworkTableManagerImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.junit.After;
@@ -78,10 +75,10 @@ public class CyTableTest extends AbstractCyTableTest {
 		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
 		table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
-					eventHelper, interpreter, 1000);
+					eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 		attrs = table.getRow(1L);
 		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
-					 eventHelper, interpreter, 1000);
+					 eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 		CyTableManagerImpl tblMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), 
 				new CyNetworkManagerImpl(serviceRegistrar), serviceRegistrar);
 		tblMgr.addTable(table);

@@ -9,6 +9,7 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
 /*
@@ -37,7 +38,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class SetPreferredLayoutTask extends AbstractTask {
 
-	@Tunable(description = "Layout to use as preferred", context = "nogui")
+	@Tunable(description = "Layout to use as preferred", context = "nogui", longDescription="Layout to use as preferred, for allowed names see Layout API", exampleStringValue="grid")
 	public ListSingleSelection<String> preferredLayout;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -48,8 +49,10 @@ public class SetPreferredLayoutTask extends AbstractTask {
 		final List<String> layoutNames = new ArrayList<>();
 		final CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
 
-		for (CyLayoutAlgorithm alg : layoutManager.getAllLayouts())
-			layoutNames.add(alg.getName());
+		for (CyLayoutAlgorithm alg : layoutManager.getAllLayouts()) {
+			if (!alg.getName().startsWith("yfiles."))
+				layoutNames.add(alg.getName());
+		}
 
 		preferredLayout = new ListSingleSelection<>(layoutNames);
 	}
@@ -67,4 +70,18 @@ public class SetPreferredLayoutTask extends AbstractTask {
 			tm.showMessage(TaskMonitor.Level.WARN, "Can't set preferred layout -- invalid layout name");
 		}
 	}
+	
+
+	@SuppressWarnings({ "rawtypes"})
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}else if (preferredLayout == null)
+			return null;
+		return preferredLayout;
+	}
+
 }

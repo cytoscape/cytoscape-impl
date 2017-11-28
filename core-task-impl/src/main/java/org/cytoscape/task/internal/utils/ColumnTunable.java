@@ -33,7 +33,7 @@ public class ColumnTunable {
 	@Tunable (description="Namespace for table", longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue="default", context="nogui")
 	public String namespace = "default";
 
-	@Tunable (description="Name of column", longDescription="Unique name of column", exampleStringValue="name", context="nogui")
+	@Tunable (description="Name of column", longDescription="Unique name of column", exampleStringValue="NewColumn", context="nogui")
 	public String column = null;
 
 	public ColumnTunable() {

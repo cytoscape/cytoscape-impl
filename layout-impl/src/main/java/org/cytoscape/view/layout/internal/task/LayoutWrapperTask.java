@@ -31,11 +31,13 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -44,20 +46,22 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class LayoutWrapperTask extends AbstractTask {
 	private final CyApplicationManager appMgr;
 	private final CyNetworkViewManager viewMgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	List<CyNode> nodes = null;
 	private final CyLayoutAlgorithm algorithm;
 	private static final String UNWEIGHTED = "(none)";
 
-	@Tunable(description="Network to layout", context="nogui")
+	@Tunable(description="Network to lay out", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
+	@Tunable(description="Nodes to layout", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="Nodes to layout", context="nogui")
 	public NodeList getnodeList() {
 		if (network == null)
 			network = appMgr.getCurrentNetwork();
@@ -69,7 +73,7 @@ public class LayoutWrapperTask extends AbstractTask {
 	// If this layout algorithm supports edge attributes, pick that
 	// up here
 	ListSingleSelection<String> possibleEdgeAttributes = null;
-	@Tunable(description="Edge column to use to weight layout", context="nogui")
+	@Tunable(description="Edge column to use to weight layout", context="nogui", longDescription="The name of the edge column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight")
 	public ListSingleSelection<String> getEdgeAttribute() {
 		// Make sure we know the network
 		if (network == null)
@@ -87,7 +91,7 @@ public class LayoutWrapperTask extends AbstractTask {
 	// If this layout algorithm supports node attributes, pick that
 	// up here
 	ListSingleSelection<String> possibleNodeAttributes = null;
-	@Tunable(description="Node column to use to weight layout", context="nogui")
+	@Tunable(description="Node column to use to weight layout", context="nogui", longDescription="The name of the node column containing numeric values that will be used as weights in the layout algorithm. Only columns containing numeric values are shown", exampleStringValue="weight")
 	public ListSingleSelection<String> getNodeAttribute() {
 		// Make sure we know the network
 		if (network == null)
@@ -105,10 +109,11 @@ public class LayoutWrapperTask extends AbstractTask {
 	@ContainsTunables
 	public Object layoutContext;
 
-	public LayoutWrapperTask(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, CyLayoutAlgorithm alg) {
+	public LayoutWrapperTask(CyApplicationManager appMgr, CyNetworkViewManager viewMgr, CyLayoutAlgorithm alg, CyServiceRegistrar serviceRegistrar) {
 		this.appMgr = appMgr;
 		this.viewMgr = viewMgr;
 		this.algorithm = alg;
+		this.serviceRegistrar = serviceRegistrar;
 		layoutContext = alg.getDefaultLayoutContext();
 	}
 
@@ -132,6 +137,15 @@ public class LayoutWrapperTask extends AbstractTask {
 			insertTasksAfterCurrentTask(algorithm.createTaskIterator(view, layoutContext, nodeViews, getLayoutAttribute()));
 		}
 
+	}
+	public Object getResults(Class type) {
+		if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				return "{}";
+			};
+			return res;
+		}
+		return null;
 	}
 
 	private List<String> getSupportedEdgeAttributes() {

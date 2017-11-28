@@ -73,21 +73,30 @@ public class ListColumnsTask extends AbstractTableDataTask implements Observable
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "         "+column.toString());
 	}
 
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	@Override
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(String.class, List.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class) && columns != null)  return DataUtils.convertData(columns);
-		
+		if (requestedType.equals(String.class) && columns != null)  
+			return DataUtils.convertData(columns);
+
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				if (columns == null) 		return "{}";
+				if (columns == null)
+					return "{}";
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
 				return cyJSONUtil.cyColumnsToJson(columns);
 			};
-		return res;
+			return res;
+		}
+
+		if (requestedType.equals(List.class)) {
+			return columns;
 		}
 		return null;
-		
-	
 	}
 
 	private String getTableDescription(CyTable table) {

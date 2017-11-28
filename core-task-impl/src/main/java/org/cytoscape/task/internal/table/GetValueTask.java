@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
@@ -48,28 +49,27 @@ import org.cytoscape.util.json.CyJSONUtil;
 
 public class GetValueTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
-	private final CyServiceRegistrar serviceRegistrar;
 	Object resultValue = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row", context="nogui")
+	@Tunable(description="Key value for row", context="nogui", longDescription=StringToModel.ROW_LONG_DESCRIPTION, exampleStringValue = StringToModel.ROW_EXAMPLE)
 	public String keyValue = null;
 
-	@Tunable(description="Name of column", context="nogui")
+	@Tunable(description="Name of column", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String column = null;
 
 	public GetValueTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
 		super(tableMgr);
 		this.appMgr = appMgr;
-		serviceRegistrar =reg;
 		tableTunable = new TableTunable(tableMgr);
 	}
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
@@ -102,7 +102,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 
 		CyColumn targetColumn = table.getColumn(column);
 		if (targetColumn == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find a '"+column+"' column in this table");
+			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find the '"+column+"' column in this table");
 			return;
 		}
 
@@ -131,7 +131,12 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		if (resultValue == null) return null;
 		if (requestedType.equals(String.class)) 	return DataUtils.convertData(resultValue);
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	return DataUtils.convertData(resultValue); };
+			JSONResult res = () -> {	
+				return "{ \"table\": "+table.getSUID()+
+				       ", \"column\":"+column+
+							 ", \"row\":"+keyValue+
+							 " \"value\":"+DataUtils.convertDataJSON(resultValue)+"}"; 
+			};
 			return res;
 		}
 		return resultValue;

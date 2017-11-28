@@ -12,6 +12,7 @@ import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
@@ -40,16 +41,18 @@ import org.cytoscape.work.json.JSONResult;
  * #L%
  */
 
-public class CreateColumnTask extends AbstractTableDataTask {
+public class CreateColumnTask extends AbstractTableDataTask implements ObservableTask {
 	
 	@ContainsTunables
 	public TableTunable tableTunable;
 
-	@Tunable(description = "Name of column", context = "nogui")
+	@Tunable(description = "Name of column", context = "nogui", longDescription="The new column name", exampleStringValue = "Uncertainty")
 	public String columnName;
 
 	@ContainsTunables
 	public ColumnTypeTunable columnType;
+
+	CyTable table = null;
 
 	public CreateColumnTask(final CyTableManager tableMgr) {
 		super(tableMgr);
@@ -59,7 +62,7 @@ public class CreateColumnTask extends AbstractTableDataTask {
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
@@ -107,16 +110,26 @@ public class CreateColumnTask extends AbstractTableDataTask {
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created column: "+columnName);
 		}
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
+
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
-		if (requestedType.equals(CyColumn.class)) 		return tableTunable.getTable().getColumn(columnName);
-		if (requestedType.equals(String.class)) 		return columnName;
-		if (requestedType.equals(JSONResult.class)) 
-		{
-			if (columnName == null) 		return "{}";
+		if (requestedType.equals(CyColumn.class)) 
+			return tableTunable.getTable().getColumn(columnName);
+		if (requestedType.equals(String.class)) 		
 			return columnName;
+
+		if (requestedType.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (table == null || columnName == null) return "{}";
+				return "{\"table\":"+table.getSUID()+",\"column\" : \"" + columnName + "\"}";
+			};
+			return res;
 		}
-	if (requestedType.equals(JSONResult.class)) 	return columnName;
 		return null;
 	}
 

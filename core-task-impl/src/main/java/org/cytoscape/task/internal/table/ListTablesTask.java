@@ -25,6 +25,7 @@ package org.cytoscape.task.internal.table;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -48,13 +49,13 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyTable> tables;
 
-	@Tunable(description="Type of table", context="nogui")
+	@Tunable(description="Type of table", context="nogui", longDescription="One of ''network'', ''node'', ''edge'', ''unattached'', ''all'', to constrain the type of table listed", exampleStringValue = "all")
 	public ListSingleSelection<String> type;
 
-	@Tunable(description="Table namespace", context="nogui")
+	@Tunable(description="Table namespace", context="nogui", longDescription="An optional argument to contrain output to a single namespace, or ALL", exampleStringValue = "all")
 	public String namespace = "default";
 
-	@Tunable(description="Include private tables?", context="nogui")
+	@Tunable(description="Include private tables?", context="nogui", longDescription="A boolean value determining whether to return private as well as public tables", exampleStringValue = "true")
 	public boolean includePrivate = true;
 
 	public ListTablesTask(CyApplicationManager appMgr, CyTableManager tableMgr, 
@@ -92,14 +93,25 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 		}
 	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
+		System.out.println(requestedType + "---------------");
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertData(tables);
 		}
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	if (tables == null) 		return "{}";
-			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-			return cyJSONUtil.cyIdentifiablesToJson(tables);
+			JSONResult res = () -> {	
+				if (tables == null) {
+					return "{}";} 
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return "{\"tables\":"+cyJSONUtil.cyIdentifiablesToJson(tables)+"}";
+			}
 		};
 			return res;
 		}

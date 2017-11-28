@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
@@ -54,7 +55,8 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for row", context="nogui")
+	@Tunable(description="Key value for row", context="nogui", 
+			longDescription=StringToModel.ROW_LONG_DESCRIPTION, exampleStringValue = StringToModel.ROW_EXAMPLE)
 	public String keyValue = null;
 
 	public GetRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
@@ -119,16 +121,22 @@ public class GetRowTask extends AbstractTableDataTask implements ObservableTask 
 		}
 
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyRow.class, String.class, JSONResult.class);	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyRow.class, String.class, JSONResult.class);
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (row == null) return null;
 		if (requestedType.equals(String.class)) 			return row.toString();
-		if (row.equals(JSONResult.class)) {
+		if (requestedType.equals(JSONResult.class)) {
 				JSONResult res = () -> {	if (row == null) 		return "{}";
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
 				return cyJSONUtil.toJson(row);
 			};
+			return res;
 		}
 		return row;
 	}

@@ -47,6 +47,7 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 	@Tunable(
 			description = "Network",
 			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
 			context = "nogui"
 	)
 	public CyNetwork network;
@@ -81,7 +82,7 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 		
 		if (type == JSONResult.class) {
 			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(views);
-			JSONResult res = () -> { return json; };
+			JSONResult res = () -> { return "{\"views\":"+json+"}"; };
 			
 			return res;
 		}

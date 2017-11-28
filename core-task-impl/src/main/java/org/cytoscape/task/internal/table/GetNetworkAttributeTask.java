@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyIdentifiable;
@@ -51,7 +52,10 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 	final CyApplicationManager appMgr;
 	Map<String, Object> networkData;
 
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network = null;
 
 	@ContainsTunables

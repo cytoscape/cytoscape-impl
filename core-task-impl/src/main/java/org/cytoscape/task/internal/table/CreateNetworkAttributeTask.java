@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -43,11 +44,14 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.json.JSONResult;
 
-public class CreateNetworkAttributeTask extends AbstractTableDataTask {
+public class CreateNetworkAttributeTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Map<CyIdentifiable, Map<String, Object>> networkData;
 
-	@Tunable(description="Network", context="nogui")
+	@Tunable(description="Network", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         context="nogui")
 	public CyNetwork network = null;
 
 	@ContainsTunables
@@ -100,11 +104,17 @@ public class CreateNetworkAttributeTask extends AbstractTableDataTask {
 				}
 			};
 			return res;
+		} else if (type.equals(String.class)) {
+			if (columnTypeTunable.getColumnType() == "list")
+				return "Created new "+columnTypeTunable.getListElementType()+" list column: "+
+				        columnTunable.getColumnName();
+			else
+				return "Created new "+columnTypeTunable.getColumnType()+" column: "+columnTunable.getColumnName();
 		}
 		return null;
 	}
 
 	public List<Class<?>> getResultClasses() {
-		return Arrays.asList(JSONResult.class);
-}
+		return Arrays.asList(JSONResult.class, String.class);
+	}
 }

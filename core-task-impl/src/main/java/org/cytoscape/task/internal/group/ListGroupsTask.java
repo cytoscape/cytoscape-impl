@@ -29,24 +29,23 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTask;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
 
 public class ListGroupsTask extends AbstractGroupTask implements ObservableTask {
 	private List<CyGroup> groups;
 	CyApplicationManager appMgr;
 	private CyServiceRegistrar serviceRegistrar;
 
-	@Tunable (description="Network", context="nogui")
+	@Tunable (description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network;
 
 	public ListGroupsTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar reg) {
@@ -79,7 +78,7 @@ public class ListGroupsTask extends AbstractGroupTask implements ObservableTask 
 		if (groups == null) return null;
 		if (requestedType.equals(String.class)) 		return DataUtils.convertData(groups);
 		if (requestedType.equals(JSONResult.class))  {
-			JSONResult res = () -> {return "{ " + DataUtils.convertData(groups) + " }"; };
+			JSONResult res = () -> {return "{\"groups\": [" + getGroupSetString(groups) + "]}"  ; };
 			return res;
 		}
 		return groups;

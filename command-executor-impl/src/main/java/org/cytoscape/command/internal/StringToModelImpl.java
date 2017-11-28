@@ -19,6 +19,8 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,7 +152,16 @@ public class StringToModelImpl implements StringToModel {
 			return CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, false);
 		}
 
-		Set<CyRow> rows = parseList(nodeList, net.getDefaultNodeTable());
+		CyTable table;
+		if (net instanceof CyRootNetwork) {
+			// OK, we're referring to a root network.  Use the shared table
+			// since the default node table doesn't have anything in it...
+			table = ((CyRootNetwork)net).getSharedNodeTable();
+		} else {
+			table = net.getDefaultNodeTable();
+		}
+
+		Set<CyRow> rows = parseList(nodeList, table);
 		if (rows == null) return null;
 
 		List<CyNode> nodes = new ArrayList<CyNode>();
@@ -178,7 +189,16 @@ public class StringToModelImpl implements StringToModel {
 			return CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, false);
 		}
 
-		Set<CyRow> rows =  parseList(edgeList, net.getDefaultEdgeTable());
+		CyTable table;
+		if (net instanceof CyRootNetwork) {
+			// OK, we're referring to a root network.  Use the shared table
+			// since the default edge table doesn't have anything in it...
+			table = ((CyRootNetwork)net).getSharedEdgeTable();
+		} else {
+			table = net.getDefaultEdgeTable();
+		}
+
+		Set<CyRow> rows =  parseList(edgeList, table);
 		if (rows == null) return null;
 
 		List<CyEdge> edges = new ArrayList<CyEdge>();

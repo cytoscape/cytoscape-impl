@@ -29,35 +29,29 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
-
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
 
 public class RenameGroupTask extends AbstractGroupTask {
 
 	private CyServiceRegistrar serviceRegistrar;
 
-	@Tunable (description="Network", context="nogui")
+	@Tunable (description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network;
 
-	@Tunable (description="Group to rename", context="nogui")
+	@Tunable (description="Group to rename", context="nogui", longDescription=StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING)
 	public String groupName;
 
-	@Tunable (description="New name", context="nogui")
+	@Tunable (description="New name", context="nogui", longDescription="Specifies the NEW name used to identify the group. ", exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING2)
 	public String newName;
 
 	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar reg) {
@@ -96,7 +90,7 @@ public class RenameGroupTask extends AbstractGroupTask {
 		if (requestedType.equals(CyGroup.class))		return getGroup(groupName);
 		if (requestedType.equals(String.class))			return groupName;
 		if (requestedType.equals(JSONResult.class))  	
-		{	JSONResult res = () -> {return groupName; };
+		{	JSONResult res = () -> {return "{}"; };
 			return res;
 		}		
 		return null;

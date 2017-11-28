@@ -1,14 +1,22 @@
 package org.cytoscape.task.internal.title;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.undo.UndoSupport;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -34,17 +42,24 @@ import org.cytoscape.work.undo.UndoSupport;
  * #L%
  */
 
-public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator {
+public class EditNetworkTitleTask extends AbstractNetworkTask implements TunableValidator, ObservableTask {
 	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Rename Network";
 	}
 
-	@Tunable(description = "New title:")
+	@Tunable(description = "New title for network", 
+	         longDescription="Enter a new title for the network",
+	         exampleStringValue="My network name",
+	         required=true)
 	public String name;
 
-	@Tunable(description = "Network to rename", context = "nogui")
+	@Tunable(description = "Network to rename", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+	         required=true,
+					 context = "nogui")
 	public CyNetwork sourceNetwork;
 
 	private final CyServiceRegistrar serviceRegistrar;
@@ -96,5 +111,27 @@ public class EditNetworkTitleTask extends AbstractNetworkTask implements Tunable
 		
 		serviceRegistrar.getService(UndoSupport.class).postEdit(new NetworkTitleEdit(sourceNetwork, oldTitle));
 		e.setProgress(1.0);
+	}
+
+	public Object getResults(Class type) {
+		if (type.equals(CyNetwork.class)) {
+			return sourceNetwork;
+		} else if (type.equals(String.class)){
+			if (sourceNetwork == null)
+				return "<none>";
+			return "Network "+sourceNetwork.getSUID()+" renamed to "+name;
+		}  else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {if (sourceNetwork == null) 
+				return "{}";
+			else {
+				return "{\"network\":"+sourceNetwork.getSUID()+", \"title\":\""+name+"\"}";
+			}};
+			return res;
+		}
+		return sourceNetwork;
+	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyNetwork.class, String.class, JSONResult.class);
 	}
 }

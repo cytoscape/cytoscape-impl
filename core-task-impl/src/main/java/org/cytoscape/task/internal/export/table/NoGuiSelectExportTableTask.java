@@ -30,18 +30,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
 
 import java.util.Iterator;
 import java.util.HashMap;
@@ -50,9 +51,9 @@ import java.util.Collections;
 
 public class NoGuiSelectExportTableTask extends AbstractTask {
 
-	@Tunable(description = "Select a table to export:")
-	public  ListSingleSelection<String> selectTable;
-	
+	@ContainsTunables
+	public TableTunable selectTable = null;
+
 	@ContainsTunables
 	public CyTableWriter tableWriter;
 	
@@ -60,10 +61,9 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	private final CyTableManager cyTableManagerServiceRef;
 	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyApplicationManager cyApplicationManagerServiceRef;
+	private CyTable tbl = null;
 
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<CyTable, CyNetwork>();
-	private HashMap<String, CyTable> titleTableMap = new HashMap<String, CyTable>();
-	
 	public NoGuiSelectExportTableTask (CyTableWriterManager writerManager,CyTableManager cyTableManagerServiceRef, 
 			CyNetworkManager cyNetworkManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef){
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
@@ -72,35 +72,29 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
 
 		populateNetworkTableMap();
-		populateSelectTable();
-		
-		
-		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, titleTableMap.get(selectTable.getSelectedValue()));
-		
-		
+		selectTable = new TableTunable(cyTableManagerServiceRef);
+
+		// Grab an arbitrary table
+		CyTable tab = getFirstTable();
+		if (tab == null)
+			throw new RuntimeException("No tables available to export");
+
+		// We need to initialize this here to the Tunables get picked up.
+		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tab);
 	}
 
-	private void populateSelectTable() {
-		final List<String> options = new ArrayList<String>();
-		
-		for ( CyTable tbl : cyTableManagerServiceRef.getAllTables(false)) {
-			String title = tbl.getTitle();
-			options.add(title);			
-			this.titleTableMap.put(title, tbl);
-		}
-		
-		Collections.sort(options);
-		selectTable =  new ListSingleSelection<String>(options);
-	}
-	
-	
 	private void populateNetworkTableMap() {
-		
 		for (CyNetwork net: cyNetworkManagerServiceRef.getNetworkSet()) {
 			this.tableNetworkMap.put(net.getDefaultNetworkTable(), net);
 			this.tableNetworkMap.put(net.getDefaultNodeTable(), net);
 			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);
 		}
+	}
+
+	private CyTable getFirstTable() {
+		for (CyTable table: cyTableManagerServiceRef.getAllTables(true))
+			return table;
+		return null;
 	}
 	
 
@@ -108,8 +102,7 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	public void run(TaskMonitor tm) throws IOException {
 
 		//Get the selected table
-		final String selectedTitle = selectTable.getSelectedValue();		
-		CyTable tbl = this.titleTableMap.get(selectedTitle);
+		tbl = this.selectTable.getTable();
 		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);
 
 		// Export the selected table

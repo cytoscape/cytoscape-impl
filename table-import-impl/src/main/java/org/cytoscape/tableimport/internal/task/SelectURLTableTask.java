@@ -43,7 +43,12 @@ import org.slf4j.LoggerFactory;
 
 public class SelectURLTableTask extends AbstractTask {
 	
-	@Tunable(description="Data Table URL:", params="fileCategory=table;input=true")
+	@Tunable(description="Data Table URL", 
+	         longDescription="The URL of the file or resource that provides the table or network to be imported.",
+	         exampleStringValue="https://www.my.domain.org/mywebpage/myFile.csv",
+	         params="fileCategory=table;input=true", 
+	         required=true, 
+	         gravity=0.0)
 	public URL url;
 	
 	private LoadTableReaderTask tableReader;

@@ -9,6 +9,7 @@ import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -53,6 +54,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerService(bc, networkFactory, CyNetworkFactory.class);
 		registerService(bc, tableFactory, CyTableFactory.class);
+		registerService(bc, tableFactory, SessionLoadedListener.class);
 		registerService(bc, rootNetworkFactory, CyRootNetworkManager.class);
 		registerService(bc, tableManager, CyTableManager.class);
 		registerAllServices(bc, networkTableManager);

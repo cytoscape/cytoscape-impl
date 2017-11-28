@@ -1,6 +1,7 @@
 package org.cytoscape.internal.view;
 
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedWriter;
@@ -18,6 +19,8 @@ import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
@@ -30,6 +33,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -37,7 +41,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -55,144 +59,168 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * #L%
  */
 
-
 /**
  * Implementation of Toolbar on the Cytoscape Desktop application.
  */
+@SuppressWarnings("serial")
 public class CytoscapeToolBar extends JToolBar {
 	
-	private final static long serialVersionUID = 1202339868655256L;
+	public static int ICON_WIDTH = 32;
+	public static int ICON_HEIGHT = 32;
+	private static int BUTTON_BORDER_SIZE = 2;
 	
-	private Map<CyAction, JButton> actionButtonMap; 
-//	private List<CyAction> actionList; 
+	private Map<CyAction, JButton> actionButtonMap;
 	private List<Object> orderedList;
 	private Map<Object, Float> componentGravity;
-	private  CyServiceRegistrar registrar;
+	private HashSet<String> stopList = new HashSet<>();
 
+	private CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * new constructor passes CyServiceRegistrar in 
 	 */
-	public CytoscapeToolBar(final CyServiceRegistrar serviceRegistrar) {
-		this();
-		registrar = serviceRegistrar;
-//		createCustomToolbar();
-		readStopList();
-	}
-	/**
-	 * Default constructor delegates to the superclass void constructor and then
-	 * calls {@link #initializeCytoscapeToolBar()}.
-	 */
-	private CytoscapeToolBar() {
+	public CytoscapeToolBar(CyServiceRegistrar serviceRegistrar) {
 		super("Cytoscape Tools");
-		
-		actionButtonMap = new HashMap<CyAction, JButton>();
-//		actionList = new ArrayList<CyAction>();
-		componentGravity = new HashMap<Object, Float>();
-		orderedList = new ArrayList<Object>();
+		actionButtonMap = new HashMap<>();
+		componentGravity = new HashMap<>();
+		orderedList = new ArrayList<>();
+		this.serviceRegistrar = serviceRegistrar;
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
 		buildPopup();
+//		createCustomToolbar();
+		readStopList();
 	}
-
+	
 	private void buildPopup() {
 		addMouseListener(new MouseAdapter() {
-			 
-	            @Override  public void mousePressed(MouseEvent e) {   showPopup(e);  }
-	            @Override  public void mouseReleased(MouseEvent e) {  showPopup(e); }
-	            private void showPopup(MouseEvent e)
-            	{
-            		if (e.isPopupTrigger()) 
-            		{
-            	        final JPopupMenu popup = new JPopupMenu();
-            	        JMenuItem menuItem = new JMenuItem("Show All");
-            	        popup.add(menuItem);
-            	        menuItem.addActionListener(ev2 -> { showAll(); resave();	} );
-            	        menuItem = new JMenuItem("Hide All");
-            	        popup.add(menuItem);
-            	        popup.add(new JSeparator());
-            	        menuItem.addActionListener(ev2 -> { hideAll(); resave();	} );
-            	        for (Component comp : getComponents())
-	                    {
-            				if (comp instanceof JButton)
-            				{
-    							JButton button  = (JButton)comp; 
-    							String tip =  button.getToolTipText();
-            					if (tip == null || tip.isEmpty()) continue;
-	            				JCheckBoxMenuItem checktem = new JCheckBoxMenuItem();
-	            				checktem.setText(tip);
-	            				checktem.setState(button.isVisible());
-	            				checktem.setIcon(button.getIcon());
-		                        popup.add(checktem);
-		                        checktem.addActionListener(ev -> {  button.setVisible(!button.isVisible()); resave();	} );
-               				}
-            				                     }
-	                    popup.show(e.getComponent(), e.getX(), e.getY());
-            		}
-            	}
-	        });		
-	}
-	private void resave() {
-		List<String> hidden = new ArrayList<String>();
-        for (Component comp : getComponents())
-        {
-            if (comp instanceof JButton)
-				if (!comp.isVisible())
-				{
-					String butnName = ((CyAction)((JButton)comp).getAction()).getName();
-					hidden.add(butnName);
-//					System.out.println("Hide " + butnName);
-				
+			@Override
+			public void mousePressed(MouseEvent e) {
+				showPopup(e);
+			}
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				showPopup(e);
+			}
+			private void showPopup(MouseEvent e) {
+				if (e.isPopupTrigger()) {
+					final JPopupMenu popup = new JPopupMenu();
+					JMenuItem menuItem = new JMenuItem("Show All");
+					popup.add(menuItem);
+					menuItem.addActionListener(ev -> {
+						showAll();
+						resave();
+					});
+					menuItem = new JMenuItem("Hide All");
+					popup.add(menuItem);
+					popup.addSeparator();
+					menuItem.addActionListener(ev -> {
+						hideAll();
+						resave();
+					});
+					
+					for (Component comp : getComponents()) {
+						if (comp instanceof JButton) {
+							JButton button = (JButton) comp;
+							String tip = button.getToolTipText();
+							
+							if (tip == null || tip.isEmpty())
+								continue;
+							
+							JCheckBoxMenuItem mi = new JCheckBoxMenuItem();
+							mi.setText(tip);
+							mi.setState(button.isVisible());
+							
+							Icon icon = button.getIcon();
+							
+							if (icon instanceof ImageIcon) {
+								icon = new ImageIcon(((ImageIcon) icon).getImage()) {
+									@Override
+									public int getIconWidth() {
+										return ICON_WIDTH;
+									}
+									@Override
+									public int getIconHeight() {
+										return ICON_HEIGHT;
+									}
+								};
+							}
+							
+							mi.setIcon(icon);
+							mi.addActionListener(ev -> {
+								button.setVisible(!button.isVisible());
+								resave();
+							});
+							popup.add(mi);
+						}
+					}
+					
+					popup.show(e.getComponent(), e.getX(), e.getY());
 				}
-        }
-        if (hidden.size() == 0)
-        	deleteStopList();
-        else writeStopList(hidden);
+			}
+		});
 	}
 
-	@Override public Component add(Component comp)
-	{
-		if (stopList.contains(comp.getName())) 
+	private void resave() {
+		List<String> hidden = new ArrayList<>();
+		
+		for (Component comp : getComponents()) {
+			if (comp instanceof JButton)
+				if (!comp.isVisible()) {
+					String butnName = ((CyAction) ((JButton) comp).getAction()).getName();
+					hidden.add(butnName);
+				}
+		}
+		
+		if (hidden.size() == 0)
+			deleteStopList();
+		else
+			writeStopList(hidden);
+	}
+
+	@Override
+	public Component add(Component comp) {
+		if (stopList.contains(comp.getName()))
 			comp.setVisible(false);
+		
 		return super.add(comp);
 	}
+	
 	/**
 	 * If the given Action has an absent or false inToolBar property, return;
 	 * otherwise delegate to addAction( String, Action ) with the value of its
 	 * gravity property.
 	 */
 	public boolean addAction(CyAction action) {
-		
-//		System.out.println("addAction: " + action.getName());
-		
 		if (!action.isInToolBar()) 
 			return false;
-
 	
 		// At present we allow an Action to be in this tool bar only once.
-		if ( actionButtonMap.containsKey( action ) )
+		if (actionButtonMap.containsKey(action))
 			return false;
-		
+
 		boolean insertSepBefore = false;
 		boolean insertSepAfter = false;
+		
 		if (action instanceof AbstractCyAction) {
-			insertSepBefore = ((AbstractCyAction)action).insertToolbarSeparatorBefore();
-			insertSepAfter = ((AbstractCyAction)action).insertToolbarSeparatorAfter();
+			insertSepBefore = ((AbstractCyAction) action).insertToolbarSeparatorBefore();
+			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
 		final JButton button = createToolBarButton(action);
+		
 		if (insertSepBefore)
-			addSeparator(action.getToolbarGravity()-.0001f);
+			addSeparator(action.getToolbarGravity() - .0001f);
 		if (insertSepAfter)
-			addSeparator(action.getToolbarGravity()+.0001f);
+			addSeparator(action.getToolbarGravity() + .0001f);
 
-		componentGravity.put(button,action.getToolbarGravity());
+		componentGravity.put(button, action.getToolbarGravity());
 		actionButtonMap.put(action, button);
-//		actionList.add(action);
 		int addIndex = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addIndex, button);
-		if (stopList.contains(action.getName())) 
+		
+		if (stopList.contains(action.getName()))
 			button.setVisible(false);
 
 		addComponents();
@@ -200,29 +228,30 @@ public class CytoscapeToolBar extends JToolBar {
 		return true;
 	}
 
-	public void showAll()
-	{
-		for ( Object o : orderedList) 
+	public void showAll() {
+		for (Object o : orderedList)
 			if (o instanceof Component)
-				((Component)o).setVisible(true);
+				((Component) o).setVisible(true);
 	}
-	
-	public void hideAll()
-	{
-		for ( Object o : orderedList) 
+
+	public void hideAll() {
+		for (Object o : orderedList)
 			if (o instanceof Component)
-				((Component)o).setVisible(false);
+				((Component) o).setVisible(false);
 	}
-	
+
 	private void addComponents() {
 		removeAll();
-		for ( Object o : orderedList) 
-		{
-			if ( o instanceof JButton ) 				add((JButton)o);
-			else if ( o instanceof Float ) 				addSeparator();
+		
+		for (Object o : orderedList) {
+			if (o instanceof JButton)
+				add((JButton) o);
+			else if (o instanceof Float)
+				addSeparator();
 			else if (o instanceof ToolBarComponent)
-				add(((ToolBarComponent)o).getComponent());
+				add(((ToolBarComponent) o).getComponent());
 		}
+		
 		validate();
 	}
 
@@ -233,14 +262,15 @@ public class CytoscapeToolBar extends JToolBar {
 		orderedList.add(addInd, key);
 	}
 
-
 	private int getInsertLocation(float newGravity) {
-		for ( int i = 0; i < orderedList.size(); i++ ) {
+		for (int i = 0; i < orderedList.size(); i++) {
 			Object item = orderedList.get(i);
 			Float gravity = componentGravity.get(item);
-			if ( gravity != null && newGravity < gravity ) 
+			
+			if (gravity != null && newGravity < gravity)
 				return i;
 		}
+		
 		return orderedList.size();
 	}
 
@@ -251,9 +281,8 @@ public class CytoscapeToolBar extends JToolBar {
 	public boolean removeAction(CyAction action) {
 		JButton button = actionButtonMap.remove(action);
 
-		if (button == null) {
+		if (button == null)
 			return false;
-		}
 
 		orderedList.remove(button);
 		remove(button);
@@ -261,7 +290,9 @@ public class CytoscapeToolBar extends JToolBar {
 		return true;
 	}
 
-	// use by toolbar updater to keep things properly enabled/disabled
+	/**
+	 * Used by toolbar updater to keep things properly enabled/disabled.
+	 */
 	Collection<CyAction> getAllToolBarActions() {
 		return actionButtonMap.keySet();
 	}
@@ -286,13 +317,20 @@ public class CytoscapeToolBar extends JToolBar {
 		action.updateEnableState();
 		
 		final JButton button = new JButton(action); 
-//		System.out.println("create button: " + action.getName());
 		button.setText(action.getName());
-		button.setBorderPainted(false);
-		button.setRolloverEnabled(true);
+		button.setBorder(BorderFactory.createEmptyBorder(BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE,
+				BUTTON_BORDER_SIZE));
+		button.setRolloverEnabled(LookAndFeelUtil.isWinLAF());
+		button.setFocusable(false);
+		button.setFocusPainted(false);
 		button.setHideActionText(true);
+		
+		Dimension dim = new Dimension(ICON_WIDTH + 2 * BUTTON_BORDER_SIZE, ICON_HEIGHT + 2 * BUTTON_BORDER_SIZE);
+		button.setMinimumSize(dim);
+		button.setPreferredSize(dim);
+		button.setMaximumSize(dim);
 
-		//  If SHORT_DESCRIPTION exists, use this as tool-tip
+		// If SHORT_DESCRIPTION exists, use this as tool-tip
 		final String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
 		
 		if (shortDescription != null) 
@@ -300,88 +338,92 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		return button;
 	}
-	private HashSet<String> 	stopList = new HashSet<String>();
-
-	//--------------------------------------
-	private void readStopList()
-	{
+	
+	private void readStopList() {
 		stopList.clear();
-		List<String> lines;
+		final List<String> lines;
+		
 		try {
-			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
+			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
+					.getService(CyApplicationConfiguration.class);
+			
 			if (cyApplicationConfiguration == null)
-			{
-//				System.out.println("cyApplicationConfiguration not found");
+				return;
+
+			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+			File configFile = null;
+			
+			if (configDirectory.exists())
+				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+			
+			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset());
+		} catch (IOException e) {
+			// file not found: there's no customization, just return
+			return;
+		}
+
+		for (String line : lines)
+			stopList.add(line.trim());
+	}
+	
+	private void deleteStopList() {
+		CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
+				.getService(CyApplicationConfiguration.class);
+		
+		if (cyApplicationConfiguration == null) {
+			System.err.println("cyApplicationConfiguration not found");
+			return;
+		}
+
+		File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
+		File configFile = null;
+		
+		if (configDirectory.exists()) {
+			configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+			
+			if (configFile.exists())
+				configFile.delete();
+		}
+	}
+
+	private void writeStopList(List<String> list) {
+		BufferedWriter writer = null;
+		
+		try {
+			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
+					.getService(CyApplicationConfiguration.class);
+			
+			if (cyApplicationConfiguration == null) {
+				System.err.println("cyApplicationConfiguration not found");
 				return;
 			}
 
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
+			
 			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath()  + "/toolbar.stoplist");
-			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset() );
+				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+			
+			writer = new BufferedWriter(new FileWriter(configFile));
+			
+			for (String line : list) {
+				if (line != null)
+					writer.write(line + "\n");
+			}
 		} catch (IOException e) {
-			// file not found: there's no customization, just return
-//			System.out.println("IOException: " + e.getMessage());
-			return;
-		}
-				
-		for (String line : lines)
-			stopList.add(line.trim());
-	}
-	//------------------------
-	private void deleteStopList()
-	{
-		CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
-		if (cyApplicationConfiguration == null)
-		{
-			System.err.println("cyApplicationConfiguration not found");
-			 return;
-		}
-
-		File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
-		File configFile = null;
-		if (configDirectory.exists())
-		{	
-				configFile = new File(configDirectory.toPath()  + "/toolbar.stoplist");
-				if (configFile.exists())
-					configFile.delete();
+			System.err.println("IOException: " + e.getMessage());
+		} finally {
+			if (writer != null) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
-	private void writeStopList(List<String> list)
-		{
-		BufferedWriter writer = null;
-		try {
-			CyApplicationConfiguration cyApplicationConfiguration = registrar.getService(CyApplicationConfiguration.class);
-			if (cyApplicationConfiguration == null)
-			{
-				System.err.println("cyApplicationConfiguration not found");
-				 return;
-			}
-
-			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
-			File configFile = null;
-			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath()  + "/toolbar.stoplist");
-			writer = new BufferedWriter(new FileWriter(configFile));
-			for (String line : list)
-				if (line != null)
-					writer.write(line + "\n");
-		} catch (IOException e) {
-			System.err.println("IOException: " + e.getMessage());
-		}finally {
-	          if ( writer != null ) {
-	        	  try {
-					writer.close();
-				} catch (IOException e) {	e.printStackTrace();	}
-	            }
-		}
-				
-	}
-	//------------------------
-//		public void createCustomToolbar()
-//		{
+//		public void createCustomToolbar() {
 //			//get the file
 //			// this doesn't work: ??  "~/CytoscapeConfiguration/toolbar.custom"
 ////			String configFilename = "/Users/adamtreister/CytoscapeConfiguration/toolbar.custom";
@@ -435,9 +477,7 @@ public class CytoscapeToolBar extends JToolBar {
 //			}
 //		}
 //		
-//		
-//		private CyAction parseLine(String line)
-//		{
+//		private CyAction parseLine(String line) {
 //			String cmdName = line.substring(0, line.indexOf(' '));
 //			String displayName =  getBetween(line, '"','"');
 //			String gravity =  getBetween(line, '[',']');
@@ -455,7 +495,6 @@ public class CytoscapeToolBar extends JToolBar {
 //			return lookupAction(cmdName);
 //		}
 //		
-//		
 //		private CyAction lookupAction(String className) {
 //			Class<?> actionClass;
 //			CyAction action = null;
@@ -467,8 +506,7 @@ public class CytoscapeToolBar extends JToolBar {
 //			return action;
 //		}
 //
-//		String getBetween(String src, char start, char end)
-//		{
+//		String getBetween(String src, char start, char end) {
 //			int startIdx = src.indexOf(start);
 //			int endIdx = src.indexOf(end, startIdx+1);
 //			if (startIdx >= 0 && endIdx > startIdx)
@@ -479,5 +517,4 @@ public class CytoscapeToolBar extends JToolBar {
 //			}
 //			return "";
 //		}
-
 }

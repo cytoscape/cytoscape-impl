@@ -32,6 +32,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
@@ -47,26 +48,29 @@ public class GroupNodesTaskFactoryImpl extends AbstractNetworkViewTaskFactory
 	private CyGroupManager mgr;
 	private CyGroupFactory groupFactory;
 	private UndoSupport undoSupport;
+	private CyServiceRegistrar serviceRegistrar;
 
 	public GroupNodesTaskFactoryImpl(CyApplicationManager appMgr,
-	                                 CyGroupManager mgr, CyGroupFactory groupFactory, UndoSupport undoSupport) {
+	                                 CyGroupManager mgr, CyGroupFactory groupFactory, 
+	                                 UndoSupport undoSupport, CyServiceRegistrar serviceRegistrar) {
 		super();
 		this.appMgr = appMgr;
 		this.mgr = mgr;
 		this.groupFactory = groupFactory;
 		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory));
+		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory, serviceRegistrar));
 	}
 
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView view) {
-		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory));
+		return new TaskIterator(new GroupNodesTask(undoSupport, view, mgr, groupFactory, serviceRegistrar));
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GroupNodesTask(undoSupport, appMgr, mgr, groupFactory));
+		return new TaskIterator(new GroupNodesTask(undoSupport, appMgr, mgr, groupFactory, serviceRegistrar));
 	}
 
 	public boolean isReady(CyNetworkView netView) {

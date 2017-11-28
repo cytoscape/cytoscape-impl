@@ -7,13 +7,7 @@ import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 
 import java.awt.Component;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,9 +17,7 @@ import javax.swing.JMenuBar;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
-import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
@@ -34,7 +26,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2017 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -58,14 +50,11 @@ public class CytoscapeMenus {
 	final private CytoscapeToolBar toolBar;
 	final private Set<CyAction> viewFrameActions;
 	
-	public CytoscapeMenus(CytoscapeMenuBar menuBar, CytoscapeToolBar toolBar, CyServiceRegistrar reg) {
-		this(menuBar, toolBar);
-	}
 	public CytoscapeMenus(CytoscapeMenuBar menuBar, CytoscapeToolBar toolBar) {
 		this.menuBar = menuBar;
 		this.toolBar = toolBar;
 		
-		viewFrameActions = new LinkedHashSet<CyAction>();
+		viewFrameActions = new LinkedHashSet<>();
 
 		menuBar.addMenu("File", 0.0);
 		menuBar.addMenu("File.New", 0.0);
@@ -120,15 +109,21 @@ public class CytoscapeMenus {
 		toolBar.addSeparator(4.0f);
 		toolBar.addSeparator(6.0f);
 		toolBar.addSeparator(8.0f);
-//		toolBar.addSeparator(10.0f);
+		toolBar.addSeparator(10.0f);
 	}
 
-	public JMenu getJMenu(String s) {		return menuBar.getMenu(s);	}
+	public JMenu getJMenu(String s) {
+		return menuBar.getMenu(s);
+	}
 
-	public JMenuBar getJMenuBar() {		return menuBar;	}
+	public JMenuBar getJMenuBar() {
+		return menuBar;
+	}
 
-	public JToolBar getJToolBar() {		return toolBar;	}
-	
+	public JToolBar getJToolBar() {
+		return toolBar;
+	}
+
 	public JToolBar createViewFrameToolBar() {
 		JToolBar viewToolBar = null;
 		final int total = toolBar.getComponentCount();
@@ -224,5 +219,4 @@ public class CytoscapeMenus {
 		
 		return dummy;
 	}
-
 }

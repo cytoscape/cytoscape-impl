@@ -59,7 +59,7 @@ public class GetCurrentNetworkViewTask extends AbstractTask implements Observabl
 		
 		if (type == JSONResult.class) {
 			String json = view != null ? serviceRegistrar.getService(CyJSONUtil.class).toJson(view) : null;
-			JSONResult res = () -> { return json; };
+			JSONResult res = () -> { return "{ \"view\":"+json+"}"; };
 			
 			return res;
 		}

@@ -530,8 +530,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			model.clearSelectedRows();
 			boolean foundANonSelectedColumnName = false;
 			
-			for (final RowSetRecord rowSet : e.getPayloadCollection()) {
-				if (!rowSet.getColumn().equals(CyNetwork.SELECTED)) {
+			for(String column : e.getColumns()) {
+				if(!CyNetwork.SELECTED.equals(column)) {
 					foundANonSelectedColumnName = true;
 					break;
 				}
@@ -599,11 +599,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private JPopupMenu getHeaderPopupMenu() {
-		if (rightClickHeaderPopupMenu != null)
-			return rightClickHeaderPopupMenu;
-
-		rightClickHeaderPopupMenu = new JPopupMenu();
-
+		if (rightClickHeaderPopupMenu == null)
+			rightClickHeaderPopupMenu = new JPopupMenu();
 		return rightClickHeaderPopupMenu;
 	}
 	

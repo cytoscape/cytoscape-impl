@@ -42,7 +42,10 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 	Class <? extends CyIdentifiable> type;
 	List<String> resultList;
 
-	@Tunable(description="Network to get properties for", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	@Tunable(description="Network to get properties for", 
+	         context="nogui", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public ListPropertiesTask(CyApplicationManager appMgr, Class<? extends CyIdentifiable> type,
@@ -56,6 +59,11 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 	public void run(final TaskMonitor taskMonitor) {
 		if (network == null) {
 			network = appManager.getCurrentNetwork();
+			if (network == null) {
+				taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
+				                        "No network");
+				return;
+			}
 		}
 	
 		resultList = listProperties(type, network);
@@ -82,6 +90,13 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 				return stringBuilder.toString();
 			};
 			return res;
+		} else if (type.equals(String.class)) {
+			StringBuilder stringBuilder = new StringBuilder("Properties for "+DataUtils.getIdentifiableType(type)+"s:");
+			int count = resultList.size();
+			for (String column : resultList) {
+				stringBuilder.append("    " + column + "\n");
+			}
+			return stringBuilder.toString();
 		}
 		return resultList;
 	}

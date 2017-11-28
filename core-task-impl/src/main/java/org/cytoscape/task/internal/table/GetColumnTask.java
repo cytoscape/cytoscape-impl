@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
@@ -11,11 +12,12 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.TableTunable;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
-public class GetColumnTask extends AbstractTableDataTask {
+public class GetColumnTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	CyColumn returnValue;
@@ -23,7 +25,8 @@ public class GetColumnTask extends AbstractTableDataTask {
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Name of column", context="nogui")
+	@Tunable(description="Name of column", context="nogui", 
+			longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
 	public String column = null;
 
 	public GetColumnTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {

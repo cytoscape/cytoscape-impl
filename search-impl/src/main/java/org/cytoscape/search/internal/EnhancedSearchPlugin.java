@@ -25,8 +25,6 @@ package org.cytoscape.search.internal;
  */
 
 import java.awt.Component;
-import java.util.Collection;
-import java.util.Iterator;
 
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -40,7 +38,6 @@ import org.cytoscape.model.events.RemovedEdgesEvent;
 import org.cytoscape.model.events.RemovedEdgesListener;
 import org.cytoscape.model.events.RemovedNodesEvent;
 import org.cytoscape.model.events.RemovedNodesListener;
-import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.search.internal.ui.EnhancedSearchPanel;
@@ -64,7 +61,7 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 		
 		// Add a text-field and a search button on tool-bar
 		searchPnl = new EnhancedSearchPanel(searchMgr, serviceRegistrar);
-		setToolBarGravity(9.8f);
+		setToolBarGravity(100000000000000.1f);
 	}
 
 	@Override
@@ -101,16 +98,9 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	
 	@Override
 	public void handleEvent(RowsSetEvent e) {
-		Collection<RowSetRecord> records = e.getPayloadCollection();
-		Iterator<RowSetRecord> it = records.iterator();
-		
-		while (it.hasNext()) {
-			// Ignore the change of selection attribute
-			if (!it.next().getColumn().equalsIgnoreCase("selected")) {
-				attributeChanged = true;
-				break;
-			}
-		}		
+		if(e.containsColumn(CyNetwork.SELECTED)) {
+			attributeChanged = true;
+		}
 	}
 
 	@Override

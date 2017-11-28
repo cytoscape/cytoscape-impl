@@ -5,14 +5,14 @@
 nodelinkouturl.Web\ Search.Google=http://www.google.com/search?hl=en&q=%ID%&btnG=Google+Search
 nodelinkouturl.Web\ Search.Wikipedia=http://en.wikipedia.org/w/index.php?search=%ID%
 
-nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Gene=http://www.ncbi.nlm.nih.gov/gene/%ID%
+nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Gene=http://www.ncbi.nlm.nih.gov/gene?term=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Genome=http://www.ncbi.nlm.nih.gov/genome?term=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.yeast=http://www.ensembl.org/Saccharomyces_cerevisiae/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.human=http://www.ensembl.org/Homo_sapiens/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.fly=http://www.ensembl.org/Drosophila_melanogaster/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.mouse=http://www.ensembl.org/Mus_musculus/geneview?gene=%ID%
 nodelinkouturl.Sequences\ and\ Proteins.Ensembl\ Gene\ View.worm=http://www.ensembl.org/Caenorhabditis_elegans/geneview?gene=%ID%
-nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://www.uniprot.org/uniprot/%ID%
+nodelinkouturl.Sequences\ and\ Proteins.UniProt=http://www.uniprot.org/uniprot/?query=%ID%&sort=score
 nodelinkouturl.Sequences\ and\ Proteins.Entrez\ Protein=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=Protein&term\=%ID%&doptcmdl\=GenPept
 
 nodelinkouturl.Publications.Pubmed=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd\=Search&db\=PubMed&term\=%ID%&doptcmdl\=Abstract
@@ -20,13 +20,13 @@ nodelinkouturl.Publications.OMIM=http\://www.ncbi.nlm.nih.gov/entrez/query.fcgi?
 
 nodelinkouturl.Model\ Organism\ DB.MGI\ (mouse)=http://www.informatics.jax.org/javawi2/servlet/WIFetch?page=searchTool&query=%ID%&selectedQuery=Genes+and+Markers
 nodelinkouturl.Model\ Organism\ DB.WormBase\ (worm)=http://www.wormbase.org/db/gene/gene?name=%ID%
-nodelinkouturl.Model\ Organism\ DB.SGD\ (yeast)=http://db.yeastgenome.org/cgi-bin/locus.pl?locus=%ID%
-nodelinkouturl.Model\ Organism\ DB.FlyBase\ (fly)=http://flybase.bio.indiana.edu/.bin/fbidq.html?%ID%
+nodelinkouturl.Model\ Organism\ DB.SGD\ (yeast)=https://www.yeastgenome.org/search?q=%ID%&is_quick=true
+nodelinkouturl.Model\ Organism\ DB.FlyBase\ (fly)=http://flybase.org/cgi-bin/quicksearch_solr.cgi?context=%ID%&tab=basic_tab&view=sum
 nodelinkouturl.Model\ Organism\ DB.HGNC\ (human)=http://www.genenames.org/data/hgnc_data.php?hgnc_id=%ID%
 
 #Ontology
-nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ ID)=http://www.ebi.ac.uk/ego/DisplayGoTerm?id=%ID%
-nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ name)=http://www.ebi.ac.uk/ego/GSearch?query=%ID%&mode=name&ontology=all_ont
+nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ ID)=https://www.ebi.ac.uk/QuickGO/search/GO:%ID%
+nodelinkouturl.Ontology.Gene\ Ontology\ (QuickGO\ by\ name)=https://www.ebi.ac.uk/QuickGO/search/%ID%
 
 #Global Search
 nodelinkouturl.Global\ Database\ Search.EBI=http://www.ebi.ac.uk/ebisearch/search.ebi?db=allebi&requestFrom=ebi_index&query=%ID%

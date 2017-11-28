@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyRow;
@@ -54,7 +55,9 @@ public class AddRowTask extends AbstractTableDataTask implements ObservableTask 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
 
-	@Tunable(description="Key value for new row", context="nogui")
+	@Tunable(description="Key value for new row", context="nogui",
+	         longDescription=StringToModel.VALUE_LONG_DESCRIPTION+"  Note that network, node, and edge tables ``must`` have Long values as keys", 
+	         exampleStringValue = StringToModel.VALUE_EXAMPLE)
 	public String keyValue = null;
 
 	public AddRowTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
@@ -101,19 +104,24 @@ public class AddRowTask extends AbstractTableDataTask implements ObservableTask 
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created new row '"+keyValue+"'");
 	}
 
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyRow.class, String.class, JSONResult.class);	}
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(CyRow.class, String.class, JSONResult.class);	
+	}
+	
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyRow.class))			return row;
 		if (requestedType.equals(String.class))			return (row == null) ?  null : row.toString();
 		if (requestedType.equals(JSONResult.class)) 
 		{
-			JSONResult res = () -> { if (row == null) 		return "{}";
-			CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-			return cyJSONUtil.toJson(row);
-		};
-		return res;
+			JSONResult res = () -> { 
+				if (row == null) 		return "{}";
+				return "{\"table\":"+tableTunable.getTable().getSUID()+", \"row\":\""+keyValue+"\"}";
+			};
+			return res;
 		}
 		return null;
-		}
+	}
 
 }

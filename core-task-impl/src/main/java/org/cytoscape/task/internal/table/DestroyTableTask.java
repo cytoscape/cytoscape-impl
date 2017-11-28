@@ -45,8 +45,9 @@ import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
 
-public class DestroyTableTask extends AbstractTableDataTask {
+public class DestroyTableTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
+	private long tableSUID = -1L;
 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
@@ -65,6 +66,7 @@ public class DestroyTableTask extends AbstractTableDataTask {
 			return;
 		}
 
+		tableSUID = table.getSUID();
 		title = table.getTitle();
 		String withId = title +" (suid:"+table.getSUID()+")";
 		cyTableManager.deleteTable(table.getSUID());
@@ -72,11 +74,21 @@ public class DestroyTableTask extends AbstractTableDataTask {
 
 	}
 
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(String.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) 		return title;
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return title;	};	
+			// JSONResult res = () -> {		return "{ \"title\": \"" + title + "\" }";	};	
+			JSONResult res = () -> { 
+				if (tableSUID < 0L)
+					return "{}";
+				return "{\"table\":"+tableSUID+"}";
+			};
 			return res;
 			}
 		return null;

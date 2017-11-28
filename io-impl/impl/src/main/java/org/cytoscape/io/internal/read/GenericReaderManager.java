@@ -164,10 +164,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		try {
 			logger.info("Successfully found compatible ReaderFactory " + chosenFactory);
 			// This returns strean using proxy if it exists.
-			InputStream stream = streamUtil.getInputStream(uri.toURL());
-			if (!stream.markSupported()) {
-				stream = new BufferedInputStream(stream);
-			}
+			final InputStream stream = streamUtil.getInputStream(uri.toURL());
 			return (R) chosenFactory.createTaskIterator(stream, inputName).next();
 		} catch (FileNotFoundException e) {
 			throw new IllegalStateException("File '"+inputName+"' not found:", e);

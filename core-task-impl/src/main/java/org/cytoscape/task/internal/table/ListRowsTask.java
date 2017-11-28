@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -50,6 +51,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyRow> rowList = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public RowTunable rowTunable = null;
@@ -63,7 +65,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = rowTunable.getTable();
+		table = rowTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Unable to find table '"+rowTunable.getTableString()+"'");
@@ -89,16 +91,36 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 			taskMonitor.showMessage(TaskMonitor.Level.INFO, message);
 		}
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
 
+	@Override
+	public List<Class<?>> getResultClasses() {	
+		return Arrays.asList(List.class, String.class, JSONResult.class);	
+	}
+
+	@Override
 	public Object getResults(Class requestedType) {
-		if (rowList == null || rowList.size() == 0) return null;
-		if (requestedType.equals(String.class)) 	return DataUtils.convertData(rowList);
+		if (requestedType.equals(String.class))
+			return DataUtils.convertData(rowList);
+
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {		return DataUtils.convertData(rowList);	};
+			JSONResult res = () -> {
+				String out = rowListAsJson();
+				return out;
+			};
 			return res;
-		}		
+		}
+
 		return rowList;
 	}
 
+	String rowListAsJson()
+	{
+		if (rowList == null || rowList.size() == 0) return "{}";
+		String primaryKey = table.getPrimaryKey().getName();
+		StringJoiner rows = new StringJoiner(",", "[","]");
+		for (CyRow row : rowList)
+			rows.add("\""+row.getRaw(primaryKey).toString()+"\"");
+
+		return "{\"table\":"+table.getSUID()+", \"rows\": "+rows.toString()+"}";
+	}
 }

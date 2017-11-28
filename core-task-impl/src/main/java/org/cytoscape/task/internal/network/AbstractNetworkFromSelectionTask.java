@@ -70,6 +70,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	private final RenderingEngineManager renderingEngineMgr;
 	protected final CyGroupManager groupMgr;
 	protected final CyServiceRegistrar serviceRegistrar;
+	protected CySubNetwork newNet;
 
 	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
 	                                        final CyNetwork parentNetwork,
@@ -127,11 +128,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		final Set<CyNode> nodes = getNodes(parentNetwork);
 		tm.setProgress(0.2);
 
-		if (nodes.size() <= 0)
+		if (nodes.size() <= 0) // return;
 			throw new IllegalArgumentException("No nodes are selected.");
 
 		// create subnetwork and add selected nodes and appropriate edges
-		final CySubNetwork newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
+		newNet = rootNetMgr.getRootNetwork(parentNetwork).addSubNetwork();
 		
 		//We need to cpy the columns to local tables, since copying them to default table will duplicate the virtual columns.
 		addColumns(parentNetwork.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS), newNet.getTable(CyNode.class, CyNetwork.LOCAL_ATTRS));
@@ -184,9 +185,11 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 		
 		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager,
+			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager, networkManager,
 				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView,
 				                        serviceRegistrar);
+		insertTasksAfterCurrentTask(createViewTask);
+		/*
 		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {
 			@Override
 			@SuppressWarnings("unchecked")
@@ -197,18 +200,18 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 				
 				if (!createdViews.isEmpty()) {
 					CyNetworkView nv = createdViews.get(createdViews.size() - 1);
+
 					if (nv != null) {
-						appMgr.setCurrentNetworkView(nv);
-						// Temporary workaround.  Since setting the current network view only
-						// changes the current network if we're on the EDT -- BUG!!! --
-						// change it explicitly here
-						appMgr.setCurrentNetwork(nv.getModel());
+						insertTasksAfterCurrentTask(new RegisterNetworkTask(nv, null, networkManager, vmMgr, appMgr, networkViewManager));
+						return;
 					}
 				}
+				insertTasksAfterCurrentTask(new RegisterNetworkTask(newNet, networkManager, vmMgr, appMgr, networkViewManager));
 				
 				tm.setProgress(1.0);
 			}
 		});
+		*/
 		
 		tm.setProgress(1.0);
 	}
