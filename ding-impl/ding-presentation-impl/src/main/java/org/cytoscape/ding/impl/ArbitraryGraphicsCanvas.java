@@ -37,6 +37,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -109,8 +110,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	/**
 	 * Our implementation of add
 	 */
-        @Override
-	public Component add(Component component) {
+	private Component addInternal(Component component) {
 		// Make sure to position the component
 		final double[] nodeCanvasCoordinates = new double[2];
 		nodeCanvasCoordinates[0] = component.getX();
@@ -123,26 +123,65 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// add to map
 		m_componentToPointMap.put(component, nodePos);
 
+		return super.add(component);
+	}
+    
+    /**
+	 * Our implementation of add
+	 */
+    @Override
+	public Component add(Component component) {
+    		Component c = addInternal(component);
 		// do our stuff
-		Component c = super.add(component);
-
 		contentChanged();
-
 		return c;
 	}
+    
+    /**
+	 * Our implementation of add
+	 */
+	public void addAll(Collection<Component> components) {
+		components.forEach(this::addInternal);
+		// call contentChanged ONCE!!!
+		contentChanged();
+	}
+	
+	/**
+	 * Our implementation of add
+	 */
+	public void addAnnotations(Collection<DingAnnotation> annotations) {
+		annotations.stream().map(DingAnnotation::getComponent).forEach(this::addInternal);
+		// call contentChanged ONCE!!!
+		contentChanged();
+	}
 
+
+	private void removeInternal(Component component) {
+		m_componentToPointMap.remove(component);
+		super.remove(component);
+	}
+        
 	/**
 	 * Our implementation of remove
 	 */
 	@Override
 	public void remove(Component component) {
-		m_componentToPointMap.remove(component);
-
-		super.remove(component);
-
+		removeInternal(component);
 		contentChanged();
 	}
-        
+	
+	
+	public void removeAll(Collection<Component> components) {
+		components.forEach(this::removeInternal);
+		// call contentChanged ONCE!!!
+		contentChanged();
+	}
+	
+	
+	public void removeAnnotations(Collection<DingAnnotation> annotations) {
+		annotations.stream().map(DingAnnotation::getComponent).forEach(this::removeInternal);
+		contentChanged();
+	}
 	/**
 	 * Our implementation of ViewportChangeListener.
 	 */

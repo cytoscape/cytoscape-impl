@@ -1,9 +1,6 @@
 package org.cytoscape.model;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -20,6 +17,7 @@ import org.cytoscape.model.internal.CyRootNetworkImpl;
 import org.cytoscape.model.internal.CyTableFactoryImpl;
 import org.cytoscape.model.internal.CyTableImpl;
 import org.cytoscape.model.internal.CyTableManagerImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.junit.After;
@@ -110,9 +108,9 @@ public class CyTableManagerTest extends AbstractCyTableManagerTest {
 	public void tableWithVirtColumnDeletionTest() {
 		final Interpreter interpreter = new InterpreterImpl();
 		CyTable table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-				eventHelper, interpreter, 1000);
+				eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 		CyTable table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, true, true, SavePolicy.SESSION_FILE,
-				eventHelper, interpreter, 1000);
+				eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 
 		table.createColumn("x", Long.class, false);
 		CyColumn column = table.getColumn("x");

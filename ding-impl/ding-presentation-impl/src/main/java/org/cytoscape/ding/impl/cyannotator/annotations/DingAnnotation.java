@@ -34,11 +34,12 @@ import java.util.UUID;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
+import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 
 
 public interface DingAnnotation extends Annotation {
@@ -49,7 +50,7 @@ public interface DingAnnotation extends Annotation {
 	public void setCanvas(String canvas);
 	public void changeCanvas(String canvas);
 	public CyNetworkView getNetworkView();
-	public JComponent getCanvas();
+	public ArbitraryGraphicsCanvas getCanvas();
 
 	public JComponent getComponent();
 	public void addComponent(JComponent canvas);

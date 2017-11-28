@@ -1,5 +1,8 @@
 package org.cytoscape.command.internal.available.dummies;
 
+import java.util.Collection;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Command Executor Impl (command-executor-impl)
@@ -23,10 +26,10 @@ package org.cytoscape.command.internal.available.dummies;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import org.cytoscape.model.*;
-import java.util.Collection;
-import java.util.List;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SavePolicy;
 
 public class DummyTable implements CyTable {
 
@@ -57,4 +60,5 @@ public class DummyTable implements CyTable {
 	public void setSavePolicy(SavePolicy policy) {}
 	public void swap(CyTable otherTable) {}
 	public boolean deleteRows(Collection<?> primaryKeys) { return false; }
+	public <T> Collection<T> getMatchingKeys(String columnName, Object value, Class<T> type) { return null; }
 }

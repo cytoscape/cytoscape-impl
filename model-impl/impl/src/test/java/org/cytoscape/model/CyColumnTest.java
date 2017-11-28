@@ -4,6 +4,7 @@ import org.cytoscape.equations.Interpreter;
 import org.cytoscape.equations.internal.interpreter.InterpreterImpl;
 import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.model.internal.CyTableImpl;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.junit.Before;
 
 /*
@@ -43,6 +44,6 @@ public class CyColumnTest extends AbstractCyColumnTest{
 	@Before
 	public void setUp (){
 		table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
-				eventHelper, interpreter, 1000);
+				eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 	}
 }

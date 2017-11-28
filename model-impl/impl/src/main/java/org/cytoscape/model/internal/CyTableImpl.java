@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -57,6 +56,8 @@ import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.model.events.TablePrivacyChangedEvent;
 import org.cytoscape.model.events.TableTitleChangedEvent;
+import org.cytoscape.model.internal.column.ColumnData;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -66,7 +67,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Set<String> currentlyActiveAttributes;
-	private Map<String, Map<Object, Object>> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.
+	private Map<String, ColumnData> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.
 	private Map<Object, CyRow> rows; // Maps the primary key to CyRow.
 	private Map<String, CyColumn> types;
 	private ArrayList<CyColumn> colList; //Stores the list of columns in the table
@@ -89,6 +90,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	// name of the primary key column
 	private String primaryKey;
+	private 	Class<?> primaryKeyType;
+	private final ColumnDataFactory columnFactory;
 
 	private final CyEventHelper eventHelper;
 	private final Interpreter interpreter;
@@ -113,29 +116,32 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 						final boolean isMutable,
 						SavePolicy savePolicy,
 						final CyEventHelper eventHelper,
+						ColumnDataFactory columnFactory,
 						final Interpreter interpreter,
 						final int defaultInitSize) {
 		this.title = title;
 		this.primaryKey = primaryKey;
+		this.primaryKeyType = primaryKeyType;
 		this.pub = pub;
 		this.isImmutable = !isMutable;
 		this.suid = Long.valueOf(SUIDFactory.getNextSUID());
 		this.eventHelper = eventHelper;
+		this.columnFactory = columnFactory;
 		this.interpreter = interpreter;
 		this.savePolicy = savePolicy;
 		this.fireEvents = false;
 		this.defaultInitSize = defaultInitSize;
 
-		currentlyActiveAttributes = new HashSet<String>();
-		attributes = new HashMap<String, Map<Object, Object>>();
+		currentlyActiveAttributes = new HashSet<>();
+		attributes = new HashMap<>();
 		
-		rows = new ConcurrentHashMap<Object, CyRow>(defaultInitSize, 0.5f, 2);
-		types = new ConcurrentHashMap<String, CyColumn>(16, 0.75f, 2);
-		colList = new ArrayList<CyColumn>();
-		rowList = new ArrayList<CyRow>();
+		rows = new ConcurrentHashMap<>(defaultInitSize, 0.5f, 2);
+		types = new ConcurrentHashMap<>(16, 0.75f, 2);
+		colList = new ArrayList<>();
+		rowList = new ArrayList<>();
 		
-		dependents = new HashMap<String, Set<CyColumn>>();
-		normalizedColumnNames = new HashMap<String, String>();
+		dependents = new HashMap<>();
+		normalizedColumnNames = new HashMap<>();
 		
 		VirtualColumnInfo virtualInfo = NonVirtualColumnInfo.create(true);
 		final String normalizedPKName = normalizeColumnName(primaryKey);
@@ -150,12 +156,18 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		colList.add(getColumn(normalizedPKName));
 		// Using a ConcurrentHashMap for attributes because this speeds up initial access times
 		// for getMatchingRows()
-		attributes.put(normalizedPKName, new HashMap<Object, Object>(defaultInitSize));
+		
+		// MKTODO (this is very strange, why is the primary key column implemented as a map???)
+		attributes.put(normalizedPKName, columnFactory.create(primaryKeyType, primaryKeyType, null, defaultInitSize));
 
-		virtualColumnMap = new HashMap<String, VirtualColumn>();
+		virtualColumnMap = new HashMap<>();
 	}
 
 
+	void clearDuplicateStringCache() {
+		
+	}
+	
 	@Override
 	public void swap(final CyTable otherTable) {
 		synchronized (lock) {
@@ -165,7 +177,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			currentlyActiveAttributes = other.currentlyActiveAttributes;
 			other.currentlyActiveAttributes = tempCurrentlyActiveAttributes;
 	
-			final Map<String, Map<Object, Object>> tempAttributes = attributes;
+			final Map<String, ColumnData> tempAttributes = attributes;
 			attributes = other.attributes;
 			other.attributes = tempAttributes;
 	
@@ -231,7 +243,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			String normalizedOldColName = normalizeColumnName(oldColumnName);
 			String normalizedNewColName = normalizeColumnName(newColumnName);
-			final Map<Object, Object> keyValuePairs = attributes.get(normalizedOldColName);
+			final ColumnData keyValuePairs = attributes.get(normalizedOldColName);
 			if (keyValuePairs != null) {
 				attributes.remove(normalizedOldColName);
 				attributes.put(normalizedNewColName, keyValuePairs);
@@ -439,7 +451,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							                              /* isPrimaryKey = */ false,
 							                              isImmutable,
 							                              defaultValue));
-			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, type, null, defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 		
@@ -479,7 +491,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 							       /* isPrimaryKey = */ false,
 							       isImmutable,
 								   defaultValue));
-			attributes.put(normalizedColName, new HashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedColName, columnFactory.create(primaryKeyType, List.class, listElementType, defaultInitSize));
 			colList.add(types.get(normalizedColName));
 		}
 
@@ -562,22 +574,31 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				return virtColumn.getMatchingRows(value);
 	
 			if (normalizedColName.equals(normalizeColumnName(primaryKey))) {
-				final ArrayList<CyRow> matchingRows = new ArrayList<CyRow>(1);
 				final CyRow matchingRow = rows.get(value);
-				if (matchingRow != null)
-					matchingRows.add(matchingRow);
-				return matchingRows;
+				return matchingRow == null ? Collections.emptyList() : Collections.singletonList(matchingRow);
 			}
 			
-			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-			final ArrayList<CyRow> matchingRows = new ArrayList<CyRow>(rows.size());
-			
-			for(Entry<Object, Object> entry: keyToValueMap.entrySet()) {
-				if(entry.getValue().equals(value))
-					matchingRows.add(rows.get(entry.getKey()));
-			}
+			final ColumnData keyToValueMap = attributes.get(normalizedColName);
+			return keyToValueMap.getMatchingRows(rows, value);
+		}
+	}
 	
-			return matchingRows;
+	@Override
+	public <T> Collection<T> getMatchingKeys(String columnName, Object value, Class<T> type) {
+		synchronized (lock) {
+			final String normalizedColName = normalizeColumnName(columnName);
+			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			
+			if (virtColumn != null)
+				return virtColumn.getMatchingKeys(value, type);
+	
+			if (normalizedColName.equals(normalizeColumnName(primaryKey))) {
+				final CyRow matchingRow = rows.get(value);
+				return matchingRow == null ? Collections.emptyList() : Collections.singletonList(type.cast(value));
+			}
+			
+			final ColumnData keyToValueMap = attributes.get(normalizedColName);
+			return keyToValueMap.getMatchingKeys(value, type);
 		}
 	}
 
@@ -590,8 +611,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (virtColumn != null)
 				return virtColumn.countMatchingRows(value);
 			
-			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
-			return Collections.frequency(keyToValueMap.values(), value);
+			final ColumnData keyToValueMap = attributes.get(normalizedColName);
+			return keyToValueMap.countMatchingRows(value);
 		}
 	}
 
@@ -626,7 +647,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				newValue = virtColumn.getValue(key);
 				newRawValue = virtColumn.getRawValue(key);
 			} else {
-				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+				ColumnData keyToValueMap = attributes.get(normalizedColName);
 
 				if (!columnType.isAssignableFrom(value.getClass())
 				    && !EqnSupport.scalarEquationIsCompatible(value, columnType))
@@ -689,7 +710,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				fireVirtualColumnRowSetEvent(table2, key, dependent.getName(), newValue, newRawValue, seen);
 			} else {
 				String normalizedTargetJoinKey = table2.normalizeColumnName(targetJoinKey);		
-				Map<Object, Object> keyToValueMap = table2.attributes.get(normalizedTargetJoinKey);
+				ColumnData keyToValueMap = table2.attributes.get(normalizedTargetJoinKey);
 				if(keyToValueMap != null) {
 					for (Object key2: keyToValueMap.keySet()) {
 						if (keyToValueMap.get(key2).equals(key)) {
@@ -717,7 +738,8 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				final List list = (List)value;
 				if (!list.isEmpty())
 					checkType(list.get(0));
-				rawValue = new CyListImpl(type, new ArrayList(list), eventHelper, row, column, this);
+				List<?> listData = columnFactory.createList(type, list);
+				rawValue = new CyListImpl(type, listData, eventHelper, row, column, this);
 			} else if (!(value instanceof Equation)) {
 				throw new IllegalArgumentException("value is a " + value.getClass().getName()
 								   + " and not a List for column '"
@@ -736,7 +758,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				virtColumn.setValue(key, rawValue);
 				newValue = virtColumn.getListValue(key);
 			} else {
-				Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+				ColumnData keyToValueMap = attributes.get(normalizedColName);
 
 				// TODO this is an implicit addRow - not sure if we want to refactor this or not
 				keyToValueMap.put(key, rawValue);
@@ -766,7 +788,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (virtColumn != null)
 				virtColumn.setValue(key, null);
 			else {
-				final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+				final ColumnData keyToValueMap = attributes.get(normalizedColName);
 				if (!types.containsKey(normalizedColName) || keyToValueMap == null)
 					throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
 
@@ -801,7 +823,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (virtColumn != null)
 				return virtColumn.getRawValue(key);
 			
-			final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+			final ColumnData keyToValueMap = attributes.get(normalizedColName);
 			if (keyToValueMap == null)
 				return null;
 			
@@ -927,7 +949,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			if (virtColumn != null) {
 				return virtColumn.getRawValue(key) != null;
 			} else {
-				final Map<Object, Object> keyToValueMap = attributes.get(normalizedColName);
+				final ColumnData keyToValueMap = attributes.get(normalizedColName);
 				
 				return keyToValueMap != null && keyToValueMap.get(key) != null;
 			}
@@ -1005,7 +1027,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 			final String normalizedTargetName = normalizeColumnName(targetName);
 			types.put(normalizedTargetName, targetColumn);
-			attributes.put(normalizedTargetName, new HashMap<Object, Object>(defaultInitSize));
+			attributes.put(normalizedTargetName, columnFactory.create(primaryKeyType, sourceColumn.getType(), sourceColumn.getListElementType(), defaultInitSize));
 			virtualColumnMap.put(normalizedTargetName, virtualColumn);
 			colList.add(types.get(normalizedTargetName));
 		}
@@ -1110,10 +1132,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		synchronized(lock) {
 			// collect the attribute maps for the columns, faster to normalize column names outside the main loop
 			Collection<CyColumn> columns = getColumns();
-			List<Map<?,?>> attributeMaps = new ArrayList<>(columns.size());
+			List<ColumnData> attributeMaps = new ArrayList<>(columns.size());
 			for(CyColumn col : columns) {
 				final String normalizedColName = normalizeColumnName(col.getName());
-				final Map<?,?> keyToValueMap = attributes.get(normalizedColName);
+				final ColumnData keyToValueMap = attributes.get(normalizedColName);
 				if(keyToValueMap != null) {
 					attributeMaps.add(keyToValueMap);
 				}
@@ -1128,7 +1150,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				CyRow row = rows.remove(key);
 				if (row != null) {
 					rowsToRemoveFromList.add(row);
-					for(Map<?,?> keyToValueMap : attributeMaps) {
+					for(ColumnData keyToValueMap : attributeMaps) {
 						keyToValueMap.remove(key);
 					}
 					changed = true;

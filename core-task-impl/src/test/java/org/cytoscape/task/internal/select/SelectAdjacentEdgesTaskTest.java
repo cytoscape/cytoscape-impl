@@ -32,7 +32,6 @@ import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -52,9 +51,9 @@ public class SelectAdjacentEdgesTaskTest extends AbstractSelectTaskTester {
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);
 		
-		Set<CyRow> selectedNodes = new HashSet<CyRow>();
-		selectedNodes.add(r3);
-		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
+		Set<Long> selectedNodes = new HashSet<>();
+		selectedNodes.add(r3.get(CyNetwork.SUID, Long.class));
+		when(nodeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedNodes);
 		
 
 		List<CyEdge> el = new ArrayList<CyEdge>();
