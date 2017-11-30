@@ -4,8 +4,9 @@ import java.util.List;
 
 import javax.script.ScriptEngineManager;
 
-import org.apache.felix.gogo.commands.Argument;
-import org.apache.felix.gogo.commands.Command;
+//import org.apache.felix.gogo.commands.Argument;
+import org.apache.karaf.shell.commands.*;
+//import org.apache.felix.gogo.commands.Command;
 import org.apache.karaf.shell.console.OsgiCommandSupport;
 import org.cytoscape.scripting.internal.ExecuteScriptCommandTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
