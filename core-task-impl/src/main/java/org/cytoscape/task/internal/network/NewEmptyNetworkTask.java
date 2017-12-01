@@ -291,7 +291,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			JSONResult res = () -> {if (subNetwork == null)
 				return "{}";
 			else {
-				return ""+subNetwork.getSUID();
+				return "{\"network\":"+subNetwork.getSUID()+"}";
 			}};
 			return res;
 		}

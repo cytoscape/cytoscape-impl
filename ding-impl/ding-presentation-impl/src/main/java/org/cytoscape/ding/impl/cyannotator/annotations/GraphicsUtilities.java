@@ -243,7 +243,7 @@ class GraphicsUtilities {
             final int type = i.currentSegment(nums);
             switch (type) {
                 case PathIterator.SEG_CLOSE:
-                    buffer.append("Z");
+                    buffer.append("Z ");
                     break;
                 case PathIterator.SEG_MOVETO:
                     buffer.append("M ");
@@ -301,6 +301,10 @@ class GraphicsUtilities {
             i++; // move past the command
             if (cmd.equalsIgnoreCase("z")) {
                 path.closePath();
+            } else if (cmd.equalsIgnoreCase("zm")) {
+                path.closePath();
+                i += parseDoubles(pieces, i, 2, nums);
+                path.moveTo(nums[0], nums[1]);
             } else if (cmd.equalsIgnoreCase("eo")) {
               path.setWindingRule(Path2D.WIND_EVEN_ODD);
             } else if (cmd.equalsIgnoreCase("nz")) {

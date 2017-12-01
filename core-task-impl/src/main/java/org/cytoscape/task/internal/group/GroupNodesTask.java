@@ -132,7 +132,7 @@ public class GroupNodesTask extends AbstractTask implements ObservableTask {
 			CyJSONUtil jsonUtil = serviceRegistrar.getService(CyJSONUtil.class);
 			JSONResult res = () -> { 
 				if (newGroup == null) return "{}";
-				return newGroup.getGroupNode().getSUID()+"";
+				return "{\"group\":"+newGroup.getGroupNode().getSUID()+"}";
 				/*
 				String val = "{\"group\":"+newGroup.getGroupNode().getSUID();
 				List<CyNode> nodes = newGroup.getNodeList();

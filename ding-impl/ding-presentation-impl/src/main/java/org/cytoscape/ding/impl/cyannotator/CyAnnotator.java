@@ -23,12 +23,25 @@ package org.cytoscape.ding.impl.cyannotator;
  * #L%
  */
 
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-// import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-// import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import java.awt.Component;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.UUID;
 
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import javax.swing.SwingUtilities;
+
+import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
@@ -37,33 +50,14 @@ import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseMotionListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseWheelListener;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
-
-import java.awt.Component;
-
-import java.awt.geom.Point2D;
-
-import javax.swing.SwingUtilities;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.UUID;
-
+import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+// import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+// import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.Task;
-
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.InnerCanvas;
-
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 
 
 public class CyAnnotator {
@@ -327,9 +321,26 @@ public class CyAnnotator {
 		annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
 		updateNetworkAttributes(view.getModel());
 	}
+	
+	public void addAnnotations(Collection<? extends Annotation> annotations) {
+		for(Annotation annotation : annotations) {
+			if(annotation instanceof DingAnnotation) {
+				DingAnnotation dingAnnotation = (DingAnnotation)annotation;
+				annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
+			}
+		}
+		updateNetworkAttributes(view.getModel());
+	}
 
 	public void removeAnnotation(Annotation annotation) {
 		annotationMap.remove((DingAnnotation)annotation);
+		updateNetworkAttributes(view.getModel());
+	}
+	
+	public void removeAnnotations(Collection<? extends Annotation> annotations) {
+		for(Annotation annotation : annotations) {
+			annotationMap.remove((DingAnnotation)annotation);
+		}
 		updateNetworkAttributes(view.getModel());
 	}
 

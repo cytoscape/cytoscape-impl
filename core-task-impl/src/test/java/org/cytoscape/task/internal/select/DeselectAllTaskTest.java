@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
@@ -46,15 +45,15 @@ public class DeselectAllTaskTest extends AbstractSelectTaskTester {
 	public void testRun() throws Exception {
 		UndoSupport undoSupport = mock(UndoSupport.class);
 
-		Set<CyRow> selectedEdges = new HashSet<CyRow>();
-		selectedEdges.add(r1);
-		selectedEdges.add(r2);
-		when(edgeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedEdges);
+		Set<Long> selectedEdges = new HashSet<>();
+		selectedEdges.add(r1.get(CyNetwork.SUID, Long.class));
+		selectedEdges.add(r2.get(CyNetwork.SUID, Long.class));
+		when(edgeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedEdges);
 		
-		Set<CyRow> selectedNodes = new HashSet<CyRow>();
-		selectedNodes.add(r3);
-		selectedNodes.add(r4);
-		when(nodeTable.getMatchingRows(CyNetwork.SELECTED, true)).thenReturn(selectedNodes);
+		Set<Long> selectedNodes = new HashSet<>();
+		selectedNodes.add(r3.get(CyNetwork.SUID, Long.class));
+		selectedNodes.add(r4.get(CyNetwork.SUID, Long.class));
+		when(nodeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedNodes);
 		
 		// run the task
 		Task t = new DeselectAllTask(undoSupport, net, networkViewManager, eventHelper);

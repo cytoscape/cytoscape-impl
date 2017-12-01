@@ -208,6 +208,11 @@ public abstract class AbstractTableFacade implements CyTable {
 	public Collection<CyRow> getMatchingRows(String columnName, Object value) {
 		return getFacadeRows(actual.getMatchingRows(columnName,value));
 	}
+	
+	@Override
+	public <T> Collection<T> getMatchingKeys(String columnName, Object value, Class<T> type) {
+		return actual.getMatchingKeys(columnName, value, type);
+	}
 
 	private final List<CyRow> getFacadeRows(final Collection<CyRow> rows) {
 		final List<CyRow> frows = new ArrayList<>(rows.size());

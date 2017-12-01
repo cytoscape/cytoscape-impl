@@ -256,7 +256,18 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = registrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+				String result = "{\"nodes\":";
+				if (selectedNodes == null || selectedNodes.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(selectedNodes);
+
+				result += ", \"edges\":";
+				if (selectedEdges == null || selectedEdges.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(selectedEdges);
+				return result+"}";
 			}};
 			return res;
 		}

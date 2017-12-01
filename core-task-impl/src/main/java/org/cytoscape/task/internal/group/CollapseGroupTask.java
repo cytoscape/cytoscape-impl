@@ -33,13 +33,14 @@ import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
 import org.cytoscape.task.internal.utils.DataUtils;
 
-public class CollapseGroupTask extends AbstractGroupTask {
+public class CollapseGroupTask extends AbstractGroupTask implements ObservableTask {
 	private List<CyGroup> groups;
 	private boolean collapse;
 
@@ -73,6 +74,11 @@ public class CollapseGroupTask extends AbstractGroupTask {
 
 		if (groups == null)
 			groups = getGroupList(tm, groupList);
+
+		if (groups == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "Can't find group "+groupList);
+			return;
+		}
 
 		tm.setProgress(0.0);
 		int collapsed = 0;
@@ -109,9 +115,12 @@ public class CollapseGroupTask extends AbstractGroupTask {
 			}
 		}
 		if (requestedType.equals(JSONResult.class))  
-			{ JSONResult res = () -> { return "["+getGroupSetString(groups)+"]"; };
+		{ 
+			JSONResult res = () -> { 
+				return "{\"groups\": ["+getGroupSetString(groups)+"]}"; 
+			};
 			return res;
-			}
+		}
 		return null;
 	}
 

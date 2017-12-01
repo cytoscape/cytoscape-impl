@@ -50,6 +50,7 @@ import org.cytoscape.util.json.CyJSONUtil;
 public class GetValueTask extends AbstractTableDataTask implements ObservableTask {
 	final CyApplicationManager appMgr;
 	Object resultValue = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public TableTunable tableTunable = null;
@@ -68,7 +69,7 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = tableTunable.getTable();
+		table = tableTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
@@ -130,7 +131,12 @@ public class GetValueTask extends AbstractTableDataTask implements ObservableTas
 		if (resultValue == null) return null;
 		if (requestedType.equals(String.class)) 	return DataUtils.convertData(resultValue);
 		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {	return DataUtils.convertDataJSON(resultValue); };
+			JSONResult res = () -> {	
+				return "{ \"table\": "+table.getSUID()+
+				       ", \"column\":"+column+
+							 ", \"row\":"+keyValue+
+							 " \"value\":"+DataUtils.convertDataJSON(resultValue)+"}"; 
+			};
 			return res;
 		}
 		return resultValue;

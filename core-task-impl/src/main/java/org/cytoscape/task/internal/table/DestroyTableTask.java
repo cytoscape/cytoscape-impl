@@ -87,7 +87,7 @@ public class DestroyTableTask extends AbstractTableDataTask implements Observabl
 			JSONResult res = () -> { 
 				if (tableSUID < 0L)
 					return "{}";
-				return ""+tableSUID;
+				return "{\"table\":"+tableSUID+"}";
 			};
 			return res;
 			}

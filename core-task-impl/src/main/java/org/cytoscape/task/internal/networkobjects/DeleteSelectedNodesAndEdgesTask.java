@@ -157,7 +157,8 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+				return "{\"nodes\":"+cyJSONUtil.cyIdentifiablesToJson(selectedNodes)+
+				       ", \"edges\":"+cyJSONUtil.cyIdentifiablesToJson(selectedEdges)+"}";
 			}};
 			return res;
 		}

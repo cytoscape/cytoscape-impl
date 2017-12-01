@@ -12,7 +12,10 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.SavePolicy;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 
 /*
  * #%L
@@ -43,16 +46,18 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * {@link CyTable} objects.  This factory will be
  * provided as a service through Spring/OSGi.
  */
-public class CyTableFactoryImpl implements CyTableFactory {
+public class CyTableFactoryImpl implements CyTableFactory, SessionLoadedListener {
 	
 	private final CyEventHelper eventHelper;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final WeakEventDelegator eventDelegator; 
+	private final ColumnDataFactory columnFactory;
 
 	public CyTableFactoryImpl(final CyEventHelper eventHelper, final CyServiceRegistrar serviceRegistrar) {
 		this.eventHelper = eventHelper;
 		this.serviceRegistrar = serviceRegistrar;
 		this.eventDelegator = new WeakEventDelegator();
+		this.columnFactory = ColumnDataFactory.createDefaultFactory();
 		this.serviceRegistrar.registerService(eventDelegator, TableAddedListener.class, new Properties());
 	}
 
@@ -66,7 +71,7 @@ public class CyTableFactoryImpl implements CyTableFactory {
 	public CyTable createTable(final String name, final String primaryKey, final Class<?> primaryKeyType,
 			final boolean pub, final boolean isMutable, final CyTableFactory.InitialTableSize size) {
 		final CyTableImpl table = new CyTableImpl(name, primaryKey, primaryKeyType, pub, isMutable,
-				SavePolicy.SESSION_FILE, eventHelper, serviceRegistrar.getService(Interpreter.class), size.getSize());
+				SavePolicy.SESSION_FILE, eventHelper, columnFactory, serviceRegistrar.getService(Interpreter.class), size.getSize());
 		eventDelegator.addListener(table);
 		
 		return table;
@@ -89,5 +94,10 @@ public class CyTableFactoryImpl implements CyTableFactory {
 					l.handleEvent(e);
 			}
 		}
+	}
+
+	@Override
+	public void handleEvent(SessionLoadedEvent e) {
+		columnFactory.clearCache();
 	}
 }

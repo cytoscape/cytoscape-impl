@@ -263,8 +263,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	@Override
-	public JComponent getCanvas() {
-		return (JComponent)canvas;
+	public ArbitraryGraphicsCanvas getCanvas() {
+		return canvas;
 	}
 
 	public JComponent getComponent() {
