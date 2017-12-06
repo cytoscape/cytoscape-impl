@@ -87,8 +87,8 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 		this.serviceRegistrar = serviceRegistrar;
 
-		visualStyles = new HashSet<VisualStyle>();
-		network2VisualStyleMap = new WeakHashMap<CyNetworkView, VisualStyle>();
+		visualStyles = new HashSet<>();
+		network2VisualStyleMap = new WeakHashMap<>();
 
 		this.defaultStyle = buildGlobalDefaultStyle(factory);
 		this.visualStyles.add(defaultStyle);
@@ -186,7 +186,7 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 			setCurrentVisualStyle(getDefaultVisualStyle());
 		
 		// Use default for all views using this vs.
-		HashSet<CyNetworkView> viewsToUpdate = new HashSet<CyNetworkView>();
+		HashSet<CyNetworkView> viewsToUpdate = new HashSet<>();
 		synchronized (lock) {
 			if (network2VisualStyleMap.values().contains(vs)) {
 				for (final CyNetworkView view : network2VisualStyleMap.keySet()) {
