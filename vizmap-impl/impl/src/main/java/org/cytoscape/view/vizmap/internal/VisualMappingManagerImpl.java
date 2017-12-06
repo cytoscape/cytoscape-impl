@@ -283,7 +283,9 @@ public class VisualMappingManagerImpl implements VisualMappingManager, SetCurren
 
 	@Override
 	public Set<VisualStyle> getAllVisualStyles() {
-		return visualStyles;
+		synchronized (lock) {
+			return new HashSet<>(visualStyles);
+		}
 	}
 
 	@Override
