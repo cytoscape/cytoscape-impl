@@ -114,15 +114,12 @@ public class NodeChangeListener implements ViewChangedListener, SessionLoadedLis
 						updateGroupLocation(networkView, nodeView);
 					} catch (Exception ee) { ee.printStackTrace(); }
 				}
-
-				if (nodes.contains(node)) {
 					// System.out.println("It's a node: "+node);
 					try {
 					updateNodeLocation(networkView, nodeView);
 					} catch (Exception ee) { ee.printStackTrace(); }
 				}
 			}
-		}
 		
 		final CyEventHelper cyEventHelper = cyGroupManager.getService(CyEventHelper.class);
 		cyEventHelper.flushPayloadEvents(); // Do we need to update the view?
