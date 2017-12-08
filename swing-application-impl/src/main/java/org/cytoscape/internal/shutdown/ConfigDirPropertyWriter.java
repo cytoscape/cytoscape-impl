@@ -57,6 +57,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 	public void handleEvent(final CyShutdownEvent event) {
 		for (final Map.Entry<CyProperty<?>, Map<?, ?>> keyAndValue : configDirProperties.entrySet()) {
 			final String propertyName = (String) keyAndValue.getValue().get("cyPropertyName");
+			if (propertyName == null || propertyName.isEmpty()) continue;
 			final String propertyFileName;
 
 			if (propertyName.endsWith(".props"))
