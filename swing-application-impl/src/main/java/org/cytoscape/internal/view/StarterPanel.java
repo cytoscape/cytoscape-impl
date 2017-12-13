@@ -84,8 +84,8 @@ public class StarterPanel extends JPanel {
 	
 	public static String NAME = "__STARTER_PANEL__";
 	
-	public static final String TUTORIAL_URL = "http://opentutorials.cgl.ucsf.edu/index.php/Portal:Cytoscape3";
-	public static final String NEWS_URL = "http://cytoscape-publications.tumblr.com/";
+	public static final String TUTORIAL_URL = "http://tutorials.cytoscape.org";
+	public static final String NEWS_URL = "http://cytoscape-publications.tumblr.com";
 	
 	public final Color LIST_BG_COLOR = UIManager.getColor("Table.background");
 	public final Color LIST_FOCUS_BG_COLOR = UIManager.getColor("Table.selectionBackground");
