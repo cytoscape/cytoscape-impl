@@ -62,6 +62,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super(cyAnnotator, view, owner); 
 		if (super.name == null)
 			super.name = "GroupAnnotation_"+instanceCount;
+		this.annotations  = new ArrayList<DingAnnotation>();
 		instanceCount++;
 	}
 
@@ -71,10 +72,10 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
-	                           List<Annotation> annotations, double zoom, Window owner) {
+	                           List<Annotation> annList, double zoom, Window owner) {
 		super(cyAnnotator, view, owner);
 		this.annotations  = new ArrayList<DingAnnotation>();
-		for (Annotation a: annotations) {
+		for (Annotation a: annList) {
 			if (a instanceof DingAnnotation)
 				this.annotations.add((DingAnnotation)a);
 		}
@@ -86,6 +87,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
 	                           Map<String, String> argMap, Window owner) {
 		super(cyAnnotator, view, argMap, owner);
+		this.annotations = new ArrayList<DingAnnotation>();
 
 		// Get the UUIDs of all of the annotations
 		if (argMap.containsKey(MEMBERS)) {
@@ -98,8 +100,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				DingAnnotation a = cyAnnotator.getAnnotation(u);
 				if (a != null) {
 					// Yup, add it in to our list
-					if (annotations == null) 
-						annotations = new ArrayList<DingAnnotation>();
 					annotations.add(a);
 				}
 			}
@@ -123,7 +123,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 
 		if (member instanceof DingAnnotation) {
-			if (annotations == null) annotations = new ArrayList<DingAnnotation>();
+			// First, we need to make sure that this annotation is
+			// already registered
+			UUID memberUUID = member.getUUID();
+			if (cyAnnotator.getAnnotation(memberUUID) == null)
+				cyAnnotator.addAnnotation(member);
+			
 			DingAnnotation dMember = (DingAnnotation)member;
 			if (!annotations.contains(dMember))
 				annotations.add(dMember);
@@ -200,6 +205,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 		// Set our new location
 		setLocation((int)location.getX(), (int)location.getY());
+
+		updateBounds();
 		cyAnnotator.moveAnnotation(this);
 	}
 
@@ -226,6 +233,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.drawAnnotation(g, x, y, scaleFactor);
 		// We don't do anything ourselves since each of our
 		// children is a component
+		// Make sure to update our bounds
+		updateBounds();
 	}
 
 	final static float dash1[] = {10.0f};
@@ -234,11 +243,16 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public void paint(Graphics g) {
 		super.paint(g);
 
+		updateBounds();
+
 		Graphics2D g2=(Graphics2D)g;
 		if(isSelected()) {
-			updateBounds();
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
+			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
+		} else {
+			g2.setColor(Color.BLACK);
+			g2.setStroke(new BasicStroke(4.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
 		}
 
@@ -279,6 +293,10 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		double xMax = Double.MIN_VALUE;
 		double yMax = Double.MIN_VALUE;
 
+		if (annotations != null)
+			System.out.println("annotations.size = "+annotations.size());
+		else
+			System.out.println("annotations is null!");
 		for (DingAnnotation child: annotations) {
 			Rectangle2D childBounds = child.getComponent().getBounds().getBounds2D();
 			if (childBounds.getMinX() < xMin) xMin = childBounds.getMinX();
