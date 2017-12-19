@@ -1,10 +1,10 @@
 <blueprint default-activation="eager"
-	xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 
 	<reference id="taskManagerServiceRef" interface="org.cytoscape.work.TaskManager" />
 	<reference id="cyAppAdapterServiceRef" interface="org.cytoscape.app.CyAppAdapter" />
 
-	<command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
+	<command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.1">
 		<command name="cytoscape/script">
 			<action
 				class="org.cytoscape.scripting.internal.command.ExecuteScriptCommand">
