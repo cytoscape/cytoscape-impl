@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
@@ -123,24 +124,37 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 
 		if (member instanceof DingAnnotation) {
-			// First, we need to make sure that this annotation is
-			// already registered
-			UUID memberUUID = member.getUUID();
-			if (cyAnnotator.getAnnotation(memberUUID) == null)
-				cyAnnotator.addAnnotation(member);
-			
 			DingAnnotation dMember = (DingAnnotation)member;
+
+			// First, we need to make sure that this annotation is
+			// already registered and added to the canvas
+			if (dMember.getCanvas() != null) {
+				dMember.addComponent(dMember.getCanvas());
+			} else {
+				dMember.addComponent(cyAnnotator.getForeGroundCanvas());
+			}
+
+			dMember.update();
+
 			if (!annotations.contains(dMember))
 				annotations.add(dMember);
+
 			dMember.setGroupParent(this);
+
 			// Set the bounding box and our location
 			updateBounds();
 			setLocation((int)bounds.getX(), (int)bounds.getY());
 			setSize((int)bounds.getWidth(), (int)bounds.getHeight());
+			dMember.getCanvas().setComponentZOrder(dMember.getComponent(), 
+			                                       (int)((AbstractAnnotation)dMember).getZOrder());
 			// Now, update our Z-order
 			int z = dMember.getCanvas().getComponentZOrder(dMember.getComponent());
+			// System.out.println("Canvas = "+dMember.getCanvas());
+			// System.out.println("Component = "+((JComponent)dMember.getComponent()).toString());
 			if (z > getCanvas().getComponentZOrder(getComponent())) {
-				getCanvas().setComponentZOrder(getComponent(), z);
+				// Not sure why, but this gives me an error: 
+				//  java.lang.IllegalArgumentException: component and container should be in the same top-level window
+				// getCanvas().setComponentZOrder(getComponent(), z);
 			}
 			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
 		}
@@ -187,26 +201,39 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void moveAnnotation(Point2D location) {
-		// Get our current location
+		// Location is in "node coordinates"
+		// Get the component coordinates of our new location
+		Point2D compLocation = getComponentCoordinates(location.getX(), location.getY());
+
+		// Get our current location in component coordinates
 		Point currentLocation = getLocation();
+		Point2D current = getComponentCoordinates(currentLocation.getX(), currentLocation.getY());
 		double currentX = currentLocation.getX();
 		double currentY = currentLocation.getY();
 
 		// Calculate the delta
-		double deltaX = currentX - location.getX();
-		double deltaY = currentY - location.getY();
+		double deltaX = currentX - compLocation.getX();
+		double deltaY = currentY - compLocation.getY();
+		// System.out.println("Delta = "+deltaX+","+deltaY);
+		// System.out.println("Current = "+currentX+","+currentY);
+		// System.out.println("Location = "+compLocation.getX()+","+compLocation.getY());
 
 		for (DingAnnotation child: annotations) {
 			// Move each child to it's new location
 			Point childLocation = child.getLocation();
-			Point2D newLocation = new Point2D.Double(childLocation.getX()-deltaX, childLocation.getY()-deltaY);
-			child.moveAnnotation(newLocation);
+			// System.out.println("Moving "+child+" to "+(childLocation.getX()-deltaX)+","+(childLocation.getY()-deltaY));
+			((AbstractAnnotation)child).setLocation((int)Math.round(childLocation.getX()-deltaX), 
+			                                        (int)Math.round(childLocation.getY()-deltaY));
 		}
 
 		// Set our new location
-		setLocation((int)location.getX(), (int)location.getY());
+		setLocation((int)compLocation.getX(), (int)compLocation.getY());
 
 		updateBounds();
+
+		for (DingAnnotation child: annotations) {
+			cyAnnotator.moveAnnotation(child);
+		}
 		cyAnnotator.moveAnnotation(this);
 	}
 
@@ -244,18 +271,19 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.paint(g);
 
 		updateBounds();
-
 		Graphics2D g2=(Graphics2D)g;
 		if(isSelected()) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
-		} else {
+		} 
+		/*
+		else {
 			g2.setColor(Color.BLACK);
 			g2.setStroke(new BasicStroke(4.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
 		}
-
+		*/
 	}
 
 	@Override
@@ -287,26 +315,17 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			});
 			return;
 		}
-		// Calculate the bounding box of all of our children
-		double xMin = Double.MAX_VALUE;
-		double yMin = Double.MAX_VALUE;
-		double xMax = Double.MIN_VALUE;
-		double yMax = Double.MIN_VALUE;
 
-		if (annotations != null)
-			System.out.println("annotations.size = "+annotations.size());
-		else
-			System.out.println("annotations is null!");
+		Rectangle2D union = null;
 		for (DingAnnotation child: annotations) {
+			if (union == null)
+				union = child.getComponent().getBounds().getBounds2D();
+			else
+				union = union.createUnion(child.getComponent().getBounds().getBounds2D());
 			Rectangle2D childBounds = child.getComponent().getBounds().getBounds2D();
-			if (childBounds.getMinX() < xMin) xMin = childBounds.getMinX();
-			if (childBounds.getMaxX() > xMax) xMax = childBounds.getMaxX();
-			if (childBounds.getMinY() < yMin) yMin = childBounds.getMinY();
-			if (childBounds.getMaxY() > yMax) yMax = childBounds.getMaxY();
 		}
-		bounds = new Rectangle2D.Double(xMin-1, yMin-1, xMax-xMin+2, yMax-yMin+2);
-		getComponent().setSize((int)bounds.getWidth()+2, (int)bounds.getHeight()+2);
-		getComponent().setLocation((int)bounds.getX(), (int)bounds.getY());
+
+		bounds = union;
 	}
 
 	public Rectangle getBounds() {
