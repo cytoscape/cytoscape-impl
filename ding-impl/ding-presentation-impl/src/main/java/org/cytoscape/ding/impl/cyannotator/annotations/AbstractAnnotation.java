@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -84,6 +85,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected static final String PARENT_ID = "parent";
 
 	protected Map<String, String> savedArgMap;
+	protected double zOrder = 0;
 
 	protected final Window owner;
 
@@ -137,6 +139,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.view = view;
 		Point2D coords = getComponentCoordinates(argMap);
 		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
+		this.zOrder = getDouble(argMap, Z, 0.0);
 		if (argMap.containsKey(NAME)) {
 			this.name = argMap.get(NAME);
 		} else {
@@ -275,9 +278,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return uuid;
 	}
 
+	public double getZOrder() {
+		return zOrder;
+	}
+
 	@Override
 	public void addComponent(final JComponent cnvs) {
 		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (inCanvas(canvas) && (canvas == cnvs)) {
+				canvas.setComponentZOrder(this, (int)zOrder);
+				return;
+			}
+
 			if (cnvs == null && canvas != null) {
 	
 			} else if (cnvs == null) {
@@ -289,7 +301,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 					setCanvas(FOREGROUND);
 			}
 			canvas.add(this.getComponent());
-			canvas.setComponentZOrder(this, 0);
+			canvas.setComponentZOrder(this, (int)zOrder);
 		});
 	}
     
@@ -659,6 +671,13 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	 */
 	public Dimension adjustAspectRatio(Dimension d) {
 		return d;
+	}
+
+	public boolean inCanvas(ArbitraryGraphicsCanvas cnvs) {
+		for (Component c: cnvs.getComponents()) {
+			if (c == this) return true;
+		}
+		return false;
 	}
 
 }
