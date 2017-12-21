@@ -365,6 +365,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	private boolean servicesRegistered;
 	
 	private final HandleFactory handleFactory;
+	private final VisualMappingManager vmm;
 
 	private List<CyNode> nodeSelectionList;
 	private List<CyEdge> edgeSelectionList;
@@ -417,6 +418,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
 
 		final SpacialIndex2DFactory spacialFactory = serviceRegistrar.getService(SpacialIndex2DFactory.class);
+		vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		
 		m_spacial = spacialFactory.createSpacialIndex2D();
 		m_spacialA = spacialFactory.createSpacialIndex2D();
@@ -1686,7 +1688,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		// First paint the background
 		m_backgroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 		
-		final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
+		// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		final Set<VisualPropertyDependency<?>> dependencies =
 				vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 
@@ -1789,7 +1791,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		int lastRenderDetail = 0;
 		
 		try {
-			final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
+			// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 			final Set<VisualPropertyDependency<?>> dependencies =
 					vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 			
@@ -1817,7 +1819,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		
 		try {
 			synchronized (m_lock) {
-				final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
+				// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 				final Set<VisualPropertyDependency<?>> dependencies =
 						vmm.getVisualStyle(this).getAllVisualPropertyDependencies();
 				
