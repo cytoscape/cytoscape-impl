@@ -240,10 +240,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// going to walk our children and make sure the extents
 		// are large enought to cover them
 
-		// interate through the components
+		// iterate through the components
 		for (Component c : components) {
 			// get position of this component in network coordinates
 			Point position = m_componentToPointMap.get(c);
+			if (position == null) continue;			// AST
 
 			// Adjust, if necessary
 			if (position.getX() < currentBounds[0]) 
@@ -288,12 +289,13 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		if (components.length == 0)
 			return;
 
-		// interate through the components
+		// iterate through the components
 		for (Component c : components) {
 			// get position of this component in network coordinates
 			Point position = m_componentToPointMap.get(c);
-			int xOrig = position.x;
-			int yOrig = position.y;
+			if (position	 == null) continue;
+//			int xOrig = position.x;
+//			int yOrig = position.y;
 
 			final double[] nodeCanvasCoordinates = new double[2];
 			nodeCanvasCoordinates[0] = position.getX()+xOffset;
@@ -368,11 +370,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		if (components.length == 0 || m_componentToPointMap == null)
 			return false;
 
-		// interate through the components
+		// iterate through the components
 		for (Component c : components) {
 			// get node
 			Point node = m_componentToPointMap.get(c);
-
+			if (node == null) continue;			// AST
 			// new image coordinates
 			double[] currentNodeCoordinates = new double[2];
 			currentNodeCoordinates[0] = node.getX();

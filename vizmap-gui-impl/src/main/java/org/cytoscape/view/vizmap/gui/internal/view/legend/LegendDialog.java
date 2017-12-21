@@ -207,7 +207,7 @@ public class LegendDialog extends JDialog {
 		// This should work, but I always get an error
 		export.addExportFileType(new PDFExportFileType());
 		
-		export.showExportDialog(null, "Export legend as ...", panel, "export");
+		export.showExportDialog(null, "Export legend as ...", panel, "legend");
 		dispose();
 	}
 }
