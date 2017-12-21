@@ -56,8 +56,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 		DGraphView dView = (DGraphView) view;
 
 		if (type.equals(ShapeAnnotation.class)) {
-			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
-					getActiveWindow());
+			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView, argMap, getActiveWindow());
 			a.update();
 			
 			return (ShapeAnnotation) a;

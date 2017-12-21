@@ -57,8 +57,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
 
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
-		super(cyAnnotator, view, owner); 
+	public TextAnnotationImpl(DGraphView view, Window owner) { 
+		super(view, owner); 
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
@@ -76,9 +76,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		super.name = c.getName();
 	}
 
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
+	public TextAnnotationImpl(DGraphView view, 
 	                          int x, int y, String text, int compCount, double zoom, Window owner){
-		super(cyAnnotator, view, x, y, zoom, owner);
+		super(view, x, y, zoom, owner);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
@@ -91,8 +91,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options
-	public TextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
-		super(cyAnnotator, view, argMap, owner);
+	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
+		super(view, argMap, owner);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		this.textColor = (Color)getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");

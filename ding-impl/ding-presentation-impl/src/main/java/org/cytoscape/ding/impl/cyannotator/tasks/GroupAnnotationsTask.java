@@ -21,7 +21,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 		if (view instanceof DGraphView) {
 			DGraphView dView = (DGraphView) view;
 			CyAnnotator cyAnnotator = dView.getCyAnnotator();
-			GroupAnnotationImpl group = new GroupAnnotationImpl(cyAnnotator, dView, null);
+			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, null);
 			group.addComponent(null); // Need to add this first so we can update
 										// things appropriately
 			cyAnnotator.addAnnotation(group);

@@ -62,7 +62,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 		if (ImageAnnotation.class.equals(clazz)) {
 			final CustomGraphicsManager customGraphicsManager = serviceRegistrar
 					.getService(CustomGraphicsManager.class);
-			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
+			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView, argMap,
 					customGraphicsManager, getActiveWindow());
 			a.update();
 

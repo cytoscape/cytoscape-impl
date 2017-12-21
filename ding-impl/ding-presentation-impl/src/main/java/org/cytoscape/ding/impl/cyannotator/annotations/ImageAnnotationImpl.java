@@ -78,8 +78,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
-		super(cyAnnotator, view, 0, 0, owner);
+	public ImageAnnotationImpl(DGraphView view, Window owner) {
+		super(view, 0, 0, owner);
 		if (super.name == null)
 			super.name = "ImageAnnotation_"+instanceCount;
 		instanceCount++;
@@ -99,11 +99,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super.name = c.getName();
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
+	public ImageAnnotationImpl(DGraphView view, double x, double y, 
 	                           URL url, BufferedImage image, double zoom, 
 	                           CustomGraphicsManager customGraphicsManager,
 	                           Window owner) {
-		super(cyAnnotator, view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
+		super( view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
 		this.image=image;
 		this.customGraphicsManager = customGraphicsManager;
 		shapeWidth=image.getWidth();
@@ -119,10 +119,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		instanceCount++;
 	}
 
-	public ImageAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
+	public ImageAnnotationImpl(DGraphView view, 
 	                           Map<String, String> argMap, CustomGraphicsManager customGraphicsManager,
 	                           Window owner) {
-		super(cyAnnotator, view, argMap, owner);
+		super(view, argMap, owner);
 		this.customGraphicsManager = customGraphicsManager;
 
 		shapeWidth = getDouble(argMap, ImageAnnotation.WIDTH, 100.0);

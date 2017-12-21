@@ -59,20 +59,20 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	private static int instanceCount = 0;
 	
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
-		super(cyAnnotator, view, 100, 100, owner);
+	public BoundedTextAnnotationImpl(DGraphView view, Window owner) { 
+		super(view, 100, 100, owner);
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
-		super.setSize(getTextWidth((Graphics2D)this.getGraphics())+4, 
-		              getTextHeight((Graphics2D)this.getGraphics())+4);
+		Graphics2D graphics = (Graphics2D)this.getGraphics();
+		super.setSize(getTextWidth(graphics)+4,  getTextHeight(graphics)+4);
 		super.name = "BoundedTextAnnotation_"+instanceCount;
 		instanceCount++;
 	}
 
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height,
+	public BoundedTextAnnotationImpl(DGraphView view, double width, double height,
 			Window owner) { 
-		super(cyAnnotator, view, width, height, owner);
+		super(view, width, height, owner);
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
 		this.text = "Text Annotation";
@@ -89,13 +89,13 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		super.name = c.getName();
 	}
 
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view,
+	public BoundedTextAnnotationImpl(DGraphView view,
                                    double x, double y, ShapeType shapeType,
                                    double width, double height,
                                    Paint fillColor, Paint edgeColor,
                                    float edgeThickness, String text, int compCount, double zoom,
                                    Window owner) {
-		super(cyAnnotator, view, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness, owner);
+		super(view, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness, owner);
 		this.text=text;
 		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float)initialFontSize;
@@ -103,17 +103,17 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		instanceCount++;
 	}
 
-	public BoundedTextAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
-	                                 Map<String, String> argMap, Window owner) {
-		super(cyAnnotator, view, argMap, owner);
+	public BoundedTextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
+		super(view, argMap, owner);
 		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		this.textColor = (Color)getColor(argMap, COLOR, Color.BLACK);
 		this.text = getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
-			double width = getTextWidth((Graphics2D)this.getGraphics())+8;
-			double height = getTextHeight((Graphics2D)this.getGraphics())+8;
+			Graphics2D graphics = (Graphics2D)this.getGraphics();
+			double width = getTextWidth(graphics)+8;
+			double height = getTextHeight(graphics)+8;
 			super.setSize(width, height);
 		}
 		super.name = "BoundedTextAnnotation_"+instanceCount;
@@ -132,8 +132,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 
 	public void fitShapeToText() {
-		double width = getTextWidth((Graphics2D)this.getGraphics())+8;
-		double height = getTextHeight((Graphics2D)this.getGraphics())+8;
+		Graphics2D graphics = (Graphics2D)this.getGraphics();
+		double width = getTextWidth(graphics)+8;
+		double height = getTextHeight(graphics)+8;
 		shapeIsFit = true;
 
 		// System.out.println("Fitting shape to text: "+width+"x"+height);
@@ -142,18 +143,18 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		ShapeType shapeType = getShapeTypeInt();
 		switch (shapeType) {
 		case ELLIPSE:
-			width = getTextWidth((Graphics2D)this.getGraphics())*3/2+8;
-			height = getTextHeight((Graphics2D)this.getGraphics())*2;
+			width = getTextWidth(graphics)*3/2+8;
+			height = getTextHeight(graphics)*2;
 			break;
 		case TRIANGLE:
-			width = getTextWidth((Graphics2D)this.getGraphics())*3/2+8;
-			height = getTextHeight((Graphics2D)this.getGraphics())*2;
+			width = getTextWidth(graphics)*3/2+8;
+			height = getTextHeight(graphics)*2;
 			break;
 		case PENTAGON:
 		case HEXAGON:
 		case STAR5:
 		case STAR6:
-			width = getTextWidth((Graphics2D)this.getGraphics())*9/7+8;
+			width = getTextWidth(graphics)*9/7+8;
 			height = width;
 			break;
 		}

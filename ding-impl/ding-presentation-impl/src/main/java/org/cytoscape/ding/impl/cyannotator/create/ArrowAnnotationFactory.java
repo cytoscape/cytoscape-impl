@@ -56,8 +56,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		DGraphView dView = (DGraphView) view;
 
 		if (type.equals(ArrowAnnotation.class))
-			return (ArrowAnnotation) (new ArrowAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
-					getActiveWindow()));
+			return (ArrowAnnotation) (new ArrowAnnotationImpl(dView, argMap, getActiveWindow()));
 
 		return null;
 	}

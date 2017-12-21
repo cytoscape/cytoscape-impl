@@ -58,8 +58,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double factor = 1.0;
 	protected static int instanceCount = 0;
 
-	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double width, double height, Window owner) {
-		super(cyAnnotator, view, owner);
+	public ShapeAnnotationImpl(DGraphView view, double width, double height, Window owner) {
+		super(view, owner);
 		shapeWidth = width;
 		shapeHeight = height;
 		shapeType = ShapeType.RECTANGLE;
@@ -84,9 +84,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		instanceCount++;
 	}
 
-	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, ShapeType shapeType,
+	public ShapeAnnotationImpl(DGraphView view, double x, double y, ShapeType shapeType,
 			double width, double height, Paint fillColor, Paint edgeColor, float edgeThickness, Window owner) {
-		super(cyAnnotator, view, x, y, view.getZoom(), owner);
+		super(view, x, y, view.getZoom(), owner);
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
@@ -103,8 +103,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		instanceCount++;
 	}
 
-	public ShapeAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
-		super(cyAnnotator, view, argMap, owner);
+	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
+		super(view, argMap, owner);
 
 		this.fillColor = getColor(argMap, FILLCOLOR, null);
 		setFillColor(fillColor);

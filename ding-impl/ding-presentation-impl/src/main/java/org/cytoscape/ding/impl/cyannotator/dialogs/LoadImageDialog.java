@@ -144,15 +144,10 @@ public class LoadImageDialog extends JDialog {
 			
 			// The Attributes are x, y, Image, componentNumber, scaleFactor
 			ImageAnnotationImpl newOne = new ImageAnnotationImpl(
-					cyAnnotator,
 					view,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
-					url,
-					image,
-					view.getZoom(),
-					cgm,
-					getOwner()
+					url, image, view.getZoom(), cgm, getOwner()
 			);
 
 			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());

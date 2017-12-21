@@ -56,13 +56,10 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 		DGraphView dView = (DGraphView) view;
 		
 		if (type.equals(TextAnnotation.class)) {
-			final TextAnnotationImpl a = new TextAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
-					getActiveWindow());
+			final TextAnnotationImpl a = new TextAnnotationImpl(dView, argMap, getActiveWindow());
 			a.update();
-			
 			return (TextAnnotation) a;
-		} else {
-			return null;
 		}
+		return null;
 	}
 }

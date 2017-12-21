@@ -59,8 +59,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) { 
-		super(cyAnnotator, view, owner); 
+	public GroupAnnotationImpl(DGraphView view, Window owner) { 
+		super(view, owner); 
 		if (super.name == null)
 			super.name = "GroupAnnotation_"+instanceCount;
 		this.annotations  = new ArrayList<DingAnnotation>();
@@ -72,9 +72,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.name = c.getName();
 	}
 
-	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, double x, double y, 
+	public GroupAnnotationImpl(DGraphView view, double x, double y, 
 	                           List<Annotation> annList, double zoom, Window owner) {
-		super(cyAnnotator, view, owner);
+		super(view, owner);
 		this.annotations  = new ArrayList<DingAnnotation>();
 		for (Annotation a: annList) {
 			if (a instanceof DingAnnotation)
@@ -85,9 +85,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		instanceCount++;
 	}
 
-	public GroupAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, 
+	public GroupAnnotationImpl(DGraphView view, 
 	                           Map<String, String> argMap, Window owner) {
-		super(cyAnnotator, view, argMap, owner);
+		super(view, argMap, owner);
 		this.annotations = new ArrayList<DingAnnotation>();
 
 		// Get the UUIDs of all of the annotations

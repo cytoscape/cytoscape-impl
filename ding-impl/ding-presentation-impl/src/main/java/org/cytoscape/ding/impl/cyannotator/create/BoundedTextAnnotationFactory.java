@@ -56,8 +56,7 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 		DGraphView dView = (DGraphView) view;
 		
 		if (type.equals(BoundedTextAnnotation.class)) {
-			final BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
-					getActiveWindow());
+			final BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView, argMap, getActiveWindow());
 			a.update();
 			
 			return (BoundedTextAnnotation) a;

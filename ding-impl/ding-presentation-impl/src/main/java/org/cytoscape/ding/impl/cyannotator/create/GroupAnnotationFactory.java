@@ -55,8 +55,7 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 		DGraphView dView = (DGraphView) view;
 
 		if (type.equals(GroupAnnotation.class)) {
-			final GroupAnnotationImpl a = new GroupAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
-					getActiveWindow());
+			final GroupAnnotationImpl a = new GroupAnnotationImpl(dView, argMap, getActiveWindow());
 			a.update();
 			
 			return (GroupAnnotation) a;

@@ -122,8 +122,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	public ArrowAnnotationImpl(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
-		super(cyAnnotator, view, owner);
+	public ArrowAnnotationImpl(DGraphView view, Window owner) {
+		super(view, owner);
 		if (super.name == null)
 			super.name = "ArrowAnnotation_"+instanceCount;
 		instanceCount++;
@@ -151,7 +151,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	public ArrowAnnotationImpl(
-			CyAnnotator cyAnnotator,
 			DGraphView view,
 			DingAnnotation source,
 			Object target,
@@ -165,7 +164,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			float targetSize,
 			Window owner
 	) {
-		super(cyAnnotator, view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(),
+		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(),
 				owner);
 
 		// Line parameters
@@ -191,12 +190,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	public ArrowAnnotationImpl(
-			CyAnnotator cyAnnotator,
 			DGraphView view,
 			Map<String, String> argMap,
 			Window owner
 	) {
-		super(cyAnnotator, view, argMap, owner);
+		super(view, argMap, owner);
 
 		this.lineColor = getColor(argMap, ARROWCOLOR, Color.BLACK);
 		this.lineWidth = getFloat(argMap, ARROWTHICKNESS, 1.0f);

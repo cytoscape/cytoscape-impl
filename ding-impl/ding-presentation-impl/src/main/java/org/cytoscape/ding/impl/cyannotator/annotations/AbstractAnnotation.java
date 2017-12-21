@@ -78,7 +78,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected ArbitraryGraphicsCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
-	protected String name;
+	protected String name = null;
 
 	protected static final String ID = "id";
 	protected static final String TYPE = "type";
@@ -96,67 +96,42 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	 * to be functional, it must be added to the AnnotationManager
 	 * and setView must be called.
 	 */
-	protected AbstractAnnotation(Map<String, String> argMap, Window owner) {
-		this.owner = owner;
-		arrowList = new HashSet<>();
-		savedArgMap = argMap;
-	}
-
-	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Window owner) {
+	protected AbstractAnnotation(DGraphView view, Window owner) {
 		this.owner = owner;
 		this.view = view;
-		this.cyAnnotator = cyAnnotator;
-		arrowList = new HashSet<>();
+		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
+		arrowList = new HashSet<ArrowAnnotation>();
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = view.getZoom();
 	}
 
 	protected AbstractAnnotation(AbstractAnnotation c, Window owner) {
-		this.owner = owner;
-		this.view = c.view;
-		this.cyAnnotator = c.cyAnnotator;
-		arrowList = new HashSet<>(c.arrowList);
+		this(c.view, owner);
+		arrowList = new HashSet<ArrowAnnotation>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
 
-	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, double x, double y, double zoom,
-			Window owner) {
-		this.owner = owner;
-		this.cyAnnotator = cyAnnotator;
-		this.view = view;
-		this.globalZoom=zoom;
-		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		arrowList = new HashSet<>();
-		// super.setBackground(Color.BLUE);
+	protected AbstractAnnotation(DGraphView view, double x, double y, double zoom, Window owner) {
+		this(view, owner);
 		setLocation((int)x, (int)y);
 	}
 
-	protected AbstractAnnotation(CyAnnotator cyAnnotator, DGraphView view, Map<String, String> argMap, Window owner) {
-		this.owner = owner;
-		this.cyAnnotator = cyAnnotator;
-		this.view = view;
+	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap, Window owner) {
+		this(view, owner);
+
 		Point2D coords = getComponentCoordinates(argMap);
 		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
 		this.zOrder = getDouble(argMap, Z, 0.0);
-		if (argMap.containsKey(NAME)) {
-			this.name = argMap.get(NAME);
-		} else {
-			this.name = null;
-		}
-		String canvasString = getString(argMap, CANVAS, FOREGROUND);
+		name = argMap.containsKey(NAME) ? argMap.get(NAME) : null;
 		
+		String canvasString = getString(argMap, CANVAS, FOREGROUND);
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
-		} else {
-			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-			this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		}
 
-		arrowList = new HashSet<>();
 		setLocation((int)coords.getX(), (int)coords.getY());
 		
 		if (argMap.containsKey(ANNOTATION_ID))
@@ -166,7 +141,6 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			// See if the parent already exists
 			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
 			DingAnnotation parentAnnotation = cyAnnotator.getAnnotation(parent_uuid);
-			
 			if (parentAnnotation != null && parentAnnotation instanceof GroupAnnotation) {
 				// It does -- add ourselves to it
 				((GroupAnnotation)parentAnnotation).addMember((Annotation)this);
@@ -175,60 +149,50 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			}
 		}
 	}
-
-	public void setView(DGraphView view) {
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		this.globalZoom = view.getZoom();
-		if (savedArgMap != null) {
-			Point2D coords = getComponentCoordinates(savedArgMap);
-			this.globalZoom = Double.parseDouble(savedArgMap.get(ZOOM));
-			String canvasString = savedArgMap.get(CANVAS);
-			if (canvasString != null && canvasString.equals(BACKGROUND)) {
-				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
-				this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
-			} else {
-				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-				this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-			}
-			setLocation((int)coords.getX(), (int)coords.getY());
-			if (savedArgMap.containsKey(ANNOTATION_ID))
-				this.uuid = UUID.fromString(savedArgMap.get(ANNOTATION_ID));
-		}
-	}
+	//------------------------------------------------------------------------
+//	public void setView(DGraphView view) {
+//		this.view = view;
+//		this.cyAnnotator = view.getCyAnnotator();
+//		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+//		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
+//		this.globalZoom = view.getZoom();
+//		if (savedArgMap != null) {
+//			Point2D coords = getComponentCoordinates(savedArgMap);
+//			this.globalZoom = Double.parseDouble(savedArgMap.get(ZOOM));
+//			String canvasString = savedArgMap.get(CANVAS);
+//			if (canvasString != null && canvasString.equals(BACKGROUND)) {
+//				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
+//				this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
+//			}
+//
+//			setLocation((int)coords.getX(), (int)coords.getY());
+//			if (savedArgMap.containsKey(ANNOTATION_ID))
+//				this.uuid = UUID.fromString(savedArgMap.get(ANNOTATION_ID));
+//		}
+//	}
 		
 
 	public String toString() {
-		Map<String,String>argMap = getArgMap();
-
-		return argMap.get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
+		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
 	}
 
 	@Override
 	public String getCanvasName() {
 		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))
 			return BACKGROUND;
-		else
-			return FOREGROUND;
+		return FOREGROUND;
 	}
 
 	@Override
 	public void setCanvas(String cnvs) {
-		if (cnvs.equals(BACKGROUND)) {
-			canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
-		} else {
-			canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		}
-		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
-		for (ArrowAnnotation arrow: arrowList) {
+		canvasName = (cnvs.equals(BACKGROUND)) ? 
+				DGraphView.Canvas.BACKGROUND_CANVAS : DGraphView.Canvas.FOREGROUND_CANVAS;
+		canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
+		for (ArrowAnnotation arrow: arrowList) 
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).setCanvas(cnvs);
-		}
 
-		// Update network attributes
-		update();
+		update();		// Update network attributes
 	}
 
 	@Override
@@ -245,19 +209,12 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 						((DingAnnotation)arrow).changeCanvas(cnvs);
 				}
 			}
-
-			// Remove ourselves from the current canvas
-			canvas.remove(this);
-
-			canvas.repaint();  // update the canvas
-
-			// Set the new canvas
-			setCanvas(cnvs);
-
-			// Add ourselves
-			canvas.add(this);
-
-			canvas.repaint();  // update the canvas
+			
+			canvas.remove(this);	// Remove ourselves from the current canvas
+			canvas.repaint();  	// update the canvas
+			setCanvas(cnvs);		// Set the new canvas
+			canvas.add(this);	// Add ourselves		
+			canvas.repaint();  	// update the canvas
 		});
 	}
 
@@ -374,14 +331,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	public void setName(String name) { this.name = name; }
 
 	public double getZoom() { return globalZoom; }
-	public void setZoom(double zoom) { 
-		globalZoom = zoom; 
-	}
+	public void setZoom(double zoom) {  globalZoom = zoom;  }
       
 	public double getSpecificZoom() {return myZoom; }
-	public void setSpecificZoom(double zoom) {
-		myZoom = zoom; 
-	}
+	public void setSpecificZoom(double zoom) { myZoom = zoom;  }
 
 	public boolean isSelected() { return selected; }
 	public void setSelected(boolean selected) {
@@ -389,16 +342,11 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		cyAnnotator.setSelectedAnnotation(this, selected);
 	}
 
-	public void addArrow(ArrowAnnotation arrow) {
-		arrowList.add(arrow);
-	}
-
-	public void removeArrow(ArrowAnnotation arrow) {
-		arrowList.remove(arrow);
-	}
-
+	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); }
+	public void removeArrow(ArrowAnnotation arrow) { arrowList.remove(arrow); 	}
 	public Set<ArrowAnnotation> getArrows() { return arrowList; }
 
+	
 	@Override
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = new HashMap<String, String>();
@@ -586,9 +534,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return Integer.parseInt(argMap.get(key));
 	}
 
-	protected Double getDouble(String dValue) {
-		return Double.parseDouble(dValue);
-	}
+	protected Double getDouble(String dValue) { return Double.parseDouble(dValue); }
 
   protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
