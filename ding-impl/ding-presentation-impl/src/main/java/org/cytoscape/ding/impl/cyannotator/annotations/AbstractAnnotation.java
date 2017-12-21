@@ -473,10 +473,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
   protected String convertColor(Paint clr) {
-		if (clr == null)
-			return null;
-		if (clr instanceof Color)
-			return Integer.toString(((Color)clr).getRGB());
+		if (clr == null) 				return null;
+		if (clr instanceof Color) 		return Integer.toString(((Color)clr).getRGB());
 		if (clr instanceof LinearGradientPaint) {
 			String lg = "lingrad(";
 			LinearGradientPaint lingrad = (LinearGradientPaint)clr;
