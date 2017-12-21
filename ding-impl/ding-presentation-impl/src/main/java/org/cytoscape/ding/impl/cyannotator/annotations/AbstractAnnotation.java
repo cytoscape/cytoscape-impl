@@ -32,6 +32,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.LinearGradientPaint;
+import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RadialGradientPaint;
@@ -439,30 +440,20 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		Graphics2D g2 = (Graphics2D)g;
 
 		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-		                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 		g2.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-		                    RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 
     // High quality color rendering is ON.
-    g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-                        RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-
-		g2.setRenderingHint(RenderingHints.KEY_DITHERING,
-		                    RenderingHints.VALUE_DITHER_ENABLE);
-
-		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-		                    RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 
 		// Text antialiasing is ON.
-		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-		                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-		                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-		                    RenderingHints.VALUE_STROKE_PURE);
+		g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
 
 		if (!usedForPreviews()) {
@@ -516,8 +507,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
   }
 
 	protected String convertPoint(Point2D point) {
-		if (point == null)
-			return "";
+		if (point == null)  return "";
 		return point.getX()+","+point.getY();
 	}
 
@@ -552,6 +542,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			float[] fractions = new float[tokens.length-4];
 			Color[] colors = new Color[tokens.length-4];
 			getStops(tokens, 4, fractions, colors);
+			CycleMethod method = CycleMethod.NO_CYCLE;
+			return new RadialGradientPaint(center, radius, focus, fractions, colors, method);
 		}
 		return new Color(Integer.parseInt(strColor), true);
   }
@@ -582,9 +574,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return argMap.get(key);
 	}
 
-  protected Float getFloat(String fValue) {
-		return Float.parseFloat(fValue);
-	}
+  protected Float getFloat(String fValue) { return Float.parseFloat(fValue);	}
 
   protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
 		if (!argMap.containsKey(key) || argMap.get(key) == null)
@@ -651,9 +641,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
-
 		view.xformNodeToComponentCoords(nextLocn);
-		
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 

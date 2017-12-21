@@ -128,15 +128,15 @@ public class LegendDialog extends JDialog {
 	private void createMappingLegends(final Collection<VisualMappingFunction<?, ?>> mappings, final JPanel legend) {
 		for (VisualMappingFunction<?, ?> map : mappings) {
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
-			final JPanel mappingLenegd;
+			final JPanel mappingLegend;
 
 			if (map instanceof ContinuousMapping) {
-				mappingLenegd = new ContinuousLegendPanel(visualStyle, (ContinuousMapping) map, appMgr
+				mappingLegend = new ContinuousLegendPanel(visualStyle, (ContinuousMapping) map, appMgr
 						.getCurrentNetwork().getDefaultNodeTable(), servicesUtil);
 			} else if (map instanceof DiscreteMapping) {
-				mappingLenegd = new DiscreteLegendPanel((DiscreteMapping<?, ?>) map, servicesUtil);
+				mappingLegend = new DiscreteLegendPanel((DiscreteMapping<?, ?>) map, servicesUtil);
 			} else if (map instanceof DiscreteMapping) {
-				mappingLenegd = new PassthroughLegendPanel((PassthroughMapping<?, ?>) map, servicesUtil);
+				mappingLegend = new PassthroughLegendPanel((PassthroughMapping<?, ?>) map, servicesUtil);
 			} else {
 				continue;
 			}
@@ -144,12 +144,12 @@ public class LegendDialog extends JDialog {
 			// Add passthrough mappings to the top since they don't
 			// display anything besides the title.
 			if (map instanceof PassthroughMapping)
-				legend.add(mappingLenegd, 0);
+				legend.add(mappingLegend, 0);
 			else
-				legend.add(mappingLenegd);
+				legend.add(mappingLegend);
 
 			// Set padding
-			mappingLenegd.setBorder(new EmptyBorder(15, 30, 15, 30));
+			mappingLegend.setBorder(new EmptyBorder(15, 30, 15, 30));
 		}
 	}
 
@@ -160,11 +160,8 @@ public class LegendDialog extends JDialog {
 		panel = generateLegendPanel(visualStyle);
 		scrollPane = new JScrollPane(panel);
 
-		exportBtn = new JButton(new AbstractAction("Export") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				export();
-			}
+		exportBtn = new JButton(new AbstractAction("Export") { 
+			@Override public void actionPerformed(ActionEvent e) { export(); }
 		});
 		cancelBtn = new JButton(new AbstractAction("Cancel") {
 			@Override
@@ -177,18 +174,14 @@ public class LegendDialog extends JDialog {
 
 		final JPanel contentPane = new JPanel();
 		final GroupLayout layout = new GroupLayout(contentPane);
-    	contentPane.setLayout(layout);
+		contentPane.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-				.addComponent(scrollPane)
-				.addComponent(buttonPanel)
-		);
+				.addComponent(scrollPane) .addComponent(buttonPanel) );
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(scrollPane)
-				.addComponent(buttonPanel)
-		);
+				.addComponent(scrollPane) .addComponent(buttonPanel) );
 		
 		setContentPane(contentPane);
 		
