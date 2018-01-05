@@ -334,12 +334,14 @@ public class CyAnnotator {
 
 	public void removeAnnotation(Annotation annotation) {
 		annotationMap.remove((DingAnnotation)annotation);
+		selectedAnnotations.remove(annotation);
 		updateNetworkAttributes(view.getModel());
 	}
 	
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
 		for(Annotation annotation : annotations) {
 			annotationMap.remove((DingAnnotation)annotation);
+			selectedAnnotations.remove(annotation);
 		}
 		updateNetworkAttributes(view.getModel());
 	}

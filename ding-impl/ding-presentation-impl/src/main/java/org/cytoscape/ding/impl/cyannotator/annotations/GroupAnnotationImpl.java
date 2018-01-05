@@ -45,6 +45,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.slf4j.Logger;
@@ -175,6 +176,27 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			}
 			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
 		}
+	}
+
+	@Override
+	public void removeAnnotation() {
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			// Remove all of our children
+			for (DingAnnotation dAnn: annotations) {
+				AbstractAnnotation ann = (AbstractAnnotation)dAnn;
+				canvas.remove(ann);
+				cyAnnotator.removeAnnotation(ann);
+				// We don't need to worry about clearing the member list
+			}
+			annotations.clear();
+
+			// Now remove ourselves
+			canvas.remove(this);
+			cyAnnotator.removeAnnotation(this);
+			if (parent != null)
+				parent.removeMember(this);
+			canvas.repaint();
+		});
 	}
 
 	public Map<String,String> getArgMap() {
