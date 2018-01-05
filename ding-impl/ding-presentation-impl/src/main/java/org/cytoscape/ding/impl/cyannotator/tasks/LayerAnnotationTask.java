@@ -35,6 +35,7 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 
 import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -62,6 +63,14 @@ public class LayerAnnotationTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		JComponent canvas = annotation.getCanvas();
+		if (annotation instanceof GroupAnnotation) {
+			int z = zorder;
+			for (Annotation ann: ((GroupAnnotation)annotation).getMembers()) {
+				DingAnnotation dAnn = (DingAnnotation)ann;
+				z += 1;
+				dAnn.getCanvas().setComponentZOrder(dAnn.getComponent(), z);
+			}
+		}
 		canvas.setComponentZOrder(annotation.getComponent(), zorder);
 		canvas.repaint();
 		if ( view instanceof DGraphView ) {
