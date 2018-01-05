@@ -248,6 +248,14 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 */
 
 	@Override
+	public void changeCanvas(final String cnvs) {
+		for (DingAnnotation ann: annotations) {
+			ann.changeCanvas(cnvs);
+		}
+		super.changeCanvas(cnvs);
+	}
+
+	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
 		// We don't do anything ourselves since each of our
