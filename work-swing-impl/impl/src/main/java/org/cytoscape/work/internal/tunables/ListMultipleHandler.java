@@ -36,6 +36,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.swing.DefaultListModel;
@@ -71,7 +72,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	
 	private JList<T> itemsContainerList;
 	private DefaultListModel<T> listModel;
-	private ListMultipleSelection<T> listMultipleSelection;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	private boolean isUpdating = false;
@@ -106,7 +106,6 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	}
 
 	private void init() {
-		listMultipleSelection = getMultipleSelection();
 		listModel = new DefaultListModel<>();
 		itemsContainerList = new JList<>(listModel);
 		
@@ -138,20 +137,24 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 		
 		LookAndFeelUtil.equalizeSize(selectAllButton, selectNoneButton);
 		
+		ListMultipleSelection<T> multipleSelection = getMultipleSelection();
+		
 		// put the items in a list
-		for (T value : getMultipleSelection().getPossibleValues()) 
-			listModel.addElement(value);
+		if (multipleSelection != null) {
+			for (T value : multipleSelection.getPossibleValues()) 
+				listModel.addElement(value);
+		}
 		
 		itemsContainerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		
 		// selected items
-		final List<T> selectedVals = listMultipleSelection.getSelectedValues();
-		final List<T> allValues = listMultipleSelection.getPossibleValues();
-		
-		final int[] selectedIdx = new int[selectedVals.size()];
+		List<T> selVals = multipleSelection != null ? multipleSelection.getSelectedValues() : Collections.emptyList();
+		List<T> allValues = multipleSelection != null ? multipleSelection.getPossibleValues() : Collections.emptyList();
+
+		final int[] selectedIdx = new int[selVals.size()];
 		int index = 0;
-		
-		for (T selected: selectedVals) {
+
+		for (T selected: selVals) {
 			for (int i = 0; i < allValues.size(); i++) {
 				if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 					selectedIdx[index] = i;
@@ -215,32 +218,31 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	public void update(){
 		isUpdating = true;
 		boolean reloadSelection = false;
-		
-		listMultipleSelection = getMultipleSelection();
+		ListMultipleSelection<T> multipleSelection = getMultipleSelection();
 		
 		//If the list of elements has changed, remove old elements and add new ones
-		if (!Arrays.equals(listModel.toArray(),listMultipleSelection.getPossibleValues().toArray())) {
+		if (!Arrays.equals(listModel.toArray(), multipleSelection.getPossibleValues().toArray())) {
 			listModel.removeAllElements();
 			reloadSelection = true;
 			
-			for (T value : listMultipleSelection.getPossibleValues()) 
+			for (T value : multipleSelection.getPossibleValues()) 
 				listModel.addElement(value);
 		} else {
 			//if the list is the same but the selection has changed, remove all selections and select new ones
 			if (!Arrays.equals(itemsContainerList.getSelectedValuesList().toArray(),
-					listMultipleSelection.getSelectedValues().toArray()))
+					multipleSelection.getSelectedValues().toArray()))
 				reloadSelection = true;
 		}
 		
 		if (reloadSelection) {
 			// selected items
-			final List<T> selectedVals = listMultipleSelection.getSelectedValues();
-			final List<T> allValues = listMultipleSelection.getPossibleValues();
+			List<T> selVals = multipleSelection != null ? multipleSelection.getSelectedValues() : Collections.emptyList();
+			List<T> allValues = multipleSelection != null ? multipleSelection.getPossibleValues() : Collections.emptyList();
 			
-			final int[] selectedIdx = new int[selectedVals.size()];
+			final int[] selectedIdx = new int[selVals.size()];
 			int index = 0;
 			
-			for (T selected: selectedVals) {
+			for (T selected: selVals) {
 				for (int i = 0; i < allValues.size(); i++) {
 					if (itemsContainerList.getModel().getElementAt(i).equals(selected)) {
 						selectedIdx[index] = i;
@@ -295,10 +297,12 @@ public class ListMultipleHandler<T> extends AbstractGUITunableHandler
 	 */
 	@Override
 	public String getState() {
-		if ( itemsContainerList == null )
+		if (itemsContainerList == null)
 			return "";
 
-		final List<T> selection = getMultipleSelection().getSelectedValues();
+		ListMultipleSelection<T> multipleSelection = getMultipleSelection();
+		List<T> selection = multipleSelection != null ? multipleSelection.getSelectedValues() : null;
+		
 		return selection == null ? "" : selection.toString();
 	}
 
