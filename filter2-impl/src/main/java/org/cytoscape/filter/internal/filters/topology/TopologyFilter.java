@@ -98,23 +98,29 @@ public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyId
 			return false;
 		}
 		
-		Set<Long> counted  = new HashSet<>();
-		// keep track of which edges have already been traversed, and the distance value
-		Map<Long,Integer> sourceToTarget = new HashMap<>();
-		Map<Long,Integer> targetToSource = new HashMap<>();
-		
-		traverse(network, (CyNode) element, distance, counted, sourceToTarget, targetToSource);
-		
-		counted.remove(element.getSUID());
-		int count = counted.size();
+		int count;
+		if(getCompositeFilter().isAlwaysFalse()) {
+			count = 0;
+		} else {
+			CyNode startNode = (CyNode) element;
+			Set<Long> counted  = new HashSet<>();
+			// keep track of which edges have already been traversed, and the distance value
+			Map<Long,Integer> sourceToTarget = new HashMap<>();
+			Map<Long,Integer> targetToSource = new HashMap<>();
+			
+			traverse(network, startNode, startNode, distance, counted, sourceToTarget, targetToSource);
+			
+			count = counted.size();
+		}
 		
 		return delegate.accepts(threshold, threshold, count);
 	}
 	
 	
-	private void traverse(CyNetwork network, CyNode node, int distance, Set<Long> counted, Map<Long,Integer> sourceToTarget, Map<Long,Integer> targetToSource) {
+	private void traverse(CyNetwork network, CyNode startNode, CyNode node, int distance, Set<Long> counted, Map<Long,Integer> sourceToTarget, Map<Long,Integer> targetToSource) {
 		Filter<CyNetwork,CyIdentifiable> memoizedFilter = super.getMemoizedFilter();
-		if(memoizedFilter.accepts(network, node))
+		
+		if(!node.equals(startNode) && memoizedFilter.accepts(network, node))
 			counted.add(node.getSUID());
 		
 		if(distance == 0) 
@@ -122,8 +128,9 @@ public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyId
 		
 		for(CyEdge edge : network.getAdjacentEdgeIterable(node, CyEdge.Type.ANY)) {
 			// short circut if we've already found enough nodes
-			if(counted.size() > threshold) // 'greater than' because the start node is included in the count
+			if(counted.size() >= threshold) {
 				return;
+			}
 			
 			// figure out which direction we are going along the edge
 			CyNode next = edge.getTarget();
@@ -134,7 +141,7 @@ public class TopologyFilter extends AbstractMemoizableTransformer<CyNetwork,CyId
 			}
 			
 			if(traverseEdge(edge, distance, map)) {
-				traverse(network, next, distance - 1, counted, sourceToTarget, targetToSource);
+				traverse(network, startNode, next, distance - 1, counted, sourceToTarget, targetToSource);
 			}
 		}
 	}

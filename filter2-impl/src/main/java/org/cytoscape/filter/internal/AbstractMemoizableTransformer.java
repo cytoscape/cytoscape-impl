@@ -97,6 +97,10 @@ public abstract class AbstractMemoizableTransformer<C,E extends CyIdentifiable> 
 			public void removeListener(TransformerListener listener) {
 				filter.removeListener(listener);
 			}
+			@Override
+			public boolean isAlwaysFalse() {
+				return filter.isAlwaysFalse();
+			}
 		};
 	}
 

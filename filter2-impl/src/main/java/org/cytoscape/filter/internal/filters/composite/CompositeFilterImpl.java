@@ -15,7 +15,7 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 	
 	private Type type;
 	
-	List<Filter<C, E>> filters;
+	final List<Filter<C, E>> filters;
 
 	private Class<C> contextType;
 
@@ -121,16 +121,32 @@ public class CompositeFilterImpl<C, E> extends AbstractTransformer<C, E> impleme
 	
 	@Override
 	public boolean accepts(C context, E element) {
-		for (int i = 0; i < filters.size(); i++) {
-			Filter<C, E> filter = filters.get(i);
+		if(filters.isEmpty()) 
+			return true;
+		
+		for (Filter<C,E> filter : filters) {
 			boolean result = filter.accepts(context, element);
 			if (result != (type == CompositeFilter.Type.ALL)) {
 				// Short-circuit
 				return result;
 			}
 		}
-		
 		return type == CompositeFilter.Type.ALL;
+	}
+	
+	@Override
+	public boolean isAlwaysFalse() {
+		if(filters.isEmpty()) 
+			return false;
+		
+		for(Filter<?,?> filter : filters) {
+			boolean result = filter.isAlwaysFalse();
+			if (result == (type == CompositeFilter.Type.ALL)) {
+				// Short-circuit
+				return result;
+			}
+		}
+		return type != CompositeFilter.Type.ALL;
 	}
 	
 	@Override

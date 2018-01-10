@@ -53,6 +53,14 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private String lowerCaseCriterion;
 	private Boolean booleanCriterion = true;
 	
+	
+	public ColumnFilter(String columnName, Predicate predicate, Object criterion) {
+		this();
+		this.columnName = columnName;
+		setPredicateImpl(predicate);
+		setCriterionImpl(criterion);
+	}
+	
 	public ColumnFilter() {
 		type = new ListSingleSelection<String>(NODES, EDGES, NODES_AND_EDGES);
 		type.addListener(new ListChangeListener<String>() {
@@ -162,7 +170,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private void setPredicateImpl(Predicate predicate) {
 		this.predicate = predicate;
 		numericDelegate = PredicateDelegates.getNumericDelegate(predicate);
-		stringDelegate = PredicateDelegates.getStringDelegate(predicate);
+		stringDelegate  = PredicateDelegates.getStringDelegate(predicate);
 	}
 	
 	/**
@@ -256,6 +264,11 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return Collections.emptyList();
 	}
 	
+
+	@Override
+	public boolean isAlwaysFalse() {
+		return columnName == null || rawCriterion == null || predicate == null;
+	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
