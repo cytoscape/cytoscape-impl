@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.swing.JOptionPane;
-
 import org.cytoscape.util.swing.OpenBrowser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,8 +63,8 @@ public class OpenBrowserImpl implements OpenBrowser {
             }
         }
 
-        JOptionPane.showInputDialog(null, "Cytoscape was unable to open your web browser.. "
-                + "\nPlease copy the following URL and paste it into your browser:", url);
+       	logger.warn("Cytoscape was unable to open your web browser.. "
+                + "\nPlease copy the following URL and paste it into your browser: " + url);
         return false;
 	}
 
