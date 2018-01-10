@@ -1,5 +1,6 @@
 package org.cytoscape.filter.internal.work;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -82,24 +83,31 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				}
 			}
 			
-			if(filter instanceof MemoizableTransformer) {
+			if (filter instanceof MemoizableTransformer) {
 				((MemoizableTransformer) filter).startCaching();
 			}
 			try {
 				List<CyNode> nodeList = network.getNodeList();
 				List<CyEdge> edgeList = network.getEdgeList();
 				double total = nodeList.size() + edgeList.size();
+				
+				List<CyIdentifiable> selected = new ArrayList<>();
+				List<CyIdentifiable> unselected = new ArrayList<>();
+				
+				// First run the filter, then do the selection after.
+				// The filter.accepts() method can be slow, if we update the selection 
+				// as we go that can cause excessive RowsSetEvents to be fired.
+				
 				for (CyNode node : nodeList) {
 					if (monitor.isCancelled()) {
 						return;
 					}
-					CyRow row = network.getRow(node);
 					boolean accepted = filter.accepts(network, node);
 					if (accepted) {
+						selected.add(node);
 						nodeCount++;
-					}
-					if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
-						row.set(CyNetwork.SELECTED, accepted);
+					} else {
+						unselected.add(node);
 					}
 					monitor.setProgress(++counter / total);
 				}
@@ -107,19 +115,32 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					if (monitor.isCancelled()) {
 						return;
 					}
-					CyRow row = network.getRow(edge);
 					boolean accepted = filter.accepts(network, edge);
 					if (accepted) {
+						selected.add(edge);
 						edgeCount++;
-					}
-					if (row.get(CyNetwork.SELECTED, Boolean.class) != accepted) {
-						row.set(CyNetwork.SELECTED, accepted);
+					} else {
+						unselected.add(edge);
 					}
 					monitor.setProgress(++counter / total);
 				}
+				
+				// now do the selection
+				for (CyIdentifiable element : unselected) {
+					CyRow row = network.getRow(element);
+					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, Boolean.FALSE);
+					}
+				}
+				for (CyIdentifiable element : selected) {
+					CyRow row = network.getRow(element);
+					if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
+						row.set(CyNetwork.SELECTED, Boolean.TRUE);
+					}
+				}
 			}
 			finally {
-				if(filter instanceof MemoizableTransformer) {
+				if (filter instanceof MemoizableTransformer) {
 					((MemoizableTransformer) filter).clearCache();
 				}
 			}
