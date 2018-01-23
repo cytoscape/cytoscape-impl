@@ -173,7 +173,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 				// At this point, we should definitely have everything to create the arguments
 				List<String> l = new ArrayList<>();
 				for (ArgHandler ah: ll.values())
-					l.add(ah.getName());
+					l.add(makeFirstLower(ah.getName()));
 				sort(l);
 
 				return l;
@@ -417,8 +417,10 @@ public class AvailableCommandsImpl implements AvailableCommands {
 				for (ArgHandler h: handlers) {
 					String context = h.getContext();
 					// Only add commands appropriate for nogui
-					if (!context.equals(Tunable.GUI_CONTEXT))
-						argMap.put(h.getName(), h);
+					if (!context.equals(Tunable.GUI_CONTEXT)) {
+						// get/set tunables will possibly have an upper case, which is just plain weird
+						argMap.put(makeFirstLower(h.getName()), h);
+					}
 				}
 			}
 
@@ -579,5 +581,7 @@ public class AvailableCommandsImpl implements AvailableCommands {
 		return "";
 	}
 
-
+	private String makeFirstLower(String string) {
+		return Character.toLowerCase(string.charAt(0)) + (string.length() > 1 ? string.substring(1) : "");
+	}
 }

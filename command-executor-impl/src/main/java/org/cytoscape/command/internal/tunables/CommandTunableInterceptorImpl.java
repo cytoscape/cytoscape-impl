@@ -76,7 +76,7 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 					h.processArgString(args);
 				} else {
 					for ( String string: mapArgs.keySet() ) {
-						if (h.getName().equals(string)) {
+						if (h.getName().equals(string) || h.getName().equals(upperFirstChar(string))) {
 							Object v = mapArgs.get(string);
 							try {
 								if (v instanceof String)
@@ -136,5 +136,9 @@ public class CommandTunableInterceptorImpl extends AbstractTunableInterceptor<St
 	}
 	public void removeTunableHandlerFactory(StringTunableHandlerFactory<StringTunableHandler> f, Map<String,String> p) {
 		super.removeTunableHandlerFactory(f,p);
+	}
+
+	private String upperFirstChar(String string) {
+		return Character.toUpperCase(string.charAt(0)) + (string.length() > 1 ? string.substring(1) : "");
 	}
 }
