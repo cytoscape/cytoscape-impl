@@ -42,8 +42,10 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasKeyListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
@@ -69,6 +71,7 @@ public class CyAnnotator {
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private MyViewportChangeListener myViewportChangeListener=null;
+	// private AbstractAnnotation resizing = null;
 	private ShapeAnnotationImpl resizing = null;
 	private ArrowAnnotationImpl repositioning = null;
 	private DingAnnotation moving = null;
@@ -154,6 +157,11 @@ public class CyAnnotator {
 		List<Map<String,String>> arrowList = 
 		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
 
+		Map<GroupAnnotation,String> groupMap = 
+		    new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
+
+		Map<String, Annotation> uuidMap = new HashMap<String, Annotation> ();
+
 		Map<Object,Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 
 		if (annotations != null) {
@@ -174,6 +182,8 @@ public class CyAnnotator {
 					continue;
 
 				annotation = (DingAnnotation)a;
+
+				uuidMap.put(annotation.getUUID().toString(), annotation);
 				Object canvas;
 
 				if (annotation.getCanvas() != null) {
@@ -193,12 +203,22 @@ public class CyAnnotator {
 					}
 				}
 
-				// Now that we've added the annotation, update
-				// the group membership
-				if (a != null && a instanceof GroupAnnotation) {
-					GroupAnnotation g = (GroupAnnotation)a;
-					for (Annotation child: g.getMembers()) {
-						g.addMember(child);
+				addAnnotation(annotation);
+
+				// If this is a group, save the annotation and the memberUIDs list
+				if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
+					groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
+				}
+			}
+
+			// Now, handle all of our groups
+			for (GroupAnnotation group: groupMap.keySet()) {
+				String uuids = groupMap.get(group);
+				String[] uuidArray = uuids.split(",");
+				for (String uuid: uuidArray) {
+					if (uuidMap.containsKey(uuid)) {
+						Annotation child = uuidMap.get(uuid);
+						group.addMember(child);
 					}
 				}
 			}
@@ -393,12 +413,23 @@ public class CyAnnotator {
 
 	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
 
+	/* public void resizeShape(AbstractAnnotation shape) {
+		resizing = shape;
+		if (resizing != null)
+			requestFocusInWindow(resizing);
+	}
+	*/
 	public void resizeShape(ShapeAnnotationImpl shape) {
 		resizing = shape;
 		if (resizing != null)
 			requestFocusInWindow(resizing);
 	}
 
+	/*
+	public AbstractAnnotation getResizeShape() {
+		return resizing;
+	}
+	*/
 	public ShapeAnnotationImpl getResizeShape() {
 		return resizing;
 	}
