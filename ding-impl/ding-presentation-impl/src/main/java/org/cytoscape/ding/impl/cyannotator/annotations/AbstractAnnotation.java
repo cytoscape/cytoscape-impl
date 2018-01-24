@@ -161,6 +161,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 		
+		/*
 		if (argMap.containsKey(PARENT_ID)) {
 			// See if the parent already exists
 			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
@@ -173,6 +174,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 				// It doesn't -- let the parent add us
 			}
 		}
+		*/
 	}
 
 	public void setView(DGraphView view) {
