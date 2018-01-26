@@ -34,7 +34,9 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -58,8 +60,9 @@ public class ResizeAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView && annotation instanceof ShapeAnnotationImpl) {
-			annotation.getCyAnnotator().resizeShape((ShapeAnnotationImpl)annotation);
+		if ( view instanceof DGraphView && 
+		    (annotation instanceof ShapeAnnotationImpl || annotation instanceof GroupAnnotationImpl)) {
+			annotation.getCyAnnotator().resizeShape((AbstractAnnotation)annotation);
 		}
 	}
 }

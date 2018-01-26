@@ -268,9 +268,15 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontSize(double size) {
+		setFontSize(size, true);
+	}
+
+	// A method that can be used for group resizing
+	public void setFontSize(double size, boolean updateBounds) {
 		this.fontSize = (float)size;
 		font = font.deriveFont((float)(fontSize));
-		updateBounds();
+		if (updateBounds)
+			updateBounds();
 	}
 
 	@Override

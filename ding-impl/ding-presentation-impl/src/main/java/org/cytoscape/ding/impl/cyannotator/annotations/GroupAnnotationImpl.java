@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
@@ -48,6 +49,7 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,14 +238,11 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		// Calculate the delta
 		double deltaX = currentX - compLocation.getX();
 		double deltaY = currentY - compLocation.getY();
-		// System.out.println("Delta = "+deltaX+","+deltaY);
-		// System.out.println("Current = "+currentX+","+currentY);
-		// System.out.println("Location = "+compLocation.getX()+","+compLocation.getY());
 
 		for (DingAnnotation child: annotations) {
 			// Move each child to it's new location
 			Point childLocation = child.getLocation();
-			// System.out.println("Moving "+child+" to "+(childLocation.getX()-deltaX)+","+(childLocation.getY()-deltaY));
+
 			((AbstractAnnotation)child).setLocation((int)Math.round(childLocation.getX()-deltaX), 
 			                                        (int)Math.round(childLocation.getY()-deltaY));
 		}
@@ -268,6 +267,87 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.setSelected(selected);
 	}
 */
+
+	/*
+	 * 1) update our bounds
+	 * 2) move each child
+	 * 3) reset the size of each child
+	 */
+	public void setSize(Dimension d) {
+		// Get our width
+		double width = getWidth();
+		double height = getHeight();
+		double dx = d.getWidth() / width;
+		double dy = d.getHeight() / height;
+		double x = getX();
+		double y = getY();
+
+		/*
+		System.out.println("Changing size of group from: "+width+"x"+height+" to "+d.getWidth()+"x"+d.getHeight());
+		System.out.println("dx = "+dx+", dy = "+dy);
+		System.out.println("x = "+x+", y = "+y);
+		*/
+
+		ViewUtil.invokeOnEDTAndWait(() -> {
+
+			// Now and move each of our children
+			for (DingAnnotation child: annotations) {
+				JComponent childComponent = child.getComponent();
+				double childX = childComponent.getX();
+				double childY = childComponent.getY();
+				double childWidth = childComponent.getWidth();
+				double childHeight = childComponent.getHeight();
+				double newX = (childX-x)*dx + x;
+				double newY = (childY-y)*dy + y;
+				double newWidth = childWidth*dx;
+				double newHeight = childHeight*dy;
+				childComponent.setLocation((int)Math.round(newX), (int)Math.round(newY));
+				child.getCanvas().modifyComponentLocation((int)Math.round(newX), (int)Math.round(newY), childComponent);
+
+				if (child instanceof TextAnnotationImpl) {
+					TextAnnotation textChild = (TextAnnotation)child;
+					double fontSize = textChild.getFontSize();
+					textChild.setFontSize(fontSize*dx);
+				}
+
+				if (child instanceof BoundedTextAnnotationImpl) {
+					BoundedTextAnnotationImpl textChild = (BoundedTextAnnotationImpl)child;
+					double fontSize = textChild.getFontSize();
+					textChild.setFontSize(fontSize*dx, false);
+				}
+
+				if (child instanceof ShapeAnnotationImpl) {
+					ShapeAnnotationImpl shapeChild = (ShapeAnnotationImpl)child;
+					double borderWidth = shapeChild.getBorderWidth();
+					double zoom = shapeChild.getZoom();
+					newWidth = newWidth - borderWidth*2*zoom;
+					newHeight = newHeight - borderWidth*2*zoom;
+					shapeChild.setSize(newWidth, newHeight);
+				}
+				child.update();
+			}
+			super.setSize((int)d.getWidth(), (int)d.getHeight());
+		});
+	}
+
+	@Override
+	public Dimension adjustAspectRatio(Dimension d) {
+		double ratio = d.getWidth() / d.getHeight();
+		double aspectRatio = bounds.getWidth() / bounds.getHeight();
+		double width, height;
+
+		if (aspectRatio >= ratio) {
+			width = d.getWidth();
+			height = width / aspectRatio;
+		} else {
+			height = d.getHeight();
+			width = height * aspectRatio;
+		}
+
+		d.setSize(width, height);
+
+		return d;
+	}
 
 	@Override
 	public void changeCanvas(final String cnvs) {
@@ -298,12 +378,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
-		} 
+		}
 		/*
 		else {
-			g2.setColor(Color.BLACK);
+			g2.setColor(Color.BLUE);
 			g2.setStroke(new BasicStroke(4.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
-			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
+			g2.drawRect(-1, -1, (int)bounds.getWidth()+2, (int)bounds.getHeight()+2);
 		}
 		*/
 	}

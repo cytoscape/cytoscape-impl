@@ -58,7 +58,6 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 		if (type.equals(ShapeAnnotation.class)) {
 			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView, argMap, getActiveWindow());
 			a.update();
-			
 			return (ShapeAnnotation) a;
 		} 
 		return null;
