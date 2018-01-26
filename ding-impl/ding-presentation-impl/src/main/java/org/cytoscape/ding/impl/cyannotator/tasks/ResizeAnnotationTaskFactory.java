@@ -32,6 +32,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -52,8 +53,11 @@ public class ResizeAnnotationTaskFactory implements NetworkViewLocationTaskFacto
 		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation != null && 
-		    (annotation instanceof ShapeAnnotationImpl || annotation instanceof ImageAnnotationImpl))
+		    (annotation instanceof ShapeAnnotationImpl || 
+				 annotation instanceof ImageAnnotationImpl ||
+				 annotation instanceof GroupAnnotationImpl)) {
 			return true;
+		}
 		return false;
 	}
 }

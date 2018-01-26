@@ -75,8 +75,7 @@ public class CyAnnotator {
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private MyViewportChangeListener myViewportChangeListener=null;
-	// private AbstractAnnotation resizing = null;
-	private ShapeAnnotationImpl resizing = null;
+	private AbstractAnnotation resizing = null;
 	private ArrowAnnotationImpl repositioning = null;
 	private DingAnnotation moving = null;
 
@@ -431,24 +430,13 @@ public class CyAnnotator {
 
 	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
 
-	/* public void resizeShape(AbstractAnnotation shape) {
-		resizing = shape;
-		if (resizing != null)
-			requestFocusInWindow(resizing);
-	}
-	*/
-	public void resizeShape(ShapeAnnotationImpl shape) {
+	public void resizeShape(AbstractAnnotation shape) {
 		resizing = shape;
 		if (resizing != null)
 			requestFocusInWindow(resizing);
 	}
 
-	/*
 	public AbstractAnnotation getResizeShape() {
-		return resizing;
-	}
-	*/
-	public ShapeAnnotationImpl getResizeShape() {
 		return resizing;
 	}
 

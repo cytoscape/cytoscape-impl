@@ -301,7 +301,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void setSize(double width, double height) {
 		shapeWidth = width;
 		shapeHeight = height;
-		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		int cWidth = (int)Math.round(shapeWidth + borderWidth * 2 * getZoom());
+		int cHeight = (int)Math.round(shapeHeight + borderWidth * 2 * getZoom());
+		setSize(cWidth, cHeight);
 	}
 
 	@Override
@@ -320,7 +322,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		double ratio = d.getWidth() / d.getHeight();
 		double aspectRatio = shapeWidth / shapeHeight;
 		double width, height;
-		
+
 		if (aspectRatio >= ratio) {
 			width = d.getWidth();
 			height = width / aspectRatio;
@@ -328,9 +330,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			height = d.getHeight();
 			width = height * aspectRatio;
 		}
-		
+
 		d.setSize(width, height);
-		
+
 		return d;
 	}
 
