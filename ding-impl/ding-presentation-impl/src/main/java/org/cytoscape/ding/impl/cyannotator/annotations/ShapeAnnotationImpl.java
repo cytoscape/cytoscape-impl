@@ -138,8 +138,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE, ShapeAnnotation.class.getName());
 
-		if (this.fillColor != null)
+		if (this.fillColor != null) {
+			System.out.println("Getting fill color");
 			argMap.put(FILLCOLOR, convertColor(this.fillColor));
+		}
 
 		argMap.put(FILLOPACITY, Double.toString(this.fillOpacity));
 

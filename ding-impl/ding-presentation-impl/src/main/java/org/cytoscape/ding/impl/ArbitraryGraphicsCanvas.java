@@ -157,7 +157,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 
 
 	private void removeInternal(Component component) {
-		m_componentToPointMap.remove(component);
+		if (m_componentToPointMap.containsKey(component))
+			m_componentToPointMap.remove(component);
 		super.remove(component);
 	}
         

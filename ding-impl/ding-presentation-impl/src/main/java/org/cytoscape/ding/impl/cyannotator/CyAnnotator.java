@@ -206,7 +206,9 @@ public class CyAnnotator {
 
 				// If this is a group, save the annotation and the memberUIDs list
 				if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
-					groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
+					// Don't bother adding the group if it doesn't have any children
+					if (argMap.containsKey("memberUUIDs"))
+						groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
 				}
 			}
 

@@ -66,7 +66,8 @@ class GraphicsUtilities {
 
 	protected static final ShapeType supportedShapes[] = {
 		ShapeType.RECTANGLE, ShapeType.ROUNDEDRECTANGLE, ShapeType.ELLIPSE, ShapeType.STAR5, 
-		ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON, ShapeType.PENTAGON, ShapeType.OCTAGON
+		ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON, ShapeType.PENTAGON, ShapeType.OCTAGON,
+		ShapeType.PARALLELOGRAM
 	};
 
 	protected static final List<String> supportedShapeNames = Arrays.asList(
@@ -79,6 +80,7 @@ class GraphicsUtilities {
 		ShapeType.HEXAGON.shapeName(),
 		ShapeType.PENTAGON.shapeName(),
 		ShapeType.OCTAGON.shapeName(),
+		ShapeType.PARALLELOGRAM.shapeName(),
 		ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = {
@@ -108,6 +110,7 @@ class GraphicsUtilities {
 			case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
 			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon  added 3.6
+			case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram  added 3.7
 			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}
@@ -444,7 +447,19 @@ class GraphicsUtilities {
 	static private Shape rectangleShape(double x, double y, double width, double height) {
 		// System.out.println("Drawing rectangle: "+x+","+y+" "+width+"x"+height);
 		return new Rectangle2D.Double(x, y, width, height);
-		
+	}
+
+	static private Shape parallelogramShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double xMax = x+width;
+		double yMax = y+height;
+
+		poly.moveTo(x, y);
+    poly.lineTo(((2.0f * xMax) + x) / 3.0f, y);
+    poly.lineTo(xMax, yMax);
+    poly.lineTo(((2.0f * x) + xMax) / 3.0f, yMax);
+		poly.closePath();
+		return poly;
 	}
 
 	static private Shape roundedRectangleShape(double x, double y, double width, double height) {
@@ -456,19 +471,16 @@ class GraphicsUtilities {
 	}
 
 	static private Shape regularPolygon(int sides, double x, double y, double width, double height) {
-		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 12);
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, sides);
 		width = width/2;
 		height = height/2;
 		x = x+width;
 		y = y+height;
 		Point2D.Double points[] = new Point2D.Double[sides];
 		for (int i = 0; i < sides; i++) {
-			double x1 = circleX(sides, i) * width + x;
-			double y1 = circleY(sides, i) * height + y;
-			double x2 = circleX(sides, (i+1)%sides) * width + x;
-			double y2 = circleY(sides, (i+1)%sides) * height + y;
+			double x1 = circleX(sides, i, true) * width + x;
+			double y1 = circleY(sides, i, true) * height + y;
 			points[i] = new Point2D.Double(x1, y1);
-			points[(i+1)%sides] = new Point2D.Double(x2, y2);
 		}
 		// Now, add the points
 		poly.moveTo(points[0].getX(), points[0].getY());
@@ -480,7 +492,7 @@ class GraphicsUtilities {
 	}
 
 	static private Shape starShape(int sides, double x, double y, double width, double height) {
-		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 12);
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, sides);
 		width = width/2;
 		height = height/2;
 		x = x+width;
@@ -488,10 +500,10 @@ class GraphicsUtilities {
 		int nPoints = sides*2;
 		Point2D.Double points[] = new Point2D.Double[nPoints];
 		for (int i = 0; i < sides; i++) {
-			double x1 = circleX(sides, i) * width + x;
-			double y1 = circleY(sides, i) * height + y;
-			double x2 = circleX(sides, (i+2)%sides) * width + x;
-			double y2 = circleY(sides, (i+2)%sides) * height + y;
+			double x1 = circleX(sides, i, false) * width + x;
+			double y1 = circleY(sides, i, false) * height + y;
+			double x2 = circleX(sides, (i+2)%sides, false) * width + x;
+			double y2 = circleY(sides, (i+2)%sides, false) * height + y;
 			points[i*2] = new Point2D.Double(x1, y1);
 			points[(i*2+4)%nPoints] = new Point2D.Double(x2, y2);
 		}
@@ -577,16 +589,26 @@ class GraphicsUtilities {
 		return circle;
 	}
 
-	static double circleX(int sides, int angle) {
-		if (sides == 8) angle += (halfPI / 4.0);		// octagons are flat on top
+	static double circleX(int sides, int angle, boolean rot) {
 		double coeff = (double)angle/(double)sides;
-		return epsilon(Math.cos(2*coeff*Math.PI-halfPI));
+		if (rot && (sides%2 == 0)) {
+			if (sides == 8) {
+				coeff += 0.5/(double)sides;
+			}
+			return epsilon(Math.cos(2*coeff*Math.PI));
+		} else
+			return epsilon(Math.cos(2*coeff*Math.PI-halfPI));
 	}
 		
-	static double circleY(int sides, int angle) {
-		if (sides == 8) angle += (halfPI / 4.0);			// octagons are flat on top
+	static double circleY(int sides, int angle, boolean rot) {
 		double coeff = (double)angle/(double)sides;
-		return epsilon(Math.sin(2*coeff*Math.PI-halfPI));
+		if (rot && (sides%2 == 0)) {
+			if (sides == 8) {
+				coeff += 0.5/(double)sides;
+			}
+			return epsilon(Math.sin(2*coeff*Math.PI));
+		} else
+			return epsilon(Math.sin(2*coeff*Math.PI-halfPI));
 	}
 
 	static double epsilon(double v) {
