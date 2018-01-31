@@ -424,9 +424,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
   protected String convertColor(Paint clr) {
 		if (clr == null) 				return null;
-		System.out.println("ConvertColor: "+clr);
+		// System.out.println("ConvertColor: "+clr);
 		if (clr instanceof LinearGradientPaint) {
-			System.out.println("lingrad");
+			// System.out.println("lingrad");
 			String lg = "lingrad(";
 			LinearGradientPaint lingrad = (LinearGradientPaint)clr;
 			Point2D start = lingrad.getStartPoint();
@@ -438,7 +438,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			lg += convertStops(fractions, colors)+")";
 			return lg;
 		} else if (clr instanceof RadialGradientPaint) {
-			System.out.println("radgrad");
+			// System.out.println("radgrad");
 			String rg = "radgrad(";
 			RadialGradientPaint radgrad = (RadialGradientPaint)clr;
 			Point2D center = radgrad.getCenterPoint();
@@ -452,7 +452,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			rg += convertStops(fractions, colors)+")";
 			return rg;
 		} else if (clr instanceof Color) {
-			System.out.println("color");
+			// System.out.println("color");
 			return Integer.toString(((Color)clr).getRGB());
 		}
 		return clr.toString();
