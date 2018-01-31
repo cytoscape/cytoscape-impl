@@ -248,19 +248,20 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			argMap.put(ARROWCOLOR,convertColor(this.lineColor));
 		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
 
-		argMap.put(SOURCEANN, source.getUUID().toString());
+		if (source != null)
+			argMap.put(SOURCEANN, source.getUUID().toString());
 
 		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
 		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
 		if (this.sourceColor != null)
 			argMap.put(SOURCECOLOR,convertColor(this.sourceColor));
 
-		if (target instanceof Point2D) {
+		if (target != null && target instanceof Point2D) {
 			Point2D xy = (Point2D) target;
 			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
-		} else if (target instanceof Annotation) {
+		} else if (target != null && target instanceof Annotation) {
 			argMap.put(TARGETANN,((DingAnnotation)target).getUUID().toString());
-		} else if (target instanceof CyNode) {
+		} else if (target != null && target instanceof CyNode) {
 			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
 			double xCenter = nv.getXPosition();
 			double yCenter = nv.getYPosition();
@@ -283,27 +284,31 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		source.addArrow(this);
 
 		updateBounds();
+		update();
 	}
 
 	public Object getTarget() { return this.target; }
 	public void setTarget(Annotation target) { 
 		this.target = target; 
 		updateBounds();
+		update();
 	}
 
 	public void setTarget(CyNode target) { 
 		this.target = target; 
 		updateBounds();
+		update();
 	}
 
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
 		this.target = getNodeCoordinates(target.getX(), target.getY()); 
 		updateBounds();
+		update();
 	}
 
 	public double getLineWidth() { return (double)lineWidth; }
-	public void setLineWidth(double width) { this.lineWidth = (float)width; }
+	public void setLineWidth(double width) { this.lineWidth = (float)width; update();}
 
 	public double getArrowSize(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
@@ -316,6 +321,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.sourceSize = width; 
 		else
 			this.targetSize = width; 
+		update();
 	}
 
 	public String getArrowType(ArrowEnd end) { 
@@ -340,6 +346,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.sourceType = aType; 
 		else
 			this.targetType = aType; 
+		update();
 	}
 
 	public AnchorType getAnchorType(ArrowEnd end) {
@@ -354,6 +361,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.sourceAnchorType = type;
 		else
 			this.targetAnchorType = type;
+		update();
 	}
 
 	public Paint getLineColor() { 
@@ -362,6 +370,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public void setLineColor(Paint clr) { 
 		this.lineColor = clr;
+		update();
 	}
 
 	public Paint getArrowColor(ArrowEnd end) { 
@@ -376,6 +385,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			this.sourceColor = color; 
 		else
 			this.targetColor = color; 
+		update();
 	}
 
 	@Override

@@ -150,12 +150,13 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 		argMap.put(EDGETHICKNESS, Double.toString(this.borderWidth));
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
-		argMap.put(SHAPETYPE, this.shapeType.name());
+		if (this.shapeType != null) {
+			argMap.put(SHAPETYPE, this.shapeType.name());
+			if (shapeType.equals(ShapeType.CUSTOM))
+				argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
+		}
 		argMap.put(ShapeAnnotation.WIDTH, Double.toString(this.shapeWidth));
 		argMap.put(ShapeAnnotation.HEIGHT, Double.toString(this.shapeHeight));
-
-		if (shapeType.equals(ShapeType.CUSTOM))
-			argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 
 		return argMap;
 	}
@@ -215,6 +216,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		
 		if (shapeType != ShapeType.CUSTOM)
 			this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
+		update();
 	}
 
 	@Override
@@ -231,6 +233,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void setBorderWidth(double width) {
 		borderWidth = width;
+		update();
 	}
 
 	@Override
@@ -256,21 +259,25 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void setBorderColor(Paint border) {
 		borderColor = border;
+		update();
 	}
 
 	@Override
 	public void setBorderOpacity(double opacity) {
 		borderOpacity = opacity;
+		update();
 	}
 
 	@Override
 	public void setFillColor(Paint fill) {
 		fillColor = fill;
+		update();
 	}
 
 	@Override
 	public void setFillOpacity(double opacity) {
 		fillOpacity = opacity;
+		update();
 	}
 
 	@Override
@@ -306,17 +313,20 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		int cWidth = (int)Math.round(shapeWidth + borderWidth * 2 * getZoom());
 		int cHeight = (int)Math.round(shapeHeight + borderWidth * 2 * getZoom());
 		setSize(cWidth, cHeight);
+		update();
 	}
 
 	@Override
 	public void setSize(Dimension d) {
 		setSize(d.getWidth(), d.getHeight());
+		update();
 	}
 
 	@Override
 	public void setCustomShape(Shape shape) {
 		this.shapeType = ShapeType.CUSTOM;
 		this.shape = shape;
+		update();
 	}
 
 	@Override

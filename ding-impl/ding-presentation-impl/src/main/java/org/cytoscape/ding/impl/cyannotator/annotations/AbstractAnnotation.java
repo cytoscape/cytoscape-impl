@@ -330,13 +330,13 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	public void resizeAnnotation(double width, double height) {};
 
 	public String getName() { return name; }
-	public void setName(String name) { this.name = name; }
+	public void setName(String name) { this.name = name; update();}
 
 	public double getZoom() { return globalZoom; }
-	public void setZoom(double zoom) {  globalZoom = zoom;  }
+	public void setZoom(double zoom) {  globalZoom = zoom; update();}
       
 	public double getSpecificZoom() {return myZoom; }
-	public void setSpecificZoom(double zoom) { myZoom = zoom;  }
+	public void setSpecificZoom(double zoom) { myZoom = zoom;  update();}
 
 	public boolean isSelected() { return selected; }
 	public void setSelected(boolean selected) {
@@ -344,8 +344,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		cyAnnotator.setSelectedAnnotation(this, selected);
 	}
 
-	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); }
-	public void removeArrow(ArrowAnnotation arrow) { arrowList.remove(arrow); 	}
+	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); update();}
+	public void removeArrow(ArrowAnnotation arrow) { arrowList.remove(arrow); update();}
 	public Set<ArrowAnnotation> getArrows() { return arrowList; }
 
 	

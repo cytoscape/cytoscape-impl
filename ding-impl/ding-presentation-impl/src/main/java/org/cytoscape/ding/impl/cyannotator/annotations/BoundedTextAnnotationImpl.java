@@ -252,6 +252,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			fitShapeToText();
 
 		updateBounds();
+		update();
 	}
 
 	@Override
@@ -261,6 +262,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setTextColor(Color color) {
 		this.textColor = color;
+		update();
 	}
 
 	@Override
@@ -269,6 +271,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontSize(double size) {
 		setFontSize(size, true);
+		update();
 	}
 
 	// A method that can be used for group resizing
@@ -277,6 +280,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		font = font.deriveFont((float)(fontSize));
 		if (updateBounds)
 			updateBounds();
+		update();
 	}
 
 	@Override
@@ -286,6 +290,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontStyle(int style) {
 		font = font.deriveFont(style, (float)(fontSize));
+		update();
 	}
 
 	@Override
@@ -296,6 +301,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	@Override
 	public void setFontFamily(String family) {
 		font = new Font(family, font.getStyle(), (int)fontSize);
+		update();
 	}
 
 	@Override
@@ -309,6 +315,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = font; 
 		this.fontSize = font.getSize2D();
 		updateBounds();
+		update();
 	}
 
 	private void updateBounds() {

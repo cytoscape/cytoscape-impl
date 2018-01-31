@@ -141,6 +141,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.text = text;
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		update();
 	}
 
 	@Override
@@ -150,6 +151,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setTextColor(Color color) {
 		this.textColor = color;
+		update();
 	}
 
 	@Override
@@ -161,6 +163,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		font = font.deriveFont((float)(fontSize));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		update();
 	}
 
 	@Override
@@ -172,6 +175,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		font = font.deriveFont(style, (float)(fontSize));
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		update();
 	}
 
 	@Override
@@ -184,6 +188,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		font = new Font(family, font.getStyle(), (int)fontSize);
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		update();
 	}
 
 	@Override
@@ -198,6 +203,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		this.fontSize = font.getSize2D();
 		if(!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		update();
 	}
 
 	public JDialog getModifyDialog() {

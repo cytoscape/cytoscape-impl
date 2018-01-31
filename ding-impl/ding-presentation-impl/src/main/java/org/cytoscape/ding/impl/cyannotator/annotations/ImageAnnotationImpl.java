@@ -161,7 +161,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,ImageAnnotation.class.getName());
-		argMap.put(URL, url.toString());
+		if (url != null)
+			argMap.put(URL, url.toString());
 		argMap.put(ImageAnnotation.WIDTH, Double.toString(shapeWidth));
 		argMap.put(ImageAnnotation.HEIGHT, Double.toString(shapeHeight));
 		argMap.put(OPACITY, Float.toString(opacity));
@@ -216,12 +217,14 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		resizedImage=resizeImage((int)width, (int)height);
 		if (!usedForPreviews())
 			getCanvas().repaint();
+		update();
 	}
 
 	@Override
 	public void setImage(URL url) {
 		this.url = url;
 		reloadImage();
+		update();
 	}
 
 	@Override
@@ -233,6 +236,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public void setImageOpacity(float opacity) {
 		this.opacity = opacity;
 		resizedImage = null;
+		update();
 	}
 
 	@Override
@@ -244,6 +248,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public void setImageBrightness(int brightness) {
 		this.brightness = brightness;
 		resizedImage = null;
+		update();
 	}
 
 	@Override
@@ -255,6 +260,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public void setImageContrast(int contrast) {
 		this.contrast = contrast;
 		resizedImage = null;
+		update();
 	}
 
 	@Override
