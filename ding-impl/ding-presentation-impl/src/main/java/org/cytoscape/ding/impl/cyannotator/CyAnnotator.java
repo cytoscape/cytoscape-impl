@@ -28,6 +28,7 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -306,6 +307,32 @@ public class CyAnnotator {
 		return top;
 	}
 
+	/**
+ 	 * Find all of our annotations that are at this point.  Return the top annotation
+ 	 * (the one with the lowest Z value) if there are more than one.
+ 	 *
+ 	 * @param cnvs the Canvas we're looking at
+ 	 * @param x the x value of the point
+ 	 * @param y the y value of the point
+ 	 * @return the list of components
+ 	 */
+	public List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+		List<DingAnnotation> list = new ArrayList<>();
+		for (DingAnnotation a: annotationMap.keySet()) {
+			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
+				// Make sure to find the parent if this is a group
+				while (a.getGroupParent() != null) {
+					a = (DingAnnotation)a.getGroupParent();
+				}
+				if (!list.contains(a))
+					list.add(a);
+			}
+		}
+		// Now sort the list by Z order, smallest to largest
+		Collections.sort(list, new ZComparator(cnvs));
+		return list;
+	}
+
 	public DingAnnotation getAnnotationAt(Point2D position) {
 		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
 		if (a != null) {
@@ -320,6 +347,13 @@ public class CyAnnotator {
 			while (a.getGroupParent() != null)
 				a = (DingAnnotation)a.getGroupParent();
 		}
+		return a;
+	}
+
+	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
+		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
+
+		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
 		return a;
 	}
 
@@ -554,6 +588,28 @@ public class CyAnnotator {
 					((DingAnnotation)annotations[i]).setZoom(newZoom);
 				}
 			}
+		}
+	}
+
+	class ZComparator implements Comparator<DingAnnotation> {
+		final ArbitraryGraphicsCanvas cnvs;
+		public ZComparator(final ArbitraryGraphicsCanvas c) {
+			this.cnvs = c;
+		}
+
+		public int compare(DingAnnotation o1, DingAnnotation o2) {
+			int z1 = cnvs.getComponentZOrder(o1.getComponent());
+			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			if (z1 < z2) return -1;
+			if (z1 > z2) return 1;
+			return 0;
+		}
+
+		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
+			int z1 = cnvs.getComponentZOrder(o1.getComponent());
+			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			if (z1 == z2) return true;
+			return false;
 		}
 	}
 }
