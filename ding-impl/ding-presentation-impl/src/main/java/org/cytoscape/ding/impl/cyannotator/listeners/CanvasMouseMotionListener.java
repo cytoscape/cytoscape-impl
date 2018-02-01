@@ -31,6 +31,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
+import java.util.List;
+
 import org.cytoscape.model.CyNode;
 
 import org.cytoscape.ding.impl.DGraphView;
@@ -132,9 +134,12 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 
 			// See what's under our mouse
 			// Annotation?
-			DingAnnotation a = cyAnnotator.getAnnotationAt(mousePoint);
-			if (a != null && !(a instanceof ArrowAnnotationImpl)) {
-				repositionAnnotation.setTarget(a);
+			List<DingAnnotation> annotations = cyAnnotator.getAnnotationsAt(mousePoint);
+			if (annotations.contains(repositionAnnotation))
+				annotations.remove(repositionAnnotation);
+
+			if (annotations.size() > 0) {
+				repositionAnnotation.setTarget(annotations.get(0));
 
 			// Node?
 			} else if (overNode(mousePoint)) {
