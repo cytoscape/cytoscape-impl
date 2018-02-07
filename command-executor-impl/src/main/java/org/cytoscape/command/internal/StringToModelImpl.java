@@ -118,7 +118,7 @@ public class StringToModelImpl implements StringToModel {
 					return null;
 
 				for (CyNetworkView view: netViewMgr.getNetworkViewSet()) {
-					if (view.getSUID() == suid) return view;
+					if (view.getSUID().equals(suid)) return view;
 				}
 				return null;
 			}
