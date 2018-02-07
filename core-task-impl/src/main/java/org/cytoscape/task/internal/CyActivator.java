@@ -99,7 +99,7 @@ import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
-import org.cytoscape.task.internal.export.graphics.ExportNetworkImageCommandTaskFactory;
+// import org.cytoscape.task.internal.export.graphics.ExportNetworkImageCommandTaskFactory;
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportSelectedNetworkTaskFactoryImpl;
@@ -494,27 +494,12 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network Image to File");
-			/*
-			props.setProperty(COMMAND, "export");
-			props.setProperty(COMMAND_NAMESPACE, "view");
-			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
-			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Exports the current view to a graphics file and returns the path to the saved file. "
-					+ "PNG and JPEG formats have options for scaling, while other formats only have the option 'exportTextAsFont'. "
-					+ "For the PDF format, exporting text as font does not work for two-byte characters such as Chinese or Japanese. "
-					+ "To avoid corrupted texts in the exported PDF, please set false to 'exportTextAsFont' "
-					+ "when exporting networks including those non-English characters."
-			);
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork.pdf\" }");
-			*/
+
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkImageTaskFactory.class, props);
-		}
-		{
+
 			// view export command
-			ExportNetworkImageCommandTaskFactory factory = new ExportNetworkImageCommandTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "view");
@@ -587,13 +572,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(TOOL_BAR_GRAVITY, "5.4");
 			props.setProperty(IN_TOOL_BAR, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+
+			props = new Properties();
 			props.setProperty(COMMAND, "fit selected");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit the selected nodes and edges into the view");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the view area.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			FitContentTaskFactory factory = new FitContentTaskFactory(serviceRegistrar);
@@ -607,13 +595,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOL_BAR_GRAVITY, "5.3");
 			props.setProperty(IN_TOOL_BAR, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+
+			props = new Properties();
 			props.setProperty(COMMAND, "fit content");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Fit all of the nodes and edges into the view");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			GetCurrentNetworkViewTaskFactory factory = new GetCurrentNetworkViewTaskFactory(serviceRegistrar);
@@ -2142,13 +2133,6 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network to File");
-			props.setProperty(COMMAND, "export");
-			props.setProperty(COMMAND_NAMESPACE, "network");
-			props.setProperty(COMMAND_DESCRIPTION, "Export a network to a file");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, 
-			                  "Export a network to a network file (e.g. ``XGMML``, ``SIF``, etc.)");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"file\":\"/tmp/foo.sif\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportSelectedNetworkTaskFactory.class, props);
 		}
@@ -2159,6 +2143,17 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ID, "exportNetworkTaskFactory");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkTaskFactory.class, props);
+
+			// Now register the command version
+			props = new Properties();
+			props.setProperty(COMMAND, "export");
+			props.setProperty(COMMAND_NAMESPACE, "network");
+			props.setProperty(COMMAND_DESCRIPTION, "Export a network to a file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, 
+			                  "Export a network to a network file (e.g. ``XGMML``, ``SIF``, etc.)");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"file\":\"/tmp/foo.sif\"}");
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			// Register as 3 types of service.

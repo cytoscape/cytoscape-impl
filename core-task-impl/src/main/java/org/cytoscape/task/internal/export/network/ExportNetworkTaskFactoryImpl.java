@@ -33,10 +33,12 @@ import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.task.write.ExportNetworkTaskFactory;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TunableSetter;
 
-public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory implements ExportNetworkTaskFactory {
+public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory 
+                                          implements ExportNetworkTaskFactory, TaskFactory {
 
 	private final CyNetworkViewWriterManager writerManager;
 	private final CyApplicationManager cyApplicationManager;
@@ -51,8 +53,13 @@ public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory imp
 	}
 	
 	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(2,new CyNetworkWriter(writerManager, cyApplicationManager, null, true));
+	}
+	
+	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(2,new CyNetworkWriter(writerManager, cyApplicationManager, network));
+		return new TaskIterator(2,new CyNetworkWriter(writerManager, cyApplicationManager, network, false));
 	}
 
 	@Override
@@ -60,8 +67,13 @@ public class ExportNetworkTaskFactoryImpl extends AbstractNetworkTaskFactory imp
 		final Map<String, Object> m = new HashMap<String, Object>();
 		m.put("OutputFile", file);
 
-		CyNetworkWriter writer = new CyNetworkWriter(writerManager, cyApplicationManager, network);
+		CyNetworkWriter writer = new CyNetworkWriter(writerManager, cyApplicationManager, network, false);
 		writer.setDefaultFileFormatUsingFileExt(file);
 		return tunableSetter.createTaskIterator(new TaskIterator(2,writer), m); 
+	}
+
+	@Override
+	public boolean isReady() {
+		return true;
 	}
 }

@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.zoom;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -29,7 +30,7 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class FitContentTaskFactory extends AbstractNetworkViewTaskFactory {
+public class FitContentTaskFactory extends AbstractNetworkViewTaskFactory implements TaskFactory {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -41,4 +42,12 @@ public class FitContentTaskFactory extends AbstractNetworkViewTaskFactory {
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return new TaskIterator(new FitContentTask(view, serviceRegistrar));
 	} 
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new FitContentTask(serviceRegistrar));
+	} 
+
+	@Override
+	public boolean isReady() { return true; }
 }
