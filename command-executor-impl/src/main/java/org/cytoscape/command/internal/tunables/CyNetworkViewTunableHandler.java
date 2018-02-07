@@ -26,19 +26,20 @@ package org.cytoscape.command.internal.tunables;
 
 import org.cytoscape.command.AbstractStringTunableHandler;
 import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.Tunable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.List;
 
-public class CyTableTunableHandler extends AbstractStringTunableHandler implements CyIdentifiableTunableHandler {
-		private StringToModel stringHandler;
-    public CyTableTunableHandler(Field f, Object o, Tunable t) { super(f,o,t); }
-    public CyTableTunableHandler(Method get, Method set, Object o, Tunable t) { super(get,set,o,t); }
-		public void setStringHandler(StringToModel sth) { this.stringHandler = sth; }
+public class CyNetworkViewTunableHandler extends AbstractStringTunableHandler 
+                                         implements CyIdentifiableTunableHandler {
+	private StringToModel stringHandler;
+	public CyNetworkViewTunableHandler(Field f, Object o, Tunable t) { super(f,o,t); }
+	public CyNetworkViewTunableHandler(Method get, Method set, Object o, Tunable t) { 
+		super(get,set,o,t); 
+	}
+	public void setStringHandler(StringToModel sth) { this.stringHandler = sth; }
 
 	public Object processArg(String arg) throws Exception {
-		return stringHandler.getTable(arg);
+		return stringHandler.getNetworkView(arg);
 	}
 }
