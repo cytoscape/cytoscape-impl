@@ -99,6 +99,7 @@ import org.cytoscape.task.hide.UnHideAllNodesTaskFactory;
 import org.cytoscape.task.hide.UnHideAllTaskFactory;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
+import org.cytoscape.task.internal.export.graphics.ExportNetworkImageCommandTaskFactory;
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportSelectedNetworkTaskFactoryImpl;
@@ -493,6 +494,7 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network Image to File");
+			/*
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "view");
 			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
@@ -505,8 +507,28 @@ public class CyActivator extends AbstractCyActivator {
 			);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork.pdf\" }");
+			*/
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, ExportNetworkImageTaskFactory.class, props);
+		}
+		{
+			// view export command
+			ExportNetworkImageCommandTaskFactory factory = new ExportNetworkImageCommandTaskFactory(serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
+			props.setProperty(COMMAND, "export");
+			props.setProperty(COMMAND_NAMESPACE, "view");
+			props.setProperty(COMMAND_DESCRIPTION, "Export the current view to a graphics file");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Exports the current view to a graphics file and returns the path to the saved file. "
+					+ "PNG and JPEG formats have options for scaling, while other formats only have the option 'exportTextAsFont'. "
+					+ "For the PDF format, exporting text as font does not work for two-byte characters such as Chinese or Japanese. "
+					+ "To avoid corrupted texts in the exported PDF, please set false to 'exportTextAsFont' "
+					+ "when exporting networks including those non-English characters."
+			);
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ \"file\": \"/Users/johndoe/Documents/MyNetwork.pdf\" }");
+			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
 			// New in 3.2.0: Export to HTML5 archive
