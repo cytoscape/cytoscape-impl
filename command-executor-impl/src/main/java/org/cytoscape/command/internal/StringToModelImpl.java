@@ -21,6 +21,8 @@ import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,6 +95,46 @@ public class StringToModelImpl implements StringToModel {
 		for (CyNetwork net: netMgr.getNetworkSet()) {
 			if (strNet.equalsIgnoreCase(net.getRow(net).get(CyNetwork.NAME, String.class)))
 				return net;
+		}
+		
+		return null;
+	}
+
+	@Override
+	public CyNetworkView getNetworkView(String strNet) {
+		if (strNet == null || strNet.length() == 0 || strNet.equalsIgnoreCase(CURRENT))
+			return serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+
+		// Look for any special prefix
+		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		String[] splitString = strNet.split(":");
+		
+		if (splitString.length > 1) {
+			if (SUID.equalsIgnoreCase(splitString[0])) {
+				Long suid = getLong(splitString[1]);
+				
+				if (suid == null)
+					return null;
+
+				for (CyNetworkView view: netViewMgr.getNetworkViewSet()) {
+					if (view.getSUID() == suid) return view;
+				}
+				return null;
+			}
+			
+			if (NAME.equalsIgnoreCase(splitString[0]))
+				strNet = splitString[1];
+		}
+
+		for (CyNetwork net: netMgr.getNetworkSet()) {
+			if (strNet.equalsIgnoreCase(net.getRow(net).get(CyNetwork.NAME, String.class))) {
+				if (netViewMgr.viewExists(net)) {
+					for (CyNetworkView view: netViewMgr.getNetworkViews(net)) {
+						return view; // Just return the first view
+					}
+				}
+			}
 		}
 		
 		return null;
