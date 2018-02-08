@@ -59,6 +59,11 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 	@Tunable(description="Values to set for the properties", context="nogui", longDescription=CoreImplDocumentationConstants.VALUE_LIST_LONG_DESCRIPTION, exampleStringValue="#808080,true")
 	public String valueList = null;
 
+	@Tunable(description="Whether or not to lock the property", context="nogui", 
+	         longDescription="Locking a visual property will override any mappings.  This is the same as the ```Bypass``` column in the user interface",
+	         exampleStringValue="true")
+	public boolean bypass = false;
+
 	public SetNodePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
 	                             RenderingEngineManager reManager) {
 		super(appMgr, viewManager, reManager);
@@ -96,7 +101,7 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 				valueIndex++;
 				try {
 					VisualProperty vp = getProperty(network, node, property.trim());
-					setPropertyValue(network, node, vp, value);
+					setPropertyValue(network, node, vp, value, bypass);
 					taskMonitor.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value.toString());
 				} catch (Exception e) {
 					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
