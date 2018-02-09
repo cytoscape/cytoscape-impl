@@ -126,10 +126,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
-		if (view == null) {
-			view = cyApplicationManager.getCurrentNetworkView();
-			setView(view);
-		}
+		if (view == null) return null;
 		return writerManager.getWriter(view, re, filter, outputStream);
 	}
 
