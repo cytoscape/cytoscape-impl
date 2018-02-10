@@ -14,6 +14,7 @@ import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.net.WebQuerier;
@@ -24,6 +25,16 @@ import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
 import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
+import org.cytoscape.app.internal.task.EnableTaskFactory;
+import org.cytoscape.app.internal.task.DisableTaskFactory;
+import org.cytoscape.app.internal.task.InformationTaskFactory;
+import org.cytoscape.app.internal.task.InstallTaskFactory;
+import org.cytoscape.app.internal.task.ListAvailableTaskFactory;
+import org.cytoscape.app.internal.task.ListAppsTaskFactory;
+import org.cytoscape.app.internal.task.ListUpdatesTaskFactory;
+import org.cytoscape.app.internal.task.StatusTaskFactory;
+import org.cytoscape.app.internal.task.UninstallTaskFactory;
+import org.cytoscape.app.internal.task.UpdateTaskFactory;
 import org.cytoscape.app.internal.tunable.AppConflictHandlerFactory;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
@@ -119,6 +130,13 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -411,20 +429,203 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
-        final AppGetResponder appGetResponder = new AppGetResponder(appManager, cytoscapeVersionService);
-        final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
-        httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
-        httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
-        httpd.addAfterResponse(new AddAllowOriginHeader());
-        httpd.addResponder(appGetResponder.new StatusResponder());
-        httpd.addResponder(appGetResponder.new InstallResponder());
-        httpd.start();
+		final AppGetResponder appGetResponder = new AppGetResponder(appManager, cytoscapeVersionService);
+		final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
+		httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
+		httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
+		httpd.addAfterResponse(new AddAllowOriginHeader());
+		httpd.addResponder(appGetResponder.new StatusResponder());
+		httpd.addResponder(appGetResponder.new InstallResponder());
+		httpd.start();
 
         // Special case: handle yFiles app options
 		final OpenBrowser openBrowser = getService(bc, OpenBrowser.class);
 		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
 		bc.addBundleListener(checker);
 		registerAllServices(bc, checker, new Properties());
+
+		{
+			DisableTaskFactory factory = new DisableTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "disable");
+      props.setProperty(COMMAND_DESCRIPTION, "Disable an app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Disable a currently installed app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			EnableTaskFactory factory = new EnableTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "enable");
+      props.setProperty(COMMAND_DESCRIPTION, "Enable a disabled app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Enable a currently disabled app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		
+		{
+			InformationTaskFactory factory = new InformationTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "information");
+      props.setProperty(COMMAND_DESCRIPTION, "Get app information");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Get information about an app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\""+
+			                                        ", \"description\": \"App description\""+
+			                                        ", \"version\": \"1.2.2\"}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		
+		{
+			InstallTaskFactory factory = new InstallTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "install");
+      props.setProperty(COMMAND_DESCRIPTION, "Install an app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Install an app given an app name or file.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			ListAvailableTaskFactory factory = new ListAvailableTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "list available");
+      props.setProperty(COMMAND_DESCRIPTION, "List the available apps");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Return a list of the available apps in the app store");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, 
+			    "[{ \"fullName\": \"appname\","+
+			    "\"name\": \"name\","+
+			    "\"description\": \"descriptions\","+
+			    "\"details\": \"app details\"},...]"
+			);
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.DISABLED);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "list disabled");
+      props.setProperty(COMMAND_DESCRIPTION, "List the disabled apps");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Return a list of the disabled apps in the current installation.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, 
+			    "[{ \"name\": \"appname\","+
+			    "\"version\": \"1.1.0\","+
+			    "\"description\": \"descriptions\","+
+			    "\"status\": \"disabled\"},...]"
+			);
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.INSTALLED);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "list installed");
+      props.setProperty(COMMAND_DESCRIPTION, "List the installed apps");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Return a list of the installed apps in the current installation.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, 
+			    "[{ \"name\": \"appname\","+
+			    "\"version\": \"1.1.0\","+
+			    "\"description\": \"descriptions\","+
+			    "\"status\": \"installed\"},...]"
+			);
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.UNINSTALLED);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "list uninstalled");
+      props.setProperty(COMMAND_DESCRIPTION, "List the uninstalled apps");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Return a list of the uninstalled apps in the current installation.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, 
+			    "[{ \"name\": \"appname\","+
+			    "\"version\": \"1.1.0\","+
+			    "\"description\": \"descriptions\","+
+			    "\"status\": \"uninstalled\"},...]"
+			);
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			ListUpdatesTaskFactory factory = new ListUpdatesTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "list updates");
+      props.setProperty(COMMAND_DESCRIPTION, "List the apps available for updates");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Return a list of the apps that have updates in the app store.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, 
+			    "[{ \"name\": \"appname\","+
+			    "\"version\": \"1.1.10\","+
+			    "\"information\": \"app information\"},...]"
+			);
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			StatusTaskFactory factory = new StatusTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "status");
+      props.setProperty(COMMAND_DESCRIPTION, "Get the status of an app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Get the status of an app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\", \"status\": \"installed\"}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
+		{
+			UninstallTaskFactory factory = new UninstallTaskFactory(appManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "uninstall");
+      props.setProperty(COMMAND_DESCRIPTION, "Uninstall an app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Uninstall a currently installed app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+		
+		{
+			UpdateTaskFactory factory = new UpdateTaskFactory(appManager, updateManager);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "update");
+      props.setProperty(COMMAND_DESCRIPTION, "Update an app or all apps");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Update an app or all apps.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
+
 	}
 
 
