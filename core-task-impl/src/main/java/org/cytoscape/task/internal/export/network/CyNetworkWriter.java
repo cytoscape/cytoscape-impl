@@ -29,6 +29,7 @@ import java.io.File;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyNetworkViewWriterFactory;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
@@ -43,8 +44,12 @@ import org.cytoscape.work.Tunable;
  * A utility Task implementation specifically for writing a {@link org.cytoscape.model.CyNetwork}.
  */
 public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
+
 	// the network to be written
-	private final CyNetwork network;
+	@Tunable(description="The network to be exported", 
+	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+	         exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING, context="nogui")
+	public CyNetwork network = null;
 
 	/**
 	 * @param writerManager The {@link org.cytoscape.io.write.CyNetworkViewWriterManager} used to determine which 
@@ -52,13 +57,11 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 	 * @param network The {@link org.cytoscape.model.CyNetwork} to be written out. 
 	 */
 	public CyNetworkWriter(final CyNetworkViewWriterManager writerManager, final CyApplicationManager cyApplicationManager,
-			final CyNetwork network ) {
+			final CyNetwork network, final boolean useTunable ) {
 		super(writerManager, cyApplicationManager);
-		
-		if (network == null)
-			throw new NullPointerException("Network is null.");
-		
+
 		this.network = network;
+
 		// Pick SIF as a default file format
 		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
 			if(fileTypeDesc.contains("SIF")) {
@@ -66,6 +69,14 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 				break;
 			}
 		}
+
+		if (useTunable) {
+			return;
+		}
+
+		if (network == null)
+			throw new NullPointerException("Network is null.");
+
 		this.outputFile = getSuggestedFile();
 	}
 
@@ -82,12 +93,12 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 			}
 	}
 
-
 	/**
 	 * {@inheritDoc}  
 	 */
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter)  throws Exception{
+		if (network == null) network = cyApplicationManager.getCurrentNetwork();
 		return writerManager.getWriter(network,filter,outputStream);
 	}
 	

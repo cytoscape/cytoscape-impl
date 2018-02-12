@@ -44,6 +44,12 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetNetworkPropertiesTask extends AbstractPropertyTask {
+
+	@Tunable(description="Whether or not to lock the property", context="nogui", 
+	         longDescription="Locking a visual property will override any mappings.  This is the same as the ```Bypass``` column in the user interface",
+	         exampleStringValue="true")
+	public boolean bypass = false;
+
 	@Tunable(description="Network to set properties for", context="nogui",
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
@@ -96,7 +102,7 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 			String value = values[valueIndex];
 			try {
 				VisualProperty vp = getProperty(network, network, property.trim());
-				setPropertyValue(network, network, vp, value);
+				setPropertyValue(network, network, vp, value, bypass);
 				taskMonitor.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkName(network)+" "+vp.getDisplayName()+" set to "+value.toString());
 			} catch (Exception e) {
 				taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());

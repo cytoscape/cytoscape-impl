@@ -1,9 +1,12 @@
 package org.cytoscape.task.internal.zoom;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 import org.cytoscape.work.undo.UndoSupport;
 
 /*
@@ -30,12 +33,28 @@ import org.cytoscape.work.undo.UndoSupport;
  * #L%
  */
 
-public class FitContentTask extends AbstractNetworkViewTask {
+public class FitContentTask extends AbstractTask {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
+	CyNetworkView tunableView = null;
+	@Tunable(description="Network View to export", 
+	         longDescription=StringToModel.CY_NETWORK_VIEW_LONG_DESCRIPTION,
+	         exampleStringValue=StringToModel.CY_NETWORK_VIEW_EXAMPLE_STRING,
+	         context="nogui")
+	public CyNetworkView getView() {
+		return tunableView;
+	}
+	public void setView(CyNetworkView setView) {
+		tunableView = setView;
+	}
+
+	public FitContentTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
 	public FitContentTask(CyNetworkView view, CyServiceRegistrar serviceRegistrar) {
-		super(view);
+		tunableView = view;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -44,10 +63,19 @@ public class FitContentTask extends AbstractNetworkViewTask {
 		tm.setTitle("Fit Content");
 		tm.setProgress(0.0);
 		
-		serviceRegistrar.getService(UndoSupport.class).postEdit(new FitContentEdit("Fit Content", view));
+		if (tunableView == null) {
+			tunableView = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		}
+
+		if (tunableView == null) {
+			tm.showMessage(TaskMonitor.Level.ERROR, "No view to fit");
+			return;
+		}
+
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new FitContentEdit("Fit Content", tunableView));
 		tm.setProgress(0.3);
 		
-		view.fitContent();
+		tunableView.fitContent();
 		tm.setProgress(1.0);
 	}
 }

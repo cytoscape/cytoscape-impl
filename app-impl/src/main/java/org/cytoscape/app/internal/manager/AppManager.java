@@ -881,7 +881,9 @@ public class AppManager implements FrameworkListener {
 	 * apps directory
 	 */
 	public void uninstallApp(App app) throws AppUninstallException {
-		if(app.isBundledApp()) return; 
+		if(app.isBundledApp()) {
+			return; 
+		}
 		
 		try {
 			app.moveAppFile(this, new File(getUninstalledAppsPath()));

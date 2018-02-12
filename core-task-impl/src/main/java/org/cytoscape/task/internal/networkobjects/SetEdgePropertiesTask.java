@@ -46,6 +46,11 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
+	@Tunable(description="Whether or not to lock the property", context="nogui", 
+	         longDescription="Locking a visual property will override any mappings.  This is the same as the ```Bypass``` column in the user interface",
+	         exampleStringValue="true")
+	public boolean bypass = false;
+
 	@Tunable(description="Properties to get the value for", context="nogui", longDescription=CoreImplDocumentationConstants.PROPERTY_LIST_LONG_DESCRIPTION, exampleStringValue="Paint, Visible")
 	public String propertyList = null;
 
@@ -89,7 +94,7 @@ public class SetEdgePropertiesTask extends AbstractPropertyTask {
 				valueIndex++;
 				try {
 					VisualProperty vp = getProperty(network, edge, property.trim());
-					setPropertyValue(network, edge, vp, value);
+					setPropertyValue(network, edge, vp, value, bypass);
 					taskMonitor.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value.toString());
 				} catch (Exception e) {
 					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());

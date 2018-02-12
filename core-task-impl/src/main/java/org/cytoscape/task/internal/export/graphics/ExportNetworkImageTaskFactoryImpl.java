@@ -8,6 +8,7 @@ import org.cytoscape.task.write.ExportNetworkImageTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -35,7 +36,7 @@ import org.cytoscape.work.TaskIterator;
  */
 
 public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFactory
-		implements ExportNetworkImageTaskFactory {
+		implements ExportNetworkImageTaskFactory, TaskFactory {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -61,4 +62,12 @@ public class ExportNetworkImageTaskFactoryImpl extends AbstractNetworkViewTaskFa
 
 		return new TaskIterator(2, new ViewWriter(view, engine, serviceRegistrar));
 	}
+
+	@Override
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(2, new ViewWriter(serviceRegistrar));
+	}
+
+	@Override
+	public boolean isReady() { return true; }
 }

@@ -22,6 +22,7 @@ import org.cytoscape.command.internal.tunables.BoundedLongTunableHandler;
 import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 import org.cytoscape.command.internal.tunables.CyIdentifiableStringTunableHandlerFactory;
 import org.cytoscape.command.internal.tunables.CyNetworkTunableHandler;
+import org.cytoscape.command.internal.tunables.CyNetworkViewTunableHandler;
 import org.cytoscape.command.internal.tunables.CyTableTunableHandler;
 import org.cytoscape.command.internal.tunables.DoubleTunableHandler;
 import org.cytoscape.command.internal.tunables.EdgeListTunableHandler;
@@ -47,6 +48,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.BoundedFloat;
@@ -122,17 +124,24 @@ public class CyActivator extends AbstractCyActivator {
 		StringToModel stm = new StringToModelImpl(serviceRegistrar);
 		registerService(bc, stm, StringToModel.class, new Properties());
 
-		CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler> networkTHF = new CyIdentifiableStringTunableHandlerFactory<>(
-				stm, CyNetworkTunableHandler.class, CyNetwork.class);
+		CyIdentifiableStringTunableHandlerFactory<CyNetworkTunableHandler> networkTHF = 
+						new CyIdentifiableStringTunableHandlerFactory<>(stm, CyNetworkTunableHandler.class, CyNetwork.class);
+		registerService(bc, networkTHF, StringTunableHandlerFactory.class, new Properties());
+
+		CyIdentifiableStringTunableHandlerFactory<CyNetworkViewTunableHandler> networkViewTHF =
+					 	new CyIdentifiableStringTunableHandlerFactory<>(stm, CyNetworkViewTunableHandler.class, CyNetworkView.class);
+		registerService(bc, networkViewTHF, StringTunableHandlerFactory.class, new Properties());
+
 		CyIdentifiableStringTunableHandlerFactory<CyTableTunableHandler> tableTHF = new CyIdentifiableStringTunableHandlerFactory<>(
 				stm, CyTableTunableHandler.class, CyTable.class);
+		registerService(bc, tableTHF, StringTunableHandlerFactory.class, new Properties());
+
 		CyIdentifiableStringTunableHandlerFactory<NodeListTunableHandler> nodeListTHF = new CyIdentifiableStringTunableHandlerFactory<>(
 				stm, NodeListTunableHandler.class, NodeList.class);
+		registerService(bc, nodeListTHF, StringTunableHandlerFactory.class, new Properties());
+
 		CyIdentifiableStringTunableHandlerFactory<EdgeListTunableHandler> edgeListTHF = new CyIdentifiableStringTunableHandlerFactory<>(
 				stm, EdgeListTunableHandler.class, EdgeList.class);
-		registerService(bc, networkTHF, StringTunableHandlerFactory.class, new Properties());
-		registerService(bc, tableTHF, StringTunableHandlerFactory.class, new Properties());
-		registerService(bc, nodeListTHF, StringTunableHandlerFactory.class, new Properties());
 		registerService(bc, edgeListTHF, StringTunableHandlerFactory.class, new Properties());
 
 		CyIdentifiableStringTunableHandlerFactory<RowListTunableHandler> rowListTHF = new CyIdentifiableStringTunableHandlerFactory<>(

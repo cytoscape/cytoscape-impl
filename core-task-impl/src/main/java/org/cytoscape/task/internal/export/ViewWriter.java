@@ -3,6 +3,7 @@ package org.cytoscape.task.internal.export;
 import java.io.File;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
 import org.cytoscape.io.CyFileFilter;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.io.write.PresentationWriterFactory;
@@ -11,6 +12,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
@@ -45,8 +47,52 @@ import org.cytoscape.work.Tunable;
  */
 public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory, PresentationWriterManager> {
 	
-	private final CyNetworkView view;
-	private final RenderingEngine<?> re;
+	public CyNetworkView view = null;
+	@Tunable(description="Network View to export", 
+	         longDescription=StringToModel.CY_NETWORK_VIEW_LONG_DESCRIPTION,
+	         exampleStringValue=StringToModel.CY_NETWORK_VIEW_EXAMPLE_STRING,
+	         context="nogui")
+	public CyNetworkView getView() {
+		return view;
+	}
+	public void setView(CyNetworkView view) {
+		this.view = view;
+		if (view != null) {
+			// Get the rendering engine
+			RenderingEngine<?> engine = serviceRegistrar.getService(CyApplicationManager.class).getCurrentRenderingEngine();
+
+			// Now get the rendering engine for this view and use this one if we can
+			String engineId = view.getRendererId();
+			RenderingEngineManager engineManager = serviceRegistrar.getService(RenderingEngineManager.class);
+	
+			for (RenderingEngine<?> e : engineManager.getRenderingEngines(view)) {
+				if (engineId.equals(e.getRendererId())) {
+					engine = e;
+					break;
+				}
+			}
+			this.re = engine;
+		}
+	}
+
+	private RenderingEngine<?> re;
+	private boolean useTunable = false;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public ViewWriter(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar.getService(PresentationWriterManager.class),
+				serviceRegistrar.getService(CyApplicationManager.class));
+		this.serviceRegistrar = serviceRegistrar;
+		useTunable = true;
+
+		// Pick PNG as a default file format
+		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
+			if (fileTypeDesc.contains("PNG")) {
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+		}
+	}
 
 	/**
 	 * @param writerManager The {@link org.cytoscape.io.write.PresentationWriterManager} used to determine which type of
@@ -57,6 +103,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	public ViewWriter(CyNetworkView view, RenderingEngine<?> re, CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar.getService(PresentationWriterManager.class),
 				serviceRegistrar.getService(CyApplicationManager.class));
+		this.serviceRegistrar = serviceRegistrar;
 
 		if (view == null)
 			throw new NullPointerException("CyNetworkView is null");
@@ -79,6 +126,7 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
+		if (view == null) return null;
 		return writerManager.getWriter(view, re, filter, outputStream);
 	}
 
@@ -93,9 +141,10 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	)
 	@Override
 	public File getOutputFile() {
+		if (outputFile == null) outputFile = getSuggestedFile();
 		return outputFile;
 	}
-	
+
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export Network as Image";
@@ -104,10 +153,10 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	@Override
 	protected String getExportName() {
 		String name = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
-		
+
 		if (name == null || name.trim().isEmpty())
 			name = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
-		
+
 		return name;
 	}
 }

@@ -163,6 +163,11 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 	}
 
 	public void setPropertyValue(CyNetwork network, CyIdentifiable target, VisualProperty vp, String value) {
+		setPropertyValue(network, target, vp, value, false);
+	}
+
+	public void setPropertyValue(CyNetwork network, CyIdentifiable target, 
+	                             VisualProperty vp, String value, boolean locked) {
 		CyNetworkView networkView = getViewForNetwork(network);
 		Class<? extends CyIdentifiable> vpTargetType = vp.getTargetDataType();
 
@@ -170,19 +175,37 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 			if (vpTargetType != CyNetwork.class)
 				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for networks");
 			Object t =  vp.parseSerializableString(value);
-			networkView.setVisualProperty(vp, t);
+			if (locked)
+				networkView.setLockedValue(vp, t);
+			else {
+				if (networkView.isValueLocked(vp))
+					networkView.clearValueLock(vp);
+				networkView.setVisualProperty(vp, t);
+			}
 		} else if (target instanceof CyNode) {
 			if (vpTargetType != CyNode.class)
 				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for nodes");
 			View<CyNode> nodeView = networkView.getNodeView((CyNode)target);
 			Object t =  vp.parseSerializableString(value);
-			nodeView.setVisualProperty(vp, t);
+			if (locked)
+				nodeView.setLockedValue(vp, t);
+			else {
+				if (nodeView.isValueLocked(vp))
+					nodeView.clearValueLock(vp);
+				nodeView.setVisualProperty(vp, t);
+			}
 		} else if (target instanceof CyEdge) {
 			if (vpTargetType != CyEdge.class)
 				throw new RuntimeException("Property '"+vp.getDisplayName()+"' not available for edges");
 			View<CyEdge> edgeView = networkView.getEdgeView((CyEdge)target);
 			Object t =  vp.parseSerializableString(value);
-			edgeView.setVisualProperty(vp, t);
+			if (locked)
+				edgeView.setLockedValue(vp, t);
+			else {
+				if (edgeView.isValueLocked(vp))
+					edgeView.clearValueLock(vp);
+				edgeView.setVisualProperty(vp, t);
+			}
 		} 
 		return;
 	}

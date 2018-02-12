@@ -45,7 +45,15 @@ public class SetCurrentNetworkViewTask extends AbstractTask {
 			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
 			context = "nogui"
 	)
-	public CyNetwork network;
+	public CyNetwork network = null;
+
+	@Tunable(
+			description = "View to set as the current view",
+			longDescription = StringToModel.CY_NETWORK_VIEW_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_VIEW_EXAMPLE_STRING,
+			context = "nogui"
+	)
+	public CyNetworkView view = null;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -55,15 +63,15 @@ public class SetCurrentNetworkViewTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		CyNetworkView view = null;
-		
-		Collection<CyNetworkView> viewList = network != null
-				? serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network)
-				: Collections.emptyList();
-		
-		if (!viewList.isEmpty())
-			view = viewList.iterator().next();
-		
+		if (view == null) {
+			Collection<CyNetworkView> viewList = network != null
+					? serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network)
+					: Collections.emptyList();
+
+			if (!viewList.isEmpty())
+				view = viewList.iterator().next();
+		}
+
 		tm.showMessage(TaskMonitor.Level.INFO, "Setting current network view to " + view);
 		serviceRegistrar.getService(CyApplicationManager.class).setCurrentNetworkView(view);
 	}

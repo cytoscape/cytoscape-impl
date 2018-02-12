@@ -41,7 +41,7 @@ nodelinkouturl.Structure\ Databases.NCBI\ Structure=http://www.ncbi.nlm.nih.gov/
 nodelinkouturl.Pathway\ Databases.Reactome=http://www.reactome.org/cgi-bin/search2?OPERATOR=ALL&SPECIES=ALL&QUERY=%ID%
 nodelinkouturl.Pathway\ Databases.Wikipathways=http://www.wikipathways.org//index.php?query=%ID%&title=Special%3ASearchPathways&doSearch=1&sa=Search
 nodelinkouturl.Pathway\ Databases.KEGG\ Pathways=http://www.kegg.jp/kegg-bin/search_pathway_text?map=map&keyword=%ID%&mode=1&viewImage=true
-nodelinkouturl.Pathway\ Databases.Pathway\ Commons=http://www.pathwaycommons.org/pc/webservice.do?version=3.0&snapshot_id=GLOBAL_FILTER_SETTINGS&record_type=PATHWAY&q=%ID%&format=html&cmd=get_by_keyword
+nodelinkouturl.Pathway\ Databases.Pathway\ Commons=http://apps.pathwaycommons.org/search?type=Pathway&q=%ID%
 
 # Arrays
 nodelinkouturl.Array\ Experiments.GEO\ DataSets=http://www.ncbi.nlm.nih.gov/gds/?term=%ID%
