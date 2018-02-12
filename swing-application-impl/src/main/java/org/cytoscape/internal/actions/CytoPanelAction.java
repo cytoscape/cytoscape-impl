@@ -7,6 +7,7 @@ import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 
@@ -63,6 +64,13 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ev) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 
+		if (position == CytoPanelName.SOUTH_WEST)
+		{
+			CytoPanel west = desktop.getCytoPanel(CytoPanelName.WEST);
+			CytoPanelState westState = west.getState();
+			if (	westState == CytoPanelState.HIDE)
+				west.setState(CytoPanelState.DOCK);
+		}
 		if (curState == CytoPanelState.HIDE)
 			desktop.getCytoPanel(position).setState(CytoPanelState.DOCK);
 		else
