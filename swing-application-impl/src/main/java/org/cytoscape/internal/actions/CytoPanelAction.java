@@ -64,7 +64,7 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ev) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 
-		if (position == CytoPanelName.SOUTH_WEST)
+		if (position == CytoPanelName.SOUTH_WEST && curState == CytoPanelState.HIDE)			// #4100
 		{
 			CytoPanel west = desktop.getCytoPanel(CytoPanelName.WEST);
 			CytoPanelState westState = west.getState();
