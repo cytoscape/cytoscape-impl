@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,11 +33,20 @@ public abstract class AbstractAppTask extends AbstractTask {
 	}
 
 	protected App getApp(String appName) {
+		List<App> matchingApps = new ArrayList<App>();
 		for (App app: appList) {
 			if (appName.equalsIgnoreCase(app.getAppName()))
-				return app;
+				if (app.getStatus() == AppStatus.INSTALLED)
+					return app;
+				matchingApps.add(app);
 		}
-		return null;
+		if (matchingApps.size() == 0)
+			return null;
+
+		// OK, we have multiple matching apps.  Find the latest version
+		// and return that one
+		Collections.sort(matchingApps, new VersionCompare());
+		return matchingApps.get(matchingApps.size()-1);
 	}
 
 	protected List<App> getApps(AppStatus status) {
@@ -66,6 +76,26 @@ public abstract class AbstractAppTask extends AbstractTask {
 		Collections.sort(releases);
 		Release release = releases.get(releases.size()-1);
 		return release.getReleaseVersion();
+	}
+
+	class VersionCompare implements Comparator<App> {
+		public int compare(App o1, App o2) {
+			String version1 = o1.getVersion();
+			String version2 = o2.getVersion();
+			String[] v1 = version1.split(".");
+			String[] v2 = version2.split(".");
+			int major1 = Integer.parseInt(v1[0]);
+			int major2 = Integer.parseInt(v2[0]);
+			if (major1 != major2)
+				return Integer.compare(major1, major2);
+			int minor1 = Integer.parseInt(v1[1]);
+			int minor2 = Integer.parseInt(v2[1]);
+			if (minor1 != minor2)
+				return Integer.compare(minor1, minor2);
+			int patch1 = Integer.parseInt(v1[2]);
+			int patch2 = Integer.parseInt(v2[2]);
+			return Integer.compare(patch1, patch2);
+		}
 	}
 
 }

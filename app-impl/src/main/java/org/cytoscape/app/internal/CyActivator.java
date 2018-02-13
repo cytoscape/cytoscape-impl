@@ -25,6 +25,7 @@ import org.cytoscape.app.internal.net.server.CyHttpdFactoryImpl;
 import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
+import org.cytoscape.app.internal.task.AppStoreTaskFactory;
 import org.cytoscape.app.internal.task.EnableTaskFactory;
 import org.cytoscape.app.internal.task.DisableTaskFactory;
 import org.cytoscape.app.internal.task.InformationTaskFactory;
@@ -443,6 +444,18 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
 		bc.addBundleListener(checker);
 		registerAllServices(bc, checker, new Properties());
+		{
+			AppStoreTaskFactory factory = new AppStoreTaskFactory(appManager, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "apps");
+      props.setProperty(COMMAND, "open appstore");
+      props.setProperty(COMMAND_DESCRIPTION, "Open the app store page for an app");
+      props.setProperty(COMMAND_LONG_DESCRIPTION,
+          "Open the app store page for an app.");
+      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			registerService(bc, factory, TaskFactory.class, props);
+		}
 
 		{
 			DisableTaskFactory factory = new DisableTaskFactory(appManager);
