@@ -45,7 +45,7 @@ public class InstallTask extends AbstractAppTask implements ObservableTask {
 			return;
 		}
 		taskMonitor.setTitle("Installing app "+app);
-		if (file == null) {
+		if (file != null) {
 			InstallAppsFromFileTask installTask =
 					new InstallAppsFromFileTask(Collections.singletonList(file), appManager, false);
 			insertTasksAfterCurrentTask(installTask);

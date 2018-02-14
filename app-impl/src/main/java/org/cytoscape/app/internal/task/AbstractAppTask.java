@@ -82,16 +82,24 @@ public abstract class AbstractAppTask extends AbstractTask {
 		public int compare(App o1, App o2) {
 			String version1 = o1.getVersion();
 			String version2 = o2.getVersion();
-			String[] v1 = version1.split(".");
-			String[] v2 = version2.split(".");
+			String[] v1 = version1.split("\\.");
+			String[] v2 = version2.split("\\.");
 			int major1 = Integer.parseInt(v1[0]);
 			int major2 = Integer.parseInt(v2[0]);
 			if (major1 != major2)
 				return Integer.compare(major1, major2);
+			if (v1.length == 1 || v2.length == 1) {
+				return Integer.compare(v1.length, v2.length);
+			}
+
 			int minor1 = Integer.parseInt(v1[1]);
 			int minor2 = Integer.parseInt(v2[1]);
 			if (minor1 != minor2)
 				return Integer.compare(minor1, minor2);
+			if (v1.length == 2 || v2.length == 2) {
+				return Integer.compare(v1.length, v2.length);
+			}
+
 			int patch1 = Integer.parseInt(v1[2]);
 			int patch2 = Integer.parseInt(v2[2]);
 			return Integer.compare(patch1, patch2);
