@@ -29,6 +29,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 // import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
