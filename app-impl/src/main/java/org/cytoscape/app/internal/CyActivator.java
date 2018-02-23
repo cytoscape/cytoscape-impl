@@ -557,7 +557,7 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the installed apps in the current installation.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"name\": \"appname\","+
+			    "[{\"name\": \"appname\","+
 			    "\"version\": \"1.1.0\","+
 			    "\"description\": \"descriptions\","+
 			    "\"status\": \"installed\"},...]"
