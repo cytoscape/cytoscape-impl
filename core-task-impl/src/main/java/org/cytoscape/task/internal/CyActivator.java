@@ -1904,6 +1904,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set a value in the network table");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified column for the passed network.");
 			props.setProperty(COMMAND_EXAMPLE_JSON, SetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -2187,10 +2188,13 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Return a network");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, 
-			                  "Return a network from the name, SUID, or other identifier");
+			                  "Return a network from the name, SUID, "+
+			                  "or other identifier.  If the name or SUID "+
+			                  "doesn't exist, the current network is returned.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, 
-							"{\"shared name\": \"my network\", \"SUID\": 80, \"name\":\"my network\"}");
+			                  "{\"shared name\": \"my network\", "+
+			                  "\"SUID\": 80, \"name\":\"my network\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
@@ -2249,6 +2253,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Set network visual properties");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Sets the value of a specified property for the passed network.");
 			props.setProperty(COMMAND_EXAMPLE_JSON, SetPropertiesTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
