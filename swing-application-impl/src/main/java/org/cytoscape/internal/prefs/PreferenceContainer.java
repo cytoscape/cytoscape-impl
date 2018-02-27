@@ -296,15 +296,13 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 	
 	public void showNext() 
 	{	String name = getTopCardName();
-		if ("Privacy".equals(name)) 
-			showHome();
-		else if ("home".equals(name)) 		// CYCLE TO FRONT
-			show("Behavior");
+		if ("Privacy".equals(name))  		showHome();
+		else if ("home".equals(name)) 		show("Behavior");		// CYCLE TO FRONT
 		else
 		{
 			CardLayout layout = (CardLayout) contentsPanel.getLayout();
 			layout.next(contentsPanel);
-			repack();
+//			repack();
 			adjust();		
 		}
 							
@@ -312,15 +310,13 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 
 	public void showPrevious() {	
 		String name = getTopCardName();
-		if ("Behavior".equals(name)) 
-			showHome();
-		else if ("home".equals(name)) 		// CYCLE TO BACK
-			show("Privacy");
+		if ("Behavior".equals(name))  		showHome();
+		else if ("home".equals(name)) 		show("Privacy");		// CYCLE TO BACK
 		else
 		{
 			CardLayout layout = (CardLayout) contentsPanel.getLayout();
 			layout.previous(contentsPanel);
-			repack();
+//			repack();
 			adjust();
 		}
 	}			

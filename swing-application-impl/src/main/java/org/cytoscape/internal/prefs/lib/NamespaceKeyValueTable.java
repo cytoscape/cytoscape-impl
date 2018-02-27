@@ -61,7 +61,7 @@ public class NamespaceKeyValueTable extends JTable {
 //        );
 
 	}
-	static Font SMALL_FONT = new Font("Serif", Font.PLAIN, 12);
+	static Font SMALL_FONT = new Font("SansSerif", Font.PLAIN, 12);
 	
 	String[] columnNames = {"Namespace", "Attribute", "Value"};
 	TableRowSorter<NamespaceKeyValueTableModel> sorter;

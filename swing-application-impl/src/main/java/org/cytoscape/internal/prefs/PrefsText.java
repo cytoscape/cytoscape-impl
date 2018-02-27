@@ -186,7 +186,7 @@ public class PrefsText extends AbstractPrefsPanel {
 		AntiAliasedPanel.setSizes(examplePanel, new Dimension(540, 120));
 		fSamplePane = new JEditorPane();
 		fSamplePane.setBackground(Color.white);
-		AntiAliasedPanel.setSizes(fSamplePane, new Dimension(520, 115));
+		AntiAliasedPanel.setSizes(fSamplePane, new Dimension(520, 100));
 		fSamplePane.setText("Lazy evaluation showed excessive use of Cytoscape will make her just be quicker in graphs.");  
 		examplePanel.add(fSamplePane);
 		examplePanel.add(Box.createVerticalGlue());

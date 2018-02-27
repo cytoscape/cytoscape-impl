@@ -23,6 +23,7 @@ import javax.swing.border.TitledBorder;
 import org.cytoscape.internal.prefs.lib.AntiAliasedPanel;
 import org.cytoscape.internal.prefs.lib.ColorPane;
 import org.cytoscape.internal.prefs.lib.HBox;
+import org.cytoscape.internal.prefs.lib.RangedIntegerTextField;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 
@@ -149,8 +150,9 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 	    	JLabel label = new JLabel(prompt);
 	    	line.add(label);
 	    	setSizes(label, 180,25);
-	
-	    	JTextField fld = new JTextField("" + value);
+//		    	JTextField fld = new JTextField("" + value);
+		RangedIntegerTextField fld =  new  RangedIntegerTextField(0,9999, new Dimension(80,27));//  new JTextField(5);
+		fld.setInt(value);
 	    	fld.setMaximumSize(new Dimension(80,30) );
 	    	line.add(fld);
 	    	fld.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -163,7 +165,8 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
     {
 		JLabel label = new JLabel(prompt);
 		setSizes(label, promptLen, 25);
-    		JTextField fld = new JTextField("" + value);
+		RangedIntegerTextField fld =  new  RangedIntegerTextField(0,9999, new Dimension(80,27));//  new JTextField(5);
+		fld.setInt(value);
     		setSizes(fld, 60, 30);
     		fld.setFont(smallFont);
     		fld.setHorizontalAlignment(SwingConstants.RIGHT);
