@@ -15,8 +15,8 @@ import org.cytoscape.internal.prefs.lib.HBox;
 public class PrefsBehavior extends AbstractPrefsPanel {
   	static Font dlogFont = new Font(Font.DIALOG, Font.PLAIN, 12);
 
-	protected PrefsBehavior(Cy3PreferencesPanel dlog) {
-		super(dlog, "cytoscape3");
+	protected PrefsBehavior(Cy3PreferencesPanel root) {
+		super(root, "cytoscape3");
 	}
     @Override public void initUI()
     {
