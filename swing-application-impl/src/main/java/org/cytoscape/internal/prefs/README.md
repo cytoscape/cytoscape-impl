@@ -1,4 +1,4 @@
-```prefs``` includes one class for each panel in the new dialog.  
+```prefs``` includes an abstract class, a container class, and one concrete class for each panel in the new dialog.  
 
 ```Cy3PreferencesPanel``` is the main panel of the dialog.  Individual panels are kept in a ```CardLayout``` defined in the abstract parent ```PreferencesContainer```
 
