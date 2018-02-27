@@ -18,8 +18,8 @@ import org.cytoscape.internal.prefs.lib.RangedIntegerTextField;
 
 public class PrefsSecurity extends AbstractPrefsPanel {
 
-	protected PrefsSecurity(Cy3PreferencesRoot dlog) {
-		super(dlog, "security");
+	protected PrefsSecurity(Cy3PreferencesPanel root) {
+		super(root, "security");
 //		namespace = "proxy";
 	}
     @Override public void initUI()
@@ -53,7 +53,7 @@ public class PrefsSecurity extends AbstractPrefsPanel {
 	static String[] strs = new String[] {"Host", "Port", "User Name", "Password"};
 	AntiAliasedPanel makeRepositoryPanel()
 	{
-		AntiAliasedPanel panel = new AntiAliasedPanel("Proxy Settings", false);
+		AntiAliasedPanel panel = new AntiAliasedPanel("Proxy Settings");
 		setSizes(panel, new Dimension(580,120));
 		fHost = new JTextField(25);
         fPort =  new  RangedIntegerTextField(0,9999, new Dimension(80,27));//  new JTextField(5);
