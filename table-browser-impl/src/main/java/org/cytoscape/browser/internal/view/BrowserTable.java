@@ -516,6 +516,9 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	
 	@Override
 	public void handleEvent(final RowsSetEvent e) {
+		if (isEditing()){
+			getCellEditor().stopCellEditing();
+		}
 		if (ignoreRowSetEvents)
 			return;
 		
