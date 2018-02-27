@@ -11,4 +11,4 @@ Each sub panel has its own data transfer routines called ```install()``` and ```
 There is one subdirectory called ```lib```.  It includes a couple of dozen of Swing utilities from my collection. 
 These are probably more appropriately located in the ```..internal.view``` package, but for now I wanted to keep all of my additions localized in a single package.
 
-Most of the GUI code is in ```AbstractPrefsPanel```, the class from which all the use specific panels derive: ```PrefsBehavior, PrefsPrivacy```, etc.
+Most of the GUI code is in ```AbstractPrefsPanel```, the class from which all the specific panels derive: ```PrefsBehavior, PrefsPrivacy```, etc.
