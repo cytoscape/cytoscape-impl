@@ -99,8 +99,7 @@ public class StringToModelImpl implements StringToModel {
 		
 		return null;
 	}
-
-	@Override
+//	@Override
 	public CyNetworkView getNetworkView(String strNet) {
 		if (strNet == null || strNet.length() == 0 || strNet.equalsIgnoreCase(CURRENT))
 			return serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();

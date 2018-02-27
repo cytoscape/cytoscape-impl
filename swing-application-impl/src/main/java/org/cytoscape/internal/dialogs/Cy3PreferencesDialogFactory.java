@@ -33,13 +33,13 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * #L%
  */
 
-public class PreferencesDialogFactory {
+public class Cy3PreferencesDialogFactory {
 
 	private Cy3PreferencesDialog dialog;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public PreferencesDialogFactory(final CyServiceRegistrar serviceRegistrar) {
+	public Cy3PreferencesDialogFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 

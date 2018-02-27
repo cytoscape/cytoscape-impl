@@ -1,14 +1,19 @@
 package org.cytoscape.internal.actions;
 
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.swing.KeyStroke;
+
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.dialogs.PreferencesDialog;
+import org.cytoscape.internal.dialogs.Cy3PreferencesDialog;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.property.CyProperty;
@@ -43,18 +48,19 @@ public class PreferenceAction extends AbstractCyAction {
 	
 	private final CySwingApplication desktop;
 	private final PreferencesDialogFactory dialogFactory;
-	private PreferencesDialog preferencesDialog;
+	private Cy3PreferencesDialog preferencesDialog;
 	private Map<String, Properties> propMap = new HashMap<>();
 	private Map<String, Bookmarks> bookmarkMap = new HashMap<>();
 	private  Map<String, CyProperty<?>> cyPropMap = new HashMap<>();
 	
 	public PreferenceAction(final CySwingApplication desktop, final PreferencesDialogFactory dialogFactory) {
-		super("Properties...");
+		super("Preferences...");
 		this.desktop = desktop;
-		this.dialogFactory = dialogFactory;
-		
-		setPreferredMenu("Edit.Preferences");
-		setMenuGravity(1.0f);
+		this.dialogFactory = dialogFactory;		
+		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_SEMICOLON,
+		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.META_DOWN_MASK));
+		setPreferredMenu("Edit");	//
+		setMenuGravity(11.0f);
 	}
 
 	@Override

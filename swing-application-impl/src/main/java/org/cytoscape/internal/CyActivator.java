@@ -54,6 +54,7 @@ import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.StarterPanelAction;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
+import org.cytoscape.internal.dialogs.Cy3PreferencesDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
@@ -177,6 +178,7 @@ public class CyActivator extends AbstractCyActivator {
 	private ArrangeTaskFactory arrangeHorizontalTaskFactory;
 	private ArrangeTaskFactory arrangeVerticalTaskFactory;
 	
+	private Cy3PreferencesDialogFactory cy3preferencesDialogFactory;
 	private PreferencesDialogFactory preferencesDialogFactory;
 	private BookmarkDialogFactory bookmarkDialogFactory;
 	
@@ -197,6 +199,7 @@ public class CyActivator extends AbstractCyActivator {
 	private PrintAction printAction;
 	private ExitAction exitAction;
 	private PreferenceAction preferenceAction;
+//	private Cy3PreferenceAction cy3preferenceAction;
 	private BookmarkAction bookmarkAction;
 	private SettingsAction settingsAction;
 	
@@ -242,6 +245,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, redoAction, CyAction.class);
 		registerService(bc, printAction, CyAction.class);
 		registerService(bc, preferenceAction, CyAction.class);
+//		registerService(bc, cy3preferenceAction, CyAction.class);
 		registerService(bc, bookmarkAction, CyAction.class);
 		registerService(bc, settingsAction, CyAction.class);
 		registerService(bc, settingsAction, SetCurrentNetworkViewListener.class);
@@ -359,6 +363,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerServiceListener(bc, cytoscapeDesktop::addAction, cytoscapeDesktop::removeAction, CyAction.class);
 		registerServiceListener(bc, preferenceAction::addCyProperty, preferenceAction::removeCyProperty, CyProperty.class);
+//		registerServiceListener(bc, cy3preferenceAction::addCyProperty, cy3preferenceAction::removeCyProperty, CyProperty.class);
 		registerServiceListener(bc, cytoscapeDesktop::addCytoPanelComponent, cytoscapeDesktop::removeCytoPanelComponent, CytoPanelComponent.class);
 		registerServiceListener(bc, cytoscapeDesktop::addToolBarComponent, cytoscapeDesktop::removeToolBarComponent, ToolBarComponent.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addTaskFactory, cytoscapeMenuPopulator::removeTaskFactory, TaskFactory.class);
@@ -448,6 +453,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeVerticalTaskFactory = new ArrangeTaskFactory(VERTICAL, cyDesktopManager, netViewMediator);
 		
 		preferencesDialogFactory = new PreferencesDialogFactory(serviceRegistrar);
+		cy3preferencesDialogFactory = new Cy3PreferencesDialogFactory(serviceRegistrar);
 		bookmarkDialogFactory = new BookmarkDialogFactory(serviceRegistrar);
 		
 		undoMonitor = new UndoMonitor(serviceRegistrar);
@@ -466,6 +472,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		printAction = new PrintAction(applicationManager, netViewManager, serviceRegistrar);
 		exitAction = new ExitAction(serviceRegistrar);
+//		cy3preferenceAction = new Cy3PreferenceAction(cytoscapeDesktop, cy3preferencesDialogFactory);
 		preferenceAction = new PreferenceAction(cytoscapeDesktop, preferencesDialogFactory);
 		bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
