@@ -178,7 +178,7 @@ public class CyActivator extends AbstractCyActivator {
 	private ArrangeTaskFactory arrangeHorizontalTaskFactory;
 	private ArrangeTaskFactory arrangeVerticalTaskFactory;
 	
-	private Cy3PreferencesDialogFactory cy3preferencesDialogFactory;
+//	private Cy3PreferencesDialogFactory cy3preferencesDialogFactory;
 	private PreferencesDialogFactory preferencesDialogFactory;
 	private BookmarkDialogFactory bookmarkDialogFactory;
 	
@@ -453,7 +453,7 @@ public class CyActivator extends AbstractCyActivator {
 		arrangeVerticalTaskFactory = new ArrangeTaskFactory(VERTICAL, cyDesktopManager, netViewMediator);
 		
 		preferencesDialogFactory = new PreferencesDialogFactory(serviceRegistrar);
-		cy3preferencesDialogFactory = new Cy3PreferencesDialogFactory(serviceRegistrar);
+//		cy3preferencesDialogFactory = new Cy3PreferencesDialogFactory(serviceRegistrar);
 		bookmarkDialogFactory = new BookmarkDialogFactory(serviceRegistrar);
 		
 		undoMonitor = new UndoMonitor(serviceRegistrar);

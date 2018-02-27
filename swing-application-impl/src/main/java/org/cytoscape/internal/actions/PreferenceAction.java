@@ -59,7 +59,7 @@ public class PreferenceAction extends AbstractCyAction {
 		this.dialogFactory = dialogFactory;		
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_SEMICOLON,
 		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.META_DOWN_MASK));
-		setPreferredMenu("Edit");	//
+		setPreferredMenu("Edit");	//  moved out of Edit.Preferences
 		setMenuGravity(11.0f);
 	}
 
