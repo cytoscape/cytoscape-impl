@@ -6,7 +6,6 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-
 import javax.swing.Box;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -15,7 +14,6 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 
 import org.cytoscape.internal.prefs.lib.HBox;
-
 
 
 public class PrefsGroups extends AbstractPrefsPanel {
@@ -43,7 +41,6 @@ public class PrefsGroups extends AbstractPrefsPanel {
 		add(page);   
 	}
   
-
 	private Component createHeader() {
 	    Box header = Box.createVerticalBox();
 	    JLabel jlab = new JLabel("Choose the method to aggregate group information" + 
@@ -110,12 +107,8 @@ public class PrefsGroups extends AbstractPrefsPanel {
 		aggregationPanel.add(new HBox(makeLabeledCombo("Attribute to override", "attribute", availableAttributes), Box.createHorizontalGlue()));
 		aggregationPanel.add(new HBox(makeLabeledCombo("Attribute type", "attributeType", attributeTypes), Box.createHorizontalGlue()));
 		aggregationPanel.add(new HBox(makeLabeledCombo("Aggregation type", "aggregationType", aggregationTypes), Box.createHorizontalGlue()));
-		
 		return aggregationPanel;
 	}
-    
-
-    
     
 	private void enableAggregationPane(boolean selected) {
 		aggregationPanel.setEnabled(selected);
@@ -126,7 +119,6 @@ public class PrefsGroups extends AbstractPrefsPanel {
 	}
 
 	@Override protected String getPropFileName()	{ return "groupSettings";	}
-
 	String[] availableAttributes = { "None", "Name", "Weight", "isNumeric"};
 	String[] attributeTypes = { "Integer", "Long", "Double", "String", "Boolean"};
 	String[] aggregationTypes = { "None", "Summary", "Average", "Range", "Distribution"};
@@ -137,7 +129,6 @@ public class PrefsGroups extends AbstractPrefsPanel {
 	String[] aggsBool = { "None", "Logical AND", "Logical OR"};
 	String[] aggsStr = { "None", "Comma Separated Text", "Tab Separated Text", "Most Common Value", "Unique Values"};
 	String[] aggsStrList = { "None", "Concatenate", "Unique Values"};
-
 
 	@Override public void install(Properties properties)
 	{

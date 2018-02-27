@@ -56,6 +56,7 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
     Dimension leading = new Dimension(12,12);
 	//---------------------------------------------------------------------------------------------
 	public HBox makeLabeledField(String s, String propertyName, String deflt, String tooltip)
+
 	{
 		JLabel label = new JLabel(s);
 		JLabel spacer = new JLabel("    " );
@@ -218,6 +219,7 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
     {
     	return makeCheckBoxLine("Partition graph before layout", "singlePartition", "tip");
     }
+
 	//---------------------------------------------------------------------------------------------------------
 	protected HBox makeCheckBoxLine(String name, String propName, Font f, String tip)
     {
@@ -349,8 +351,6 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 //	here we push a value into the control (inject).
 //	and pull the value out (scrape)
 
-
-
 	protected void inject(String value, JComponent control) {
 		if (control instanceof JCheckBox) {
 			JCheckBox ck = (JCheckBox) control;
@@ -407,6 +407,5 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 		}
 		return "";
 	}
-
 
 };

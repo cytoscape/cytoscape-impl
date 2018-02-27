@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.util.List;
 import java.util.Properties;
-
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -39,12 +38,11 @@ public class PrefsLinks extends AbstractPrefsPanel {
 		TableColumn col = table.getColumnModel().getColumn(2);
 		col.setPreferredWidth(260);
 	}
- 	
+ 
     private Component makeTable() {
 		table = new NamespaceKeyValueTable();
 		table.setFillsViewportHeight(true);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-
 		JPanel contentPane = new JPanel( new BorderLayout() );
 		JScrollPane scroller = new JScrollPane( table  );		
 		contentPane.add(scroller, BorderLayout.CENTER );

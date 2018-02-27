@@ -168,7 +168,6 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 	final protected JButton homeButton = new JButton("");
 	final protected JTabbedPane modeTabPane = new JTabbedPane(JTabbedPane.TOP);
 	public JButton getHomeButton() {  return homeButton; }
-
 	public void HomeActionPerformed() {		showHome();			adjust();	}	
 	public void NextActionPerformed() {		showNext();			adjust(); }
 	public void PrevActionPerformed() {		showPrevious();		adjust(); }
@@ -269,7 +268,6 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 	protected boolean cancelled = false;
 	private void setCancelled() 			{		cancelled = true;	}
 	protected void clearCancelled()	 	{		cancelled = false;	}
-
 	public String getTopCardName()
 	{
 		for (Component comp : contentsPanel.getComponents()) {
@@ -306,7 +304,7 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 		{
 			CardLayout layout = (CardLayout) contentsPanel.getLayout();
 			layout.next(contentsPanel);
-//			repack();
+			repack();
 			adjust();		
 		}
 							
@@ -434,7 +432,6 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 //			label.setForeground(Color.BLUE.darker().darker());
 //			label.setHorizontalAlignment(SwingConstants.CENTER);
 //			
-				
 			for(int a = 0; a<buttons.length; a++) 
 			{
 				if(buttons[a]==null) continue;
@@ -453,6 +450,7 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 		String title = "Preferences" + ((top == null) ? "" : (": " + top));
 		dialog.setTitle(title);
 	}
+
 	private final DialogFooter footer = makeDlogFooter();  
 	
 	private DialogFooter makeDlogFooter()
@@ -495,8 +493,6 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 
 	abstract public void install();
 
-
-	
 	/** This action takes the Window associated with the source of this event,
 	 * hides it, and then calls <code>dispose()</code> on it.
 	 * <P>(This will not throw an exception if there is no parent window,

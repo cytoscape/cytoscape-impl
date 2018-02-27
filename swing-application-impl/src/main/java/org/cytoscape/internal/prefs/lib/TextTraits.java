@@ -108,7 +108,6 @@ public final class TextTraits
     public void setColor(Color c)		{		foreColor = c;	}
     public void setBackColor(Color c)	{		backColor = c;	}
 
-
     public static String styleToString(int style)
     {
       switch (style)
@@ -127,5 +126,4 @@ public final class TextTraits
     		if (s.contains("italic"))	style += Font.ITALIC;
       return style;
     }
-    
 }

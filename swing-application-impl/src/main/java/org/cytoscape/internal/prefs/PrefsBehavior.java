@@ -35,7 +35,6 @@ public class PrefsBehavior extends AbstractPrefsPanel {
 			String fld  = shortened.substring(0, 1).toLowerCase() + shortened.substring(1);
 			page.add(makeCheckBoxLine(prompt, fld,  tips[i]));
 		}
-
 //	    
 //	    page.add(Box.createRigidArea(new Dimension(30,40)));
 //	    page.add(new HBox(true, true, new JLabel("Privacy Settings")));
@@ -77,4 +76,5 @@ public class PrefsBehavior extends AbstractPrefsPanel {
 	String[] tips = { "Display the nested levels of networks in the status bar", "Includes the numbers of nodes and edges in the status bar",  "Display a panel of recent sessions and samples from our documentation",  
 							"A canonical name includes ",  "Skip the view showing recent sessions",  "Use the largest window sizes possible by default"  };
  
+
 }

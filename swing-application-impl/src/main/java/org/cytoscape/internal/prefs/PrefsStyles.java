@@ -15,6 +15,7 @@ import org.cytoscape.internal.prefs.lib.VBox;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 
+//UNUSED
 public class PrefsStyles extends AbstractPrefsPanel {
 
 	private static final long serialVersionUID = 1L;

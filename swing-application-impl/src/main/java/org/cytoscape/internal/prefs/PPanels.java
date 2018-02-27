@@ -23,7 +23,6 @@ public enum PPanels {
 	public static int[] rowLengths = new int[] { 3, 3, 3 };
 	public static String[] rowNames = new String[]{ "", "", ""};
 //	public static String[] rowNames = new String[]{ "Networks", "Cytoscape", "Output"};
-
 	
 	String displayName;
 	String icon;		// define the FontAwesome icons

@@ -46,13 +46,13 @@ public class ListAppsTask extends AbstractAppTask implements ObservableTask {
 				int count = statusAppList.size();
 				int index = 0;
 				for (App app: statusAppList) {
-					stringBuilder.append("\"name\": \""+app.getAppName()+"\",");
+					stringBuilder.append("{\"name\": \""+app.getAppName()+"\",");
 					stringBuilder.append("\"version\": \""+app.getVersion()+"\",");
 					stringBuilder.append("\"description\": \""+app.getDescription()+"\",");
 					stringBuilder.append("\"status\": \""+app.getReadableStatus()+"\"}");
+					index++;
 					if (index < count)
 						stringBuilder.append(",");
-					index++;
 				}
 				stringBuilder.append("]");
 				return stringBuilder.toString();

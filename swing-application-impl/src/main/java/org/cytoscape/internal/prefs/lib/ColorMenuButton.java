@@ -21,7 +21,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.border.AbstractBorder;
 import javax.swing.border.EmptyBorder;
 
-
 public class ColorMenuButton extends JButton implements MouseListener, ColorMenuListener //, ActionListener
 {
 	private static final long	serialVersionUID	= 1L;

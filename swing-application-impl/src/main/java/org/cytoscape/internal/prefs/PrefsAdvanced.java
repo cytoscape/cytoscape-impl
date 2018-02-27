@@ -109,4 +109,5 @@ public class PrefsAdvanced extends AbstractPrefsPanel {
 			properties.put(row.getAttribute(), row.getValue());
 		}
     	}
+
 }

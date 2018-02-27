@@ -93,7 +93,6 @@ public class RangedDoubleTextField extends JFormattedTextField {
 
 	public void setMax(double d) 	{		dVerifier.setMax(d);	}
 	public double getMax() 			{		return dVerifier.getMax();	}
-
 	/**
 	 * Get error label Use for 1:1 mapping of field to error label
 	 * 
@@ -119,7 +118,6 @@ public class RangedDoubleTextField extends JFormattedTextField {
 	private boolean fSupportArrowKeys = false;
 
 	public void supportArrowKeyIncrement() {		fSupportArrowKeys = true;	}
-
 	@Override
 	public void processKeyEvent(KeyEvent ev) {
 		int code = ev.getKeyCode();

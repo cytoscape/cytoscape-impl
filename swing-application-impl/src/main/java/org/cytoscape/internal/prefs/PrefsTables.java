@@ -2,7 +2,6 @@ package org.cytoscape.internal.prefs;
 
 import java.awt.Component;
 import java.awt.Dimension;
-
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;

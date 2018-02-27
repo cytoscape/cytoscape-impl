@@ -342,5 +342,5 @@ public class PrefsText extends AbstractPrefsPanel {
 		dump(properties, "text");
     }
 
-		
+
 }

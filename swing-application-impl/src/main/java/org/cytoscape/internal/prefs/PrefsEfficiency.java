@@ -41,7 +41,6 @@ public class PrefsEfficiency extends AbstractPrefsPanel {
 
 	static String UNDO_INTRO = "This sets the number of steps that can be reversed with Undo.";
 	static String UNDO_INTRO2 = "Conserve memory by limiting the number of tasks to save.";
-	
     @Override public void initUI()
     {
         super.initUI();

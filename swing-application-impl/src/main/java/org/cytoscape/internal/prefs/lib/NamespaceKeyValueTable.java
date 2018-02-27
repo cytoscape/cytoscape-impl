@@ -164,7 +164,6 @@ public class NamespaceKeyValueTable extends JTable {
 	  public static final DefaultTableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
 	    public final static Color offwhite     = new Color(250, 250, 250);
 	  //---------------------------------------------------------------
-
 class EvenOddRenderer implements TableCellRenderer {
 
 
