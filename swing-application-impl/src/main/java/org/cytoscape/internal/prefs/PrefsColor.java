@@ -55,8 +55,9 @@ public class PrefsColor extends AbstractPrefsPanel {
 		public void actionPerformed(ActionEvent e) {
 			
 			String name = e.getActionCommand();
-			populate();
-			setSchemeName(paletteChoices.get(name));
+			String currentPalette = paletteChoices.get(name);
+			populate(currentPalette);
+			setSchemeName(currentPalette);
 		}
 	};
 	ButtonGroup buttonGroup = new ButtonGroup();
@@ -99,12 +100,12 @@ public class PrefsColor extends AbstractPrefsPanel {
 
 		combined.setSpacer(new Dimension(30, 30));
 		page.add(combined);
-		populate();
+		populate(paletteChoices.get("Sequential"));
 		add(page);
 	}
 	
 	
-	private JLabel schemeName = new JLabel("Blue-Greens");
+	private JLabel schemeName = new JLabel("Blues");
 	private void setSchemeName(String s)
 	{
 		schemeName.setText(s);
@@ -150,7 +151,7 @@ public class PrefsColor extends AbstractPrefsPanel {
 	String sequentialScheme = "Blue-Violet";
 	String qualScheme = "Pastels";
 	//---------------------------------------------------------
-	public void populate() {
+	public void populate(String selection) {
 		String state = buttonGroup.getSelection().getActionCommand();
 		colorBlindSafe = colorBlindSafeCheckBox.isSelected();
 		// System.out.println("populate " + state);
@@ -163,32 +164,34 @@ public class PrefsColor extends AbstractPrefsPanel {
 			brewer = ColorBrewer.getSequentialColorPalettes(colorBlindSafe);
 		if ("Qualitative".equals(state))
 			brewer = ColorBrewer.getQualitativeColorPalettes(colorBlindSafe);
+		if (selection == null) 
+			selection = brewer[0].getPaletteDescription();
 		setSchemeName(paletteChoices.get("palette." + state));
 
-		buildPalettes(brewer);
+		buildPalettes(brewer, selection);
 		lineOfPalettes.setVisible(false);
 		lineOfPalettes.setVisible(true); // TODO REFRESH
 	}
 
-	void buildPalettes(ColorBrewer[] brewers) {
+	void buildPalettes(ColorBrewer[] brewers, String selectionName) {
 		int len = brewers.length;
 		if (len < 9)
 			for (ColorBrewer brew : brewers) {
 				Color[] colors = brew.getColorPalette(5);
-				lineOfPalettes.add(makeColorColumn(brew.getPaletteDescription(), colors));
+				lineOfPalettes.add(makeColorColumn(brew.getPaletteDescription(), colors, selectionName));
 				lineOfPalettes.add(Box.createRigidArea(new Dimension(8, 4)));
 			}
 		else {			// make two rows
 			int i = 0;
 			for (; i < len / 2; i++) {
 				Color[] colors = brewers[i].getColorPalette(5);
-				lineOfPalettes.add(makeColorColumn(brewers[i].getPaletteDescription(), colors));
+				lineOfPalettes.add(makeColorColumn(brewers[i].getPaletteDescription(), colors, selectionName));
 				lineOfPalettes.add(Box.createRigidArea(new Dimension(8, 4)));
 
 			}
 			for (; i < len; i++) {
 				Color[] colors = brewers[i].getColorPalette(5);
-				lineOfPalettes2.add(makeColorColumn(brewers[i].getPaletteDescription(), colors));
+				lineOfPalettes2.add(makeColorColumn(brewers[i].getPaletteDescription(), colors, selectionName));
 				lineOfPalettes2.add(Box.createRigidArea(new Dimension(8, 4)));
 
 			}
@@ -196,7 +199,7 @@ public class PrefsColor extends AbstractPrefsPanel {
 		}
 	}
 
-	VBox makeColorColumn(String description, Color[] colors) {
+	VBox makeColorColumn(String description, Color[] colors, String selection) {
 		VBox box = new VBox(false, false);
 		int row = 0;
 		for (Color color : colors) {
@@ -207,7 +210,7 @@ public class PrefsColor extends AbstractPrefsPanel {
 			    		{  select(box, description);    }	});
 			box.add(c);
 		}
-		box.setBorder(orange4);
+		box.setBorder(description.equals(selection) ? red4 : orange4);
 		box.addMouseListener(new MouseAdapter(){
 		    @Override public void mouseClicked(MouseEvent e) 	    
 		    {   		select(box, description);  	} 	 });
@@ -218,18 +221,25 @@ Map<String, VBox> allVisPalettes = new HashMap<String, VBox>();
 
 static Border orange4 = BorderFactory.createLineBorder(Color.orange, 4);
 static Border red4 = BorderFactory.createLineBorder(Color.red, 4);
+	
 	private	void select(JComponent box, String description)
 	{
 		for (String str : allVisPalettes.keySet())
 		{	
-			
 			VBox v = allVisPalettes.get(str);
 			v.setBorder((v == box) ? red4 : orange4);
-	
 		}
 		setSchemeName(description);
+		setCurrentPalette(description);
 	}
 	
+	private void setCurrentPalette(String description) {
+		String prop = "palette." + buttonGroup.getSelection().getActionCommand();
+		paletteChoices.put(prop, description);
+		
+	}
+
+
 	@Override public void install(Properties properties)
 	{
 	    	for (String name : categories)

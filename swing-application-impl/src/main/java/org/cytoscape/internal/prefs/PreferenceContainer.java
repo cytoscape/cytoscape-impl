@@ -224,15 +224,22 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 	
 	private void reset()	
 	{  
-		Object[] options = { "Cancel", "All Panels", "This Panel Only"};
+		String selectedPanel = getTopCardName();
+		boolean isHome = null == selectedPanel;
+		Object[] panelOptions = { "Cancel", "All Panels", "This Panel Only"};
+		Object[] homeOptions = { "Cancel", "Reset"};
+		Object[] options = (isHome) ? homeOptions : panelOptions;
+		String prompt = "[TODO] This will set your preferences to the Factory Defaults.";
+		if (!isHome)
+			prompt += "\nYou can choose to reset just this panel or all panels.";
 		int n = JOptionPane.showOptionDialog(dialog,
-				"[TODO] This will set your preferences to the Factory Defaults.\nYou can choose to reset just this panel or all panels." ,
+				prompt,
 				"Reset Preferences",
 				JOptionPane.YES_NO_CANCEL_OPTION,
 				JOptionPane.QUESTION_MESSAGE,
 				null,
 				options,
-				options[2]);
+				(isHome ? options[1] : options[2]));
 		
 		if (n == 1) resetAllPanels();
 		if (n == 2) resetCurrentPanel();
@@ -312,6 +319,7 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 		String name = getTopCardName();
 		if ("Behavior".equals(name))  		showHome();
 		else if ("home".equals(name)) 		show("Privacy");		// CYCLE TO BACK
+		
 		else
 		{
 			CardLayout layout = (CardLayout) contentsPanel.getLayout();

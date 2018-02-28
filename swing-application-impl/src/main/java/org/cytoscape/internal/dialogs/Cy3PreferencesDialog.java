@@ -60,12 +60,12 @@ public class Cy3PreferencesDialog extends JDialog { //implements ItemListener, A
 		contentPane.install();
 
 		setTitle("Cytoscape Preferences Editor");
-		setResizable(true);
-		Dimension winSize = new Dimension(AbstractPrefsPanel.getPanelSize());
+		setResizable(false);
+//		Dimension winSize = new Dimension(AbstractPrefsPanel.getPanelSize());
 //		winSize.height += 180;
 		setLocationRelativeTo(owner);
 		pack();
-		setSize(615,526);
+		setSize(615,526);		// HACK -- should be based on AbstractPrefsPanel.PREF_PANEL_SIZE
 //		contentPane.showDlog();
 	}
 

@@ -93,7 +93,7 @@ public final class TextTraits
     public Color getColor()  				{        return foreColor;       }
     @Override public Object clone()    		{        return new TextTraits(fontName,fontSize,fontStyle, backColor, foreColor, name);    }
 
-    @Override public String toString()		{	return	name + ": " + getFontName() + "(" + getSize() + ", " + getStyleString() + ")"	;		}
+    @Override public String toString()		{	return	getFontName() + "(" + getSize() + ", " + getStyleString() + ")"	;		}
 
     public String getFontName()			{		return fontName;	}
     public void setFontName(String fn)	{		fontName = fn;		}

@@ -43,9 +43,10 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 
 import javax.swing.Icon;
+
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Creates an {@link Icon} from a give FontAwesome unicode identifier.
@@ -65,20 +66,20 @@ public class FontAwesomeIcon implements Icon {
     private Font font;
     
     static {
-        try {
-            InputStream stream =
-                    FontAwesomeIcon.class.getResourceAsStream(AWESOME_SET);
-            awesome = Font.createFont(Font.TRUETYPE_FONT, stream);
-
-        } catch (FontFormatException | IOException ex) {
-            throw new RuntimeException(ex);
-        }
+//        try {
+//            InputStream stream =
+//                    FontAwesomeIcon.class.getResourceAsStream(AWESOME_SET);
+            awesome =  LookAndFeelUtil.getIconFont(22.0f);   ///Font.createFont(Font.TRUETYPE_FONT, stream);
+//
+//        } catch (FontFormatException | IOException ex) {
+//            throw new RuntimeException(ex);
+//        }
     }
     
     public FontAwesomeIcon(char iconID, int size) {
         this.iconID = iconID;
         this.size = size;
-        font = awesome.deriveFont(Font.PLAIN, size);
+        font = awesome; // .deriveFont(Font.PLAIN, size);
     }
 
     @Override
