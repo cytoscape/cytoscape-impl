@@ -60,7 +60,7 @@ public class StatusTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				return "{\"app\": \""+app+"\", \"status\": \""+status.toString()+"\" }";
+				return "{\"appName\": \""+app+"\", \"status\": \""+status.toString()+"\" }";
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {

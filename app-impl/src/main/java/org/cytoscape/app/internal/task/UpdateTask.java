@@ -79,7 +79,7 @@ public class UpdateTask extends AbstractAppTask implements ObservableTask {
 				int index = 0;
 				for (Update update: updateList) {
 					App appObject = update.getApp();
-					str += "{\"app\": \""+appObject.getAppName()+"\"";
+					str += "{\"appName\": \""+appObject.getAppName()+"\"";
 					str += ",\"version\": \""+appObject.getVersion()+"\"}";
 					if (index < updateList.size())
 						str += ",";

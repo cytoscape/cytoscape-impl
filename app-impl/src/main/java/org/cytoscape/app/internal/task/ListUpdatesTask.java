@@ -47,7 +47,7 @@ public class ListUpdatesTask extends AbstractAppTask implements ObservableTask {
 				int index = 0;
 				for (Update update: updates) {
 					App app = update.getApp();
-					stringBuilder.append("{\"name\": \""+app.getAppName()+"\",");
+					stringBuilder.append("{\"appName\": \""+app.getAppName()+"\",");
 					stringBuilder.append("\"version\": \""+app.getVersion()+"\",");
 					stringBuilder.append("\"new version\": \""+update.getUpdateVersion()+"\",");
 					if (index < count)

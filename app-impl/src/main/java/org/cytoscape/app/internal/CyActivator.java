@@ -466,7 +466,7 @@ public class CyActivator extends AbstractCyActivator {
       props.setProperty(COMMAND_LONG_DESCRIPTION,
           "Disable a currently installed app.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 
@@ -479,7 +479,7 @@ public class CyActivator extends AbstractCyActivator {
       props.setProperty(COMMAND_LONG_DESCRIPTION,
           "Enable a currently disabled app.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		
@@ -492,7 +492,7 @@ public class CyActivator extends AbstractCyActivator {
       props.setProperty(COMMAND_LONG_DESCRIPTION,
           "Get information about an app.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\""+
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\""+
 			                                        ", \"description\": \"App description\""+
 			                                        ", \"version\": \"1.2.2\"}");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -521,10 +521,9 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the available apps in the app store");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"fullName\": \"appname\","+
-			    "\"name\": \"name\","+
-			    "\"description\": \"descriptions\","+
-			    "\"details\": \"app details\"},...]"
+			    "[{\"appName\":\"name\", "+
+			    "\"description\":\"descriptions\", "+
+			    "\"details\":\"app details\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -539,10 +538,10 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the disabled apps in the current installation.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"name\": \"appname\","+
+			    "[{ \"appName\": \"appname\","+
 			    "\"version\": \"1.1.0\","+
 			    "\"description\": \"descriptions\","+
-			    "\"status\": \"disabled\"},...]"
+			    "\"status\": \"Disabled\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -557,10 +556,10 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the installed apps in the current installation.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{\"name\": \"appname\","+
+			    "[{\"appName\": \"appname\","+
 			    "\"version\": \"1.1.0\","+
 			    "\"description\": \"descriptions\","+
-			    "\"status\": \"installed\"},...]"
+			    "\"status\": \"Installed\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -575,10 +574,10 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the uninstalled apps in the current installation.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"name\": \"appname\","+
+			    "[{ \"appName\": \"appname\","+
 			    "\"version\": \"1.1.0\","+
 			    "\"description\": \"descriptions\","+
-			    "\"status\": \"uninstalled\"},...]"
+			    "\"status\": \"Uninstalled\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -593,9 +592,9 @@ public class CyActivator extends AbstractCyActivator {
           "Return a list of the apps that have updates in the app store.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
       props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"name\": \"appname\","+
+			    "[{ \"appName\": \"appname\","+
 			    "\"version\": \"1.1.10\","+
-			    "\"information\": \"app information\"},...]"
+			    "\"information\": \"app information\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
@@ -609,7 +608,7 @@ public class CyActivator extends AbstractCyActivator {
       props.setProperty(COMMAND_LONG_DESCRIPTION,
           "Get the status of an app.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\", \"status\": \"installed\"}");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\", \"status\": \"Installed\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 
@@ -622,7 +621,7 @@ public class CyActivator extends AbstractCyActivator {
       props.setProperty(COMMAND_LONG_DESCRIPTION,
           "Uninstall a currently installed app.");
       props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"app\": \"appname\"}");
+      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		

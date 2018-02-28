@@ -15,6 +15,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.net.WebQuerier;
+import org.cytoscape.app.internal.util.Utils;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -44,15 +45,18 @@ public class ListAvailableTask extends AbstractAppTask implements ObservableTask
 				int count = webAppList.size();
 				int index = 0;
 				for (WebApp app: webAppList) {
-					stringBuilder.append("{\"fullName\": \""+app.getFullName()+"\",");
-					stringBuilder.append("\"name\": \""+app.getName()+"\",");
-					stringBuilder.append("\"description\": \""+app.getDescription()+"\",");
-					stringBuilder.append("\"details\": \""+app.getDetails()+"\"}");
+					stringBuilder.append("{\"appName\": \""+app.getName()+"\",");
+					stringBuilder.append("\"description\": "+Utils.quote(app.getDescription())+",");
+					if (app.getDetails() != null)
+						stringBuilder.append("\"details\": "+Utils.quote(app.getDetails())+"}");
+					else
+						stringBuilder.append("\"details\": \"\"}");
+					index++;
 					if (index < count)
 						stringBuilder.append(",");
-					index++;
 				}
 				stringBuilder.append("]");
+				// System.out.println(stringBuilder.toString());
 				return stringBuilder.toString();
 			};
 			return (R)res;

@@ -59,7 +59,7 @@ public class UninstallTask extends AbstractAppTask implements ObservableTask {
 	public <R> R getResults(Class<? extends R> type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				return "{\"app\": \""+app+"\"}";
+				return "{\"appName\": \""+app+"\"}";
 			};
 			return (R)res;
 		} else if (type.equals(String.class)) {
