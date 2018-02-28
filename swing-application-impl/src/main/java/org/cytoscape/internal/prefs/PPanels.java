@@ -1,5 +1,7 @@
 package org.cytoscape.internal.prefs;
 
+// TODO: change unicode entries to IconManager symbolic icons
+
 public enum PPanels {
 
 	BEHAVIOR("Behavior", "\uf14a", "Settings related to what information is shown in the program "),

@@ -44,10 +44,11 @@ import javax.swing.plaf.SeparatorUI;
 
 import org.cytoscape.internal.prefs.lib.AntiAliasedPanel;
 import org.cytoscape.internal.prefs.lib.DialogFooter;
-import org.cytoscape.internal.prefs.lib.FontAwesomeIcon;
+// import org.cytoscape.internal.prefs.lib.FontAwesomeIcon;
 import org.cytoscape.internal.prefs.lib.HBox;
 import org.cytoscape.internal.prefs.lib.VBox;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
 
 abstract public class PreferenceContainer extends JPanel  implements ActionListener//implements PrefsStringDefs 
@@ -60,6 +61,7 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 	static String TABULAR = "Show All";
 	static String GUI = "GUI";
 	final CyServiceRegistrar serviceRegistrar;
+	final IconManager iconManager;
 	boolean advanced = false;
 
 	public PreferenceContainer(JDialog dlog, CyServiceRegistrar reg) 
@@ -67,25 +69,33 @@ abstract public class PreferenceContainer extends JPanel  implements ActionListe
 		super();
 		serviceRegistrar = reg;
 		dialog = dlog;
+		iconManager = serviceRegistrar.getService(IconManager.class);
 //		WindowDragger g = new WindowDragger(header);
 		setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 		homeButton.addActionListener(e -> { showHome(); });	
 		AntiAliasedPanel.setSizes(homeButton, new Dimension(36, 36));
-		Icon home = new FontAwesomeIcon(homeIcon.charAt(0), 18);
+		homeButton.setText(IconManager.ICON_HOME);
+		homeButton.setFont(iconManager.getIconFont(14.0f));
+
+		// Icon home = new FontAwesomeIcon(homeIcon.charAt(0), 18);
 		homeButton.setVisible(true);
-		homeButton.setIcon(home);
+		// homeButton.setIcon(home);
 
 		leftButton.addActionListener(e -> { showPrevious(); });	
 		AntiAliasedPanel.setSizes(leftButton, new Dimension(36,36));
-		Icon lft = new FontAwesomeIcon(leftArrow.charAt(0), 14);
+		// Icon lft = new FontAwesomeIcon(leftArrow.charAt(0), 14);
+		leftButton.setText(IconManager.ICON_ARROW_LEFT);
+		leftButton.setFont(iconManager.getIconFont(14.0f));
 		leftButton.setVisible(true);
-		leftButton.setIcon(lft);
+		// leftButton.setIcon(lft);
 
 		rightButton.addActionListener(e -> { showNext(); });	
 		AntiAliasedPanel.setSizes(rightButton, new Dimension(36,36));
 		rightButton.setVisible(true);
-		Icon rt = new FontAwesomeIcon(rtArrow.charAt(0), 14);
-		rightButton.setIcon(rt);
+		rightButton.setText(IconManager.ICON_ARROW_RIGHT);
+		rightButton.setFont(iconManager.getIconFont(14.0f));
+		// Icon rt = new FontAwesomeIcon(rtArrow.charAt(0), 14);
+		// rightButton.setIcon(rt);
 
 		JLabel spacer = new JLabel("");
 		AntiAliasedPanel.setSizes(spacer, new Dimension(60,24));

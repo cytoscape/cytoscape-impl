@@ -31,6 +31,7 @@ import org.cytoscape.internal.prefs.lib.FontAwesomeIcon;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 
 
 /** The preferences for Cytoscape 3.7.
@@ -42,6 +43,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	private static final long serialVersionUID = 1L;
 	static int NPREFS = PPanels.values().length;		
 	static int FOOTER_HEIGHT = 0;
+	final IconManager iconManager;
 
 	//----------------------------------------------------------------------------------------------------
 //	public static void main(String[] args) {
@@ -62,14 +64,15 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	public Cy3PreferencesPanel(JDialog dlog, final Map<String, CyProperty<?>> inPropMap, final CyServiceRegistrar reg) 
 	{
 		super(dlog, reg);
+		iconManager = reg.getService(IconManager.class);
 		globalPropMap = inPropMap;
 		makeLocalCopy(inPropMap);
 		AbstractPrefsPanel.setSizes(this, AbstractPrefsPanel.getPanelSize());
 		try
 		{
-			InputStream istream = Cy3PreferencesPanel.class.getResourceAsStream("lib/fontawesome-webfont.ttf");
-	        Font font = Font.createFont(Font.TRUETYPE_FONT, istream);
-	        font = font.deriveFont(Font.PLAIN, 24f);
+			// InputStream istream = Cy3PreferencesPanel.class.getResourceAsStream("lib/fontawesome-webfont.ttf");
+	    //     Font font = Font.createFont(Font.TRUETYPE_FONT, istream);
+	    //     font = font.deriveFont(Font.PLAIN, 24f);
 			
 	        initUI();
 	        JPanel homePanel = new JPanel();
@@ -146,8 +149,8 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		}
 	
 	private JButton makePanelButton(PPanels panel) {
-		char iconName = panel.getIcon().charAt(0);
-		Icon icon = new FontAwesomeIcon(iconName, 24);
+		String iconName = panel.getIcon();
+		Icon icon = new FontAwesomeIcon(iconManager, iconName, 24);
 		String name = panel.getDisplayName();
 		int wid = 160; 
 		int hght = 100; 

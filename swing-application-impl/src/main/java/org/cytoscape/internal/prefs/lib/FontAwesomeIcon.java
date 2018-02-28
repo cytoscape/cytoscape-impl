@@ -46,7 +46,8 @@ import java.io.IOException;
 
 import javax.swing.Icon;
 
-import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.IconManager;
+// import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /**
  * Creates an {@link Icon} from a give FontAwesome unicode identifier.
@@ -55,31 +56,32 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 public class FontAwesomeIcon implements Icon {
 
-    private static final String AWESOME_SET = "fontawesome-webfont.ttf";
+    // private static final String AWESOME_SET = "fontawesome-webfont.ttf";
     
     private int size;
     private BufferedImage buffer;
     
-    private char iconID;
-    private static final Font awesome;
+    private String iconID;
+    // private static final Font awesome;
     
     private Font font;
     
-    static {
+//    static {
 //        try {
 //            InputStream stream =
 //                    FontAwesomeIcon.class.getResourceAsStream(AWESOME_SET);
-            awesome =  LookAndFeelUtil.getIconFont(22.0f);   ///Font.createFont(Font.TRUETYPE_FONT, stream);
+//            awesome =  LookAndFeelUtil.getIconFont(22.0f);   ///Font.createFont(Font.TRUETYPE_FONT, stream);
 //
 //        } catch (FontFormatException | IOException ex) {
 //            throw new RuntimeException(ex);
 //        }
-    }
+//    }
     
-    public FontAwesomeIcon(char iconID, int size) {
+    public FontAwesomeIcon(final IconManager iconManager, String iconID, int size) {
         this.iconID = iconID;
         this.size = size;
-        font = awesome; // .deriveFont(Font.PLAIN, size);
+        // font = awesome; // .deriveFont(Font.PLAIN, size);
+				font = iconManager.getIconFont(size);
     }
 
     @Override
@@ -97,7 +99,7 @@ public class FontAwesomeIcon implements Icon {
             graphics.setColor(Color.BLACK);
             
             int stringY = getIconHeight() - (getIconHeight()/4) + 1;
-            graphics.drawString(String.valueOf(iconID), 0, stringY);
+            graphics.drawString(iconID, 0, stringY);
             
             graphics.dispose();
         }
