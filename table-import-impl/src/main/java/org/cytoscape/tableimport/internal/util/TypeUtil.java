@@ -230,7 +230,6 @@ public final class TypeUtil {
 		COLUMN_LOOP:
 		for (int col = 0; col < model.getColumnCount(); col++) {
 			AttributeDataType dt = dataTypes[col];
-			
 			for (int row = 0; row < rowCount; row++) {
 				final String val = (String) model.getValueAt(row, col);
 				
@@ -412,8 +411,17 @@ public final class TypeUtil {
 		return val != null && (truePattern.matcher(val).matches() || falsePattern.matcher(val).matches());
 	}
 	
+	private static boolean isNaN(final String val){
+		if (val != null){
+			return val.equals("NA") || val.equals("#NUM!") || val.equals("NaN");
+		}
+		return false;
+	}
+
 	private static boolean isInteger(final String val) {
 		if (val != null) {
+			if (isNaN(val))
+				return true;
 			try {
 				final long n = Long.parseLong(val.trim());
 				return n <= Integer.MAX_VALUE && n >= Integer.MIN_VALUE;
@@ -426,6 +434,8 @@ public final class TypeUtil {
 	
 	private static boolean isLong(final String val) {
 		if (val != null) {
+			if (isNaN(val))
+				return true;
 			try {
 				Long.parseLong(val.trim());
 				return true;
@@ -439,7 +449,8 @@ public final class TypeUtil {
 	private static boolean isDouble(String val) {
 		if (val != null) {
 			val = val.trim();
-			
+			if (isNaN(val))
+				return true;
 			try {
 				Double.parseDouble(val);
 			} catch (NumberFormatException e) {
