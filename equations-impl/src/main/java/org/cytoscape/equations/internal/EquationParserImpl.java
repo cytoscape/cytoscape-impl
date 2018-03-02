@@ -338,7 +338,6 @@ public class EquationParserImpl implements EquationParser {
 			Object defaultValue = null;
 			if (usingOptionalBraces) {
 				token = tokeniser.getToken();
-
 				// Do we have a default value?
 				if (token == Token.COLON) {
 					token = tokeniser.getToken();

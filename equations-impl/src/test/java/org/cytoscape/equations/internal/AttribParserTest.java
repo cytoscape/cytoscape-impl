@@ -61,6 +61,19 @@ public class AttribParserTest {
 		attribNameToTypeMap.put("BOB", Double.class);
 		assertTrue(parser.parse("=42 - 12 + 3 * (4 - 2) + ${BOB:12}", attribNameToTypeMap));
 	}
+	
+	@Test
+	public void testColumnStartsWithNumber() throws Exception {
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		attribNameToTypeMap.put("1BOB", Double.class);
+		assertTrue(parser.parse("=${1BOB}", attribNameToTypeMap));
+	}
+	@Test
+	public void testColumnStartsWithNumberDefault() throws Exception {
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		attribNameToTypeMap.put("1BOB", Double.class);
+		assertTrue(parser.parse("=${1BOB:12}", attribNameToTypeMap));
+	}
 
 	@Test
 	public void testStringVarDefault() throws Exception {
