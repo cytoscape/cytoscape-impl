@@ -6,6 +6,7 @@ import static org.cytoscape.application.swing.CytoPanelName.EAST;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
@@ -132,6 +133,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	 */
 	protected NetworkViewMediator netViewMediator;
 
+	private BiModalJSplitPane automationMasterPane;
 	private BiModalJSplitPane masterPane;
 	private BiModalJSplitPane rightPane;
 	private BiModalJSplitPane topRightPane;
@@ -140,6 +142,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private CytoPanelImpl eastPanel;
 	private CytoPanelImpl southPanel;
 	private CytoPanelImpl southWestPanel; 
+	private CytoPanelImpl automationPanel; 
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
 	private JPanel mainPanel;
@@ -333,6 +336,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private CytoPanelImpl getCytoPanelInternal(final CytoPanelName compassDirection) {
 		switch (compassDirection) {
+			case BOTTOM:
+				return getAutomationPanel();
 			case SOUTH:
 				return getSouthPanel();
 			case EAST:
@@ -344,7 +349,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		}
 
 		throw new IllegalArgumentException(
-				"Illegal Argument:  " + compassDirection + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
+				"Illegal Argument:  " + compassDirection + ".  Must be one of:  {BOTTOM,SOUTH,EAST,WEST,SOUTH_WEST}.");
 	}
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
@@ -561,8 +566,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				splitPane.addCytoPanel(cytoPanel);
 		}
 
-		if (splitPane != null)
+		if (splitPane != null) {
 			splitPane.update();
+		}
 	}
 	
 	private void showCytoPanel(CytoPanelImpl cytoPanel) {
@@ -603,6 +609,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	private BiModalJSplitPane getSplitPaneOf(CytoPanelImpl cytoPanel) {
 		switch (cytoPanel.getCytoPanelName()) {
+			case BOTTOM:
+				return getAutomationMasterPane();
 			case SOUTH:
 				return getRightPane();
 			case EAST:
@@ -621,12 +629,21 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			mainPanel = new JPanel();
 			mainPanel.setLayout(new BorderLayout());
 			mainPanel.add(cyMenus.getJToolBar(), BorderLayout.NORTH);
-			mainPanel.add(getMasterPane(), BorderLayout.CENTER);
+			mainPanel.add(getAutomationMasterPane(), BorderLayout.CENTER);
 		}
 		
 		return mainPanel;
 	}
 	
+	private BiModalJSplitPane getAutomationMasterPane() {
+		if (automationMasterPane == null) {
+			automationMasterPane = new BiModalJSplitPane(SOUTH, JSplitPane.VERTICAL_SPLIT, getMasterPane(),
+					getAutomationPanel().getThisComponent());
+			automationMasterPane.setDividerLocation(600);
+		}
+		return automationMasterPane;
+	}
+
 	private BiModalJSplitPane getMasterPane() {
 		if (masterPane == null) {
 			masterPane = new BiModalJSplitPane(WEST, JSplitPane.HORIZONTAL_SPLIT, getWestPanel().getThisComponent(),
@@ -713,5 +730,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		}
 		
 		return southWestPanel;
+	}
+
+	private CytoPanelImpl getAutomationPanel() {
+		if (automationPanel == null) {
+			automationPanel = new CytoPanelImpl(BOTTOM, JTabbedPane.RIGHT, HIDE, serviceRegistrar);
+		}
+		
+		return automationPanel;
 	}
 }

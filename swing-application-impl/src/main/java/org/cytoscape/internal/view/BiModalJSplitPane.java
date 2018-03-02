@@ -1,10 +1,15 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.application.swing.CytoPanelName.EAST;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MAX_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MAX_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MAX_WIDTH;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -112,6 +117,7 @@ public class BiModalJSplitPane extends JSplitPane {
 				break;
 			case SOUTH:
 			case SOUTH_WEST:
+			case BOTTOM:
 				setBottomComponent(cytoPanel.getThisComponent());
 				break;
 		}
@@ -164,10 +170,11 @@ public class BiModalJSplitPane extends JSplitPane {
 		Component lc = getLeftComponent();
 		Component rc = getRightComponent();
 		
-		if (lc != null && lc.isVisible() && rc != null && rc.isVisible())
+		if (lc != null && lc.isVisible() && rc != null && rc.isVisible()) {
 			showSplit();
-		else
+		} else {
 			hideSplit();
+		}
 	}
 	
 	/**
@@ -223,7 +230,7 @@ public class BiModalJSplitPane extends JSplitPane {
 				w1 = Math.max(w1, EAST_MIN_WIDTH);
 	
 				setDividerLocation(w - getInsets().right - getInsets().left - divSize - w1);
-			}
+			} 
 		} catch (Exception e) {
 			logger.error("Unable to update Split Pane's divider location", e);
 		} finally {

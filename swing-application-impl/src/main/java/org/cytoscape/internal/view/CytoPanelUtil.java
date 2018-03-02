@@ -41,7 +41,7 @@ public final class CytoPanelUtil {
 	
 	public static final int WEST_MIN_WIDTH = 100;
 	public static final int WEST_MAX_WIDTH = 400;
-	public static final int WEST_MIN_HEIGHT = 250;
+	public static final int WEST_MIN_HEIGHT = 100;
 	
 	public static final int SOUTH_MIN_WIDTH = 500;
 	public static final int SOUTH_MIN_HEIGHT = 50;
@@ -49,6 +49,11 @@ public final class CytoPanelUtil {
 	public static final int EAST_MIN_WIDTH = 100;
 	public static final int EAST_MAX_WIDTH = 1500;
 	public static final int EAST_MIN_HEIGHT = 100;
+	
+	public static final int BOTTOM_MIN_WIDTH = 100;
+	public static final int BOTTOM_MAX_WIDTH = 1500;
+	public static final int BOTTOM_MIN_HEIGHT = 32; // Just enough for the command line itself
+	public static final int BOTTOM_MAX_HEIGHT = 500;
 	
 	static final int BUTTON_SIZE = 16;
 	
@@ -99,6 +104,8 @@ public final class CytoPanelUtil {
 		} else if (compassDirection == CytoPanelName.EAST) {
 			p.x = containerLocation.x + INSET + (int) containerWidth;
 		} else if (compassDirection == CytoPanelName.SOUTH) {
+			p.y = containerLocation.y + INSET + (int) containerHeight;
+		} else if (compassDirection == CytoPanelName.BOTTOM) {
 			p.y = containerLocation.y + INSET + (int) containerHeight;
 		}
 
