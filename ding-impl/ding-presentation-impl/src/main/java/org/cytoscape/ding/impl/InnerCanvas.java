@@ -912,8 +912,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		if (notches < 0)
 			factor = 1.1; // scroll up, zoom in
-		else
+		else if (notches > 0)
 			factor = 0.9; // scroll down, zoom out
+		else
+			return;
 
 		synchronized (m_lock) {
 			m_scaleFactor = m_scaleFactor * factor;

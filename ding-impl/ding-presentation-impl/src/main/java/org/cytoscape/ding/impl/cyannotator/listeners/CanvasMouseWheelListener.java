@@ -55,8 +55,10 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 		// scroll up, zoom in
 		if (notches < 0)
 				factor = 1.1;
-		else
+		else if (notches > 0)
 				factor = 0.9;
+		else
+				return;
 
 		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
 		if(selectedAnnotations != null && selectedAnnotations.size() > 0){
