@@ -2,32 +2,23 @@ package org.cytoscape.internal.prefs;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.internal.prefs.lib.AntiAliasedPanel;
-import org.cytoscape.internal.prefs.lib.FontAwesomeIcon;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -82,14 +73,14 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 			{
 				int rowLength = PPanels.rowLengths[row];
 				JButton[] buttons = new JButton[rowLength];
-				JComponent[] components = getRowsComponents(row, rowLength);  			
+				AbstractPrefsPanel[] components = getRowsComponents(row, rowLength);  			
 				for (int j=0; j < rowLength; j++) 
 				{
 					int index = j;
 					if (row > 0)  index += PPanels.rowLengths[0];
 					if (row > 1)  index += PPanels.rowLengths[1];
 					PPanels panel = PPanels.values()[index];
-					buttons[j] = makePanelButton(panel);
+					buttons[j] = makePanelButton(components[j]);
 					components[j].setName(buttons[j].getText());
 					contentsPanel.add(components[j], buttons[j].getText());
 				}
@@ -129,9 +120,9 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		}
 	
 	// ----------------------------------------------------------------------------------------
-	private JComponent[] getRowsComponents(int row, int rowLen)
+	private AbstractPrefsPanel[] getRowsComponents(int row, int rowLen)
 		{
-			JComponent[] components = new JComponent[rowLen];
+			AbstractPrefsPanel[] components = new AbstractPrefsPanel[rowLen];
 			int start = 0;
 			if (row > 0) 
 					start += PPanels.rowLengths[0];
@@ -148,9 +139,9 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 			return components;
 		}
 	
-	private JButton makePanelButton(PPanels panel) {
+	private JButton makePanelButton(AbstractPrefsPanel panel) {
 		String iconName = panel.getIcon();
-		Icon icon = new FontAwesomeIcon(iconManager, iconName, 24);
+		Icon icon = new TextIcon(iconName, 24);
 		String name = panel.getDisplayName();
 		int wid = 160; 
 		int hght = 100; 

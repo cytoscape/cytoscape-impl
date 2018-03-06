@@ -16,7 +16,7 @@ public class PrefsBehavior extends AbstractPrefsPanel {
   	static Font dlogFont = new Font(Font.DIALOG, Font.PLAIN, 12);
 
 	protected PrefsBehavior(Cy3PreferencesPanel root) {
-		super(root, "cytoscape3");
+		super(root, "cytoscape3", "Behavior", "\uf14a", "Settings related to what information is shown in the program ");
 	}
     @Override public void initUI()
     {

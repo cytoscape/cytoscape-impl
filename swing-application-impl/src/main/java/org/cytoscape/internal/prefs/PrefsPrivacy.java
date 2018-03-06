@@ -16,7 +16,7 @@ public class PrefsPrivacy extends AbstractPrefsPanel {
   	static Font dlogFont = new Font(Font.DIALOG, Font.PLAIN, 12);
 
 	protected PrefsPrivacy(Cy3PreferencesPanel dlog) {
-		super(dlog, "cytoscape3");
+		super(dlog, "cytoscape3", "Privacy", "\uf023", "Ability to provide or limit exposure of your identity to our log servers");
 	}
     @Override public void initUI()
     {

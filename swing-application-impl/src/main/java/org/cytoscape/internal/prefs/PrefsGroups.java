@@ -19,7 +19,7 @@ import org.cytoscape.internal.prefs.lib.HBox;
 public class PrefsGroups extends AbstractPrefsPanel {
 
 	protected PrefsGroups(Cy3PreferencesPanel dlog) {
-		super(dlog, "groupSettings");
+		super(dlog, "groupSettings", "Groups", "\uf110", "Parameters to determine how group aggregations are displayed");
 	}
 	
 	String[] optionsArray = { "None", "Expand/Contract", "Select" };

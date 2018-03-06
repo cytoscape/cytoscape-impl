@@ -42,7 +42,7 @@ public class PrefsColor extends AbstractPrefsPanel {
 	static String[] defaults = {"Blue-Greens", "Red-White-Blue", "Darker" };
 	
 	protected PrefsColor(Cy3PreferencesPanel dlog) {
-		super(dlog, "color");
+		super(dlog, "color", "Color", "\uf1fb", "A moderated selection of appropriate colors to use in visualizations ");
 		lineOfPalettes = new HBox();
 		lineOfPalettes2 = new HBox();
 		// lineOfPalettes.setBorder(Borders.red);

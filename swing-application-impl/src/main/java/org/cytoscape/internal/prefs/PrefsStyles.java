@@ -21,7 +21,7 @@ public class PrefsStyles extends AbstractPrefsPanel {
 	private static final long serialVersionUID = 1L;
 
 	protected PrefsStyles(Cy3PreferencesPanel dlog) {
-		super(dlog, "vizmap");
+		super(dlog, "vizmap", "", "", "");
 	}
 
 	@Override

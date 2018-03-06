@@ -37,7 +37,7 @@ public enum PPanels {
 		this.tooltip = tooltip;
 	}
 	
-	public String getDisplayName() 	{ return displayName; };
+	public String getDisplayName() 	{ return displayName; }
 	public String getIcon() 			{ return icon; };
 	public String getTooltip() 		{ return tooltip; };
 

@@ -33,7 +33,7 @@ import org.cytoscape.property.CyProperty;
 public class PrefsText extends AbstractPrefsPanel {
 
 	protected PrefsText(Cy3PreferencesPanel dlog) {
-		super(dlog, "text");
+		super(dlog, "text", "Text", "\uf032", "Options to define default values for font familty, size and style");
 		setBorder(BorderFactory.createEmptyBorder(20,32,0,0));
 	}
 //    private final Font panelFont = new Font("Dialog", Font.PLAIN, 10);

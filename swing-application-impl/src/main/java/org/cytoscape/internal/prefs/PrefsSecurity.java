@@ -17,9 +17,9 @@ import org.cytoscape.internal.prefs.lib.HBox;
 import org.cytoscape.internal.prefs.lib.RangedIntegerTextField;
 
 public class PrefsSecurity extends AbstractPrefsPanel {
-
+//UNUSED
 	protected PrefsSecurity(Cy3PreferencesPanel root) {
-		super(root, "security");
+		super(root, "security", "", "", "");
 //		namespace = "proxy";
 	}
     @Override public void initUI()
