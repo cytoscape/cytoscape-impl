@@ -2,36 +2,28 @@ package org.cytoscape.internal.prefs;
 
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
-import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
-import javax.swing.JRootPane;
-import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.internal.prefs.lib.AntiAliasedPanel;
-import org.cytoscape.internal.prefs.lib.FontAwesomeIcon;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 
 
 /** The preferences for Cytoscape 3.7.
@@ -150,7 +142,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	
 	private JButton makePanelButton(PPanels panel) {
 		String iconName = panel.getIcon();
-		Icon icon = new FontAwesomeIcon(iconManager, iconName, 24);
+		Icon icon = new TextIcon(iconName, iconManager.getIconFont(24.0f), 32, 32);
 		String name = panel.getDisplayName();
 		int wid = 160; 
 		int hght = 100; 
