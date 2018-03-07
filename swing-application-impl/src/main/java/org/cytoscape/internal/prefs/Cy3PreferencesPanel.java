@@ -5,7 +5,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -33,7 +35,6 @@ import org.cytoscape.util.swing.TextIcon;
 public class Cy3PreferencesPanel extends PreferenceContainer implements ActionListener
 {
 	private static final long serialVersionUID = 1L;
-	static int NPREFS = PPanels.values().length;		
 	static int FOOTER_HEIGHT = 0;
 	final IconManager iconManager;
 
@@ -62,32 +63,28 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		AbstractPrefsPanel.setSizes(this, AbstractPrefsPanel.getPanelSize());
 		try
 		{
-			// InputStream istream = Cy3PreferencesPanel.class.getResourceAsStream("lib/fontawesome-webfont.ttf");
-	    //     Font font = Font.createFont(Font.TRUETYPE_FONT, istream);
-	    //     font = font.deriveFont(Font.PLAIN, 24f);
-			
 	        initUI();
 	        JPanel homePanel = new JPanel();
 			homePanel.setLayout(new BoxLayout(homePanel, BoxLayout.PAGE_AXIS));
 			contentsPanel.add(homePanel,  "home");
-			for(int row = 0; row<PPanels.rowLengths.length; row++) 
+			for(int row = 0; row<rowLengths.length; row++) 
 			{
-				int rowLength = PPanels.rowLengths[row];
+				int rowLength = rowLengths[row];
 				JButton[] buttons = new JButton[rowLength];
 				AbstractPrefsPanel[] components = getRowsComponents(row, rowLength);  			
 				for (int j=0; j < rowLength; j++) 
 				{
 					int index = j;
-					if (row > 0)  index += PPanels.rowLengths[0];
-					if (row > 1)  index += PPanels.rowLengths[1];
-					PPanels panel = PPanels.values()[index];
+					if (row > 0)  index += rowLengths[0];
+					if (row > 1)  index += rowLengths[1];
+//					PPanels panel = PPanels.values()[index];
 					buttons[j] = makePanelButton(components[j]);
 					components[j].setName(buttons[j].getText());
 					contentsPanel.add(components[j], buttons[j].getText());
 				}
-				addButtonRow(buttons, PPanels.rowNames[row], homePanel);
+				addButtonRow(buttons, rowNames[row], homePanel);
 			}
-			contentsPanel.add(fPrefs[NPREFS-1], "Advanced");
+			contentsPanel.add(fPrefs.get(fPrefs.size()-1), "Advanced");
 
 		}
 		catch (Exception e)		{	e.printStackTrace();	}
@@ -95,43 +92,45 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	//-------------------------------------------------------------------------
 	boolean advancedMode = false;
 	PrefsAdvanced advancedPanel;
-	private final AbstractPrefsPanel[] fPrefs = new AbstractPrefsPanel[NPREFS];
+	private final List<AbstractPrefsPanel> fPrefs = new ArrayList<AbstractPrefsPanel>();
 
 	// order of the prefs layout is determined by PPanels enum
 	// keep this in synch with PPanels.java
 	private void initUI() {
 			int i = 0;									
-			fPrefs[i++] = new PrefsBehavior(this);			
-			fPrefs[i++] = new PrefsColor(this);		
-			fPrefs[i++] = new PrefsText(this);
+			fPrefs.add(new PrefsBehavior(this));			
+			fPrefs.add(new PrefsColor(this));		
+			fPrefs.add(new PrefsText(this));
 
-			fPrefs[i++] = new PrefsGroups(this);
-			fPrefs[i++] = new PrefsTables(this);
-			fPrefs[i++] = new PrefsLinks(this);
+			fPrefs.add(new PrefsGroups(this));
+			fPrefs.add(new PrefsTables(this));
+			fPrefs.add(new PrefsLinks(this));
 
-			fPrefs[i++] = new PrefsEfficiency(this);
-			fPrefs[i++] = new PrefsNetwork(this);
-			fPrefs[i++] = new PrefsPrivacy(this);
+			fPrefs.add(new PrefsEfficiency(this));
+			fPrefs.add(new PrefsNetwork(this));
+			fPrefs.add(new PrefsPrivacy(this));
 	
 						
-			fPrefs[i++] = advancedPanel = new PrefsAdvanced(this);			// available modally thru Tabular button
+			fPrefs.add(advancedPanel = new PrefsAdvanced(this));			// available modally thru Tabular button
 
-			for (i=0; i < NPREFS; i++)
-				fPrefs[i].initUI();
+			for (AbstractPrefsPanel pref : fPrefs)
+				pref.initUI();
 		}
 	
+	public static int[] rowLengths = new int[] { 3, 3, 3 };
+	public static String[] rowNames = new String[]{ "", "", ""};
 	// ----------------------------------------------------------------------------------------
 	private AbstractPrefsPanel[] getRowsComponents(int row, int rowLen)
 		{
 			AbstractPrefsPanel[] components = new AbstractPrefsPanel[rowLen];
 			int start = 0;
 			if (row > 0) 
-					start += PPanels.rowLengths[0];
+					start += rowLengths[0];
 			if (row > 1) 
-				start += PPanels.rowLengths[1];				// TODO assumes 3 rows
+				start += rowLengths[1];				// TODO assumes 3 rows
 
 			for (int i=0; i < rowLen; i++)	
-				components[i] = fPrefs[i + start];	
+				components[i] = fPrefs.get(i + start);	
 			int width = AbstractPrefsPanel.WINDOW_WIDTH;  
 			int height = AbstractPrefsPanel.ROW_HEIGHT;
 			Dimension size = new Dimension(width, height);
@@ -194,8 +193,8 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		}
 		// ---------------------------------------------------------------------------------------------------------
 		protected void resetAllPanels() {
-			for (int i=0; i < NPREFS; i++)
-				fPrefs[i].reset();
+			for (AbstractPrefsPanel pref : fPrefs)
+				pref.reset();
 	}
 
 		protected void resetCurrentPanel() {
