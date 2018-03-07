@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.application.swing.CytoPanelName.EAST;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.FLOAT;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
@@ -13,18 +14,22 @@ import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
 import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -37,6 +42,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -283,6 +289,8 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 			comp.setMinimumSize(new Dimension(SOUTH_MIN_WIDTH, SOUTH_MIN_HEIGHT));
 		else if (compassDirection == EAST)
 			comp.setMinimumSize(new Dimension(EAST_MIN_WIDTH, EAST_MIN_HEIGHT));
+		else if (compassDirection == BOTTOM)
+			comp.setMinimumSize(new Dimension(BOTTOM_MIN_WIDTH, BOTTOM_MIN_HEIGHT));
 	}
 	
 	private void init() {
@@ -307,12 +315,17 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		final FontMetrics fm = getFloatLabel().getFontMetrics(getFloatLabel().getFont());
 		floatDockPanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
 				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
-		floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
-				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 2));
+		if (compassDirection == BOTTOM)
+			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
+					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
+		else
+			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
+					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 2));
 
 		contentPane.setLayout(new BorderLayout());
 		contentPane.add(floatDockPanel, BorderLayout.NORTH);
 		contentPane.add(getTabbedPane(), BorderLayout.CENTER);
+		contentPane.setBorder(BorderFactory.createEmptyBorder());
 		
 		update();
 	}
@@ -331,7 +344,10 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		if (floatLabel == null) {
 			floatLabel = new JLabel(getTitle());
 			floatLabel.setFont(floatLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+			if (compassDirection == BOTTOM)
+				floatLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
+			else
+				floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
 		}
 		
 		return floatLabel;

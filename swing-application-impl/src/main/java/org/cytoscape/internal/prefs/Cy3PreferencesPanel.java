@@ -23,6 +23,7 @@ import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 
 
 /** The preferences for Cytoscape 3.7.
@@ -141,7 +142,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	
 	private JButton makePanelButton(AbstractPrefsPanel panel) {
 		String iconName = panel.getIcon();
-		Icon icon = new TextIcon(iconName, 24);
+		Icon icon = new TextIcon(iconName, iconManager.getIconFont(24.0f), 32, 32);
 		String name = panel.getDisplayName();
 		int wid = 160; 
 		int hght = 100; 

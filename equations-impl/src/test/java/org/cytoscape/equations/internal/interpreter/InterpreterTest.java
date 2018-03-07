@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.cytoscape.equations.Function;
 import org.cytoscape.equations.IdentDescriptor;
 import org.cytoscape.equations.Interpreter;
@@ -119,6 +118,16 @@ public class InterpreterTest {
 		nameToDescriptorMap.put("attr1", new IdentDescriptor(5.5));
 		nameToDescriptorMap.put("attr2", new IdentDescriptor(6.5));
 		assertEquals(new Double(-0.5), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
+	}
+	
+	@Test
+	public void testColumnStartsWithNumber() throws Exception {
+		final Map<String, Class<?>> attribNameToTypeMap = new HashMap<String, Class<?>>();
+		attribNameToTypeMap.put("24 hr.", Long.class);
+		assertTrue(compiler.compile("=${24 hr.}", attribNameToTypeMap));
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new HashMap<String, IdentDescriptor>();
+		nameToDescriptorMap.put("24 hr.", new IdentDescriptor(5L));
+		assertEquals(new Long(5L), interpreter.execute(compiler.getEquation(), nameToDescriptorMap));
 	}
 
 	@Test

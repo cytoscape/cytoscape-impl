@@ -9,6 +9,7 @@ import static org.cytoscape.application.swing.CytoPanelName.EAST;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
 import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
 import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
@@ -207,6 +208,7 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoPanelAction cytoPanelSouthAction;
 	private CytoPanelAction cytoPanelEastAction;
 	private CytoPanelAction cytoPanelSouthWestAction;
+	private CytoPanelAction cytoPanelCommandAction;
 
 	private StarterPanelAction starterPanelAction;
 	private DetachedViewToolBarAction detachedViewToolBarAction;
@@ -253,6 +255,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelSouthAction, CyAction.class);
 		registerService(bc, cytoPanelEastAction, CyAction.class);
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class);
+		registerService(bc, cytoPanelCommandAction, CyAction.class);
 		registerService(bc, starterPanelAction, CyAction.class);
 		registerService(bc, detachedViewToolBarAction, CyAction.class);
 		registerService(bc, closeWindowAction, CyAction.class);
@@ -481,6 +484,7 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
 		cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
 		cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
+		cytoPanelCommandAction = new CytoPanelAction(BOTTOM, false, cytoscapeDesktop, 1.35f);
 		
 		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
