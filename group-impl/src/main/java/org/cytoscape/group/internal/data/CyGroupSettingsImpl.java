@@ -628,7 +628,6 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 	private void getOverrideAggregationProperty(Properties p, String key) {
 		CyNetwork currentNetwork = appMgr.getCurrentNetwork();
 		if (currentNetwork != null) {
-			CyTable nodeTable = currentNetwork.getDefaultNodeTable();
 			if (p.containsKey(key)) {
 				List<String[]> aggr = decodeAggregationOverrides(p.getProperty(key));
 				for (String[] pair: aggr) {
