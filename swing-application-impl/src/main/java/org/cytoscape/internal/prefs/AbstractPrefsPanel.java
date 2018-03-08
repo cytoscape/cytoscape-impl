@@ -40,16 +40,28 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 	final static public Font ital11 = new Font("SansSerif", Font.ITALIC, 11);
 //	protected String namespace;
 	
-	protected AbstractPrefsPanel(Cy3PreferencesPanel container, String inStr)
+	protected AbstractPrefsPanel(Cy3PreferencesPanel container, String inStr, String inName, String icon, String tip)
 	{
 		super();
 		root = container;
 		setName(inStr); 
 //		setBorder(BorderFactory.createLineBorder(Color.red));
+		displayName = inName;
+		this.icon = icon;
+		tooltip = tip;
 	}
 
 	public void initUI()	{	setSizes(this, PREFS_PANEL_SIZE); }
 	public void adjust()	{ }		//  set buttons or text state
+
+	String displayName;
+	String icon;		// define the FontAwesome icons
+	String tooltip;
+ 
+
+	public String getDisplayName() 	{ return displayName; }
+	public String getIcon() 			{ return icon; }
+	public String getTooltip() 		{ return tooltip; }
 
 	//---------------------------------------------------------------------------------------------
 	

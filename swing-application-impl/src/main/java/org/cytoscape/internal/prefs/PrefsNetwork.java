@@ -30,7 +30,7 @@ import org.cytoscape.property.CyProperty;
 public class PrefsNetwork extends AbstractPrefsPanel {
 
 	protected PrefsNetwork(Cy3PreferencesPanel dlog) {
-		super(dlog, "network");
+		super(dlog, "network", "Network", "\uf09e", "Proxy server settings to support network security constraints");
 //		namespace = "proxy";
 	}
     @Override public void initUI()

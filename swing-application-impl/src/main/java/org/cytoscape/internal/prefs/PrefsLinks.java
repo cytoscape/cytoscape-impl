@@ -20,7 +20,7 @@ public class PrefsLinks extends AbstractPrefsPanel {
 	  private NamespaceKeyValueTable table;
 
 	  protected PrefsLinks(Cy3PreferencesPanel dlog) {
-		super(dlog, "linkout");
+		super(dlog, "linkout", "Links", "\uf08e", "Access to external resources on the web based on node and edge values");
 		// TODO Auto-generated constructor stub
 	}
     @Override public void initUI()

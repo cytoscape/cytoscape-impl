@@ -23,7 +23,7 @@ import org.cytoscape.property.CyProperty;
 public class PrefsEfficiency extends AbstractPrefsPanel {
 
 	protected PrefsEfficiency(Cy3PreferencesPanel dlog) {
-		super(dlog,  "cytoscape3");
+		super(dlog,  "cytoscape3", "Efficiency", "\uf085", "Threshold settings to improve performance with large networks");
 		setBorder(BorderFactory.createEmptyBorder(20,32,0,0));
 
 	}
