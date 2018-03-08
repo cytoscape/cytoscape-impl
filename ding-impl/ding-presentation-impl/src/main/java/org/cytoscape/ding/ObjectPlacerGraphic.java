@@ -447,9 +447,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			bestLabelY = labelAnchor.ordinal() / 3;
 		}
 
-		if ((nodeAnchor != NONE) || (labelAnchor != NONE)) {
-			xPos = npoints[bestNodeX] - lxpoints[bestLabelX];
-			yPos = npoints[bestNodeY] - lypoints[bestLabelY];
+		if ((nodeAnchor != NONE || labelAnchor != NONE) && npoints != null && lxpoints != null && lypoints != null) {
+			if (npoints.length > bestNodeX && lxpoints.length > bestLabelX)
+				xPos = npoints[bestNodeX] - lxpoints[bestLabelX];
+			if (npoints.length > bestNodeY && lypoints.length > bestLabelY)
+				yPos = npoints[bestNodeY] - lypoints[bestLabelY];
 		}
 	}
 	

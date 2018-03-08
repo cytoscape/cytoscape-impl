@@ -632,7 +632,8 @@ public class CyGroupSettingsImpl implements GroupAddedListener,
 			if (p.containsKey(key)) {
 				List<String[]> aggr = decodeAggregationOverrides(p.getProperty(key));
 				for (String[] pair: aggr) {
-					allGroupOverridePropertyMap.put(pair[0], pair[1]);
+					if (pair.length > 1)
+						allGroupOverridePropertyMap.put(pair[0], pair[1]);
 				}
 			}
 		}
