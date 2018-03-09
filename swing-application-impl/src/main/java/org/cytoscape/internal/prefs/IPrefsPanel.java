@@ -11,6 +11,7 @@ public interface IPrefsPanel {
 	public String getDisplayName();
 	public String getIcon();
 	public String getTooltip();
+	public int getGravity();
 	public String getPropFileName();
 
 }
