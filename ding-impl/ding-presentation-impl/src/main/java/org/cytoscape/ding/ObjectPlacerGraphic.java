@@ -1,31 +1,5 @@
 package org.cytoscape.ding;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import static org.cytoscape.view.presentation.property.values.Justification.JUSTIFY_LEFT;
-import static org.cytoscape.view.presentation.property.values.Justification.JUSTIFY_RIGHT;
 import static org.cytoscape.view.presentation.property.values.Position.NONE;
 
 import java.awt.BasicStroke;
@@ -50,6 +24,30 @@ import javax.swing.UIManager;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListener {
 
@@ -447,9 +445,11 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 			bestLabelY = labelAnchor.ordinal() / 3;
 		}
 
-		if ((nodeAnchor != NONE) || (labelAnchor != NONE)) {
-			xPos = npoints[bestNodeX] - lxpoints[bestLabelX];
-			yPos = npoints[bestNodeY] - lypoints[bestLabelY];
+		if ((nodeAnchor != NONE || labelAnchor != NONE) && npoints != null && lxpoints != null && lypoints != null) {
+			if (npoints.length > bestNodeX && lxpoints.length > bestLabelX)
+				xPos = npoints[bestNodeX] - lxpoints[bestLabelX];
+			if (npoints.length > bestNodeY && lypoints.length > bestLabelY)
+				yPos = npoints[bestNodeY] - lypoints[bestLabelY];
 		}
 	}
 	
@@ -462,6 +462,7 @@ public class ObjectPlacerGraphic extends JPanel implements PropertyChangeListene
 	/**
 	 * Handles all property changes that the panel listens for.
 	 */
+	@Override
 	public void propertyChange(PropertyChangeEvent e) {
 		final String type = e.getPropertyName();
 

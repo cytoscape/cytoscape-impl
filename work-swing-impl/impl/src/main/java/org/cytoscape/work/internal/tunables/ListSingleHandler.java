@@ -7,6 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
@@ -59,6 +62,8 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	private JComboBox<T> combobox;
 	private final JLabel label = new JLabel(getDescription());
 	private boolean isUpdating;
+	private boolean decorated = false;
+	private List<T> initialValues;
 
 	/**
 	 * Constructs the <code>GUIHandler</code> for the <code>ListSingleSelection</code> type.
@@ -99,6 +104,7 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		if (getSingleSelection() == null || getSingleSelection().getPossibleValues() == null) {
 			values = (T[])new Object[1];
 		} else {
+			initialValues = new ArrayList<T>(getSingleSelection().getPossibleValues());
 			values = (T[])getSingleSelection().getPossibleValues().toArray();
 			selectedValue = getSingleSelection().getSelectedValue();
 		}
@@ -107,16 +113,28 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		combobox = new JComboBox<>(values);
 		combobox.getModel().setSelectedItem(selectedValue);
 		combobox.addActionListener(this);
-		
+
+		String decorate = getParams().getProperty("lookup");
+
+		if (decorate != null) {
+			decorated = true;
+			// JComboBoxDecorator<T> decorator = new JComboBoxDecorator();
+			if (decorate.equalsIgnoreCase("begins")) {
+				JComboBoxDecorator.decorate(combobox, Arrays.asList(values), true);
+			} else if (decorate.equalsIgnoreCase("contains")) {
+				JComboBoxDecorator.decorate(combobox, Arrays.asList(values), false);
+			}
+		}
+
 		updateFieldPanel(panel, label, combobox, horizontal);
 		setTooltip(getTooltip(), label, combobox);
-		
+
 		combobox.setEnabled(combobox.getModel().getSize() > 1);
 		label.setEnabled(combobox.isEnabled());
 		panel.setVisible(combobox.getModel().getSize() > 0);
-		
+
 		final ListSingleSelection<T> singleSelection = getSingleSelection();
-		
+
 		if (singleSelection != null) {
 			// Make sure we're the only handler for this Tunable that's listening
 			// for changes.  If we're in the middle of a refresh, we can sometimes
@@ -140,11 +158,19 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	public void update() {
 		isUpdating = true;
 		if (combobox == null) return;
-		combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
+		// combobox.setModel(new DefaultComboBoxModel<T>((T[])getSingleSelection().getPossibleValues().toArray()));
 		combobox.setSelectedItem(getSingleSelection().getSelectedValue());
-		combobox.setEnabled(combobox.getModel().getSize() > 1);
-		label.setEnabled(combobox.isEnabled());
-		panel.setVisible(combobox.getModel().getSize() > 0);
+		if (!decorated) {
+			combobox.setEnabled(combobox.getModel().getSize() > 1);
+			label.setEnabled(combobox.isEnabled());
+			panel.setVisible(combobox.getModel().getSize() > 0);
+		} else {
+			// We can't use the same rules since we might now have a single value after
+			// filtering
+			combobox.setEnabled(combobox.getModel().getSize() >= 1);
+			label.setEnabled(combobox.isEnabled());
+			panel.setVisible(combobox.getModel().getSize() > 0);
+		}
 		isUpdating = false;
 	}
 
@@ -161,7 +187,15 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		
 		if (selectedItem != null) {
 			ListSingleSelection<T> singleSelection = getSingleSelection();
-			singleSelection.setSelectedValue(selectedItem);
+
+			// If we're decorating, don't set the selected value if it's not
+			// one of the options
+			if (decorated) {
+				if (initialValues.contains(selectedItem))
+					singleSelection.setSelectedValue(selectedItem);
+			} else {
+				singleSelection.setSelectedValue(selectedItem);
+			}
 			
 			try {
 				// TODO This is wrong! It should not set the same list of values again,
@@ -190,8 +224,10 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 		if (selectedItem == null)
 			return "";
 
-		getSingleSelection().setSelectedValue(selectedItem);
-		return selectedItem.toString();
+		if (!decorated || initialValues.contains(selectedItem))
+			getSingleSelection().setSelectedValue(selectedItem);
+		// return selectedItem.toString();
+		return getSingleSelection().getSelectedValue().toString();
 	}
 
 	@Override

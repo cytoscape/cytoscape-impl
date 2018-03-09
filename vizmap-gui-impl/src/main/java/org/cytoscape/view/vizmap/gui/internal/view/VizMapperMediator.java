@@ -1137,13 +1137,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 						continue;
 					
 					final Set values = getDistinctLockedValues(model.getVisualProperty(), selectedViews);
-					
-					if (targetDataType == CyNode.class)
-						updateVpInfoLockedState(model, values, selectedViews);
-					else if (targetDataType == CyEdge.class)
-						updateVpInfoLockedState(model, values, selectedViews);
-					else
-						updateVpInfoLockedState(model, values, selectedViews);
+					updateVpInfoLockedState(model, values, selectedViews);
 				}
 			}
 		});
