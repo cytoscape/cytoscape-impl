@@ -92,35 +92,38 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	boolean advancedMode = false;
 	PrefsAdvanced advancedPanel;
 	private final List<AbstractPrefsPanel> fPrefs = new ArrayList<AbstractPrefsPanel>();
-
-	// order of the prefs layout is determined by PPanels enum
-	// keep this in synch with PPanels.java
-	
 	
 	public void add(AbstractPrefsPanel panel)
 	{
-		fPrefs.add(panel);			
-
-	}	
-		private void initUI() {
-	
-			add(new PrefsBehavior(this));			
-			add(new PrefsColor(this));		
-			add(new PrefsText(this));
-
-			add(new PrefsGroups(this));
-			add(new PrefsTables(this));
-			add(new PrefsLinks(this));
-
-			add(new PrefsEfficiency(this));
-			add(new PrefsNetwork(this));
-			add(new PrefsPrivacy(this));
-						
-			add(advancedPanel = new PrefsAdvanced(this));			// available modally thru Tabular button
-
-			for (AbstractPrefsPanel pref : fPrefs)
-				pref.initUI();
+		int gravity = panel.getGravity();
+		int i = 0;
+		for  (; i<fPrefs.size(); i++)
+		{
+			if (fPrefs.get(i).getGravity() > gravity)
+				break;
 		}
+		fPrefs.add(i, panel);		
+	}	
+	
+	//-------------------------------------------------------------------------
+	private void initUI() {
+		add(new PrefsBehavior(this));			
+		add(new PrefsColor(this));		
+		add(new PrefsText(this));
+
+		add(new PrefsGroups(this));
+		add(new PrefsTables(this));
+		add(new PrefsLinks(this));
+
+		add(new PrefsEfficiency(this));
+		add(new PrefsNetwork(this));
+		add(new PrefsPrivacy(this));
+					
+		add(advancedPanel = new PrefsAdvanced(this));			// available modally thru Tabular button
+
+		for (AbstractPrefsPanel pref : fPrefs)
+			pref.initUI();
+	}
 	
 	public static int[] rowLengths = new int[] { 3, 3, 3 };
 	public static String[] rowNames = new String[]{ "", "", ""};
@@ -130,7 +133,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 			AbstractPrefsPanel[] components = new AbstractPrefsPanel[rowLen];
 			int start = 0;
 			if (row > 0) 
-					start += rowLengths[0];
+				start += rowLengths[0];
 			if (row > 1) 
 				start += rowLengths[1];				// TODO assumes 3 rows
 
@@ -176,8 +179,6 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		}
 	}
 
-
-	private Properties getProperties(String propName) {	return propertyMap.get(propName);	}
 	
 	public void extract()
 	{
@@ -221,6 +222,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 	
 	private Map<String, Properties> propertyMap;		
 	public  Map<String, Properties> getPropertyMap()	{ return propertyMap; }
+	private Properties getProperties(String propName) {	return propertyMap.get(propName);	}
 
 	 // a reference to the properties used by the rest of the program
 	Map<String, CyProperty<?>> globalPropMap;  
@@ -236,8 +238,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 			Object reader = thing.getProperties();
 			if (reader instanceof Properties)
 			{
-			 // AbstractConfigDirPropsReader propsReader = (AbstractConfigDirPropsReader) thing;
-			  Properties properties = (Properties) reader;  //propsReader.getProperties();
+			  Properties properties = (Properties) reader;
 			  if (properties != null)
 			  {
 				  Properties clone = new Properties();
@@ -307,6 +308,8 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 			}
 		}
 	// ---------------------------------------------------------------------------------------------------------
+	//DEBUG
+	
 	private void dumpGlobalProps(String stat)
 	{
 		for (String s : globalPropMap.keySet())
