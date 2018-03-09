@@ -27,7 +27,7 @@ public class PrefsAdvanced extends AbstractPrefsPanel {
 	private static final long serialVersionUID = 1L;
 
 	protected PrefsAdvanced(Cy3PreferencesPanel dlog) {
-		super(dlog, "Advanced", "", "", "");
+		super(dlog, "Advanced", "", "", "", 0);
 //		setBorder(BorderFactory.createLineBorder(Color.cyan));
 	}
 	

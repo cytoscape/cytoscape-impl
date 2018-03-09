@@ -24,8 +24,6 @@ import org.cytoscape.internal.prefs.lib.AntiAliasedPanel;
 import org.cytoscape.internal.prefs.lib.ColorPane;
 import org.cytoscape.internal.prefs.lib.HBox;
 import org.cytoscape.internal.prefs.lib.RangedIntegerTextField;
-import org.cytoscape.property.AbstractConfigDirPropsReader;
-import org.cytoscape.property.CyProperty;
 
 abstract public class AbstractPrefsPanel extends AntiAliasedPanel implements IPrefsPanel
 {
@@ -34,11 +32,9 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel implements IPr
 	final private static Dimension PREFS_PANEL_SIZE = new Dimension(615, 420);
 	final public static Dimension getPanelSize() { return new Dimension(PREFS_PANEL_SIZE); }
 	final public static int WINDOW_WIDTH = PREFS_PANEL_SIZE.width;
-//	final public static int WINDOW_HEIGHT = PREFS_PANEL_SIZE.height;
 	final static int FOOTER_HEIGHT = 50;
 	final public static int ROW_HEIGHT = 140; // (WINDOW_HEIGHT - FOOTER_HEIGHT) / 3;  // TODO -- hard-coded assumption of 3rows
 	final static public Font ital11 = new Font("SansSerif", Font.ITALIC, 11);
-//	protected String namespace;
 	
 	protected AbstractPrefsPanel(Cy3PreferencesPanel container, String inStr, String inName, String icon, String tip, int weight)
 	{
@@ -196,7 +192,7 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel implements IPr
 			   return ck.isSelected() ? "true" : "false";
 		   }
 
-		//---------------------------------------------------------------------------------------------
+	//---------------------------------------------------------------------------------------------
 	public AbstractBorder makeSubpanelBorder(String name)
 	{
 		TitledBorder border = new TitledBorder(name);
@@ -320,6 +316,50 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel implements IPr
 	protected HBox makeCheckBoxLine(String name, String propName, String tip)
 	{
 		return makeCheckBoxLine(name, propName,  new Font(Font.DIALOG, Font.PLAIN, 12), tip);
+	}
+	//----------------------------------------------------------------------------------------
+	protected JSlider makeSlider(String s, String propName, int min, int max, int val)
+    {
+        JSlider slider = new JSlider(JSlider.HORIZONTAL,min, max, val);
+        slider.setMajorTickSpacing(max - min);
+        slider.setPaintLabels(true);
+        slider.setToolTipText("" + slider.getValue());
+        slider.setMaximumSize(new Dimension(200, 36));
+        slider.addChangeListener(e -> { slider.setToolTipText("" + slider.getValue());} );
+       return slider;
+    }
+    
+	//----------------------------------------------------------------------------------------
+	protected  HBox makeNumberSliderRow(String s, String propName, JSlider slider) 
+    {
+		JLabel label = new JLabel(s);
+		setSizes(label, 150, 30);
+		label.setHorizontalAlignment(SwingConstants.LEFT);
+		label.setHorizontalTextPosition(SwingConstants.LEFT);
+//		JTextField fld = new JTextField("" + slider.getValue());
+//		fld.addFocusListener(new FocusListener() {
+//			
+//			@Override
+//			public void focusLost(FocusEvent e) {
+//				String txt = fld.getText();
+//				try
+//				{
+//					int val = Integer.parseInt(txt);
+//					slider.setValue(val);
+//				}
+//				catch (Exception ex) {}
+//			}
+//			
+//			@Override
+//			public void focusGained(FocusEvent e) {			}
+//		});
+//		setSizes(fld, 80,30);
+//        slider.addChangeListener(e -> { fld.setText("" + slider.getValue());} );
+//        fld.setHorizontalAlignment(SwingConstants.RIGHT);
+		components.put(propName, slider);
+		Component spacer = Box.createHorizontalStrut(40);
+		HBox line = new HBox(spacer, label, slider);		//fld, 
+ 		return line;
 	}
 
 	//------------------------------------------------------------------
