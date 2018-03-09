@@ -66,7 +66,6 @@ public final class TextTraits
 		  
 		  } catch (NumberFormatException e) { fontSize = 11;	}
 	   }
-	   fontName = s.substring(0,  index1).trim();
 
    }
     

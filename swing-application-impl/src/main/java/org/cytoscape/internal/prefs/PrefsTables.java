@@ -19,7 +19,7 @@ public class PrefsTables extends AbstractPrefsPanel
 {
 	public PrefsTables(Cy3PreferencesPanel dlog)
 	{
-		super(dlog, "table", "Tables", "\uf0ce", "Options to customize the display of tables in Cytoscape");
+		super(dlog, "table", "Tables", "\uf0ce", "Options to customize the display of tables in Cytoscape", -1);
 		init();
 	}
 	

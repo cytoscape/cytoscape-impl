@@ -33,7 +33,7 @@ import org.cytoscape.property.CyProperty;
 public class PrefsText extends AbstractPrefsPanel {
 
 	protected PrefsText(Cy3PreferencesPanel dlog) {
-		super(dlog, "text", "Text", "\uf032", "Options to define default values for font familty, size and style");
+		super(dlog, "text", "Text", "\uf032", "Options to define default values for font familty, size and style", -1);
 		setBorder(BorderFactory.createEmptyBorder(20,32,0,0));
 	}
 //    private final Font panelFont = new Font("Dialog", Font.PLAIN, 10);
@@ -308,11 +308,11 @@ public class PrefsText extends AbstractPrefsPanel {
 
 	@Override public void install(Properties properties)
 	{
-		if (verbose)
-		for (Object key : properties.keySet())
-		{
-			System.out.println(key + " : " + properties.getProperty(key.toString()));
-		}
+//		if (verbose)
+//		for (Object key : properties.keySet())
+//		{
+//			System.out.println(key + " : " + properties.getProperty(key.toString()));
+//		}
 		
 		for (String name : kTraitNames)
 		{
@@ -324,6 +324,7 @@ public class PrefsText extends AbstractPrefsPanel {
 		if (curName == null) 
 			curName = "Nodes";
 		fCurrentTextTrait = fontMap.get(curName);
+		installCurrentTrait();
 	}
 
 //------------------------------------------------------------------------------

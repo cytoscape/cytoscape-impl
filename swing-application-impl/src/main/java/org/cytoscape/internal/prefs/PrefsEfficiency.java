@@ -23,7 +23,7 @@ import org.cytoscape.property.CyProperty;
 public class PrefsEfficiency extends AbstractPrefsPanel {
 
 	protected PrefsEfficiency(Cy3PreferencesPanel dlog) {
-		super(dlog,  "cytoscape3", "Efficiency", "\uf085", "Threshold settings to improve performance with large networks");
+		super(dlog,  "cytoscape3", "Efficiency", "\uf085", "Threshold settings to improve performance with large networks", -1);
 		setBorder(BorderFactory.createEmptyBorder(20,32,0,0));
 
 	}
@@ -87,10 +87,13 @@ public class PrefsEfficiency extends AbstractPrefsPanel {
         JSlider slider = new JSlider(JSlider.HORIZONTAL,min, max, val);
         slider.setMajorTickSpacing(max - min);
         slider.setPaintLabels(true);
+        slider.setToolTipText("" + slider.getValue());
         slider.setMaximumSize(new Dimension(200, 36));
-        return slider;
-	
+        slider.addChangeListener(e -> { slider.setToolTipText("" + slider.getValue());} );
+       return slider;
     }
+    
+    
     
     private  HBox makeNumberSliderRow(String s, String propName, JSlider slider) 
     {

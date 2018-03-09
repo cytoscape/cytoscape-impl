@@ -20,7 +20,7 @@ public class PrefsLinks extends AbstractPrefsPanel {
 	  private NamespaceKeyValueTable table;
 
 	  protected PrefsLinks(Cy3PreferencesPanel dlog) {
-		super(dlog, "linkout", "Links", "\uf08e", "Access to external resources on the web based on node and edge values");
+		super(dlog, "linkout", "Links", "\uf08e", "Access to external resources on the web based on node and edge values", -1);
 		// TODO Auto-generated constructor stub
 	}
     @Override public void initUI()
@@ -56,7 +56,7 @@ public class PrefsLinks extends AbstractPrefsPanel {
     		super.install(properties);
     			table.install(properties);
     }
-	protected String getPropFileName()	{ return "linkout";	}
+    public String getPropFileName()	{ return "linkout";	}
 boolean verboseLinks = false;
 
     @Override public void extract(Properties properties)

@@ -19,7 +19,7 @@ import org.cytoscape.internal.prefs.lib.HBox;
 public class PrefsGroups extends AbstractPrefsPanel {
 
 	protected PrefsGroups(Cy3PreferencesPanel dlog) {
-		super(dlog, "groupSettings", "Groups", "\uf110", "Parameters to determine how group aggregations are displayed");
+		super(dlog, "groupSettings", "Groups", "\uf110", "Parameters to determine how group aggregations are displayed", -1);
 	}
 	
 	String[] optionsArray = { "None", "Expand/Contract", "Select" };
@@ -118,7 +118,7 @@ public class PrefsGroups extends AbstractPrefsPanel {
 		
 	}
 
-	@Override protected String getPropFileName()	{ return "groupSettings";	}
+	@Override public String getPropFileName()	{ return "groupSettings";	}
 	String[] availableAttributes = { "None", "Name", "Weight", "isNumeric"};
 	String[] attributeTypes = { "Integer", "Long", "Double", "String", "Boolean"};
 	String[] aggregationTypes = { "None", "Summary", "Average", "Range", "Distribution"};
@@ -130,20 +130,20 @@ public class PrefsGroups extends AbstractPrefsPanel {
 	String[] aggsStr = { "None", "Comma Separated Text", "Tab Separated Text", "Most Common Value", "Unique Values"};
 	String[] aggsStrList = { "None", "Concatenate", "Unique Values"};
 
-	@Override public void install(Properties properties)
-	{
-		super.install(properties);
-		dump(properties);
-	}
-	
-	void dump (Properties properties)
-	{
-		for (Object name : properties.keySet())
-		{
-			String strTrait = properties.getProperty(name.toString());
-			System.out.println(name + ": " + strTrait);
-		}
-		System.out.println();
-
-	}
+//	@Override public void install(Properties properties)
+//	{
+//		super.install(properties);
+//		dump(properties);
+//	}
+//	
+//	void dump (Properties properties)
+//	{
+//		for (Object name : properties.keySet())
+//		{
+//			String strTrait = properties.getProperty(name.toString());
+//			System.out.println(name + ": " + strTrait);
+//		}
+//		System.out.println();
+//
+//	}
 }

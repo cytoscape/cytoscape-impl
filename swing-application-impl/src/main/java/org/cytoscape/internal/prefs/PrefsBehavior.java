@@ -16,7 +16,7 @@ public class PrefsBehavior extends AbstractPrefsPanel {
   	static Font dlogFont = new Font(Font.DIALOG, Font.PLAIN, 12);
 
 	protected PrefsBehavior(Cy3PreferencesPanel root) {
-		super(root, "cytoscape3", "Behavior", "\uf14a", "Settings related to what information is shown in the program ");
+		super(root, "cytoscape3", "Behavior", "\uf14a", "Settings related to what information is shown in the program ", -1);
 	}
     @Override public void initUI()
     {
@@ -70,11 +70,11 @@ public class PrefsBehavior extends AbstractPrefsPanel {
 	}
 	
 	
-	String[] displayNames = { "Show Network Provenance Hierarchy", "Show Node Edge Count",  "Show QuickStart As Startup",  
+	String[] displayNames = { "Show Network Provenance Hierarchy", "Show Node Edge Count",  "Show QuickStart At Startup",  
 							"Canonicalize Names",  "Hide Welcome Screen",  "Maximize View On Create"  };
 		
 	String[] tips = { "Display the nested levels of networks in the status bar", "Includes the numbers of nodes and edges in the status bar",  "Display a panel of recent sessions and samples from our documentation",  
-							"A canonical name includes ",  "Skip the view showing recent sessions",  "Use the largest window sizes possible by default"  };
+							"A canonical name includes the network name with the node or edge",  "Skip the view showing recent sessions",  "Use the largest window sizes possible by default"  };
  
 
 }

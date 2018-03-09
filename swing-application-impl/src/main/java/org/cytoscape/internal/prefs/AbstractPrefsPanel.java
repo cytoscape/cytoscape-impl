@@ -27,7 +27,7 @@ import org.cytoscape.internal.prefs.lib.RangedIntegerTextField;
 import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 
-abstract public class AbstractPrefsPanel extends AntiAliasedPanel
+abstract public class AbstractPrefsPanel extends AntiAliasedPanel implements IPrefsPanel
 {
 	private static final long serialVersionUID = 1L;
 	protected Cy3PreferencesPanel root;
@@ -40,7 +40,7 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 	final static public Font ital11 = new Font("SansSerif", Font.ITALIC, 11);
 //	protected String namespace;
 	
-	protected AbstractPrefsPanel(Cy3PreferencesPanel container, String inStr, String inName, String icon, String tip)
+	protected AbstractPrefsPanel(Cy3PreferencesPanel container, String inStr, String inName, String icon, String tip, int weight)
 	{
 		super();
 		root = container;
@@ -49,6 +49,7 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 		displayName = inName;
 		this.icon = icon;
 		tooltip = tip;
+		gravity = weight;
 	}
 
 	public void initUI()	{	setSizes(this, PREFS_PANEL_SIZE); }
@@ -57,19 +58,87 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 	String displayName;
 	String icon;		// define the FontAwesome icons
 	String tooltip;
+	int gravity= 0;
  
 
 	public String getDisplayName() 	{ return displayName; }
 	public String getIcon() 			{ return icon; }
 	public String getTooltip() 		{ return tooltip; }
+	public String getPropFileName()	{ return "cytoscape 3";	}
+	public int getGravity()			{ return gravity;	}
 
 	//---------------------------------------------------------------------------------------------
 	
 	public Map<String, Properties> getPropertyMap()	{ return root.getPropertyMap();	}
-    Dimension leading = new Dimension(12,12);
-	//---------------------------------------------------------------------------------------------
-	public HBox makeLabeledField(String s, String propertyName, String deflt, String tooltip)
 
+	//------------------------------------------------------------------
+	// Semantic Meat
+	// Map from key to displayName, to the component
+	//------------------------------------------------------------------
+		protected Map<String, JComponent> components = new HashMap<String, JComponent>();
+//		protected Map<String, String> displayNames = new HashMap<String, String>();
+		boolean verbose = true;
+		//------------------------------------------------------------------
+
+	    protected void dump(Properties properties, String filter) {
+			if (verbose)
+			for (Object key : properties.keySet())
+			{
+				if (key.toString().startsWith(filter))
+					System.out.println(key + " : " + properties.getProperty(key.toString()));
+			}
+			
+		}
+		public void install(Properties properties)
+		{		
+		   System.out.println("->  " + getName());
+		   for (String name : components.keySet())
+		    	{
+		    		String property = (String) properties.get(name);
+		    		JComponent component = components.get(name);
+		    		if (property != null && component != null)
+		    		{
+		    			inject(property, component);
+		    			System.out.println("> " + name + ": " + property);
+		    		}
+		    	}
+		}
+
+		   
+	    public void extract(Properties properties)
+	    {
+		   System.out.println("--  " + getName());
+		   for (String fld : components.keySet())
+		   {
+				JComponent comp = components.get(fld);
+			   if (comp == null) continue;	
+			   String val = scrape(comp);
+				{
+					properties.put(fld, val);
+					  System.out.println("< " + fld + ": " + val);
+				}
+		    }
+	    }
+		
+		public void reset() {
+			
+			   for (String fld : components.keySet())
+			   {
+					JComponent comp = components.get(fld);
+					if (comp != null)
+						reset(comp);
+			   }
+		}
+		   
+		private void reset(JComponent comp) {
+			// TODO store factory defaults with components when they are created
+			
+		}
+
+	//---------------------------------------------------------------------------------------------
+		// GUI Construction Factory
+	Dimension leading = new Dimension(12,12);
+	public HBox makeLabeledField(String s, String propertyName, String deflt, String tooltip)
 	{
 		JLabel label = new JLabel(s);
 		JLabel spacer = new JLabel("    " );
@@ -301,66 +370,6 @@ abstract public class AbstractPrefsPanel extends AntiAliasedPanel
 			components.put(propertyName, fld);
 			return fld;
 		}
-
-//------------------------------------------------------------------
-// Semantic Meat
-// Map from key to displayName, to the component
-//------------------------------------------------------------------
-	protected Map<String, JComponent> components = new HashMap<String, JComponent>();
-//	protected Map<String, String> displayNames = new HashMap<String, String>();
-	boolean verbose = true;
-	//------------------------------------------------------------------
-
-    protected void dump(Properties properties, String filter) {
-		if (verbose)
-		for (Object key : properties.keySet())
-		{
-			if (key.toString().startsWith(filter))
-				System.out.println(key + " : " + properties.getProperty(key.toString()));
-		}
-		
-	}
-	public void install(Properties properties)
-	{		
-	    	for (String name : components.keySet())
-	    	{
-	    		String property = (String) properties.get(name);
-	    		JComponent component = components.get(name);
-	    		if (property != null && component != null)
-	    			inject(property, component);
-	    	}
-	}
-
-	   
-	protected String getPropFileName()	{ return "cytoscape 3";	}
-    public void extract(Properties properties)
-    {
-	   System.out.println("--  " + getName());
-	   for (String fld : components.keySet())
-	   {
-			JComponent comp = components.get(fld);
-		   if (comp == null) continue;	
-		   String val = scrape(comp);
-			properties.put(fld, val);
-		  if (!getName().equals("linkouts")) 
-			  System.out.println(fld + " : " + val);
-	    }
-    }
-	
-	public void reset() {
-		
-		   for (String fld : components.keySet())
-		   {
-				JComponent comp = components.get(fld);
-				if (comp != null)
-					reset(comp);
-		   }
-	}
-	   
-	private void reset(JComponent comp) {
-		// TODO store factory defaults with components when they are created
-		
-	}
 //------------------------------------------------------------------
 // For each type of control we have used,
 //	here we push a value into the control (inject).

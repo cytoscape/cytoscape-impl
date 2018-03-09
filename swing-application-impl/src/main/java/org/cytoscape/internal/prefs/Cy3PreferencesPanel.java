@@ -6,10 +6,13 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -59,6 +62,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		super(dlog, reg);
 		iconManager = reg.getService(IconManager.class);
 		globalPropMap = inPropMap;
+//		dumpGlobalProps("constructor");
 		makeLocalCopy(inPropMap);
 		AbstractPrefsPanel.setSizes(this, AbstractPrefsPanel.getPanelSize());
 		try
@@ -74,12 +78,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 				AbstractPrefsPanel[] components = getRowsComponents(row, rowLength);  			
 				for (int j=0; j < rowLength; j++) 
 				{
-					int index = j;
-					if (row > 0)  index += rowLengths[0];
-					if (row > 1)  index += rowLengths[1];
-//					PPanels panel = PPanels.values()[index];
 					buttons[j] = makePanelButton(components[j]);
-					components[j].setName(buttons[j].getText());
 					contentsPanel.add(components[j], buttons[j].getText());
 				}
 				addButtonRow(buttons, rowNames[row], homePanel);
@@ -96,22 +95,28 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 
 	// order of the prefs layout is determined by PPanels enum
 	// keep this in synch with PPanels.java
-	private void initUI() {
-			int i = 0;									
-			fPrefs.add(new PrefsBehavior(this));			
-			fPrefs.add(new PrefsColor(this));		
-			fPrefs.add(new PrefsText(this));
-
-			fPrefs.add(new PrefsGroups(this));
-			fPrefs.add(new PrefsTables(this));
-			fPrefs.add(new PrefsLinks(this));
-
-			fPrefs.add(new PrefsEfficiency(this));
-			fPrefs.add(new PrefsNetwork(this));
-			fPrefs.add(new PrefsPrivacy(this));
 	
+	
+	public void add(AbstractPrefsPanel panel)
+	{
+		fPrefs.add(panel);			
+
+	}	
+		private void initUI() {
+	
+			add(new PrefsBehavior(this));			
+			add(new PrefsColor(this));		
+			add(new PrefsText(this));
+
+			add(new PrefsGroups(this));
+			add(new PrefsTables(this));
+			add(new PrefsLinks(this));
+
+			add(new PrefsEfficiency(this));
+			add(new PrefsNetwork(this));
+			add(new PrefsPrivacy(this));
 						
-			fPrefs.add(advancedPanel = new PrefsAdvanced(this));			// available modally thru Tabular button
+			add(advancedPanel = new PrefsAdvanced(this));			// available modally thru Tabular button
 
 			for (AbstractPrefsPanel pref : fPrefs)
 				pref.initUI();
@@ -140,9 +145,10 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		}
 	
 	private JButton makePanelButton(AbstractPrefsPanel panel) {
+		String name = panel.getDisplayName();
+		panel.setName(name);				// CardLayout relies on getName, so mirror it from displayName
 		String iconName = panel.getIcon();
 		Icon icon = new TextIcon(iconName, iconManager.getIconFont(24.0f), 32, 32);
-		String name = panel.getDisplayName();
 		int wid = 160; 
 		int hght = 100; 
 		JButton btn = new JButton(name);
@@ -155,113 +161,123 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		return btn;
 	}
 	// ---------------------------------------------------------------------------------------------------------
-		public void install()    
-		{
-			if (advanced)
-				advancedPanel.install(propertyMap);
-			else
+	public void install()    
+	{
+		dumpGlobalProps("install");
+		if (advanced)
+			advancedPanel.install(propertyMap);
+		else
+		for (AbstractPrefsPanel panel : fPrefs)
+		{	
+			String propName = panel.getPropFileName();
+            Properties props = getProperties(propName);
+			if (props != null)
+				panel.install(props);
+		}
+	}
+
+
+	private Properties getProperties(String propName) {	return propertyMap.get(propName);	}
+	
+	public void extract()
+	{
+		dumpGlobalProps("extract pre");
+		if (advancedMode)
+			advancedPanel.extract(propertyMap);
+		else
 			for (AbstractPrefsPanel panel : fPrefs)
 			{	
 				String propName = panel.getPropFileName();
 				Properties props = getProperties(propName);
 				if (props != null)
-					panel.install(props);
+					panel.extract(props);
 			}
-		}
-
-
-		private Properties getProperties(String propName) {	return propertyMap.get(propName);	}
-		
-		public void extract()
-		{
-			if (advancedMode)
-				advancedPanel.extract(propertyMap);
-			else
-				for (AbstractPrefsPanel panel : fPrefs)
-				{	
-					String propName = panel.getPropFileName();
-					Properties props = getProperties(propName);
-					if (props != null)
-						panel.extract(props);
-				}
-		}
-		
-		@Override public void savePrefs()
-		{
-			extract();
-			saveStateToConfigDirectory();
-		}
-		// ---------------------------------------------------------------------------------------------------------
-		protected void resetAllPanels() {
-			for (AbstractPrefsPanel pref : fPrefs)
-				pref.reset();
+		dumpGlobalProps("extract post");
+	}
+	
+	@Override public void savePrefs()
+	{
+		extract();
+		saveStateToConfigDirectory();
+	}
+	// ---------------------------------------------------------------------------------------------------------
+	protected void resetAllPanels() {
+		for (AbstractPrefsPanel pref : fPrefs)
+			pref.reset();
 	}
 
-		protected void resetCurrentPanel() {
-			for (Component comp : contentsPanel.getComponents()) {
-				if (comp.isVisible() == true) {
-					AbstractPrefsPanel pref = (AbstractPrefsPanel) comp;
-					pref.reset();
-			    }
+	protected void resetCurrentPanel() {
+		for (Component comp : contentsPanel.getComponents()) {
+			if (comp.isVisible() == true) {
+				AbstractPrefsPanel pref = (AbstractPrefsPanel) comp;
+				pref.reset();
+		    }
+		}
+	}
+	//----------------------------------------------------------------------------------------------------
+	// The set of properties read in from several files all put into one map.
+	// This is kept separate from the <CyProperty> map that lives in PreferenceAction
+	// so you can cancel out of the dialog with no changes taking effect.
+	
+	private Map<String, Properties> propertyMap;		
+	public  Map<String, Properties> getPropertyMap()	{ return propertyMap; }
+
+	 // a reference to the properties used by the rest of the program
+	Map<String, CyProperty<?>> globalPropMap;  
+	
+	private void makeLocalCopy(Map<String, CyProperty<?>> original)
+	{
+		propertyMap = new HashMap<String, Properties>();
+		for (String s : original.keySet())
+		{
+			if (s.startsWith("vizmap")) continue;
+			if (s.startsWith("layout")) continue;
+			CyProperty<?> thing = original.get(s);
+			Object reader = thing.getProperties();
+			if (reader instanceof Properties)
+			{
+			 // AbstractConfigDirPropsReader propsReader = (AbstractConfigDirPropsReader) thing;
+			  Properties properties = (Properties) reader;  //propsReader.getProperties();
+			  if (properties != null)
+			  {
+				  Properties clone = new Properties();
+				  for (Object obj : properties.keySet())
+					  clone.put(obj, properties.get(obj)); 
+				  propertyMap.put(s, clone);
+			  }
 			}
 		}
-		//----------------------------------------------------------------------------------------------------
-		// The set of properties read in from several files all put into one map.
-		// This is kept separate from the <CyProperty> map that lives in PreferenceAction
-		// so you can cancel out of the dialog with no changes taking effect.
+	}
 		
-		private Map<String, Properties> propertyMap;		
-		public  Map<String, Properties> getPropertyMap()	{ return propertyMap; }
-
-		 // a reference to the properties used by the rest of the program
-		Map<String, CyProperty<?>> globalPropMap;  
-		
-		private void makeLocalCopy(Map<String, CyProperty<?>> original)
+	private void copyLocalToGlobalProperties()
+	{
+		for (String s : globalPropMap.keySet())
 		{
-			propertyMap = new HashMap<String, Properties>();
-			for (String s : original.keySet())
+			CyProperty<?> orig = globalPropMap.get(s);
+			if (orig == null) continue;
+			try
 			{
-				if (s.startsWith("vizmap")) continue;
-				if (s.startsWith("layout")) continue;
-				CyProperty<?> thing = original.get(s);
-				Object reader = thing.getProperties();
-				if (reader instanceof Properties)
+				Properties properties = (Properties) orig.getProperties();
+				if (properties != null)
 				{
-				 // AbstractConfigDirPropsReader propsReader = (AbstractConfigDirPropsReader) thing;
-				  Properties properties = (Properties) reader;  //propsReader.getProperties();
-				  if (properties != null)
-				  {
-					  Properties clone = new Properties();
-					  for (Object obj : properties.keySet())
-						  clone.put(obj, properties.get(obj)); 
-					  propertyMap.put(s, clone);
-				  }
+					System.out.println("global props: + " + s + " " + properties);
+					Properties local = propertyMap.get(s);
+					if (local == null) continue;
+					for (Object key : local.keySet())
+					{
+						Object locObj = local.get(key);
+						if (locObj != null)
+								properties.put(key, locObj);
+					}
 				}
 			}
-		}
-		
-		private void copyLocalToGlobalProperties()
-		{
-			for (String s : globalPropMap.keySet())
+			catch (ClassCastException ex)
 			{
-				CyProperty<?> orig = globalPropMap.get(s);
-				Object reader = orig.getProperties();
-				if (reader instanceof AbstractConfigDirPropsReader)
-				{
-				  AbstractConfigDirPropsReader propsReader = (AbstractConfigDirPropsReader) orig;
-				  Properties properties = propsReader.getProperties();
-				  if (properties != null)
-				  {
-					  Properties local =  propertyMap.get(s);
-					  for (Object key : local.keySet())
-						  properties.put(key, local.get(s));
-
-				  }
-				}
+				System.err.println("ClasscastException in copyLocalToGlobalProperties");
 			}
 		}
+	}
 	// ---------------------------------------------------------------------------------------------------------
-	// prefs.groupSettings doesn't reflect changes!!
 		
 	public void saveStateToConfigDirectory()
 	{
@@ -270,6 +286,7 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 		System.out.println("saveStateToConfigDirectory");
 		for (String key : prefs.keySet()) {
 			if (key.startsWith("layout")) continue;
+			if (key.startsWith("vizmap")) continue;
 			final String propertyName = key;
 			if (propertyName == null || propertyName.isEmpty()) continue;
 			
@@ -289,4 +306,35 @@ public class Cy3PreferencesPanel extends PreferenceContainer implements ActionLi
 				}
 			}
 		}
+	// ---------------------------------------------------------------------------------------------------------
+	private void dumpGlobalProps(String stat)
+	{
+		for (String s : globalPropMap.keySet())
+		{
+			if (s.startsWith("layout")) continue;
+			if (s.startsWith("viz")) continue;
+			if (s.startsWith("group")) continue;
+			if (s.startsWith("commandline")) continue;
+			if (s.startsWith("link")) continue;
+			System.out.println(stat + "\n:-----------" + s);
+			CyProperty<?> orig = globalPropMap.get(s);
+			Object prop = orig.getProperties();
+			if (prop instanceof Properties)
+				  dumpProperties( (Properties) prop);
+		}
+	}
+	
+	void dumpProperties(Properties p)			// in alphabetical order
+	{
+	     Enumeration<Object> keysEnum = p.keys();
+	     Vector<String> keyList = new Vector<String>();
+	     while(keysEnum.hasMoreElements())
+	       keyList.add((String)keysEnum.nextElement());
+	     
+	     Collections.sort(keyList);
+	     for (String key : keyList)
+			  System.out.println(key + ": " + p.getProperty(key));
+	     System.out.println();
+	}
+
 }

@@ -42,7 +42,7 @@ public class PrefsColor extends AbstractPrefsPanel {
 	static String[] defaults = {"Blue-Greens", "Red-White-Blue", "Darker" };
 	
 	protected PrefsColor(Cy3PreferencesPanel dlog) {
-		super(dlog, "color", "Color", "\uf1fb", "A moderated selection of appropriate colors to use in visualizations ");
+		super(dlog, "color", "Color", "\uf1fb", "A moderated selection of appropriate colors to use in visualizations ", -1);
 		lineOfPalettes = new HBox();
 		lineOfPalettes2 = new HBox();
 		// lineOfPalettes.setBorder(Borders.red);
@@ -252,7 +252,7 @@ static Border red4 = BorderFactory.createLineBorder(Color.red, 4);
 	}
 
 	   
-	protected String getPropFileName()	{ return "cytoscape 3";	}
+	public String getPropFileName()	{ return "cytoscape 3";	}
 	@Override  public void extract(Properties properties)
     {
 	   System.out.println("--  " + getName());
