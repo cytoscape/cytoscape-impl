@@ -302,6 +302,57 @@ public final class TypeUtil {
 		return dataTypes;
 	}
 	
+	public static SourceColumnSemantic[] parseColumnTypeList(final String strList) {
+		final List<SourceColumnSemantic> typeList = new ArrayList<>();
+		if (strList != null) {
+			final String[] tokens = getCSV(strList);
+			
+			for (final String t : tokens) {
+				final String s = t.trim().toLowerCase().replaceAll("[^a-zA-Z]", "");
+				final SourceColumnSemantic dataType;
+
+				switch(s) {
+					case "s":
+					case "source":
+					case "source node":
+						dataType = SourceColumnSemantic.SOURCE;
+						break;
+					case "t":
+					case "target":
+					case "target node":
+						dataType = SourceColumnSemantic.TARGET;
+						break;
+					case "i":
+					case "interaction":
+						dataType = SourceColumnSemantic.INTERACTION;
+						break;
+					case "sa":
+					case "source attribute":
+						dataType = SourceColumnSemantic.SOURCE_ATTR;
+						break;
+					case "ta":
+					case "target attribute":
+						dataType = SourceColumnSemantic.TARGET_ATTR;
+						break;
+					case "ea":
+					case "edge attribute":
+						dataType = SourceColumnSemantic.EDGE_ATTR;
+						break;
+					case "x":
+					case "skip":
+					case "none":
+						dataType = SourceColumnSemantic.NONE;
+						break;
+					default:
+						throw new IllegalArgumentException("Invalid Column Type: \"" + t + "\"");
+				}
+				
+				typeList.add(dataType);
+			}
+		}
+		return typeList.toArray(new SourceColumnSemantic[typeList.size()]);
+	}
+
 	public static AttributeDataType[] parseDataTypeList(final String strList) {
 		final List<AttributeDataType> dataTypeList = new ArrayList<>();
 		

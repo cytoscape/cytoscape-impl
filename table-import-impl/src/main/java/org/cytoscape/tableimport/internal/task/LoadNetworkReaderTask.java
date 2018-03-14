@@ -125,7 +125,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	@Tunable(description = "Source column number", 
 	         exampleStringValue = "1",
 	         longDescription = "The column index that contains the source node identifiers.",
-	         required = true,
+	         required = false,
 	         context = "both")
 	public int indexColumnSourceInteraction = -1;
 
@@ -156,6 +156,15 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	         exampleStringValue = "string,int,string,double,double",
 					 context = "nongui")
 	public String dataTypeList;
+
+	@Tunable(description = "Column import types",
+	         longDescription = "List of column types ordered by "+
+					                   "column index (e.g. \"source,target,interaction,source attribute,"+
+														 "target attribute,edge attribute,skip\" or just "+
+														 "\"s,t,i,sa,ta,ea,x\"):", 
+	         exampleStringValue = "source,target,source attribute,source attribute,target attribute,target attribute",
+					 context = "nongui")
+	public String columnTypeList;
 	
 	private NetworkTableMappingParameters ntmp;
 
@@ -223,19 +232,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		tm.setTitle("Loading network from table");
 		tm.setProgress(0.0);
 
-		if (nogui) {
-			// Handle the validation
-			nogui = false;
-			ValidationState state = getValidationState(new StringBuffer(80));
-			switch (state) {
-				case INVALID:
-					tm.showMessage(TaskMonitor.Level.ERROR, "Source column must be specified");
-					return;
-				case REQUEST_CONFIRMATION:
-					tm.showMessage(TaskMonitor.Level.WARN, "Target column is not specified.  No edges will be created");
-			}
-			nogui = true;
-		}
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
 		
@@ -253,7 +249,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		
 		if (netReader instanceof CombineReaderAndMappingTask) {
 			Workbook workbook = null;
-			
+
 			// Load Spreadsheet data for preview.
 			if (fileType != null && (fileType.equalsIgnoreCase(
 					SupportedFileType.EXCEL.getExtension())
@@ -294,7 +290,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			}
 	
 			final SourceColumnSemantic[] types = previewPanel.getTypes();
-			
+
 			for (int i = 0; i < colCount; i++) {
 				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
 				
@@ -338,9 +334,44 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						tunableDataTypes, 0,
 						dataTypesCopy, 0, 
 						Math.min(tunableDataTypes.length, dataTypesCopy.length));
-			
+
+			SourceColumnSemantic[] tunableColumnTypes = null;
+			if (columnTypeList != null && !columnTypeList.trim().isEmpty()) {
+				tunableColumnTypes = TypeUtil.parseColumnTypeList(columnTypeList);
+			}
+
+			if (tunableColumnTypes != null && tunableColumnTypes.length > 0) {
+				System.arraycopy(
+						tunableColumnTypes, 0,
+						typesCopy, 0, 
+						Math.min(tunableColumnTypes.length, typesCopy.length));
+				// Set the source and target interaction columns
+				int index = 0;
+				for (SourceColumnSemantic scs: tunableColumnTypes) {
+					if (scs.equals(SourceColumnSemantic.SOURCE))
+						indexColumnSourceInteraction = index;
+					else if (scs.equals(SourceColumnSemantic.TARGET))
+						indexColumnTargetInteraction = index;
+					index++;
+				}
+			}
+
+			if (nogui) {
+				// Handle the validation
+				nogui = false;
+				ValidationState state = getValidationState(new StringBuffer(80));
+				switch (state) {
+					case INVALID:
+						tm.showMessage(TaskMonitor.Level.ERROR, "Source column must be specified");
+						return;
+					case REQUEST_CONFIRMATION:
+						tm.showMessage(TaskMonitor.Level.WARN, "Target column is not specified.  No edges will be created");
+				}
+				nogui = true;
+			}
+
 			String[] listDelimiters = previewPanel.getListDelimiters();
-			
+
 			if (listDelimiters == null || listDelimiters.length == 0) {
 				listDelimiters = new String[dataTypes.length];
 				
