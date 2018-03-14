@@ -42,6 +42,8 @@ public class PrefsText extends AbstractPrefsPanel {
 	final private static String kDefaultFont = "SansSerif";
 	final private static String kStringListTypeStyles[] = { "plain", "bold", "italic", "bold-italic" };
 	final private static String kTraitNames[] = { "Nodes", "Edges", "Annotations", "Legend" };  //"Tables",  , "Charts"
+	final private static String kTraitTooltips[] = { "The default font used for labels in nodes", "The default font used for labels in edges", 
+				"Font used in text annotations", "Font used in legend title and descriptions" };  
 
 	final private static int kTablesIndex = 0;
 //	final private static int kLayoutAxesIndex = 2;
@@ -113,6 +115,7 @@ public class PrefsText extends AbstractPrefsPanel {
 			for (int currTrait = 0; currTrait < kNumTextTraits; currTrait++)
 			{
 				fRadioButtons[currTrait] = new JRadioButton(kTraitNames[currTrait]);
+				fRadioButtons[currTrait].setToolTipText(kTraitTooltips[currTrait]);
 				final int trait = currTrait;
 				fRadioButtons[currTrait].addActionListener(new ActionListener()	
 				{	public void actionPerformed(ActionEvent e)		{		changeCurrentTarget(trait);	}			});
@@ -122,6 +125,7 @@ public class PrefsText extends AbstractPrefsPanel {
 			}
 			fRadioButtons[0].setSelected(true);
 			fBtnSetAllTT = new JButton("Use For All");
+			fBtnSetAllTT.setToolTipText("Assign the current font information to nodes, edges, annotations, and legends");
 			fBtnSetAllTT.addActionListener(new ActionListener()		{	public void actionPerformed(ActionEvent e)		{		updateAllTraits();		}	});
 //			fBtnSetAllTT.setFont(panelFont);
 			p.addSpacer();
@@ -164,14 +168,18 @@ public class PrefsText extends AbstractPrefsPanel {
 			fLblTextColor = new JLabel("Color:");
 			
 			fCbTextStyle = new JComboBox<String>(kStringListTypeStyles);
+			AntiAliasedPanel.setSizes(fCbTextStyle, new Dimension(136, 27));
 			fCbTextStyle.addActionListener(act);
 			fLblTextStyle = new JLabel("Style:");
 
-			settingsPanel.add(new HBox(new JLabel("Font:"), fCbTextFont));
-			settingsPanel.add(new HBox( new JLabel("Size:"), fCbTextSize));
-			settingsPanel.add(new HBox(fLblTextColor, fBtnTextColor));
-			settingsPanel.add(new HBox( fLblTextStyle, fCbTextStyle));
-			settingsPanel.add(Box.createVerticalGlue());
+			VBox sub = new VBox(false, true);
+			sub.setBorder(BorderFactory.createEmptyBorder(0, 6, 0,  6));
+			sub.add(new HBox(new JLabel("Font:"), fCbTextFont));  	fCbTextFont.setToolTipText("The family of font, such as Monospaced or SansSerif. to use."  );
+			sub.add(new HBox( new JLabel("Size:"), fCbTextSize)); 	fCbTextSize.setToolTipText("The number of points measuring the height of characters.");
+			sub.add(new HBox(fLblTextColor, fBtnTextColor));			fBtnTextColor.setToolTipText("The color used to draw the text");
+			sub.add(new HBox( fLblTextStyle, fCbTextStyle));			fCbTextStyle.setToolTipText("The font style, such as bold or italic");
+			sub.add(Box.createVerticalGlue());
+			settingsPanel.add(sub);
 			fTextSettingsPanel = settingsPanel;
 		}
 		
@@ -249,13 +257,9 @@ public class PrefsText extends AbstractPrefsPanel {
 
 	private void updateAllTraits()
 	{
-//		int savedCurrentTextTrait = fCurrentTextTraitIndex;
-//		for (int i = 0; i < kNumTextTraits; i++)
-//		{
-//			fCurrentTextTraitIndex = i;
-//			extractCurrentTrait();
-//		}
-//		fCurrentTextTraitIndex = savedCurrentTextTrait;
+		extractCurrentTrait();
+		for (String name : fontMap.keySet())
+			fontMap.put(name, fCurrentTextTrait);
 	}
 
 	// respond to radio buttons changing the trait we're editing
@@ -295,13 +299,15 @@ public class PrefsText extends AbstractPrefsPanel {
 		if (setting) return;
 		setting = true;
 		if (fCurrentTextTrait == null)
-		{	System.out.println("fCurrentTextTrait == null"); return;  }
-
-//		System.out.println("install: " + fCurrentTextTrait.getTTName() + " = " +  fCurrentTextTrait);
-		fCbTextFont.setSelectedItem(fCurrentTextTrait.getFontName());
-		fCbTextSize.setSelectedItem("" + fCurrentTextTrait.getSize());
-		fBtnTextColor.setColor(fCurrentTextTrait.getColor());
-		fCbTextStyle.setSelectedItem(TextTraits.styleToString(fCurrentTextTrait.getStyle()));
+			System.err.println("fCurrentTextTrait == null"); 
+		else
+		{
+	//		System.out.println("install: " + fCurrentTextTrait.getTTName() + " = " +  fCurrentTextTrait);
+			fCbTextFont.setSelectedItem(fCurrentTextTrait.getFontName());
+			fCbTextSize.setSelectedItem("" + fCurrentTextTrait.getSize());
+			fBtnTextColor.setColor(fCurrentTextTrait.getColor());
+			fCbTextStyle.setSelectedItem(TextTraits.styleToString(fCurrentTextTrait.getStyle()));
+		}
 		setting = false;
 	}
 //------------------------------------------------------------------------------
