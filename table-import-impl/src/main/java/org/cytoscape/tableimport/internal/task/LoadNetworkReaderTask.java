@@ -346,7 +346,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						typesCopy, 0, 
 						Math.min(tunableColumnTypes.length, typesCopy.length));
 				// Set the source and target interaction columns
-				int index = 0;
+				int index = 1;
 				for (SourceColumnSemantic scs: tunableColumnTypes) {
 					if (scs.equals(SourceColumnSemantic.SOURCE))
 						indexColumnSourceInteraction = index;
