@@ -1,22 +1,10 @@
 package org.cytoscape.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
+import static org.cytoscape.application.swing.CytoPanelName.*;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -54,8 +42,8 @@ import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.StarterPanelAction;
+import org.cytoscape.internal.command.CommandToolDialog;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
-import org.cytoscape.internal.dialogs.Cy3PreferencesDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
@@ -160,6 +148,7 @@ public class CyActivator extends AbstractCyActivator {
 	private NetworkViewMainPanel netViewMainPanel;
 	private NetworkViewMediator netViewMediator;
 	private CytoscapeDesktop cytoscapeDesktop;
+	private CommandToolDialog commandToolPanel;
 	
 	private SessionHandler sessionHandler;
 	
@@ -347,6 +336,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		registerAllServices(bc, cytoscapeDesktop);
 		registerAllServices(bc, netMainPanel);
+		registerAllServices(bc, commandToolPanel);
 		registerAllServices(bc, netMediator);
 		registerAllServices(bc, netViewMediator);
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class);
@@ -428,6 +418,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		netMainPanel = new NetworkMainPanel(netSearchBar, serviceRegistrar);
 		netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
+		commandToolPanel = new CommandToolDialog(serviceRegistrar);
 		
 		viewComparator = new ViewComparator(netMainPanel);
 		gridViewToggleModel = new GridViewToggleModel(GridViewToggleModel.Mode.VIEW);
@@ -495,6 +486,8 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
 		exportNetworkAction = new ExportNetworkAction(1000.1f, serviceRegistrar);
 		exportImageAction = new ExportImageAction(1000.2f, serviceRegistrar);
+		
+		
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {

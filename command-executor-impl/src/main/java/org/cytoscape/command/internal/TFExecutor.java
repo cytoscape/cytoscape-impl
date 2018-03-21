@@ -26,6 +26,8 @@ package org.cytoscape.command.internal;
 
 import java.util.Map;
 
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Task;
@@ -33,40 +35,36 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.command.internal.tunables.CommandTunableInterceptorImpl;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class TFExecutor implements Executor {
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	private final TaskFactory tf;
 	private final CommandTunableInterceptorImpl interceptor; 
-	private final OutTaskMonitor tm = new OutTaskMonitor(); 
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 
 	public TFExecutor(TaskFactory tf, CommandTunableInterceptorImpl interceptor) {
 		this.tf = tf;
 		this.interceptor = interceptor;
 	}
 
-	public void execute(String args, TaskObserver observer) throws Exception {
+	@Override
+	public void execute(String args, TaskMonitor taskMonitor, TaskObserver observer) throws Exception {
 		interceptor.setConfigurationContext((String)null); // Reset TunableInterceptor
-		// TODO
-		// At some point in the future, this code should be reorganized into
-		// a proper TaskManager - that's really what's happening here.
 		TaskIterator ti = tf.createTaskIterator();
 		while (ti.hasNext()) {
 			Task t = ti.next();
 			interceptor.setConfigurationContext(args);
 			interceptor.validateAndWriteBackTunables(t);
-			if(!interceptor.validateTunableInput(t, tm))
-			{
+			TaskMonitor tm = new LogDelegateTaskMonitor(taskMonitor);
+			if(!interceptor.validateTunableInput(t, tm)) {
 				if(observer != null)
 					observer.allFinished(FinishStatus.newCancelled(t));
 				return;
 			}
-			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {
 				observer.taskFinished((ObservableTask)t);
@@ -74,20 +72,20 @@ class TFExecutor implements Executor {
 		}
 	}
 
-	public void execute(Map<String, Object> args, TaskObserver observer) throws Exception {
+	@Override
+	public void execute(Map<String, Object> args, TaskMonitor taskMonitor, TaskObserver observer) throws Exception {
 		interceptor.setConfigurationContext((Map<String, Object>)null); // Reset TunableInterceptor
 		TaskIterator ti = tf.createTaskIterator();
 		while (ti.hasNext()) {
 			Task t = ti.next();
 			interceptor.setConfigurationContext(args);
 			interceptor.validateAndWriteBackTunables(t);
-			if(!interceptor.validateTunableInput(t, tm))
-			{
+			TaskMonitor tm = new LogDelegateTaskMonitor(taskMonitor);
+			if(!interceptor.validateTunableInput(t, tm)) {
 				if(observer != null)
 					observer.allFinished(FinishStatus.newCancelled(t));
 				return;
 			}
-			tm.setTask(t);
 			t.run(tm);
 			if (observer != null && t instanceof ObservableTask) {
 				observer.taskFinished((ObservableTask)t);
@@ -95,42 +93,39 @@ class TFExecutor implements Executor {
 		}
 	}
 
-	private class OutTaskMonitor implements TaskMonitor {
-		private static final String LOG_PREFIX = "TaskMonitor";
-		private Logger messageLogger = null;
-		private Task task = null;
-
-		public void setTitle(String title) {
-			//System.out.println("set title: " + title);
+	
+	private class LogDelegateTaskMonitor implements TaskMonitor {
+		
+		private TaskMonitor delegate;
+		
+		public LogDelegateTaskMonitor(TaskMonitor delegate) {
+			this.delegate = delegate;
 		}
-		public void setProgress(double progress) {
-			//System.out.println("set progress: " + progress);
-		}
+		
+		public void setTitle(String title) { }
+		
+		public void setProgress(double progress) { }
+		
 		public void setStatusMessage(String statusMessage) {
-			//System.out.println("set statusMessage: " + statusMessage);
 			showMessage(TaskMonitor.Level.INFO, statusMessage);
 		}
+		
 		public void showMessage(TaskMonitor.Level level, String message) {
-			// System.out.println("OutTaskMonitor: logging "+message);
 			switch(level) {
-			case INFO:
-				messageLogger.info(message);
-				break;
-			case WARN:
-				messageLogger.warn(message);
-				break;
-			case ERROR:
-				messageLogger.error(message);
-				break;
+				case INFO:
+					logger.info(message);
+					break;
+				case WARN:
+					logger.warn(message);
+					break;
+				case ERROR:
+					logger.error(message);
+					break;
 			}
-		}
-
-		public void setTask(final Task newTask) {
-			this.task = newTask;
-			this.messageLogger = LoggerFactory.getLogger(CyUserLog.NAME);
-			// System.out.println("OutTaskMonitor: logging to "+LOG_PREFIX+"."+newTask.getClass().getName());
-			// this.messageLogger = LoggerFactory.getLogger(LOG_PREFIX);
-			// System.out.println("OutTaskMonitor: logging to "+LOG_PREFIX);
+			
+			if(delegate != null)
+				delegate.showMessage(level, message);
 		}
 	}
+	
 }
