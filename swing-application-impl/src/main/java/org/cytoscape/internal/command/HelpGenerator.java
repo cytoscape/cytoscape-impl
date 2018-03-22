@@ -15,6 +15,10 @@ import org.cytoscape.work.util.BoundedLong;
 import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import com.vladsch.flexmark.ast.Node;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+
 public class HelpGenerator {
 	
 	private AvailableCommands availableCommands;
@@ -114,15 +118,14 @@ public class HelpGenerator {
 				longDescription = longDescription.trim().substring(6);
 				longDescription = longDescription.substring(0,longDescription.length()-7);
 				// System.out.println("longDescription(html) = "+longDescription);
-			} 
-//			else {
-//				// No, pass it through the markdown converter
-//				Parser parser = Parser.builder().build();
-//				Node document = parser.parse(longDescription);
-//				HtmlRenderer renderer = HtmlRenderer.builder().build();
-//				longDescription = renderer.render(document);
-//				// System.out.println("longDescription(markdown) = "+longDescription);
-//			}
+			} else {
+				// No, pass it through the markdown converter
+				Parser parser = Parser.builder().build();
+				Node document = parser.parse(longDescription);
+				HtmlRenderer renderer = HtmlRenderer.builder().build();
+				longDescription = renderer.render(document);
+				// System.out.println("longDescription(markdown) = "+longDescription);
+			}
 			message += longDescription;
 		}
 		List<String> argList = availableCommands.getArguments(namespace, command);
