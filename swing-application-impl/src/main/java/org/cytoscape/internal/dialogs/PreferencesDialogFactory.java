@@ -35,7 +35,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 
 public class PreferencesDialogFactory {
 
-	private Cy3PreferencesDialog dialog;
+	private PreferencesDialog dialog;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -43,10 +43,10 @@ public class PreferencesDialogFactory {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public Cy3PreferencesDialog getPreferencesDialog(Window owner, Map<String, Properties> propMap,
+	public PreferencesDialog getPreferencesDialog(Window owner, Map<String, Properties> propMap,
 			Map<String, CyProperty<?>> cyPropMap) {
 		if (dialog == null) {
-			dialog = new Cy3PreferencesDialog(owner, propMap, cyPropMap, serviceRegistrar);
+			dialog = new PreferencesDialog(owner, propMap, cyPropMap, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {
