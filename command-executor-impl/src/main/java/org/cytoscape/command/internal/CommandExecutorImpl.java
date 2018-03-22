@@ -100,7 +100,7 @@ public class CommandExecutorImpl {
 
 	public void addTableTaskFactory(TableTaskFactory tf, Map<?, ?> props) {
 		DynamicTaskFactoryProvisioner provisioner = serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
-		addTF(new TFExecutor(provisioner.createFor(tf),interceptor), props);
+		addTF(new TFExecutor(provisioner.createFor(tf), interceptor), props);
 	}
 
 	public void removeTableTaskFactory(TableTaskFactory tf, Map<?, ?> props) {
@@ -172,7 +172,7 @@ public class CommandExecutorImpl {
 		
 		if ( ex == null )
 			throw new RuntimeException("Failed to find command: '" + command +"' (from namespace: " + namespace + ")");	
-		ex.execute(args, observer);
+		ex.execute(args, tm, observer);
 	}
 
 	private void handleCommand(String commandLine, TaskMonitor tm, TaskObserver observer) throws Exception {
@@ -278,8 +278,7 @@ public class CommandExecutorImpl {
 		} catch (Exception e) { return ""; }
 
 		// Concatenate the commands together
-		String command = "";
-		for (String word: tokenList) command += word+" ";
+		String command = String.join(" ", tokenList);
 
 		// Now, the last token of the args goes with the first setting
 		return command.trim();

@@ -1,11 +1,13 @@
 package org.cytoscape.command.internal;
 
-import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.io.File;
 import java.net.URL;
 import java.util.Properties;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.command.AvailableCommands;
 import org.cytoscape.command.CommandExecutorTaskFactory;
 import org.cytoscape.command.StringToModel;
@@ -14,6 +16,9 @@ import org.cytoscape.command.internal.available.ArgHandlerFactory;
 import org.cytoscape.command.internal.available.ArgRecorder;
 import org.cytoscape.command.internal.available.AvailableCommandsImpl;
 import org.cytoscape.command.internal.available.BasicArgHandlerFactory;
+import org.cytoscape.command.internal.tasks.QuitTaskFactory;
+import org.cytoscape.command.internal.tasks.RunCommandsTaskFactory;
+import org.cytoscape.command.internal.tasks.SleepCommandTaskFactory;
 import org.cytoscape.command.internal.tunables.BooleanTunableHandler;
 import org.cytoscape.command.internal.tunables.BoundedDoubleTunableHandler;
 import org.cytoscape.command.internal.tunables.BoundedFloatTunableHandler;
@@ -42,6 +47,7 @@ import org.cytoscape.command.util.NodeList;
 import org.cytoscape.command.util.RowList;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
@@ -49,7 +55,9 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.BoundedFloat;
 import org.cytoscape.work.util.BoundedInteger;
@@ -177,5 +185,55 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, commandExecutor::addTableTaskFactory, commandExecutor::removeTableTaskFactory, TableTaskFactory.class);
 
 		registerServiceListener(bc, interceptor::addTunableHandlerFactory, interceptor::removeTunableHandlerFactory, StringTunableHandlerFactory.class);
+		
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "sleep");
+			props.setProperty(COMMAND_NAMESPACE, "command");
+			props.setProperty(COMMAND_DESCRIPTION, "Stop command processing for a specified time");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "The **sleep** command will pause processing for a period of time as specified by *duration* seconds.");
+			registerService(bc, new SleepCommandTaskFactory(), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "quit");
+			props.setProperty(COMMAND_NAMESPACE, "command");
+			props.setProperty(COMMAND_DESCRIPTION, "Exit Cytoscape");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "This command causes Cytoscape to exit. It is typically used at the end of a script file");
+			registerService(bc, new QuitTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, "Tools");
+			props.setProperty(TITLE, "Execute Command File...");
+			props.setProperty(COMMAND, "run");
+			props.setProperty(COMMAND_NAMESPACE, "command");
+			props.setProperty(COMMAND_DESCRIPTION, "Run a series of commands from a file");
+			props.setProperty(IN_MENU_BAR, "true");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+			                            "The **run** command will execute a command script from the "+
+			                            "file pointed to by the ``file`` argument, which "+
+			                            "should contain Cytoscape commands, one per line. "+
+			                            "Arguments to the "+
+			                            "script are provided by the *args* argument");
+			registerService(bc, new RunCommandsTaskFactory(commandExecutorTaskFactory), TaskFactory.class, props);
+		}
+		
+		
+		// Get any command line arguments.  The "-S" and "-R" are ours
+		AppsFinishedStartingListener scriptRunner = new AppsFinishedStartingListener() {
+			public void handleEvent(AppsFinishedStartingEvent event) {
+				@SuppressWarnings("unchecked")
+				CyProperty<Properties> commandLineProps = getService(bc, CyProperty.class, "(cyPropertyName=commandline.props)");
+				String scriptFile = commandLineProps.getProperties().getProperty("scriptFile");
+				if(scriptFile !=  null) {
+					TaskIterator tasks = commandExecutorTaskFactory.createTaskIterator(new File(scriptFile), null);
+					SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+					taskManager.execute(tasks);
+				}
+			}
+		};
+		registerService(bc, scriptRunner, AppsFinishedStartingListener.class, new Properties());
 	}
+	
 }

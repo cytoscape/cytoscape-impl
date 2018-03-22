@@ -39,6 +39,7 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>flexmark,flexmark-util</Embed-Dependency>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -210,6 +211,16 @@
 			<groupId>cytoscape-sun</groupId>
 			<artifactId>jhall</artifactId>
 			<version>1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark</artifactId>
+			<version>0.22.4</version>
+		</dependency>
+		<dependency>
+			<groupId>com.vladsch.flexmark</groupId>
+			<artifactId>flexmark-util</artifactId>
+			<version>0.22.4</version>
 		</dependency>
 		
 		<dependency>
