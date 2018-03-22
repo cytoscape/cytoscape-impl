@@ -1,5 +1,11 @@
 package org.cytoscape.command.internal;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
+
 /*
  * #%L
  * Cytoscape Command Executor Impl (command-executor-impl)
@@ -28,14 +34,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.Tunable;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-
-
-import java.util.List;
-import java.util.ArrayList;
 
 
 public class CommandFileExecutorTask extends AbstractTask {

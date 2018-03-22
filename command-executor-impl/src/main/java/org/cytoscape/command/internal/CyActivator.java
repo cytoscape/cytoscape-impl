@@ -17,7 +17,6 @@ import org.cytoscape.command.internal.available.ArgRecorder;
 import org.cytoscape.command.internal.available.AvailableCommandsImpl;
 import org.cytoscape.command.internal.available.BasicArgHandlerFactory;
 import org.cytoscape.command.internal.tasks.QuitTaskFactory;
-import org.cytoscape.command.internal.tasks.RunCommandsTask;
 import org.cytoscape.command.internal.tasks.RunCommandsTaskFactory;
 import org.cytoscape.command.internal.tasks.SleepCommandTaskFactory;
 import org.cytoscape.command.internal.tunables.BooleanTunableHandler;
@@ -220,6 +219,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, new RunCommandsTaskFactory(commandExecutorTaskFactory), TaskFactory.class, props);
 		}
 		
+		
 		// Get any command line arguments.  The "-S" and "-R" are ours
 		AppsFinishedStartingListener scriptRunner = new AppsFinishedStartingListener() {
 			public void handleEvent(AppsFinishedStartingEvent event) {
@@ -227,10 +227,9 @@ public class CyActivator extends AbstractCyActivator {
 				CyProperty<Properties> commandLineProps = getService(bc, CyProperty.class, "(cyPropertyName=commandline.props)");
 				String scriptFile = commandLineProps.getProperties().getProperty("scriptFile");
 				if(scriptFile !=  null) {
-					RunCommandsTask task = new RunCommandsTask(commandExecutorTaskFactory);
-					task.setfile(new File(scriptFile));
+					TaskIterator tasks = commandExecutorTaskFactory.createTaskIterator(new File(scriptFile), null);
 					SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
-					taskManager.execute(new TaskIterator(task));
+					taskManager.execute(tasks);
 				}
 			}
 		};

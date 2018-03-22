@@ -39,7 +39,6 @@ public class RunCommandsTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		System.out.println("RunCommandsTask.run() " + file);
 		TaskIterator tasks = taskFactory.createTaskIterator(file, null);
 		insertTasksAfterCurrentTask(tasks);
 	}
