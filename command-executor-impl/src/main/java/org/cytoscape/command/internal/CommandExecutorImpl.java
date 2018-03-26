@@ -229,7 +229,7 @@ public class CommandExecutorImpl {
 		return namespace;
 	}
 
-	private String parseInput(String input, Map<String,Object> settings) {
+	public static String parseInput(String input, Map<String,Object> arguments) {
 		// Tokenize
 		StringReader reader = new StringReader(input);
 		StreamTokenizer st = new StreamTokenizer(reader);
@@ -261,7 +261,7 @@ public class CommandExecutorImpl {
 						if (i == StreamTokenizer.TT_WORD || i == '"' || i == '\'') {
 							tokenIndex--;
 							String key = tokenList.get(tokenIndex);
-							settings.put(key, st.sval);
+							arguments.put(key, st.sval);
 							tokenList.remove(tokenIndex);
 						}
 						break;
