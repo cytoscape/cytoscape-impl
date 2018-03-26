@@ -156,16 +156,32 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementListeners.remove(listener);
 	}
 	
+	
 	void handleDelete() {
 		int index = namedElementComboBoxModel.getSelectedIndex(); 
 		if (index == -1) {
 			// If nothing is selected, do nothing.
 			return;
 		}
-		
-		notifyRemoved(namedElementComboBoxModel.remove(index));
+		handleDelete(index);
 	}
 
+	boolean handleDelete(String name) {
+		List<T> items = namedElementComboBoxModel.items;
+		for(int i = 0; i < items.size(); i++) {
+			T element = items.get(i);
+			if (element.name.equals(name)) {
+				handleDelete(i);
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private void handleDelete(int index) {
+		notifyRemoved(namedElementComboBoxModel.remove(index));
+	}
+	
 	private void notifyRemoved(T element) {
 		for (NamedElementListener<T> listener : namedElementListeners) {
 			try {
@@ -331,7 +347,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	}
 	
 	protected void handleExport(V view) {
-		Task task = new ExportNamedTransformersTask(filterIo, getNamedTransformers());
+		Task task = new ExportNamedTransformersTask(filterIo, this);
 		serviceRegistrar.getService(TaskManager.class).execute(new TaskIterator(task));
 	}
 	

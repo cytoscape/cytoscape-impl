@@ -27,6 +27,10 @@ import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
+import org.cytoscape.filter.TransformerContainer;
+import org.cytoscape.filter.model.NamedTransformer;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -56,7 +60,8 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  */
 
 @SuppressWarnings({ "serial", "rawtypes" })
-public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> extends JPanel implements SelectPanelComponent {
+public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPanelController> 
+	extends JPanel implements SelectPanelComponent, TransformerContainer<CyNetwork, CyIdentifiable> {
 	
 	protected C controller;
 	protected JComboBox namedElementComboBox;
@@ -231,6 +236,35 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 
 	public C getController() {
 		return controller;
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public void addNamedTransformer(NamedTransformer<CyNetwork, CyIdentifiable> transformer) {
+		controller.addNamedTransformers(this, transformer);
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public NamedTransformer<CyNetwork, CyIdentifiable> getNamedTransformer(String name) {
+		if(name == null)
+			return null;
+		NamedTransformer[] namedTransformers = controller.getNamedTransformers();
+		if(namedTransformers == null)
+			return null;
+		for(NamedTransformer<CyNetwork, CyIdentifiable> transformer : namedTransformers) {
+			if(name.equals(transformer.getName())) {
+				return transformer;
+			}
+		}
+		return null;
+	}
+	
+	@Override 
+	public boolean removeNamedTransformer(String name) {
+		if(name == null)
+			return false;
+		return controller.handleDelete(name);
 	}
 	
 	protected void styleToolBarButton(JButton btn) {

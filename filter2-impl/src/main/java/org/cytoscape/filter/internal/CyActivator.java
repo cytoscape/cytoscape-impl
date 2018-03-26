@@ -1,8 +1,11 @@
 package org.cytoscape.filter.internal;
 
+import static org.cytoscape.work.ServiceProperties.*;
+
 import java.util.Properties;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.filter.TransformerContainer;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterFactory;
 import org.cytoscape.filter.internal.filters.column.ColumnFilterViewFactory;
@@ -11,6 +14,8 @@ import org.cytoscape.filter.internal.filters.degree.DegreeFilterFactory;
 import org.cytoscape.filter.internal.filters.degree.DegreeFilterViewFactory;
 import org.cytoscape.filter.internal.filters.topology.TopologyFilterFactory;
 import org.cytoscape.filter.internal.filters.topology.TopologyFilterViewFactory;
+import org.cytoscape.filter.internal.tasks.ExportNamedTransformersTaskFactory;
+import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTaskFactory;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformerFactory;
 import org.cytoscape.filter.internal.transformers.adjacency.AdjacencyTransformerViewFactory;
 import org.cytoscape.filter.internal.transformers.interaction.InteractionTransformerFactory;
@@ -39,6 +44,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.work.TaskFactory;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -125,6 +131,38 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, settingsManager, SessionAboutToBeSavedListener.class, new Properties());
 		registerService(bc, settingsManager, SessionAboutToBeLoadedListener.class, new Properties());
 		registerService(bc, settingsManager, SessionLoadedListener.class, new Properties());
+		
+		// new TransformerPanelManager API
+		{
+			Properties props = new Properties();
+			props.setProperty("service.type", "manager");
+			props.setProperty("panel.type", "filter");
+			registerService(bc, filterPanel, TransformerContainer.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty("service.type", "manager");
+			props.setProperty("panel.type", "transformer");
+			registerService(bc, transformerPanel, TransformerContainer.class, props);
+		}
+		
+		// commands
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "import");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Import filter JSON from a file.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Import filter JSON from a file.");
+			registerService(bc, new ImportNamedTransformersTaskFactory(filterIo, filterPanel), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "export");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Export filter JSON to a file.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Export filter JSON to a file.");
+			registerService(bc, new ExportNamedTransformersTaskFactory(filterIo, filterPanelController), TaskFactory.class, props);
+		}
 	}
 }
 

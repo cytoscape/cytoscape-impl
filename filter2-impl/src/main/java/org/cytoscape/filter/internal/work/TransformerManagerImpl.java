@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.internal.ModelUtil;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterImpl;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.ElementTransformer;
@@ -21,6 +22,7 @@ import org.cytoscape.filter.model.Filter;
 import org.cytoscape.filter.model.FilterFactory;
 import org.cytoscape.filter.model.HolisticTransformer;
 import org.cytoscape.filter.model.HolisticTransformerFactory;
+import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.filter.model.TransformerSink;
 import org.cytoscape.filter.model.TransformerSource;
@@ -191,6 +193,13 @@ public class TransformerManagerImpl implements TransformerManager {
 		}
 		return createHolisticTransformer(id);
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public <C, E> NamedTransformer<C, E> createNamedTransformer(String name, List<Transformer<C, E>> transformers) {
+		return (NamedTransformer<C, E>)ModelUtil.createNamedTransformer(name, transformers.toArray(new Transformer[0]));
+	}
+	
 	
 	@SuppressWarnings("unchecked")
 	<C, E> Filter<C, E> createFilter(String id) {

@@ -1,38 +1,7 @@
 package org.cytoscape.task.internal;
 
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_URL;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.application.swing.ActionEnableSupport.*;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.util.Properties;
 
@@ -103,14 +72,18 @@ import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactory
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportSelectedNetworkTaskFactoryImpl;
+import org.cytoscape.task.internal.export.network.GenerateNetworkViewsTask;
 import org.cytoscape.task.internal.export.network.LoadMultipleNetworkFilesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.LoadNetworkFileTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.LoadNetworkURLTaskFactoryImpl;
-import org.cytoscape.task.internal.export.network.GenerateNetworkViewsTask;
 import org.cytoscape.task.internal.export.table.ExportNoGuiSelectedTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportSelectedTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.table.ExportTableTaskFactoryImpl;
 import org.cytoscape.task.internal.export.web.ExportAsWebArchiveTaskFactory;
+import org.cytoscape.task.internal.filter.ApplyFilterTaskFactory;
+import org.cytoscape.task.internal.filter.CreateFilterTaskFactory;
+import org.cytoscape.task.internal.filter.DeleteFilterTaskFactory;
+import org.cytoscape.task.internal.filter.RunFilterTaskFactory;
 import org.cytoscape.task.internal.group.AddToGroupTaskFactory;
 import org.cytoscape.task.internal.group.GetGroupTask;
 import org.cytoscape.task.internal.group.GetGroupTaskFactory;
@@ -324,6 +297,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 
 		createPreferencesTaskFactories(bc, serviceRegistrar);
+		createFilterTaskFactories(bc, serviceRegistrar);
 		createTableTaskFactories(bc, serviceRegistrar, undoSupportServiceRef, cyNetworkManagerServiceRef,
 				cyApplicationManagerServiceRef, cyTableFactoryServiceRef, cyTableManagerServiceRef,
 				cyTableWriterManagerRef, tunableSetterServiceRef, rootNetworkManagerServiceRef,
@@ -358,6 +332,42 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Proxy Settings...");
 			registerService(bc, factory, TaskFactory.class, props);
+		}
+	}
+	
+	private void createFilterTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		// export and import commands are in filter2-impl
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "apply");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges using a JSON filter expression.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "On.");
+			registerService(bc, new ApplyFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "run");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Run an existing filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Run an existing filter by supplying the filter name.");
+			registerService(bc, new RunFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "delete");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Delete a filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Delete an existing filter by supplying its name.");
+			registerService(bc, new DeleteFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "create");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Create a filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Create a filter by suppling a name and a JSON filter expression.");
+			registerService(bc, new CreateFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 	}
 

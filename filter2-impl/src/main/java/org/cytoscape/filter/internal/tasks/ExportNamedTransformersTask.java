@@ -3,9 +3,7 @@ package org.cytoscape.filter.internal.tasks;
 import java.io.File;
 
 import org.cytoscape.filter.internal.FilterIO;
-import org.cytoscape.filter.model.NamedTransformer;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.filter.internal.view.AbstractPanelController;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -16,15 +14,15 @@ public class ExportNamedTransformersTask extends AbstractTask {
 	public File file;
 	
 	private FilterIO filterIo;
-	private NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers;
+	private AbstractPanelController<?,?> panelController;
 	
-	public ExportNamedTransformersTask(FilterIO filterIo, NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers) {
+	public ExportNamedTransformersTask(FilterIO filterIo, AbstractPanelController<?,?> panelController) {
 		this.filterIo = filterIo;
-		this.namedTransformers = namedTransformers;
+		this.panelController = panelController;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		filterIo.writeFilters(file, namedTransformers);
+		filterIo.writeFilters(file, panelController.getNamedTransformers());
 	}
 }

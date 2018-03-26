@@ -38,18 +38,18 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 
-final class SelectUtils {
+public final class SelectUtils {
 	final CyEventHelper eventHelper;
 
 	public SelectUtils(CyEventHelper helper) {
 		this.eventHelper = helper;
 	}
 
-	void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
+	public void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
 		setSelected(network,nodes, select, network.getDefaultNodeTable());
 	}
 
-	void setSelectedEdges(final CyNetwork network, final Collection<CyEdge> edges, final boolean select) {
+	public void setSelectedEdges(final CyNetwork network, final Collection<CyEdge> edges, final boolean select) {
 		setSelected(network,edges, select, network.getDefaultEdgeTable());
 	}
 
