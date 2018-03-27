@@ -85,7 +85,14 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		assertNextToken(parser, JsonToken.START_OBJECT);
 		
 		Transformer<?, ?> transformer = transformerManager.createTransformer(id);
-		Map<String, Object> parameters = readParameters(parser, transformer);
+		if(transformer == null && !id.contains(".")) {
+			transformer = transformerManager.createTransformer("org.cytoscape." + id);
+		}
+		if(transformer == null) {
+			throw new IOException("Unrecognized id: '" + id + "'");
+		}
+		
+		Map<String, Object> parameters = readParameters(parser);
 		assertEquals(JsonToken.END_OBJECT, parser.getCurrentToken());
 		
 		FilterIO.applyParameters(parameters, transformer);
@@ -125,7 +132,7 @@ public class CyTransformerReaderImpl implements CyTransformerReader {
 		assertNextToken(parser, JsonToken.END_OBJECT);
 	}
 
-	private Map<String, Object> readParameters(JsonParser parser, Transformer<?, ?> transformer) throws IOException {
+	private Map<String, Object> readParameters(JsonParser parser) throws IOException {
 		Map<String, Object> parameters = new HashMap<String, Object>();
 		while (parser.nextToken() != JsonToken.END_OBJECT) {
 			assertEquals(JsonToken.FIELD_NAME, parser.getCurrentToken());
