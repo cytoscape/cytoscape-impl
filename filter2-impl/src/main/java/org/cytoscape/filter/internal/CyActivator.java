@@ -136,13 +136,13 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty("service.type", "manager");
-			props.setProperty("panel.type", "filter");
+			props.setProperty("container.type", "filter");
 			registerService(bc, filterPanel, TransformerContainer.class, props);
 		}
 		{
 			Properties props = new Properties();
 			props.setProperty("service.type", "manager");
-			props.setProperty("panel.type", "transformer");
+			props.setProperty("container.type", "chain");
 			registerService(bc, transformerPanel, TransformerContainer.class, props);
 		}
 		

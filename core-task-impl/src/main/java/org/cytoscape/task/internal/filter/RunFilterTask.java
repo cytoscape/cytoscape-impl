@@ -8,6 +8,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.Tunable;
@@ -20,12 +21,16 @@ public class RunFilterTask extends AbstractTask {
 	@Tunable
 	public String name;
 	
+	@ContainsTunables
+	public ContainerTunable containerTunable = new ContainerTunable();
+	
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public RunFilterTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
+	
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -37,8 +42,12 @@ public class RunFilterTask extends AbstractTask {
 		if(network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
-		@SuppressWarnings("unchecked")
-		TransformerContainer<CyNetwork,CyIdentifiable> container = serviceRegistrar.getService(TransformerContainer.class, "(panel.type=filter)");
+		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
+		if(container == null) {
+			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
+			return;
+		}
+		
 		NamedTransformer<CyNetwork,CyIdentifiable> transformer = container.getNamedTransformer(name);
 		
 		if(transformer == null) {

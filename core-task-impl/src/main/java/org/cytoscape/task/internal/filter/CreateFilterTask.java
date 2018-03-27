@@ -18,7 +18,10 @@ public class CreateFilterTask extends AbstractTask {
 	public String name;
 	
 	@ContainsTunables
-	public TransformerJsonTunable json = new TransformerJsonTunable();
+	public TransformerJsonTunable jsonTunable = new TransformerJsonTunable();
+	
+	@ContainsTunables
+	public ContainerTunable containerTunable = new ContainerTunable();
 	
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -26,6 +29,7 @@ public class CreateFilterTask extends AbstractTask {
 	public CreateFilterTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
+	
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) throws Exception {
@@ -36,14 +40,18 @@ public class CreateFilterTask extends AbstractTask {
 		
 		CyTransformerReader transformerReader = serviceRegistrar.getService(CyTransformerReader.class);
 		
-		NamedTransformer<CyNetwork,CyIdentifiable> transformer = json.getTransformer(name, transformerReader);
+		NamedTransformer<CyNetwork,CyIdentifiable> transformer = jsonTunable.getTransformer(name, transformerReader);
 		if(transformer == null) {
 			taskMonitor.showMessage(Level.ERROR, "Error parsing JSON");
 			return;
 		}
 		
-		@SuppressWarnings("unchecked")
-		TransformerContainer<CyNetwork,CyIdentifiable> container = serviceRegistrar.getService(TransformerContainer.class, "(panel.type=filter)");
+		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
+		if(container == null) {
+			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
+			return;
+		}
+			
 		container.addNamedTransformer(transformer);
 	}
 
