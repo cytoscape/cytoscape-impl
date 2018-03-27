@@ -42,7 +42,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private StringPredicateDelegate stringDelegate;
 	
 	private boolean caseSensitive;
-	private boolean anyMatch = true;
+	private boolean anyMatch = true; // for list columns
 	
 	private String columnName;
 
@@ -51,7 +51,7 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 	private Number upperBound;
 	private String stringCriterion;
 	private String lowerCaseCriterion;
-	private Boolean booleanCriterion = true;
+	private Boolean booleanCriterion;
 	
 	
 	public ColumnFilter(String columnName, Predicate predicate, Object criterion) {
@@ -264,7 +264,29 @@ public class ColumnFilter extends AbstractTransformer<CyNetwork, CyIdentifiable>
 		return Collections.emptyList();
 	}
 	
+	@Override
+	public List<ValidationWarning> validateCreation() {
+		if(columnName == null)
+			return warn("'columnName' is not set");
+		if(predicate == null)
+			return warn("'predicate' is not set");
+		if(getCriterion() == null)
+			return warn("'criterion' is not set. Must be a boolean, string or two element array of numbers.");
+		
+		if(predicate == Predicate.IS || predicate == Predicate.IS_NOT) {
+			if(stringCriterion == null && booleanCriterion == null) {
+				return warn("predicate IS or IS_NOT requires a string or boolean criterion");
+			}
+		} else if(!stringDelegate.unsupported() && stringCriterion == null) {
+			return warn("string predicate requires string criterion");
+		} else if(!numericDelegate.unsupported() && (lowerBound == null || upperBound == null)) {
+			return warn("numeric predicate requires lower and upper bound, eg [1,2]");
+		}
+		
+		return Collections.emptyList();
+	}
 
+	
 	@Override
 	public boolean isAlwaysFalse() {
 		return columnName == null || rawCriterion == null || predicate == null;

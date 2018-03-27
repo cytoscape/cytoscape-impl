@@ -32,7 +32,7 @@ public class CreateFilterTask extends AbstractTask {
 	
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor taskMonitor) {
 		if(name == null || name.isEmpty()) {
 			taskMonitor.showMessage(Level.ERROR, "name is missing");
 			return;
@@ -43,6 +43,11 @@ public class CreateFilterTask extends AbstractTask {
 		NamedTransformer<CyNetwork,CyIdentifiable> transformer = jsonTunable.getTransformer(name, transformerReader);
 		if(transformer == null) {
 			taskMonitor.showMessage(Level.ERROR, "Error parsing JSON");
+			return;
+		}
+		
+		boolean valid = TransformerJsonTunable.validate(transformer, taskMonitor);
+		if(!valid) {
 			return;
 		}
 		

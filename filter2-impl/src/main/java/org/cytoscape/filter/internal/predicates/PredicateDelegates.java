@@ -67,6 +67,11 @@ public class PredicateDelegates {
 			return false;
 		}
 		
+		@Override
+		public boolean unsupported() {
+			return true;
+		}
+		
 	}
 	
 	static class IsDelegate implements NumericPredicateDelegate, StringPredicateDelegate {
