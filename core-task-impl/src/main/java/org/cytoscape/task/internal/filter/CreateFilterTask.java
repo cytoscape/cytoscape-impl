@@ -30,6 +30,10 @@ public class CreateFilterTask extends AbstractTask {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
+	public CreateFilterTask(CyServiceRegistrar serviceRegistrar, String name) {
+		this(serviceRegistrar);
+		this.name = name;
+	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {

@@ -46,6 +46,11 @@ public class ApplyFilterTask extends AbstractTask {
 			return;
 		}
 		
+		boolean valid = TransformerJsonTunable.validate(transformer, taskMonitor);
+		if(!valid) {
+			return;
+		}
+		
 		applyFilter(serviceRegistrar, network, transformer);
 	}
 	
