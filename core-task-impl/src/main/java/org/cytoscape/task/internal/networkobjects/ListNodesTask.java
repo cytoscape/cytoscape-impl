@@ -84,7 +84,7 @@ public class ListNodesTask extends AbstractTask implements ObservableTask {
 		} else if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(nodes);
+				return "{\"nodes\":"+cyJSONUtil.cyIdentifiablesToJson(nodes)+"}";
 			};
 			return res;
 		}

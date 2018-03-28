@@ -59,7 +59,6 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView.getCyAnnotator(), dView, argMap,
 					getActiveWindow());
 			a.update();
-			
 			return (ShapeAnnotation) a;
 		} 
 		return null;

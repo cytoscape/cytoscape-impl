@@ -72,7 +72,7 @@ public class ListNetworksTask extends AbstractTask implements ObservableTask{
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = registrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(networks);
+				return "{\"networks\":"+cyJSONUtil.cyIdentifiablesToJson(networks)+"}";
 			}};
 			return res;
 		}

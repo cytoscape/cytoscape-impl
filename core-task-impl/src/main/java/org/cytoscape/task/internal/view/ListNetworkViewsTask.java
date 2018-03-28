@@ -82,7 +82,7 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 		
 		if (type == JSONResult.class) {
 			String json = serviceRegistrar.getService(CyJSONUtil.class).cyIdentifiablesToJson(views);
-			JSONResult res = () -> { return json; };
+			JSONResult res = () -> { return "{\"views\":"+json+"}"; };
 			
 			return res;
 		}

@@ -29,6 +29,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 // import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
@@ -47,6 +48,7 @@ import javax.swing.SwingUtilities;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,7 +64,6 @@ import org.cytoscape.work.Task;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
-
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 
 
@@ -75,7 +76,7 @@ public class CyAnnotator {
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private MyViewportChangeListener myViewportChangeListener=null;
-	private ShapeAnnotationImpl resizing = null;
+	private AbstractAnnotation resizing = null;
 	private ArrowAnnotationImpl repositioning = null;
 	private DingAnnotation moving = null;
 
@@ -160,6 +161,11 @@ public class CyAnnotator {
 		List<Map<String,String>> arrowList = 
 		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
 
+		Map<GroupAnnotation,String> groupMap = 
+		    new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
+
+		Map<String, Annotation> uuidMap = new HashMap<String, Annotation> ();
+
 		Map<Object,Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 
 		if (annotations != null) {
@@ -180,6 +186,8 @@ public class CyAnnotator {
 					continue;
 
 				annotation = (DingAnnotation)a;
+
+				uuidMap.put(annotation.getUUID().toString(), annotation);
 				Object canvas;
 
 				if (annotation.getCanvas() != null) {
@@ -199,12 +207,22 @@ public class CyAnnotator {
 					}
 				}
 
-				// Now that we've added the annotation, update
-				// the group membership
-				if (a != null && a instanceof GroupAnnotation) {
-					GroupAnnotation g = (GroupAnnotation)a;
-					for (Annotation child: g.getMembers()) {
-						g.addMember(child);
+				addAnnotation(annotation);
+
+				// If this is a group, save the annotation and the memberUIDs list
+				if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
+					groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
+				}
+			}
+
+			// Now, handle all of our groups
+			for (GroupAnnotation group: groupMap.keySet()) {
+				String uuids = groupMap.get(group);
+				String[] uuidArray = uuids.split(",");
+				for (String uuid: uuidArray) {
+					if (uuidMap.containsKey(uuid)) {
+						Annotation child = uuidMap.get(uuid);
+						group.addMember(child);
 					}
 				}
 			}
@@ -291,6 +309,32 @@ public class CyAnnotator {
 		return top;
 	}
 
+	/**
+ 	 * Find all of our annotations that are at this point.  Return the top annotation
+ 	 * (the one with the lowest Z value) if there are more than one.
+ 	 *
+ 	 * @param cnvs the Canvas we're looking at
+ 	 * @param x the x value of the point
+ 	 * @param y the y value of the point
+ 	 * @return the list of components
+ 	 */
+	public List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+		List<DingAnnotation> list = new ArrayList<>();
+		for (DingAnnotation a: annotationMap.keySet()) {
+			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
+				// Make sure to find the parent if this is a group
+				while (a.getGroupParent() != null) {
+					a = (DingAnnotation)a.getGroupParent();
+				}
+				if (!list.contains(a))
+					list.add(a);
+			}
+		}
+		// Now sort the list by Z order, smallest to largest
+		Collections.sort(list, new ZComparator(cnvs));
+		return list;
+	}
+
 	public DingAnnotation getAnnotationAt(Point2D position) {
 		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
 		if (a != null) {
@@ -305,6 +349,13 @@ public class CyAnnotator {
 			while (a.getGroupParent() != null)
 				a = (DingAnnotation)a.getGroupParent();
 		}
+		return a;
+	}
+
+	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
+		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
+
+		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
 		return a;
 	}
 
@@ -380,13 +431,13 @@ public class CyAnnotator {
 
 	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
 
-	public void resizeShape(ShapeAnnotationImpl shape) {
+	public void resizeShape(AbstractAnnotation shape) {
 		resizing = shape;
 		if (resizing != null)
 			requestFocusInWindow(resizing);
 	}
 
-	public ShapeAnnotationImpl getResizeShape() {
+	public AbstractAnnotation getResizeShape() {
 		return resizing;
 	}
 
@@ -520,6 +571,28 @@ public class CyAnnotator {
 					((DingAnnotation)annotations[i]).setZoom(newZoom);
 				}
 			}
+		}
+	}
+
+	class ZComparator implements Comparator<DingAnnotation> {
+		final ArbitraryGraphicsCanvas cnvs;
+		public ZComparator(final ArbitraryGraphicsCanvas c) {
+			this.cnvs = c;
+		}
+
+		public int compare(DingAnnotation o1, DingAnnotation o2) {
+			int z1 = cnvs.getComponentZOrder(o1.getComponent());
+			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			if (z1 < z2) return -1;
+			if (z1 > z2) return 1;
+			return 0;
+		}
+
+		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
+			int z1 = cnvs.getComponentZOrder(o1.getComponent());
+			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			if (z1 == z2) return true;
+			return false;
 		}
 	}
 }

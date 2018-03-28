@@ -138,7 +138,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			JSONResult res = () -> {if (localNets == null) 
 				return "{}";
 			else {
-				return ""+localNets.get(0).getSUID();
+				return "{\"network\":"+localNets.get(0).getSUID()+"}";
 			}};
 			return res;
 		}

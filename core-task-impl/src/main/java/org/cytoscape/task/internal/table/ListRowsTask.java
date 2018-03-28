@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
@@ -50,6 +51,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	List<CyRow> rowList = null;
+	CyTable table = null;
 
 	@ContainsTunables
 	public RowTunable rowTunable = null;
@@ -63,7 +65,7 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
-		CyTable table = rowTunable.getTable();
+		table = rowTunable.getTable();
 		if (table == null) {
 			taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
 			                        "Unable to find table '"+rowTunable.getTableString()+"'");
@@ -114,12 +116,11 @@ public class ListRowsTask extends AbstractTableDataTask implements ObservableTas
 	String rowListAsJson()
 	{
 		if (rowList == null || rowList.size() == 0) return "{}";
-		StringBuilder str = new StringBuilder("[ ");
+		String primaryKey = table.getPrimaryKey().getName();
+		StringJoiner rows = new StringJoiner(",", "[","]");
 		for (CyRow row : rowList)
-			str.append(row.get("SUID", Long.class) + ",");
-		String out = str.toString();
-		out = out.substring(0, out.length()-1);
-		return out + " ]";
-		
+			rows.add("\""+row.getRaw(primaryKey).toString()+"\"");
+
+		return "{\"table\":"+table.getSUID()+", \"rows\": "+rows.toString()+"}";
 	}
 }

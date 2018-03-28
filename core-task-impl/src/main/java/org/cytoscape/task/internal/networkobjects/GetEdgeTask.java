@@ -127,7 +127,7 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.toJson(returnedEdge);
+				return "{\"edge\":"+cyJSONUtil.toJson(returnedEdge)+"}";
 			}};
 			return res;
 		}

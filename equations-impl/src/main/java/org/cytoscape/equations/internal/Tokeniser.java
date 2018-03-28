@@ -41,7 +41,7 @@ public class Tokeniser {
 	private String errorMsg;
 	private int previousChar;
 	private boolean putBackChar;
-	private boolean openingBraceSeen;
+	private boolean identifierInBraces;
 
 	public Tokeniser(final String equationAsString) {
 		this.equationAsString = equationAsString;
@@ -49,7 +49,7 @@ public class Tokeniser {
 		reader = new StringReader(equationAsString);
 		currentPos = -1;
 		putBackChar = false;
-		openingBraceSeen = false;
+		identifierInBraces = false;
 	}
 
 	public Token getToken() {
@@ -80,13 +80,16 @@ public class Tokeniser {
 
 		final char ch = (char)nextCh;
 		switch (ch) {
-		case ':': return Token.COLON;
+		case ':': 
+			// colon separates identifier from default value in braces
+			identifierInBraces = false; 
+			return Token.COLON;
 		case '^': return Token.CARET;
 		case '{':
-			openingBraceSeen = true;
+			identifierInBraces = true;
 			return Token.OPEN_BRACE;
 		case '}':
-			openingBraceSeen = false;
+			identifierInBraces = false;
 			return Token.CLOSE_BRACE;
 		case '(': return Token.OPEN_PAREN;
 		case ')': return Token.CLOSE_PAREN;
@@ -102,7 +105,7 @@ public class Tokeniser {
 
 		if (ch == '"')
 			return parseStringConstant();
-		if (Character.isDigit(ch) || ch == '.') {
+		if (!identifierInBraces && (Character.isDigit(ch) || ch == '.')) {
 			ungetChar(nextCh);
 			return parseNumericConstant();
 		}
@@ -129,9 +132,9 @@ public class Tokeniser {
 			return Token.GREATER_THAN;
 		}
 
-		if (Character.isLetter(ch)) {
+		if (identifierInBraces || Character.isLetter(ch)) {
 			ungetChar(nextCh);
-			return openingBraceSeen ? parseIdentifier() : parseSimpleIdentifier();
+			return identifierInBraces ? parseIdentifier() : parseSimpleIdentifier();
 		}
 
 		errorMsg = "unexpected input character '" + Character.toString(ch) + "'";

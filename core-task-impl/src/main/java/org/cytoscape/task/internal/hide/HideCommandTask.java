@@ -135,7 +135,20 @@ public class HideCommandTask extends AbstractTask implements ObservableTask {
 				return "{}";
 			else {
 				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return cyJSONUtil.cyIdentifiablesToJson(identifiables);
+				String result = "{\"nodes\":";
+				if (nodes == null || nodes.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(nodes);
+
+				result += ", \"edges\":";
+				if (edges == null || edges.size() == 0)
+					result += "[]";
+				else
+					result += cyJSONUtil.cyIdentifiablesToJson(edges);
+
+				result += "}";
+				return result;
 			}};
 			return res;
 		}

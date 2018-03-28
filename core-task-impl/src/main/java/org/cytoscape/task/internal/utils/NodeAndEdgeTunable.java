@@ -32,12 +32,15 @@ import org.cytoscape.command.util.NodeList;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.Tunable;
 
 public class NodeAndEdgeTunable {
 	
 	final CyServiceRegistrar serviceRegistrar;
+	final boolean useRootNetwork;
 	
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
@@ -45,12 +48,19 @@ public class NodeAndEdgeTunable {
 	public NodeList nodeList = null;
 	@Tunable(description="List of nodes", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList getnodeList() {
+		CyNetwork net;
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		if (nodeList == null) 
-			nodeList = new NodeList(network);
+
+		if (useRootNetwork)
+			net = ((CySubNetwork)network).getRootNetwork();
 		else
-			nodeList.setNetwork(network);
+			net = network;
+
+		if (nodeList == null) 
+			nodeList = new NodeList(net);
+		else
+			nodeList.setNetwork(net);
 		return nodeList;
 	}
   public void setnodeList(NodeList setValue) {}
@@ -58,18 +68,30 @@ public class NodeAndEdgeTunable {
 	public EdgeList edgeList = null;
 	@Tunable(description="List of edges", context="nogui", longDescription=StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_EDGE_LIST_EXAMPLE_STRING)
 	public EdgeList getedgeList() {
+		CyNetwork net;
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
-		if (edgeList == null) 
-			edgeList = new EdgeList(network);
+
+		if (useRootNetwork)
+			net = ((CySubNetwork)network).getRootNetwork();
 		else
-			edgeList.setNetwork(network);
+			net = network;
+
+		if (edgeList == null) 
+			edgeList = new EdgeList(net);
+		else
+			edgeList.setNetwork(net);
 		return edgeList;
 	}
   public void setedgeList(EdgeList setValue) {}
 
-	public NodeAndEdgeTunable(final CyServiceRegistrar serviceRegistrar) {
+	public NodeAndEdgeTunable(final CyServiceRegistrar serviceRegistrar, final boolean useRootNetwork) {
 		this.serviceRegistrar = serviceRegistrar;
+		this.useRootNetwork = useRootNetwork;
+	}
+
+	public NodeAndEdgeTunable(final CyServiceRegistrar serviceRegistrar) {
+		this(serviceRegistrar, false);
 	}
 
 	public CyNetwork getNetwork() { 

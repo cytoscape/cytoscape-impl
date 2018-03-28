@@ -110,7 +110,7 @@ public class ListTablesTask extends AbstractTableDataTask implements ObservableT
 					return "{}";} 
 				else {
 					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-					return cyJSONUtil.cyIdentifiablesToJson(tables);
+					return "{\"tables\":"+cyJSONUtil.cyIdentifiablesToJson(tables)+"}";
 			}
 		};
 			return res;
