@@ -3,7 +3,11 @@ package org.cytoscape.task.internal;
 import static org.cytoscape.application.swing.ActionEnableSupport.*;
 import static org.cytoscape.work.ServiceProperties.*;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
@@ -336,21 +340,43 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void createFilterTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+		String createLongDescription;
+		try {
+			InputStream in = getClass().getResourceAsStream("create_filter_long_description.md");
+			createLongDescription = new BufferedReader(new InputStreamReader(in)).lines().collect(Collectors.joining("\n"));
+		} catch (Exception e) {
+			createLongDescription = "Create a filter by suppling a name and a JSON filter expression.";
+		}
+		
 		// export and import commands are in filter2-impl
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "create");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Create a filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, createLongDescription);
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new CreateFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
 		{
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "apply");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges using a JSON filter expression.");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "On.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "See the documentation for 'filter create' for details on the accepted JSON format.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, new ApplyFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "run");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
-			props.setProperty(COMMAND_DESCRIPTION, "Run an existing filter.");
+			props.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges by running a filter.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Run an existing filter by supplying the filter name.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, new RunFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 		{
@@ -358,16 +384,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "delete");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
 			props.setProperty(COMMAND_DESCRIPTION, "Delete a filter.");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Delete an existing filter by supplying its name.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Delete an existing filter by supplying the filter name.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, new DeleteFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
-		}
-		{
-			Properties props = new Properties();
-			props.setProperty(COMMAND, "create");
-			props.setProperty(COMMAND_NAMESPACE, "filter");
-			props.setProperty(COMMAND_DESCRIPTION, "Create a filter.");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Create a filter by suppling a name and a JSON filter expression.");
-			registerService(bc, new CreateFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 	}
 
