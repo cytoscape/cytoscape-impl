@@ -1,22 +1,10 @@
 package org.cytoscape.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
+import static org.cytoscape.application.swing.CytoPanelName.*;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -55,6 +43,7 @@ import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.StarterPanelAction;
 import org.cytoscape.internal.command.CommandToolDialog;
+import org.cytoscape.internal.command.PauseCommandTaskFactory;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.io.SessionIO;
@@ -344,6 +333,19 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
 			registerAllServices(bc, exportImageAction, props);
+		}
+		{
+			TaskFactory pauseCommand = new PauseCommandTaskFactory(cytoscapeDesktop);
+			Properties props = new Properties();
+			props.setProperty(COMMAND_NAMESPACE, "command");
+			props.setProperty(COMMAND_DESCRIPTION, "Display a message and pause until the user continues.");
+			props.setProperty(COMMAND, "pause");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+	                            "The **pause** command displays a dialog with the text provided in the *message* argument "+
+	                            "and waits for the user to click **OK**");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			registerService(bc, pauseCommand, TaskFactory.class, props);
 		}
 		
 		registerAllServices(bc, cytoscapeDesktop);

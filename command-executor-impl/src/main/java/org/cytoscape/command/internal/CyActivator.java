@@ -16,6 +16,7 @@ import org.cytoscape.command.internal.available.ArgHandlerFactory;
 import org.cytoscape.command.internal.available.ArgRecorder;
 import org.cytoscape.command.internal.available.AvailableCommandsImpl;
 import org.cytoscape.command.internal.available.BasicArgHandlerFactory;
+import org.cytoscape.command.internal.tasks.EchoCommandTaskFactory;
 import org.cytoscape.command.internal.tasks.QuitTaskFactory;
 import org.cytoscape.command.internal.tasks.RunCommandsTaskFactory;
 import org.cytoscape.command.internal.tasks.SleepCommandTaskFactory;
@@ -193,6 +194,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Stop command processing for a specified time");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "The **sleep** command will pause processing for a period of time as specified by *duration* seconds.");
 			registerService(bc, new SleepCommandTaskFactory(), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "echo");
+			props.setProperty(COMMAND_NAMESPACE, "command");
+			props.setProperty(COMMAND_DESCRIPTION, "Returns the value of the 'message' argument.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the value of the **message** argument.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "");
+			registerService(bc, new EchoCommandTaskFactory(), TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
