@@ -34,7 +34,8 @@ public class CommandParseTest {
 			{ "command a='hello'", "command", of("a", "hello") },
 			{ "command a='he\"ll\"o'", "command", of("a", "he\"ll\"o") },
 			{ "command a=\"he'll'o\"", "command", of("a", "he'll'o") },
-			{ "command a=\"he'll'o\"", "command", of("a", "he'll'o") },
+			{ "command a=\"he\\\"llo\"", "command", of("a", "he\"llo") },
+			{ "command a=\"he\\\\tllo\"", "command", of("a", "he\\tllo") },
 			
 			// json
 			{ "command json='{ \"key\" : \"value\" }'", "command", of("json", "{ \"key\" : \"value\" }") },
@@ -49,9 +50,10 @@ public class CommandParseTest {
 
 	@Test
 	public void testCommandParsing() {
-		System.out.println(command);
-		System.out.println(expectedRes);
-		System.out.println(expectedArgs);
+//		System.out.println();
+//		System.out.println(command);
+//		System.out.println(expectedRes);
+//		System.out.println(expectedArgs);
 		
 		Map<String,Object> arguments = new HashMap<>();
 		String res = CommandExecutorImpl.parseInput(command, arguments);

@@ -56,10 +56,10 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 public class LoadTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
@@ -79,11 +79,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	
 	TextTableReader reader;
 	
-	@Tunable(description="Text Delimiters", 
-	         longDescription="The list of delimiters that separate columns in the table.",
-	         exampleStringValue="\',\',\'\\t\'",
-	         context="both")
-	public ListMultipleSelection<String> delimiters;
+	@ContainsTunables
+	public DelimitersTunable delimiters = new DelimitersTunable();
 	
 	@Tunable(description="Text Delimiters for data list type", 
 	         longDescription="The delimiters between elements of list columns in the table.",
@@ -121,13 +118,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<>();
-		tempList.add(TextDelimiter.COMMA.getDelimiter());
-		tempList.add(TextDelimiter.SEMICOLON.getDelimiter());
-		tempList.add(TextDelimiter.SPACE.getDelimiter());
-		tempList.add(TextDelimiter.TAB.getDelimiter());
-		delimiters = new ListMultipleSelection<>(tempList);
-	    
-		tempList = new ArrayList<>();
 		tempList.add(TextDelimiter.PIPE.getDelimiter());
 		tempList.add(TextDelimiter.BACKSLASH.getDelimiter());
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
@@ -175,11 +165,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			throw new IllegalStateException("Could not initialize object", e);
 		}
 		
-		List<String> tempList = new ArrayList<>();
+		List<TextDelimiter> tempList = new ArrayList<>();
 		if (fileType.equals(".csv"))
-			tempList.add(TextDelimiter.COMMA.getDelimiter());
+			tempList.add(TextDelimiter.COMMA);
 		else
-			tempList.add(TextDelimiter.TAB.getDelimiter());
+			tempList.add(TextDelimiter.TAB);
 		delimiters.setSelectedValues(tempList);
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}

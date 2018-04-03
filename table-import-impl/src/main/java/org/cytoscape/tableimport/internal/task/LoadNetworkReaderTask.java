@@ -43,12 +43,12 @@ import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
@@ -92,13 +92,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private TaskMonitor taskMonitor;
 	private boolean nogui = false;
 	
-	@Tunable(description = "Text delimiters", 
-	         longDescription = "Select the delimiters to use to separate columns in the table, "+
-					                   "from the list '``,``',' ','``TAB``', or '``;``'.  ``TAB`` and '``,``' "+
-														 "are used by default",
-	         exampleStringValue = ";,\\,",
-	         context = "both")
-	public ListMultipleSelection<String> delimiters;
+	@ContainsTunables
+	public DelimitersTunable delimiters = new DelimitersTunable();
 
 	@Tunable(description = "Text delimiters for lists", 
 	         longDescription = "Select the delimiters to use to separate list entries in a list, "+
@@ -174,15 +169,8 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar, boolean nogui) {
 		this.serviceRegistrar = serviceRegistrar;
-		
-		List<String> tempList = new ArrayList<>();
-		tempList.add(TextDelimiter.COMMA.getDelimiter());
-		tempList.add(TextDelimiter.SEMICOLON.getDelimiter());
-		tempList.add(TextDelimiter.SPACE.getDelimiter());
-		tempList.add(TextDelimiter.TAB.getDelimiter());
-		delimiters = new ListMultipleSelection<>(tempList);
 	    
-		tempList = new ArrayList<>();
+		List<String> tempList = new ArrayList<>();
 		tempList.add(TextDelimiter.PIPE.getDelimiter());
 		tempList.add(TextDelimiter.BACKSLASH.getDelimiter());
 		tempList.add(TextDelimiter.SLASH.getDelimiter());
@@ -219,11 +207,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			e.printStackTrace();
 		}
 		
-		List<String> tempList = new ArrayList<>();
-		tempList = new ArrayList<>();
-		tempList.add(TextDelimiter.TAB.getDelimiter());
-		tempList.add(TextDelimiter.COMMA.getDelimiter());
-		delimiters.setSelectedValues(tempList);
+		delimiters.setSelectedValues(Arrays.asList(TextDelimiter.TAB, TextDelimiter.COMMA));
 		delimitersForDataList.setSelectedValue(TextDelimiter.PIPE.getDelimiter());
 	}
 
@@ -526,7 +510,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private String getString()
 	{
 		StringBuilder str = new StringBuilder("LoadNetworkReaderTask\n");
-		str.append("delimiters=").append(listToString(delimiters)).append("\n");
+		str.append("delimiters=").append(listToString(delimiters.getTunable())).append("\n");
 		str.append("delimitersForDataList=").append(listToString(delimitersForDataList)).append("\n");
 		str.append("startLoadRow=" + startLoadRow + "\n");
 		str.append("firstRowAsColumnNames=").append(firstRowAsColumnNames ? "TRUE" : "FALSE").append("\n");
@@ -540,7 +524,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 	private void setString(String state)
 	{
-		loadList(delimiters, fieldFromString(state, "delimiters"));
+		loadList(delimiters.getTunable(), fieldFromString(state, "delimiters"));
 		loadList(delimitersForDataList, fieldFromString(state, "delimitersForDataList"));
 		startLoadRow = Integer.parseInt(fieldFromString(state, "startLoadRow"));
 		firstRowAsColumnNames = "TRUE".equals(fieldFromString(state, "firstRowAsColumnNames"));
