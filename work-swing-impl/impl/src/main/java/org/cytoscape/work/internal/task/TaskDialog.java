@@ -2,7 +2,6 @@ package org.cytoscape.work.internal.task;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
 import java.awt.Color;
@@ -89,14 +88,16 @@ class TaskDialog extends JDialog {
 		cancelButton = new JButton(new AbstractAction("Cancel") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				cancel();
+				if (cancelButton.isVisible() && cancelButton.isEnabled())
+					cancel();
 			}
 		});
 
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				close();
+				if (closeButton.isVisible() && closeButton.isEnabled())
+					close();
 			}
 		});
 		closeButton.setVisible(false);
@@ -114,10 +115,7 @@ class TaskDialog extends JDialog {
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addComponent(titleLabel, DEFAULT_SIZE, PREF_LABEL_WIDTH, Short.MAX_VALUE)
 						.addComponent(subtitleLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						.addGroup(layout.createSequentialGroup()
-								.addComponent(progressBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(cancelButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						)
+						.addComponent(progressBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addGroup(layout.createSequentialGroup()
 								.addComponent(msgIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 								.addComponent(msgArea, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -131,10 +129,7 @@ class TaskDialog extends JDialog {
 				.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(subtitleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
-				.addGroup(layout.createParallelGroup(CENTER, false)
-						.addComponent(progressBar)
-						.addComponent(cancelButton)
-				)
+				.addComponent(progressBar)
 				.addGap(15)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addComponent(msgIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -147,7 +142,7 @@ class TaskDialog extends JDialog {
 
 		getContentPane().add(contents);
 
-		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), closeButton.getAction());
+		LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), closeButton.getAction(), cancelButton.getAction());
 		getRootPane().setDefaultButton(closeButton);
 
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
