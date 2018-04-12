@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -154,7 +153,6 @@ public class ListSingleHandler<T> extends AbstractGUITunableHandler
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public void update() {
 		isUpdating = true;
 		if (combobox == null) return;

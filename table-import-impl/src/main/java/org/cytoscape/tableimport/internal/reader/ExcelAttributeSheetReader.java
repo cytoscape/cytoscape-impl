@@ -34,6 +34,7 @@ import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.slf4j.Logger;
@@ -57,14 +58,14 @@ public class ExcelAttributeSheetReader implements TextTableReader {
 	private final int startLineNumber;
 	private int globalCounter = 0;
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	
 	public ExcelAttributeSheetReader(
 			final Sheet sheet,
 			final AttributeMappingParameters mapping,
 			final CyServiceRegistrar serviceRegistrar
-	){
+	) {
 		this.sheet = sheet;
 		this.mapping = mapping;
 		this.startLineNumber = mapping.getStartLineNumber();

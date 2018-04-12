@@ -348,7 +348,7 @@ public class AttributeEditorPanel extends JPanel {
 			listDelimiterComboBox = new JComboBox<>();
 			listDelimiterComboBox.putClientProperty("JComponent.sizeVariant", "small");
 			listDelimiterComboBox.setModel(
-					new DefaultComboBoxModel<String>(new String[] {
+					new DefaultComboBoxModel<>(new String[] {
 							PIPE.toString(),
 	                        COLON.toString(),
 	                        SLASH.toString(),

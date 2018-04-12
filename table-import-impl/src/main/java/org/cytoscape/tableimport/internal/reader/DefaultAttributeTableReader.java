@@ -35,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.URLUtil;
@@ -54,7 +55,7 @@ import au.com.bytecode.opencsv.CSVReader;
  */
 public class DefaultAttributeTableReader implements TextTableReader {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final URL source;
 	private AttributeMappingParameters mapping;
