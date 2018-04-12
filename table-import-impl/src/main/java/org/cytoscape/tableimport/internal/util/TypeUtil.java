@@ -48,12 +48,15 @@ import static org.cytoscape.tableimport.internal.util.SourceColumnSemantic.TAXON
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
+
+import org.cytoscape.model.CyNetwork;
 
 /**
  *
@@ -73,6 +76,10 @@ public final class TypeUtil {
 	);
 	private static final List<SourceColumnSemantic> ONTOLOGY_IMPORT_TYPES = Arrays.asList(
 			NONE, KEY, ALIAS, ONTOLOGY, TAXON, ATTR
+	);
+	
+	private static final List<String> NAMESPACES = Arrays.asList(
+			CyNetwork.LOCAL_ATTRS, CyNetwork.DEFAULT_ATTRS
 	);
 	
 	private static final String[] PREF_KEY_NAMES = new String[] {
@@ -112,6 +119,9 @@ public final class TypeUtil {
 	private static Pattern truePattern = Pattern.compile("^true$", Pattern.CASE_INSENSITIVE);
 	private static Pattern falsePattern = Pattern.compile("^false$", Pattern.CASE_INSENSITIVE);
 	
+	/** Keeps the preferred namespace of regular nodes/edges attributes */
+	private static String preferredNamespace = CyNetwork.DEFAULT_ATTRS;
+	
 	private TypeUtil() {}
 	
 	public static List<SourceColumnSemantic> getAvailableTypes(final ImportType importType) {
@@ -119,6 +129,10 @@ public final class TypeUtil {
 		if (importType == ONTOLOGY_IMPORT) return ONTOLOGY_IMPORT_TYPES;
 		
 		return TABLE_IMPORT_TYPES;
+	}
+	
+	public static List<String> getAvailableNamespaces(final ImportType importType) {
+		return importType == NETWORK_IMPORT ? NAMESPACES : Collections.emptyList();
 	}
 	
 	public static SourceColumnSemantic getDefaultType(final ImportType importType) {
@@ -459,6 +473,31 @@ public final class TypeUtil {
 		return dataTypeList.toArray(new AttributeDataType[dataTypeList.size()]);
 	}
 	
+	public static String[] getPreferredNamespaces(SourceColumnSemantic[] types) {
+		String[] namespaces = types != null ? new String[types.length] : null;
+		
+		if (namespaces != null) {
+			for (int i = 0; i < types.length; i++) {
+				SourceColumnSemantic t = types[i];
+				namespaces[i] = getPreferredNamespace(t);
+			}
+		}
+		
+		return namespaces;
+	}
+	
+	public static String getPreferredNamespace(SourceColumnSemantic type) {
+		if (type == null)
+			return null;
+		
+		// PKs (source, target, etc) must always be local columns!
+		return type.isUnique() ? CyNetwork.LOCAL_ATTRS : preferredNamespace;
+	}
+	
+	public static void setPreferredNamespace(String preferredNamespace) {
+		TypeUtil.preferredNamespace = preferredNamespace;
+	}
+	
 	private static boolean isBoolean(final String val) {
 		return val != null && (truePattern.matcher(val).matches() || falsePattern.matcher(val).matches());
 	}
@@ -531,6 +570,19 @@ public final class TypeUtil {
 		
 		if (type == INTERACTION || type == ONTOLOGY || type == TAXON)
 			return dataType == TYPE_STRING;
+		
+		return true;
+	}
+	
+	public static boolean isValid(final SourceColumnSemantic type, final String namespace) {
+		if (type == NONE)
+			return false;
+		
+		if (type == KEY || type == SOURCE || type == TARGET)
+			return namespace == CyNetwork.LOCAL_ATTRS;
+		
+		if (type == INTERACTION || type == ONTOLOGY || type == TAXON)
+			return namespace == CyNetwork.LOCAL_ATTRS;
 		
 		return true;
 	}

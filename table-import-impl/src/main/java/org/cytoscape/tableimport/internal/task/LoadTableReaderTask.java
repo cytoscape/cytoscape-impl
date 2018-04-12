@@ -136,7 +136,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.inputName = inputName;
 		this.isStart = is;
 
-
 		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, serviceRegistrar.getService(IconManager.class));
 				
 		try {
@@ -230,6 +229,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		}
 
 		final String sourceName = previewPanel.getSourceName();
+		
+		// Semantic Types:
 		final SourceColumnSemantic[] types = previewPanel.getTypes();
 		
 		for (int i = 0; i < colCount; i++) {
@@ -262,6 +263,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 		
+		// Data Types:
 		final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 		final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 		
@@ -285,11 +287,27 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				Arrays.fill(listDelimiters, delimitersForDataList.getSelectedValue());
 		}
 		
+		// Namespaces:
+		final String[] namespaces = previewPanel.getNamespaces();
+		final String[] namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
+
+// TODO Set namespaces though Tunables as well
+//		String[] tunableNamespaces = null;
+//		
+//		if (namespaceList != null && !namespaceList.trim().isEmpty())
+//			tunableNamespaces = TypeUtil.parseDataTypeList(namespaceList);
+//		
+//		if (tunableNamespaces != null && tunableNamespaces.length > 0)
+//			System.arraycopy(
+//					tunableNamespaces, 0,
+//					namespacesCopy, 0, 
+//					Math.min(tunableNamespaces.length, namespacesCopy.length));
+		
 		if (keyColumnIndex > 0)
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(sourceName, delimiters.getSelectedValues(), listDelimiters,
-				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, startLoadRow, null);
+				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, namespacesCopy, startLoadRow, null);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

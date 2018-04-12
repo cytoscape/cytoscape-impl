@@ -51,6 +51,7 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 			final String[] attributeNames,
 			final AttributeDataType[] dataTypes,
 			final SourceColumnSemantic[] types,
+			final String[] namespaces,
 			final Integer source,
 			final Integer target,
 			final Integer interaction,
@@ -58,7 +59,7 @@ public class NetworkTableMappingParameters extends AbstractMappingParameters {
 			final int startNumber,
 			final String commentChar
 	) throws Exception {
-		super(name, delimiters, listDelimiters, attributeNames , dataTypes, types, startNumber, commentChar);
+		super(name, delimiters, listDelimiters, attributeNames , dataTypes, types, namespaces, startNumber, commentChar);
 
 		this.source = source;
 		this.target = target;

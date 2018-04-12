@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 
 public abstract class AbstractMappingParameters implements MappingParameter{
 	
@@ -46,6 +47,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 	protected String[] attributeNames;
 	protected AttributeDataType[] dataTypes;
 	protected SourceColumnSemantic[] types;
+	protected String[] namespaces;
 	protected List<String> delimiters;
 	protected String[] listDelimiters;
 	
@@ -73,9 +75,10 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
 			final SourceColumnSemantic[] types,
+			final String[] namespaces,
 			final boolean caseSensitive
 	) throws Exception {
-		this(name, delimiters, listDelimiters, attrNames, dataTypes, types, 0, null);
+		this(name, delimiters, listDelimiters, attrNames, dataTypes, types, namespaces, 0, null);
 	}
 
 	public AbstractMappingParameters(
@@ -85,6 +88,7 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
 			final SourceColumnSemantic[] types,
+			final String[] namespaces,
 			final int startNumber,
 			final String commentChar
 	) throws Exception {
@@ -131,6 +135,14 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		} else {
 			this.types = types;
 		}
+		
+		/*
+		 * If namespaces were not specified, use the preferred ones
+		 */
+		if (namespaces == null)
+			this.namespaces = TypeUtil.getPreferredNamespaces(this.types);
+		else
+			this.namespaces = namespaces;
 	}
 
 	@Override
@@ -153,12 +165,18 @@ public abstract class AbstractMappingParameters implements MappingParameter{
 		return types;
 	}
 
+	@Override
 	public String[] getListDelimiters() {
 		return listDelimiters;
 	}
 
 	public List<String> getDelimiters() {
 		return delimiters;
+	}
+	
+	@Override
+	public String[] getNamespaces() {
+		return namespaces;
 	}
 
 	public String getDelimiterRegEx() {

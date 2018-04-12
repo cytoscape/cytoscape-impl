@@ -115,6 +115,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.model.CyColumn;
@@ -147,7 +148,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class ImportTablePanel extends JPanel implements PropertyChangeListener, DataEvents {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final String ID = CyNetwork.NAME;
 
@@ -1433,6 +1434,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String[] listDelimiters = getPreviewPanel().getListDelimiters();
 		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
+		final String[] namespaces = getPreviewPanel().getNamespaces();
+		final String[] namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
+		
 		int startLineNumber = getStartLineNumber();
 		String commentChar = null;
 		
@@ -1444,7 +1448,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final int keyInFile = getPreviewPanel().getColumnIndex(KEY);
 		
 		final AttributeMappingParameters mapping = new AttributeMappingParameters(sourceName, del, listDelimitersCopy,
-				keyInFile, attrNames, dataTypesCopy, typesCopy, startLineNumber, commentChar);
+				keyInFile, attrNames, dataTypesCopy, typesCopy, namespacesCopy, startLineNumber, commentChar);
 
 		return mapping;
 	}
@@ -1487,6 +1491,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String[] listDelimiters = getPreviewPanel().getListDelimiters();
 		final String[] listDelimitersCopy = Arrays.copyOf(listDelimiters, listDelimiters.length);
 
+		final String[] namespaces = getPreviewPanel().getNamespaces();
+		final String[] namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
+		
 		int startLineNumber = getStartLineNumber();
 
 		String commentChar = null;
@@ -1502,8 +1509,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 
 		// Build mapping parameter object.
 		final List<String> del = checkDelimiter();
-		final NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(sourceName, del,
-				listDelimitersCopy, attrNames, dataTypesCopy, typesCopy, sourceColumnIndex, targetColumnIndex,
+		NetworkTableMappingParameters mapping = new NetworkTableMappingParameters(sourceName, del, listDelimitersCopy,
+				attrNames, dataTypesCopy, typesCopy, namespacesCopy, sourceColumnIndex, targetColumnIndex,
 				interactionColumnIndex, defaultInteraction, startLineNumber, commentChar);
 
 		return mapping;

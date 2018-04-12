@@ -90,7 +90,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private URI uri;
 	private File tempFile;
 	private TaskMonitor taskMonitor;
-	private boolean nogui = false;
+	private boolean nogui;
 	
 	@ContainsTunables
 	public DelimitersTunable delimiters = new DelimitersTunable();
@@ -179,7 +179,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.nogui = nogui;
 	}
 	
-	public void setInputFile(final InputStream is, final String fileType,final String inputName, final URI uriName,
+	public void setInputFile(final InputStream is, final String fileType, final String inputName, final URI uriName,
 			final IconManager iconManager) {
 		this.is = is;
 		this.fileType = fileType;
@@ -218,10 +218,6 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 
 		tm.setStatusMessage("Loading network...");
 		taskMonitor = tm;
-		
-		final List<String> attrNameList = new ArrayList<>();
-		int colCount;
-		String[] attributeNames;
 		
 		final CyNetworkReaderManager networkReaderManager = serviceRegistrar.getService(CyNetworkReaderManager.class);
 		
@@ -265,7 +261,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					startLoadRowTemp
 			);
 			
-			colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
+			int colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
 			Object curName = null;
 			
 			if (firstRowAsColumnNames) {
@@ -274,6 +270,9 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			}
 	
 			final SourceColumnSemantic[] types = previewPanel.getTypes();
+			
+			// Column Names:
+			final List<String> attrNameList = new ArrayList<>();
 
 			for (int i = 0; i < colCount; i++) {
 				curName = previewPanel.getPreviewTable().getColumnModel().getColumn(i).getHeaderValue();
@@ -301,10 +300,11 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					attrNameList.add(curName.toString());
 			}
 			
-			attributeNames = attrNameList.toArray(new String[attrNameList.size()]);
+			String[] attributeNames = attrNameList.toArray(new String[attrNameList.size()]);
 			
 			final SourceColumnSemantic[] typesCopy = Arrays.copyOf(types, types.length);
 			
+			// Data Types:
 			final AttributeDataType[] dataTypes = previewPanel.getDataTypes();
 			final AttributeDataType[] dataTypesCopy = Arrays.copyOf(dataTypes, dataTypes.length);
 			
@@ -318,11 +318,12 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 						tunableDataTypes, 0,
 						dataTypesCopy, 0, 
 						Math.min(tunableDataTypes.length, dataTypesCopy.length));
-
+			
+			// Semantic Types:
 			SourceColumnSemantic[] tunableColumnTypes = null;
-			if (columnTypeList != null && !columnTypeList.trim().isEmpty()) {
+			
+			if (columnTypeList != null && !columnTypeList.trim().isEmpty())
 				tunableColumnTypes = TypeUtil.parseColumnTypeList(columnTypeList);
-			}
 
 			if (tunableColumnTypes != null && tunableColumnTypes.length > 0) {
 				System.arraycopy(
@@ -339,6 +340,22 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 					index++;
 				}
 			}
+			
+			// Namespaces:
+			final String[] namespaces = previewPanel.getNamespaces();
+			final String[] namespacesCopy = Arrays.copyOf(namespaces, namespaces.length);
+
+// TODO Set namespaces though Tunables as well
+//			String[] tunableNamespaces = null;
+//			
+//			if (namespaceList != null && !namespaceList.trim().isEmpty())
+//				tunableNamespaces = TypeUtil.parseDataTypeList(namespaceList);
+//			
+//			if (tunableNamespaces != null && tunableNamespaces.length > 0)
+//				System.arraycopy(
+//						tunableNamespaces, 0,
+//						namespacesCopy, 0, 
+//						Math.min(tunableNamespaces.length, namespacesCopy.length));
 
 			if (nogui) {
 				// Handle the validation
@@ -375,7 +392,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			networkName = previewPanel.getSourceName();
 			
 			ntmp = new NetworkTableMappingParameters(networkName, delimiters.getSelectedValues(),
-					listDelimiters, attributeNames, dataTypesCopy, typesCopy,
+					listDelimiters, attributeNames, dataTypesCopy, typesCopy, namespacesCopy,
 					indexColumnSourceInteraction, indexColumnTargetInteraction, indexColumnTypeInteraction,
 					defaultInteraction, startLoadRow, null);
 			

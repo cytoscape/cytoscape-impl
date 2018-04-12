@@ -156,9 +156,14 @@ public class NetworkLineParser extends AbstractLineParser {
 			return;
 		
 		final AttributeDataType type = mapping.getDataTypes()[index];
+		String namespace = mapping.getNamespaces() != null && mapping.getNamespaces().length > index ?
+				mapping.getNamespaces()[index] : null;
+		
+		if (namespace == null)
+			namespace = CyNetwork.DEFAULT_ATTRS;
 		
 		if (type.isList()) {
-			final CyTable table = network.getRow(element).getTable();
+			final CyTable table = network.getRow(element, namespace).getTable();
 			
 			if (table.getColumn(mapping.getAttributeNames()[index]) == null)
 				table.createListColumn(mapping.getAttributeNames()[index], type.getListType(), false);
@@ -174,7 +179,7 @@ public class NetworkLineParser extends AbstractLineParser {
 			
 			if (value instanceof List) {
 				// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
-				List<Object> curList = network.getRow(element).get(mapping.getAttributeNames()[index], List.class);
+				List<Object> curList = network.getRow(element, namespace).get(mapping.getAttributeNames()[index], List.class);
 
 				if (curList == null)
 					curList = new ArrayList<>();
@@ -183,19 +188,22 @@ public class NetworkLineParser extends AbstractLineParser {
 				value = curList;
 			}
 
-			network.getRow(element).set(mapping.getAttributeNames()[index], value);
+			network.getRow(element, namespace).set(mapping.getAttributeNames()[index], value);
 		} else {
-			createColumn(element, mapping.getAttributeNames()[index], type.getType());
+			createColumn(element, mapping.getAttributeNames()[index], type.getType(), namespace);
 			
 			final Object value = parse(entry, type, null);
-			network.getRow(element).set(mapping.getAttributeNames()[index], value);
+			network.getRow(element, namespace).set(mapping.getAttributeNames()[index], value);
 		}
 	}
 	
-	private <T extends CyIdentifiable> void createColumn(final T element, final String attributeName, Class<?> type){
+	private <T extends CyIdentifiable> void createColumn(T element, String attributeName, Class<?> type,
+			String namespace) {
 		// If attribute does not exist, create it
-		if (network.getRow(element).getTable().getColumn(attributeName) == null)
-			network.getRow(element).getTable().createColumn(attributeName, type, false);
+		CyTable table = network.getRow(element, namespace).getTable();
+		
+		if (table.getColumn(attributeName) == null)
+			table.createColumn(attributeName, type, false);
 	}
 
 	public void setNetwork(CyNetwork network){

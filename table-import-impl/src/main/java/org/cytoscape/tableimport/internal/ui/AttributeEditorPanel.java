@@ -52,6 +52,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
@@ -71,6 +72,7 @@ public class AttributeEditorPanel extends JPanel {
 	
 	private final Map<SourceColumnSemantic, JToggleButton> typeButtons = new LinkedHashMap<>();
 	private final Map<AttributeDataType, JToggleButton> dataTypeButtons = new LinkedHashMap<>();
+	private final Map<String, JToggleButton>namespaceButtons = new LinkedHashMap<>();
 	
 	private JToggleButton stringButton;
 	private JToggleButton booleanButton;
@@ -88,12 +90,15 @@ public class AttributeEditorPanel extends JPanel {
 	private JTextField otherTextField;
 	
 	private ButtonGroup typeButtonGroup;
+	private ButtonGroup namespaceButtonGroup;
 	private ButtonGroup dataTypeButtonGroup;
 	
 	private String attrName;
-	private SourceColumnSemantic attrType;
+	private SourceColumnSemantic attributeType;
+	private String namespace = CyNetwork.DEFAULT_ATTRS;
 	private final List<SourceColumnSemantic> availableTypes;
-	private AttributeDataType attrDataType;
+	private final List<String> availableNamespaces;
+	private AttributeDataType attributeDataType;
 	private String listDelimiter;
 	
 	private final IconManager iconManager;
@@ -102,15 +107,19 @@ public class AttributeEditorPanel extends JPanel {
 			final Window parent,
 			final String attrName,
 			final List<SourceColumnSemantic> availableTypes,
+			final List<String> availableNamespaces,
 			final SourceColumnSemantic attrType,
+			final String namespace,
 			final AttributeDataType attrDataType,
 			final String listDelimiter,
 			final IconManager iconManager
 	) {
 		this.attrName = attrName;
 		this.availableTypes = availableTypes;
-		this.attrType = attrType;
-		this.attrDataType = attrDataType;
+		this.attributeType = attrType;
+		this.availableNamespaces = availableNamespaces;
+		this.namespace = namespace;
+		this.attributeDataType = attrDataType;
 		this.listDelimiter = listDelimiter;
 		this.iconManager = iconManager;
 		
@@ -125,7 +134,7 @@ public class AttributeEditorPanel extends JPanel {
 		return getAttributeNameTextField().getText().trim();
 	}
 	
-	public SourceColumnSemantic getAttributeType() {
+	public SourceColumnSemantic getSelectedAttributeType() {
 		final ButtonModel model = typeButtonGroup.getSelection();
 
 		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
@@ -138,7 +147,7 @@ public class AttributeEditorPanel extends JPanel {
 		return NONE;
 	}
 
-	public AttributeDataType getAttributeDataType() {
+	public AttributeDataType getSelectedAttributeDataType() {
 		final ButtonModel model = dataTypeButtonGroup.getSelection();
 
 		for (Entry<AttributeDataType, JToggleButton> entry : dataTypeButtons.entrySet()) {
@@ -161,11 +170,39 @@ public class AttributeEditorPanel extends JPanel {
 		return del != null ? del.getDelimiter() : null;
 	}
 	
+	protected SourceColumnSemantic getAttributeType() {
+		return attributeType;
+	}
+	
+	private void setAttributeType(SourceColumnSemantic attributeType) {
+		if (this.attributeType != attributeType)
+			firePropertyChange("attributeType", this.attributeType, this.attributeType = attributeType);
+	}
+	
+	protected String getNamespace() {
+		return namespace;
+	}
+	
+	private void setNamespace(String namespace) {
+		if (this.namespace != namespace)
+			firePropertyChange("namespace", this.namespace, this.namespace = namespace);
+	}
+	
+	protected AttributeDataType getAttributeDataType() {
+		return attributeDataType;
+	}
+	
+	private void setAttributeDataType(AttributeDataType attributeDataType) {
+		if (this.attributeDataType != attributeDataType)
+			firePropertyChange("attributeDataType", this.attributeDataType, this.attributeDataType = attributeDataType);
+	}
+	
 	private void initComponents() {
 		listDelimiterLabel = new JLabel("List Delimiter:");
 		listDelimiterLabel.putClientProperty("JComponent.sizeVariant", "small");
 		
 		typeButtonGroup = new ButtonGroup();
+		namespaceButtonGroup = new ButtonGroup();
 		dataTypeButtonGroup = new ButtonGroup();
 
 		final List<JToggleButton> dataTypeBtnList = new ArrayList<>();
@@ -181,12 +218,23 @@ public class AttributeEditorPanel extends JPanel {
 		dataTypeBtnList.add(floatingPointListButton = createDataTypeButton(TYPE_FLOATING_LIST));
 		dataTypeBtnList.add(booleanListButton = createDataTypeButton(TYPE_BOOLEAN_LIST));
 		
-		setStyles(dataTypeBtnList);
+		setStyles(dataTypeBtnList.toArray(new JToggleButton[dataTypeBtnList.size()]));
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(false);
+		
+		final SequentialGroup namespaceHGroup = layout.createSequentialGroup();
+		final ParallelGroup namespaceVGroup = layout.createParallelGroup(CENTER, false);
+		
+		if (availableNamespaces.size() > 1) {
+			for (String ns : availableNamespaces) {
+				final JToggleButton btn = createNamespaceButton(ns);
+				namespaceHGroup.addComponent(btn, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE);
+				namespaceVGroup.addComponent(btn);
+			}
+		}
 		
 		final SequentialGroup typeHGroup = layout.createSequentialGroup();
 		final ParallelGroup typeVGroup = layout.createParallelGroup(CENTER, false);
@@ -197,7 +245,7 @@ public class AttributeEditorPanel extends JPanel {
 			typeVGroup.addComponent(btn);
 		}
 		
-		setStyles(new ArrayList<JToggleButton>(typeButtons.values()));
+		setStyles(typeButtons.values().toArray(new JToggleButton[typeButtons.size()]));
 		
 		final JLabel typeLabel = new JLabel("Meaning:");
 		typeLabel.putClientProperty("JComponent.sizeVariant", "small");
@@ -209,6 +257,7 @@ public class AttributeEditorPanel extends JPanel {
 				.addComponent(getAttributeNameTextField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(typeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(typeHGroup)
+				.addGroup(namespaceHGroup)
 				.addComponent(dataTypeLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(stringButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -237,6 +286,8 @@ public class AttributeEditorPanel extends JPanel {
 				.addComponent(typeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addGroup(typeVGroup)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addGroup(namespaceVGroup)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(dataTypeLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addPreferredGap(ComponentPlacement.RELATED)
@@ -324,15 +375,12 @@ public class AttributeEditorPanel extends JPanel {
 				}
 			});
 			
-			listDelimiterComboBox.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final boolean isOther = isOtherDelimiterSelected();
-					getOtherTextField().setEnabled(isOther);
-					
-					if (!isOther || !getOtherTextField().getText().isEmpty())
-						firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
-				}
+			listDelimiterComboBox.addActionListener(evt -> {
+				final boolean isOther = isOtherDelimiterSelected();
+				getOtherTextField().setEnabled(isOther);
+				
+				if (!isOther || !getOtherTextField().getText().isEmpty())
+					firePropertyChange("listDelimiter", listDelimiter, listDelimiter = getListDelimiter());
 			});
 		}
 		
@@ -365,17 +413,17 @@ public class AttributeEditorPanel extends JPanel {
 		return otherTextField;
 	}
 
-	private void setStyles(final List<JToggleButton> btnList) {
+	private void setStyles(JToggleButton... btnList) {
 		if (LookAndFeelUtil.isAquaLAF()) {
-			for (int i = 0; i < btnList.size(); i++) {
-				final JToggleButton btn = btnList.get(i);
+			for (int i = 0; i < btnList.length; i++) {
+				final JToggleButton btn = btnList[i];
 				btn.putClientProperty("JButton.buttonType", "segmentedGradient");
 				btn.putClientProperty("JButton.segmentPosition", "only");
 				btn.putClientProperty("JComponent.sizeVariant", "small");
 			}
 		}
 		
-		LookAndFeelUtil.equalizeSize(btnList.toArray(new JToggleButton[btnList.size()]));
+		LookAndFeelUtil.equalizeSize(btnList);
 	}
 	
 	private void updateComponents() {
@@ -385,10 +433,11 @@ public class AttributeEditorPanel extends JPanel {
 		updateOtherTextField();
 		updateTypeButtons();
 		updateDataTypeButtons();
+		updateNamespaceButtons();
 	}
 	
 	private void updateTypeButtons() {
-		final AttributeDataType dataType = getAttributeDataType();
+		final AttributeDataType dataType = getSelectedAttributeDataType();
 
 		for (Entry<SourceColumnSemantic, JToggleButton> entry : typeButtons.entrySet()) {
 			final SourceColumnSemantic type = entry.getKey();
@@ -397,9 +446,9 @@ public class AttributeEditorPanel extends JPanel {
 			btn.setForeground(btn.isEnabled() ? type.getForeground() : UIManager.getColor("Button.disabledForeground"));
 		}
 	}
-
+	
 	private void updateDataTypeButtons() {
-		final SourceColumnSemantic type = getAttributeType();
+		final SourceColumnSemantic type = getSelectedAttributeType();
 
 		for (Entry<AttributeDataType, JToggleButton> entry : dataTypeButtons.entrySet()) {
 			final AttributeDataType dataType = entry.getKey();
@@ -408,8 +457,23 @@ public class AttributeEditorPanel extends JPanel {
 		}
 	}
 	
+	private void updateNamespaceButtons() {
+		final SourceColumnSemantic type = getSelectedAttributeType();
+
+		for (Entry<String, JToggleButton> entry : namespaceButtons.entrySet()) {
+			final String namespace = entry.getKey();
+			final JToggleButton btn = entry.getValue();
+			btn.setEnabled(TypeUtil.isValid(type, namespace));
+			
+			if (namespace.equals(this.namespace) && !btn.isEnabled())
+				setNamespace(TypeUtil.getPreferredNamespace(type));
+		}
+		
+		updateNamespaceButtonGroup();
+	}
+	
 	private void updateTypeButtonGroup() {
-		JToggleButton btn = typeButtons.get(attrType);
+		JToggleButton btn = typeButtons.get(attributeType);
 
 		if (btn == null)
 			btn = typeButtons.get(NONE);
@@ -418,16 +482,25 @@ public class AttributeEditorPanel extends JPanel {
 	}
 	
 	private void updateDataTypeButtonGroup() {
-		final JToggleButton button = dataTypeButtons.get(attrDataType);
+		final JToggleButton button = dataTypeButtons.get(attributeDataType);
 		final ButtonModel model = button != null ? button.getModel() : null;
 		
 		if (model != null)
 			dataTypeButtonGroup.setSelected(model, true);
 	}
 	
+	private void updateNamespaceButtonGroup() {
+		JToggleButton btn = namespaceButtons.get(namespace);
+
+		if (btn != null)
+			namespaceButtonGroup.setSelected(btn.getModel(), true);
+		else
+			namespaceButtonGroup.clearSelection();
+	}
+	
 	private void updateListDelimiterComboBox() {
-		listDelimiterLabel.setEnabled(attrDataType.isList());
-		getListDelimiterComboBox().setEnabled(attrDataType.isList());
+		listDelimiterLabel.setEnabled(attributeDataType.isList());
+		getListDelimiterComboBox().setEnabled(attributeDataType.isList());
 		
 		if (listDelimiter == null || listDelimiter.isEmpty()) {
 			getListDelimiterComboBox().setSelectedIndex(0);
@@ -448,7 +521,7 @@ public class AttributeEditorPanel extends JPanel {
 	}
 	
 	private void updateOtherTextField() {
-		getOtherTextField().setEnabled(attrDataType.isList() && isOtherDelimiterSelected());
+		getOtherTextField().setEnabled(attributeDataType.isList() && isOtherDelimiterSelected());
 		
 		if (listDelimiter != null && !listDelimiter.isEmpty() && isOtherDelimiterSelected())
 			getOtherTextField().setText(listDelimiter);
@@ -464,16 +537,53 @@ public class AttributeEditorPanel extends JPanel {
 		btn.setFont(iconManager.getIconFont(ICON_FONT_SIZE));
 		btn.setForeground(type.getForeground());
 		btn.setName(type.toString());
-		btn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateDataTypeButtons();
-				firePropertyChange("attributeType", attrType, attrType = getAttributeType());
-			}
+		btn.addActionListener(evt -> {
+			setNamespace(TypeUtil.getPreferredNamespace(type));
+			updateNamespaceButtons();
+			updateDataTypeButtons();
+			setAttributeType(getSelectedAttributeType());
 		});
 		
 		typeButtonGroup.add(btn);
 		typeButtons.put(type, btn);
+		
+		return btn;
+	}
+	
+	private JToggleButton createNamespaceButton(final String namespace) {
+		String text = null;
+		String toolTip = null;
+		
+		if (namespace.equals(CyNetwork.LOCAL_ATTRS)) {
+			text = "Local";
+			toolTip = "<html>The column will be created in the network's table</html>";
+		} else if (namespace.equals(CyNetwork.DEFAULT_ATTRS)) {
+			text = "Shared";
+			toolTip = "<html>The column will be created in the network collection's table<br>and shared among all networks in the same collection</html>";
+		} else if (namespace.equals(CyNetwork.HIDDEN_ATTRS)) {
+			text = "Hidden";
+			toolTip = "<html>The column will be created in the network's private table<br>and hidden from the user</html>";
+		} else {
+			text = namespace;
+		}
+		
+		final JToggleButton btn = new JToggleButton(text);
+		btn.setToolTipText(toolTip);
+		btn.setName(namespace);
+		btn.addActionListener(evt -> {
+			// When the user selects another namespace for a regular attribute (not a PK, source, target...),
+			// we save it so the same namespace is used again as the default one in future imports
+			TypeUtil.setPreferredNamespace(namespace);
+			setNamespace(namespace);
+		});
+		
+		setStyles(btn);
+		
+		if (!LookAndFeelUtil.isAquaLAF())
+			btn.setFont(btn.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+		
+		namespaceButtonGroup.add(btn);
+		namespaceButtons.put(namespace, btn);
 		
 		return btn;
 	}
@@ -505,7 +615,8 @@ public class AttributeEditorPanel extends JPanel {
 			getListDelimiterComboBox().setEnabled(isList);
 			getOtherTextField().setEnabled(isList && isOtherDelimiterSelected());
 			updateTypeButtons();
-			firePropertyChange("attributeDataType", attrDataType, attrDataType = getAttributeDataType());
+			updateNamespaceButtonGroup();
+			setAttributeDataType(getSelectedAttributeDataType());
 		}
 	}
 }

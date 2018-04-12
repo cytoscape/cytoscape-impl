@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.
@@ -53,9 +54,10 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 			final int keyIndex,
 			final String[] attrNames,
 			final AttributeDataType[] dataTypes,
-	        final SourceColumnSemantic[] types
+	        final SourceColumnSemantic[] types,
+	        final String[] namespaces
 	) throws Exception {
-		this(name, delimiters, listDelimiters, keyIndex, attrNames, dataTypes, types, 0, null);
+		this(name, delimiters, listDelimiters, keyIndex, attrNames, dataTypes, types, namespaces, 0, null);
 	}
 	
 	public AttributeMappingParameters(
@@ -66,10 +68,11 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
             final String[] attrNames,
             final AttributeDataType[] dataTypes,
             final SourceColumnSemantic[] types,
+            final String[] namespaces,
             final int startNumber,
             final String commentChar
     ) throws Exception {
-		super(name, delimiters, listDelimiters, attrNames, dataTypes, types, startNumber, commentChar);
+		super(name, delimiters, listDelimiters, attrNames, dataTypes, types, namespaces, startNumber, commentChar);
 		
 		if (attrNames == null)
 			throw new Exception("attributeNames should not be null.");
@@ -102,6 +105,14 @@ public class AttributeMappingParameters extends AbstractMappingParameters {
 		} else {
 			this.types = types;
 		}
+		
+		/*
+		 * If namespaces were not specified, use the preferred ones
+		 */
+		if (namespaces == null)
+			this.namespaces = TypeUtil.getPreferredNamespaces(this.types);
+		else
+			this.namespaces = namespaces;
 	}
 	
 	public int getKeyIndex() {
