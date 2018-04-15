@@ -187,9 +187,13 @@ public class CloneNetworkTask extends AbstractCreationTask {
 
 		cloneGroups(origNet, newNet);
 
+		// Clone any network columns
+		cloneNetwork(origNet, newNet);
+
+		// Now, override the name so we don't have two networks with the same name
 		newNet.getRow(newNet).set(CyNetwork.NAME, 
 				naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
-		
+
 		return newNet;
 	}
 	
@@ -373,6 +377,10 @@ public class CloneNetworkTask extends AbstractCreationTask {
 				GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
 			}
 		}
+	}
+
+	private void cloneNetwork(final CyNetwork origNet, final CyNetwork newNet) {
+		cloneRow(newNet, CyNetwork.class, origNet.getRow(origNet, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNet, CyNetwork.LOCAL_ATTRS));
 	}
 
 	private void addColumns(final CyNetwork origNet,
