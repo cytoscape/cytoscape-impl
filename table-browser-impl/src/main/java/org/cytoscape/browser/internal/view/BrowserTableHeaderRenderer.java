@@ -26,14 +26,20 @@ package org.cytoscape.browser.internal.view;
 
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.util.List;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -44,21 +50,39 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.application.swing.CyColumnPresentation;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 
 final class BrowserTableHeaderRenderer extends JPanel implements TableCellRenderer {
 
 	private static final long serialVersionUID = 4656466166588715282L;
 
+	private final JLabel namespaceLabel;
+	private final JLabel namespaceIconLabel;
 	private final JLabel nameLabel;
 	private final JLabel sharedLabel;
 	private final JLabel sortLabel;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	BrowserTableHeaderRenderer(final IconManager iconManager) {
+	BrowserTableHeaderRenderer(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+		
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		
 		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		setBackground(UIManager.getColor("TableHeader.background"));
+		
+		namespaceLabel = new JLabel();
+		namespaceLabel.setFont(UIManager.getFont("TableHeader.font"));
+		namespaceLabel.setHorizontalAlignment(JLabel.CENTER);
+		namespaceLabel.setForeground(UIManager.getColor("TableHeader.foreground"));
+		
+		namespaceIconLabel = new JLabel();
 		
 		nameLabel = new JLabel();
 		nameLabel.setFont(UIManager.getFont("TableHeader.font"));
@@ -74,30 +98,88 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		sortLabel.setMinimumSize(sortLabel.getPreferredSize());
 		sortLabel.setSize(sortLabel.getPreferredSize());
 		
-		final GroupLayout layout = new GroupLayout(this);
-		this.setLayout(layout);
+		JPanel panel = new JPanel();
+		panel.setOpaque(false);
+		setLayout(new BorderLayout());
+		add(panel, BorderLayout.SOUTH);
+		
+		final GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup(Alignment.CENTER)
+				.addComponent(namespaceIconLabel)
 				.addComponent(sharedLabel)
+			)
+			.addGroup(layout.createParallelGroup(Alignment.CENTER)
+				.addComponent(namespaceLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(nameLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(sortLabel)
-				.addGap(4)
+			)
+			.addComponent(sortLabel)
+			.addGap(4)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
+		
+		layout.setVerticalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup(LEADING, false)
+				.addComponent(namespaceIconLabel)
+				.addComponent(namespaceLabel)
+			)
+			.addGap(2)
+			.addGroup(layout.createParallelGroup(LEADING, false)
 				.addComponent(sharedLabel)
-				.addGroup(layout.createSequentialGroup()
-						.addGap(2)
-						.addGroup(layout.createParallelGroup(CENTER, false)
-								.addComponent(nameLabel)
-								.addComponent(sortLabel)
-						)
-						.addGap(2)
-				)
+				.addComponent(nameLabel)
+				.addComponent(sortLabel)
+			)
+			.addGap(2)
 		);
 	}
 
+	private Icon getNamespaceIcon(String namespace) {
+		CyColumnPresentationManager presentationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
+		CyColumnPresentation presentation = presentationManager.getColumnPresentation(namespace);
+		
+		if(presentation == null)
+			return null;
+		
+		Icon icon = presentation.getNamespaceIcon();
+		if(icon == null)
+			return null;
+		
+ 		if(icon.getIconWidth() <= 16 && icon.getIconHeight() <= 16)
+ 			return icon;
+ 	
+ 		return resizeIcon(icon, 16);
+	}
+	
+	
+	private Icon resizeIcon(Icon icon, final int max) {
+		final int height = icon.getIconHeight(), width = icon.getIconWidth();
+		
+		// calculate new height and width
+		final int newHeight, newWidth;
+		
+		if(height > width) {
+			newHeight = max;
+			newWidth = (int)((float)width/(float)height * max);
+		} else {
+			newWidth = max;
+			newHeight = (int)((float)height/(float)width * max);
+		}
+		
+		
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		icon.paintIcon(null, g, 0, 0);
+		g.dispose();
+		
+		Image resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+		ImageIcon resizedIcon = new ImageIcon(resizedImage);
+		return resizedIcon;
+	}
+	
+	
 	@Override
 	public Component getTableCellRendererComponent(final JTable table, final Object value, boolean isSelected,
 			boolean hasFocus, int row, int col) {
@@ -109,9 +191,28 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		// Configure the component with the specified value
 		final String colName = value != null ? value.toString() : "";
 		
+		String[] parts = CyColumn.splitColumnName(colName);
+		String namespace = parts[0];
+		
+		if(namespace == null) {
+			namespaceLabel.setVisible(false);
+			namespaceIconLabel.setVisible(false);
+		} else {
+			namespaceLabel.setVisible(true);
+			namespaceLabel.setText(namespace);
+			
+			Icon icon = getNamespaceIcon(namespace);
+			if(icon == null) {
+				namespaceIconLabel.setVisible(false);
+			} else {
+				namespaceIconLabel.setVisible(true);
+				namespaceIconLabel.setIcon(icon);
+			}
+		}
+		
 		final Font font = nameLabel.getFont();
 		nameLabel.setFont(colName.equals(CyIdentifiable.SUID) ? font.deriveFont(Font.BOLD) : font.deriveFont(Font.PLAIN));
-		nameLabel.setText(colName);
+		nameLabel.setText(parts[1]);
 		
 		sharedLabel.setText("");
 		
@@ -129,24 +230,26 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		final CyColumn column = model.getDataTable().getColumn(colName);
 		
 		if (column != null) {
-			String toolTip = "<html><div style=\"text-align: center;\">";
+			StringBuilder toolTip = new StringBuilder("<html><div style=\"text-align: center;\">");
 	
 			if (colName.equals(CyIdentifiable.SUID))
-				toolTip += "Session-Unique ID (Primary Key)<br />This column is uneditable";
+				toolTip.append("Session-Unique ID (Primary Key)<br />This column is uneditable");
 			else if (column.getType() == List.class)
-				toolTip += "<b>" + column.getName() + "</b><br />(List of "+ getMinimizedType(column.getListElementType().getName()) + "s)";
+				toolTip.append("<b>").append(column.getName()).append("</b><br />(List of ")
+					.append(getMinimizedType(column.getListElementType().getName())).append("s)");
 			else
-				toolTip += "<b>" + column.getName()+ "</b><br />(" + getMinimizedType(column.getType().getName()) + ")";
+				toolTip.append("<b>").append(column.getName()).append("</b><br />(")
+					.append(getMinimizedType(column.getType().getName())).append(")");
 			
 			if (column.getVirtualColumnInfo().isVirtual()) {
-				toolTip += "<br /><i>Network Collection Column</i></html>";
+				toolTip.append("<br /><i>Network Collection Column</i></div></html>");
 				sharedLabel.setText(ColumnSelector.SHARED_COL_ICON_TEXT);
 			} else {
-				toolTip +="</div></html>";
+				toolTip.append("</div></html>");
 			}
 	
 			// Set tool tip if desired
-			setToolTipText(toolTip);
+			setToolTipText(toolTip.toString());
 	
 			//*****sorting icon**
 			int index = -1;

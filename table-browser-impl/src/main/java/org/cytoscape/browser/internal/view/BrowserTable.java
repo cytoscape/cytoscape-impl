@@ -172,6 +172,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			for (int i = 0; i < model.getColumnCount(); i++) {
 				TableColumn tableColumn = new TableColumn(i);
 				tableColumn.setHeaderValue(model.getColumnName(i));
+				tableColumn.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 				columnModel.addColumn(tableColumn);
 			}
 		}
@@ -457,6 +458,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		int colIndex = columnModel.getColumnCount(false);
 		TableColumn newCol = new TableColumn(colIndex);
 		newCol.setHeaderValue(e.getColumnName());
+		newCol.setHeaderRenderer(new BrowserTableHeaderRenderer(serviceRegistrar));
 		addColumn(newCol);
 	}
 
@@ -566,7 +568,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	protected void init() {
 		final JTableHeader header = getTableHeader();
 		header.setOpaque(false);
-		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
+//		header.setDefaultRenderer(new BrowserTableHeaderRenderer(serviceRegistrar.getService(IconManager.class)));
 		header.getColumnModel().setColumnSelectionAllowed(true);
 		header.addMouseMotionListener(this);
 		header.addMouseListener(new MouseAdapter() {
@@ -579,7 +581,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 				maybeShowHeaderPopup(e);
 			}
 		});
-
+		
 		setSelectionModel(new BrowserTableListSelectionModel());
 		setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		addMouseListener(this);

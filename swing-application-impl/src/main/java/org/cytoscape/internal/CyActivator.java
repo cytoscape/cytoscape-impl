@@ -21,6 +21,8 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.application.swing.CyColumnPresentation;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.application.swing.CyHelpBroker;
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -62,6 +64,7 @@ import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.util.undo.UndoMonitor;
+import org.cytoscape.internal.view.CyColumnPresentationManagerImpl;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
 import org.cytoscape.internal.view.CytoscapeDesktop;
@@ -177,6 +180,7 @@ public class CyActivator extends AbstractCyActivator {
 	private RowViewTracker rowViewTracker;
 	private SelectEdgeViewUpdater selecteEdgeViewUpdater;
 	private SelectNodeViewUpdater selecteNodeViewUpdater;
+	private CyColumnPresentationManagerImpl columnPresentationManager;
 	
 	private RowsSetViewUpdater rowsSetViewUpdater;
 	
@@ -359,6 +363,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, rowViewTracker);
 		registerAllServices(bc, selecteEdgeViewUpdater);
 		registerAllServices(bc, selecteNodeViewUpdater);
+		registerService(bc, columnPresentationManager, CyColumnPresentationManager.class);
 
 		registerAllServices(bc, rowsSetViewUpdater);
 		
@@ -381,6 +386,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, cytoscapeMenuPopulator::addTableTaskFactory, cytoscapeMenuPopulator::removeTableTaskFactory, TableTaskFactory.class);
 		registerServiceListener(bc, layoutSettingsManager::addLayout, layoutSettingsManager::removeLayout, CyLayoutAlgorithm.class);
 		registerServiceListener(bc, settingsAction::addLayout, settingsAction::removeLayout, CyLayoutAlgorithm.class);
+		registerServiceListener(bc, columnPresentationManager::addPresentation, columnPresentationManager::removePresentation, CyColumnPresentation.class);
 		
 		// For Network Panel context menu
 		registerServiceListener(bc, netMediator::addNetworkViewTaskFactory, netMediator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
@@ -468,6 +474,7 @@ public class CyActivator extends AbstractCyActivator {
 		rowViewTracker = new RowViewTracker();
 		selecteEdgeViewUpdater = new SelectEdgeViewUpdater(rowViewTracker);
 		selecteNodeViewUpdater = new SelectNodeViewUpdater(rowViewTracker);
+		columnPresentationManager = new CyColumnPresentationManagerImpl();
 		
 		rowsSetViewUpdater = new RowsSetViewUpdater(rowViewTracker, netViewMediator, serviceRegistrar);
 
