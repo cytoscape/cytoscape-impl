@@ -33,7 +33,6 @@ import org.cytoscape.io.util.StreamUtil;
 
 public class VizmapPropertiesFileFilter extends PropertiesFileFilter {
 
-
     public VizmapPropertiesFileFilter(Set<String> extensions, Set<String> contentTypes,
             String description, DataCategory category, StreamUtil streamUtil) {
         super(extensions, contentTypes, description, category, streamUtil);
@@ -46,7 +45,6 @@ public class VizmapPropertiesFileFilter extends PropertiesFileFilter {
 
     @Override
     public boolean accepts(InputStream stream, DataCategory category) {
-
         // Check data category
         if (category != this.category)
             return false;

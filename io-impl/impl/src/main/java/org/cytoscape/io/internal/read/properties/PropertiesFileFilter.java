@@ -45,7 +45,6 @@ public class PropertiesFileFilter extends BasicCyFileFilter {
 
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-
 		// Check data category
 		if (category != this.category)
 			return false;

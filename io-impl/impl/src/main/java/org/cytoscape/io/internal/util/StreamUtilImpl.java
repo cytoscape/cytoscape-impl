@@ -98,7 +98,7 @@ public class StreamUtilImpl implements StreamUtil {
 	 */
 	@Override
 	public InputStream getInputStream(URL source) throws IOException {
-		if(source == null)
+		if (source == null)
 			throw new NullPointerException("Source URL is null");
 		
 		return getURLConnection(source).getInputStream();

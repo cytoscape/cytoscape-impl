@@ -30,8 +30,8 @@ import java.io.StreamTokenizer;
 import java.net.URI;
 import java.util.Set;
 
-import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,9 +89,8 @@ public class GMLFileFilter extends BasicCyFileFilter {
 	
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {
-		if (!category.equals(DataCategory.NETWORK)) {
+		if (!category.equals(DataCategory.NETWORK))
 			return false;
-		}
 		
 		try (InputStream is = streamUtil.getInputStream(uri.toURL())) {
 			return accepts(is, category);

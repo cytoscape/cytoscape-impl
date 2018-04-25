@@ -16,6 +16,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.internal.read.xgmml.handler.ReadDataManager;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
@@ -86,7 +87,7 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 	private VisualLexicon visualLexicon;
 	
 	private static final Map<String, String> legacyArrowShapes = new HashMap<>();
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	static {
 		legacyArrowShapes.put("0", "NONE"); // NO_END

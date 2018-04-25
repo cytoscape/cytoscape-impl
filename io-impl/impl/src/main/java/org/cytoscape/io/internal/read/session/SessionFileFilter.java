@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.read.MarkSupportedInputStream;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class SessionFileFilter extends BasicCyFileFilter {
 
 	private static final String DEFAULT_VERSION = "2.0.0";
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog .NAME);
 	
 	private String requiredVersion;
 
@@ -60,9 +61,6 @@ public class SessionFileFilter extends BasicCyFileFilter {
 		this.requiredVersion = requiredVersion;
 	}
 	
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {
 		if (super.accepts(uri, category)) {

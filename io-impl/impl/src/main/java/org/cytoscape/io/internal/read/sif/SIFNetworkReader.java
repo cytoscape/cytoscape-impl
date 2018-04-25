@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -24,6 +25,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -64,6 +67,8 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	public SIFNetworkReader(final InputStream is, final CyServiceRegistrar serviceRegistrar) {
 		super(
 				is, 
@@ -81,8 +86,12 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 			readInput(tm);
 		} finally {
 			if (inputStream != null) {
-				inputStream.close();
-				inputStream = null;
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					logger.warn("Cannot close SIF input stream", e);
+				}
 			}
 		}
 	}

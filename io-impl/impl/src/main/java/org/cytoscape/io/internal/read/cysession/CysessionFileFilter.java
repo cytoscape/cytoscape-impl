@@ -29,15 +29,16 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.io.BasicCyFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CysessionFileFilter extends BasicCyFileFilter {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public CysessionFileFilter(Set<String> extensions, Set<String> contentTypes,
 			String description, DataCategory category, StreamUtil streamUtil) {
@@ -51,12 +52,12 @@ public class CysessionFileFilter extends BasicCyFileFilter {
 
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-
 		if (category != this.category) 
 			return false;
 		
 		final String header = this.getHeader(stream,20);
-		if(header.contains("<cysession"))
+		
+		if (header.contains("<cysession"))
 			return true;
 		
 		return false;

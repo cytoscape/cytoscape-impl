@@ -30,6 +30,7 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -43,6 +44,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -57,6 +60,8 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 
 	private GraphMLParser parser;
 	private TaskMonitor taskMonitor;
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public GraphMLReader(final InputStream inputStream,
 						 final CyLayoutAlgorithmManager layouts,
@@ -65,6 +70,7 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 						 final CyNetworkManager cyNetworkManager,
 						 final CyRootNetworkManager cyRootNetworkManager) {
 		super(inputStream, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
+		
 		if (inputStream == null)
 			throw new NullPointerException("Input stream is null");
 
@@ -84,6 +90,7 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 	@Override
 	public void run(final TaskMonitor taskMonitor) throws Exception {
 		this.taskMonitor = taskMonitor;
+		
 		try {
 			final SAXParserFactory spf = SAXParserFactory.newInstance();
 			spf.setNamespaceAware(true);
@@ -108,8 +115,12 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 			xmlReader.parse(inputSource);
 		} finally {
 			if (inputStream != null) {
-				inputStream.close();
-				inputStream = null;
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					logger.warn("Cannot close GraphML input stream", e);
+				}
 			}
 		}
 	}

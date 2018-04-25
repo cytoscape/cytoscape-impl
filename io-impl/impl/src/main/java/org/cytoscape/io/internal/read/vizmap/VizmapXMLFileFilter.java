@@ -1,12 +1,24 @@
 package org.cytoscape.io.internal.read.vizmap;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Set;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.BasicCyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.util.StreamUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,44 +36,42 @@ package org.cytoscape.io.internal.read.vizmap;
  * #L%
  */
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Set;
-
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.io.BasicCyFileFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class VizmapXMLFileFilter extends BasicCyFileFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-    
-    public VizmapXMLFileFilter(Set<String> extensions, Set<String> contentTypes,
-            String description, DataCategory category, StreamUtil streamUtil) {
-        super(extensions, contentTypes, description, category, streamUtil);
-    }
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-    public VizmapXMLFileFilter(String[] extensions, String[] contentTypes,
-            String description, DataCategory category, StreamUtil streamUtil) {
-        super(extensions, contentTypes, description, category, streamUtil);
-    }
+	public VizmapXMLFileFilter(
+			Set<String> extensions,
+			Set<String> contentTypes,
+			String description,
+			DataCategory category,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, streamUtil);
+	}
 
-    @Override
-    public boolean accepts(InputStream stream, DataCategory category) {
+	public VizmapXMLFileFilter(
+			String[] extensions,
+			String[] contentTypes,
+			String description,
+			DataCategory category,
+			StreamUtil streamUtil
+	) {
+		super(extensions, contentTypes, description, category, streamUtil);
+	}
 
-        if (category != this.category) 
-            return false;
-        
-        final String header = this.getHeader(stream, 20);
-        
-        if (header.contains("<vizmap"))
-            return true;
-        
-        return false;
-    }
+	@Override
+	public boolean accepts(InputStream stream, DataCategory category) {
+		if (category != this.category)
+			return false;
+
+		final String header = this.getHeader(stream, 20);
+
+		if (header.contains("<vizmap"))
+			return true;
+
+		return false;
+	}
 
     @Override
     public boolean accepts(URI uri, DataCategory category) {

@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -57,7 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NNFNetworkReader extends AbstractCyNetworkReader {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	// Optional comments start with this character and extend to the end of line.
 	private static final char COMMENT_CHAR = '#';	
@@ -88,8 +89,12 @@ public class NNFNetworkReader extends AbstractCyNetworkReader {
 			readInput(tm);
 		} finally {
 			if (inputStream != null) {
-				inputStream.close();
-				inputStream = null;
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					logger.warn("Cannot close NNF input stream", e);
+				}
 			}
 		}
 	}
