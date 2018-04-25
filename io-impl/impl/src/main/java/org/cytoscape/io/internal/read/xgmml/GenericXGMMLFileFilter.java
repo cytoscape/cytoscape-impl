@@ -67,8 +67,8 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 
 	@Override
 	public boolean accepts(final URI uri, final DataCategory category) {
-		try {
-			return accepts(uri.toURL().openStream(), category);
+		try (InputStream is = uri.toURL().openStream()) {
+			return accepts(is, category);
 		} catch (IOException e) {
 			logger.error("Error while opening stream: " + uri, e);
 			return false;

@@ -217,6 +217,15 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		} catch (Exception io) {
 			io.printStackTrace();
 			throw new RuntimeException(io.getMessage());
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					logger.warn("Cannot close GML input stream", e);
+				}
+			}
 		}
 		
 		taskMonitor.setProgress(0.05);

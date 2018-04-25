@@ -65,11 +65,11 @@ public class VizmapXMLFileFilter extends BasicCyFileFilter {
 
     @Override
     public boolean accepts(URI uri, DataCategory category) {
-        try {
-            return accepts(uri.toURL().openStream(), category);
-        } catch (IOException e) {
-            logger.error("Error while opening stream: " + uri, e);
-            return false;
-        }
+		try (InputStream is = uri.toURL().openStream()) {
+			return accepts(is, category);
+		} catch (IOException e) {
+			logger.error("Error while opening stream: " + uri, e);
+			return false;
+		}
     }
 }

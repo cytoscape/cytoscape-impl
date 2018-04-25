@@ -65,14 +65,14 @@ public class GraphMLFileFilter extends BasicCyFileFilter {
 
 	@Override
 	public boolean accepts(URI uri, DataCategory category) {
-		try {
-			if(super.accepts(uri, category))
-				return accepts(uri.toURL().openStream(), category);
-			else
-				return false;
-		} catch (IOException e) {
-			logger.error("Error while opening stream: " + uri, e);
-			return false;
+		if (super.accepts(uri, category)) {
+			try (InputStream is = uri.toURL().openStream()) {
+				return accepts(is, category);
+			} catch (IOException e) {
+				logger.error("Error while opening stream: " + uri, e);
+			}
 		}
+
+		return false;
 	}
 }
