@@ -84,15 +84,15 @@ class PayloadAccumulator<S, P, E extends CyPayloadEvent<S, P>> {
 	boolean checkReady() {
 		synchronized (lock) {
 			if(++checkedCount >= maxChecked) {
-				System.out.println("ready because of too many checks");
+//				System.out.println("ready because of too many checks");
 				return true;
 			}
 			if(payloadList.size() >= maxSize) {
-				System.out.println("ready because buffer full");
+//				System.out.println("ready because buffer full");
 				return true;
 			}
 			if(ready) {
-				System.out.println("ready because ready flag is true");
+//				System.out.println("ready because ready flag is true");
 			}
 			boolean r = ready;
 			ready = true;
