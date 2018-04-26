@@ -1,5 +1,8 @@
 package org.cytoscape.event.internal;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+
 /*
  * #%L
  * Cytoscape Event Impl (event-impl)
@@ -25,61 +28,87 @@ package org.cytoscape.event.internal;
  */
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Collection;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.util.List;
+
 import org.cytoscape.event.CyPayloadEvent;
 
-class PayloadAccumulator<S,P,E extends CyPayloadEvent<S,P>> {
+class PayloadAccumulator<S, P, E extends CyPayloadEvent<S, P>> {
 
-	private List<P> payloadList; 
+	private final int maxSize;
+	private final int maxChecked;
+	
+	private List<P> payloadList;
 	private final Constructor<E> constructor;
 	private Class<?> sourceClass;
+	private final S source;
+	
+	private boolean ready = true;
+	private int checkedCount = 0;
 
 	private final Object lock = new Object();
-	
-	PayloadAccumulator(S source, Class<E> eventType) throws NoSuchMethodException {
-		//System.out.println(" payload accumulator: source.getClass():  " + source + "   " + source.getClass());
 
-		for ( Constructor<?> cons : eventType.getConstructors() ) {
+	PayloadAccumulator(S source, Class<E> eventType, int maxSize, int maxChecked) throws NoSuchMethodException {
+		for (Constructor<?> cons : eventType.getConstructors()) {
 			Class<?>[] params = cons.getParameterTypes();
-			if ( params.length == 2 && params[1] == Collection.class ) {
+			if (params.length == 2 && params[1] == Collection.class) {
 				sourceClass = params[0];
 			}
 		}
 
-		if ( sourceClass == null )
+		if (sourceClass == null)
 			throw new IllegalArgumentException("no valid source class found.");
-			
+
+		this.source = source;
+		this.maxSize = maxSize;
+		this.maxChecked = maxChecked;
+		
 		constructor = eventType.getConstructor(sourceClass, Collection.class);
 		payloadList = new ArrayList<P>();
 	}
 
-	E newEventInstance(Object source) throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassCastException {
-		if ( source == null ) 
-			return null;
-
-		final Collection<P> coll = getPayloadCollection();
-
-		if ( coll == null ) 
-			return null;
-
-		return constructor.newInstance( sourceClass.cast(source), coll );			
+	E newEventInstance() throws InstantiationException, IllegalAccessException, InvocationTargetException, ClassCastException {
+		Collection<P> coll = getPayloadCollection();
+		return constructor.newInstance(sourceClass.cast(source), coll);
 	}
 
 	void addPayload(P t) {
 		synchronized (lock) {
-			if ( t != null ) 
+			if (t != null) {
+				ready = false;
 				payloadList.add(t);
+			}
 		}
 	}
 
+	boolean checkReady() {
+		synchronized (lock) {
+			if(++checkedCount >= maxChecked) {
+				System.out.println("ready because of too many checks");
+				return true;
+			}
+			if(payloadList.size() >= maxSize) {
+				System.out.println("ready because buffer full");
+				return true;
+			}
+			if(ready) {
+				System.out.println("ready because ready flag is true");
+			}
+			boolean r = ready;
+			ready = true;
+			return r;
+		}
+	}
+
+	Object getSource() {
+		return source;
+	}
+	
 	private Collection<P> getPayloadCollection() {
 		synchronized (lock) {
-			if ( payloadList.isEmpty() )
+			if (payloadList.isEmpty())
 				return null;
-	
+
 			List<P> ret = payloadList;
 			payloadList = new ArrayList<P>();
 			return ret;
