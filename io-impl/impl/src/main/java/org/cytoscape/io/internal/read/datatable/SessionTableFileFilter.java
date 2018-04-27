@@ -47,9 +47,8 @@ public class SessionTableFileFilter extends BasicCyFileFilter {
 	
 	@Override
 	public boolean accepts(InputStream stream, DataCategory category) {
-		if (category != DataCategory.TABLE) {
+		if (category != DataCategory.TABLE)
 			return false;
-		}
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(stream, Charset.forName("UTF-8").newDecoder()));
 		try {
@@ -57,13 +56,12 @@ public class SessionTableFileFilter extends BasicCyFileFilter {
 			String line = reader.readLine().trim();
 			
 			// Make sure we don't accept XML
-			if (line.startsWith("<")) {
+			if (line.startsWith("<"))
 				return false;
-			}
+			
 			return line.contains(",");
 		} catch (IOException e) {
 			return false;
 		}
 	}
-
 }

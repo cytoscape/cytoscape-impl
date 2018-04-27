@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.Vector;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.internal.util.UnrecognizedVisualPropertyManager;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyColumn;
@@ -153,8 +154,7 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 	private CySubNetwork network;
 	private VisualLexicon visualLexicon;
 
-	protected static final Logger logger = LoggerFactory
-			.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	static {
 		legacyArrowShapes.put("0", ArrowShapeVisualProperty.NONE); // NO_END
@@ -217,6 +217,15 @@ public class GMLNetworkReader extends AbstractCyNetworkReader {
 		} catch (Exception io) {
 			io.printStackTrace();
 			throw new RuntimeException(io.getMessage());
+		} finally {
+			if (inputStream != null) {
+				try {
+					inputStream.close();
+					inputStream = null;
+				} catch (Exception e) {
+					logger.warn("Cannot close GML input stream", e);
+				}
+			}
 		}
 		
 		taskMonitor.setProgress(0.05);

@@ -161,6 +161,11 @@ public class TableEventHelperFacade implements CyEventHelper {
 	public void flushPayloadEvents() {
 		getEventHelper().flushPayloadEvents();
 	}
+	
+	@Override
+	public void flushPayloadEvents(Object eventSource) {
+		getEventHelper().flushPayloadEvents(eventSource);
+	}
 
 	@Override
 	public void silenceEventSource(Object eventSource) {

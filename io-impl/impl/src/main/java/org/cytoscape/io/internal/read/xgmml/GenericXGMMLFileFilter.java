@@ -31,6 +31,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.internal.util.session.SessionUtil;
@@ -44,7 +45,7 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 			.compile("<graph[\\s]+[^<>]*[\\'\"]http://www.cs.rpi.edu/XGMML[\\'\"][^<>]*>|"     // XGMML namespace
 					+ "<!DOCTYPE[\\s]+graph[\\s]+[^<>]*[\\'\"][^<>]*xgmml.dtd[\\'\"][^<>]*>"); // or XGMML DTD
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 
 	public GenericXGMMLFileFilter(Set<String> extensions, Set<String> contentTypes,
@@ -67,8 +68,8 @@ public class GenericXGMMLFileFilter extends BasicCyFileFilter {
 
 	@Override
 	public boolean accepts(final URI uri, final DataCategory category) {
-		try {
-			return accepts(uri.toURL().openStream(), category);
+		try (InputStream is = uri.toURL().openStream()) {
+			return accepts(is, category);
 		} catch (IOException e) {
 			logger.error("Error while opening stream: " + uri, e);
 			return false;

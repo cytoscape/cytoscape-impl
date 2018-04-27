@@ -1,12 +1,33 @@
 package org.cytoscape.io.internal.read;
 
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.DataCategory;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.work.Task;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -23,29 +44,6 @@ package org.cytoscape.io.internal.read;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.DataCategory;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.work.Task;
-import org.apache.log4j.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Task> {
 
@@ -64,7 +62,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		this.category = category;
 		this.streamUtil = streamUtil;
 
-		factories = new CopyOnWriteArraySet<T>();
+		factories = new CopyOnWriteArraySet<>();
 	}
 
 	/**
@@ -100,28 +98,27 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 	 * @return GraphReader capable of reading the specified file. Null if file
 	 *         cannot be read.
 	 */
+	@SuppressWarnings("unchecked")
 	public R getReader(final URI uri, final String inputName) {
-
 		// Data location is always required.
-		if (uri == null) {
+		if (uri == null)
 			throw new NullPointerException("Data source URI is null");
-		}
 
 		// This is the default reader, which accepts files with no extension.
-		// Usually, this is ImportNetworkTableReaderFactory (Manual table
-		// import)
+		// Usually, this is ImportNetworkTableReaderFactory (Manual table import)
 		T defaultFactory = null;
-
-		final List<T> factoryList = new ArrayList<T>();
-		final Map<String, T> factoryTable = new HashMap<String, T>();
+		final List<T> factoryList = new ArrayList<>();
+		final Map<String, T> factoryTable = new HashMap<>();
 
 		// Pick compatible reader factories.
 		for (final T factory : factories) {
 			final CyFileFilter cff = factory.getFileFilter();
+			
 			// Got "Accepted" flag. Need to check it's default or not.
 			if (cff.accepts(uri, category)) {
 				logger.info("Filter returns Accepted.  Need to check priority: " + factory);
-				if(factory.getClass().toString().contains(DEFAULT_READER_FACTORY_CLASS)) {
+				
+				if (factory.getClass().toString().contains(DEFAULT_READER_FACTORY_CLASS)) {
 					defaultFactory = factory;
 				} else {
 					factoryList.add(factory);
@@ -142,18 +139,19 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 			// There is only one compatible reader factory.  Use it:
 			chosenFactory = factoryList.get(0);
 		} else {
-			if(factoryList.isEmpty() && defaultFactory != null) {
+			if (factoryList.isEmpty() && defaultFactory != null) {
 				// There is only one factory
 				chosenFactory = defaultFactory;
 			} else {
 				// Well, we cannot decide which one is correct.  Try to use ext...
 				String extension = FilenameUtils.getExtension(uri.toString());
-				if (factoryTable.containsKey(extension))
+				
+				if (factoryTable.containsKey(extension)) {
 					chosenFactory = factoryTable.get(extension);
-				else {
-					if (factoryTable.containsKey(""))
+				} else {
+					if (factoryTable.containsKey("")) {
 						chosenFactory = factoryTable.get("");
-					else {
+					} else {
 						userLogger.warn("Can't figure out how to read: " + uri.toString() + " from extension");
 						throw new IllegalStateException("Can't figure out how to read "+uri.toString()+" from extension");
 					}
@@ -174,7 +172,7 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 		}
 	}
 
-
+	@SuppressWarnings("unchecked")
 	public R getReader(InputStream stream, String inputName) {
 		try {
 			if (!stream.markSupported()) {
