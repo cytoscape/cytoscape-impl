@@ -180,23 +180,33 @@ public class GenericReaderManager<T extends InputStreamTaskFactory, R extends Ta
 				stream.mark(1025);
 			}
 
+			int kb = 1;
+			String lowerName = inputName != null ? inputName.toLowerCase() : "";
+			
+			// Unfortunately network names are added to the "label" attribute in the XGMML root tag,
+			// and if the name is too long, 1KB is not enough to copy the whole root to the XGMML File Filter,
+			// which won't find the expected namespace/DTD and accept the file as XGMML.
+			// If we don't do this, Cytoscape may not be able to open sessions that contain serialized
+			// network files (.xgmml) with very long network names.
+			// This works because the network name is also the file name of the serialized Network or View XGMML.
+			// See: http://code.cytoscape.org/redmine/issues/3903
+			if (lowerName.endsWith(".xgmml"))
+				kb += ((2 * lowerName.length()) / 1024);
+			
 			for (T factory : factories) {
 				CyFileFilter cff = factory.getFileFilter();
-				// logger.debug("trying READER: " + factory + " with filter: " + cff);
 
 				// Because we don't know who will provide the file filter or
 				// what they might do with the InputStream, we provide a copy
-				// of the first 2KB rather than the stream itself.
-				if (cff.accepts(CopyInputStream.copyKBytes(stream, 1), category)) {
-					// logger.debug("successfully matched READER " + factory);
+				// of the first KBs rather than the stream itself.
+				if (cff.accepts(CopyInputStream.copyKBytes(stream, kb), category))
 					return (R) factory.createTaskIterator(stream, inputName).next();
-				}
 			}
 		} catch (IOException ioe) {
 			userLogger.warn("Error setting input stream", ioe);
 		}
 
-		userLogger.warn("No reader found for input stream");
+		userLogger.warn("No reader found for input stream: " + inputName);
 		return null;
 	}
 }
