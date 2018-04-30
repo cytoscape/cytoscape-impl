@@ -40,6 +40,12 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 	
 	private static final String DEF_NETWORK_NAME_PREFIX = "Network";
 	
+	/**
+	 * Almost the max number of characters allowed by the OS (usually 255)--let's leave
+	 * some room for at least the repeated name suffix (e.g. "(12)") and file extensions (e.g. ".xgmml")
+	 */
+	private static final int MAX_TITLE_LENGH = 200;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public CyNetworkNamingImpl(final CyServiceRegistrar serviceRegistrar) {
@@ -58,6 +64,9 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 			parentName = parentName.substring(0, m.start(1) - 1);
 			start = Integer.decode(m.group(1));
 		}
+		
+		if (parentName.length() > MAX_TITLE_LENGH)
+			parentName = parentName.substring(0, MAX_TITLE_LENGH);
 		
 		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 
@@ -85,6 +94,9 @@ public class CyNetworkNamingImpl implements CyNetworkNaming {
 			String gr = m.group(1); // happens to be "" (empty str.) because of \\d*
 			start = (gr.isEmpty()) ? 1 : Integer.decode(gr) + 1;
 		}
+		
+		if (desiredTitle.length() > MAX_TITLE_LENGH)
+			desiredTitle = desiredTitle.substring(0, MAX_TITLE_LENGH);
 		
 		final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 
