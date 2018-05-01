@@ -2,13 +2,7 @@ package org.cytoscape.browser.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.IconManager.ICON_COG;
-import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
-import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
-import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
-import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
-import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
+import static org.cytoscape.util.swing.IconManager.*;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -49,6 +43,8 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyColumnPicker;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -103,7 +99,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	
 	/* GUI components */
 	private JPopupMenu columnSelectorPopupMenu;
-	private ColumnSelector columnSelector;
+	private CyColumnPicker columnSelector;
 	private JPopupMenu createColumnMenu;
 
 	private JToolBar toolBar;
@@ -295,9 +291,11 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return columnSelectorPopupMenu;
 	}
 	
-	private ColumnSelector getColumnSelector() {
+	private CyColumnPicker getColumnSelector() {
 		if (columnSelector == null) {
-			columnSelector = new ColumnSelector(serviceRegistrar);
+			IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			CyColumnPresentationManager presetationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
+			columnSelector = new CyColumnPicker(iconManager, presetationManager);
 		}
 		
 		return columnSelector;

@@ -43,6 +43,7 @@ public class SelectionMediator implements RowsSetListener, SetCurrentNetworkView
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		CyNetworkView networkView = e.getNetworkView();
+		// MKTODO how to handle null?
 		eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(networkView));
 	}
 

@@ -50,6 +50,7 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.application.swing.CyColumnPicker;
 import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
@@ -146,16 +147,15 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		Icon icon = presentation.getNamespaceIcon();
 		if(icon == null)
 			return null;
-		
- 		if(icon.getIconWidth() <= 16 && icon.getIconHeight() <= 16)
- 			return icon;
- 	
+ 		
  		return resizeIcon(icon, 16);
 	}
 	
 	
-	private Icon resizeIcon(Icon icon, final int max) {
+	private static Icon resizeIcon(Icon icon, int max) {
 		final int height = icon.getIconHeight(), width = icon.getIconWidth();
+		if(width <= 16 && height <= 16)
+ 			return icon;
 		
 		// calculate new height and width
 		final int newHeight, newWidth;
@@ -243,7 +243,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			
 			if (column.getVirtualColumnInfo().isVirtual()) {
 				toolTip.append("<br /><i>Network Collection Column</i></div></html>");
-				sharedLabel.setText(ColumnSelector.SHARED_COL_ICON_TEXT);
+				sharedLabel.setText(CyColumnPicker.SHARED_COL_ICON_TEXT);
 			} else {
 				toolTip.append("</div></html>");
 			}
