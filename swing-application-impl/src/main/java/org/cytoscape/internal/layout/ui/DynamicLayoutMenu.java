@@ -32,17 +32,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyColumnPresentation;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -64,7 +69,8 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
     private final boolean usesNodeAttrs;
     private final boolean usesEdgeAttrs;
     private final boolean supportsSelectedOnly;
-    private final CyApplicationManager appMgr;
+    
+    private final CyServiceRegistrar serviceRegistrar;
     
     // There is a memory leak on Mac, the Mac LAF holds on to this menu 
     // for too long, allow the network to be garbage collected if this happens.
@@ -79,13 +85,13 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
      *
      * @param layout  DOCUMENT ME!
      */
-    public DynamicLayoutMenu(CyLayoutAlgorithm layout, CyNetwork network, boolean enabled, CyApplicationManager appMgr, DialogTaskManager tm,
+    public DynamicLayoutMenu(CyLayoutAlgorithm layout, CyNetwork network, boolean enabled, CyServiceRegistrar serviceRegistrar, DialogTaskManager tm,
                          boolean usesNodeAttrs, boolean usesEdgeAttrs, boolean supportsSelectedOnly) {
         super(layout.toString());
         this.layout = layout;
         this.networkRef = new WeakReference<>(network);
         this.tm = tm;
-        this.appMgr = appMgr;
+        this.serviceRegistrar = serviceRegistrar;
         addMenuListener(this);
         setEnabled(enabled);
         this.supportsSelectedOnly = supportsSelectedOnly;
@@ -135,7 +141,7 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
         parent.add(new LayoutAttributeMenuItem(UNWEIGHTED, selectedOnly));
         for (final CyColumn column : attributes.getColumns())
             if (typeSet.contains(column.getType()))
-                parent.add(new LayoutAttributeMenuItem(column.getName(), selectedOnly));
+                parent.add(new LayoutAttributeMenuItem(column, selectedOnly));
     }
 
     private void addSelectedOnlyMenus(JMenu parent) {
@@ -172,8 +178,27 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
             this.selectedOnly = selectedOnly;
         }
 
+        public LayoutAttributeMenuItem(CyColumn column, boolean selectedOnly) {
+            addActionListener(this);
+            this.selectedOnly = selectedOnly;
+            String name = column.getNameOnly();
+            String namespace = column.getNamespace();
+            CyColumnPresentationManager presentationMgr = serviceRegistrar.getService(CyColumnPresentationManager.class);
+            CyColumnPresentation pres = presentationMgr.getColumnPresentation(namespace);
+            Icon icon = pres.getNamespaceIcon();
+            if(icon != null) {
+                setIcon(IconManager.resizeIcon(icon, 16));
+            }
+            if(namespace == null) {
+                setText(name);
+            } else {
+                setText(namespace + "  " + name);
+            }
+        }
+
         public void actionPerformed(ActionEvent e) {
             // NOTE: We iterate over all selected networks, not just the current network!
+            CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
             List<CyNetworkView> views = appMgr.getSelectedNetworkViews();
             for (final CyNetworkView netView : views) {
                 Set<View<CyNode>> nodeViews;

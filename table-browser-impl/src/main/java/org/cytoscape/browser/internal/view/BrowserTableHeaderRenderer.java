@@ -31,15 +31,11 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
@@ -148,37 +144,8 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		if(icon == null)
 			return null;
  		
- 		return resizeIcon(icon, 16);
+ 		return IconManager.resizeIcon(icon, 16);
 	}
-	
-	
-	private static Icon resizeIcon(Icon icon, int max) {
-		final int height = icon.getIconHeight(), width = icon.getIconWidth();
-		if(width <= 16 && height <= 16)
- 			return icon;
-		
-		// calculate new height and width
-		final int newHeight, newWidth;
-		
-		if(height > width) {
-			newHeight = max;
-			newWidth = (int)((float)width/(float)height * max);
-		} else {
-			newWidth = max;
-			newHeight = (int)((float)height/(float)width * max);
-		}
-		
-		
-		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		Graphics2D g = img.createGraphics();
-		icon.paintIcon(null, g, 0, 0);
-		g.dispose();
-		
-		Image resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
-		ImageIcon resizedIcon = new ImageIcon(resizedImage);
-		return resizedIcon;
-	}
-	
 	
 	@Override
 	public Component getTableCellRendererComponent(final JTable table, final Object value, boolean isSelected,
