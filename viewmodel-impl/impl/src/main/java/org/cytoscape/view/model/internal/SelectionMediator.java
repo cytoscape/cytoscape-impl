@@ -14,16 +14,13 @@ import org.cytoscape.view.model.events.SelectedNodesAndEdgesEvent;
 
 /**
  * Fires an event whenever the selection in the current network view changes.
- * @author mkucera
  */
 public class SelectionMediator implements RowsSetListener, SetCurrentNetworkViewListener {
 
-	private final CyApplicationManager applicationManager;
-	private final CyEventHelper eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	public SelectionMediator(CyServiceRegistrar serviceRegistrar) {
-		this.applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		this.eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
@@ -31,10 +28,12 @@ public class SelectionMediator implements RowsSetListener, SetCurrentNetworkView
 		if(!e.containsColumn(CyNetwork.SELECTED)) {
 			return;
 		}
+		CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		CyNetworkView networkView = applicationManager.getCurrentNetworkView();
 		if(networkView != null) {
 			CyNetwork network = networkView.getModel();
 			if(e.getSource() == network.getDefaultEdgeTable() || e.getSource() == network.getDefaultNodeTable()) {
+				CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 				eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(networkView));
 			}
 		}
@@ -43,8 +42,10 @@ public class SelectionMediator implements RowsSetListener, SetCurrentNetworkView
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		CyNetworkView networkView = e.getNetworkView();
-		// MKTODO how to handle null?
-		eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(networkView));
+		if(networkView != null) {
+			CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+			eventHelper.fireEvent(new SelectedNodesAndEdgesEvent(networkView));
+		}
 	}
 
 }

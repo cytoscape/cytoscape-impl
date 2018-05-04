@@ -18,6 +18,7 @@ import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -58,10 +59,13 @@ public class PreferenceAction extends AbstractCyAction {
 		super("Properties...");
 		this.desktop = desktop;
 		this.dialogFactory = dialogFactory;		
-		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_SEMICOLON,
-		Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.META_DOWN_MASK));
+		
 		setPreferredMenu("Edit.Preferences");	// TODO -- moved out of Edit.Preferences
-//		setMenuGravity(11.0f);
+		setMenuGravity(11.0f);
+		
+		if (LookAndFeelUtil.isMac())
+			setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_COMMA,
+					Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() + InputEvent.META_DOWN_MASK));
 	}
 
 	@Override
