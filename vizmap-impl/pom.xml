@@ -86,6 +86,10 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>util-api</artifactId>
+		</dependency>
 
 		<!-- for testing -->
 		<dependency>

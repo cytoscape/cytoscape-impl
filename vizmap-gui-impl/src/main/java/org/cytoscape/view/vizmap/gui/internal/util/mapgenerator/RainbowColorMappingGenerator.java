@@ -29,11 +29,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteProviderManager;
+
 public class RainbowColorMappingGenerator extends
 		AbstractDiscreteMappingGenerator<Color> {
 
-	public RainbowColorMappingGenerator(final Class<Color> type) {
+	PaletteProviderManager paletteProviderMgr;
+
+	public RainbowColorMappingGenerator(final PaletteProviderManager paletteProviderManager, 
+	                                    final Class<Color> type) {
 		super(type);
+		paletteProviderMgr = paletteProviderManager;
 	}
 
 	public <T> Map<T, Color> generateMap(Set<T> attributeSet) {
@@ -41,16 +49,14 @@ public class RainbowColorMappingGenerator extends
 		if(attributeSet == null || attributeSet.size() == 0)
 			return null;
 
-		final float increment = 1f / ((Number) attributeSet.size())
-				.floatValue();
+		int nColors = attributeSet.size();
 
-		float hue = 0;
-
+		Color[] colors = paletteProviderMgr.getPaletteProvider("Rainbow").getPalette("rainbow", nColors).getColors();
 		final Map<T, Color> valueMap = new HashMap<T, Color>();
 
+		int i = 0;
 		for (T key : attributeSet) {
-			hue = hue + increment;
-			valueMap.put(key, new Color(Color.HSBtoRGB(hue, 1f, 1f)));
+			valueMap.put(key, colors[i++]);
 		}
 
 		return valueMap;
