@@ -73,6 +73,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 
 		getAbovePanel().setVisible(false);
 		getBelowPanel().setVisible(false);
+		getPalettesPanel().setVisible(false);
 
 		initSlider();
 		

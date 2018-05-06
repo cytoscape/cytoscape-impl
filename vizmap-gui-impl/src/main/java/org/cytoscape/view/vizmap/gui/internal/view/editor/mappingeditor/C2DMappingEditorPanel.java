@@ -62,6 +62,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		this.getIconPanel().setVisible(false);
 		this.getBelowPanel().setVisible(false);
 		this.getAbovePanel().setVisible(false);
+		this.getPalettesPanel().setVisible(false);
 		
 		initSlider();
 	}

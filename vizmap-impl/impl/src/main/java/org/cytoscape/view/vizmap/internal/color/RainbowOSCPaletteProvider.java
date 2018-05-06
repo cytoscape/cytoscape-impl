@@ -45,7 +45,9 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 	public List<Palette.PaletteType> getPaletteTypes() { return Collections.singletonList(Palette.PaletteType.QUALITATIVE); }
 
 	public List<String> listPaletteNames(Palette.PaletteType type, boolean colorBlindSafe) {
-		return Arrays.asList(" ");
+		if (type.equals(Palette.PaletteType.QUALITATIVE))
+			return Arrays.asList(" ");
+		else return new ArrayList<String>();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -99,5 +101,7 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 			}
 			return colors;
 		}
+
+		public String toString() { return "Rainbow OSC"; }
 	}
 }

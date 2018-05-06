@@ -156,5 +156,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 		public Color[] getColors() {
 			return getColors(size);
 		}
+
+		public String toString() { return "ColorBrewer "+getName(); }
 	}
 }

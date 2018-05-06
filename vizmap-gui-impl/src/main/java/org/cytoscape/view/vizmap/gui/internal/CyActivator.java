@@ -357,10 +357,7 @@ public class CyActivator extends AbstractCyActivator {
 		for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(Palette.PaletteType.QUALITATIVE, false)) {
 			for (String paletteName: provider.listPaletteNames(Palette.PaletteType.QUALITATIVE, false)) {
 				Palette palette = provider.getPalette(paletteName);
-				if (!paletteName.equals(" "))
-					registerNewGenerator(registrar, provider.getProviderName()+" "+paletteName, palette);
-				else
-					registerNewGenerator(registrar, provider.getProviderName(), palette);
+				registerNewGenerator(registrar, palette.toString(), palette);
 			}
 		}
 	}

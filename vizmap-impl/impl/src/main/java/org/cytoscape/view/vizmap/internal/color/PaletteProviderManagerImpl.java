@@ -44,6 +44,7 @@ public class PaletteProviderManagerImpl implements PaletteProviderManager {
 		addPaletteProvider(new RainbowOSCPaletteProvider());
 		addPaletteProvider(new RandomPaletteProvider());
 		addPaletteProvider(new ColorBrewerPaletteProvider());
+		addPaletteProvider(new BuiltinDivergentPaletteProvider());
 	}
 
 	public List<PaletteProvider> getPaletteProviders() {
