@@ -37,6 +37,7 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.osgi.framework.BundleContext;
 
@@ -51,6 +52,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		// Import required Services
+		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		StreamUtil streamUtilRef = getService(bc, StreamUtil.class);
 		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
 		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
@@ -63,7 +65,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		GraphMLReaderFactory graphMLReaderFactory = new GraphMLReaderFactory(graphMLFilter, cyLayoutsServiceRef,
 				cyApplicationManagerServiceRef, cyNetworkFactoryServiceRef, cyNetworkManager,
-				cyRootNetworkFactoryServiceRef);
+				cyRootNetworkFactoryServiceRef, serviceRegistrar);
 		
 		GraphMLNetworkWriterFactory graphMLNetworkWriterFactory = new GraphMLNetworkWriterFactory(graphMLFilter);
 

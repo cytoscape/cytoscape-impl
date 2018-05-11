@@ -32,6 +32,7 @@ import org.cytoscape.io.read.AbstractInputStreamTaskFactory;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.TaskIterator;
 
@@ -41,6 +42,7 @@ public class GraphMLReaderFactory extends AbstractInputStreamTaskFactory {
 	private final CyNetworkFactory cyNetworkFactory;
 	private final CyRootNetworkManager cyRootNetworkFactory;
 	private final CyNetworkManager cyNetworkManager;
+	private final CyServiceRegistrar cyServiceRegistrar;
 
 	private final CyLayoutAlgorithmManager layouts;
 
@@ -49,18 +51,20 @@ public class GraphMLReaderFactory extends AbstractInputStreamTaskFactory {
 								final CyApplicationManager cyApplicationManager,
 								final CyNetworkFactory cyNetworkFactory,
 								final CyNetworkManager cyNetworkManager,
-								final CyRootNetworkManager cyRootNetworkFactory) {
+								final CyRootNetworkManager cyRootNetworkFactory,
+								final CyServiceRegistrar cyServiceRegistrar) {
 		super(filter);
 		this.cyApplicationManager = cyApplicationManager;
 		this.cyNetworkFactory = cyNetworkFactory;
 		this.cyRootNetworkFactory = cyRootNetworkFactory;
 		this.layouts = layouts;
 		this.cyNetworkManager = cyNetworkManager;
+		this.cyServiceRegistrar = cyServiceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(InputStream inputStream, String inputName) {
 		return new TaskIterator(new GraphMLReader(inputStream, layouts, cyApplicationManager, cyNetworkFactory,
-				cyNetworkManager, cyRootNetworkFactory));
+				cyNetworkManager, cyRootNetworkFactory, cyServiceRegistrar));
 	}
 }
