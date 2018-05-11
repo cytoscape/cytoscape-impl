@@ -218,6 +218,7 @@ public class GraphMLParser extends DefaultHandler {
 			for (CyNetwork network : networkStack) {
 				if (network != rootNetwork) {
 					((CySubNetwork) network).addNode((CyNode) currentObject);
+					network.getRow(currentObject).set(CyNetwork.NAME, currentAttributeID);
 				}
 			}
 		} else {
