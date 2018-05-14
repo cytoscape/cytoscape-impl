@@ -17,6 +17,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicComboBoxRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.filter.internal.view.Matcher;
 import org.cytoscape.filter.internal.view.ViewUtil;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
@@ -105,7 +106,7 @@ public class ColumnChooser extends JPanel {
 	void updateComboBox() {
 		Object selected = comboBox.getSelectedItem();
 		comboBox.removeAllItems();
-		comboBox.addItem(new ColumnElement("Choose column..."));
+		comboBox.addItem(new ColumnElement());
 		
 		CyNetwork network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
@@ -169,12 +170,29 @@ public class ColumnChooser extends JPanel {
 			if (value == null)
 				return component;
 
+			ColumnElement columnElement = (ColumnElement) value;
 			final JLabel lbl = component instanceof JLabel ? (JLabel) component : new JLabel();
-			lbl.setText(ViewUtil.abbreviate(value.toString(), 30));
-
-			ColumnElement valueElememnt = (ColumnElement) value;
-
-			if(!enabledColumns.contains(valueElememnt)) {//not enabled
+			
+			if(columnElement.isPlaceholder()) {
+				lbl.setText(columnElement.getName());
+				lbl.setIcon(null);
+			} else {
+				CyColumnPresentationManager presentationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
+				presentationManager.setLabel(columnElement.getName(), lbl::setIcon, text -> {
+					StringBuilder sb = new StringBuilder();
+					Class<?> tableType = columnElement.getTableType();
+					if(CyNode.class.equals(tableType))
+						sb.append("Node: ");
+					if(CyEdge.class.equals(tableType))
+						sb.append("Edge: ");
+					sb.append(ViewUtil.abbreviate(text, 30));
+					lbl.setText(sb.toString());
+				});
+				
+				lbl.setToolTipText("Column: " + columnElement.getName());
+			}
+			
+			if(!enabledColumns.contains(columnElement)) {//not enabled
 				if(isSelected) {
 					component.setBackground(UIManager.getColor("ComboBox.background"));
 				} else {

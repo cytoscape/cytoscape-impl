@@ -70,8 +70,8 @@ public class ModelMonitor implements SetCurrentNetworkListener,
 		nodeColumnRanges = new HashMap<>();
 		edgeColumnRanges = new HashMap<>();
 		
-		columnNames = new ArrayList<ColumnElement>();
-		defaultColumnName = new ColumnElement("Choose column...");
+		columnNames = new ArrayList<>();
+		defaultColumnName = new ColumnElement();
 		columnNames.add(defaultColumnName);
 		
 		interactivityChangedListeners = new CopyOnWriteArrayList<>();
