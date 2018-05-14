@@ -43,6 +43,7 @@ import javax.swing.JList;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -60,18 +61,21 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 
 	private final Class<? extends CyIdentifiable> graphObjectType;
 	private final AttributeSetProxy attrProxy;
+	
 	private final CyNetworkManager networkManager;
+	private final CyColumnPresentationManager columnPresentationManager;
 
-	private Map<String, Class<?>> currentColumnMap;
+	private Map<String, Class<?>> currentColumnMap = new HashMap<>();
 
 	public AttributeComboBoxPropertyEditor(final Class<? extends CyIdentifiable> type,
 										   final AttributeSetProxy attrProxy,
 										   final CyApplicationManager appManager,
-										   final CyNetworkManager networkManager) {
+										   final CyNetworkManager networkManager,
+										   final CyColumnPresentationManager columnPresentationManager) {
 		this.attrProxy = attrProxy;
 		this.graphObjectType = type;
 		this.networkManager = networkManager;
-		currentColumnMap = new HashMap<String, Class<?>>();
+		this.columnPresentationManager = columnPresentationManager;
 
 		final JComboBox comboBox = (JComboBox) editor;
 		comboBox.setRenderer(new AttributeComboBoxCellRenderer());
@@ -144,7 +148,8 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 				return component;
 
 			final JLabel lbl = component instanceof JLabel ? (JLabel) component : new JLabel();
-			lbl.setText(value.toString());
+			
+			columnPresentationManager.setLabel(value.toString(), lbl);
 
 			final Set<String> keys = currentColumnMap.keySet();
 			final String valueString = value.toString();
@@ -157,7 +162,11 @@ public final class AttributeComboBoxPropertyEditor extends CyComboBoxPropertyEdi
 			} else {
 				this.setEnabled(true);
 				this.setFocusable(true);
-				this.setToolTipText("Column Data Type: " + currentColumnMap.get(valueString).getSimpleName());
+				this.setToolTipText(
+						"<html>" +
+						"Column: " + value.toString() + "<br>" +
+						"Data Type: " + currentColumnMap.get(valueString).getSimpleName() +
+						"</html>");
 			}
 
 			return lbl;

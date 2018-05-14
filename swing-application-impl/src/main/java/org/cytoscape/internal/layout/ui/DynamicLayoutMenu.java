@@ -32,14 +32,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.Icon;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
@@ -47,7 +45,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
@@ -181,19 +178,8 @@ public class DynamicLayoutMenu extends JMenu implements MenuListener {
         public LayoutAttributeMenuItem(CyColumn column, boolean selectedOnly) {
             addActionListener(this);
             this.selectedOnly = selectedOnly;
-            String name = column.getNameOnly();
-            String namespace = column.getNamespace();
             CyColumnPresentationManager presentationMgr = serviceRegistrar.getService(CyColumnPresentationManager.class);
-            CyColumnPresentation pres = presentationMgr.getColumnPresentation(namespace);
-            Icon icon = pres.getNamespaceIcon();
-            if(icon != null) {
-                setIcon(IconManager.resizeIcon(icon, 16));
-            }
-            if(namespace == null) {
-                setText(name);
-            } else {
-                setText(namespace + "  " + name);
-            }
+            presentationMgr.setLabel(column.getName(), this::setIcon, this::setText);
         }
 
         public void actionPerformed(ActionEvent e) {

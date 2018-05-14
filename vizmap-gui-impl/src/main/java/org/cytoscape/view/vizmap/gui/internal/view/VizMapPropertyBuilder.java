@@ -33,13 +33,13 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -82,6 +82,7 @@ public class VizMapPropertyBuilder {
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final DefaultTableCellRenderer defaultTableCellRenderer;
+	private final DefaultTableCellRenderer defaultTableCellRendererForColumn;
 
 	private final EditorManager editorManager;
 	private final MappingFunctionFactoryManager mappingFactoryManager;
@@ -92,7 +93,8 @@ public class VizMapPropertyBuilder {
 		this.editorManager = editorManager;
 		this.mappingFactoryManager = mappingFactoryManager;
 		this.servicesUtil = servicesUtil;
-		this.defaultTableCellRenderer = new DefaultVizMapTableCellRenderer();
+		this.defaultTableCellRenderer = new DefaultVizMapTableCellRenderer(false);
+		this.defaultTableCellRendererForColumn = new DefaultVizMapTableCellRenderer(true);
 	}
 
 	/**
@@ -113,7 +115,7 @@ public class VizMapPropertyBuilder {
 		// Build Property object
 		columnProp.setDisplayName(COLUMN);
 		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-				columnProp, defaultTableCellRenderer);
+				columnProp, defaultTableCellRendererForColumn);
 		
 		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>> mapTypeProp = 
 				new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>>(
@@ -168,7 +170,7 @@ public class VizMapPropertyBuilder {
 			columnProp.setValue(null);
 			
 		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
-				columnProp, defaultTableCellRenderer);
+				columnProp, defaultTableCellRendererForColumn);
 
 		mapTypeProp.setDisplayName(MAPPING_TYPE);
 		mapTypeProp.setValue(factory); // Set mapping type as string.
@@ -467,20 +469,30 @@ public class VizMapPropertyBuilder {
 		}
 	}
 	
-	private static class DefaultVizMapTableCellRenderer extends DefaultTableCellRenderer {
+	@SuppressWarnings("serial")
+	private class DefaultVizMapTableCellRenderer extends DefaultTableCellRenderer {
 		
-		private static final long serialVersionUID = 3837281348887354114L;
-
+		final boolean forColumn;
+		
+		public DefaultVizMapTableCellRenderer(boolean forColumn) {
+			this.forColumn = forColumn;
+		}
+		
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
 			final Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			
-			if (c instanceof JLabel && value == null)
-				((JLabel) c).setText("-- select value --");
+			if (value == null) {
+				setText("-- select value --");
+				setIcon(null);
+			} else if(forColumn) {
+				CyColumnPresentationManager presentationManager = servicesUtil.get(CyColumnPresentationManager.class);
+				presentationManager.setLabel(value.toString(), this);
+			}
 			
 			if (!isSelected)
-				c.setForeground(UIManager.getColor("Label.disabledForeground"));
+				setForeground(UIManager.getColor("Label.disabledForeground"));
 			
 			return c;
 		}

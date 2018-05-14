@@ -1,6 +1,5 @@
 package org.cytoscape.internal.view;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,14 +8,14 @@ import javax.swing.ImageIcon;
 
 import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
+import org.cytoscape.internal.util.RandomImage;
 
 public class CyColumnPresentationManagerImpl implements CyColumnPresentationManager {
 	
 	private static final String ICON_PATH = "/images/logo-light-96.png";
-	private static final String GREY_ICON_PATH = "/images/logo-light-grey-96.png";
 
-	private final CyColumnPresentation CYTOSCAPE_PRESENTATION = new DefaultPresentation(ICON_PATH, "Cytoscape"); 
-	
+	private final CyColumnPresentation CYTOSCAPE_PRESENTATION = new DefaultPresentation("Cytoscape", ICON_PATH); 
+
 	private final Map<String,CyColumnPresentation> presentations = new HashMap<>();
 	
 
@@ -35,19 +34,23 @@ public class CyColumnPresentationManagerImpl implements CyColumnPresentationMana
 	public CyColumnPresentation getColumnPresentation(String namespace) {
 		if(namespace == null)
 			return CYTOSCAPE_PRESENTATION;
-		return presentations.computeIfAbsent(namespace.toLowerCase(), k -> new DefaultPresentation(GREY_ICON_PATH, namespace));
+		return presentations.computeIfAbsent(namespace.toLowerCase(), DefaultPresentation::new);
 	}
 	
 	
 	private static class DefaultPresentation implements CyColumnPresentation {
 		
-		private Icon icon;
-		private String description;
+		private final String description;
+		private final Icon icon;
 		
-		public DefaultPresentation(String iconPath, String description) {
+		public DefaultPresentation(String description, String iconPath) {
 			this.description = description;
-			URL url = getClass().getResource(iconPath);
-			this.icon = new ImageIcon(url);
+			this.icon = new ImageIcon(getClass().getResource(iconPath));
+		}
+		
+		public DefaultPresentation(String namespace) {
+			this.description = namespace;
+			this.icon = new ImageIcon(new RandomImage(16, 16, namespace.hashCode())); // assume namespace.toLowerCase() has already been done
 		}
 		
 		@Override
@@ -60,5 +63,6 @@ public class CyColumnPresentationManagerImpl implements CyColumnPresentationMana
 			return icon;
 		}
 	}
+
 
 }

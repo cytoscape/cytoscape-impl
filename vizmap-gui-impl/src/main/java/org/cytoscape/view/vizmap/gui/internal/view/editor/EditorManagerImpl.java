@@ -15,6 +15,7 @@ import javax.swing.JOptionPane;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentRenderingEngineListener;
+import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -116,14 +117,15 @@ public class EditorManagerImpl implements EditorManager {
 		
 		final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 		final CyNetworkManager netMgr = servicesUtil.get(CyNetworkManager.class);
+		final CyColumnPresentationManager presMgr = servicesUtil.get(CyColumnPresentationManager.class);
 		
 		// Create attribute (Column Name) editors
 		final AttributeComboBoxPropertyEditor nodeAttrEditor = new AttributeComboBoxPropertyEditor(CyNode.class,
-				attrProxy, appMgr, netMgr);
+				attrProxy, appMgr, netMgr, presMgr);
 		final AttributeComboBoxPropertyEditor edgeAttrEditor = new AttributeComboBoxPropertyEditor(CyEdge.class,
-				attrProxy, appMgr, netMgr);
+				attrProxy, appMgr, netMgr, presMgr);
 		final AttributeComboBoxPropertyEditor networkAttrEditor = new AttributeComboBoxPropertyEditor(CyNetwork.class,
-				attrProxy, appMgr, netMgr);
+				attrProxy, appMgr, netMgr, presMgr);
 		attrComboBoxEditors = new HashMap<>();
 		attrComboBoxEditors.put(nodeAttrEditor.getTargetObjectType(), nodeAttrEditor);
 		attrComboBoxEditors.put(edgeAttrEditor.getTargetObjectType(), edgeAttrEditor);
