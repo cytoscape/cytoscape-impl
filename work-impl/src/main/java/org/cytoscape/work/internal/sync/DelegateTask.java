@@ -53,6 +53,7 @@ public class DelegateTask extends AbstractTask {
 		this.observer = observer;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		// this ensures that we get a coherent task monitor
 		DelegatingTaskMonitor dtm = new DelegatingTaskMonitor(tm, ti.getNumTasks());
