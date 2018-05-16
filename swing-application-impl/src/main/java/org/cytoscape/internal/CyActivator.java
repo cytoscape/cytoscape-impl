@@ -1,10 +1,28 @@
 package org.cytoscape.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
-import static org.cytoscape.application.swing.CytoPanelName.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
+import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
+import static org.cytoscape.application.swing.CytoPanelName.EAST;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
+import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.application.swing.CytoPanelName.WEST;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -18,6 +36,7 @@ import javax.swing.JLabel;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
@@ -52,6 +71,7 @@ import org.cytoscape.internal.io.SessionIO;
 import org.cytoscape.internal.layout.ui.LayoutMenuPopulator;
 import org.cytoscape.internal.layout.ui.LayoutSettingsManager;
 import org.cytoscape.internal.layout.ui.SettingsAction;
+import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.internal.select.RowViewTracker;
 import org.cytoscape.internal.select.RowsSetViewUpdater;
 import org.cytoscape.internal.select.SelectEdgeViewUpdater;
@@ -96,6 +116,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.RootNetworkTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -116,7 +137,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -138,7 +159,7 @@ public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 
-	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private CytoscapeMenus cytoscapeMenus;
 	private ToolBarEnableUpdater toolBarEnableUpdater;
@@ -389,6 +410,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, columnPresentationManager::addPresentation, columnPresentationManager::removePresentation, CyColumnPresentation.class);
 		
 		// For Network Panel context menu
+		registerServiceListener(bc, netMediator::addRootNetworkTaskFactory, netMediator::removeRootNetworkTaskFactory, RootNetworkTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkViewTaskFactory, netMediator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkTaskFactory, netMediator::removeNetworkTaskFactory, NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkViewCollectionTaskFactory, netMediator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
@@ -428,6 +450,8 @@ public class CyActivator extends AbstractCyActivator {
 		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 		
+		final RootNetworkManager rootNetManager = new RootNetworkManager();
+		
 		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar(serviceRegistrar);
 		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
 		cytoscapeMenus = new CytoscapeMenus(cytoscapeMenuBar, cytoscapeToolBar);
@@ -437,7 +461,7 @@ public class CyActivator extends AbstractCyActivator {
 		netSearchMediator = new NetworkSearchMediator(netSearchBar, serviceRegistrar);
 		
 		netMainPanel = new NetworkMainPanel(netSearchBar, serviceRegistrar);
-		netMediator = new NetworkMediator(netMainPanel, serviceRegistrar);
+		netMediator = new NetworkMediator(netMainPanel, rootNetManager, serviceRegistrar);
 		commandToolPanel = new CommandToolDialog(serviceRegistrar);
 		
 		viewComparator = new ViewComparator(netMainPanel);
@@ -479,7 +503,7 @@ public class CyActivator extends AbstractCyActivator {
 		rowsSetViewUpdater = new RowsSetViewUpdater(rowViewTracker, netViewMediator, serviceRegistrar);
 
 		recentSessionManager = new RecentSessionManager(serviceRegistrar);
-		netSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, serviceRegistrar);
+		netSelectionMediator = new NetworkSelectionMediator(netMainPanel, netViewMainPanel, rootNetManager, serviceRegistrar);
 		
 		///// CyActions ////
 		undoAction = new UndoAction(serviceRegistrar);
