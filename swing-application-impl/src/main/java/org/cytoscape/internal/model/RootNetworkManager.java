@@ -1,5 +1,8 @@
 package org.cytoscape.internal.model;
 
+import java.util.Collection;
+import java.util.LinkedHashSet;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 
@@ -28,20 +31,23 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
  */
 
 /**
- * This manager provides {@link CyRootNetwork} instances that are currently selected (or right-clicked) to other
- * classes in this module. Cytoscape does not keep a global reference to the current root-network 
+ * This manager provides {@link CyRootNetwork} instances that are currently selected to other
+ * classes in this module. Cytoscape does not keep a global reference to the current or selected root-networks 
  * (see {@link CyApplicationManager}), since a {@link CyRootNetwork} is just a "meta-network"
  * (or a "Collection" of sub-networks), and is not visualized by end users.
  */
 public class RootNetworkManager {
 
-	private CyRootNetwork currentRootNetwork;
+	private final Collection<CyRootNetwork> selectedRootNetworks = new LinkedHashSet<>();
 	
-	public CyRootNetwork getCurrentRootNetwork() {
-		return currentRootNetwork;
+	public Collection<CyRootNetwork> getSelectedRootNetworks() {
+		return new LinkedHashSet<>(selectedRootNetworks);
 	}
 	
-	public void setCurrentRootNetwork(CyRootNetwork currentRootNetwork) {
-		this.currentRootNetwork = currentRootNetwork;
+	public void setSelectedRootNetworks(Collection<CyRootNetwork> rootNetworks) {
+		selectedRootNetworks.clear();
+		
+		if (rootNetworks != null && !rootNetworks.isEmpty())
+			selectedRootNetworks.addAll(rootNetworks);
 	}
 }

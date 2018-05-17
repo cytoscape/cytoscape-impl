@@ -116,7 +116,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.RootNetworkTaskFactory;
+import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
@@ -410,9 +410,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, columnPresentationManager::addPresentation, columnPresentationManager::removePresentation, CyColumnPresentation.class);
 		
 		// For Network Panel context menu
-		registerServiceListener(bc, netMediator::addRootNetworkTaskFactory, netMediator::removeRootNetworkTaskFactory, RootNetworkTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkViewTaskFactory, netMediator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkTaskFactory, netMediator::removeNetworkTaskFactory, NetworkTaskFactory.class, CONTEXT_MENU_FILTER);
+		registerServiceListener(bc, netMediator::addRootNetworkCollectionTaskFactory, netMediator::removeRootNetworkCollectionTaskFactory, RootNetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkViewCollectionTaskFactory, netMediator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addNetworkCollectionTaskFactory, netMediator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netMediator::addCyAction, netMediator::removeCyAction, CyAction.class, CONTEXT_MENU_FILTER);

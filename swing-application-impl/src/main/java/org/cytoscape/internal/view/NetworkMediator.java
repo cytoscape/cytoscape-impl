@@ -53,7 +53,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.RootNetworkTaskFactory;
+import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -245,17 +245,17 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		});
 	}
 	
-	public void addRootNetworkTaskFactory(RootNetworkTaskFactory factory, Map<?, ?> props) {
+	public void addRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
 			TaskFactory provisioner = new TaskFactory() {
 				@Override
 				public TaskIterator createTaskIterator() {
-					return factory.createTaskIterator(rootNetManager.getCurrentRootNetwork());
+					return factory.createTaskIterator(rootNetManager.getSelectedRootNetworks());
 				}
 				
 				@Override
 				public boolean isReady() {
-					return factory.isReady(rootNetManager.getCurrentRootNetwork());
+					return factory.isReady(rootNetManager.getSelectedRootNetworks());
 				}
 			};
 			provisionerMap.put(factory, provisioner);
@@ -263,9 +263,9 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		});
 	}
 	
-	public void removeRootNetworkTaskFactory(RootNetworkTaskFactory factory, Map<?, ?> props) {
+	public void removeRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory), true);
+			removeFactory(provisionerMap.remove(factory), false);
 		});
 	}
 	
