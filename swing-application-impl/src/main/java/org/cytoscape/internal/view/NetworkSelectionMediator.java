@@ -397,7 +397,7 @@ public class NetworkSelectionMediator
 	
 	private class NetPanelPropertyChangeListener implements PropertyChangeListener {
 
-		final String[] PROP_NAMES = new String[] { "currentNetwork", "selectedSubNetworks" };
+		final String[] PROP_NAMES = new String[] { "currentNetwork", "selectedSubNetworks", "selectedRootNetworks" };
 		
 		@Override
 		public void propertyChange(PropertyChangeEvent e) {
@@ -406,6 +406,8 @@ public class NetworkSelectionMediator
 					handleCurrentNetworkChange(e);
 				else if (e.getPropertyName().equals("selectedSubNetworks"))
 					handleSelectedSubNetworksChange(e);
+				else if (e.getPropertyName().equals("selectedRootNetworks"))
+					handleSelectedRootNetworksChange(e);
 			}
 		}
 		
@@ -417,12 +419,9 @@ public class NetworkSelectionMediator
 				viewMainPanel.showNullView((CyNetwork) e.getNewValue());
 			
 			final CyNetwork net = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
-			final CyRootNetwork rootNet = e.getNewValue() instanceof CyRootNetwork ? (CyRootNetwork) e.getNewValue() : null;
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			synchronized (lock) {
-				rootNetManager.setCurrentRootNetwork(rootNet);
-				
 				final CyNetwork currentNet = appMgr.getCurrentNetwork();
 				
 				if (same(net, currentNet))
@@ -447,6 +446,12 @@ public class NetworkSelectionMediator
 			}
 			
 			syncFromSelectedNetworks(selectedNets);
+		}
+		
+		@SuppressWarnings("unchecked")
+		private void handleSelectedRootNetworksChange(PropertyChangeEvent e) {
+			final Collection<CyRootNetwork> selectedRootNets = (Collection<CyRootNetwork>) e.getNewValue();
+			rootNetManager.setSelectedRootNetworks(selectedRootNets);
 		}
 	}
 	
