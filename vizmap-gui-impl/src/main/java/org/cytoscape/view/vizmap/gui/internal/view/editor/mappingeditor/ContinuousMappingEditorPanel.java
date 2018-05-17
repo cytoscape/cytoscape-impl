@@ -39,6 +39,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -47,6 +48,7 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -58,6 +60,9 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -106,8 +111,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	/*
 	 * For Gradient panel only.
 	 */
+	private JPanel palettesPanel;
+	private JComboBox<Palette> paletteBox;
 	private BelowAndAbovePanel abovePanel;
 	private BelowAndAbovePanel belowPanel;
+	private static String DEFAULT_PALETTE = "ColorBrewer Red-Blue";
 	
 	private JXMultiThumbSlider<V> slider;
 	private JSpinner valueSpinner;
@@ -125,6 +133,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected V below;
 	protected V above;
+
+	protected boolean userEdited = false;
 
 	protected Double lastSpinnerNumber;
 
@@ -180,6 +190,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (tracer == null)
 			tracer = new EditorValueRangeTracer(servicesUtil);
 
+		if (mapping.getPointCount() > 0)
+			userEdited = true;
+
 		initComponents();
 		initRangeValues();
 		setSpinner();
@@ -224,6 +237,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected void reset() {
 		initRangeValues();
 		updateMap();
+		userEdited = false;
 		repaint();
 	}
 
@@ -241,11 +255,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(true);
 
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(getPalettesPanel())
 				.addComponent(getMainPanel())
 				.addComponent(buttonPanel)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(getPalettesPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(getMainPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
@@ -286,6 +302,52 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		}
 		
 		return mainPanel;
+	}
+
+	/**
+	 * Create a list of diverging palettes to choose from
+	 */
+	protected JPanel getPalettesPanel() {
+		if (palettesPanel == null) {
+			palettesPanel = new JPanel();
+			JLabel label = new JLabel("Palettes: ");
+			// paletteBox = new JComboBox<Palette>(getPalettes().toArray(new Palette[1]));
+			final GroupLayout layout = new GroupLayout(palettesPanel);
+			palettesPanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(true);
+			layout.setAutoCreateGaps(true);
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(2)
+					.addComponent(getPaletteBox(), DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
+
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
+					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getPaletteBox(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+		}
+		return palettesPanel;
+	}
+
+	protected JComboBox<Palette> getPaletteBox() {
+		if (paletteBox == null) {
+			Palette defaultPalette = null;
+			PaletteProviderManager paletteProviderMgr = servicesUtil.get(PaletteProviderManager.class);
+			List<Palette> paletteList = new ArrayList<>();
+			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(Palette.PaletteType.DIVERGING, false)) {
+				for (String paletteName: provider.listPaletteNames(Palette.PaletteType.DIVERGING, false)) {
+					Palette palette = provider.getPalette(paletteName);
+					if (palette.toString().equalsIgnoreCase(DEFAULT_PALETTE))
+						defaultPalette = palette;
+					paletteList.add(palette);
+				}
+			}
+			paletteBox = new JComboBox<Palette>(paletteList.toArray(new Palette[0]));
+			if (defaultPalette != null)
+				paletteBox.setSelectedItem(defaultPalette);
+		}
+		return paletteBox;
 	}
 	
 	private JPanel getEditorPanel() {
@@ -643,6 +705,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		final double min = tracer.getMin(type);
 		final double range = tracer.getRange(type);
 
+		userEdited = true;
+
 		// There is only one point.
 		if (thumbs.size() == 1) {
 			updateOnePoint(thumbs, min, range);
@@ -655,7 +719,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		
 		// This should not happen!
 		if(size != mappingPointCount)
-			throw new IllegalStateException("Number of handles is not equal to mapping points.");
+			throw new IllegalStateException("Number of handles ("+size+") is not equal to mapping points ("+mappingPointCount+").");
 
 		int i = 0;
 		for (final Thumb<V> handle:thumbs) {
@@ -818,7 +882,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 		}
 	}
-	
+
 	private class ColorIcon implements Icon {
 
 		private final Color color;

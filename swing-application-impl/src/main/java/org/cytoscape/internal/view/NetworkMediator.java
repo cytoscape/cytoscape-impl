@@ -2,12 +2,9 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -23,6 +20,7 @@ import javax.swing.JSeparator;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.internal.actions.DestroyNetworksAction;
+import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -55,6 +53,7 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.RootNetworkTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -64,6 +63,7 @@ import org.cytoscape.view.model.events.NetworkViewDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewDestroyedListener;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 /*
@@ -99,22 +99,26 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		SessionAboutToBeLoadedListener, SessionLoadedListener {
 
 	private final Map<Object, TaskFactory> provisionerMap = new HashMap<>();
-	private final Map<Object, CyAction> popupActionMap = new WeakHashMap<>();
+	private final Map<Object, CyAction> netPopupActionMap = new WeakHashMap<>();
+	private final Map<Object, CyAction> rootPopupActionMap = new WeakHashMap<>();
 	
 	private boolean loadingSession;
 	
-	private NetworkMainPanel networkMainPanel;
+	private final NetworkMainPanel networkMainPanel;
+	private final RootNetworkManager rootNetManager;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NetworkMediator(final NetworkMainPanel networkMainPanel, final CyServiceRegistrar serviceRegistrar) {
+	public NetworkMediator(NetworkMainPanel networkMainPanel, RootNetworkManager rootNetManager,
+			CyServiceRegistrar serviceRegistrar) {
 		this.networkMainPanel = networkMainPanel;
+		this.rootNetManager = rootNetManager;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", (PropertyChangeEvent evt) -> {
+		networkMainPanel.addPropertyChangeListener("rootNetworkPanelCreated", evt -> {
 			final RootNetworkPanel p = (RootNetworkPanel) evt.getNewValue();
 			addMouseListenersForSelection(p, p.getHeaderPanel(), p.getNetworkCountLabel(), p.getNameLabel(), p);
 		});
-		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", (PropertyChangeEvent evt) -> {
+		networkMainPanel.addPropertyChangeListener("subNetworkPanelCreated", evt -> {
 			final SubNetworkPanel p = (SubNetworkPanel) evt.getNewValue();
 			addMouseListenersForSelection(p, p.getNameLabel(), p.getViewIconLabel(), p.getViewCountLabel(),
 					p.getNodeCountLabel(), p.getEdgeCountLabel(), p);
@@ -241,98 +245,110 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		});
 	}
 	
-	public void addTaskFactory(TaskFactory factory, Map<?, ?> props) {
+	public void addRootNetworkTaskFactory(RootNetworkTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			addFactory(factory, props);
+			TaskFactory provisioner = new TaskFactory() {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return factory.createTaskIterator(rootNetManager.getCurrentRootNetwork());
+				}
+				
+				@Override
+				public boolean isReady() {
+					return factory.isReady(rootNetManager.getCurrentRootNetwork());
+				}
+			};
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props, true);
 		});
 	}
-
-	public void removeTaskFactory(TaskFactory factory, Map<?, ?> props) {
+	
+	public void removeRootNetworkTaskFactory(RootNetworkTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(factory);
+			removeFactory(provisionerMap.remove(factory), true);
 		});
 	}
-
+	
 	public void addNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
 					.getService(DynamicTaskFactoryProvisioner.class);
 			TaskFactory provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
-			addFactory(provisioner, props);
+			addFactory(provisioner, props, false);
 		});
 	}
 
 	public void removeNetworkCollectionTaskFactory(NetworkCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory));
+			removeFactory(provisionerMap.remove(factory), false);
 		});
 	}
 
 	public void addNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
 					.getService(DynamicTaskFactoryProvisioner.class);
 			TaskFactory provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
-			addFactory(provisioner, props);
+			addFactory(provisioner, props, false);
 		});
 	}
 
 	public void removeNetworkViewCollectionTaskFactory(NetworkViewCollectionTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory));
+			removeFactory(provisionerMap.remove(factory), false);
 		});
 	}
 
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
 					.getService(DynamicTaskFactoryProvisioner.class);
 			TaskFactory provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
-			addFactory(provisioner, props);
+			addFactory(provisioner, props, false);
 		});
 	}
 
 	public void removeNetworkTaskFactory(NetworkTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory));
+			removeFactory(provisionerMap.remove(factory), false);
 		});
 	}
-
-	public void addNetworkViewTaskFactory(final NetworkViewTaskFactory factory, Map<?, ?> props) {
+	
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			final DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
+			DynamicTaskFactoryProvisioner factoryProvisioner = serviceRegistrar
 					.getService(DynamicTaskFactoryProvisioner.class);
 			TaskFactory provisioner = factoryProvisioner.createFor(factory);
 			provisionerMap.put(factory, provisioner);
-			addFactory(provisioner, props);
+			addFactory(provisioner, props, false);
 		});
 	}
 
 	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory factory, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			removeFactory(provisionerMap.remove(factory));
+			removeFactory(provisionerMap.remove(factory), false);
 		});
 	}
 	
-	public void addCyAction(final CyAction action, Map<?, ?> props) {
+	public void addCyAction(CyAction action, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			popupActionMap.put(action, action);
+			netPopupActionMap.put(action, action);
 		});
 	}
 	
-	public void removeCyAction(final CyAction action, Map<?, ?> props) {
+	public void removeCyAction(CyAction action, Map<?, ?> props) {
 		invokeOnEDT(() -> {
-			popupActionMap.remove(action);
+			netPopupActionMap.remove(action);
 		});
 	}
 	
 	// // Private Methods // //
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private void addFactory(final TaskFactory factory, final Map props) {
+	private void addFactory(TaskFactory factory, Map props, boolean rootPopup) {
 		final CyAction action;
 		
 		if (props.containsKey(ServiceProperties.ENABLE_FOR))
@@ -340,11 +356,17 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 		else
 			action = new TaskFactoryTunableAction(serviceRegistrar, factory, props);
 
-		popupActionMap.put(factory, action);
+		if (rootPopup)
+			rootPopupActionMap.put(factory, action);
+		else
+			netPopupActionMap.put(factory, action);
 	}
 	
-	private void removeFactory(TaskFactory factory) {
-		popupActionMap.remove(factory);
+	private void removeFactory(TaskFactory factory, boolean rootPopup) {
+		if (rootPopup)
+			rootPopupActionMap.remove(factory);
+		else
+			netPopupActionMap.remove(factory);
 	}
 	
 	private void addMouseListenersForSelection(final AbstractNetworkPanel<?> item, final JComponent... components) {
@@ -423,63 +445,76 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 			final JPopupMenu popup = new JPopupMenu();
 			
 			if (network instanceof CySubNetwork) {
-				final TreeMap<Double, CyAction> gravityMap = new TreeMap<>();
-				
-				// Sort the actions by gravity first
-				for (CyAction action : popupActionMap.values()) {
-					double g = 99;
-					
-					if (action instanceof AbstractCyAction)
-						g = ((AbstractCyAction) action).getMenuGravity();
-						
-					gravityMap.put(g, action);
-				}
-				
-				// Create the menu items
-				gravityMap.forEach((g, action) -> {
-					int count = popup.getComponentCount();
-					
-					if (action.insertSeparatorBefore() && count > 0
-							&& popup.getComponent(count - 1) instanceof JSeparator == false)
-						popup.addSeparator();
-					
-					final JMenuItem mi = new JMenuItem(action);
-					popup.add(mi);
-					action.updateEnableState();
-					
-					if (action.insertSeparatorAfter())
-						popup.addSeparator();
-				});
-				
-				// Remove the last item if it is a separator
-				int count = popup.getComponentCount();
-				
-				if (count > 0 && popup.getComponent(count - 1) instanceof JSeparator)
-					popup.remove(count - 1);
+				addMenuItems(popup, netPopupActionMap);
 			} else {
+				// Basic actions for root-networks
 				{
-					final JMenuItem mi = new JMenuItem("Rename Network Collection...");
-					mi.addActionListener(new ActionListener() {
-						@Override
-						public void actionPerformed(ActionEvent e) {
-							final EditNetworkTitleTaskFactory factory = serviceRegistrar
-									.getService(EditNetworkTitleTaskFactory.class);
-							taskMgr.execute(factory.createTaskIterator(network));
-						}
+					JMenuItem mi = new JMenuItem("Rename Network Collection...");
+					mi.addActionListener(evt -> {
+						EditNetworkTitleTaskFactory factory = serviceRegistrar
+								.getService(EditNetworkTitleTaskFactory.class);
+						taskMgr.execute(factory.createTaskIterator(network));
 					});
 					popup.add(mi);
 					mi.setEnabled(selectedItems.size() == 1);
 				}
 				{
-					final DestroyNetworksAction action = new DestroyNetworksAction(0.0f, networkMainPanel,
+					DestroyNetworksAction action = new DestroyNetworksAction(0.0f, networkMainPanel,
 							serviceRegistrar);
-					final JMenuItem mi = new JMenuItem(action);
+					JMenuItem mi = new JMenuItem(action);
 					popup.add(mi);
 					action.updateEnableState();
+				}
+				
+				if (!rootPopupActionMap.isEmpty()) {
+					popup.addSeparator();
+					addMenuItems(popup, rootPopupActionMap);
 				}
 			}
 			
 			popup.show(e.getComponent(), e.getX(), e.getY());
+		}
+
+		private void addMenuItems(JPopupMenu popup, Map<Object, CyAction> popupActionMap) {
+			// Sort the actions by gravity first
+			TreeMap<Double, CyAction> gravityMap = sortByGravity(popupActionMap);
+			
+			// Create the menu items
+			gravityMap.forEach((g, action) -> {
+				int count = popup.getComponentCount();
+				
+				if (action.insertSeparatorBefore() && count > 0
+						&& popup.getComponent(count - 1) instanceof JSeparator == false)
+					popup.addSeparator();
+				
+				JMenuItem mi = new JMenuItem(action);
+				popup.add(mi);
+				action.updateEnableState();
+				
+				if (action.insertSeparatorAfter())
+					popup.addSeparator();
+			});
+			
+			// Remove the last item if it is a separator
+			int count = popup.getComponentCount();
+			
+			if (count > 0 && popup.getComponent(count - 1) instanceof JSeparator)
+				popup.remove(count - 1);
+		}
+
+		private TreeMap<Double, CyAction> sortByGravity(Map<Object, CyAction> popupActionMap) {
+			TreeMap<Double, CyAction> gravityMap = new TreeMap<>();
+			
+			for (CyAction action : popupActionMap.values()) {
+				double g = 99;
+				
+				if (action instanceof AbstractCyAction)
+					g = ((AbstractCyAction) action).getMenuGravity();
+					
+				gravityMap.put(g, action);
+			}
+			
+			return gravityMap;
 		}
 	}
 }

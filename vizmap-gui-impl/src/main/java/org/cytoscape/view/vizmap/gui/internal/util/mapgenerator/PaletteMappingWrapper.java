@@ -27,47 +27,39 @@ package org.cytoscape.view.vizmap.gui.internal.util.mapgenerator;
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
 
-/**
- *
- */
-public class RainbowOscColorMappingGenerator extends
-		AbstractDiscreteMappingGenerator<Color> {
+import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
+import org.cytoscape.view.vizmap.gui.util.DiscreteMappingGenerator;
 
-	PaletteProviderManager paletteProviderMgr;
-
-	public RainbowOscColorMappingGenerator(final PaletteProviderManager paletteProviderManager, 
-	                                       final Class<Color> type) {
-		super(type);
-		paletteProviderMgr = paletteProviderManager;
+public class PaletteMappingWrapper extends AbstractDiscreteMappingGenerator<Color> {
+	String name;
+	Palette palette;
+	public PaletteMappingWrapper(String name, Palette palette) {
+		super(Color.class);
+		this.name = name;
+		this.palette = palette;
 	}
 
-	/**
-	 * Generate discrete mapping from T to Color (Rainbow w/ oscillation
-	 * algorithm)
-	 * 
-	 * @param <T>
-	 *            Attribute type
-	 * @param attributeSet
-	 *            Set of attribute type T
-	 * 
-	 * @return Discrete mapping from T to Color
-	 */
 	public <T> Map<T, Color> generateMap(Set<T> attributeSet) {
-		final Map<T, Color> valueMap = new HashMap<T, Color>();
+		// Error check
+		if(attributeSet == null || attributeSet.size() == 0)
+			return null;
 
 		int nColors = attributeSet.size();
-
-		Color[] colors = paletteProviderMgr.getPaletteProvider("RainbowOSC").getPalette("rainbowosc", nColors).getColors();
+		Color[] colors = palette.getColors(nColors);
+		final Map<T, Color> valueMap = new HashMap<T, Color>();
 
 		int i = 0;
-		for (T key : attributeSet)
+		for (T key : attributeSet) {
 			valueMap.put(key, colors[i++]);
+		}
 
 		return valueMap;
 	}

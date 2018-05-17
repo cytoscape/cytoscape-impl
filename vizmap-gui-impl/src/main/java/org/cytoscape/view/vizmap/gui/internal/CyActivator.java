@@ -9,6 +9,9 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
@@ -41,9 +44,10 @@ import org.cytoscape.view.vizmap.gui.internal.util.ServicePropertiesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.FitLabelMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.NumberSeriesMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
-import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
+import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.PaletteMappingWrapper;
+// import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowColorMappingGenerator;
+// import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RainbowOscColorMappingGenerator;
+// import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomColorMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.util.mapgenerator.RandomNumberMappingGenerator;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapPropertyBuilder;
 import org.cytoscape.view.vizmap.gui.internal.view.VizMapperMainPanel;
@@ -101,6 +105,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		final AttributeSetProxy attributeSetProxy = new AttributeSetProxy(servicesUtil);
 		final MappingFunctionFactoryProxy mappingFactoryProxy = new MappingFunctionFactoryProxy(servicesUtil);
+
+		final PaletteProviderManager paletteProviderManager = getService(bc, PaletteProviderManager.class);
+		generateColorMappingGenerators(serviceRegistrar, paletteProviderManager);
 		
 		final EditorManagerImpl editorManager = new EditorManagerImpl(attributeSetProxy, mappingFactoryProxy, servicesUtil);
 		// These listeners must be registered before the ValueEditors and VisualPropertyEditors:
@@ -251,26 +258,34 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, removeVisualMappingsTaskFactory, removeVisualMappingTaskFactoryProps);
 		
 		// Discrete value generators:
-		final RainbowColorMappingGenerator rainbowGenerator = new RainbowColorMappingGenerator(Color.class);
+
+		// NOTE: These color mapping generators should be automatically created from the available palettes
+		/*
+		final RainbowColorMappingGenerator rainbowGenerator = 
+						new RainbowColorMappingGenerator(paletteProviderManager, Color.class);
 		final Properties rainbowGeneratorProps = new Properties();
 		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
 		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Rainbow");
 		rainbowGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, rainbowGenerator, DiscreteMappingGenerator.class, rainbowGeneratorProps);
 
-		final RainbowOscColorMappingGenerator rainbowOscGenerator = new RainbowOscColorMappingGenerator(Color.class);
+		final RainbowOscColorMappingGenerator rainbowOscGenerator = 
+						new RainbowOscColorMappingGenerator(paletteProviderManager, Color.class);
 		final Properties rainbowOscGeneratorProps = new Properties();
 		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
 		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Rainbow OSC");
 		rainbowOscGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, rainbowOscGenerator, DiscreteMappingGenerator.class, rainbowOscGeneratorProps);
 
-		final RandomColorMappingGenerator randomColorGenerator = new RandomColorMappingGenerator(Color.class);
+		final RandomColorMappingGenerator randomColorGenerator = 
+						new RandomColorMappingGenerator(paletteProviderManager, Color.class);
 		final Properties randomColorGeneratorProps = new Properties();
 		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI.contextMenu");
 		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.TITLE, "Random Color");
 		randomColorGeneratorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
 		registerService(bc, randomColorGenerator, DiscreteMappingGenerator.class, randomColorGeneratorProps);
+		*/
+
 		
 		final NumberSeriesMappingGenerator<Number> seriesGenerator = new NumberSeriesMappingGenerator<Number>(Number.class);
 		final Properties numberSeriesGeneratorProps = new Properties();
@@ -336,4 +351,24 @@ public class CyActivator extends AbstractCyActivator {
 		// Startup the framework
 		new ApplicationFacade(startupCommand).startup();
 	}
+
+	public void generateColorMappingGenerators(final CyServiceRegistrar registrar,
+	                                           final PaletteProviderManager paletteProviderMgr) { 
+		for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(Palette.PaletteType.QUALITATIVE, false)) {
+			for (String paletteName: provider.listPaletteNames(Palette.PaletteType.QUALITATIVE, false)) {
+				Palette palette = provider.getPalette(paletteName);
+				registerNewGenerator(registrar, palette.toString(), palette);
+			}
+		}
+	}
+
+	private void registerNewGenerator(CyServiceRegistrar registrar, String name, Palette palette) {
+		DiscreteMappingGenerator<Color> generator = new PaletteMappingWrapper(name, palette);
+		final Properties generatorProps = new Properties();
+		generatorProps.setProperty(ServicePropertiesUtil.SERVICE_TYPE, "vizmapUI");
+		generatorProps.setProperty(ServicePropertiesUtil.TITLE, name);
+		generatorProps.setProperty(ServicePropertiesUtil.MENU_ID, "context");
+		registrar.registerService(generator, DiscreteMappingGenerator.class, generatorProps);
+	}
+
 }

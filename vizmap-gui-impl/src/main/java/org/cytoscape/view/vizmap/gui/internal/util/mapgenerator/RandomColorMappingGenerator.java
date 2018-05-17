@@ -30,19 +30,23 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteProviderManager;
+
 /**
  * Mapping generator from any attributes to random color
  */
 public class RandomColorMappingGenerator extends
 		AbstractDiscreteMappingGenerator<Color> {
 
-	public RandomColorMappingGenerator(Class<Color> type) {
-		super(type);
-	}
+	PaletteProviderManager paletteProviderMgr;
 
-	private final int MAX_COLOR = 256 * 256 * 256;
-	private final long seed = System.currentTimeMillis();
-	private final Random rand = new Random(seed);
+	public RandomColorMappingGenerator(final PaletteProviderManager paletteProviderManager, 
+	                                   final Class<Color> type) {
+		super(type);
+		paletteProviderMgr = paletteProviderManager;
+	}
 
 	/**
 	 * From a given set of attributes, create a discrete mapping from the
@@ -58,9 +62,13 @@ public class RandomColorMappingGenerator extends
 	public <T> Map<T, Color> generateMap(Set<T> attributeSet) {
 		final Map<T, Color> valueMap = new HashMap<T, Color>();
 
+		int nColors = attributeSet.size();
+
+		Color[] colors = paletteProviderMgr.getPaletteProvider("Random").getPalette("random", nColors).getColors();
+
+		int i = 0;
 		for (T key : attributeSet)
-			valueMap.put(key, new Color(
-					((Number) (rand.nextFloat() * MAX_COLOR)).intValue()));
+			valueMap.put(key, colors[i++]);
 
 		return valueMap;
 	}
