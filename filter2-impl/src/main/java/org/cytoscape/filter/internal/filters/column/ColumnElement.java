@@ -3,15 +3,14 @@ package org.cytoscape.filter.internal.filters.column;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 
 public class ColumnElement implements Comparable<ColumnElement> {
 	private final Class<?> tableType;
 	private final SelectedColumnType colType;
 	private final String name;
-	private final String description;
 	private final boolean list;
+	private final boolean placeholder;
 	
 	public static enum SelectedColumnType {
 		NONE,
@@ -48,22 +47,20 @@ public class ColumnElement implements Comparable<ColumnElement> {
 		this.colType = SelectedColumnType.fromColumn(col);
 		this.list = SelectedColumnType.isList(col);
 		this.name = col.getName();
-		
-		if (CyNode.class.equals(tableType)) {
-			description = "Node: " + name;
-		} else if (CyEdge.class.equals(tableType)) {
-			description = "Edge: " + name;
-		} else {
-			description = name;
-		}
+		this.placeholder = false;
 	}
 	
-	public ColumnElement(String description) {
+	
+	public ColumnElement() {
 		this.tableType = null;
 		this.colType = SelectedColumnType.NONE;
-		this.name = "";
-		this.description = description;
+		this.name = "Choose column...";
 		this.list = false;
+		this.placeholder = true;
+	}
+	
+	public boolean isPlaceholder() {
+		return placeholder;
 	}
 	
 	public Class<?> getTableType() {
@@ -83,15 +80,9 @@ public class ColumnElement implements Comparable<ColumnElement> {
 		return name;
 	}
 
-
-	public String getDescription() {
-		return description;
-	}
-
-
 	@Override
 	public String toString() {
-		return description;
+		return name;
 	}
 	
 	@Override

@@ -129,7 +129,7 @@ public class LayoutMenuPopulator implements MenuListener {
             boolean usesSelected = (layout.getSupportsSelectedOnly() && someSelected);
 
             if (usesNodeAttrs || usesEdgeAttrs || usesSelected) {
-                JMenu newMenu = new DynamicLayoutMenu(layout,network,enableMenuItem,appMgr,
+                JMenu newMenu = new DynamicLayoutMenu(layout,network,enableMenuItem,serviceRegistrar,
                                                       tm,usesNodeAttrs,usesEdgeAttrs,usesSelected);
                 menuMap.put(layout, newMenu);
                 gravityTracker.addMenu(newMenu, gravity);

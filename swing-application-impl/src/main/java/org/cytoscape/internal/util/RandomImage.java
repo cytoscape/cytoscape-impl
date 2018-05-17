@@ -13,10 +13,15 @@ public class RandomImage extends BufferedImage {
 	
 	public RandomImage(int width, int height) {
 		super(width, height, BufferedImage.TYPE_INT_ARGB);
-		draw();
+		draw(new Random());
 	}
 	
-	private void draw() {
+	public RandomImage(int width, int height, long seed) {
+		super(width, height, BufferedImage.TYPE_INT_ARGB);
+		draw(new Random(seed));
+	}
+	
+	private void draw(Random random) {
 		int w = getWidth();
 		int h = getHeight();
 		
@@ -26,14 +31,14 @@ public class RandomImage extends BufferedImage {
 
 		int max = 200, min = 100;
 		
-		Color color = randomColor();
+		Color color = randomColor(random);
 		int red = color.getRed();
 		int green = color.getGreen();
 		int blue = color.getBlue();
 		
 		g2.setColor(color);
 		
-		double blockout = Math.random();
+		double blockout = random.nextDouble();
 		int x = 0, y = 0;
 		
 		for (int i = 0; i < grain; i++) {
@@ -56,7 +61,7 @@ public class RandomImage extends BufferedImage {
 					x += w / grain;
 				}
 				
-				blockout = Math.random();
+				blockout = random.nextDouble();
 			}
 			
 			y += h / grain;
@@ -64,9 +69,8 @@ public class RandomImage extends BufferedImage {
 		}
 	}
 	
-	private Color randomColor() {
+	private Color randomColor(Random random) {
 		// Get rainbow, pastel colors
-		Random random = new Random();
 		final float hue = random.nextFloat();
 		final float saturation = 0.9f;// 1.0 for brilliant, 0.0 for dull
 		final float luminance = 1.0f; // 1.0 for brighter, 0.0 for black

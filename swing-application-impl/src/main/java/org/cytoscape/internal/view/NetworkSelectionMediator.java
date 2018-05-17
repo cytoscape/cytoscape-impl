@@ -23,6 +23,7 @@ import org.cytoscape.application.events.SetSelectedNetworkViewsEvent;
 import org.cytoscape.application.events.SetSelectedNetworkViewsListener;
 import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.application.events.SetSelectedNetworksListener;
+import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -40,7 +41,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -75,14 +76,16 @@ public class NetworkSelectionMediator
 	
 	private final NetworkMainPanel netMainPanel;
 	private final NetworkViewMainPanel viewMainPanel;
+	private final RootNetworkManager rootNetManager;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private final Object lock = new Object();
 
-	public NetworkSelectionMediator(final NetworkMainPanel netMainPanel, final NetworkViewMainPanel viewMainPanel,
-			final CyServiceRegistrar serviceRegistrar) {
+	public NetworkSelectionMediator(NetworkMainPanel netMainPanel, NetworkViewMainPanel viewMainPanel,
+			RootNetworkManager rootNetManager, CyServiceRegistrar serviceRegistrar) {
 		this.netMainPanel = netMainPanel;
 		this.viewMainPanel = viewMainPanel;
+		this.rootNetManager = rootNetManager;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		netPanelPropChangeListener = new NetPanelPropertyChangeListener();
@@ -394,7 +397,7 @@ public class NetworkSelectionMediator
 	
 	private class NetPanelPropertyChangeListener implements PropertyChangeListener {
 
-		final String[] PROP_NAMES = new String[] { "currentNetwork", "selectedSubNetworks" };
+		final String[] PROP_NAMES = new String[] { "currentNetwork", "selectedSubNetworks", "selectedRootNetworks" };
 		
 		@Override
 		public void propertyChange(PropertyChangeEvent e) {
@@ -403,6 +406,8 @@ public class NetworkSelectionMediator
 					handleCurrentNetworkChange(e);
 				else if (e.getPropertyName().equals("selectedSubNetworks"))
 					handleSelectedSubNetworksChange(e);
+				else if (e.getPropertyName().equals("selectedRootNetworks"))
+					handleSelectedRootNetworksChange(e);
 			}
 		}
 		
@@ -413,17 +418,17 @@ public class NetworkSelectionMediator
 			if (e.getNewValue() == null || e.getNewValue() instanceof CyRootNetwork)
 				viewMainPanel.showNullView((CyNetwork) e.getNewValue());
 			
-			final CyNetwork network = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
+			final CyNetwork net = e.getNewValue() instanceof CySubNetwork ? (CyNetwork) e.getNewValue() : null;
 			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			synchronized (lock) {
 				final CyNetwork currentNet = appMgr.getCurrentNetwork();
 				
-				if (same(network, currentNet))
+				if (same(net, currentNet))
 					return;
 			}
 			
-			syncFrom(network);
+			syncFrom(net);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -441,6 +446,12 @@ public class NetworkSelectionMediator
 			}
 			
 			syncFromSelectedNetworks(selectedNets);
+		}
+		
+		@SuppressWarnings("unchecked")
+		private void handleSelectedRootNetworksChange(PropertyChangeEvent e) {
+			final Collection<CyRootNetwork> selectedRootNets = (Collection<CyRootNetwork>) e.getNewValue();
+			rootNetManager.setSelectedRootNetworks(selectedRootNets);
 		}
 	}
 	
