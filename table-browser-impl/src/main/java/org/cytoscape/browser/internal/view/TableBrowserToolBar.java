@@ -43,7 +43,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyColumnPicker;
+import org.cytoscape.application.swing.CyColumnSelector;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
@@ -99,7 +99,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	
 	/* GUI components */
 	private JPopupMenu columnSelectorPopupMenu;
-	private CyColumnPicker columnSelector;
+	private CyColumnSelector columnSelector;
 	private JPopupMenu createColumnMenu;
 
 	private JToolBar toolBar;
@@ -291,11 +291,11 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return columnSelectorPopupMenu;
 	}
 	
-	private CyColumnPicker getColumnSelector() {
+	private CyColumnSelector getColumnSelector() {
 		if (columnSelector == null) {
 			IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			CyColumnPresentationManager presetationManager = serviceRegistrar.getService(CyColumnPresentationManager.class);
-			columnSelector = new CyColumnPicker(iconManager, presetationManager);
+			columnSelector = new CyColumnSelector(iconManager, presetationManager);
 		}
 		
 		return columnSelector;

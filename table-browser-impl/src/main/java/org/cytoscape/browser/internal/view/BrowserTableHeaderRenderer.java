@@ -46,7 +46,6 @@ import javax.swing.UIManager;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 
-import org.cytoscape.application.swing.CyColumnPicker;
 import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
@@ -210,7 +209,7 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			
 			if (column.getVirtualColumnInfo().isVirtual()) {
 				toolTip.append("<br /><i>Network Collection Column</i></div></html>");
-				sharedLabel.setText(CyColumnPicker.SHARED_COL_ICON_TEXT);
+				sharedLabel.setText(IconManager.ICON_SITEMAP);
 			} else {
 				toolTip.append("</div></html>");
 			}
