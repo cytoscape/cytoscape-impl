@@ -402,6 +402,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, cytoscapeMenuPopulator::addTaskFactory, cytoscapeMenuPopulator::removeTaskFactory, TaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkTaskFactory, cytoscapeMenuPopulator::removeNetworkTaskFactory, NetworkTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewTaskFactory, cytoscapeMenuPopulator::removeNetworkViewTaskFactory, NetworkViewTaskFactory.class);
+		registerServiceListener(bc, cytoscapeMenuPopulator::addRootNetworkCollectionTaskFactory, cytoscapeMenuPopulator::removeRootNetworkCollectionTaskFactory, RootNetworkCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkCollectionTaskFactory, NetworkCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addNetworkViewCollectionTaskFactory, cytoscapeMenuPopulator::removeNetworkViewCollectionTaskFactory, NetworkViewCollectionTaskFactory.class);
 		registerServiceListener(bc, cytoscapeMenuPopulator::addTableTaskFactory, cytoscapeMenuPopulator::removeTableTaskFactory, TableTaskFactory.class);
@@ -474,7 +475,7 @@ public class CyActivator extends AbstractCyActivator {
 		sessionHandler = new SessionHandler(cytoscapeDesktop, netViewMediator, sessionIO, netMainPanel, serviceRegistrar);
 		
 		layoutMenuPopulator = new LayoutMenuPopulator(cytoscapeMenuBar, serviceRegistrar);
-		cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop, serviceRegistrar);
+		cytoscapeMenuPopulator = new CytoscapeMenuPopulator(cytoscapeDesktop, rootNetManager, serviceRegistrar);
 
 		layoutSettingsManager = new LayoutSettingsManager(serviceRegistrar);
 		
