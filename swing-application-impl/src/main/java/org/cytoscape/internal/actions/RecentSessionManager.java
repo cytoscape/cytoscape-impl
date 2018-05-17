@@ -62,7 +62,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 	
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	
-	private static final String MENU_CATEGORY = "File.Open Recent";
+	private static final String MENU_CATEGORY = "File.Open Recent[1.2]";
 
 	private final Set<OpenRecentSessionAction> currentMenuItems;
 	private final ClearMenuAction clearMenuAction;
@@ -101,7 +101,7 @@ public class RecentSessionManager implements SessionLoadedListener, CyShutdownLi
 				continue;
 			}
 			
-			final OpenRecentSessionAction action = new OpenRecentSessionAction(gravity++, file);
+			final OpenRecentSessionAction action = new OpenRecentSessionAction(gravity++/6, file);
 			serviceRegistrar.registerService(action, CyAction.class, new Properties());
 			currentMenuItems.add(action);
 		}

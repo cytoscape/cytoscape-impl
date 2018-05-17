@@ -518,7 +518,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");
 			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-img-32.png").toString());
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(MENU_GRAVITY, "5.2");
+			props.setProperty(MENU_GRAVITY, "21.2");
 			props.setProperty(TITLE, "Export as Image...");
 			// props.setProperty(TOOL_BAR_GRAVITY, "3.2");
 			// props.setProperty(IN_TOOL_BAR, "true");
@@ -552,7 +552,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(MENU_GRAVITY, "5.3");
+			props.setProperty(MENU_GRAVITY, "21.4");
 			props.setProperty(TITLE, "Export as Web Page...");
 			registerAllServices(bc, factory, props);
 			registerServiceListener(bc, factory::registerFactory, factory::unregisterFactory, CySessionWriterFactory.class);
@@ -1576,7 +1576,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import.Table[2.0]");
+			props.setProperty(PREFERRED_MENU, "File.Import[19.0]");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOL_BAR_GRAVITY, "2.2");
 			props.setProperty(TITLE, "File...");
@@ -1592,7 +1592,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import.Table[2.0]");
+			props.setProperty(PREFERRED_MENU, "File.Import.Table[19.6]");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			// props.setProperty(TOOL_BAR_GRAVITY, "2.3");
 			props.setProperty(TITLE, "URL...");
@@ -1610,7 +1610,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyTableManagerServiceRef, cyNetworkManagerServiceRef, cyApplicationManagerServiceRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
-			props.setProperty(PREFERRED_MENU, "File.Export");
+			props.setProperty(PREFERRED_MENU, "File.Export[20]");
 			props.setProperty(MENU_GRAVITY, "1.3");
 			// props.setProperty(TOOL_BAR_GRAVITY, "3.1");
 			props.setProperty(TITLE, "Table...");
@@ -1974,7 +1974,7 @@ public class CyActivator extends AbstractCyActivator {
 					synchronousTaskManagerServiceRef, visualMappingManagerServiceRef, cyRootNetworkFactoryServiceRef,
 					cyApplicationManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.New.Network");
+			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			props.setProperty(TITLE, "Empty Network");
 			props.setProperty(COMMAND, "create empty");
@@ -1990,6 +1990,29 @@ public class CyActivator extends AbstractCyActivator {
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
+			CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(cyNetworkManagerServiceRef,
+					cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef, cyNetworkFactoryServiceRef,
+					cyNetworkViewFactoryServiceRef, cyNetworkNamingServiceRef, cyApplicationManagerServiceRef,
+					cyNetworkTableManagerServiceRef, rootNetworkManagerServiceRef, cyGroupManager, cyGroupFactory,
+					renderingEngineManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
+			Properties props = new Properties();
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
+			props.setProperty(PREFERRED_MENU, "File");
+			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(TITLE, "Clone Current Network");
+			props.setProperty(COMMAND, "clone");
+			props.setProperty(COMMAND_NAMESPACE, "network");
+			props.setProperty(COMMAND_DESCRIPTION, "Make a copy of the current network");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+                        "Create a new network by cloning an existing network. The new network will "+
+												"be created as part of a new network collection.  The SUID of the new network "+
+												"and view (if one is created) are returned.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101,\"view\":400}");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, CloneNetworkTaskFactory.class, props);
+		}
+		{
 			NewNetworkSelectedNodesEdgesTaskFactoryImpl factory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(
 					undoSupportServiceRef, cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef,
 					cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyNetworkNamingServiceRef,
@@ -1997,8 +2020,8 @@ public class CyActivator extends AbstractCyActivator {
 					renderingEngineManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
-			props.setProperty(PREFERRED_MENU, "File.New.Network");
-			props.setProperty(MENU_GRAVITY, "2.0");
+			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
+			props.setProperty(MENU_GRAVITY, "15.0");
 			props.setProperty(ACCELERATOR, "cmd shift n");
 			props.setProperty(TITLE, "From selected nodes, selected edges");
 			// props.setProperty(COMMAND, "create from selected nodes and edges");
@@ -2013,12 +2036,12 @@ public class CyActivator extends AbstractCyActivator {
 					visualMappingManagerServiceRef, cyApplicationManagerServiceRef, cyEventHelperRef, cyGroupManager,
 					renderingEngineManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.New.Network");
+			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/new-from-selected-32.png").toString());
 			props.setProperty(ACCELERATOR, "cmd n");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
 			props.setProperty(TITLE, "From selected nodes, all edges");
-			props.setProperty(TOOL_BAR_GRAVITY, "9.1");
+			props.setProperty(TOOL_BAR_GRAVITY, "16.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOLTIP, "New Network From Selection (all edges)");
@@ -2026,29 +2049,6 @@ public class CyActivator extends AbstractCyActivator {
 			// props.setProperty(COMMAND_NAMESPACE, "network");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, NewNetworkSelectedNodesOnlyTaskFactory.class, props);
-		}
-		{
-			CloneNetworkTaskFactoryImpl factory = new CloneNetworkTaskFactoryImpl(cyNetworkManagerServiceRef,
-					cyNetworkViewManagerServiceRef, visualMappingManagerServiceRef, cyNetworkFactoryServiceRef,
-					cyNetworkViewFactoryServiceRef, cyNetworkNamingServiceRef, cyApplicationManagerServiceRef,
-					cyNetworkTableManagerServiceRef, rootNetworkManagerServiceRef, cyGroupManager, cyGroupFactory,
-					renderingEngineManagerServiceRef, nullNetworkViewFactory, serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "File.New.Network");
-			props.setProperty(MENU_GRAVITY, "3.0");
-			props.setProperty(TITLE, "Clone Current Network");
-			props.setProperty(COMMAND, "clone");
-			props.setProperty(COMMAND_NAMESPACE, "network");
-			props.setProperty(COMMAND_DESCRIPTION, "Make a copy of the current network");
-			props.setProperty(COMMAND_LONG_DESCRIPTION,
-                        "Create a new network by cloning an existing network. The new network will "+
-												"be created as part of a new network collection.  The SUID of the new network "+
-												"and view (if one is created) are returned.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"network\":101,\"view\":400}");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
-			registerService(bc, factory, CloneNetworkTaskFactory.class, props);
 		}
 		{
 			DestroyNetworkTaskFactoryImpl factory = new DestroyNetworkTaskFactoryImpl(serviceRegistrar);
@@ -2077,7 +2077,7 @@ public class CyActivator extends AbstractCyActivator {
 			LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ID, "loadNetworkFileTaskFactory");
-			props.setProperty(PREFERRED_MENU, "File.Import.Network[1.0]");
+			props.setProperty(PREFERRED_MENU, "File.Import[19.0]");
 			props.setProperty(ACCELERATOR, "cmd l");
 			props.setProperty(TITLE, "File...");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2114,14 +2114,14 @@ public class CyActivator extends AbstractCyActivator {
 			LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ID, "loadNetworkURLTaskFactory");
-			props.setProperty(PREFERRED_MENU, "File.Import.Network[1.0]");
+			props.setProperty(PREFERRED_MENU, "File.Import[19]");
 			props.setProperty(ACCELERATOR, "cmd shift l");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			// props.setProperty(TOOL_BAR_GRAVITY, "2.1");
 			props.setProperty(TITLE, "URL...");
 			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-net-url-32.png").toString());
 			// props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Import Network From URL");
+			props.setProperty(TOOLTIP, "Import Network");
 			props.setProperty(COMMAND, "load url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML) from a url");
@@ -2159,7 +2159,7 @@ public class CyActivator extends AbstractCyActivator {
 			ExportSelectedNetworkTaskFactoryImpl factory = new ExportSelectedNetworkTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "File.Export");
+			props.setProperty(PREFERRED_MENU, "File.Export[20]");
 			props.setProperty(MENU_GRAVITY, "1.1");
 			// props.setProperty(TOOL_BAR_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Network...");
@@ -2313,9 +2313,9 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.New");
-			props.setProperty(MENU_GRAVITY, "1.1");
-			props.setProperty(TITLE, "Session");
+			props.setProperty(PREFERRED_MENU, "File");
+			props.setProperty(MENU_GRAVITY, "1.8");
+			props.setProperty(TITLE, "Close");
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new, empty session");
@@ -2335,7 +2335,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Open...");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.0");
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "1.2");
+			props.setProperty(MENU_GRAVITY, "0.5");
 			props.setProperty(TOOLTIP, "Open Session");
 			registerService(bc, factory, OpenSessionTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -2364,7 +2364,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Save");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.1");
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(MENU_GRAVITY, "1.5");
 			props.setProperty(TOOLTIP, "Save Session");
 			props.setProperty(COMMAND, "save");
 			props.setProperty(COMMAND_NAMESPACE, "session");
@@ -2381,7 +2381,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd shift s");
-			props.setProperty(MENU_GRAVITY, "3.1");
+			props.setProperty(MENU_GRAVITY, "1.7");
 			props.setProperty(TITLE, "Save As...");
 			props.setProperty(COMMAND, "save as");
 			props.setProperty(COMMAND_NAMESPACE, "session");
@@ -2416,7 +2416,7 @@ public class CyActivator extends AbstractCyActivator {
 			ExportVizmapTaskFactoryImpl factory = new ExportVizmapTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "vizmap");
-			props.setProperty(PREFERRED_MENU, "File.Export");
+			props.setProperty(PREFERRED_MENU, "File.Export[20]");
 			props.setProperty(MENU_GRAVITY, "1.4");
 			props.setProperty(TITLE, "Styles...");
 			props.setProperty(COMMAND, "export");
@@ -2431,7 +2431,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadVizmapFileTaskFactoryImpl factory = new LoadVizmapFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import");
+			props.setProperty(PREFERRED_MENU, "File.Import[19]");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Styles...");
 			props.setProperty(COMMAND, "load file");

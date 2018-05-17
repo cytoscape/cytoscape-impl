@@ -47,8 +47,8 @@ public class CyActivator extends AbstractCyActivator {
 
 			final Properties props = new Properties();
 			props.setProperty(ID, "executeScriptTaskFactory");
-			props.setProperty(PREFERRED_MENU, "File");
-			props.setProperty(MENU_GRAVITY, "7.1f");
+			props.setProperty(PREFERRED_MENU, "Tools");
+//			props.setProperty(MENU_GRAVITY, "7.1");
 			props.setProperty(TITLE, "Run Script File...");
 			props.setProperty(IN_TOOL_BAR, "false");
 

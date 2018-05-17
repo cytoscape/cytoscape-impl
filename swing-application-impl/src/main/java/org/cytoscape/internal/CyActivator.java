@@ -501,7 +501,7 @@ public class CyActivator extends AbstractCyActivator {
 		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
 		
-		closeWindowAction = new CloseWindowAction(6.1f, netViewMediator);
+		closeWindowAction = new CloseWindowAction(1.99f, netViewMediator);
 		createNetworkViewsAction = new CreateNetworkViewsAction(3.0f, serviceRegistrar);
 		destroyNetworkViewsAction = new DestroyNetworkViewsAction(3.1f, serviceRegistrar);
 		destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
