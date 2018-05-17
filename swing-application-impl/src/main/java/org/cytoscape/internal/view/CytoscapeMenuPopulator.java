@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view;
 
+import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
 
 import java.util.HashMap;
@@ -7,6 +8,7 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.cytoscape.application.swing.CyAction;
+import org.cytoscape.internal.model.RootNetworkManager;
 import org.cytoscape.internal.task.CytoPanelTaskFactoryTunableAction;
 import org.cytoscape.internal.task.TaskFactoryTunableAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -15,9 +17,11 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -54,6 +58,7 @@ import org.cytoscape.work.TaskFactory;
 public class CytoscapeMenuPopulator {
 	
 	final private CytoscapeDesktop app;
+	final private RootNetworkManager rootNetManager;
 	final private CyServiceRegistrar serviceRegistrar;
 
 	final private Map<TaskFactory, CyAction> taskMap;
@@ -62,8 +67,10 @@ public class CytoscapeMenuPopulator {
 	/**
 	 * This will construct the basic bar objects, but won't fill them with menu items and associated action listeners.
 	 */
-	public CytoscapeMenuPopulator(final CytoscapeDesktop app, final CyServiceRegistrar serviceRegistrar) {
+	public CytoscapeMenuPopulator(CytoscapeDesktop app, RootNetworkManager rootNetManager,
+			CyServiceRegistrar serviceRegistrar) {
 		this.app = app;
+		this.rootNetManager = rootNetManager;
 		this.serviceRegistrar = serviceRegistrar;
 
 		taskMap = new HashMap<>();
@@ -83,6 +90,30 @@ public class CytoscapeMenuPopulator {
 		removeFactory(factory, props);
 	}
 
+	public void addRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<String, String> props) {
+		invokeOnEDT(() -> {
+			TaskFactory provisioner = new TaskFactory() {
+				@Override
+				public TaskIterator createTaskIterator() {
+					return factory.createTaskIterator(rootNetManager.getSelectedRootNetworks());
+				}
+				
+				@Override
+				public boolean isReady() {
+					return factory.isReady(rootNetManager.getSelectedRootNetworks());
+				}
+			};
+			provisionerMap.put(factory, provisioner);
+			addFactory(provisioner, props);
+		});
+	}
+	
+	public void removeRootNetworkCollectionTaskFactory(RootNetworkCollectionTaskFactory factory, Map<String, String> props) {
+		invokeOnEDT(() -> {
+			removeFactory(provisionerMap.remove(factory), props);
+		});
+	}
+	
 	public void addNetworkTaskFactory(NetworkTaskFactory factory, Map<String, String> props) {
 		final DynamicTaskFactoryProvisioner factoryProvisioner =
 				serviceRegistrar.getService(DynamicTaskFactoryProvisioner.class);
