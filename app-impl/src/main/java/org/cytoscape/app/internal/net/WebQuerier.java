@@ -697,8 +697,7 @@ public class WebQuerier {
 					
 					for (Release release : releases) {
 						
-						if (release.getSha512Checksum().trim().length() > 0
-								&& sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
+						if (release.getSha512Checksum().trim().length() > 0 && sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
 							if(webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached() ||
 									compareVersions(webApp.getCorrespondingApp().getVersion(), app.getVersion()) > 0) {
 								webApp.setCorrespondingApp(app);
@@ -818,27 +817,21 @@ public class WebQuerier {
 		}
 		
 		// Find the set of all available apps
-		Set<WebApp> allWebApps = new HashSet<WebApp>(
-				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
+		Set<WebApp> allWebApps = new HashSet<>(appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
 		for (String url : appsByUrl.keySet()) {
-			
 			Set<WebApp> urlApps = appsByUrl.get(url);
 			for (WebApp webApp : urlApps) {
-				
 				allWebApps.add(webApp);
 			}
 		}
 		
 		// Find set of all app releases
-		Map<Release, WebApp> allReleases = new HashMap<Release, WebApp>(
-				appsByUrl.get(DEFAULT_APP_STORE_URL).size());
+		Map<Release, WebApp> allReleases = new HashMap<>(appsByUrl.get(DEFAULT_APP_STORE_URL).size());
 		
 		List<Release> appReleases = null;
 		for (WebApp webApp : allWebApps) {
-			
 			appReleases = webApp.getReleases();
-			
 			for (Release appRelease : appReleases) {
 				allReleases.put(appRelease, webApp);
 			}
@@ -846,7 +839,6 @@ public class WebQuerier {
 		
 		// Find matching app hashes
 		for (Release release : allReleases.keySet()) {
-			
 			for (App app : apps) {
 				String checksum = app.getSha512Checksum().toLowerCase();
 				
@@ -857,10 +849,10 @@ public class WebQuerier {
 				if (checksum.indexOf(release.getSha512Checksum().toLowerCase()) != -1
 						&& app.getDescription() == null) {
 
-// WebQuerier obtains app information from app store because no description metadata is required
-// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
-// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
-//					System.out.println("Found description: " + allReleases.get(release).getDescription());
+					// WebQuerier obtains app information from app store because no description metadata is required
+					// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
+					// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
+					//					System.out.println("Found description: " + allReleases.get(release).getDescription());
 					app.setDescription(allReleases.get(release).getDescription());
 				}
 			}

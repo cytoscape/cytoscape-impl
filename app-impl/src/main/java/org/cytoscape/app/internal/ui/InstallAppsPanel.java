@@ -43,7 +43,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -85,7 +84,6 @@ import javax.swing.tree.TreeSelectionModel;
 
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
-import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.ResultsFilterer;
@@ -510,29 +508,25 @@ public class InstallAppsPanel extends JPanel {
     }
     
 	private void installFromFileButtonActionPerformed(ActionEvent evt) {
-		List<String> sha1Checksums = new ArrayList<String>();
-		for(App app: appManager.getApps()) {
-			sha1Checksums.add(app.getSha512Checksum());
+		// Setup a the file filter for the open file dialog
+		FileChooserFilter fileChooserFilter = new FileChooserFilter(
+				"Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)", new String[] { "jar", "zip", "kar" });
+
+		Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
+		fileChooserFilters.add(fileChooserFilter);
+
+		// Show the dialog
+		final File[] files = fileUtil.getFiles(parent, "Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY,
+				"Install", true, fileChooserFilters);
+
+		if (files != null) {
+			TaskIterator ti = new TaskIterator();
+			ti.append(new InstallAppsFromFileTask(Arrays.asList(files), appManager, true));
+			ti.append(new ShowInstalledAppsIfChangedTask(appManager, parent));
+			taskManager.setExecutionContext(parent);
+			taskManager.execute(ti);
 		}
-    	// Setup a the file filter for the open file dialog
-    	FileChooserFilter fileChooserFilter = new FileChooserFilter("Jar, Zip, and Karaf Kar Files (*.jar, *.zip, *.kar)",
-    			new String[]{"jar", "zip", "kar"});
-    	
-    	Collection<FileChooserFilter> fileChooserFilters = new LinkedList<FileChooserFilter>();
-    	fileChooserFilters.add(fileChooserFilter);
-    	
-    	// Show the dialog
-    	final File[] files = fileUtil.getFiles(parent, 
-    			"Choose file(s)", FileUtil.LOAD, FileUtil.LAST_DIRECTORY, "Install", true, fileChooserFilters);
-    	
-        if (files != null) {
-        	TaskIterator ti = new TaskIterator();
-        	ti.append(new InstallAppsFromFileTask(Arrays.asList(files), appManager, true));
-        	ti.append(new ShowInstalledAppsIfChangedTask(appManager, parent));
-        	taskManager.setExecutionContext(parent);
-        	taskManager.execute(ti);
-        }
-    }
+	}
 	
     /**
      * Attempts to insert newlines into a given string such that each line has no 
