@@ -288,14 +288,6 @@ public class AppParser {
 			}
 		}	
 		
-		String fileHash;
-		try {
-			fileHash = getChecksum(file);
-			parsedApp.setSha512Checksum(fileHash);
-		} catch (ChecksumException e) {
-			parsedApp.setSha512Checksum(null);
-		}
-		
 		parsedApp.setAppFile(file);
 		parsedApp.setAppName(readableName);
 		parsedApp.setEntryClassName(entryClassName);
@@ -321,8 +313,11 @@ public class AppParser {
 	 * @return The SHA-512 checksum, in format: sha512:e1..
 	 * @throws ChecksumException If unable to obtain SHA-512 algorithm implementation,
 	 * file does not exist, or IO error while reading
+	 * 
+	 * @deprecated Computing the checksum for an App is an unacceptable performance hit.
 	 */
-	public String getChecksum(File file) throws ChecksumException {
+    @Deprecated
+	private String getChecksum(File file) throws ChecksumException {
 		MessageDigest messageDigest;
 		 
 		try {

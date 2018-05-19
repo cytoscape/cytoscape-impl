@@ -92,7 +92,7 @@ import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.net.WebQuerier.AppTag;
 import org.cytoscape.app.internal.task.InstallAppsFromFileTask;
 import org.cytoscape.app.internal.task.InstallAppsFromWebAppTask;
-import org.cytoscape.app.internal.task.ShowInstalledAppsIfChangedTask;
+import org.cytoscape.app.internal.task.ShowInstalledAppsTask;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager.DownloadSitesChangedEvent;
@@ -522,7 +522,7 @@ public class InstallAppsPanel extends JPanel {
 		if (files != null) {
 			TaskIterator ti = new TaskIterator();
 			ti.append(new InstallAppsFromFileTask(Arrays.asList(files), appManager, true));
-			ti.append(new ShowInstalledAppsIfChangedTask(appManager, parent));
+			ti.append(new ShowInstalledAppsTask(parent));
 			taskManager.setExecutionContext(parent);
 			taskManager.execute(ti);
 		}

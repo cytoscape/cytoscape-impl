@@ -38,7 +38,6 @@ import org.cytoscape.app.internal.exception.AppStartupException;
 import org.cytoscape.app.internal.exception.AppStoppingException;
 import org.cytoscape.app.internal.exception.AppUnloadingException;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.util.AppHelper;
 import org.cytoscape.application.CyVersion;
 
 /**
@@ -85,10 +84,6 @@ public abstract class App {
 	 */
 	private boolean bundledApp;
 	
-	/**
-	 * The SHA-512 checksum of the app file, in format sha512:0a516c..
-	 */
-	private String sha512Checksum;
 
 	public static class Dependency {
 		final String name;
@@ -248,40 +243,11 @@ public abstract class App {
 	 * <code>false</code> otherwise.
 	 */
 	public boolean heuristicEquals(App other) {
-		
 		// Return false if different app names
-		if (bundledApp == other.bundledApp
-				&& appName.equalsIgnoreCase(other.appName)
-				&& WebQuerier.compareVersions(version, other.version) == 0) {
-
-			if (sha512Checksum != null && other.sha512Checksum != null) {
-				return (sha512Checksum.equalsIgnoreCase(other.sha512Checksum));
-			}
-			
-			return true;
-		}
-		
-		return false;
+		return bundledApp == other.bundledApp
+			&& appName.equalsIgnoreCase(other.appName)
+			&& WebQuerier.compareVersions(version, other.version) == 0;
 	}
-	
-	/*
-	/**
-	 * Returns true only if the argument is an {@link App} with the same app name and version.
-	 */
-	/*
-	@Override
-	public boolean equals(Object other) {
-		if (other == null) {
-			return false;
-		}
-		
-		if (other instanceof App) {
-			return (this.heuristicEquals((App) other));
-		}
-		
-		return false;
-	}
-	*/
 	
 	public String getReadableStatus() {
 		return this.getStatus().toString();
@@ -317,10 +283,6 @@ public abstract class App {
 	
 	public String getCompatibleVersions() {
 		return compatibleVersions;
-	}
-	
-	public String getSha512Checksum() {
-		return sha512Checksum;
 	}
 	
 	public URL getAppStoreUrl() {
@@ -373,10 +335,6 @@ public abstract class App {
 	
 	public void setCompatibleVersions(String compatibleVersions) {
 		this.compatibleVersions = compatibleVersions;
-	}
-	
-	public void setSha512Checksum(String sha512Checksum) {
-		this.sha512Checksum = sha512Checksum;
 	}
 	
 	public void setAppStoreUrl(URL appStoreURL) {

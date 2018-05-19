@@ -28,8 +28,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import javax.swing.ImageIcon;
 
@@ -87,19 +85,21 @@ public class WebApp {
 	
 	private App correspondingApp;
 	
-	public static class Release implements Comparable<Release> {
+	public class Release implements Comparable<Release> {
 		private String baseUrl;
 		private String relativeUrl;
 		private String releaseDate;
 		private String releaseVersion;
 		private String compatibleCytoscapeVersions;
-		private String sha512Checksum;
 		
 		@Override
 		public int compareTo(Release other) {
 //			return WebQuerier.compareVersions(other., second)
-			
 			return releaseDate.compareToIgnoreCase(other.releaseDate);
+		}
+		
+		public WebApp getWebApp() {
+			return WebApp.this;
 		}
 		
 		public String getBaseUrl() {
@@ -122,10 +122,6 @@ public class WebApp {
 			return compatibleCytoscapeVersions;
 		}
 		
-		public String getSha512Checksum() {
-			return sha512Checksum;
-		}
-		
 		public void setBaseUrl(String baseUrl) {
 			this.baseUrl = baseUrl;
 		}
@@ -146,10 +142,6 @@ public class WebApp {
 			this.compatibleCytoscapeVersions = compatibleCytoscapeVersions;
 		}
 		
-		public void setSha512Checksum(String checksum) {
-			this.sha512Checksum = checksum;
-		}
-
 		public boolean isCompatible(final CyVersion cyVer) {
 			return AppHelper.isCompatible(cyVer, compatibleCytoscapeVersions);
 		}

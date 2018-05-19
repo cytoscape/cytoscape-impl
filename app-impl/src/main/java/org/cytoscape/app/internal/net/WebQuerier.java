@@ -50,7 +50,6 @@ import org.apache.commons.io.IOUtils;
 import org.cytoscape.app.internal.exception.AppDownloadException;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.AppParser.ChecksumException;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
 import org.cytoscape.app.internal.util.DebugHelper;
@@ -297,7 +296,7 @@ public class WebQuerier {
 		// by the web store and is used to build a set of all available tags
 		Set<WebApp> apps = getAllApps();
 		
-		return new HashSet<AppTag>(appTagsByUrl.get(currentAppStoreUrl).values());
+		return new HashSet<>(appTagsByUrl.get(currentAppStoreUrl).values());
 	}
 
 	public boolean appsHaveBeenLoaded() {
@@ -312,7 +311,7 @@ public class WebQuerier {
 		
 		DebugHelper.print("Obtaining apps from app store..");
 
-		Set<WebApp> result = new HashSet<WebApp>();
+		Set<WebApp> result = new HashSet<>();
 		
 		String jsonResult = null;
 		try {
@@ -348,8 +347,7 @@ public class WebQuerier {
 				
 				keyName = "page_url";
 				if (jsonObject.has(keyName)) {
-					webApp.setPageUrl(currentAppStoreUrl.substring(0, currentAppStoreUrl.length() - 1) 
-							+ jsonObject.get(keyName).toString());
+					webApp.setPageUrl(currentAppStoreUrl.substring(0, currentAppStoreUrl.length() - 1) + jsonObject.get(keyName).toString());
 				}
 				
 				keyName = "description";
@@ -361,24 +359,21 @@ public class WebQuerier {
 				if (jsonObject.has(keyName)) {
 					try {
 						webApp.setDownloadCount(Integer.parseInt(jsonObject.get(keyName).toString()));
-					} catch (NumberFormatException e) {
-					}
+					} catch (NumberFormatException e) { }
 				}
 				
 				keyName = "stars_percentage";
 				if (jsonObject.has(keyName)) {
 					try {
 						webApp.setStarsPercentage(Integer.parseInt(jsonObject.get(keyName).toString()));
-					} catch (NumberFormatException e) {
-					}
+					} catch (NumberFormatException e) { }
 				}
 				
 				keyName = "votes";
 				if (jsonObject.has(keyName)) {
 					try {
 						webApp.setVotes(Integer.parseInt(jsonObject.get(keyName).toString()));
-					} catch (NumberFormatException e) {
-					}
+					} catch (NumberFormatException e) { }
 				}
 				
 				keyName = "citation";
@@ -387,7 +382,7 @@ public class WebQuerier {
 				}
 				
 				try {
-					List<WebApp.Release> releases = new LinkedList<WebApp.Release>();
+					List<WebApp.Release> releases = new LinkedList<>();
 					
 					if (jsonObject.has("releases")) {
 						JSONArray jsonReleases = jsonObject.getJSONArray("releases");
@@ -397,13 +392,13 @@ public class WebQuerier {
 						for (int releaseIndex = 0; releaseIndex < jsonReleases.length(); releaseIndex++) {
 							jsonRelease = jsonReleases.getJSONObject(releaseIndex);
 							
-							WebApp.Release release = new WebApp.Release();
+							WebApp.Release release = webApp.new Release();
 							
 							release.setBaseUrl(currentAppStoreUrl);
 							release.setRelativeUrl(jsonRelease.optString("release_download_url"));
 							release.setReleaseDate(jsonRelease.optString("created_iso"));
 							release.setReleaseVersion(jsonRelease.optString("version"));							
-							release.setSha512Checksum(jsonRelease.optString("hexchecksum"));
+							//release.setSha512Checksum(jsonRelease.optString("hexchecksum"));
 							
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
@@ -416,20 +411,12 @@ public class WebQuerier {
 						}
 						
 						// Sort releases by version number
-						Collections.sort(releases, new Comparator<WebApp.Release>() {
-
-							@Override
-							public int compare(Release first, Release second) {
-								return compareVersions(second.getReleaseVersion(), first.getReleaseVersion());
-							}
-							
-						});
+						Collections.sort(releases, Comparator.comparing(Release::getReleaseVersion));
 					}
 					
 					webApp.setReleases(releases);
 				} catch (JSONException e) {
-					logger.warn("Error obtaining releases for app: " + webApp.getFullName() + ", " 
-							+ e.getMessage());
+					logger.warn("Error obtaining releases for app: " + webApp.getFullName() + ", " + e.getMessage());
 				}
 				
 				// DebugHelper.print("Obtaining ImageIcon: " + iconUrlPrefix + webApp.getIconUrl());
@@ -443,7 +430,6 @@ public class WebQuerier {
 				if (compatibleReleases.size() > 0) {
 					// Obtain tags associated with this app
 					processAppTags(webApp, jsonObject);
-	
 					result.add(webApp);
 				}
 			}
@@ -679,32 +665,14 @@ public class WebQuerier {
 		// (num_installed_apps * num_web_apps * releases_per_web_app)
 		
 		for (App app : appManager.getInstalledApps()) {
-			
-			if (app.getSha512Checksum() == null) {
-				try {
-					app.setSha512Checksum(appManager.getAppParser().getChecksum(app.getAppFile()));
-				} catch (ChecksumException e) {
-					app.setSha512Checksum(null);
-				}
-			}
-			
-			if (app.getSha512Checksum() != null) {
-				String sha512checksum = app.getSha512Checksum().toLowerCase();
-				
-				for (WebApp webApp : webApps) {
-					
-					List<Release> releases = webApp.getReleases();
-					
-					for (Release release : releases) {
-						
-						if (release.getSha512Checksum().trim().length() > 0 && sha512checksum.indexOf(release.getSha512Checksum()) != -1) {
-							if(webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached() ||
-									compareVersions(webApp.getCorrespondingApp().getVersion(), app.getVersion()) > 0) {
-								webApp.setCorrespondingApp(app);
-								// For convenience, set the app's description field
-								if (app.getDescription() == null) {
-									app.setDescription(webApp.getDescription());
-								}
+			for (WebApp webApp : webApps) {
+				for (Release release : webApp.getReleases()) {
+					if (releaseEquals(app, release)) {
+						if(webApp.getCorrespondingApp() == null || webApp.getCorrespondingApp().isDetached() || compareVersions(webApp.getCorrespondingApp().getVersion(), app.getVersion()) > 0) {
+							webApp.setCorrespondingApp(app);
+							// For convenience, set the app's description field
+							if (app.getDescription() == null) {
+								app.setDescription(webApp.getDescription());
 							}
 						}
 					}
@@ -712,6 +680,13 @@ public class WebQuerier {
 			}
 		}
 	}
+	
+	
+	private static boolean releaseEquals(App app, Release release) {
+		return app.getAppName().equals(release.getWebApp().getName()) && 
+				WebQuerier.compareVersions(app.getVersion(), release.getReleaseVersion()) == 0;
+	}
+	
 	
 	private Update checkForUpdate(App app, String url, AppManager appManager) {
 		Set<WebApp> urlApps = appsByUrl.get(url);
@@ -826,36 +801,26 @@ public class WebQuerier {
 			}
 		}
 		
-		// Find set of all app releases
-		Map<Release, WebApp> allReleases = new HashMap<>(appsByUrl.get(DEFAULT_APP_STORE_URL).size());
-		
-		List<Release> appReleases = null;
 		for (WebApp webApp : allWebApps) {
-			appReleases = webApp.getReleases();
-			for (Release appRelease : appReleases) {
-				allReleases.put(appRelease, webApp);
-			}
-		}
-		
-		// Find matching app hashes
-		for (Release release : allReleases.keySet()) {
-			for (App app : apps) {
-				String checksum = app.getSha512Checksum().toLowerCase();
-				
-				// TODO: Currently, this will give the app the description from the
-				// first app store providing the matching hash. Perhaps
-				// we could give the default app store the priority in providing the description,
-				// in cases where multiple stores give the same hash.
-				if (checksum.indexOf(release.getSha512Checksum().toLowerCase()) != -1
-						&& app.getDescription() == null) {
-
-					// WebQuerier obtains app information from app store because no description metadata is required
-					// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
-					// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
-					//					System.out.println("Found description: " + allReleases.get(release).getDescription());
-					app.setDescription(allReleases.get(release).getDescription());
+			for (Release release : webApp.getReleases()) {
+				for (App app : apps) {
+					
+					// TODO: Currently, this will give the app the description from the
+					// first app store providing the matching hash. Perhaps
+					// we could give the default app store the priority in providing the description,
+					// in cases where multiple stores give the same hash.
+					
+					if (app.getDescription() == null && releaseEquals(app, release)) {
+	
+						// WebQuerier obtains app information from app store because no description metadata is required
+						// in the app zip file itself. This was to allow better App-Bundle interchangeability, not
+						// imposing unneeded restrictions on OSGi bundles (from past discussion on mailing list, some time in 2012)
+						
+						app.setDescription(release.getWebApp().getDescription());
+					}
 				}
 			}
 		}
 	}
+	
 }
