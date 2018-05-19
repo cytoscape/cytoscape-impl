@@ -70,6 +70,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		this.context = context;
 		this.integrator = integrator;
+		
 
 		edgeWeighter = context.edgeWeighter;
 		edgeWeighter.setWeightAttribute(layoutAttribute);

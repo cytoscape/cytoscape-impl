@@ -22,8 +22,8 @@ public class CloseWindowAction extends AbstractCyAction {
 		super("Close Window");
 		this.netViewMediator = netViewMediator;
 		
-		setPreferredMenu("File");
-		setMenuGravity(menuGravity);
+		setPreferredMenu("View");
+		setMenuGravity(7.5f);  //
 		
 		final int CTRL = LookAndFeelUtil.isMac() ? InputEvent.META_DOWN_MASK :  InputEvent.CTRL_DOWN_MASK;
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_W, CTRL));

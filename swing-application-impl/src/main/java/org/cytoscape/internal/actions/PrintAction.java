@@ -44,7 +44,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 @SuppressWarnings("serial")
 public class PrintAction extends AbstractCyAction {
 
-	private final static String MENU_LABEL = "Print Current Network...";
+	private final static String MENU_LABEL = "Print Network...";				// #4111
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -54,7 +54,7 @@ public class PrintAction extends AbstractCyAction {
 		this.serviceRegistrar = serviceRegistrar;
 
 		setPreferredMenu("File");
-		setMenuGravity(8.1f);
+		setMenuGravity(28.1f);
 		setAcceleratorKeyStroke(KeyStroke.getKeyStroke(KeyEvent.VK_P, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
 	}
 	
