@@ -127,8 +127,15 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 		return this;
 	}
 
+	/**
+	 * This method returns null because CytoPanelName.BOTTOM is not currently being exposed as API, 
+	 * for this reason the CommandToolDialog should not be accessible to Apps via any public API.
+	 */
 	@Override
-	public CytoPanelName getCytoPanelName() { return CytoPanelName.BOTTOM; }
+	public CytoPanelName getCytoPanelName() {
+		// return CytoPanelName.BOTTOM; 
+		return null; 
+	}
 
 	@Override
 	public Icon getIcon() { return null; }

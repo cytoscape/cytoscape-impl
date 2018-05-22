@@ -1,28 +1,9 @@
 package org.cytoscape.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -87,6 +68,7 @@ import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.CyColumnPresentationManagerImpl;
 import org.cytoscape.internal.view.CyDesktopManager;
 import org.cytoscape.internal.view.CyHelpBrokerImpl;
+import org.cytoscape.internal.view.CytoPanelNameInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.CytoscapeMenuBar;
 import org.cytoscape.internal.view.CytoscapeMenuPopulator;
@@ -517,11 +499,11 @@ public class CyActivator extends AbstractCyActivator {
 		bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 		
-		cytoPanelWestAction = new CytoPanelAction(WEST, true, cytoscapeDesktop, 1.0f);
-		cytoPanelSouthAction = new CytoPanelAction(SOUTH, true, cytoscapeDesktop, 1.1f);
-		cytoPanelEastAction = new CytoPanelAction(EAST, false, cytoscapeDesktop, 1.2f);
-		cytoPanelSouthWestAction = new CytoPanelAction(SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
-		cytoPanelCommandAction = new CytoPanelAction(BOTTOM, false, cytoscapeDesktop, 1.35f);
+		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, true, cytoscapeDesktop, 1.0f);
+		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, true, cytoscapeDesktop, 1.1f);
+		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, false, cytoscapeDesktop, 1.2f);
+		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
+		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, false, cytoscapeDesktop, 1.35f);
 		
 		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);

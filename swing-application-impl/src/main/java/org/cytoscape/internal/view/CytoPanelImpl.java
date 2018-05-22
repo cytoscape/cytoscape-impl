@@ -1,28 +1,13 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.FLOAT;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
-import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
-import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
-import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
-import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
+import static org.cytoscape.internal.view.CytoPanelUtil.*;
+import static org.cytoscape.util.swing.IconManager.*;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -42,7 +27,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -106,7 +90,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	
 	private final JComponent contentPane = new ContentPane();
 	private final BiModalJSplitPane splitPane;
-	private final CytoPanelName compassDirection;
+	private final CytoPanelNameInternal compassDirection;
 	private final int tabPlacement;
 	
 	private CytoPanelState cytoPanelState;
@@ -116,7 +100,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public CytoPanelImpl(
-			final CytoPanelName compassDirection,
+			final CytoPanelNameInternal compassDirection,
 			final int tabPlacement,
 			final CytoPanelState cytoPanelState,
 			final CyServiceRegistrar serviceRegistrar
@@ -143,7 +127,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	 * @param serviceRegistrar
 	 */
 	public CytoPanelImpl(
-			final CytoPanelName compassDirection,
+			final CytoPanelNameInternal compassDirection,
 			final int tabPlacement,
 			final CytoPanelState cytoPanelState,
 			final CytoPanelImpl otherPanel,
@@ -155,7 +139,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		this.tabPlacement = tabPlacement;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		splitPane = new BiModalJSplitPane(otherPanel.getCytoPanelName(), splitOrientation, contentPane,
+		splitPane = new BiModalJSplitPane(otherPanel.getCytoPanelNameInternal(), splitOrientation, contentPane,
 				otherPanel.getThisComponent());
 		
 		if (resizeWeight >= 0.0)
@@ -171,6 +155,10 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 
 	@Override
 	public CytoPanelName getCytoPanelName() {
+		return compassDirection.toCytoPanelName();
+	}
+	
+	public CytoPanelNameInternal getCytoPanelNameInternal() {
 		return compassDirection;
 	}
 

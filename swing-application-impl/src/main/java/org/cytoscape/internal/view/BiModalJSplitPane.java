@@ -1,15 +1,10 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH_WEST;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MAX_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MAX_HEIGHT;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MAX_WIDTH;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -20,7 +15,6 @@ import javax.swing.BorderFactory;
 import javax.swing.JSplitPane;
 
 import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +64,7 @@ public class BiModalJSplitPane extends JSplitPane {
 	private boolean dividerManuallyMoved;
 	private boolean updatingDivider;
 	
-	private final CytoPanelName compassDirection;
+	private final CytoPanelNameInternal compassDirection;
 	
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
@@ -82,7 +76,7 @@ public class BiModalJSplitPane extends JSplitPane {
 	 * @param rightComponent Right/Bottom Component.
 	 */
 	public BiModalJSplitPane(
-			CytoPanelName compassDirection,
+			CytoPanelNameInternal compassDirection,
 			int orientation,
 			Component
 			leftComponent,
@@ -107,8 +101,8 @@ public class BiModalJSplitPane extends JSplitPane {
 		});
 	}
 
-	public void addCytoPanel(CytoPanel cytoPanel) {
-		switch (cytoPanel.getCytoPanelName()) {
+	public void addCytoPanel(CytoPanelImpl cytoPanel) {
+		switch (cytoPanel.getCytoPanelNameInternal()) {
 			case WEST:
 				setLeftComponent(cytoPanel.getThisComponent());
 				break;

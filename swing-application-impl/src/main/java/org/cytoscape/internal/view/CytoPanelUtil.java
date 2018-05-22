@@ -1,6 +1,8 @@
 package org.cytoscape.internal.view;
 
 
+import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
+
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -8,7 +10,6 @@ import java.awt.Rectangle;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 
-import org.cytoscape.application.swing.CytoPanelName;
 
 /*
  * #%L
@@ -81,7 +82,7 @@ public final class CytoPanelUtil {
 			Dimension screenDimension,
 			Rectangle containerBounds,
 			Dimension frameDimension,
-			CytoPanelName compassDirection,
+			CytoPanelNameInternal compassDirection,
 			boolean outputDiagnostics) {
 		if (outputDiagnostics)
 			outputDiagnostics(screenDimension, containerBounds, frameDimension, compassDirection);
@@ -99,13 +100,13 @@ public final class CytoPanelUtil {
 		Point p = new Point(containerLocation.x, containerLocation.y);
 
 		// Set Point Based on Compass Direction
-		if (compassDirection == CytoPanelName.WEST) {
+		if (compassDirection == WEST) {
 			p.x = containerLocation.x - INSET - (int) frameDimension.getWidth();
-		} else if (compassDirection == CytoPanelName.EAST) {
+		} else if (compassDirection == EAST) {
 			p.x = containerLocation.x + INSET + (int) containerWidth;
-		} else if (compassDirection == CytoPanelName.SOUTH) {
+		} else if (compassDirection == SOUTH) {
 			p.y = containerLocation.y + INSET + (int) containerHeight;
-		} else if (compassDirection == CytoPanelName.BOTTOM) {
+		} else if (compassDirection == BOTTOM) {
 			p.y = containerLocation.y + INSET + (int) containerHeight;
 		}
 
@@ -139,7 +140,7 @@ public final class CytoPanelUtil {
 	 * Outputs Diagnostics Related to Screen/Window Dimensions.
 	 */
 	private static void outputDiagnostics(Dimension screenDimension, Rectangle containerBounds,
-			Dimension preferredSizeOfPanel, final CytoPanelName compassDirection) {
+			Dimension preferredSizeOfPanel, final CytoPanelNameInternal compassDirection) {
 		System.err.println("Compass Direction:  " + compassDirection);
 		System.err.println("Screen Dimension:  " + screenDimension);
 		System.err.println("Container Bounds:  " + containerBounds.toString());

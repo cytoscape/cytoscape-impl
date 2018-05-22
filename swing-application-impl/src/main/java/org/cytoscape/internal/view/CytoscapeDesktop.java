@@ -2,16 +2,12 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.application.swing.CytoPanelName.EAST;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH;
-import static org.cytoscape.application.swing.CytoPanelName.SOUTH_WEST;
-import static org.cytoscape.application.swing.CytoPanelName.WEST;
-import static org.cytoscape.application.swing.CytoPanelName.BOTTOM;
 import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -61,6 +57,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
+import org.cytoscape.internal.command.CommandToolDialog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -331,10 +328,14 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	@Override
 	public CytoPanel getCytoPanel(final CytoPanelName compassDirection) {
+		return getCytoPanelInternal(CytoPanelNameInternal.valueOf(compassDirection));
+	}
+	
+	public CytoPanel getCytoPanel(final CytoPanelNameInternal compassDirection) {
 		return getCytoPanelInternal(compassDirection);
 	}
 
-	private CytoPanelImpl getCytoPanelInternal(final CytoPanelName compassDirection) {
+	private CytoPanelImpl getCytoPanelInternal(final CytoPanelNameInternal compassDirection) {
 		switch (compassDirection) {
 			case BOTTOM:
 				return getAutomationPanel();
@@ -349,19 +350,27 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		}
 
 		throw new IllegalArgumentException(
-				"Illegal Argument:  " + compassDirection + ".  Must be one of:  {BOTTOM,SOUTH,EAST,WEST,SOUTH_WEST}.");
+				"Illegal Argument:  " + compassDirection + ".  Must be one of:  {SOUTH,EAST,WEST,SOUTH_WEST}.");
 	}
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImpl impl = getCytoPanelInternal(cp.getCytoPanelName());
+			CytoPanelImpl impl;
+			if(cp instanceof CommandToolDialog)
+				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
+			else		
+				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
 			impl.add(cp);
 		});
 	}
 
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImpl impl = getCytoPanelInternal(cp.getCytoPanelName());
+			CytoPanelImpl impl;
+			if(cp instanceof CommandToolDialog)
+				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
+			else		
+				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
 			impl.remove(cp);
 		});
 	}
@@ -602,13 +611,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		bounds.setLocation(getLocationOnScreen());
 
 		Point p = CytoPanelUtil.getLocationOfExternalWindow(screenDimension, bounds, frame.getSize(),
-				cytoPanel.getCytoPanelName(), false);
+				cytoPanel.getCytoPanelNameInternal(), false);
 		frame.setLocation(p);
 		frame.setVisible(true);
 	}
 	
 	private BiModalJSplitPane getSplitPaneOf(CytoPanelImpl cytoPanel) {
-		switch (cytoPanel.getCytoPanelName()) {
+		switch (cytoPanel.getCytoPanelNameInternal()) {
 			case BOTTOM:
 				return getAutomationMasterPane();
 			case SOUTH:

@@ -6,10 +6,11 @@ import javax.swing.Action;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.internal.view.CytoPanelNameInternal;
+import org.cytoscape.internal.view.CytoscapeDesktop;
 
 /*
  * #%L
@@ -38,18 +39,15 @@ import org.cytoscape.application.swing.CytoPanelState;
 @SuppressWarnings("serial")
 public class CytoPanelAction extends AbstractCyAction {
 	
-	protected static String SHOW = "Show";
-	protected static String HIDE = "Hide";
+	protected static String SHOW = "Show ";
+	protected static String HIDE = "Hide ";
 
-	protected String title;
-	protected CytoPanelName position;
-	private CySwingApplication desktop;
+	private CytoPanelNameInternal position;
+	private CytoscapeDesktop desktop;
 
-	public CytoPanelAction(final CytoPanelName position, final boolean show, final CySwingApplication desktop,
-			float menuGravity) {
-		super(show ? HIDE + " " + position.getTitle() : SHOW + " " + position.getTitle());
+	public CytoPanelAction(CytoPanelNameInternal position, boolean show, CytoscapeDesktop desktop, float menuGravity) {
+		super(show ? HIDE + position.getTitle() : SHOW + position.getTitle());
 
-		this.title = position.getTitle();
 		this.position = position;
 		this.desktop = desktop;
 		
@@ -64,7 +62,7 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ev) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 
-		if (position == CytoPanelName.SOUTH_WEST && curState == CytoPanelState.HIDE)			// #4100
+		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.HIDE)			// #4100
 		{
 			CytoPanel west = desktop.getCytoPanel(CytoPanelName.WEST);
 			CytoPanelState westState = west.getState();
@@ -85,8 +83,8 @@ public class CytoPanelAction extends AbstractCyAction {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 		
 		if (curState == CytoPanelState.HIDE)
-			putValue(Action.NAME, SHOW + " " + title);
+			putValue(Action.NAME, SHOW + position.getTitle());
 		else
-			putValue(Action.NAME, HIDE + " " + title);
+			putValue(Action.NAME, HIDE + position.getTitle());
 	}
 }
