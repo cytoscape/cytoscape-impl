@@ -81,6 +81,8 @@ public interface GraphView {
 	public boolean nodeSelectionEnabled();
 
 	public boolean edgeSelectionEnabled();
+	
+	public boolean annotationSelectionEnabled();
 
 	public void enableNodeSelection();
 
@@ -89,6 +91,10 @@ public interface GraphView {
 	public void enableEdgeSelection();
 
 	public void disableEdgeSelection();
+	
+	public void enableAnnotationSelection();
+	
+	public void disableAnnotationSelection();
 
 	/**
 	 * @return An int array of the graph perspective indices of the selected nodes.

@@ -272,15 +272,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	int imageHeight = 0;
 
-	/**
-	 *
-	 */
 	boolean m_nodeSelection = true;
-
-	/**
-	 *
-	 */
 	boolean m_edgeSelection = true;
+	boolean m_annotationSelection = true;
 
 	/**
 	 * BTree of selected nodes.
@@ -490,25 +484,21 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		return model;
 	}
 
-	/**
-	 * Whether node selection is enabled.
-	 */
 	@Override
 	public boolean nodeSelectionEnabled() {
 		return m_nodeSelection;
 	}
 
-	/**
-	 * Whether edge selection is enabled.
-	 */
 	@Override
 	public boolean edgeSelectionEnabled() {
 		return m_edgeSelection;
 	}
+	
+	@Override
+	public boolean annotationSelectionEnabled() {
+		return m_annotationSelection;
+	}
 
-	/**
-	 * Enabling the ability to select nodes.
-	 */
 	@Override
 	public void enableNodeSelection() {
 		synchronized (m_lock) {
@@ -516,9 +506,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * Disables the ability to select nodes.
-	 */
 	@Override
 	public void disableNodeSelection() {
 		final long[] unselectedNodes;
@@ -538,20 +525,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				setContentChanged();
 			}
 		}
-
-		if (unselectedNodes.length > 0) {
-			// final GraphViewChangeListener listener = m_lis[0];
-
-			// if (listener != null) {
-			// 	listener.graphViewChanged(new GraphViewNodesUnselectedEvent(
-			// 			this, makeNodeList(unselectedNodes, this)));
-			// }
-		}
 	}
 
-	/**
-	 * Enables the ability to select edges.
-	 */
 	@Override
 	public void enableEdgeSelection() {
 		synchronized (m_lock) {
@@ -559,9 +534,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		}
 	}
 
-	/**
-	 * Disables the ability to select edges.
-	 */
 	@Override
 	public void disableEdgeSelection() {
 		final long[] unselectedEdges;
@@ -580,18 +552,20 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				setContentChanged();
 			}
 		}
-
-		if (unselectedEdges.length > 0) {
-			// final GraphViewChangeListener listener = m_lis[0];
-
-			// if (listener != null) {
-			// 	listener.graphViewChanged(new GraphViewEdgesUnselectedEvent(
-			// 			this, makeEdgeList(unselectedEdges, this)));
-			// }
-
-			// Update the view after listener events are fired because listeners
-			// may change something in the graph.
-			// updateView(false);
+	}
+	
+	@Override
+	public void enableAnnotationSelection() {
+		synchronized (m_lock) {
+			m_annotationSelection = true;
+		}
+	}
+	
+	@Override
+	public void disableAnnotationSelection() {
+		synchronized (m_lock) {
+			m_annotationSelection = false;
+			getCyAnnotator().clearSelectedAnnotations();
 		}
 	}
 
@@ -2470,6 +2444,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 				enableEdgeSelection();
 			else
 				disableEdgeSelection();
+		} else if (vp == DVisualLexicon.NETWORK_ANNOTATION_SELECTION) {
+			boolean b = ((Boolean) value).booleanValue();
+			if (b)
+				enableAnnotationSelection();
+			else
+				disableAnnotationSelection();
 		} else if (vp == BasicVisualLexicon.NETWORK_BACKGROUND_PAINT) {
 			setBackgroundPaint((Paint) value);
 		} else if (vp == BasicVisualLexicon.NETWORK_CENTER_X_LOCATION) {
