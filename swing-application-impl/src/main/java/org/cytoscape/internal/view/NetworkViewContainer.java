@@ -21,11 +21,15 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.ParallelGroup;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.InputMap;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -35,18 +39,23 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
+import org.cytoscape.internal.model.SelectionMode;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.Range;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -57,7 +66,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -82,16 +91,20 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private final CyNetworkView networkView;
 	private final RenderingEngine<CyNetwork> renderingEngine;
 	private final RenderingEngineFactory<CyNetwork> thumbnailEngineFactory;
+	private final VisualLexicon lexicon;
 
 	private VisRootPaneContainer visualizationContainer;
 	
 	private JPanel toolBar;
+	
 	private JButton detachViewButton;
 	private JButton reattachViewButton;
 	private JButton exportButton;
 	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
+	private Map<VisualProperty<Boolean>, JToggleButton> selectionModeButtons = new LinkedHashMap<>();
+	private JPanel selectionModePanel;
 	private JPanel infoPanel;
 	private JLabel selectionIconLabel;
 	private JLabel hiddenIconLabel;
@@ -124,6 +137,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.networkView = networkView;
+		this.lexicon = engineFactory.getVisualLexicon();
 		this.current = current;
 		this.gridViewTogglePanel = new GridViewTogglePanel(gridViewToggleModel, serviceRegistrar);
 		this.serviceRegistrar = serviceRegistrar;
@@ -207,6 +221,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
+		updateSelectionModePanel();
 		updateInfoPanel();
 		
 		if (isComparing())
@@ -215,6 +230,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
 		updateBirdsEyeViewPanel();
+	}
+	
+	protected void updateSelectionModePanel() {
+		selectionModeButtons.forEach((vp, btn) -> {
+			final boolean selected = networkView.getVisualProperty(vp);
+			btn.setForeground(UIManager.getColor(selected ? "Focus.color" : "Button.foreground"));
+		});
 	}
 	
 	protected void updateInfoPanel() {
@@ -368,6 +390,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getViewTitleLabel())
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
+					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -387,6 +411,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -470,6 +495,60 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		return viewTitleTextField;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private JPanel getSelectionModePanel() {
+		if (selectionModePanel == null) {
+			selectionModePanel = new JPanel();
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				selectionModePanel.setOpaque(false);
+			
+			final GroupLayout layout = new GroupLayout(selectionModePanel);
+			selectionModePanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			
+			final SequentialGroup hGroup = layout.createSequentialGroup();
+			final ParallelGroup vGroup = layout.createParallelGroup(CENTER, false);
+			
+			layout.setHorizontalGroup(hGroup);
+			layout.setVerticalGroup(vGroup);
+			
+			IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			
+			for (SelectionMode mode : SelectionMode.values()) {
+				final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
+				
+				if (vp != null && lexicon.isSupported(vp)) {
+					Range<?> range = vp.getRange();
+					
+					if (range != null && range.getType() != Boolean.class)
+						continue;
+					
+					JToggleButton btn = new JToggleButton(mode.getIconText());
+					btn.setToolTipText(mode.getText());
+					styleToolBarButton(btn, iconManager.getIconFont(14.0f), true);
+					
+					hGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+					vGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+					
+					selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
+					
+					btn.addActionListener(evt -> {
+						networkView.setLockedValue(vp, btn.isSelected());
+						updateSelectionModePanel();
+					});
+				}
+			}
+			
+			if (!selectionModeButtons.isEmpty())
+				LookAndFeelUtil.equalizeSize(
+						selectionModeButtons.values().toArray(new JToggleButton[selectionModeButtons.size()]));
+		}
+		
+		return selectionModePanel;
 	}
 	
 	private JPanel getInfoPanel() {
