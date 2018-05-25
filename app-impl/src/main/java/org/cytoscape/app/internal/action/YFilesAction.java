@@ -7,7 +7,7 @@ import java.awt.event.ActionEvent;
 
 public class YFilesAction extends AbstractCyAction {
 
-    private static final String YFILES_URL = "http://apps.cytoscape.org/apps/yfileslayoutalgorithms";
+    private static final String YFILES_URL = "https://apps.cytoscape.org/apps/yfileslayoutalgorithms";
 
     private final OpenBrowser openBrowser;
 
