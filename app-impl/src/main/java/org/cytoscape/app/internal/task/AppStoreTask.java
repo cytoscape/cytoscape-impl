@@ -22,7 +22,7 @@ import org.cytoscape.work.json.JSONResult;
 
 public class AppStoreTask extends AbstractAppTask implements ObservableTask {
 	final CyServiceRegistrar serviceRegistrar;
-	final static String APP_STORE = "http://apps.cytoscape.org/";
+	final static String APP_STORE = "https://apps.cytoscape.org/";
 	private String url = null;
 
 	@Tunable (description="App name", context="nogui")

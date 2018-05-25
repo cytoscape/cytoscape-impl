@@ -71,7 +71,7 @@ public class WebQuerier {
 	
 	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
 	
-	public static final String DEFAULT_APP_STORE_URL = "http://apps.cytoscape.org/";
+	public static final String DEFAULT_APP_STORE_URL = "https://apps.cytoscape.org/";
 	
 	private static final String REQUEST_JSON_HEADER_KEY = "X-Requested-With";
 	private static final String REQUEST_JSON_HEADER_VALUE = "XMLHttpRequest";
@@ -254,7 +254,7 @@ public class WebQuerier {
 	 * Sets the current base url used for app store queries. If the url is malformed,
 	 * no change is made.
 	 * 
-	 * @param url The base url of the app store, e.g. http://apps.cytoscape.org/
+	 * @param url The base url of the app store, e.g. https://apps.cytoscape.org/
 	 */
 	public void setCurrentAppStoreUrl(String url) {
 		boolean malformed = false;
