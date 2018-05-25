@@ -9,6 +9,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
@@ -354,8 +355,8 @@ public class CyActivator extends AbstractCyActivator {
 
 	public void generateColorMappingGenerators(final CyServiceRegistrar registrar,
 	                                           final PaletteProviderManager paletteProviderMgr) { 
-		for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(Palette.PaletteType.QUALITATIVE, false)) {
-			for (String paletteName: provider.listPaletteNames(Palette.PaletteType.QUALITATIVE, false)) {
+		for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(BrewerType.QUALITATIVE, false)) {
+			for (String paletteName: provider.listPaletteNames(BrewerType.QUALITATIVE, false)) {
 				Palette palette = provider.getPalette(paletteName);
 				registerNewGenerator(registrar, palette.toString(), palette);
 			}

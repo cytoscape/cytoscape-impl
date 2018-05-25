@@ -32,34 +32,36 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteType;
 
 /**
  * This is a built-in palette provider that provides the palettes originally
  * implemented by Cytoscape's VizMapper.
  */
 public class ColorBrewerPaletteProvider implements PaletteProvider {
-	Map<Palette.PaletteType,Map<String, ColorBrewer>> paletteMap;
+	Map<PaletteType,Map<String, ColorBrewer>> paletteMap;
 	public ColorBrewerPaletteProvider() {
 		paletteMap = new HashMap<>();
-		paletteMap.put(Palette.PaletteType.SEQUENTIAL,
+		paletteMap.put(BrewerType.SEQUENTIAL,
 		               getBrewerPalettes(ColorBrewer.getSequentialColorPalettes(false)));
-		paletteMap.put(Palette.PaletteType.QUALITATIVE,
+		paletteMap.put(BrewerType.QUALITATIVE,
 		               getBrewerPalettes(ColorBrewer.getQualitativeColorPalettes(false)));
-		paletteMap.put(Palette.PaletteType.DIVERGING,
+		paletteMap.put(BrewerType.DIVERGING,
 		               getBrewerPalettes(ColorBrewer.getDivergingColorPalettes(false)));
 	}
 
 	public String getProviderName() { return "ColorBrewer"; }
 
-	public List<Palette.PaletteType> getPaletteTypes() { 
-			return Arrays.asList(Palette.PaletteType.SEQUENTIAL, 
-			                     Palette.PaletteType.QUALITATIVE, 
-			                     Palette.PaletteType.DIVERGING); 
+	public List<PaletteType> getPaletteTypes() { 
+			return Arrays.asList(BrewerType.SEQUENTIAL, 
+			                     BrewerType.QUALITATIVE, 
+			                     BrewerType.DIVERGING); 
 	}
 
-	public List<String> listPaletteNames(Palette.PaletteType type, boolean colorBlindSafe) {
+	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
 		Map<String, ColorBrewer> palettes = paletteMap.get(type);
 		if (colorBlindSafe) {
 			List<String> names = new ArrayList<>();
@@ -73,7 +75,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object> listPaletteIdentifiers(Palette.PaletteType type, boolean colorBlindSafe) {
+	public List<Object> listPaletteIdentifiers(PaletteType type, boolean colorBlindSafe) {
 		Map<String, ColorBrewer> palettes = paletteMap.get(type);
 		if (colorBlindSafe) {
 			List<Object> safePalettes = new ArrayList<>();
@@ -91,7 +93,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	}
 
 	public Palette getPalette(String paletteName, int size) {
-		for (Palette.PaletteType type: paletteMap.keySet()) {
+		for (PaletteType type: paletteMap.keySet()) {
 			Map<String, ColorBrewer> palettes = paletteMap.get(type);
 			for (String name: palettes.keySet()) {
 				if (name.equalsIgnoreCase(paletteName))
@@ -106,7 +108,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	}
 
 	public Palette getPalette(Object paletteIdentifier, int size) {
-		for (Palette.PaletteType type: paletteMap.keySet()) {
+		for (PaletteType type: paletteMap.keySet()) {
 			Map<String, ColorBrewer> palettes = paletteMap.get(type);
 			for (ColorBrewer cb: palettes.values()) {
 				if (paletteIdentifier.equals(cb))
@@ -129,9 +131,9 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	 */
 	class BrewerPalette implements Palette {
 		ColorBrewer palette;
-		Palette.PaletteType type;
+		PaletteType type;
 		int size;
-		public BrewerPalette(ColorBrewer cbPalette, int size, Palette.PaletteType type) {
+		public BrewerPalette(ColorBrewer cbPalette, int size, PaletteType type) {
 			this.palette = cbPalette;
 			this.size = size;
 			this.type = type;
@@ -145,7 +147,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 			return palette.isColorBlindSave();
 		}
 
-		public Palette.PaletteType getType() { return type; }
+		public PaletteType getType() { return type; }
 
 		public int size() { return size; }
 

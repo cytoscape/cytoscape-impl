@@ -32,6 +32,7 @@ import java.util.Map;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.color.PaletteType;
 
 public class PaletteProviderManagerImpl implements PaletteProviderManager {
 	Map<String,PaletteProvider> providerMap;
@@ -51,7 +52,7 @@ public class PaletteProviderManagerImpl implements PaletteProviderManager {
 		return new ArrayList<PaletteProvider>(providerMap.values());
 	}
 
-	public List<PaletteProvider> getPaletteProviders(Palette.PaletteType type, boolean colorSafe) {
+	public List<PaletteProvider> getPaletteProviders(PaletteType type, boolean colorSafe) {
 		List<PaletteProvider> providers = new ArrayList<>();
 		for (PaletteProvider provider: providerMap.values()) {
 			List<String> palettes = provider.listPaletteNames(type, colorSafe);

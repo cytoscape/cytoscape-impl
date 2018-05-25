@@ -33,8 +33,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
+import org.cytoscape.util.color.PaletteType;
 
 /**
  * This is a built-in palette provider that provides the palettes originally
@@ -43,16 +45,16 @@ import org.cytoscape.util.color.PaletteProvider;
 public class RandomPaletteProvider implements PaletteProvider {
 	public String getProviderName() { return "Random"; }
 
-	public List<Palette.PaletteType> getPaletteTypes() { return Collections.singletonList(Palette.PaletteType.QUALITATIVE); }
+	public List<PaletteType> getPaletteTypes() { return Collections.singletonList(BrewerType.QUALITATIVE); }
 
-	public List<String> listPaletteNames(Palette.PaletteType type, boolean colorBlindSafe) {
-		if (type.equals(Palette.PaletteType.QUALITATIVE))
+	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
+		if (type.equals(BrewerType.QUALITATIVE))
 			return Arrays.asList(" ");
 		else return new ArrayList<String>();
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Object> listPaletteIdentifiers(Palette.PaletteType type, boolean colorBlindSafe) {
+	public List<Object> listPaletteIdentifiers(PaletteType type, boolean colorBlindSafe) {
 		return (List)listPaletteNames(type, colorBlindSafe);
 	}
 
@@ -82,7 +84,7 @@ public class RandomPaletteProvider implements PaletteProvider {
 	class RandomPalette extends AbstractPalette {
 		Color[] colors;
 		RandomPalette(int size) {
-			super(" ", size, PaletteType.QUALITATIVE, false);
+			super(" ", size, BrewerType.QUALITATIVE, false);
 			getColors(size);
 		}
 

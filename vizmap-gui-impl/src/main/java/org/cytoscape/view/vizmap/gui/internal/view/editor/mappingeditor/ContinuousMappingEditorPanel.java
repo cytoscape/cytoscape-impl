@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
@@ -335,8 +336,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			Palette defaultPalette = null;
 			PaletteProviderManager paletteProviderMgr = servicesUtil.get(PaletteProviderManager.class);
 			List<Palette> paletteList = new ArrayList<>();
-			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(Palette.PaletteType.DIVERGING, false)) {
-				for (String paletteName: provider.listPaletteNames(Palette.PaletteType.DIVERGING, false)) {
+			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(BrewerType.DIVERGING, false)) {
+				for (String paletteName: provider.listPaletteNames(BrewerType.DIVERGING, false)) {
 					Palette palette = provider.getPalette(paletteName);
 					if (palette.toString().equalsIgnoreCase(DEFAULT_PALETTE))
 						defaultPalette = palette;
