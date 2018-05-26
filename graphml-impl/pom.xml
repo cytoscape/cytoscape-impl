@@ -43,6 +43,11 @@
 		<!-- Cytoscape Core API -->
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>group-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>io-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
@@ -68,6 +73,19 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>event-api</artifactId>
 			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>group-impl</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>group-impl</artifactId>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

@@ -25,19 +25,30 @@ package org.cytoscape.io.internal.read.graphml;
  */
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.CyGroupSettingsManager;
+import org.cytoscape.group.CyGroupSettingsManager.GroupViewType;
 import org.cytoscape.io.read.AbstractCyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
@@ -57,6 +68,12 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 	private InputStream inputStream;
 	private final CyLayoutAlgorithmManager layouts;
 	private final CyRootNetworkManager cyRootNetworkManager;
+	
+	private final CyGroupFactory cyGroupFactory;
+	private final CyGroupManager cyGroupManager;
+	private final CyGroupSettingsManager cyGroupSettings;
+	
+	private final List<CyGroup> cyGroups;
 
 	private GraphMLParser parser;
 	private TaskMonitor taskMonitor;
@@ -68,7 +85,8 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 						 final CyApplicationManager cyApplicationManager,
 						 final CyNetworkFactory cyNetworkFactory,
 						 final CyNetworkManager cyNetworkManager,
-						 final CyRootNetworkManager cyRootNetworkManager) {
+						 final CyRootNetworkManager cyRootNetworkManager,
+						 final CyServiceRegistrar cyServiceRegistrar) {
 		super(inputStream, cyApplicationManager, cyNetworkFactory, cyNetworkManager, cyRootNetworkManager);
 		
 		if (inputStream == null)
@@ -77,6 +95,11 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 		this.inputStream = inputStream;
 		this.layouts = layouts;
 		this.cyRootNetworkManager = cyRootNetworkManager;
+		
+		this.cyGroupFactory = cyServiceRegistrar.getService(CyGroupFactory.class);
+		this.cyGroupManager = cyServiceRegistrar.getService(CyGroupManager.class);
+		this.cyGroupSettings = cyServiceRegistrar.getService(CyGroupSettingsManager.class);
+		this.cyGroups = new ArrayList<>();
 	}
 
 	@Override
@@ -113,6 +136,9 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 			final InputSource inputSource = new InputSource(inputStream);
 			inputSource.setEncoding("UTF-8");
 			xmlReader.parse(inputSource);
+			
+			createGroups(root, newNetwork);
+			
 		} finally {
 			if (inputStream != null) {
 				try {
@@ -128,7 +154,15 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 	@Override
 	public CyNetworkView buildCyNetworkView(CyNetwork network) {
 		final CyNetworkView view = getNetworkViewFactory().createNetworkView(network);
-
+		
+		// now that a view exists, ensure that the groups are rendered as a compound node
+		// because it's more intuitive than the other options
+		for (CyGroup group: cyGroups) {
+			// HACK: need to cause a settings change in order for the view change to stick
+			cyGroupSettings.setGroupViewType(group, GroupViewType.SINGLENODE);
+			cyGroupSettings.setGroupViewType(group, GroupViewType.COMPOUND);
+		}
+		
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
 		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
 		Task nextTask = itr.next();
@@ -139,5 +173,28 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 		}
 
 		return view;
+	}
+	
+	private void createGroups(final CyRootNetwork root, final CySubNetwork net) {
+		
+		for (CySubNetwork subnet : root.getSubNetworkList()) {
+			if (subnet == net) {
+				continue;
+			}
+			
+			// create the group, add it to the base network
+			CyGroup group = cyGroupFactory.createGroup(net, subnet.getNodeList(), null, true);
+			CyNode groupNode = group.getGroupNode();
+			net.addNode(groupNode);
+			cyGroups.add(group);
+			
+			// give each group a name
+			String groupName = subnet.getRow(subnet).get(CyNetwork.NAME, String.class);
+			
+			// set shared name and name properties
+			CyRow sharedRow = root.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
+			sharedRow.set(CyRootNetwork.SHARED_NAME, groupName);
+			net.getRow(groupNode).set(CyNetwork.NAME, groupName);
+		}
 	}
 }
