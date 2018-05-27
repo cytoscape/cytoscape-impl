@@ -525,7 +525,8 @@ public class CyActivator extends AbstractCyActivator {
 			if (LookAndFeelUtil.isMac() || LookAndFeelUtil.isWindows())
 				lookAndFeel = UIManager.getSystemLookAndFeelClassName();
 			else // Use Nimbus on *nix systems
-				lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+				// lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+				lookAndFeel = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
 		}
 			
 		try {
