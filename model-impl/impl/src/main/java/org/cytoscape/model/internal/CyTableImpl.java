@@ -343,7 +343,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 	@Override
 	public Collection<CyColumn> getColumns() {
-		return colList;
+		synchronized (lock) {
+			return new ArrayList<>(colList);
+		}
 	}
 
 	@Override
