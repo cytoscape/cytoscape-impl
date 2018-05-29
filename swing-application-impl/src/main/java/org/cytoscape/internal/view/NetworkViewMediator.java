@@ -25,6 +25,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.Timer;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
@@ -120,7 +121,7 @@ public class NetworkViewMediator
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final NetworkViewMainPanel networkViewMainPanel;
 	private final NetworkMediator networkMediator;
