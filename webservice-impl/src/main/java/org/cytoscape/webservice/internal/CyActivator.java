@@ -75,9 +75,9 @@ public class CyActivator extends AbstractCyActivator {
 		);
 		ShowImportDialogAction showImportTableFromWebServiceDialogAction = new ShowImportDialogAction(
 				unifiedTableImportDialog,
-				"File.Import.Table[23]",
-				3.0f,
-				"Public Databases...",
+				"File.Import[23]",
+				7.0f,
+				"Table From Public Databases...",
 				tableImportShortcut,
 				serviceRegistrar
 		);

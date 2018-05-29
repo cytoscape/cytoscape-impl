@@ -1576,10 +1576,10 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import.Table[23.0]");
-			props.setProperty(MENU_GRAVITY, "1.0");
-			props.setProperty(TOOL_BAR_GRAVITY, "2.2");
-			props.setProperty(TITLE, "File...");
+			props.setProperty(PREFERRED_MENU, "File");		//.Import.Table[23.0]
+			props.setProperty(MENU_GRAVITY, "5.1");
+			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
+			props.setProperty(TITLE, "Open Table From File...");
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From File");
@@ -1592,13 +1592,13 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import.Table[23.0]");
-			props.setProperty(MENU_GRAVITY, "2.0");
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
+			props.setProperty(MENU_GRAVITY, "6.0");
 			// props.setProperty(TOOL_BAR_GRAVITY, "2.3");
-			props.setProperty(TITLE, "URL...");
+			props.setProperty(TITLE, "Table From URL...");
 			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-url-32.png").toString());
 			// props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Import Table From URL");
+			props.setProperty(TOOLTIP, "Import Table From URL...");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
@@ -1610,7 +1610,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyTableManagerServiceRef, cyNetworkManagerServiceRef, cyApplicationManagerServiceRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
-			props.setProperty(PREFERRED_MENU, "File.Export[24]");
+			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(MENU_GRAVITY, "1.3");
 			// props.setProperty(TOOL_BAR_GRAVITY, "3.1");
 			props.setProperty(TITLE, "Table...");
@@ -1976,7 +1976,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(MENU_GRAVITY, "4.0");
-			props.setProperty(TITLE, "Empty Network");
+			props.setProperty(TITLE, "New Empty Network");
 			props.setProperty(COMMAND, "create empty");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create an empty network");
@@ -2114,11 +2114,11 @@ public class CyActivator extends AbstractCyActivator {
 			LoadNetworkURLTaskFactoryImpl factory = new LoadNetworkURLTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ID, "loadNetworkURLTaskFactory");
-			props.setProperty(PREFERRED_MENU, "File");
+			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(ACCELERATOR, "cmd shift l");
-			props.setProperty(MENU_GRAVITY, "4.8");
+			props.setProperty(MENU_GRAVITY, "0.2");
 			// props.setProperty(TOOL_BAR_GRAVITY, "2.1");
-			props.setProperty(TITLE, "Open Network From URL...");
+			props.setProperty(TITLE, "Network From URL...");
 			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-net-url-32.png").toString());
 			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Open a network from a remote Internet location");
@@ -2159,7 +2159,7 @@ public class CyActivator extends AbstractCyActivator {
 			ExportSelectedNetworkTaskFactoryImpl factory = new ExportSelectedNetworkTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "File.Export[24]");
+			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(MENU_GRAVITY, "1.1");
 			// props.setProperty(TOOL_BAR_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Network...");
@@ -2416,7 +2416,7 @@ public class CyActivator extends AbstractCyActivator {
 			ExportVizmapTaskFactoryImpl factory = new ExportVizmapTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, "vizmap");
-			props.setProperty(PREFERRED_MENU, "File.Export[24]");
+			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(MENU_GRAVITY, "1.4");
 			props.setProperty(TITLE, "Styles...");
 			props.setProperty(COMMAND, "export");
@@ -2432,7 +2432,7 @@ public class CyActivator extends AbstractCyActivator {
 			LoadVizmapFileTaskFactoryImpl factory = new LoadVizmapFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
-			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(MENU_GRAVITY, "30.0");
 			props.setProperty(TITLE, "Styles...");
 			props.setProperty(COMMAND, "load file");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");
