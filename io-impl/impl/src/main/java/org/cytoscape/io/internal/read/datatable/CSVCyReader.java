@@ -176,21 +176,30 @@ public class CSVCyReader implements CyTableReader {
 		if (type.equals(List.class)) {
 			List<Object> list = new ArrayList<>();
 			String[] values = value.split("\n");
-			
 			for (String item : values) {
 				list.add(parseValue(listElementType, null, item));
 			}
-
 			if (list.size() == 1 && list.get(0) == null) 
 				return null;
-
 			return list;
-		} else if (type.equals(String.class))
+		} else if (type.equals(String.class)) {
 			return value;
-		else {
+		} else if(value.isEmpty()) {
+			return null;
+		} else {
 			try {
-				Method method = type.getMethod("valueOf", String.class);
-				return method.invoke(null, value);
+				if (type.equals(Long.class)) {
+					return Long.valueOf(value);
+				} else if (type.equals(Boolean.class)) {
+					return Boolean.valueOf(value);
+				} else if (type.equals(Double.class)) {
+					return Double.valueOf(value);
+				} else if (type.equals(Integer.class)) {
+					return Integer.valueOf(value); 
+				} else {
+					Method method = type.getMethod("valueOf", String.class);
+					return method.invoke(null, value);
+				}
 			} catch (Exception e) {
 				return null;
 			}
