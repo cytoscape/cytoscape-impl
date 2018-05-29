@@ -56,53 +56,16 @@ public class CytoscapeMenus {
 		
 		viewFrameActions = new LinkedHashSet<>();
 
-//		menuBar.addMenu("File", 0.0);
-//		menuBar.addMenu("File.New", 0.0);
-//		menuBar.addMenu("File.New.Network", 0.0);
-//		menuBar.addMenu("File.Open Recent", 1.9);
-//		menuBar.addMenu("File.Import", 5.0);
-//		menuBar.addMenu("File.Export", 5.1);
-//		menuBar.addMenu("Edit", 0.0);
-//		menuBar.addMenu("View", 0.0);
-//		menuBar.addMenu("Select", 0.0);
-//		menuBar.addMenu("Select.Nodes", 1.0);
-//		menuBar.addMenu("Select.Edges", 1.1);
-//		menuBar.addMenu("Layout", 0.0);
-//		menuBar.addMenu("Apps", 0.0);
-//		menuBar.addMenu("Tools", 0.0);
-//		menuBar.addMenu("Help", 0.0);
-//
-//		menuBar.addSeparator("File", 2.0);
-//		menuBar.addSeparator("File", 4.0);
-//		menuBar.addSeparator("File", 6.0);
-//		menuBar.addSeparator("File", 7.0);
-//		menuBar.addMenu("File", 0.0);
-//		menuBar.addMenu("File.Open", 1.1);
-//		menuBar.addMenu("File.Open Recent", 1.3);
-//		menuBar.addMenu("File.Save", 1.5);
-//		menuBar.addMenu("File.Save As", 1.7);
-//		menuBar.addMenu("File.Close", 1.9);
 
 		menuBar.addSeparator("File", 1.99);
 		menuBar.addSeparator("File", 2.99);
-		menuBar.addSeparator("File",4.5);
+		menuBar.addSeparator("File",5.5);
 		menuBar.addSeparator("File",25);
 		if (!LookAndFeelUtil.isMac())
 			menuBar.addSeparator("File", 27.0);
 
 		
 		menuBar.addMenu("File.New Network", 3.0);
-//		menuBar.addMenu("File.New Collection", 2.995);
-//		menuBar.addMenu("File.New Empty Network", 4.0);
-//		menuBar.addMenu("File.New Network From SelectedNodesAllEdges", 5.0);
-//		menuBar.addMenu("File.New Network From SelectedNodesSelectedEdges", 6.0);
-//		menuBar.addMenu("File.Import", 7.0);
-//		menuBar.addMenu("File.Export", 8.0);
-//		menuBar.addMenu("File.ExportImage", 9);
-//		menuBar.addMenu("File.ExportHTML", 10);
-//		menuBar.addMenu("File.Print", 11);
-
-		
 		menuBar.addMenu("Edit", 0.0);
 		menuBar.addMenu("View", 0.0);
 		menuBar.addMenu("Select", 0.0);

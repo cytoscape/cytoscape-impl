@@ -66,16 +66,16 @@ public class CyActivator extends AbstractCyActivator {
 		
 		ShowImportDialogAction showImportNetworkFromWebServiceDialogAction = new ShowImportDialogAction(
 				unifiedNetworkImportDialog,
-				"File.Import.Network",
-				3.0f,
-				"Public Databases...",
+				"File.Import[23]",
+				0.5f,
+				"Network From Public Databases...",
 				networkImportShortcut,
-				"Import Network from Database...",
+				"Import a network from a curated database",
 				serviceRegistrar
 		);
 		ShowImportDialogAction showImportTableFromWebServiceDialogAction = new ShowImportDialogAction(
 				unifiedTableImportDialog,
-				"File.Import.Table",
+				"File.Import.Table[23]",
 				3.0f,
 				"Public Databases...",
 				tableImportShortcut,
