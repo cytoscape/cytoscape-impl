@@ -3,8 +3,10 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
+import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
@@ -41,7 +43,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
@@ -119,6 +120,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
 	final JSeparator sep5 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep6 = new JSeparator(JSeparator.VERTICAL);
 	
     private boolean detached;
     private boolean comparing;
@@ -214,7 +216,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getReattachViewButton().setVisible(isDetached());
 		sep2.setVisible(!isComparing());
 		getExportButton().setVisible(!isComparing());
-		sep3.setVisible(!isComparing());
+		sep3.setVisible(getSelectionModePanel().isVisible());
+		sep4.setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
@@ -321,6 +324,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setFocusable(true);
 		setRequestFocusEnabled(true);
 		
+		createSelectionModeButtons();
+		
 		final JPanel glassPane = new JPanel(null);
 		getRootPane().setGlassPane(glassPane);
 		glassPane.setOpaque(false);
@@ -344,6 +349,37 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		resizeTimer.start();
 	}
 	
+	@SuppressWarnings("unchecked")
+	private void createSelectionModeButtons() {
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		
+		for (SelectionMode mode : SelectionMode.values()) {
+			final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
+			
+			if (vp != null && lexicon.isSupported(vp)) {
+				Range<?> range = vp.getRange();
+				
+				if (range != null && range.getType() != Boolean.class)
+					continue;
+				
+				JToggleButton btn = new JToggleButton(mode.getIconText());
+				btn.setToolTipText(mode.getText());
+				styleToolBarButton(btn, iconManager.getIconFont(14.0f), 2, 5);
+				
+				selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
+				
+				btn.addActionListener(evt -> {
+					networkView.setLockedValue(vp, btn.isSelected());
+					updateSelectionModePanel();
+				});
+			}
+		}
+		
+		if (!selectionModeButtons.isEmpty())
+			LookAndFeelUtil.equalizeSize(
+					selectionModeButtons.values().toArray(new JToggleButton[selectionModeButtons.size()]));
+	}
+
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
 		return renderingEngine;
 	}
@@ -390,15 +426,17 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getViewTitleLabel())
 					.addComponent(getViewTitleTextField(), 100, 260, 320)
 					.addGap(0, 10, Short.MAX_VALUE)
-					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
+					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
+					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep6, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -411,12 +449,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -456,7 +495,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JLabel getCurrentLabel() {
 		if (currentLabel == null) {
-			currentLabel = new JLabel(IconManager.ICON_CIRCLE); // Just to get the preferred size with the icon font
+			currentLabel = new JLabel(ICON_CIRCLE); // Just to get the preferred size with the icon font
 			currentLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
 			currentLabel.setMinimumSize(currentLabel.getPreferredSize());
 			currentLabel.setMaximumSize(currentLabel.getPreferredSize());
@@ -497,7 +536,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return viewTitleTextField;
 	}
 	
-	@SuppressWarnings("unchecked")
 	private JPanel getSelectionModePanel() {
 		if (selectionModePanel == null) {
 			selectionModePanel = new JPanel();
@@ -505,47 +543,30 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (LookAndFeelUtil.isAquaLAF())
 				selectionModePanel.setOpaque(false);
 			
-			final GroupLayout layout = new GroupLayout(selectionModePanel);
-			selectionModePanel.setLayout(layout);
-			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
-			
-			final SequentialGroup hGroup = layout.createSequentialGroup();
-			final ParallelGroup vGroup = layout.createParallelGroup(CENTER, false);
-			
-			layout.setHorizontalGroup(hGroup);
-			layout.setVerticalGroup(vGroup);
-			
-			IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-			
-			for (SelectionMode mode : SelectionMode.values()) {
-				final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
+			if (selectionModeButtons.isEmpty()) {
+				selectionModePanel.setVisible(false);
+			} else {
+				final GroupLayout layout = new GroupLayout(selectionModePanel);
+				selectionModePanel.setLayout(layout);
+				layout.setAutoCreateContainerGaps(false);
+				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 				
-				if (vp != null && lexicon.isSupported(vp)) {
-					Range<?> range = vp.getRange();
-					
-					if (range != null && range.getType() != Boolean.class)
-						continue;
-					
-					JToggleButton btn = new JToggleButton(mode.getIconText());
-					btn.setToolTipText(mode.getText());
-					styleToolBarButton(btn, iconManager.getIconFont(14.0f), true);
-					
+				final SequentialGroup hGroup = layout.createSequentialGroup();
+				final ParallelGroup vGroup = layout.createParallelGroup(CENTER, false);
+				layout.setHorizontalGroup(hGroup);
+				layout.setVerticalGroup(vGroup);
+			
+				JLabel lbl = new JLabel("Select:");
+				LookAndFeelUtil.makeSmall(lbl);
+				
+				hGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE).addPreferredGap(RELATED);
+				vGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+			
+				selectionModeButtons.forEach((vp, btn) -> {
 					hGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 					vGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-					
-					selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
-					
-					btn.addActionListener(evt -> {
-						networkView.setLockedValue(vp, btn.isSelected());
-						updateSelectionModePanel();
-					});
-				}
+				});
 			}
-			
-			if (!selectionModeButtons.isEmpty())
-				LookAndFeelUtil.equalizeSize(
-						selectionModeButtons.values().toArray(new JToggleButton[selectionModeButtons.size()]));
 		}
 		
 		return selectionModePanel;
@@ -569,11 +590,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addContainerGap()
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getHiddenLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addContainerGap()
