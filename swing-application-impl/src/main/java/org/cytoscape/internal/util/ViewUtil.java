@@ -142,6 +142,12 @@ public final class ViewUtil {
 	}
 	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font, final boolean addPadding) {
+		int hPad = addPadding ? 10 : 0;
+		int vPad = addPadding ? 5 : 0;
+		styleToolBarButton(btn, font, hPad, vPad);
+	}
+	
+	public static void styleToolBarButton(final AbstractButton btn, final Font font, int hPad, int vPad) {
 		btn.setFont(font);
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
@@ -149,9 +155,9 @@ public final class ViewUtil {
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
 		
-		if (addPadding) {
+		if (hPad > 0 || vPad > 0) {
 			final Dimension d = btn.getPreferredSize();
-			btn.setPreferredSize(new Dimension(d.width + 10, d.height + 5));
+			btn.setPreferredSize(new Dimension(d.width + hPad, d.height + vPad));
 		}
 	}
 	
