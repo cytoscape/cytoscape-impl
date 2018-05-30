@@ -34,6 +34,7 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -41,7 +42,6 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -104,7 +104,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
-	private Map<VisualProperty<Boolean>, JToggleButton> selectionModeButtons = new LinkedHashMap<>();
+	private Map<VisualProperty<Boolean>, JCheckBox> selectionCheckBoxes = new LinkedHashMap<>();
 	private JPanel selectionModePanel;
 	private JPanel infoPanel;
 	private JLabel selectionIconLabel;
@@ -236,9 +236,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	protected void updateSelectionModePanel() {
-		selectionModeButtons.forEach((vp, btn) -> {
+		selectionCheckBoxes.forEach((vp, cb) -> {
 			final boolean selected = networkView.getVisualProperty(vp);
-			btn.setForeground(UIManager.getColor(selected ? "Focus.color" : "Button.foreground"));
+			cb.setSelected(selected);
 		});
 	}
 	
@@ -351,8 +351,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	@SuppressWarnings("unchecked")
 	private void createSelectionModeButtons() {
-		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-		
 		for (SelectionMode mode : SelectionMode.values()) {
 			final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
 			
@@ -362,22 +360,17 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				if (range != null && range.getType() != Boolean.class)
 					continue;
 				
-				JToggleButton btn = new JToggleButton(mode.getIconText());
-				btn.setToolTipText(mode.getText());
-				styleToolBarButton(btn, iconManager.getIconFont(14.0f), 2, 5);
+				JCheckBox cb = new JCheckBox(mode.getText());
+				LookAndFeelUtil.makeSmall(cb);
 				
-				selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
+				selectionCheckBoxes.put((VisualProperty<Boolean>) vp, cb);
 				
-				btn.addActionListener(evt -> {
-					networkView.setLockedValue(vp, btn.isSelected());
+				cb.addActionListener(evt -> {
+					networkView.setLockedValue(vp, cb.isSelected());
 					updateSelectionModePanel();
 				});
 			}
 		}
-		
-		if (!selectionModeButtons.isEmpty())
-			LookAndFeelUtil.equalizeSize(
-					selectionModeButtons.values().toArray(new JToggleButton[selectionModeButtons.size()]));
 	}
 
 	protected RenderingEngine<CyNetwork> getRenderingEngine() {
@@ -543,7 +536,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (LookAndFeelUtil.isAquaLAF())
 				selectionModePanel.setOpaque(false);
 			
-			if (selectionModeButtons.isEmpty()) {
+			if (selectionCheckBoxes.isEmpty()) {
 				selectionModePanel.setVisible(false);
 			} else {
 				final GroupLayout layout = new GroupLayout(selectionModePanel);
@@ -562,9 +555,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				hGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE).addPreferredGap(RELATED);
 				vGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 			
-				selectionModeButtons.forEach((vp, btn) -> {
-					hGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-					vGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				selectionCheckBoxes.forEach((vp, cb) -> {
+					hGroup.addComponent(cb, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+					vGroup.addComponent(cb, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 				});
 			}
 		}
