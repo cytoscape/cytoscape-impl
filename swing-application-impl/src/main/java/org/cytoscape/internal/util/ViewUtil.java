@@ -137,6 +137,14 @@ public final class ViewUtil {
 		return null;
 	}
 	
+	public static void styleToolBarButton(final AbstractButton btn) {
+		styleToolBarButton(btn, null, true);
+	}
+	
+	public static void styleToolBarButton(final AbstractButton btn, final boolean addPadding) {
+		styleToolBarButton(btn, null, addPadding);
+	}
+	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font) {
 		styleToolBarButton(btn, font, true);
 	}
@@ -148,7 +156,9 @@ public final class ViewUtil {
 	}
 	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font, int hPad, int vPad) {
-		btn.setFont(font);
+		if (font != null)
+			btn.setFont(font);
+		
 		btn.setBorder(null);
 		btn.setContentAreaFilled(false);
 		btn.setBorderPainted(false);

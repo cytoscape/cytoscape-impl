@@ -129,7 +129,7 @@ public class GridViewTogglePanel extends JPanel {
 			gridModeButton.setToolTipText("Show Grid (G)");
 			styleToolBarButton(gridModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
-			gridModeButton.addActionListener((ActionEvent e) -> {
+			gridModeButton.addActionListener(evt -> {
 				model.setMode(Mode.GRID);
 			});
 		}
@@ -143,7 +143,7 @@ public class GridViewTogglePanel extends JPanel {
 			viewModeButton.setToolTipText("Show View (V)");
 			styleToolBarButton(viewModeButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
-			viewModeButton.addActionListener((ActionEvent e) -> {
+			viewModeButton.addActionListener(evt -> {
 				model.setMode(Mode.VIEW);
 			});
 		}

@@ -649,15 +649,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f),
 					false);
 			
-			birdsEyeViewButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					getBirdsEyeViewPanel().setVisible(!getBirdsEyeViewPanel().isVisible());
-					updateBirdsEyeButton();
-					
-					if (getBirdsEyeViewPanel().isVisible())
-						updateBirdsEyeViewPanel();
-				}
+			birdsEyeViewButton.addActionListener(evt -> {
+				getBirdsEyeViewPanel().setVisible(!getBirdsEyeViewPanel().isVisible());
+				updateBirdsEyeButton();
+				
+				if (getBirdsEyeViewPanel().isVisible())
+					updateBirdsEyeViewPanel();
 			});
 		}
 		
