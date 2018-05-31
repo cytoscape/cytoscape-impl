@@ -57,7 +57,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
-import org.cytoscape.internal.command.CommandToolDialog;
+import org.cytoscape.internal.command.CommandToolPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
@@ -356,7 +356,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			CytoPanelImpl impl;
-			if(cp instanceof CommandToolDialog)
+			if(cp instanceof CommandToolPanel)
 				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
 			else		
 				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
@@ -367,7 +367,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
 			CytoPanelImpl impl;
-			if(cp instanceof CommandToolDialog)
+			if(cp instanceof CommandToolPanel)
 				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
 			else		
 				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));

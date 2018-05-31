@@ -35,7 +35,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -43,6 +42,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +69,12 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
-public class CommandToolDialog extends JPanel implements CytoPanelComponent2,ActionListener,CyShutdownListener {
+public class CommandToolPanel extends JPanel implements CytoPanelComponent2, ActionListener, CyShutdownListener {
 
-	private static final String NEXT = "next";
-	private static final String PREVIOUS = "previous";
+	private static final String NEXT_ACTION = "next";
+	private static final String PREV_ACTION = "previous";
+	private static final String CLEAR_ACTION = "clear";
+	
 	public static final int MAX_SAVED_COMMANDS = 500;
 	
 	private static final Logger logger  = Logger.getLogger(CyUserLog.NAME);
@@ -83,23 +85,22 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 	private List<String> commandList = new ArrayList<>();
 	private int commandIndex = 0;
 
-	// Dialog components
 	private JResultsPane resultsText;
 	private JTextField inputField;
 	private File savedCommandsFile;
 
-	public CommandToolDialog(CyServiceRegistrar serviceRegistrar) {
+	public CommandToolPanel(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		this.commandRunner = new CommandTaskRunner(serviceRegistrar);
 		restoreCommandHistory();
 		initComponents();
-		setPreferredSize(new Dimension(800, 80));
+		setOpaque(false);
 	}
 
 	private void restoreCommandHistory() {
 		CyApplicationConfiguration appConfig = serviceRegistrar.getService(CyApplicationConfiguration.class);
 		File appConfigDir = appConfig.getConfigurationDirectoryLocation();
-		savedCommandsFile = new File(appConfigDir.getAbsolutePath()+File.separator+"commandHistory.txt");
+		savedCommandsFile = new File(appConfigDir.getAbsolutePath() + File.separator + "commandHistory.txt");
 		if (savedCommandsFile.exists()) {
 			readCommandHistory(savedCommandsFile);
 		}
@@ -112,7 +113,7 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 				commandList.add(line);
 			}
 			commandIndex = commandList.size();
-		} catch (Exception e) {
+		} catch (IOException e) {
 			logger.error("Error reading command history from '" + commandsFile.getAbsolutePath() + "': " + e);
 		}
 	}
@@ -128,8 +129,9 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 	}
 
 	/**
-	 * This method returns null because CytoPanelName.BOTTOM is not currently being exposed as API, 
-	 * for this reason the CommandToolDialog should not be accessible to Apps via any public API.
+	 * This method returns null because CytoPanelName.BOTTOM is not currently being exposed as API.
+	 * The method contract for this method prohibits returning null, for this reason the CommandToolDialog 
+	 * should not be accessible to Apps via any public API.
 	 */
 	@Override
 	public CytoPanelName getCytoPanelName() {
@@ -138,10 +140,14 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 	}
 
 	@Override
-	public Icon getIcon() { return null; }
+	public Icon getIcon() { 
+		return null; 
+	}
 
 	@Override
-	public String getTitle() { return "Command Line"; }
+	public String getTitle() { 
+		return "Command Line"; 
+	}
 
 	@Override
 	public void setVisible(boolean tf) {
@@ -153,81 +159,47 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 	 * Initialize all of the graphical components of the dialog
 	 */
 	private void initComponents() {
-		// setTitle("Command Line Dialog");
-		// setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-		// Create a panel for the main content
-		// final JPanel dataPanel = new JPanel();
-
-		// final JLabel resultsLabel = new JLabel("Log:");
-		final JLabel inputLabel = new JLabel("Command:");
-		inputLabel.setFont(inputLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-
+		JLabel inputLabel = new JLabel("Command:");
 		resultsText = new JResultsPane(null, this);
 		resultsText.setEditable(false);
 
-		final JScrollPane scrollPane = new JScrollPane(resultsText);
-		// scrollPane.getVerticalScrollBar().addAdjustmentListener(resultsText);
+		JScrollPane scrollPane = new JScrollPane(resultsText);
 		resultsText.setScrollPane(scrollPane); // So we can update the scroll position
 
-		/*
-		// Create the button box
-		final JButton doneButton = new JButton(new AbstractAction("Close") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				dispose();
-			}
-		});
-		*/
-
-		final JButton clearButton = new JButton("Clear");
+		JButton clearButton = new JButton("Clear");
 		clearButton.setToolTipText("Clear Log");
-		clearButton.setActionCommand("clear");
+		clearButton.setActionCommand(CLEAR_ACTION);
 		clearButton.addActionListener(this);
 		clearButton.putClientProperty("JButton.buttonType", "gradient");
 
-		// final JPanel buttonBox = LookAndFeelUtil.createOkCancelPanel(null, doneButton);
-		// buttonBox.add(clearButton);
-		// buttonBox.add(doneButton);
-
-		final GroupLayout layout = new GroupLayout(this);
+		LookAndFeelUtil.makeSmall(inputLabel, clearButton);
+		
+		GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
 		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(false);
 
-		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
-				.addGroup(layout.createSequentialGroup()
-						.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
-								// .addComponent(resultsLabel)
-								//.addComponent(clearButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-								.addComponent(inputLabel)
-						)
-						.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-								.addComponent(scrollPane, DEFAULT_SIZE, 880, Short.MAX_VALUE)
-								.addComponent(getInputField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-						)
-				)
-			//	.addComponent(buttonBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		layout.setHorizontalGroup(layout.createSequentialGroup()
+			.addGroup(layout.createParallelGroup(Alignment.TRAILING, false)
+				.addComponent(clearButton)
+				.addComponent(inputLabel)
+			)
+			.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(scrollPane, DEFAULT_SIZE, 880, Short.MAX_VALUE)
+				.addComponent(getInputField(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			)
 		);
+		
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.LEADING, true)
-						.addGroup(layout.createSequentialGroup()
-								// .addComponent(resultsLabel, 0, DEFAULT_SIZE, PREFERRED_SIZE)
-								//.addGap(0, 0, Short.MAX_VALUE)
-								//.addComponent(clearButton, 0, DEFAULT_SIZE, PREFERRED_SIZE)
-						)
-						.addComponent(scrollPane, 0, 580, Short.MAX_VALUE)
-				)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(inputLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(getInputField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				)
-			//	.addComponent(buttonBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
+				.addComponent(clearButton, 0, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(scrollPane, 0, 580, Short.MAX_VALUE)
+			)
+			.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
+				.addComponent(inputLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(getInputField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			)
 		);
-
-		// setContentPane(dataPanel);
-		// LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, doneButton.getAction());
-		// pack();
 	}
 
 	/**
@@ -237,15 +209,7 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 		resultsText.appendCommand(command);
 		commandRunner.runCommand(command, resultsText);
 	}
-
-	/**
-	 * Set the list of commands.
-	 */
-	public void setCommandList(List<String> commands) {
-		if (commands != null && commands.size() > 0)
-			commandList.addAll(commands);
-	};
-
+	
 	/**
 	 * Write out the last 500 commands
 	 */
@@ -257,13 +221,11 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 		if (commandList.size() > MAX_SAVED_COMMANDS)
 			start = commandList.size() - MAX_SAVED_COMMANDS;
 
-		try {
-			FileWriter writer = new FileWriter(savedCommandsFile);
+		try (FileWriter writer = new FileWriter(savedCommandsFile)) {
 			for (int i = start; i < commandList.size(); i++) {
-				writer.write(commandList.get(i)+"\n");
+				writer.write(commandList.get(i) + "\n");
 			}
-			writer.close();
-		} catch (Exception ioe){
+		} catch (Exception ioe) {
 			logger.error("Error writing command history to '"+savedCommandsFile.getAbsolutePath()+"': "+ioe);
 			System.err.println("Error writing command history to '"+savedCommandsFile.getAbsolutePath()+"': "+ioe);
 		}
@@ -271,7 +233,7 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if ("clear".equals(e.getActionCommand())) {
+		if (CLEAR_ACTION.equals(e.getActionCommand())) {
 			resultsText.clear();
 		} else {
 			String input = getInputField().getText();
@@ -290,13 +252,13 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 			inputField.setFont(inputField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 
 			// Set up our up-arrow/down-arrow actions
-			final Action previousAction = new LineAction(PREVIOUS);
-			inputField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), PREVIOUS);
-			inputField.getActionMap().put(PREVIOUS, previousAction);
+			Action previousAction = new LineAction(PREV_ACTION);
+			inputField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), PREV_ACTION);
+			inputField.getActionMap().put(PREV_ACTION, previousAction);
 
-			final Action nextAction = new LineAction(NEXT);
-			inputField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NEXT);
-			inputField.getActionMap().put(NEXT, nextAction);
+			Action nextAction = new LineAction(NEXT_ACTION);
+			inputField.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), NEXT_ACTION);
+			inputField.getActionMap().put(NEXT_ACTION, nextAction);
 			inputField.addActionListener(this);
 		}
 
@@ -305,10 +267,9 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 
 	private class LineAction extends AbstractAction {
 
-		String action = null;
+		final String action;
 
 		public LineAction(String action) {
-			super();
 			this.action = action;
 		}
 
@@ -317,16 +278,13 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 			if (commandList.size() == 0)
 				return;
 
-			if (action.equals(NEXT)) {
-				commandIndex++;
-			} else if (action.equals(PREVIOUS)) {
-				commandIndex--;
-			} else {
-				return;
+			switch(action) {
+				case NEXT_ACTION: commandIndex++; break;
+				case PREV_ACTION: commandIndex--; break;
+				default: return;
 			}
 
-			final String inputCommand;
-
+			String inputCommand;
 			if (commandIndex >= commandList.size()) {
 				inputCommand = "";
 				commandIndex = commandList.size();
@@ -341,4 +299,5 @@ public class CommandToolDialog extends JPanel implements CytoPanelComponent2,Act
 			getInputField().selectAll();
 		}
 	}
+	
 }
