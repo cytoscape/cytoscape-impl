@@ -1579,7 +1579,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File");		//.Import.Table[23.0]
 			props.setProperty(MENU_GRAVITY, "5.1");
 			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
-			props.setProperty(TITLE, "Open Table From File...");
+			props.setProperty(TITLE, "Import Table From File...");
 			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From File");
@@ -2079,7 +2079,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ID, "loadNetworkFileTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd l");
-			props.setProperty(TITLE, "Open Network From File...");
+			props.setProperty(TITLE, "Import Network From File...");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND, "load file");
 			props.setProperty(COMMAND_DESCRIPTION, "Load a network file (e.g. XGMML)");
@@ -2432,7 +2432,7 @@ public class CyActivator extends AbstractCyActivator {
 			LoadVizmapFileTaskFactoryImpl factory = new LoadVizmapFileTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
-			props.setProperty(MENU_GRAVITY, "30.0");
+			props.setProperty(MENU_GRAVITY, "20.0");
 			props.setProperty(TITLE, "Styles...");
 			props.setProperty(COMMAND, "load file");
 			props.setProperty(COMMAND_NAMESPACE, "vizmap");

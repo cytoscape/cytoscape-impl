@@ -61,6 +61,7 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("File", 2.99);
 //		menuBar.addSeparator("File",5.5);
 		menuBar.addSeparator("File.Import[23]",5.5);
+		menuBar.addSeparator("File.Import[23]",17.5);
 		menuBar.addSeparator("File",23.99);
 		menuBar.addSeparator("File",25);
 		if (!LookAndFeelUtil.isMac())
