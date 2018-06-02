@@ -44,7 +44,7 @@ import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
 import org.cytoscape.internal.actions.StarterPanelAction;
-import org.cytoscape.internal.command.CommandToolDialog;
+import org.cytoscape.internal.command.CommandToolPanel;
 import org.cytoscape.internal.command.PauseCommandTaskFactory;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
@@ -155,7 +155,7 @@ public class CyActivator extends AbstractCyActivator {
 	private NetworkViewMainPanel netViewMainPanel;
 	private NetworkViewMediator netViewMediator;
 	private CytoscapeDesktop cytoscapeDesktop;
-	private CommandToolDialog commandToolPanel;
+	private CommandToolPanel commandToolPanel;
 	
 	private SessionHandler sessionHandler;
 	
@@ -445,7 +445,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		netMainPanel = new NetworkMainPanel(netSearchBar, serviceRegistrar);
 		netMediator = new NetworkMediator(netMainPanel, rootNetManager, serviceRegistrar);
-		commandToolPanel = new CommandToolDialog(serviceRegistrar);
+		commandToolPanel = new CommandToolPanel(serviceRegistrar);
 		
 		viewComparator = new ViewComparator(netMainPanel);
 		gridViewToggleModel = new GridViewToggleModel(GridViewToggleModel.Mode.VIEW);

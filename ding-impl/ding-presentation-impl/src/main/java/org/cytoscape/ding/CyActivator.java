@@ -122,7 +122,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -167,12 +167,12 @@ public class CyActivator extends AbstractCyActivator {
 		AnnotationManager annotationManager = new AnnotationManagerImpl(serviceRegistrar);
 
 		DingGraphLOD dingGraphLOD = new DingGraphLOD(serviceRegistrar);
-		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class, new Properties());
+		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class);
 		
 		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 		
 		HandleFactory handleFactory = new HandleFactoryImpl();
-		registerService(bc, handleFactory, HandleFactory.class, new Properties());
+		registerService(bc, handleFactory, HandleFactory.class);
 		
 		DingRenderingEngineFactory dingRenderingEngineFactory =
 				new DingRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD,
@@ -203,7 +203,7 @@ public class CyActivator extends AbstractCyActivator {
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT, dingNavigationRenderingEngineFactory);
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.VISUAL_STYLE_PREVIEW_CONTEXT, dingVisualStyleRenderingEngineFactory);
 		renderer.registerRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT, dingThumbnailRenderingEngineFactory);
-		registerService(bc, renderer, NetworkViewRenderer.class, new Properties());
+		registerService(bc, renderer, NetworkViewRenderer.class);
 		
 		// Edge Bend editor
 		EdgeBendValueEditor edgeBendValueEditor =
@@ -239,15 +239,15 @@ public class CyActivator extends AbstractCyActivator {
 		objectPositionEditorProp.setProperty(ID, "objectPositionEditor");
 		registerService(bc, objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 
-		registerAllServices(bc, edgeBendValueEditor, new Properties());
-		registerService(bc, edgeBendEditor, VisualPropertyEditor.class, new Properties());
+		registerAllServices(bc, edgeBendValueEditor);
+		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
 
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		// Annotations
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
-		registerService(bc, annotationManager, AnnotationManager.class, new Properties());
+		registerService(bc, annotationManager, AnnotationManager.class);
 
 		// Arrow
 		AnnotationFactory<?> arrowAnnotationFactory = new ArrowAnnotationFactory(serviceRegistrar);
@@ -454,13 +454,19 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Set mouse drag selection modes
 		SelectModeAction selectNodesOnlyAction = new SelectModeAction(SelectModeAction.NODES, 0.5f, serviceRegistrar);
-		registerAllServices(bc, selectNodesOnlyAction, new Properties());
+		registerAllServices(bc, selectNodesOnlyAction);
 		
 		SelectModeAction selectEdgesOnlyAction = new SelectModeAction(SelectModeAction.EDGES, 0.6f, serviceRegistrar);
-		registerAllServices(bc, selectEdgesOnlyAction, new Properties());
+		registerAllServices(bc, selectEdgesOnlyAction);
+		
+		SelectModeAction selectAnnotationsOnlyAction = new SelectModeAction(SelectModeAction.ANNOTATIONS, 0.7f, serviceRegistrar);
+		registerAllServices(bc, selectAnnotationsOnlyAction);
+		
+		SelectModeAction selectNodesEdgesAction = new SelectModeAction(SelectModeAction.NODES_EDGES, 0.8f, serviceRegistrar);
+		registerAllServices(bc, selectNodesEdgesAction);
 
-		SelectModeAction selectNodesAndEdgesAction = new SelectModeAction(SelectModeAction.ALL, 0.7f, serviceRegistrar);
-		registerAllServices(bc, selectNodesAndEdgesAction, new Properties());
+		SelectModeAction selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
+		registerAllServices(bc, selectAllAction);
 		
 		{
 			// Toggle Graphics Details
@@ -492,47 +498,47 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
 
 		BendFactory bendFactory = new BendFactoryImpl();
-		registerService(bc, bendFactory, BendFactory.class, new Properties());
+		registerService(bc, bendFactory, BendFactory.class);
 
 		// Register the factory
 		dVisualLexicon.addBendFactory(bendFactory, new HashMap<Object, Object>());
 		
 		// Translators for Passthrough
 		final CustomGraphicsTranslator cgTranslator = new CustomGraphicsTranslator(cgManager, cg2Manager);
-		registerService(bc, cgTranslator, ValueTranslator.class, new Properties());
+		registerService(bc, cgTranslator, ValueTranslator.class);
 
 		// Factories for Visual Property Dependency
 		final NodeSizeDependencyFactory nodeSizeDependencyFactory = new NodeSizeDependencyFactory(dVisualLexicon);
-		registerService(bc, nodeSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
+		registerService(bc, nodeSizeDependencyFactory, VisualPropertyDependencyFactory.class);
 
 		final EdgeColorDependencyFactory edgeColorDependencyFactory = new EdgeColorDependencyFactory(dVisualLexicon);
-		registerService(bc, edgeColorDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
+		registerService(bc, edgeColorDependencyFactory, VisualPropertyDependencyFactory.class);
 
 		final CustomGraphicsSizeDependencyFactory cgSizeDependencyFactory = new CustomGraphicsSizeDependencyFactory(
 				dVisualLexicon);
-		registerService(bc, cgSizeDependencyFactory, VisualPropertyDependencyFactory.class, new Properties());
+		registerService(bc, cgSizeDependencyFactory, VisualPropertyDependencyFactory.class);
 
 		// Custom Graphics Editors
 		final CyCustomGraphicsValueEditor cgValueEditor = new CyCustomGraphicsValueEditor(cgManager, cg2Manager,
 				cgBrowser, serviceRegistrar);
-		registerAllServices(bc, cgValueEditor, new Properties());
+		registerAllServices(bc, cgValueEditor);
 
 		final CustomGraphicsVisualPropertyEditor cgVisualPropertyEditor = new CustomGraphicsVisualPropertyEditor(
 				CyCustomGraphics.class, cgValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
-		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class, new Properties());
+		registerService(bc, cgVisualPropertyEditor, VisualPropertyEditor.class);
 	}
 
 	private void startCustomGraphicsMgr(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
 		cgManager = new CustomGraphicsManagerImpl(getdefaultImageURLs(bc), serviceRegistrar);
-		registerAllServices(bc, cgManager, new Properties());
+		registerAllServices(bc, cgManager);
 
 		cgBrowser = new CustomGraphicsBrowser(cgManager);
-		registerAllServices(bc, cgBrowser, new Properties());
+		registerAllServices(bc, cgBrowser);
 
 		CustomGraphicsManagerAction cgManagerAction = new CustomGraphicsManagerAction(cgManager, cgBrowser,
 				serviceRegistrar);
 
-		registerService(bc, cgManagerAction, CyAction.class, new Properties());
+		registerService(bc, cgManagerAction, CyAction.class);
 
 		// Create and register our built-in factories.
 		// TODO:  When the CustomGraphicsFactory service stuff is set up, just
@@ -553,7 +559,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Register this service listener so that app writers can provide their own CyCustomGraphics2 factories
 		cg2Manager = CyCustomGraphics2ManagerImpl.getInstance();
-		registerAllServices(bc, cg2Manager, new Properties());
+		registerAllServices(bc, cg2Manager);
 		registerServiceListener(bc, ((CyCustomGraphics2ManagerImpl)cg2Manager)::addFactory, 
 				((CyCustomGraphics2ManagerImpl)cg2Manager)::removeFactory, CyCustomGraphics2Factory.class);
 	}
@@ -605,7 +611,6 @@ public class CyActivator extends AbstractCyActivator {
 	/**
 	 * Get list of default images from resource.
 	 */
-	@SuppressWarnings("unchecked")
 	private Set<URL> getdefaultImageURLs(final BundleContext bc) {
 		Enumeration<URL> e = bc.getBundle().findEntries("images/sampleCustomGraphics", "*.png", true);
 		final Set<URL> defaultImageUrls = new HashSet<>();
@@ -618,6 +623,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void startSpacial(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
 		RTreeFactory rtreeFactory = new RTreeFactory();
-		registerService(bc, rtreeFactory, SpacialIndex2DFactory.class, new Properties());
+		registerService(bc, rtreeFactory, SpacialIndex2DFactory.class);
 	}
 }

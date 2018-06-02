@@ -1,4 +1,8 @@
-package org.cytoscape.internal.model;
+package org.cytoscape.internal.util;
+
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.io.IOException;
 
 /*
  * #%L
@@ -24,24 +28,27 @@ package org.cytoscape.internal.model;
  * #L%
  */
 
-public enum SelectionMode {
-	NODE_SELECTION("Nodes", "NETWORK_NODE_SELECTION"),
-	EDGE_SELECTION("Edges", "NETWORK_EDGE_SELECTION"),
-	ANNOTATION_SELECTION("Annotations", "NETWORK_ANNOTATION_SELECTION");
+public abstract class IconUtil {
 	
-	private final String text;
-	private final String propertyId;
+	public static final String CYTOSCAPE_LOGO = "b";
+	
+	private static Font iconFont;
 
-	private SelectionMode(String text, String propertyId) {
-		this.text = text;
-		this.propertyId = propertyId;
+	static {
+		try {
+			iconFont = Font.createFont(Font.TRUETYPE_FONT, IconUtil.class.getResourceAsStream("/fonts/cytoscape-3.ttf"));
+		} catch (FontFormatException e) {
+			throw new RuntimeException();
+		} catch (IOException e) {
+			throw new RuntimeException();
+		}
 	}
 	
-	public String getText() {
-		return text;
+	public static Font getIconFont(float size) {
+		return iconFont.deriveFont(size);
 	}
 	
-	public String getPropertyId() {
-		return propertyId;
+	private IconUtil() {
+		// ...
 	}
 }

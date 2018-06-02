@@ -3,12 +3,9 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -450,8 +447,8 @@ public class NetworkViewMediator
 		final NetworkViewMainPanel viewMainPanel = getNetworkViewMainPanel();
 		final NetworkViewGrid vg = viewMainPanel.getNetworkViewGrid();
 		
-		gridViewToggleModel.addPropertyChangeListener("mode", (PropertyChangeEvent e) -> {
-			final Mode mode = (Mode) e.getNewValue();
+		gridViewToggleModel.addPropertyChangeListener("mode", evt -> {
+			final Mode mode = (Mode) evt.getNewValue();
 			
 			if (mode == Mode.GRID) {
 				final Component currentCard = viewMainPanel.getCurrentCard();
@@ -485,8 +482,8 @@ public class NetworkViewMediator
 			}
 		});
 
-		vg.addPropertyChangeListener("currentNetworkView", (PropertyChangeEvent e) -> {
-			final CyNetworkView targetView = (CyNetworkView) e.getNewValue();
+		vg.addPropertyChangeListener("currentNetworkView", evt -> {
+			final CyNetworkView targetView = (CyNetworkView) evt.getNewValue();
 			
 			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
 			
@@ -504,8 +501,8 @@ public class NetworkViewMediator
 			}
 		});
 		
-		vg.addPropertyChangeListener("thumbnailPanels", (PropertyChangeEvent e) -> {
-			final Collection<ThumbnailPanel> thumbnails = (Collection<ThumbnailPanel>) e.getNewValue();
+		vg.addPropertyChangeListener("thumbnailPanels", evt -> {
+			final Collection<ThumbnailPanel> thumbnails = (Collection<ThumbnailPanel>) evt.getNewValue();
 			
 			for (ThumbnailPanel tp : thumbnails) {
 				addMouseListeners(tp, tp, tp.getTitleLabel(), tp.getCurrentLabel(), tp.getImagePanel().getGlassPane());
@@ -851,14 +848,11 @@ public class NetworkViewMediator
 			
 			{
 				final JMenuItem mi = new JMenuItem("Show View" + (selectedViews.size() == 1 ? "" : "s"));
-				mi.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						if (selectedViews.size() == 1)
-							getNetworkViewMainPanel().showViewContainer(selectedViews.iterator().next());
-						else if (selectedViews.size() > 1)
-							getNetworkViewMainPanel().showComparisonPanel(new HashSet<>(selectedViews));
-					}
+				mi.addActionListener(evt -> {
+					if (selectedViews.size() == 1)
+						getNetworkViewMainPanel().showViewContainer(selectedViews.iterator().next());
+					else if (selectedViews.size() > 1)
+						getNetworkViewMainPanel().showComparisonPanel(new HashSet<>(selectedViews));
 				});
 				popupMenu.add(mi);
 				mi.setEnabled(!selectedViews.isEmpty());

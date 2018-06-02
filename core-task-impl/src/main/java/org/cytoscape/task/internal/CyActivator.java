@@ -87,6 +87,8 @@ import org.cytoscape.task.internal.export.web.ExportAsWebArchiveTaskFactory;
 import org.cytoscape.task.internal.filter.ApplyFilterTaskFactory;
 import org.cytoscape.task.internal.filter.CreateFilterTaskFactory;
 import org.cytoscape.task.internal.filter.DeleteFilterTaskFactory;
+import org.cytoscape.task.internal.filter.GetFilterTaskFactory;
+import org.cytoscape.task.internal.filter.ListFiltersTaskFactory;
 import org.cytoscape.task.internal.filter.RunFilterTaskFactory;
 import org.cytoscape.task.internal.group.AddToGroupTaskFactory;
 import org.cytoscape.task.internal.group.GetGroupTask;
@@ -388,6 +390,26 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, new DeleteFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "list");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "List filters.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns a list of current filter names.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new ListFiltersTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "get");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Get a filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the JSON representation of a filter.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new GetFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 	}
 
