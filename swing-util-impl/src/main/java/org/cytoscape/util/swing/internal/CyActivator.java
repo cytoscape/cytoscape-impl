@@ -1,5 +1,8 @@
 package org.cytoscape.util.swing.internal;
 
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.io.IOException;
 import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -15,7 +18,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,5 +50,13 @@ public class CyActivator extends AbstractCyActivator {
 
 		final IconManagerImpl iconManager = new IconManagerImpl();
 		registerService(bc, iconManager, IconManager.class, new Properties());
+		
+		// Register the font used for custom Cytoscape icons
+		try {
+			Font font = Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream("/fonts/cytoscape-3.ttf"));
+			iconManager.addIconFont(font);
+		} catch (FontFormatException|IOException e) {
+			throw new RuntimeException("Cannot Load Cytoscape font", e);
+		}
 	}
 }

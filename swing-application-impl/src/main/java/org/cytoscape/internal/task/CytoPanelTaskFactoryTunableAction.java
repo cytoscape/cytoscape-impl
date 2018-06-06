@@ -13,6 +13,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -109,7 +110,7 @@ public class CytoPanelTaskFactoryTunableAction extends AbstractCyAction {
 	final private Map<String, String> serviceProps;
 	final private CytoPanelName cytoPanelName;
 	final private CyServiceRegistrar serviceRegistrar;
-	final private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	final private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public CytoPanelTaskFactoryTunableAction(
 			final TaskFactory factory,

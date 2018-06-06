@@ -1,8 +1,58 @@
 package org.cytoscape.task.internal;
 
-import static org.cytoscape.application.swing.ActionEnableSupport.*;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
+import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
+import static org.cytoscape.task.internal.utils.IconUtil.APPLY_LAYOUT;
+import static org.cytoscape.task.internal.utils.IconUtil.C1;
+import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2A;
+import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2B;
+import static org.cytoscape.task.internal.utils.IconUtil.COLORS_3;
+import static org.cytoscape.task.internal.utils.IconUtil.FIRST_NEIGHBORS;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HELP;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HIDE_SELECTED;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_NET;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_TABLE;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_NEW_FROM_SELECTED;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_OPEN_FILE;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SAVE;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SHOW_ALL;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_FIT;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_IN;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_OUT;
+import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_SEL;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
+import static org.cytoscape.work.ServiceProperties.ID;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
+import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
+import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
+import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
+import java.awt.Font;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -231,6 +281,8 @@ import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -268,69 +320,87 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
+	private static float LARGE_ICON_FONT_SIZE = 32f;
+	private static int LARGE_ICON_SIZE = 32;
+	
+	private Font iconFont;
+	
+	private CyServiceRegistrar serviceRegistrar;
+	private CyEventHelper cyEventHelperRef;
+	private CyNetworkNaming cyNetworkNamingServiceRef;
+	private UndoSupport undoSupportServiceRef;
+	private CyNetworkViewFactory cyNetworkViewFactoryServiceRef;
+	private CyNetworkFactory cyNetworkFactoryServiceRef;
+	private CyRootNetworkManager cyRootNetworkFactoryServiceRef;
+	private VisualMappingManager visualMappingManagerServiceRef;
+	private CyNetworkViewWriterManager networkViewWriterManagerServiceRef;
+	private CyNetworkManager cyNetworkManagerServiceRef;
+	private CyNetworkViewManager cyNetworkViewManagerServiceRef;
+	private CyApplicationManager cyApplicationManagerServiceRef;
+	private CySessionManager cySessionManagerServiceRef;
+	private CyTableFactory cyTableFactoryServiceRef;
+	private CyTableManager cyTableManagerServiceRef;
+	private CyLayoutAlgorithmManager cyLayoutsServiceRef;
+	private CyTableWriterManager cyTableWriterManagerRef;
+	private SynchronousTaskManager<?> synchronousTaskManagerServiceRef;
+	private TunableSetter tunableSetterServiceRef;
+	private CyRootNetworkManager rootNetworkManagerServiceRef;
+	private CyNetworkTableManager cyNetworkTableManagerServiceRef;
+	private RenderingEngineManager renderingEngineManagerServiceRef;
+	private CyNetworkViewFactory nullNetworkViewFactory;
+	private IconManager iconManager;
+	
 	@Override
 	public void start(BundleContext bc) {
-		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		CyEventHelper cyEventHelperRef = getService(bc, CyEventHelper.class);
-		CyNetworkNaming cyNetworkNamingServiceRef = getService(bc, CyNetworkNaming.class);
-		UndoSupport undoSupportServiceRef = getService(bc, UndoSupport.class);
-		CyNetworkViewFactory cyNetworkViewFactoryServiceRef = getService(bc, CyNetworkViewFactory.class);
-		CyNetworkFactory cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
-		CyRootNetworkManager cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
-		VisualMappingManager visualMappingManagerServiceRef = getService(bc, VisualMappingManager.class);
-		CyNetworkViewWriterManager networkViewWriterManagerServiceRef = getService(bc, CyNetworkViewWriterManager.class);
-		CyNetworkManager cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
-		CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
-		CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		CySessionManager cySessionManagerServiceRef = getService(bc, CySessionManager.class);
-		CyTableFactory cyTableFactoryServiceRef = getService(bc, CyTableFactory.class);
-		CyTableManager cyTableManagerServiceRef = getService(bc, CyTableManager.class);
-		CyLayoutAlgorithmManager cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
-		CyTableWriterManager cyTableWriterManagerRef = getService(bc, CyTableWriterManager.class);
-		SynchronousTaskManager<?> synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
-		TunableSetter tunableSetterServiceRef = getService(bc, TunableSetter.class);
-		CyRootNetworkManager rootNetworkManagerServiceRef = getService(bc, CyRootNetworkManager.class);
-		CyNetworkTableManager cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
-		RenderingEngineManager renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
-		CyNetworkViewFactory nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+		serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		cyEventHelperRef = getService(bc, CyEventHelper.class);
+		cyNetworkNamingServiceRef = getService(bc, CyNetworkNaming.class);
+		undoSupportServiceRef = getService(bc, UndoSupport.class);
+		cyNetworkViewFactoryServiceRef = getService(bc, CyNetworkViewFactory.class);
+		cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
+		cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
+		visualMappingManagerServiceRef = getService(bc, VisualMappingManager.class);
+		networkViewWriterManagerServiceRef = getService(bc, CyNetworkViewWriterManager.class);
+		cyNetworkManagerServiceRef = getService(bc, CyNetworkManager.class);
+		cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
+		cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
+		cySessionManagerServiceRef = getService(bc, CySessionManager.class);
+		cyTableFactoryServiceRef = getService(bc, CyTableFactory.class);
+		cyTableManagerServiceRef = getService(bc, CyTableManager.class);
+		cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
+		cyTableWriterManagerRef = getService(bc, CyTableWriterManager.class);
+		synchronousTaskManagerServiceRef = getService(bc, SynchronousTaskManager.class);
+		tunableSetterServiceRef = getService(bc, TunableSetter.class);
+		rootNetworkManagerServiceRef = getService(bc, CyRootNetworkManager.class);
+		cyNetworkTableManagerServiceRef = getService(bc, CyNetworkTableManager.class);
+		renderingEngineManagerServiceRef = getService(bc, RenderingEngineManager.class);
+		nullNetworkViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+		iconManager = getService(bc, IconManager.class);
 		
 		CyGroupManager cyGroupManager = getService(bc, CyGroupManager.class);
 		CyGroupFactory cyGroupFactory = getService(bc, CyGroupFactory.class);
+		
+		iconFont = iconManager.getIconFont("cytoscape-3", LARGE_ICON_FONT_SIZE);
 		
 		{
 			DynamicTaskFactoryProvisionerImpl factory = new DynamicTaskFactoryProvisionerImpl(serviceRegistrar);
 			registerAllServices(bc, factory);
 		}
 
-		createPreferencesTaskFactories(bc, serviceRegistrar);
-		createFilterTaskFactories(bc, serviceRegistrar);
-		createTableTaskFactories(bc, serviceRegistrar, undoSupportServiceRef, cyNetworkManagerServiceRef,
-				cyApplicationManagerServiceRef, cyTableFactoryServiceRef, cyTableManagerServiceRef,
-				cyTableWriterManagerRef, tunableSetterServiceRef, rootNetworkManagerServiceRef,
-				cyNetworkTableManagerServiceRef);
-		createNetworkTaskFactories(bc, serviceRegistrar, cyEventHelperRef, cyNetworkNamingServiceRef,
-				undoSupportServiceRef, cyNetworkViewFactoryServiceRef, cyNetworkFactoryServiceRef,
-				cyRootNetworkFactoryServiceRef, visualMappingManagerServiceRef, cyNetworkManagerServiceRef,
-				cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef, synchronousTaskManagerServiceRef,
-				rootNetworkManagerServiceRef, cyNetworkTableManagerServiceRef, renderingEngineManagerServiceRef,
-				nullNetworkViewFactory, cyGroupManager, cyGroupFactory, networkViewWriterManagerServiceRef,
-				tunableSetterServiceRef);
-		createViewTaskFactories(bc, cyEventHelperRef, undoSupportServiceRef, visualMappingManagerServiceRef,
-				networkViewWriterManagerServiceRef, cyNetworkViewManagerServiceRef, cyApplicationManagerServiceRef,
-				cyLayoutsServiceRef, tunableSetterServiceRef, renderingEngineManagerServiceRef,
-				cyNetworkManagerServiceRef, cySessionManagerServiceRef, serviceRegistrar);
-		createVizmapTaskFactories(bc, serviceRegistrar);
-		createSessionTaskFactories(bc, serviceRegistrar);
-		createGroupTaskFactories(bc, undoSupportServiceRef, cyApplicationManagerServiceRef, cyGroupManager,
-				cyGroupFactory, serviceRegistrar);
-		createNodeEdgeTaskFactories(bc, serviceRegistrar, cyEventHelperRef, undoSupportServiceRef,
-				cyNetworkViewManagerServiceRef, tunableSetterServiceRef, cyApplicationManagerServiceRef,
-				cyTableManagerServiceRef, renderingEngineManagerServiceRef, visualMappingManagerServiceRef);
-		createLayoutTaskFactories(bc, serviceRegistrar);
-		createHelpTaskFactories(bc, serviceRegistrar);
+		createPreferencesTaskFactories(bc);
+		createFilterTaskFactories(bc);
+		createTableTaskFactories(bc);
+		createNetworkTaskFactories(bc, cyGroupManager, cyGroupFactory);
+		createViewTaskFactories(bc);
+		createVizmapTaskFactories(bc);
+		createSessionTaskFactories(bc);
+		createGroupTaskFactories(bc, cyGroupManager, cyGroupFactory);
+		createNodeEdgeTaskFactories(bc);
+		createLayoutTaskFactories(bc);
+		createHelpTaskFactories(bc);
 	}
 
-	private void createPreferencesTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createPreferencesTaskFactories(BundleContext bc) {
 		{
 			ProxySettingsTaskFactoryImpl factory = new ProxySettingsTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
@@ -341,7 +411,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 	
-	private void createFilterTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createFilterTaskFactories(BundleContext bc) {
 		String createLongDescription;
 		try {
 			InputStream in = getClass().getResourceAsStream("create_filter_long_description.md");
@@ -413,13 +483,18 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createLayoutTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createLayoutTaskFactories(BundleContext bc) {
 		{
 			ApplyPreferredLayoutTaskFactoryImpl factory = new ApplyPreferredLayoutTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(APPLY_LAYOUT, iconFont, C1, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
+			String iconId = "cy::APPLY_LAYOUT";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Layout");
 			props.setProperty(ACCELERATOR, "fn5");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/apply-layout-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TITLE, "Apply Preferred Layout");
 			props.setProperty(TOOL_BAR_GRAVITY, "7.0");
@@ -472,13 +547,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createViewTaskFactories(BundleContext bc, CyEventHelper cyEventHelperRef,
-			UndoSupport undoSupportServiceRef, VisualMappingManager visualMappingManagerServiceRef,
-			CyNetworkViewWriterManager networkViewWriterManagerServiceRef,
-			CyNetworkViewManager cyNetworkViewManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef,
-			CyLayoutAlgorithmManager cyLayoutsServiceRef, TunableSetter tunableSetterServiceRef,
-			RenderingEngineManager renderingEngineManagerServiceRef, CyNetworkManager cyNetworkManagerServiceRef,
-			CySessionManager cySessionManagerServiceRef, CyServiceRegistrar serviceRegistrar) {
+	private void createViewTaskFactories(BundleContext bc) {
 		{
 			ExportNetworkViewTaskFactoryImpl factory = new ExportNetworkViewTaskFactoryImpl(
 					networkViewWriterManagerServiceRef, cyApplicationManagerServiceRef, tunableSetterServiceRef);
@@ -538,7 +607,6 @@ public class CyActivator extends AbstractCyActivator {
 			ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
-			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-img-32.png").toString());
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(MENU_GRAVITY, "24.2");
 			props.setProperty(TITLE, "Export as Image...");
@@ -581,12 +649,17 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			ZoomInTaskFactory factory = new ZoomInTaskFactory(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_ZOOM_IN, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::LAYERED_ZOOM_IN";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom In");
 			props.setProperty(MENU_GRAVITY, "6.3");
 			props.setProperty(ACCELERATOR, "cmd equals");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/zoom-in-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOLTIP, "Zoom In");
 			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
@@ -597,6 +670,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			ZoomOutTaskFactory factory = new ZoomOutTaskFactory(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_ZOOM_OUT, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::LAYERED_ZOOM_OUT";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom Out");
@@ -604,7 +682,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "6.4");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			props.setProperty(ACCELERATOR, "cmd minus");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/zoom-out-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOL_BAR_GRAVITY, "5.2");
 			props.setProperty(IN_TOOL_BAR, "true");
@@ -614,13 +692,18 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			FitSelectedTaskFactory factory = new FitSelectedTaskFactory(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_ZOOM_SEL, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::LAYERED_ZOOM_SELECTED";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Selected");
 			props.setProperty(TOOLTIP, "Zoom selected region");
 			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(ACCELERATOR, "cmd 9");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/zoom-selected-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(TOOL_BAR_GRAVITY, "5.4");
 			props.setProperty(IN_TOOL_BAR, "true");
@@ -637,13 +720,18 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			FitContentTaskFactory factory = new FitContentTaskFactory(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_ZOOM_FIT, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::LAYERED_ZOOM_FIT";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
 			props.setProperty(TOOLTIP, "Zoom out to display all of current Network");
 			props.setProperty(MENU_GRAVITY, "6.1");
 			props.setProperty(ACCELERATOR, "cmd 0");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/zoom-fit-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOL_BAR_GRAVITY, "5.3");
 			props.setProperty(IN_TOOL_BAR, "true");
@@ -709,12 +797,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createNodeEdgeTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar,
-			CyEventHelper cyEventHelperRef, UndoSupport undoSupportServiceRef,
-			CyNetworkViewManager cyNetworkViewManagerServiceRef, TunableSetter tunableSetterServiceRef,
-			CyApplicationManager cyApplicationManagerServiceRef, CyTableManager cyTableManagerServiceRef,
-			RenderingEngineManager renderingEngineManagerServiceRef,
-			VisualMappingManager visualMappingManagerServiceRef) {
+	private void createNodeEdgeTaskFactories(BundleContext bc) {
 		// SELECTION
 		{
 			DeleteSelectedNodesAndEdgesTaskFactoryImpl factory = 
@@ -814,6 +897,11 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(undoSupportServiceRef,
 					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.ANY);
+			
+			TextIcon icon = new TextIcon(FIRST_NEIGHBORS, iconFont, C1, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
+			String iconId = "cy::FIRST_NEIGHBORS";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
@@ -821,8 +909,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOL_BAR_GRAVITY, "9.15");
 			props.setProperty(ACCELERATOR, "cmd 6");
 			props.setProperty(TITLE, "Undirected");
-			props.setProperty(LARGE_ICON_URL,
-					getClass().getResource("/images/icons/first-neighbors-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Undirected)");
 			// props.setProperty(COMMAND, "select first neighbors undirected");
@@ -956,13 +1043,18 @@ public class CyActivator extends AbstractCyActivator {
 		// SHOW / HIDE
 		{
 			UnHideAllTaskFactoryImpl factory = new UnHideAllTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_SHOW_ALL, iconFont, COLORS_2A, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::SHOW_ALL";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.6");
 			props.setProperty(TITLE, factory.getDescription());
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/show-all-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -970,13 +1062,18 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			HideSelectedTaskFactoryImpl factory = new HideSelectedTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_HIDE_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::HIDE_SELECTED";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "3.1");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.5");
 			props.setProperty(TITLE, factory.getDescription());
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/hide-selected-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1405,9 +1502,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createGroupTaskFactories(BundleContext bc, UndoSupport undoSupportServiceRef,
-			CyApplicationManager cyApplicationManagerServiceRef, CyGroupManager cyGroupManager,
-			CyGroupFactory cyGroupFactory, CyServiceRegistrar serviceRegistrar) {
+	private void createGroupTaskFactories(BundleContext bc, CyGroupManager cyGroupManager, CyGroupFactory cyGroupFactory) {
 		{
 			GroupNodesTaskFactoryImpl factory = new GroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef,
 					cyGroupManager, cyGroupFactory, undoSupportServiceRef, serviceRegistrar);
@@ -1589,20 +1684,20 @@ public class CyActivator extends AbstractCyActivator {
 		// TODO: remove from group...
 	}
 
-	private void createTableTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar,
-			UndoSupport undoSupportServiceRef, CyNetworkManager cyNetworkManagerServiceRef,
-			CyApplicationManager cyApplicationManagerServiceRef, CyTableFactory cyTableFactoryServiceRef,
-			CyTableManager cyTableManagerServiceRef, CyTableWriterManager cyTableWriterManagerRef,
-			TunableSetter tunableSetterServiceRef, CyRootNetworkManager rootNetworkManagerServiceRef,
-			CyNetworkTableManager cyNetworkTableManagerServiceRef) {
+	private void createTableTaskFactories(BundleContext bc) {
 		{
 			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::IMPORT_TABLE";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");		//.Import.Table[23.0]
 			props.setProperty(MENU_GRAVITY, "5.1");
-			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
+			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
 			props.setProperty(TITLE, "Import Table From File...");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From File");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
@@ -1616,10 +1711,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
 			props.setProperty(MENU_GRAVITY, "6.0");
-			// props.setProperty(TOOL_BAR_GRAVITY, "2.3");
 			props.setProperty(TITLE, "Table From URL...");
-			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-table-url-32.png").toString());
-			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Import Table From URL...");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
@@ -1634,10 +1726,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(MENU_GRAVITY, "1.3");
-			// props.setProperty(TOOL_BAR_GRAVITY, "3.1");
 			props.setProperty(TITLE, "Table...");
-			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-table-32.png").toString());
-			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Export Table to File");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportSelectedTableTaskFactory.class, props);
@@ -1979,17 +2068,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createNetworkTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar, CyEventHelper cyEventHelperRef,
-			CyNetworkNaming cyNetworkNamingServiceRef, UndoSupport undoSupportServiceRef,
-			CyNetworkViewFactory cyNetworkViewFactoryServiceRef, CyNetworkFactory cyNetworkFactoryServiceRef,
-			CyRootNetworkManager cyRootNetworkFactoryServiceRef, VisualMappingManager visualMappingManagerServiceRef,
-			CyNetworkManager cyNetworkManagerServiceRef, CyNetworkViewManager cyNetworkViewManagerServiceRef,
-			CyApplicationManager cyApplicationManagerServiceRef,
-			SynchronousTaskManager<?> synchronousTaskManagerServiceRef,
-			CyRootNetworkManager rootNetworkManagerServiceRef, CyNetworkTableManager cyNetworkTableManagerServiceRef,
-			RenderingEngineManager renderingEngineManagerServiceRef, CyNetworkViewFactory nullNetworkViewFactory,
-			CyGroupManager cyGroupManager, CyGroupFactory cyGroupFactory,
-			CyNetworkViewWriterManager networkViewWriterManagerServiceRef, TunableSetter tunableSetterServiceRef) {
+	private void createNetworkTaskFactories(BundleContext bc, CyGroupManager cyGroupManager, CyGroupFactory cyGroupFactory) {
 		{
 			NewEmptyNetworkTaskFactoryImpl factory = new NewEmptyNetworkTaskFactoryImpl(cyNetworkFactoryServiceRef,
 					cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyNetworkNamingServiceRef,
@@ -2058,8 +2137,13 @@ public class CyActivator extends AbstractCyActivator {
 					visualMappingManagerServiceRef, cyApplicationManagerServiceRef, cyEventHelperRef, cyGroupManager,
 					renderingEngineManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
+			
+			TextIcon icon = new TextIcon(LAYERED_NEW_FROM_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::NEW_FROM_SELECTED";
+			iconManager.addIcon(iconId, icon);
+			
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/new-from-selected-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ACCELERATOR, "cmd n");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
 			props.setProperty(TITLE, "From selected nodes, all edges");
@@ -2097,6 +2181,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{ 
 			LoadNetworkFileTaskFactoryImpl factory = new LoadNetworkFileTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_IMPORT_NET, iconFont, COLORS_2B, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
+			String iconId = "cy::IMPORT_NET";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ID, "loadNetworkFileTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File");
@@ -2116,7 +2205,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, GenerateNetworkViewsTask.JSON_EXAMPLE);
 			props.setProperty(MENU_GRAVITY, "5.0");
 			props.setProperty(TOOL_BAR_GRAVITY, "2.0");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-net-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Open a network from a file on the file system.");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -2139,10 +2228,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");
 			props.setProperty(ACCELERATOR, "cmd shift l");
 			props.setProperty(MENU_GRAVITY, "0.2");
-			// props.setProperty(TOOL_BAR_GRAVITY, "2.1");
 			props.setProperty(TITLE, "Network From URL...");
-			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/import-net-url-32.png").toString());
-			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "Open a network from a remote Internet location");
 			props.setProperty(COMMAND, "load url");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2183,10 +2269,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(MENU_GRAVITY, "1.1");
-			// props.setProperty(TOOL_BAR_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Network...");
-			// props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/export-net-32.png").toString());
-			// props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(IN_CONTEXT_MENU, "false");
 			props.setProperty(TOOLTIP, "Export Network to File");
 			registerService(bc, factory, TaskFactory.class, props);
@@ -2331,7 +2414,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createSessionTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createSessionTaskFactories(BundleContext bc) {
 		{
 			NewSessionTaskFactoryImpl factory = new NewSessionTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
@@ -2349,11 +2432,16 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			OpenSessionTaskFactoryImpl factory = new OpenSessionTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_OPEN_FILE, iconFont, COLORS_2B, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
+			String iconId = "cy::OPEN_FILE";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ID, "openSessionTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd o");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/open-file-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TITLE, "Open...");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.0");
 			props.setProperty(IN_TOOL_BAR, "true");
@@ -2379,10 +2467,15 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			SaveSessionTaskFactoryImpl factory = new SaveSessionTaskFactoryImpl(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_SAVE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1, 2);
+			String iconId = "cy::SAVE";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(ACCELERATOR, "cmd s");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/save-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TITLE, "Save");
 			props.setProperty(TOOL_BAR_GRAVITY, "1.1");
 			props.setProperty(IN_TOOL_BAR, "true");
@@ -2416,7 +2509,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 
-	private void createVizmapTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createVizmapTaskFactories(BundleContext bc) {
 		{
 			ApplyVisualStyleTaskFactoryimpl factory = new ApplyVisualStyleTaskFactoryimpl(serviceRegistrar);
 			Properties props = new Properties();
@@ -2489,12 +2582,17 @@ public class CyActivator extends AbstractCyActivator {
 		}
 	}
 	
-	private void createHelpTaskFactories(BundleContext bc, CyServiceRegistrar serviceRegistrar) {
+	private void createHelpTaskFactories(BundleContext bc) {
 		{
 			HelpTaskFactory factory = new HelpTaskFactory(serviceRegistrar);
+			
+			TextIcon icon = new TextIcon(LAYERED_HELP, iconFont, COLORS_2A, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
+			String iconId = "cy::HELP";
+			iconManager.addIcon(iconId, icon);
+			
 			Properties props = new Properties();
 			props.setProperty(ACCELERATOR, "cmd ?");
-			props.setProperty(LARGE_ICON_URL, getClass().getResource("/images/icons/help-32.png").toString());
+			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TITLE, "Help");
 			props.setProperty(TOOLTIP, "Link to context sensitive help");
 			props.setProperty(TOOL_BAR_GRAVITY, "" + Float.MAX_VALUE);

@@ -1,9 +1,23 @@
 package org.cytoscape.internal;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.*;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.CASCADE;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
+import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -601,6 +615,36 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Table.font", TABLE_FONT);
 				UIManager.put("Tree.font", TABLE_FONT);
+				
+				// The default disabled color is usually too dark, so let's make it look more like the native one.
+//				Color disabledFg = UIManager.getColor("Label.disabledForeground");
+//				
+//				if (disabledFg == null)
+//					disabledFg = Color.LIGHT_GRAY;
+//				else
+//					disabledFg = disabledFg.brighter();
+//				
+//				UIManager.put("Label.disabledForeground", disabledFg);
+//				UIManager.put("Button.disabledForeground", disabledFg);
+//				UIManager.put("Button.disabledText", disabledFg);
+//				UIManager.put("ToggleButton.disabledForeground", disabledFg);
+//				UIManager.put("ToggleButton.disabledText", disabledFg);
+//				UIManager.put("CheckBox.disabledForeground", disabledFg);
+//				UIManager.put("Radio.disabledForeground", disabledFg);
+//				UIManager.put("Menu.disabledForeground", disabledFg);
+//				UIManager.put("MenuItem.disabledForeground", disabledFg);
+//				UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
+//				UIManager.put("Table.disabledForeground", disabledFg);
+//				UIManager.put("TableHeader.disabledForeground", disabledFg);
+//				UIManager.put("TextField.inactiveForeground", disabledFg);
+//				UIManager.put("TextField.disabledForeground", disabledFg);
+//				UIManager.put("FormattedTextField.inactiveForeground", disabledFg);
+//				UIManager.put("FormattedTextField.disabledForeground", disabledFg);
+//				UIManager.put("PasswordField.disabledBackground", disabledFg);
+//				UIManager.put("TextArea.inactiveForeground", disabledFg);
+//				UIManager.put("TextArea.disabledForeground", disabledFg);
+//				UIManager.put("List.disabledForeground", disabledFg);
+//				UIManager.put("ComboBox.disabledForeground", disabledFg);
 			} else if (LookAndFeelUtil.isWindows()) {
 				// Windows:
 				UIManager.put(

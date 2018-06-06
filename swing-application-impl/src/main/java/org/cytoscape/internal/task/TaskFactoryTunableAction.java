@@ -1,11 +1,18 @@
 package org.cytoscape.internal.task;
 
+import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
+import static org.cytoscape.work.ServiceProperties.SMALL_ICON_ID;
+
 import java.awt.event.ActionEvent;
 import java.util.Map;
 
+import javax.swing.Icon;
+
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
@@ -19,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,7 +47,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class TaskFactoryTunableAction extends AbstractCyAction {
 
-	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final TaskFactory factory;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -54,6 +61,7 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		super(props, factory);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
+		setIcons();
 	}
 
 	/**
@@ -70,10 +78,34 @@ public class TaskFactoryTunableAction extends AbstractCyAction {
 		);
 		this.factory = factory;
 		this.serviceRegistrar = serviceRegistrar;
+		setIcons();
 	}
 
+	private void setIcons() {
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		final String largeIconId = configurationProperties.get(LARGE_ICON_ID);
+
+		if (largeIconId != null && !largeIconId.trim().isEmpty()) {
+			// Check if the icon is really registered
+			Icon icon = iconManager.getIcon(largeIconId);
+			
+			if (icon != null)
+				putValue(LARGE_ICON_KEY, icon);
+		}
+		
+		final String smallIconId = configurationProperties.get(SMALL_ICON_ID);
+		
+		if (smallIconId != null && !smallIconId.trim().isEmpty()) {
+			// Check if the icon is really registered
+			Icon icon = iconManager.getIcon(smallIconId);
+			
+			if (icon != null)
+				putValue(SMALL_ICON, icon);
+		}
+	}
+	
 	@Override
-	public void actionPerformed(ActionEvent a) {
+	public void actionPerformed(ActionEvent evt) {
 		logger.debug("About to execute task from factory: " + factory.toString());
 
 		// execute the task(s) in a separate thread
