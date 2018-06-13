@@ -1,5 +1,9 @@
 package org.cytoscape.internal.model;
 
+import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_ANNOTATIONS;
+import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_EDGES;
+import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODES;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -25,15 +29,40 @@ package org.cytoscape.internal.model;
  */
 
 public enum SelectionMode {
-	NODE_SELECTION("Nodes", "NETWORK_NODE_SELECTION"),
-	EDGE_SELECTION("Edges", "NETWORK_EDGE_SELECTION"),
-	ANNOTATION_SELECTION("Annotations", "NETWORK_ANNOTATION_SELECTION");
+	
+	NODE_SELECTION(
+			"Toggle Node Selection",
+			SELECTION_MODE_NODES,
+			"Turn off this option if you don't want nodes to be selected when they are clicked or drag-selected.",
+			"/images/tooltips/selection-mode-nodes.gif",
+			"NETWORK_NODE_SELECTION"
+	),
+	EDGE_SELECTION(
+			"Toggle Edge Selection",
+			SELECTION_MODE_EDGES,
+			"Turn off this option if you don't want edges to be selected when they are clicked or drag-selected.",
+			"/images/tooltips/selection-mode-edges.gif",
+			"NETWORK_EDGE_SELECTION"
+	),
+	ANNOTATION_SELECTION(
+			"Toggle Annotation Selection",
+			SELECTION_MODE_ANNOTATIONS,
+			"Turn off this option if you don't want annotations to be selected when they are clicked or drag-selected.",
+			null,
+			"NETWORK_ANNOTATION_SELECTION"
+	);
 	
 	private final String text;
+	private final String iconText;
+	private final String toolTipText;
+	private final String toolTipImage;
 	private final String propertyId;
 
-	private SelectionMode(String text, String propertyId) {
+	private SelectionMode(String text, String iconText, String toolTipText, String toolTipImage, String propertyId) {
 		this.text = text;
+		this.iconText = iconText;
+		this.toolTipText = toolTipText;
+		this.toolTipImage = toolTipImage;
 		this.propertyId = propertyId;
 	}
 	
@@ -41,7 +70,19 @@ public enum SelectionMode {
 		return text;
 	}
 	
+	public String getIconText() {
+		return iconText;
+	}
+	
 	public String getPropertyId() {
 		return propertyId;
+	}
+	
+	public String getToolTipText() {
+		return toolTipText;
+	}
+	
+	public String getToolTipImage() {
+		return toolTipImage;
 	}
 }

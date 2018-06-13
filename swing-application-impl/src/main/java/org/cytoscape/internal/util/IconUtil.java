@@ -1,9 +1,5 @@
 package org.cytoscape.internal.util;
 
-import java.awt.Font;
-import java.awt.FontFormatException;
-import java.io.IOException;
-
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)
@@ -30,23 +26,12 @@ import java.io.IOException;
 
 public abstract class IconUtil {
 	
+	public static final String CY_FONT_NAME = "cytoscape-3";
+	
 	public static final String CYTOSCAPE_LOGO = "b";
-	
-	private static Font iconFont;
-
-	static {
-		try {
-			iconFont = Font.createFont(Font.TRUETYPE_FONT, IconUtil.class.getResourceAsStream("/fonts/cytoscape-3.ttf"));
-		} catch (FontFormatException e) {
-			throw new RuntimeException();
-		} catch (IOException e) {
-			throw new RuntimeException();
-		}
-	}
-	
-	public static Font getIconFont(float size) {
-		return iconFont.deriveFont(size);
-	}
+	public static final String SELECTION_MODE_ANNOTATIONS = "p";
+	public static final String SELECTION_MODE_EDGES = "q";
+	public static final String SELECTION_MODE_NODES = "r";
 	
 	private IconUtil() {
 		// ...

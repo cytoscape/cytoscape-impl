@@ -495,7 +495,7 @@ public class CyActivator extends AbstractCyActivator {
 		rowViewTracker = new RowViewTracker();
 		selecteEdgeViewUpdater = new SelectEdgeViewUpdater(rowViewTracker);
 		selecteNodeViewUpdater = new SelectNodeViewUpdater(rowViewTracker);
-		columnPresentationManager = new CyColumnPresentationManagerImpl();
+		columnPresentationManager = new CyColumnPresentationManagerImpl(serviceRegistrar);
 		
 		rowsSetViewUpdater = new RowsSetViewUpdater(rowViewTracker, netViewMediator, serviceRegistrar);
 

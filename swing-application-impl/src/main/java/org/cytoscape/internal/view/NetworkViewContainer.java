@@ -3,6 +3,8 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
@@ -18,11 +20,13 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.LayoutManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -32,9 +36,9 @@ import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,15 +46,21 @@ import javax.swing.JRootPane;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.JToggleButton;
+import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.model.SelectionMode;
+import org.cytoscape.internal.util.IconUtil;
+import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -104,13 +114,15 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
-	private Map<VisualProperty<Boolean>, JCheckBox> selectionCheckBoxes = new LinkedHashMap<>();
+	private Map<VisualProperty<Boolean>, JToggleButton> selectionModeButtons = new LinkedHashMap<>();
 	private JPanel selectionModePanel;
 	private JPanel infoPanel;
 	private JLabel selectionIconLabel;
 	private JLabel hiddenIconLabel;
-	private JLabel selectionLabel;
-	private JLabel hiddenLabel;
+	private JLabel nodeSelectionLabel;
+	private JLabel edgeSelectionLabel;
+	private JLabel nodeHiddenLabel;
+	private JLabel edgeHiddenLabel;
 	private JButton birdsEyeViewButton;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
@@ -218,6 +230,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getExportButton().setVisible(!isComparing());
 		sep3.setVisible(getSelectionModePanel().isVisible());
 		sep4.setVisible(!isComparing());
+		getInfoPanel().setVisible(!isComparing());
+		sep5.setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
@@ -236,9 +250,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	protected void updateSelectionModePanel() {
-		selectionCheckBoxes.forEach((vp, cb) -> {
+		selectionModeButtons.forEach((vp, btn) -> {
 			final boolean selected = networkView.getVisualProperty(vp);
-			cb.setSelected(selected);
+			btn.setForeground(UIManager.getColor(selected ? "Focus.color" : "Button.foreground"));
 		});
 	}
 	
@@ -252,11 +266,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			// Selected nodes/edges info
 			final int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			final int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
-			getSelectionLabel().setText(sn + " - " + se);
+			getNodeSelectionLabel().setText("" + sn);
+			getEdgeSelectionLabel().setText("" + se);
 			
 			final String sTooltip = createInfoToolTipText(sn, se, "selected");
 			getSelectionIconLabel().setToolTipText(sTooltip);
-			getSelectionLabel().setToolTipText(sTooltip);
+			getNodeSelectionLabel().setToolTipText(sTooltip);
 			
 			getSelectionIconLabel().setForeground(
 					sn > 0 || se > 0 ? LookAndFeelUtil.getInfoColor() : UIManager.getColor("Label.disabledForeground"));
@@ -264,11 +279,12 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			// Hidden nodes/edges info
 			final int hn = ViewUtil.getHiddenNodeCount(view);
 			final int he = ViewUtil.getHiddenEdgeCount(view);
-			getHiddenLabel().setText(hn + " - " + he);
+			getNodeHiddenLabel().setText("" + hn);
+			getEdgeHiddenLabel().setText("" + he);
 			
 			final String hTooltip = createInfoToolTipText(hn, he, "hidden");
 			getHiddenIconLabel().setToolTipText(hTooltip);
-			getHiddenLabel().setToolTipText(hTooltip);
+			getNodeHiddenLabel().setToolTipText(hTooltip);
 			
 			getHiddenIconLabel().setForeground(
 					hn > 0 || he > 0 ? LookAndFeelUtil.getWarnColor() : UIManager.getColor("Label.disabledForeground"));
@@ -351,6 +367,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	@SuppressWarnings("unchecked")
 	private void createSelectionModeButtons() {
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
+		
 		for (SelectionMode mode : SelectionMode.values()) {
 			final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
 			
@@ -360,13 +379,28 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				if (range != null && range.getType() != Boolean.class)
 					continue;
 				
-				JCheckBox cb = new JCheckBox(mode.getText());
-				LookAndFeelUtil.makeSmall(cb);
+				final URL tipImgUrl = mode.getToolTipImage() == null ? null :
+						Util.getURL(getClass().getResource(mode.getToolTipImage()).toString());
 				
-				selectionCheckBoxes.put((VisualProperty<Boolean>) vp, cb);
+				JToggleButton btn = new JToggleButton(mode.getIconText()) {
+					@Override
+					public JToolTip createToolTip() {
+						return new CyToolTip(
+								this,
+								mode.getText(),
+								mode.getToolTipText(),
+								tipImgUrl == null ? null : new ImageIcon(tipImgUrl)
+						);
+					}
+				};
 				
-				cb.addActionListener(evt -> {
-					networkView.setLockedValue(vp, cb.isSelected());
+				btn.setToolTipText(mode.getText());
+				styleToolBarButton(btn, iconFont, 3, 2);
+				
+				selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
+				
+				btn.addActionListener(evt -> {
+					networkView.setLockedValue(vp, btn.isSelected());
 					updateSelectionModePanel();
 				});
 			}
@@ -421,11 +455,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
-					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
-					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -443,9 +477,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getSelectionModePanel(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getExportButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -536,7 +570,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (LookAndFeelUtil.isAquaLAF())
 				selectionModePanel.setOpaque(false);
 			
-			if (selectionCheckBoxes.isEmpty()) {
+			if (selectionModeButtons.isEmpty()) {
 				selectionModePanel.setVisible(false);
 			} else {
 				final GroupLayout layout = new GroupLayout(selectionModePanel);
@@ -549,15 +583,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				layout.setHorizontalGroup(hGroup);
 				layout.setVerticalGroup(vGroup);
 			
-				JLabel lbl = new JLabel("Select:");
-				LookAndFeelUtil.makeSmall(lbl);
-				
-				hGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE).addPreferredGap(RELATED);
-				vGroup.addComponent(lbl, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-			
-				selectionCheckBoxes.forEach((vp, cb) -> {
-					hGroup.addComponent(cb, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
-					vGroup.addComponent(cb, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+				selectionModeButtons.forEach((vp, btn) -> {
+					hGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
+					vGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 				});
 			}
 		}
@@ -574,30 +602,47 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			
 			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
 			
+			LookAndFeelUtil.equalizeSize(getSelectionIconLabel(), getHiddenIconLabel());
+			final int lw = 48; // Preferred label width
+			
 			final GroupLayout layout = new GroupLayout(infoPanel);
 			infoPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
-					.addContainerGap()
-					.addGap(0, 0, Short.MAX_VALUE)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(RELATED)
-					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(4)
+					.addGroup(layout.createParallelGroup(TRAILING, true)
+							.addComponent(getNodeSelectionLabel(), lw, lw, Short.MAX_VALUE)
+							.addComponent(getEdgeSelectionLabel(), lw, lw, Short.MAX_VALUE)
+					)
+					.addGap(4, 4, Short.MAX_VALUE)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(RELATED)
-					.addComponent(getHiddenLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(0, 0, Short.MAX_VALUE)
-					.addContainerGap()
+					.addGap(4)
+					.addGroup(layout.createParallelGroup(TRAILING, true)
+							.addComponent(getNodeHiddenLabel(), lw, lw, Short.MAX_VALUE)
+							.addComponent(getEdgeHiddenLabel(), lw, lw, Short.MAX_VALUE)
+					)
+					.addGap(4, 4, Short.MAX_VALUE)
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
+			layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getNodeSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getEdgeSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
+					.addGroup(layout.createSequentialGroup()
+							.addGap(4)
+							.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGap(4)
+					)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getHiddenLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(getNodeHiddenLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getEdgeHiddenLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					)
 			);
 		}
 		
@@ -622,24 +667,48 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return hiddenIconLabel;
 	}
 	
-	private JLabel getSelectionLabel() {
-		if (selectionLabel == null) {
-			selectionLabel = new JLabel();
-			selectionLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			selectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+	private JLabel getNodeSelectionLabel() {
+		if (nodeSelectionLabel == null) {
+			nodeSelectionLabel = new JLabel();
+			nodeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			nodeSelectionLabel.setFont(nodeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nodeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
-		return selectionLabel;
+		return nodeSelectionLabel;
 	}
 	
-	private JLabel getHiddenLabel() {
-		if (hiddenLabel == null) {
-			hiddenLabel = new JLabel();
-			hiddenLabel.setFont(selectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			hiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+	private JLabel getEdgeSelectionLabel() {
+		if (edgeSelectionLabel == null) {
+			edgeSelectionLabel = new JLabel();
+			edgeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			edgeSelectionLabel.setFont(edgeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			edgeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
-		return hiddenLabel;
+		return edgeSelectionLabel;
+	}
+	
+	private JLabel getNodeHiddenLabel() {
+		if (nodeHiddenLabel == null) {
+			nodeHiddenLabel = new JLabel();
+			nodeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			nodeHiddenLabel.setFont(nodeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nodeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return nodeHiddenLabel;
+	}
+	
+	private JLabel getEdgeHiddenLabel() {
+		if (edgeHiddenLabel == null) {
+			edgeHiddenLabel = new JLabel();
+			edgeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+			edgeHiddenLabel.setFont(edgeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			edgeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+		}
+		
+		return edgeHiddenLabel;
 	}
 	
 	JButton getBirdsEyeViewButton() {

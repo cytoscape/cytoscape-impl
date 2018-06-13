@@ -12,6 +12,8 @@ import org.cytoscape.application.swing.CyColumnPresentation;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.internal.util.RandomImage;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 
 public class CyColumnPresentationManagerImpl implements CyColumnPresentationManager {
@@ -19,8 +21,8 @@ public class CyColumnPresentationManagerImpl implements CyColumnPresentationMana
 	private final CyColumnPresentation cytoscapePresentation;
 	private final Map<String,CyColumnPresentation> presentations = new HashMap<>();
 	
-	public CyColumnPresentationManagerImpl() {
-		Font font = IconUtil.getIconFont(15f);
+	public CyColumnPresentationManagerImpl(CyServiceRegistrar serviceRegistrar) {
+		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 15f);
 		Color color = new Color(254, 193, 125);
 		Icon icon = new TextIcon(IconUtil.CYTOSCAPE_LOGO, font, color, 16, 16);
 		cytoscapePresentation = new DefaultPresentation("Cytoscape", icon);

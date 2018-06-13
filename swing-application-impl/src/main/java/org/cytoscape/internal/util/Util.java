@@ -2,6 +2,8 @@ package org.cytoscape.internal.util;
 
 import java.awt.Component;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -129,6 +131,17 @@ public final class Util {
 				"Open Session",
 				JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
 			openSession(file, serviceRegistrar, observer);
+	}
+	
+	public static URL getURL(final String s) {
+		try {
+			if (s != null)
+				return new URL(s);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+		
+		return null;
 	}
 	
 	private Util() {

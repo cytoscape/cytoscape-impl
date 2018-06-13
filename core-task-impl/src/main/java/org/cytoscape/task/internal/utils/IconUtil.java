@@ -53,47 +53,60 @@ public abstract class IconUtil {
 	public static final String NEW_FROM_SELECTED = "m";
 	public static final String OPEN_FILE = "n";
 	public static final String SAVE_SESSION = "o";
-	public static final String SHOW_ALL = "p";
-	public static final String ZOOM_FIT = "q";
-	public static final String ZOOM_IN = "r";
-	public static final String ZOOM_OUT = "s";
-	public static final String ZOOM_SELECTED = "t";
+	public static final String SELECTION_MODE_ANNOTATIONS = "p";
+	public static final String SELECTION_MODE_EDGES = "q";
+	public static final String SELECTION_MODE_NODES = "r";
+	public static final String SHOW_ALL = "s";
+	public static final String VENN_DIFFERENCE = "t";
+	public static final String VENN_INTERSECTION = "u";
+	public static final String VENN_UNION = "v";
+	public static final String ZOOM_FIT = "w";
+	public static final String ZOOM_IN = "x";
+	public static final String ZOOM_OUT = "y";
+	public static final String ZOOM_SELECTED = "z";
 	
 	// Icon Parts
-	public static final String HELP_1 = "u";
-	public static final String HELP_2 = "v";
+	public static final String ANNOTATION = "A";
+	public static final String EDGES = "B";
 	
-	public static final String HIDE_SELECTED_1 = "w";
-	public static final String HIDE_SELECTED_2 = "x";
-	public static final String HIDE_SELECTED_3 = "y";
+	public static final String HELP_1 = "C";
+	public static final String HELP_2 = "D";
 	
-	public static final String IMPORT_NET_1 = "z";
-	public static final String IMPORT_NET_2 = "A";
+	public static final String HIDE_SELECTED_1 = "E";
+	public static final String HIDE_SELECTED_2 = "F";
+	public static final String HIDE_SELECTED_3 = "G";
 	
-	public static final String IMPORT_TABLE_1 = "B";
-	public static final String IMPORT_TABLE_2 = "C";
-	public static final String IMPORT_TABLE_3 = "D";
+	public static final String IMPORT_NET_1 = "H";
+	public static final String IMPORT_NET_2 = "I";
 	
-	public static final String NEW_FROM_SELECTED_1 = "E";
-	public static final String NEW_FROM_SELECTED_2 = "F";
-	public static final String NEW_FROM_SELECTED_3 = "G";
+	public static final String IMPORT_TABLE_1 = "J";
+	public static final String IMPORT_TABLE_2 = "K";
+	public static final String IMPORT_TABLE_3 = "L";
 	
-	public static final String OPEN_FILE_1 = "H";
-	public static final String OPEN_FILE_2 = "I";
+	public static final String NEW_FROM_SELECTED_1 = "M";
+	public static final String NEW_FROM_SELECTED_2 = "N";
+	public static final String NEW_FROM_SELECTED_3 = "O";
 	
-	public static final String SAVE_1 = "J";
-	public static final String SAVE_2 = "K";
-	public static final String SAVE_3 = "L";
+	public static final String NODES = "P";
 	
-	public static final String SHOW_ALL_1 = "M";
-	public static final String SHOW_ALL_2 = "N";
+	public static final String OPEN_FILE_1 = "Q";
+	public static final String OPEN_FILE_2 = "R";
 	
-	public static final String ZOOM_1 = "O";
-	public static final String ZOOM_2 = "P";
-	public static final String ZOOM_FIT_3 = "Q";
-	public static final String ZOOM_IN_3 = "R";
-	public static final String ZOOM_OUT_3 = "S";
-	public static final String ZOOM_SELECTED_3 = "T";
+	public static final String SAVE_1 = "S";
+	public static final String SAVE_2 = "T";
+	public static final String SAVE_3 = "U";
+	
+	public static final String SELECTION = "V";
+	
+	public static final String SHOW_ALL_1 = "W";
+	public static final String SHOW_ALL_2 = "X";
+	
+	public static final String ZOOM_1 = "Y";
+	public static final String ZOOM_2 = "Z";
+	public static final String ZOOM_FIT_3 = "0";
+	public static final String ZOOM_IN_3 = "1";
+	public static final String ZOOM_OUT_3 = "2";
+	public static final String ZOOM_SELECTED_3 = "3";
 	
 	// Layers/Colors used to build a TextIcon
 	// HELP
