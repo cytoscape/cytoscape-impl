@@ -41,6 +41,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.TableModel;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
@@ -96,7 +97,7 @@ public abstract class AbstractTableBrowser extends JPanel
 										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
 										   			  SessionAboutToBeSavedListener{
 
-	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	static final int SELECTOR_WIDTH = 400;
 	private static final Dimension PANEL_SIZE = new Dimension(550, 400);
@@ -219,7 +220,7 @@ public abstract class AbstractTableBrowser extends JPanel
 			dropPanel.setBackground(UIManager.getColor("Table.background"));
 			
 			Color fg = UIManager.getColor("Label.disabledForeground");
-			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 60);
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 120);
 			
 			dropPanel.setBorder(BorderFactory.createCompoundBorder(
 					BorderFactory.createEmptyBorder(3, 3, 3, 3),

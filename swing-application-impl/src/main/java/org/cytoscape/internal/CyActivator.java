@@ -617,34 +617,34 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Tree.font", TABLE_FONT);
 				
 				// The default disabled color is usually too dark, so let's make it look more like the native one.
-//				Color disabledFg = UIManager.getColor("Label.disabledForeground");
-//				
-//				if (disabledFg == null)
-//					disabledFg = Color.LIGHT_GRAY;
-//				else
-//					disabledFg = disabledFg.brighter();
-//				
-//				UIManager.put("Label.disabledForeground", disabledFg);
-//				UIManager.put("Button.disabledForeground", disabledFg);
-//				UIManager.put("Button.disabledText", disabledFg);
-//				UIManager.put("ToggleButton.disabledForeground", disabledFg);
-//				UIManager.put("ToggleButton.disabledText", disabledFg);
-//				UIManager.put("CheckBox.disabledForeground", disabledFg);
-//				UIManager.put("Radio.disabledForeground", disabledFg);
-//				UIManager.put("Menu.disabledForeground", disabledFg);
-//				UIManager.put("MenuItem.disabledForeground", disabledFg);
-//				UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
-//				UIManager.put("Table.disabledForeground", disabledFg);
-//				UIManager.put("TableHeader.disabledForeground", disabledFg);
-//				UIManager.put("TextField.inactiveForeground", disabledFg);
-//				UIManager.put("TextField.disabledForeground", disabledFg);
-//				UIManager.put("FormattedTextField.inactiveForeground", disabledFg);
-//				UIManager.put("FormattedTextField.disabledForeground", disabledFg);
-//				UIManager.put("PasswordField.disabledBackground", disabledFg);
-//				UIManager.put("TextArea.inactiveForeground", disabledFg);
-//				UIManager.put("TextArea.disabledForeground", disabledFg);
-//				UIManager.put("List.disabledForeground", disabledFg);
-//				UIManager.put("ComboBox.disabledForeground", disabledFg);
+				Color disabledFg = UIManager.getColor("Label.disabledForeground");
+				
+				if (disabledFg == null)
+					disabledFg = Color.LIGHT_GRAY;
+				else
+					disabledFg = disabledFg.brighter();
+				
+				UIManager.put("Label.disabledForeground", disabledFg);
+				UIManager.put("Button.disabledForeground", disabledFg);
+				UIManager.put("Button.disabledText", disabledFg);
+				UIManager.put("ToggleButton.disabledForeground", disabledFg);
+				UIManager.put("ToggleButton.disabledText", disabledFg);
+				UIManager.put("CheckBox.disabledForeground", disabledFg);
+				UIManager.put("Radio.disabledForeground", disabledFg);
+				UIManager.put("Menu.disabledForeground", disabledFg);
+				UIManager.put("MenuItem.disabledForeground", disabledFg);
+				UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
+				UIManager.put("Table.disabledForeground", disabledFg);
+				UIManager.put("TableHeader.disabledForeground", disabledFg);
+				UIManager.put("TextField.inactiveForeground", disabledFg);
+				UIManager.put("TextField.disabledForeground", disabledFg);
+				UIManager.put("FormattedTextField.inactiveForeground", disabledFg);
+				UIManager.put("FormattedTextField.disabledForeground", disabledFg);
+				UIManager.put("PasswordField.disabledBackground", disabledFg);
+				UIManager.put("TextArea.inactiveForeground", disabledFg);
+				UIManager.put("TextArea.disabledForeground", disabledFg);
+				UIManager.put("List.disabledForeground", disabledFg);
+				UIManager.put("ComboBox.disabledForeground", disabledFg);
 			} else if (LookAndFeelUtil.isWindows()) {
 				// Windows:
 				UIManager.put(
