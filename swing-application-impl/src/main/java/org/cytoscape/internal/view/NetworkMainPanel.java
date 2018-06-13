@@ -1132,7 +1132,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			setBackground(UIManager.getColor("Table.background"));
 			
 			Color fg = UIManager.getColor("Label.disabledForeground");
-			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 60);
+			fg = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 120);
 			
 			dropBorder = BorderFactory.createCompoundBorder(
 					BorderFactory.createEmptyBorder(3, 3, 3, 3),

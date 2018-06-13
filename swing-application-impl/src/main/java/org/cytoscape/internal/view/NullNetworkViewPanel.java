@@ -243,7 +243,6 @@ public class NullNetworkViewPanel extends JPanel {
 			infoLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 			
 			Color c = UIManager.getColor("Label.disabledForeground");
-			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 120);
 			infoLabel.setForeground(c);
 		}
 		
@@ -258,7 +257,6 @@ public class NullNetworkViewPanel extends JPanel {
 			infoIconLabel.setVerticalAlignment(JLabel.CENTER);
 			
 			Color c = UIManager.getColor("Label.disabledForeground");
-			c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
 			infoIconLabel.setForeground(c);
 		}
 		
