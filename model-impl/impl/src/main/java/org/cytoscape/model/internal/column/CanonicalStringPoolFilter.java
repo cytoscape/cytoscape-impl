@@ -32,11 +32,11 @@ public class CanonicalStringPoolFilter implements ColumnData {
 	}
 
 	@Override
-	public void put(Object key, Object value) {
+	public boolean put(Object key, Object value) {
 		if(value instanceof String) {
 			value = stringPool.canonicalize((String)value);
 		}
-		delegate.put(key, value);
+		return delegate.put(key, value);
 	}
 
 	@Override
@@ -45,8 +45,8 @@ public class CanonicalStringPoolFilter implements ColumnData {
 	}
 
 	@Override
-	public void remove(Object key) {
-		delegate.remove(key);
+	public boolean remove(Object key) {
+		return delegate.remove(key);
 	}
 
 	@Override

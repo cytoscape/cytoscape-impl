@@ -61,24 +61,22 @@ public class CyTableTest extends AbstractCyTableTest {
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 	private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private EquationCompiler compiler;
-
+	private Interpreter interpreter;
 	
 	@Before
 	public void setUp() {
 		eventHelper = new DummyCyEventHelper();
 		compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
-		final Interpreter interpreter = new InterpreterImpl();
+		interpreter = new InterpreterImpl();
 		
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
 		
-		table = new CyTableImpl("homer", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
-					eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
+		table = createTable("homer");
+		table2 = createTable("marge");
 		attrs = table.getRow(1L);
-		table2 = new CyTableImpl("marge", CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
-					 eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 		CyTableManagerImpl tblMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), 
 				new CyNetworkManagerImpl(serviceRegistrar), serviceRegistrar);
 		tblMgr.addTable(table);
@@ -86,6 +84,12 @@ public class CyTableTest extends AbstractCyTableTest {
 		tblMgr.addTable(table2);
 		((CyTableImpl)table2).handleEvent(new TableAddedEvent(tblMgr, table2));
 
+	}
+	
+	@Override
+	protected CyTable createTable(String title) {
+		return new CyTableImpl(title, CyIdentifiable.SUID, Long.class, false, true, SavePolicy.SESSION_FILE,
+				eventHelper, ColumnDataFactory.createDefaultFactory(), interpreter, 1000);
 	}
 
 	@After

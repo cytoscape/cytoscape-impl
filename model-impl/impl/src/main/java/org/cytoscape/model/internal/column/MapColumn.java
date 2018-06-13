@@ -44,8 +44,13 @@ class MapColumn implements ColumnData {
 	}
 	
 	@Override
-	public void put(Object key, Object value) {
-		attributes.put(key, value);
+	public boolean put(Object key, Object value) {
+		Object prev = attributes.put(key, value);
+		if(prev == null && value == null)
+			return false;
+		if(prev == null)
+			return true;
+		return !prev.equals(value);
 	}
 	
 	@Override
@@ -59,8 +64,8 @@ class MapColumn implements ColumnData {
 	}
 	
 	@Override
-	public void remove(Object key) {
-		attributes.remove(key);
+	public boolean remove(Object key) {
+		return attributes.remove(key) != null;
 	}
 
 }

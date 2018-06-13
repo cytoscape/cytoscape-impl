@@ -628,6 +628,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		final Object newRawValue;
 		final VirtualColumn virtColumn;
 		
+		boolean changed = true;
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(columnName);
 			
@@ -662,26 +663,37 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 					keyToValueMap.put(key, equation);
 
 					final StringBuilder errorMsg = new StringBuilder();
-					newValue = EqnSupport.evalEquation(equation, key, interpreter,
-									   currentlyActiveAttributes, columnName,
-									   errorMsg, this);
+					newValue = evalEquation(equation, key, columnName, errorMsg);
 					lastInternalError = errorMsg.toString();
 					if (newValue == null)
 						logger.warn("attempted premature evaluation evaluation for " + equation);
 				} else {
 					// TODO this is an implicit addRow - not sure if we want to refactor this or not
 					newRawValue = newValue = columnType.cast(value);
-					keyToValueMap.put(key, newValue);
+					changed = keyToValueMap.put(key, newValue);
 				}
 			}
 		}
 
-		if (fireEvents && virtColumn == null) {
+		if (fireEvents && changed && virtColumn == null) {
 			// Fire an event for each table in the virtual column chain
-			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue, Collections.newSetFromMap(new IdentityHashMap<VirtualColumnInfo, Boolean>()));
+			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue);
 		}
 	}
 
+	
+	private Object evalEquation(Equation equation, Object key, String columnName, Appendable errorsMessages) {
+		return EqnSupport.evalEquation(equation, key, interpreter, currentlyActiveAttributes, columnName, errorsMessages, this);
+	}
+	
+	/**
+	 * If a value in a virtual column changes then we need to fire events for the table that contains the 
+	 * local column and every dependent table that contains a virtual column.
+	 */
+	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue) {
+		fireVirtualColumnRowSetEvent(this, key, columnName, newValue, newRawValue, Collections.newSetFromMap(new IdentityHashMap<>()));
+	}
+	
 	private void fireVirtualColumnRowSetEvent(CyTableImpl table, Object key, String columnName, Object newValue, Object newRawValue, Set<VirtualColumnInfo> seen) {
 		// Fire an event for this table
 		CyRow row = table.getRowNoCreate(key);
@@ -727,7 +739,9 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	private final void setListX(final Object key, final String columnName, final Object value) {
 		Object newValue;
 		final Object rawValue;
+		final VirtualColumn virtColumn;
 		
+		boolean changed = true;
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(columnName);
 			final CyColumn column = types.get(normalizedColName);
@@ -743,18 +757,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				List<?> listData = columnFactory.createList(type, list);
 				rawValue = new CyListImpl(type, listData, eventHelper, row, column, this);
 			} else if (!(value instanceof Equation)) {
-				throw new IllegalArgumentException("value is a " + value.getClass().getName()
-								   + " and not a List for column '"
-								   + columnName + "'.");
+				throw new IllegalArgumentException("value is a " + value.getClass().getName() + " and not a List for column '" + columnName + "'.");
 			} else if (!EqnSupport.listEquationIsCompatible((Equation)value, type)) {
-				throw new IllegalArgumentException(
-								   "value is not a List equation of a compatible type for column '"
-								   + columnName + "'.");
+				throw new IllegalArgumentException("value is not a List equation of a compatible type for column '" + columnName + "'.");
 			} else {
 				rawValue = value;
 			}
 
-			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			virtColumn = virtualColumnMap.get(normalizedColName);
 			
 			if (virtColumn != null) {
 				virtColumn.setValue(key, rawValue);
@@ -763,12 +773,10 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				ColumnData keyToValueMap = attributes.get(normalizedColName);
 
 				// TODO this is an implicit addRow - not sure if we want to refactor this or not
-				keyToValueMap.put(key, rawValue);
+				changed = keyToValueMap.put(key, rawValue);
 				if (rawValue instanceof Equation) {
 					final StringBuilder errorMsg = new StringBuilder();
-					newValue = EqnSupport.evalEquation((Equation)rawValue, suid, interpreter,
-									   currentlyActiveAttributes, columnName,
-									   errorMsg, this);
+					newValue = evalEquation((Equation)rawValue, suid, columnName, errorMsg);
 					lastInternalError = errorMsg.toString();
 				} else {
 					newValue = rawValue;
@@ -776,16 +784,19 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 			}
 		}
 
-		if (fireEvents)
-			eventHelper.addEventPayload((CyTable)this,
-			                            new RowSetRecord(getRow(key),columnName,newValue, rawValue),
-			                            RowsSetEvent.class);
+		if (fireEvents && changed && virtColumn == null) {
+			// Fire an event for each table in the virtual column chain
+			fireVirtualColumnRowSetEvent(this, key, columnName, newValue, rawValue);
+		}
 	}
 
 	private void unSetX(final Object key, final String columnName) {
+		boolean changed = true;
+		final VirtualColumn virtColumn;
+		
 		synchronized(lock) {
 			final String normalizedColName = normalizeColumnName(columnName);
-			final VirtualColumn virtColumn = virtualColumnMap.get(normalizedColName);
+			virtColumn = virtualColumnMap.get(normalizedColName);
 			
 			if (virtColumn != null)
 				virtColumn.setValue(key, null);
@@ -794,18 +805,14 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 				if (!types.containsKey(normalizedColName) || keyToValueMap == null)
 					throw new IllegalArgumentException("column: '" + columnName + "' does not yet exist.");
 
-				final Object value = keyToValueMap.get(key);
-				if (value == null)
-					return;
-
-				keyToValueMap.remove(key);
+				changed = keyToValueMap.remove(key);
 			}
 		}
 
-		if (fireEvents)
-			eventHelper.addEventPayload((CyTable)this,
-			                            new RowSetRecord(getRow(key), columnName, null, null),
-			                            RowsSetEvent.class);
+		if (fireEvents && changed && virtColumn == null) {
+			// Fire an event for each table in the virtual column chain
+			fireVirtualColumnRowSetEvent(this, key, columnName, null, null);
+		}
 	}
 
 	Object getValueOrEquation(final Object key, final String columnName) {
@@ -865,10 +872,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		if (vl instanceof Equation) {
 			final StringBuilder errorMsg = new StringBuilder();
-			final Object value =
-				EqnSupport.evalEquation((Equation)vl, key, interpreter,
-							currentlyActiveAttributes, columnName,
-							errorMsg, this);
+			final Object value = evalEquation((Equation)vl, key, columnName, errorMsg);
 			lastInternalError = errorMsg.toString();
 			if ( type == null )
 				return value;
@@ -928,10 +932,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	
 			if (vl instanceof Equation) {
 				final StringBuilder errorMsg = new StringBuilder();
-				final Object result =
-					EqnSupport.evalEquation((Equation)vl, key, interpreter,
-								currentlyActiveAttributes, columnName,
-								errorMsg, this);
+				final Object result = evalEquation((Equation)vl, key, columnName, errorMsg);
 				lastInternalError = errorMsg.toString();
 				return (List)result;
 			} else

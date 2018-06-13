@@ -13,7 +13,7 @@ import com.google.common.collect.Sets;
 public class EquationSupport implements ColumnData {
 
 	private final ColumnData delegate;
-	private final Map<Object,Equation> equations;
+	private final Map<Object,Object> equations; // no need to cast
 
 	public EquationSupport(ColumnData delegate) {
 		this.delegate = delegate;
@@ -21,17 +21,18 @@ public class EquationSupport implements ColumnData {
 	}
 
 	@Override
-	public void put(Object key, Object value) {
+	public boolean put(Object key, Object value) {
 		if(value instanceof Equation) {
-			equations.put(key, (Equation)value);
+			equations.put(key, value);
+			return true; // hard to know if value of equation changed, so best to be conservative
 		} else {
-			delegate.put(key, value);
+			return delegate.put(key, value);
 		}
 	}
 
 	@Override
 	public Object get(Object key) {
-		Equation equation = equations.get(key);
+		Object equation = equations.get(key);
 		if(equation == null) {
 			return delegate.get(key);
 		}
@@ -39,9 +40,10 @@ public class EquationSupport implements ColumnData {
 	}
 
 	@Override
-	public void remove(Object key) {
-		equations.remove(key);
-		delegate.remove(key);
+	public boolean remove(Object key) {
+		if(equations.remove(key) != null)
+			return true;
+		return delegate.remove(key);
 	}
 
 	@Override

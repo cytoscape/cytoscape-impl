@@ -8,13 +8,17 @@ import org.cytoscape.model.CyRow;
 
 public interface ColumnData {
 	
+	Object get(Object key);
+	Set<Object> keySet();
+	
+	/**
+	 * Returns true if the value changed
+	 */
+	boolean put(Object key, Object value); 
+	boolean remove(Object key);
+	
 	int countMatchingRows(Object value);
 	Collection<CyRow> getMatchingRows(Map<Object, CyRow> rows, Object value);
 	<T> Collection<T> getMatchingKeys(Object value, Class<T> type);
-	
-	void put(Object key, Object value);
-	Object get(Object key);
-	void remove(Object key);
-	Set<Object> keySet();
 
 }

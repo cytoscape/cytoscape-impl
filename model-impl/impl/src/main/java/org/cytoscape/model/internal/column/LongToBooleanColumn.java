@@ -65,19 +65,22 @@ public class LongToBooleanColumn implements ColumnData {
 	}
 	
 	@Override
-	public void put(Object key, Object value) {
+	public boolean put(Object key, Object value) {
+		boolean changed = false;
 		if(Boolean.TRUE.equals(value)) {
-			trueKeys.add((Long)key);
+			changed = trueKeys.add((Long)key);
 			falseKeys.remove(key);
 		}
 		else if(Boolean.FALSE.equals(value)) {
-			falseKeys.add((Long)key);
+			changed = falseKeys.add((Long)key);
 			trueKeys.remove(key);
 		}
+		return changed;
 	}
 
 	@Override
 	public Object get(Object key) {
+		// avoid boxing
 		if(trueKeys.contains(key))
 			return Boolean.TRUE;
 		if(falseKeys.contains(key))
@@ -86,9 +89,11 @@ public class LongToBooleanColumn implements ColumnData {
 	}
 
 	@Override
-	public void remove(Object key) {
-		trueKeys.remove(key);
-		falseKeys.remove(key);
+	public boolean remove(Object key) {
+		boolean changed = false;
+		changed |= trueKeys.remove(key);
+		changed |= falseKeys.remove(key);
+		return changed;
 	}
 
 	@Override

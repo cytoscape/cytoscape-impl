@@ -3,8 +3,6 @@ package org.cytoscape.model;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.util.Random;
-
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.internal.EquationCompilerImpl;
 import org.cytoscape.equations.internal.EquationParserImpl;
@@ -54,12 +52,10 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 	
 	TableTestSupport support; 
 	CyTableFactory factory;
-	Random rand;
 
 	public TableTestSupportTest() {
 		support = new TableTestSupport();
 		factory = support.getTableFactory();
-		rand = new Random(15);
 	}
 
 	@Before
@@ -71,8 +67,8 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 		when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
 		when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		
-		table = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
-		table2 = factory.createTable(Integer.toString( rand.nextInt(10000) ), CyIdentifiable.SUID, Long.class, false, true);
+		table = createTable("homer");
+		table2 = createTable("marge");
 		attrs = table.getRow(1l);
 		CyTableManagerImpl tblMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), 
 				new CyNetworkManagerImpl(serviceRegistrar), serviceRegistrar);
@@ -82,6 +78,11 @@ public class TableTestSupportTest extends AbstractCyTableTest {
 		((CyTableImpl)table2).handleEvent(new TableAddedEvent(tblMgr, table2));
 	}
 
+	@Override
+	protected CyTable createTable(String title) {
+		return factory.createTable(title, CyIdentifiable.SUID, Long.class, false, true);
+	}
+	
 	@After
 	public void tearDown() {
 		table = null;
