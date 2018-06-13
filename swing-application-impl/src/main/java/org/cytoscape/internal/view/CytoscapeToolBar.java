@@ -2,8 +2,12 @@ package org.cytoscape.internal.view;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.ImageProducer;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -19,6 +23,7 @@ import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
+import javax.swing.GrayFilter;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -27,12 +32,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JToolBar;
+import javax.swing.JToolTip;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
@@ -76,9 +83,6 @@ public class CytoscapeToolBar extends JToolBar {
 
 	private CyServiceRegistrar serviceRegistrar;
 	
-	/**
-	 * new constructor passes CyServiceRegistrar in 
-	 */
 	public CytoscapeToolBar(CyServiceRegistrar serviceRegistrar) {
 		super("Cytoscape Tools");
 		actionButtonMap = new HashMap<>();
@@ -316,7 +320,17 @@ public class CytoscapeToolBar extends JToolBar {
 	public static JButton createToolBarButton(CyAction action) {
 		action.updateEnableState();
 		
-		final JButton button = new JButton(action); 
+		final JButton button = new JButton(action) {
+			@Override
+		      public JToolTip createToolTip() {
+				return new CyToolTip(
+						this,
+						action.getName(),
+						(String) action.getValue(Action.SHORT_DESCRIPTION),
+						action.getToolTipImage() == null ? null : new ImageIcon(action.getToolTipImage())
+				);
+		      }
+		};
 		button.setText(action.getName());
 		button.setBorder(BorderFactory.createEmptyBorder(BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE,
 				BUTTON_BORDER_SIZE));
@@ -330,11 +344,15 @@ public class CytoscapeToolBar extends JToolBar {
 		button.setPreferredSize(dim);
 		button.setMaximumSize(dim);
 
-		// If SHORT_DESCRIPTION exists, use this as tool-tip
-		final String shortDescription = (String) action.getValue(Action.SHORT_DESCRIPTION);
+		Object normalIcon = action.getValue(Action.LARGE_ICON_KEY);
 		
-		if (shortDescription != null) 
-			button.setToolTipText(shortDescription);
+		if (normalIcon instanceof ImageIcon) {
+			Image normalImage = ((ImageIcon) normalIcon).getImage();
+			GrayFilter filter = new GrayFilter(true, 71);
+	        ImageProducer prod = new FilteredImageSource(normalImage.getSource(), filter);
+	        Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
+	        button.setDisabledIcon(new ImageIcon(grayImage));
+		}
 		
 		return button;
 	}

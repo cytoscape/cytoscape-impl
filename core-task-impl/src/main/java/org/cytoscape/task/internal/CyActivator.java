@@ -50,6 +50,7 @@ import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP_IMAGE;
 import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.awt.Font;
@@ -300,7 +301,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -700,7 +701,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Selected");
-			props.setProperty(TOOLTIP, "Zoom selected region");
+			props.setProperty(TOOLTIP, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the displayed view area.");
 			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(ACCELERATOR, "cmd 9");
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -728,7 +729,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
-			props.setProperty(TOOLTIP, "Zoom out to display all of current Network");
+			props.setProperty(TOOLTIP, "Zooms out the current view in order to display all of its elements.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/fit-content.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.1");
 			props.setProperty(ACCELERATOR, "cmd 0");
 			props.setProperty(LARGE_ICON_ID, iconId);
