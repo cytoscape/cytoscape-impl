@@ -1,57 +1,8 @@
 package org.cytoscape.task.internal;
 
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_EDGES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
-import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SINGLE_NETWORK;
-import static org.cytoscape.task.internal.utils.IconUtil.APPLY_LAYOUT;
-import static org.cytoscape.task.internal.utils.IconUtil.C1;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2A;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_2B;
-import static org.cytoscape.task.internal.utils.IconUtil.COLORS_3;
-import static org.cytoscape.task.internal.utils.IconUtil.FIRST_NEIGHBORS;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HELP;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HIDE_SELECTED;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_NET;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_TABLE;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_NEW_FROM_SELECTED;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_OPEN_FILE;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SAVE;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SHOW_ALL;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_FIT;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_IN;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_OUT;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_ZOOM_SEL;
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
-import static org.cytoscape.work.ServiceProperties.LARGE_ICON_ID;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP_IMAGE;
-import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
+import static org.cytoscape.application.swing.ActionEnableSupport.*;
+import static org.cytoscape.task.internal.utils.IconUtil.*;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Font;
 import java.io.BufferedReader;
@@ -140,7 +91,8 @@ import org.cytoscape.task.internal.filter.CreateFilterTaskFactory;
 import org.cytoscape.task.internal.filter.DeleteFilterTaskFactory;
 import org.cytoscape.task.internal.filter.GetFilterTaskFactory;
 import org.cytoscape.task.internal.filter.ListFiltersTaskFactory;
-import org.cytoscape.task.internal.filter.RunFilterTaskFactory;
+import org.cytoscape.task.internal.filter.RenameFilterTaskFactory;
+import org.cytoscape.task.internal.filter.SelectFilterTaskFactory;
 import org.cytoscape.task.internal.group.AddToGroupTaskFactory;
 import org.cytoscape.task.internal.group.GetGroupTask;
 import org.cytoscape.task.internal.group.GetGroupTaskFactory;
@@ -434,23 +386,23 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(COMMAND, "apply");
+			props.setProperty(COMMAND, "select");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges using a JSON filter expression.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "See the documentation for 'filter create' for details on the accepted JSON format.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, new ApplyFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+			registerService(bc, new SelectFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(COMMAND, "run");
+			props.setProperty(COMMAND, "apply");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes and edges by running a filter.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Run an existing filter by supplying the filter name.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
-			registerService(bc, new RunFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+			registerService(bc, new ApplyFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
@@ -461,6 +413,16 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
 			registerService(bc, new DeleteFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(COMMAND, "rename");
+			props.setProperty(COMMAND_NAMESPACE, "filter");
+			props.setProperty(COMMAND_DESCRIPTION, "Rename a filter.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Rename an existing filter by supplying the filter name and a new name.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");
+			registerService(bc, new RenameFilterTaskFactory(serviceRegistrar), TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
@@ -476,7 +438,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get");
 			props.setProperty(COMMAND_NAMESPACE, "filter");
-			props.setProperty(COMMAND_DESCRIPTION, "Get a filter.");
+			props.setProperty(COMMAND_DESCRIPTION, "Returns the JSON representation of a filter.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the JSON representation of a filter.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{ }");

@@ -1,17 +1,12 @@
 package org.cytoscape.task.internal.filter;
 
-import java.io.IOException;
-
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.filter.TransformerManager;
+import org.cytoscape.filter.TransformerContainer;
 import org.cytoscape.filter.model.NamedTransformer;
-import org.cytoscape.io.read.CyTransformerReader;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.select.SelectUtils;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -23,8 +18,11 @@ public class ApplyFilterTask extends AbstractTask {
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 	
+	@Tunable
+	public String name;
+	
 	@ContainsTunables
-	public TransformerJsonTunable json = new TransformerJsonTunable();
+	public ContainerTunable containerTunable = new ContainerTunable();
 	
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -33,43 +31,31 @@ public class ApplyFilterTask extends AbstractTask {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
+	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws IOException {
+	public void run(TaskMonitor taskMonitor) throws Exception {
+		if(name == null || name.isEmpty()) {
+			taskMonitor.showMessage(Level.ERROR, "name is missing");
+			return;
+		}
+
 		if(network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
-		CyTransformerReader transformerReader = serviceRegistrar.getService(CyTransformerReader.class);
+		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
+		if(container == null) {
+			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
+			return;
+		}
 		
-		NamedTransformer<CyNetwork,CyIdentifiable> transformer = json.getTransformer("ApplyFilterTask", transformerReader);
+		NamedTransformer<CyNetwork,CyIdentifiable> transformer = container.getNamedTransformer(name);
+		
 		if(transformer == null) {
-			taskMonitor.showMessage(Level.ERROR, "Error parsing JSON");
+			taskMonitor.showMessage(Level.WARN, "filter '" + name + "' not found");
 			return;
 		}
 		
-		boolean valid = TransformerJsonTunable.validate(transformer, taskMonitor);
-		if(!valid) {
-			return;
-		}
-		
-		applyFilter(serviceRegistrar, network, transformer);
-	}
-	
-	
-	public static void applyFilter(CyServiceRegistrar serviceRegistrar, CyNetwork network, NamedTransformer<CyNetwork,CyIdentifiable> transformer) {
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		TransformerManager transformerManager = serviceRegistrar.getService(TransformerManager.class);
-		
-		SelectUtils selectUtils = new SelectUtils(eventHelper);
-		
-		// De-select all nodes and edges. 
-		// Do this before running the filter because selection handlers can run in parallel with the filter.
-		selectUtils.setSelectedNodes(network, network.getNodeList(), false);
-		selectUtils.setSelectedEdges(network, network.getEdgeList(), false);
-		
-		Sink sink = new Sink();
-		transformerManager.execute(network, transformer.getTransformers(), sink);
-		
-		selectUtils.setSelectedNodes(network, sink.getNodes(), true);
+		SelectFilterTask.applyFilter(serviceRegistrar, network, transformer);
 	}
 
 }

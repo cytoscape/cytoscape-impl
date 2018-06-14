@@ -42,6 +42,20 @@ public class CreateFilterTask extends AbstractTask {
 			return;
 		}
 		
+		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
+		if(container == null) {
+			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
+			return;
+		}
+		
+		// If a filter with the name already exists overwrite it.
+		// The default behaviour of addNamedTransformer() is to add a number to the end of the name.
+		// That's bad for commands because subsequent commands can't refer to the filter by the expected name.
+		NamedTransformer<CyNetwork,CyIdentifiable> existingTransformer = container.getNamedTransformer(name);
+		if(existingTransformer != null) {
+			container.removeNamedTransformer(name);
+		}
+		
 		CyTransformerReader transformerReader = serviceRegistrar.getService(CyTransformerReader.class);
 		
 		NamedTransformer<CyNetwork,CyIdentifiable> transformer = jsonTunable.getTransformer(name, transformerReader);
@@ -52,12 +66,6 @@ public class CreateFilterTask extends AbstractTask {
 		
 		boolean valid = TransformerJsonTunable.validate(transformer, taskMonitor);
 		if(!valid) {
-			return;
-		}
-		
-		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
-		if(container == null) {
-			taskMonitor.showMessage(Level.ERROR, "container type not found: '" + containerTunable.getValue() + "'");
 			return;
 		}
 			

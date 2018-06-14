@@ -1,8 +1,7 @@
 package org.cytoscape.task.internal.filter;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
 import org.cytoscape.filter.TransformerContainer;
+import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -13,13 +12,13 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.Tunable;
 
-public class RunFilterTask extends AbstractTask {
+public class RenameFilterTask extends AbstractTask {
 
-	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
-	
 	@Tunable
 	public String name;
+	
+	@Tunable
+	public String newName;
 	
 	@ContainsTunables
 	public ContainerTunable containerTunable = new ContainerTunable();
@@ -27,7 +26,7 @@ public class RunFilterTask extends AbstractTask {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public RunFilterTask(CyServiceRegistrar serviceRegistrar) {
+	public RenameFilterTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
@@ -38,9 +37,10 @@ public class RunFilterTask extends AbstractTask {
 			taskMonitor.showMessage(Level.ERROR, "name is missing");
 			return;
 		}
-
-		if(network == null)
-			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		if(newName == null || newName.isEmpty()) {
+			taskMonitor.showMessage(Level.ERROR, "newName is missing");
+			return;
+		}
 		
 		TransformerContainer<CyNetwork,CyIdentifiable> container = containerTunable.getContainer(serviceRegistrar);
 		if(container == null) {
@@ -49,13 +49,16 @@ public class RunFilterTask extends AbstractTask {
 		}
 		
 		NamedTransformer<CyNetwork,CyIdentifiable> transformer = container.getNamedTransformer(name);
-		
 		if(transformer == null) {
-			taskMonitor.showMessage(Level.WARN, "filter '" + name + "' not found");
+			taskMonitor.showMessage(Level.ERROR, "filter with name '" + name + "' not found");
 			return;
 		}
 		
-		ApplyFilterTask.applyFilter(serviceRegistrar, network, transformer);
+		TransformerManager transformerManager = serviceRegistrar.getService(TransformerManager.class);
+		NamedTransformer<CyNetwork,CyIdentifiable> newTransformer = transformerManager.createNamedTransformer(newName, transformer.getTransformers());
+		
+		container.removeNamedTransformer(name);
+		container.addNamedTransformer(newTransformer);
 	}
 
 }
