@@ -411,6 +411,14 @@ public class NetworkViewMediator
 			
 			if (tbl.equals(net.getDefaultNodeTable()) || tbl.equals(net.getDefaultEdgeTable())) {
 				final Collection<CyNetworkView> networkViews = netViewMgr.getNetworkViews(net);
+
+				// Update node/edge selection info
+				final Collection<RowSetRecord> selectedRecords = e.getColumnRecords(CyNetwork.SELECTED);
+				
+				if (!selectedRecords.isEmpty()) {
+					for (final CyNetworkView view : networkViews)
+						getNetworkViewMainPanel().updateSelectionInfo(view);
+				}
 				
 				// Update views with styles affected by this RowsSetEvent
 				final Set<CyNetworkView> viewsToUpdate = new HashSet<>();
