@@ -2,6 +2,7 @@ package org.cytoscape.app.internal;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -647,12 +648,21 @@ public class CyActivator extends AbstractCyActivator {
 
 		private final AppManager manager;
 		private final CyServiceRegistrar serviceRegistrar;
-		private final CyAction installAction;
+//		private final CyAction installAction;
+		private final String[] yFilesLayouts = new String[] {
+				"Circular Layout", "Heirarchic Layout", "Heirarchic Layout Selected Nodes",
+				"Organic Layout", "Orthogonal Layout", "Radial Layout", "Tree Layout",
+				"Orthogonal Edge Router", "Organic Edge Router"
+		};
+		private final HashMap<String, CyAction> actionMap = new HashMap<String, CyAction>();
 
 		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
-			this.installAction = new YFilesAction(openBrowser);
+			for (String s : yFilesLayouts) {
+				actionMap.put(s, new YFilesAction("yFiles ".concat(s), openBrowser));
+			}
+//			this.installAction = new YFilesAction(openBrowser);
 		}
 
 		@Override
@@ -662,7 +672,10 @@ public class CyActivator extends AbstractCyActivator {
 					.filter(app -> app.getAppName().toLowerCase().contains(YFILES_TAG)).collect(Collectors.toSet());
 
 			if(filtered.isEmpty()) {
-				serviceRegistrar.registerService(this.installAction, CyAction.class, new Properties());
+				for (CyAction action : actionMap.values()) {
+					serviceRegistrar.registerService(action, CyAction.class, new Properties());
+				}
+//				serviceRegistrar.registerService(this.installAction, CyAction.class, new Properties());
 			}
 		}
 
@@ -670,7 +683,10 @@ public class CyActivator extends AbstractCyActivator {
 		public void bundleChanged(BundleEvent bundleEvent) {
 			final String bundleName = bundleEvent.getBundle().getSymbolicName();
 			if(bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
-				serviceRegistrar.unregisterAllServices(this.installAction);
+//				serviceRegistrar.unregisterAllServices(this.installAction);
+				for (CyAction action : actionMap.values()) {
+					serviceRegistrar.unregisterAllServices(action);
+				}
 			}
 		}
 	}

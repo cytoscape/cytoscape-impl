@@ -11,8 +11,8 @@ public class YFilesAction extends AbstractCyAction {
 
     private final OpenBrowser openBrowser;
 
-    public YFilesAction(OpenBrowser openBrowser) {
-        super("Install yFiles Layouts...");
+    public YFilesAction(String name, OpenBrowser openBrowser) {
+        super(name); //"Install yFiles Layouts...");
         super.setPreferredMenu("Layout");
         super.setMenuGravity(2000.0f);
 
