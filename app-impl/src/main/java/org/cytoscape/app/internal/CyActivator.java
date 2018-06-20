@@ -648,9 +648,8 @@ public class CyActivator extends AbstractCyActivator {
 
 		private final AppManager manager;
 		private final CyServiceRegistrar serviceRegistrar;
-//		private final CyAction installAction;
 		private final String[] yFilesLayouts = new String[] {
-				"Circular Layout", "Heirarchic Layout", "Heirarchic Layout Selected Nodes",
+				"Circular Layout", "Hierarchic Layout", "Hierarchic Layout Selected Nodes",
 				"Organic Layout", "Orthogonal Layout", "Radial Layout", "Tree Layout",
 				"Orthogonal Edge Router", "Organic Edge Router"
 		};
@@ -662,7 +661,6 @@ public class CyActivator extends AbstractCyActivator {
 			for (String s : yFilesLayouts) {
 				actionMap.put(s, new YFilesAction("yFiles ".concat(s), openBrowser));
 			}
-//			this.installAction = new YFilesAction(openBrowser);
 		}
 
 		@Override
@@ -675,7 +673,6 @@ public class CyActivator extends AbstractCyActivator {
 				for (CyAction action : actionMap.values()) {
 					serviceRegistrar.registerService(action, CyAction.class, new Properties());
 				}
-//				serviceRegistrar.registerService(this.installAction, CyAction.class, new Properties());
 			}
 		}
 
@@ -683,7 +680,6 @@ public class CyActivator extends AbstractCyActivator {
 		public void bundleChanged(BundleEvent bundleEvent) {
 			final String bundleName = bundleEvent.getBundle().getSymbolicName();
 			if(bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
-//				serviceRegistrar.unregisterAllServices(this.installAction);
 				for (CyAction action : actionMap.values()) {
 					serviceRegistrar.unregisterAllServices(action);
 				}
