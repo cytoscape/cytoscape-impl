@@ -508,22 +508,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void disableNodeSelection() {
-		final long[] unselectedNodes;
-
 		synchronized (m_lock) {
 			m_nodeSelection = false;
-			unselectedNodes = getSelectedNodeIndices();
-
-			if (unselectedNodes.length > 0) {
-				// Adding this line to speed things up from O(n*log(n)) to O(n).
-				m_selectedNodes.empty();
-
-				for (int i = 0; i < unselectedNodes.length; i++)
-					((DNodeView) getDNodeView(unselectedNodes[i]))
-							.unselectInternal();
-
-				setContentChanged();
-			}
 		}
 	}
 
@@ -536,21 +522,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 	@Override
 	public void disableEdgeSelection() {
-		final long[] unselectedEdges;
-
 		synchronized (m_lock) {
 			m_edgeSelection = false;
-			unselectedEdges = getSelectedEdgeIndices();
-
-			if (unselectedEdges.length > 0) {
-				// Adding this line to speed things up from O(n*log(n)) to O(n).
-				m_selectedEdges.empty();
-
-				for (int i = 0; i < unselectedEdges.length; i++)
-					getDEdgeView(unselectedEdges[i]).unselectInternal();
-
-				setContentChanged();
-			}
 		}
 	}
 	
@@ -565,7 +538,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	public void disableAnnotationSelection() {
 		synchronized (m_lock) {
 			m_annotationSelection = false;
-			getCyAnnotator().clearSelectedAnnotations();
 		}
 	}
 
