@@ -94,7 +94,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			Boolean.TRUE, "NETWORK_EDGE_SELECTION", "Network Edge Selection",
 			CyNetwork.class);
 	public static final VisualProperty<Boolean> NETWORK_ANNOTATION_SELECTION = new BooleanVisualProperty(
-			Boolean.TRUE, "NETWORK_ANNOTATION_SELECTION", "Network Annotation Selection",
+			Boolean.FALSE, "NETWORK_ANNOTATION_SELECTION", "Network Annotation Selection",
 			CyNetwork.class);
 
 	public static final VisualProperty<ObjectPosition> NODE_LABEL_POSITION = new ObjectPositionVisualProperty(
