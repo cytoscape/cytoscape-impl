@@ -659,7 +659,7 @@ public class CyActivator extends AbstractCyActivator {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
 			for (String s : yFilesLayouts) {
-				actionMap.put(s, new YFilesAction("yFiles ".concat(s), openBrowser));
+				actionMap.put(s, new YFilesAction("Install yFiles ".concat(s), openBrowser));
 			}
 		}
 
