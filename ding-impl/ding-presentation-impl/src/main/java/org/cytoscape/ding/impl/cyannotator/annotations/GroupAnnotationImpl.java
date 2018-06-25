@@ -46,6 +46,7 @@ import javax.swing.SwingUtilities;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -227,11 +228,11 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public void moveAnnotation(Point2D location) {
 		// Location is in "node coordinates"
 		// Get the component coordinates of our new location
-		Point2D compLocation = getComponentCoordinates(location.getX(), location.getY());
+		Point2D compLocation = ViewUtils.getComponentCoordinates(view, location.getX(), location.getY());
 
 		// Get our current location in component coordinates
 		Point currentLocation = getLocation();
-		Point2D current = getComponentCoordinates(currentLocation.getX(), currentLocation.getY());
+		Point2D current = ViewUtils.getComponentCoordinates(view, currentLocation.getX(), currentLocation.getY());
 		double currentX = currentLocation.getX();
 		double currentY = currentLocation.getY();
 
@@ -257,16 +258,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 		cyAnnotator.moveAnnotation(this);
 	}
-
-/*
-	@Override
-	public void setSelected(boolean selected) {
-		// for (DingAnnotation child: annotations) {
-		// 	child.setSelected(selected);
-		// }
-		super.setSelected(selected);
-	}
-*/
 
 	/*
 	 * 1) update our bounds
@@ -424,7 +415,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				union = child.getComponent().getBounds().getBounds2D();
 			else
 				union = union.createUnion(child.getComponent().getBounds().getBounds2D());
-			Rectangle2D childBounds = child.getComponent().getBounds().getBounds2D();
 		}
 
 		bounds = union;

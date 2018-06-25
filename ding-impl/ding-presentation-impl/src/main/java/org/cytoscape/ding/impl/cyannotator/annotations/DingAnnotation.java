@@ -27,6 +27,7 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -60,6 +61,7 @@ public interface DingAnnotation extends Annotation {
 	public CyAnnotator getCyAnnotator();
 
 	public void moveAnnotation(Point2D location);
+	public void moveAnnotationRelative(Point2D location);
 	public void removeAnnotation();
 
 	public double getZoom();
@@ -98,4 +100,11 @@ public interface DingAnnotation extends Annotation {
 	// Group support
 	public void setGroupParent(GroupAnnotation parent);
 	public GroupAnnotation getGroupParent();
+
+	// Drag support
+	public void setOffset(Point2D offset);
+	public Point2D getOffset();
+
+	public void saveBounds();
+	public Rectangle2D getInitialBounds();
 }

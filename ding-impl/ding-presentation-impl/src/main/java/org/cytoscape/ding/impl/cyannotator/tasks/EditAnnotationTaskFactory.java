@@ -54,4 +54,8 @@ public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory
 			return true;
 		return false;
 	}
+
+	public TaskIterator createTaskIterator(CyNetworkView networkView, DingAnnotation annotation, Point2D javaPt) {
+		return new TaskIterator(new EditAnnotationTask(networkView, annotation, javaPt));
+	}
 }

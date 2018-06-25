@@ -44,6 +44,7 @@ import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
@@ -56,6 +57,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 // import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
@@ -71,29 +73,33 @@ public class CyAnnotator {
 	private final ArbitraryGraphicsCanvas backGroundCanvas;
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
+	private final CyServiceRegistrar registrar; 
+	private final AnnotationSelection annotationSelection;
 	private MyViewportChangeListener myViewportChangeListener=null;
 	private AbstractAnnotation resizing = null;
 	private ArrowAnnotationImpl repositioning = null;
 	private DingAnnotation moving = null;
+	private Point2D mousePressed = null;
 
 	private Map<DingAnnotation, Map<String,String>> annotationMap = 
 	        new HashMap<DingAnnotation, Map<String,String>>();
-
-	private Set<DingAnnotation> selectedAnnotations = new HashSet<DingAnnotation>();
 
 	private CanvasMouseMotionListener mouseMotionListener;
 	private CanvasMouseListener mouseListener;
 	private CanvasKeyListener keyListener;
 	private CanvasMouseWheelListener mouseWheelListener;
 
-	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager) {
+	public CyAnnotator(final DGraphView view, final AnnotationFactoryManager annotationFactoryManager, 
+	                   final CyServiceRegistrar registrar) {
 		this.view = view;
+		this.registrar = registrar;
 		this.foreGroundCanvas = 
 			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.backGroundCanvas = 
 			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 		this.networkCanvas = view.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
+		annotationSelection = new AnnotationSelection(this);
 		initListeners();  
 	}
 
@@ -281,6 +287,7 @@ public class CyAnnotator {
 	public void update() { view.updateView(); }
 
 	public DGraphView getView() { return view; }
+	public CyServiceRegistrar getRegistrar() { return registrar; }
 
 	/**
  	 * Find all of our annotations that are at this point.  Return the top annotation
@@ -389,14 +396,14 @@ public class CyAnnotator {
 
 	public void removeAnnotation(Annotation annotation) {
 		annotationMap.remove((DingAnnotation)annotation);
-		selectedAnnotations.remove(annotation);
+		annotationSelection.remove(annotation);
 		updateNetworkAttributes(view.getModel());
 	}
 	
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
 		for(Annotation annotation : annotations) {
 			annotationMap.remove((DingAnnotation)annotation);
-			selectedAnnotations.remove(annotation);
+			annotationSelection.remove(annotation);
 		}
 		updateNetworkAttributes(view.getModel());
 	}
@@ -417,9 +424,9 @@ public class CyAnnotator {
 
 		if (selected) {
 			requestFocusInWindow(a);
-			selectedAnnotations.add(a);
+			annotationSelection.add(a);
 		} else
-			selectedAnnotations.remove(a);
+			annotationSelection.remove(a);
 	}
 
 	public void clearSelectedAnnotations() {
@@ -432,8 +439,10 @@ public class CyAnnotator {
 
 		boolean repaintForeGround = false;
 		boolean repaintBackGround = false;
-		for (DingAnnotation a: new ArrayList<DingAnnotation>(selectedAnnotations)) {
-			setSelectedAnnotation(a, false);
+
+		// We need to get a copy of the set to avoid a concurrent modification
+		for (DingAnnotation a: new ArrayList<DingAnnotation>(annotationSelection.getSelectedAnnotations())) {
+			a.setSelected(false);
 			if (a.getCanvasName().equals(Annotation.FOREGROUND))
 				repaintForeGround = true;
 			else
@@ -442,11 +451,15 @@ public class CyAnnotator {
 		if (repaintForeGround)
 			foreGroundCanvas.repaint();
 		if (repaintBackGround)
-		backGroundCanvas.repaint();
+			backGroundCanvas.repaint();
+
+		annotationSelection.clear();
 
 	}
 
-	public Set<DingAnnotation> getSelectedAnnotations() { return selectedAnnotations; }
+	public AnnotationSelection getAnnotationSelection() {
+		return annotationSelection;
+	}
 
 	public void resizeShape(AbstractAnnotation shape) {
 		resizing = shape;

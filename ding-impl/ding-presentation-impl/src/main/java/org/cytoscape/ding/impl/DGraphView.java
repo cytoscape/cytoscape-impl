@@ -459,7 +459,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		setGraphLOD(dingGraphLOD);
 
 		// Finally, intialize our annotations
-		this.cyAnnotator = new CyAnnotator(this, annMgr);
+		this.cyAnnotator = new CyAnnotator(this, annMgr, registrar);
 		
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());

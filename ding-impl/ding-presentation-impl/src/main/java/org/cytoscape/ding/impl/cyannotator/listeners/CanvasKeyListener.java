@@ -25,15 +25,20 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  */
 
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
 
 import java.util.Set;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 
@@ -41,6 +46,7 @@ public class CanvasKeyListener implements KeyListener {
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
 	private final DGraphView view;
+	private JComponent component;
 
 	public CanvasKeyListener(CyAnnotator c, DGraphView view) {
 		this.cyAnnotator = c;
@@ -50,9 +56,14 @@ public class CanvasKeyListener implements KeyListener {
 
 	public void keyPressed(KeyEvent e) {
 		int code = e.getKeyCode();
-		Set<DingAnnotation> selectedAnnotations = cyAnnotator.getSelectedAnnotations();
+		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 
-		if ((selectedAnnotations != null && selectedAnnotations.size() > 0) &&
+		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+			networkCanvas.keyPressed(e);
+			return;
+		}
+
+		if ((annotationSelection.count() > 0) &&
 		    ((code == KeyEvent.VK_UP) || 
 		    (code == KeyEvent.VK_DOWN) || 
 		    (code == KeyEvent.VK_LEFT)|| 
@@ -60,24 +71,25 @@ public class CanvasKeyListener implements KeyListener {
 		{
 			//Some annotations have been double clicked and selected
 			int move=2;
-			for (DingAnnotation annotation: selectedAnnotations) {
+			for (DingAnnotation annotation: annotationSelection) {
 				Component c = annotation.getComponent();
 				int x=c.getX(), y=c.getY();
-				int shiftMask = e.getModifiers() & KeyEvent.SHIFT_DOWN_MASK;
 				if (annotation instanceof ShapeAnnotationImpl && e.isShiftDown()) {
 					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)annotation;
 					int width = c.getWidth(), height = c.getHeight();
+					int borderWidth = (int)sa.getBorderWidth(); // We need to take this into account
 					if (code == KeyEvent.VK_UP) {
-						height -= move;
+						height -= move*2; width -= borderWidth*2;
 					} else if (code == KeyEvent.VK_DOWN) {
-						height += move;
+						height += move; width -= borderWidth*2;
 					} else if (code == KeyEvent.VK_LEFT) {
-						width -= move;
+						width -= move*2; height -= borderWidth*2;
 					} else if (code == KeyEvent.VK_RIGHT) {
-						width += move;
+						width += move; height -= borderWidth*2;
 					}
 					// Adjust the size of the selected annotations
 					sa.setSize((double)width, (double)height);
+
 				} else {
 					if (code == KeyEvent.VK_UP)
 						y-=move;
@@ -113,11 +125,42 @@ public class CanvasKeyListener implements KeyListener {
 				cyAnnotator.moveAnnotation(null);
 				return;
 			}
+		} 
+		/*
+		else if (code == KeyEvent.VK_ALT) {
+			// Get the bounding box of any selected annotations
+			Rectangle2D union = null;
+			for (DingAnnotation a: selectedAnnotations) {
+				if (union == null)
+					union = a.getComponent().getBounds().getBounds2D();
+				else
+					union = union.createUnion(a.getComponent().getBounds().getBounds2D());
+			}
+			// Draw the box with anchors
+			System.out.println("Draw anchors");
+			component = new BBoxWithHandles(union, cyAnnotator);
+			cyAnnotator.getForeGroundCanvas().add(component);
+			cyAnnotator.getForeGroundCanvas().repaint();
 		}
+		*/
 		networkCanvas.keyPressed(e);
 	}
 
-	public void keyReleased(KeyEvent e) { }
+	public void keyReleased(KeyEvent e) { 
+		int code = e.getKeyCode();
+		/*
+		if (code == KeyEvent.VK_ALT) {
+			// Clear drawing of anchors
+			System.out.println("Clear anchors");
+			if (component != null) {
+				cyAnnotator.getForeGroundCanvas().remove(component);
+				cyAnnotator.getForeGroundCanvas().repaint();
+			}
+			component = null;
+		}
+		*/
+	}
 
 	public void keyTyped(KeyEvent e) { }
+
 }

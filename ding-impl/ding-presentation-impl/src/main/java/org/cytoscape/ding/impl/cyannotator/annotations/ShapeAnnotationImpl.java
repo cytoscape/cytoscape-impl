@@ -41,6 +41,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 // import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 
 @SuppressWarnings("serial")
@@ -106,18 +107,18 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
 		super(view, argMap, owner);
 
-		this.fillColor = getColor(argMap, FILLCOLOR, null);
+		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
 		setFillColor(fillColor);
-		this.fillOpacity = getDouble(argMap, FILLOPACITY, 100.0);
+		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
 
 		// If this is an old bounded text, we might not (yet) have a width or
 		// height
-		this.shapeWidth = getDouble(argMap, ShapeAnnotation.WIDTH, 100.0);
-		this.shapeHeight = getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0);
+		this.shapeWidth = ViewUtils.getDouble(argMap, ShapeAnnotation.WIDTH, 100.0);
+		this.shapeHeight = ViewUtils.getDouble(argMap, ShapeAnnotation.HEIGHT, 100.0);
 
-		this.borderWidth = getDouble(argMap, EDGETHICKNESS, 1.0);
-		this.borderColor = getColor(argMap, EDGECOLOR, Color.BLACK);
-		this.borderOpacity = getDouble(argMap, EDGEOPACITY, 100.0);
+		this.borderWidth = ViewUtils.getDouble(argMap, EDGETHICKNESS, 1.0);
+		this.borderColor = ViewUtils.getColor(argMap, EDGECOLOR, Color.BLACK);
+		this.borderOpacity = ViewUtils.getDouble(argMap, EDGEOPACITY, 100.0);
 
 		this.shapeType = GraphicsUtilities.getShapeType(argMap, SHAPETYPE, ShapeType.RECTANGLE);
 
@@ -140,13 +141,13 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 		if (this.fillColor != null) {
 			// System.out.println("Getting fill color");
-			argMap.put(FILLCOLOR, convertColor(this.fillColor));
+			argMap.put(FILLCOLOR, ViewUtils.convertColor(this.fillColor));
 		}
 
 		argMap.put(FILLOPACITY, Double.toString(this.fillOpacity));
 
 		if (this.borderColor != null)
-			argMap.put(EDGECOLOR, convertColor(this.borderColor));
+			argMap.put(EDGECOLOR, ViewUtils.convertColor(this.borderColor));
 
 		argMap.put(EDGETHICKNESS, Double.toString(this.borderWidth));
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
@@ -304,6 +305,16 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			GraphicsUtilities.drawShape(g, 0, 0, getWidth() - 1, getHeight() - 1, this, true);
 		else
 			GraphicsUtilities.drawShape(g, 0, 0, getWidth() - 1, getHeight() - 1, this, false);
+	}
+
+	@Override
+	public void resizeAnnotation(double width, double height) {
+		setSize((int)width, (int)height);
+		// shapeWidth = width - borderWidth*2*getZoom();
+		// shapeHeight = height - borderWidth*2*getZoom();
+		shapeWidth = width;
+		shapeHeight = height;
+		update();
 	}
 
 	@Override

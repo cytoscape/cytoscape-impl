@@ -1492,7 +1492,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 
-	private void changeCursor(Cursor cursor) {
+	public void changeCursor(Cursor cursor) {
 		String componentName = "__CyNetworkView_" + m_view.getSUID(); // see ViewUtil.createUniqueKey(CyNetworkView)
 		Container parent = this;
 		while(parent != null) {
@@ -1504,7 +1504,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 	
-	private Cursor getMoveCursor() {
+	public Cursor getMoveCursor() {
 		if (moveCursor == null) {
 			Cursor cursor = null;
 			

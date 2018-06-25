@@ -48,7 +48,10 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 
 	//To handle zooming in and out
 	public void mouseWheelMoved(MouseWheelEvent e) {
+		networkCanvas.mouseWheelMoved(e);
+		return;
 
+		/*
 		int notches = e.getWheelRotation();
 		double factor = 1.0;
 
@@ -73,5 +76,7 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 		} else {
 			networkCanvas.mouseWheelMoved(e);
 		}
+		networkCanvas.mouseWheelMoved(e);
+		*/
 	}
 }
