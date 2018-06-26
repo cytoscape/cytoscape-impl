@@ -28,8 +28,10 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 
+import java.util.List;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -53,6 +55,7 @@ public class CanvasMouseListener implements MouseListener {
 	private final InnerCanvas networkCanvas;
 	private final DGraphView view;
 	private JComponent anchorComponent;
+	private Point2D mouseDown;
 
 	public CanvasMouseListener(CyAnnotator c, DGraphView view) {
 		this.cyAnnotator = c;
@@ -62,6 +65,7 @@ public class CanvasMouseListener implements MouseListener {
 
 	// TODO: create annotation-specific popup?
 	public void mousePressed(MouseEvent e) {
+		mouseDown = null;
 		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.processMouseEvent(e);
 			return;
@@ -87,6 +91,11 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 
 				a.saveBounds();
 		} else if (annotation == null) {
+				if (e.isShiftDown()) {
+					// Remember where we did the mouse down.  We may be doing
+					// a sweep select
+					mouseDown = new Point2D.Double(e.getX(), e.getY());
+				}
 				// Let the InnerCanvas handle this event
 				networkCanvas.processMouseEvent(e);
 		} else {
@@ -112,6 +121,9 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) {
 				a.setOffset(e.getPoint());
 			}
+
+			// Let the network canvas know...
+			networkCanvas.processMouseEvent(e);
 		}
 	}
 
@@ -119,6 +131,24 @@ public class CanvasMouseListener implements MouseListener {
 		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		annotationSelection.setResizing(false);
+
+		if (mouseDown != null) {
+			double startX = Math.min(mouseDown.getX(), e.getX());
+			double startY = Math.min(mouseDown.getY(), e.getY());
+			double endX = Math.max(mouseDown.getX(), e.getX());
+			double endY = Math.max(mouseDown.getY(), e.getY());
+			// Assume we did a sweep select
+			Rectangle2D sweepArea = new Rectangle2D.Double(startX, startY, endX-startX, endY-startY);
+			List<DingAnnotation> annotations = cyAnnotator.getAnnotationsIn(sweepArea);
+			for (DingAnnotation a: annotations) {
+				a.setSelected(true);
+			}
+
+			mouseDown = null;
+
+			networkCanvas.processMouseEvent(e);
+			return;
+		}
 
 		DingAnnotation annotation = getAnnotation(e);
 		if (annotationSelection.count() == 0 ||
@@ -130,6 +160,11 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: annotationSelection) {
 				a.setOffset(null);
 			}
+		} else if (annotationSelection.count() > 0) {
+			cyAnnotator.clearSelectedAnnotations();
+			networkCanvas.processMouseEvent(e);
+		} else {
+			networkCanvas.processMouseEvent(e);
 		}
 	}
 
@@ -157,14 +192,14 @@ public class CanvasMouseListener implements MouseListener {
 		if (annotation == null) {
 			if (view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 				cyAnnotator.clearSelectedAnnotations();
-				e.consume();
 			}
 
-			if (!e.isConsumed()) {
+			// if (!e.isConsumed()){
 				networkCanvas.processMouseEvent(e);
-				e.consume();
-			}
+			//	e.consume();
+			//}
 		} else if (e.getClickCount()==1 && !e.isConsumed()) {
+			// Do we want to pass this down?
 			e.consume();
 		} else if (e.getClickCount()==2 && !e.isConsumed()) {
 			e.consume();

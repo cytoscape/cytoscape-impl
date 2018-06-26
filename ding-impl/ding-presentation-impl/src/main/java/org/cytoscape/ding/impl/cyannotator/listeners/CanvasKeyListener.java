@@ -36,6 +36,8 @@ import java.awt.geom.Rectangle2D;
 
 import javax.swing.JComponent;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -148,17 +150,24 @@ public class CanvasKeyListener implements KeyListener {
 
 	public void keyReleased(KeyEvent e) { 
 		int code = e.getKeyCode();
-		/*
-		if (code == KeyEvent.VK_ALT) {
-			// Clear drawing of anchors
-			System.out.println("Clear anchors");
-			if (component != null) {
-				cyAnnotator.getForeGroundCanvas().remove(component);
-				cyAnnotator.getForeGroundCanvas().repaint();
-			}
-			component = null;
+		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
+
+		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+			networkCanvas.keyPressed(e);
+			return;
 		}
-		*/
+
+		if (code == KeyEvent.VK_DELETE) {
+			if (annotationSelection.count() > 0) {
+				List<DingAnnotation> selectedAnnotations = 
+				                new ArrayList<>(annotationSelection.getSelectedAnnotations());
+				for (DingAnnotation ann: selectedAnnotations) {
+					ann.removeAnnotation();
+				}
+			}
+		}
+
+		networkCanvas.keyPressed(e);
 	}
 
 	public void keyTyped(KeyEvent e) { }

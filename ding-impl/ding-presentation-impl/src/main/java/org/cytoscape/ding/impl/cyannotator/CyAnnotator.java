@@ -25,6 +25,7 @@ package org.cytoscape.ding.impl.cyannotator;
 
 import java.awt.Component;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -362,6 +363,17 @@ public class CyAnnotator {
 
 		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
 		return a;
+	}
+
+	public List<DingAnnotation> getAnnotationsIn(Rectangle2D rect) {
+		List<DingAnnotation> anns = new ArrayList<>();
+		for (Annotation ann: getAnnotations()) {
+			DingAnnotation d = (DingAnnotation)ann;
+			Rectangle2D bounds = d.getComponent().getBounds();
+			if (rect.contains(bounds) && d.getGroupParent() == null)
+				anns.add(d);
+		}
+		return anns;
 	}
 
 	public InnerCanvas getNetworkCanvas() {
