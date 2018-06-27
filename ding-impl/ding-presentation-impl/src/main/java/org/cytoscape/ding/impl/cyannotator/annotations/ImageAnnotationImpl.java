@@ -25,8 +25,8 @@ import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-// import org.cytoscape.ding.impl.cyannotator.api.ImageAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
@@ -125,12 +125,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super(view, argMap, owner);
 		this.customGraphicsManager = customGraphicsManager;
 
-		shapeWidth = getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
-		shapeHeight = getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
+		shapeWidth = ViewUtils.getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
+		shapeHeight = ViewUtils.getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
 
-		opacity = getFloat(argMap, OPACITY, 1.0f);
-		brightness = getInteger(argMap, LIGHTNESS, 0);
-		contrast = getInteger(argMap, CONTRAST, 0);
+		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
+		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
+		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
 
 		this.image = null;
 		this.resizedImage = null;

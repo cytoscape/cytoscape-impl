@@ -335,6 +335,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, editAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                editAnnotationTaskFactoryProps);
 
+		/*
 		MoveAnnotationTaskFactory moveAnnotationTaskFactory = new MoveAnnotationTaskFactory();
 		Properties moveAnnotationTaskFactoryProps = new Properties();
 		moveAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -343,6 +344,7 @@ public class CyActivator extends AbstractCyActivator {
 		moveAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation");
 		registerService(bc, moveAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                moveAnnotationTaskFactoryProps);
+		*/
 
 
 		LayerAnnotationTaskFactory moveTFAnnotationTaskFactory = new LayerAnnotationTaskFactory(-10000);
@@ -400,6 +402,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, pushAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                pushAnnotationTaskFactoryProps);
 
+		/*
 		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
 		Properties resizeAnnotationTaskFactoryProps = new Properties();
 		resizeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -408,6 +411,7 @@ public class CyActivator extends AbstractCyActivator {
 		resizeAnnotationTaskFactoryProps.setProperty(TITLE, "Resize Annotation");
 		registerService(bc, resizeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                resizeAnnotationTaskFactoryProps);
+		*/
 
 		// Annotation delete
 		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory();
@@ -419,6 +423,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, removeAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                removeAnnotationTaskFactoryProps);
 
+		/*
 		// Annotation select
 		SelectAnnotationTaskFactory selectAnnotationTaskFactory = new SelectAnnotationTaskFactory();
 		Properties selectAnnotationTaskFactoryProps = new Properties();
@@ -428,6 +433,7 @@ public class CyActivator extends AbstractCyActivator {
 		selectAnnotationTaskFactoryProps.setProperty(TITLE, "Select/Unselect Annotation");
 		registerService(bc, selectAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                selectAnnotationTaskFactoryProps);
+		*/
 
 		// Annotation group
 		GroupAnnotationsTaskFactory groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory();

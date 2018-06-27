@@ -587,14 +587,58 @@ public class CyActivator extends AbstractCyActivator {
 				tsb = hsl.adjustLuminance(LookAndFeelUtil.isAquaLAF() ? 94.0f : 90.0f);
 			}
 			
-			final Color TABLE_SELECTION_BG = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
+			final Color tableSelectionBg = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
 			
 			UIManager.put("Table.focusCellBackground", UIManager.getColor("Tree.selectionBackground"));
 			UIManager.put("Table.focusCellForeground", UIManager.getColor("Tree.selectionForeground"));
-			UIManager.put("Table.selectionBackground", TABLE_SELECTION_BG);
+			UIManager.put("Table.selectionBackground", tableSelectionBg);
 			UIManager.put("Table.selectionForeground", UIManager.getColor("Table.foreground"));
 			
-			final Font TABLE_FONT = UIManager.getFont("Label.font").deriveFont(11.0f);
+			Color originalDisabledFg = null;
+			
+			if (LookAndFeelUtil.isNimbusLAF()) {
+				originalDisabledFg = UIManager.getColor("nimbusDisabledText");
+				
+				// Because Nimbus colors are usually of class javax.swing.plaf.nimbus.DerivedColor
+				if (originalDisabledFg != null)
+					originalDisabledFg = new Color(originalDisabledFg.getRGB());
+			} else {
+				originalDisabledFg = UIManager.getColor("Label.disabledForeground");
+				
+				if (originalDisabledFg == null)
+					originalDisabledFg = UIManager.getColor("TextField.inactiveForeground");
+			}
+			
+			if (originalDisabledFg == null)
+				originalDisabledFg = Color.LIGHT_GRAY;
+			
+			// The default disabled color is usually too dark, so let's make it look more like the native one
+			final Color disabledFg = LookAndFeelUtil.isNimbusLAF() ? originalDisabledFg : originalDisabledFg.brighter();
+			
+			UIManager.put("Label.disabledForeground", disabledFg);
+			UIManager.put("Button.disabledForeground", disabledFg);
+			UIManager.put("Button.disabledText", disabledFg);
+			UIManager.put("ToggleButton.disabledForeground", disabledFg);
+			UIManager.put("ToggleButton.disabledText", disabledFg);
+			UIManager.put("CheckBox.disabledForeground", disabledFg);
+			UIManager.put("Radio.disabledForeground", disabledFg);
+			UIManager.put("Menu.disabledForeground", disabledFg);
+			UIManager.put("MenuItem.disabledForeground", disabledFg);
+			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
+			UIManager.put("Table.disabledForeground", disabledFg);
+			UIManager.put("Table.disabledText", disabledFg);
+			UIManager.put("TableHeader.disabledForeground", disabledFg);
+			UIManager.put("TextField.inactiveForeground", disabledFg);
+			UIManager.put("TextField.disabledForeground", disabledFg);
+			UIManager.put("FormattedTextField.inactiveForeground", disabledFg);
+			UIManager.put("FormattedTextField.disabledForeground", disabledFg);
+			UIManager.put("PasswordField.disabledBackground", disabledFg);
+			UIManager.put("TextArea.inactiveForeground", disabledFg);
+			UIManager.put("TextArea.disabledForeground", disabledFg);
+			UIManager.put("List.disabledForeground", disabledFg);
+			UIManager.put("ComboBox.disabledForeground", disabledFg);
+			
+			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
 			if (LookAndFeelUtil.isAquaLAF()) {
 				// Mac OS X + Aqua:
@@ -613,38 +657,8 @@ public class CyActivator extends AbstractCyActivator {
 				);
 				UIManager.put("TableHeader.background", new Color(244, 244, 244));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
-				UIManager.put("Table.font", TABLE_FONT);
-				UIManager.put("Tree.font", TABLE_FONT);
-				
-				// The default disabled color is usually too dark, so let's make it look more like the native one.
-				Color disabledFg = UIManager.getColor("Label.disabledForeground");
-				
-				if (disabledFg == null)
-					disabledFg = Color.LIGHT_GRAY;
-				else
-					disabledFg = disabledFg.brighter();
-				
-				UIManager.put("Label.disabledForeground", disabledFg);
-				UIManager.put("Button.disabledForeground", disabledFg);
-				UIManager.put("Button.disabledText", disabledFg);
-				UIManager.put("ToggleButton.disabledForeground", disabledFg);
-				UIManager.put("ToggleButton.disabledText", disabledFg);
-				UIManager.put("CheckBox.disabledForeground", disabledFg);
-				UIManager.put("Radio.disabledForeground", disabledFg);
-				UIManager.put("Menu.disabledForeground", disabledFg);
-				UIManager.put("MenuItem.disabledForeground", disabledFg);
-				UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
-				UIManager.put("Table.disabledForeground", disabledFg);
-				UIManager.put("TableHeader.disabledForeground", disabledFg);
-				UIManager.put("TextField.inactiveForeground", disabledFg);
-				UIManager.put("TextField.disabledForeground", disabledFg);
-				UIManager.put("FormattedTextField.inactiveForeground", disabledFg);
-				UIManager.put("FormattedTextField.disabledForeground", disabledFg);
-				UIManager.put("PasswordField.disabledBackground", disabledFg);
-				UIManager.put("TextArea.inactiveForeground", disabledFg);
-				UIManager.put("TextArea.disabledForeground", disabledFg);
-				UIManager.put("List.disabledForeground", disabledFg);
-				UIManager.put("ComboBox.disabledForeground", disabledFg);
+				UIManager.put("Table.font", tableFont);
+				UIManager.put("Tree.font", tableFont);
 			} else if (LookAndFeelUtil.isWindows()) {
 				// Windows:
 				UIManager.put(
@@ -676,22 +690,16 @@ public class CyActivator extends AbstractCyActivator {
 				
 				// Make all table rows white, like the other LAFs
 				UIManager.put("Table.background", Color.WHITE);
+				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
 				UIManager.put("Table.alternateRowColor", Color.WHITE);
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
 				
 				UIManager.put("Table.showGrid", true);
 				UIManager.put("Table.gridColor", new Color(242, 242, 242));
-				UIManager.put("Table.disabledText", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Table.disabledForeground", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Table.font", TABLE_FONT);
-				UIManager.put("Tree.font", TABLE_FONT);
+				UIManager.put("Table.font", tableFont);
+				UIManager.put("Tree.font", tableFont);
 				
 				UIManager.put("Separator.foreground", UIManager.getColor("nimbusBorder"));
-				UIManager.put("TextField.inactiveForeground", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("TextField.disabledForeground", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Label.disabledForeground", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Button.disabledForeground", UIManager.getColor("nimbusDisabledText"));
-				UIManager.put("Button.disabledText", UIManager.getColor("nimbusDisabledText"));
 				
 				Color nimbusColor = UIManager.getColor("nimbusFocus");
 				

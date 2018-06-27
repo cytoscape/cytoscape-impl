@@ -31,14 +31,12 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.LinearGradientPaint;
-import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.Point;
-import java.awt.RadialGradientPaint;
 import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -52,6 +50,7 @@ import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -79,6 +78,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
 	protected String name = null;
+	protected Point2D offset = null; // Offset in node coordinates
+	protected Rectangle2D initialBounds;
 
 	protected static final String ID = "id";
 	protected static final String TYPE = "type";
@@ -121,58 +122,25 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap, Window owner) {
 		this(view, owner);
 
-		Point2D coords = getComponentCoordinates(argMap);
-		this.globalZoom = getDouble(argMap, ZOOM, 1.0);
-		this.zOrder = getDouble(argMap, Z, 0.0);
+		Point2D coords = ViewUtils.getComponentCoordinates(view, argMap);
+		this.globalZoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
+		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0);
 		name = argMap.containsKey(NAME) ? argMap.get(NAME) : null;
 		
-		String canvasString = getString(argMap, CANVAS, FOREGROUND);
+		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
 		}
 
 		setLocation((int)coords.getX(), (int)coords.getY());
-		
+
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
-		
-		/*
-		if (argMap.containsKey(PARENT_ID)) {
-			// See if the parent already exists
-			UUID parent_uuid = UUID.fromString(argMap.get(PARENT_ID));
-			DingAnnotation parentAnnotation = cyAnnotator.getAnnotation(parent_uuid);
-			if (parentAnnotation != null && parentAnnotation instanceof GroupAnnotation) {
-				// It does -- add ourselves to it
-				((GroupAnnotation)parentAnnotation).addMember((Annotation)this);
-			} else {
-				// It doesn't -- let the parent add us
-			}
-		}
-		*/
+
 	}
+
 	//------------------------------------------------------------------------
-//	public void setView(DGraphView view) {
-//		this.view = view;
-//		this.cyAnnotator = view.getCyAnnotator();
-//		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-//		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-//		this.globalZoom = view.getZoom();
-//		if (savedArgMap != null) {
-//			Point2D coords = getComponentCoordinates(savedArgMap);
-//			this.globalZoom = Double.parseDouble(savedArgMap.get(ZOOM));
-//			String canvasString = savedArgMap.get(CANVAS);
-//			if (canvasString != null && canvasString.equals(BACKGROUND)) {
-//				this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
-//				this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
-//			}
-//
-//			setLocation((int)coords.getX(), (int)coords.getY());
-//			if (savedArgMap.containsKey(ANNOTATION_ID))
-//				this.uuid = UUID.fromString(savedArgMap.get(ANNOTATION_ID));
-//		}
-//	}
-		
 
 	public String toString() {
 		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
@@ -283,9 +251,21 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return (GroupAnnotation)parent;
 	}
     
+	// Assumes location is node coordinates
+	public void moveAnnotationRelative(Point2D location) {
+		if (offset == null) {
+			moveAnnotation(location);
+			return;
+		}
+
+		// Get the relative move
+		moveAnnotation(new Point2D.Double(location.getX()-offset.getX(), location.getY()-offset.getY()));
+	}
+
+	// Assumes location is node coordinates.
 	public void moveAnnotation(Point2D location) {
 		// Location is in "node coordinates"
-		Point2D coords = getComponentCoordinates(location.getX(), location.getY());
+		Point2D coords = ViewUtils.getComponentCoordinates(view, location.getX(), location.getY());
 		if (!(this instanceof ArrowAnnotationImpl)) {
 			setLocation((int)coords.getX(), (int)coords.getY());
 		}
@@ -354,7 +334,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		Map<String, String> argMap = new HashMap<String, String>();
 		if (name != null)
 			argMap.put(NAME, this.name);
-		addNodeCoordinates(argMap);
+		ViewUtils.addNodeCoordinates(view, argMap, getX(), getY());
 		argMap.put(ZOOM,Double.toString(this.globalZoom));
 		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))
 			argMap.put(CANVAS, BACKGROUND);
@@ -422,178 +402,30 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
-  protected String convertColor(Paint clr) {
-		if (clr == null) 				return null;
-		// System.out.println("ConvertColor: "+clr);
-		if (clr instanceof LinearGradientPaint) {
-			// System.out.println("lingrad");
-			String lg = "lingrad(";
-			LinearGradientPaint lingrad = (LinearGradientPaint)clr;
-			Point2D start = lingrad.getStartPoint();
-			Point2D end = lingrad.getEndPoint();
-			lg += convertPoint(start)+";";
-			lg += convertPoint(end)+";";
-			float[] fractions = lingrad.getFractions();
-			Color[] colors = lingrad.getColors();
-			lg += convertStops(fractions, colors)+")";
-			return lg;
-		} else if (clr instanceof RadialGradientPaint) {
-			// System.out.println("radgrad");
-			String rg = "radgrad(";
-			RadialGradientPaint radgrad = (RadialGradientPaint)clr;
-			Point2D center = radgrad.getCenterPoint();
-			Point2D focus = radgrad.getFocusPoint();
-			float radius = radgrad.getRadius();
-			rg += convertPoint(center)+";";
-			rg += convertPoint(focus)+";";
-			rg += radius+";";
-			float[] fractions = radgrad.getFractions();
-			Color[] colors = radgrad.getColors();
-			rg += convertStops(fractions, colors)+")";
-			return rg;
-		} else if (clr instanceof Color) {
-			// System.out.println("color");
-			return Integer.toString(((Color)clr).getRGB());
+	// Save the bounds (in node coordinages)
+	public void saveBounds() {
+		initialBounds = ViewUtils.getNodeCoordinates(view, getBounds().getBounds2D());
+	}
+
+	public Rectangle2D getInitialBounds() {
+		return initialBounds;
+	}
+
+	// Save the offset in node coordinates
+	public void setOffset(Point2D offset) {
+		if (offset == null) {
+			this.offset = null;
+			return;
 		}
-		return clr.toString();
-  }
 
-	protected String convertPoint(Point2D point) {
-		if (point == null)  return "";
-		return point.getX()+","+point.getY();
+		Point2D mouse = ViewUtils.getNodeCoordinates(view, offset.getX(), offset.getY());
+		Point2D current = ViewUtils.getNodeCoordinates(view, getLocation().getX(), getLocation().getY());
+
+		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
 	}
 
-	protected String convertStops(float[] fractions, Color[] colors) {
-		String stops = null;
-		for (int i = 0; i < fractions.length; i++) {
-			if (stops != null)
-				stops += ";";
-			else
-				stops = "";
-			stops += fractions[i]+","+Integer.toString(colors[i].getRGB());
-		}
-		return stops;
-	}
+	public Point2D getOffset() { return offset; }
 
-  protected Paint getColor(String strColor) {
-		if (strColor == null)
-			return null;
-		if (strColor.startsWith("lingrad")) {
-			String[] tokens = strColor.split("[(;)]");
-			Point2D start = getPoint2D(tokens[1]);
-			Point2D end = getPoint2D(tokens[2]);
-			float[] fractions = new float[tokens.length-3];
-			Color[] colors = new Color[tokens.length-3];
-			getStops(tokens, 3, fractions, colors);
-			return new LinearGradientPaint(start, end, fractions, colors);
-		} else if (strColor.startsWith("radgrad")) {
-			String[] tokens = strColor.split("[(;)]");
-			Point2D center = getPoint2D(tokens[1]);
-			Point2D focus = getPoint2D(tokens[2]);
-			float radius = getFloat(tokens[3]);
-			float[] fractions = new float[tokens.length-4];
-			Color[] colors = new Color[tokens.length-4];
-			getStops(tokens, 4, fractions, colors);
-			CycleMethod method = CycleMethod.NO_CYCLE;
-			return new RadialGradientPaint(center, radius, focus, fractions, colors, method);
-		}
-		return new Color(Integer.parseInt(strColor), true);
-  }
-
-  protected Paint getColor(Map<String, String> argMap, String key, Color defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
-			return defValue;
-		return getColor(argMap.get(key));
-	}
-
-	protected void getStops(String[] tokens, int stopStart, float[] fractions, Color[] colors) {
-		for (int i = stopStart; i < tokens.length; i++) {
-			String[] stop = tokens[i].split(",");
-			fractions[i-stopStart] = getFloat(stop[0]);
-			colors[i-stopStart] = new Color(Integer.parseInt(stop[1]), true);
-		}
-	}
-
-	protected Point2D getPoint2D(String point) {
-		if (point.length() == 0) return null;
-		String[] xy = point.split(",");
-		return new Point2D.Double(getDouble(xy[0]), getDouble(xy[1]));
-	}
-
-  protected String getString(Map<String, String> argMap, String key, String defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
-			return defValue;
-		return argMap.get(key);
-	}
-
-  protected Float getFloat(String fValue) { return Float.parseFloat(fValue);	}
-
-  protected Float getFloat(Map<String, String> argMap, String key, float defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
-			return defValue;
-		return Float.parseFloat(argMap.get(key));
-	}
-
-  protected Integer getInteger(Map<String, String> argMap, String key, int defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
-			return defValue;
-		return Integer.parseInt(argMap.get(key));
-	}
-
-	protected Double getDouble(String dValue) { return Double.parseDouble(dValue); }
-
-  protected Double getDouble(Map<String, String> argMap, String key, double defValue) {
-		if (!argMap.containsKey(key) || argMap.get(key) == null)
-			return defValue;
-		return Double.parseDouble(argMap.get(key));
-	}
-
-	protected Font getArgFont(Map<String, String> argMap, String defFamily, int defStyle, int defSize) {
-		String family = getString(argMap, TextAnnotation.FONTFAMILY, defFamily);
-		int size = getInteger(argMap, TextAnnotation.FONTSIZE, defSize);
-		int style = getInteger(argMap, TextAnnotation.FONTSTYLE, defStyle);
-		return new Font(family, style, size);
-	}
-
-	// Private methods
-	private void addNodeCoordinates(Map<String, String> argMap) {
-		Point2D xy = getNodeCoordinates(getX(), getY());
-		argMap.put(X,Double.toString(xy.getX()));
-		argMap.put(Y,Double.toString(xy.getY()));
-	}
-
-	protected Point2D getComponentCoordinates(Map<String, String> argMap) {
-		// Get our current transform
-		double[] nextLocn = new double[2];
-		nextLocn[0] = 0.0;
-		nextLocn[1] = 0.0;
-
-		if (argMap.containsKey(X))
-			nextLocn[0] = Double.parseDouble(argMap.get(X));
-		if (argMap.containsKey(Y))
-			nextLocn[1] = Double.parseDouble(argMap.get(Y));
-
-		view.xformNodeToComponentCoords(nextLocn);
-		
-		return new Point2D.Double(nextLocn[0], nextLocn[1]);
-	}
-
-	protected Point2D getNodeCoordinates(double x, double y) {
-    // Get our current transform
-		double[] nextLocn = new double[2];
-		nextLocn[0] = x;
-		nextLocn[1] = y;
-		view.xformComponentToNodeCoords(nextLocn);
-		return new Point2D.Double(nextLocn[0], nextLocn[1]);
-	}
-
-	protected Point2D getComponentCoordinates(double x, double y) {
-		double[] nextLocn = new double[2];
-		nextLocn[0] = x;
-		nextLocn[1] = y;
-		view.xformNodeToComponentCoords(nextLocn);
-		return new Point2D.Double(nextLocn[0], nextLocn[1]);
-	}
 
 	public void contentChanged() {
 		if (view == null) return;

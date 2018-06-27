@@ -151,29 +151,31 @@ public class CyEventHelperImpl implements CyEventHelper {
 		flushPayloadEvents(null, true);
 	}
 	
-	private void flushPayloadEvents(Object source, boolean force) {
+	private void flushPayloadEvents(Object oneSource, boolean force) {
 		List<CyEvent<?>> flushList = new ArrayList<>();
 		
 		synchronized (lock) {
-			if(source != null) {
-				Map<Class<?>, PayloadAccumulator<?,?,?>> cmap = sourceAccMap.remove(source);
-				if(cmap != null) {
-					createPayloadEvents(cmap, flushList, force);
-				}
+			if(oneSource != null) {
+				createPayloadEvents(oneSource, flushList, force);
 			} else {
-				for(Map<Class<?>, PayloadAccumulator<?,?,?>> cmap : sourceAccMap.values()) {
-					createPayloadEvents(cmap, flushList, force);
+				for(Object source : new ArrayList<>(sourceAccMap.keySet())) {
+					createPayloadEvents(source, flushList, force);
 				}
 			}
 		}
 
 		// Actually fire the events outside of the synchronized block.
-		for(CyEvent<?> event : flushList)
+		for(CyEvent<?> event : flushList) {
 			normal.fireEvent(event);
+		}
 	}
 	
 	
-	private void createPayloadEvents(Map<Class<?>, PayloadAccumulator<?,?,?>> cmap, List<CyEvent<?>> flushList, boolean force) {
+	private void createPayloadEvents(Object source, List<CyEvent<?>> flushList, boolean force) {
+		Map<Class<?>, PayloadAccumulator<?,?,?>> cmap = sourceAccMap.get(source);
+		if(cmap == null)
+			return;
+		
 		Iterator<PayloadAccumulator<?,?,?>> iter = cmap.values().iterator();
 		while(iter.hasNext()) {
 			PayloadAccumulator<?,?,?> acc = iter.next();
@@ -188,6 +190,11 @@ public class CyEventHelperImpl implements CyEventHelper {
 				}
 				iter.remove();
 			}
+		}
+		
+		// prevent memory leak, often networks and tables are used as event sources
+		if(cmap.isEmpty()) {
+			sourceAccMap.remove(source);
 		}
 	}
 	

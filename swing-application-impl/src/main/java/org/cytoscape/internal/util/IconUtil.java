@@ -29,9 +29,15 @@ public abstract class IconUtil {
 	public static final String CY_FONT_NAME = "cytoscape-3";
 	
 	public static final String CYTOSCAPE_LOGO = "b";
+	
 	public static final String SELECTION_MODE_ANNOTATIONS = "p";
 	public static final String SELECTION_MODE_EDGES = "q";
 	public static final String SELECTION_MODE_NODES = "r";
+	
+	public static final String ANNOTATIONS = "A";
+	public static final String EDGES = "B";
+	public static final String NODES = "P";
+	public static final String SELECTION = "V";
 	
 	private IconUtil() {
 		// ...

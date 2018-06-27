@@ -46,6 +46,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -196,8 +197,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	) {
 		super(view, argMap, owner);
 
-		this.lineColor = getColor(argMap, ARROWCOLOR, Color.BLACK);
-		this.lineWidth = getFloat(argMap, ARROWTHICKNESS, 1.0f);
+		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
+		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f);
 
 		// Source
 		if (argMap.containsKey(SOURCEANN)) {
@@ -207,13 +208,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// Source Arrow
 		this.sourceType = GraphicsUtilities.getArrowType(argMap, SOURCETYPE, ArrowType.NONE);
-		this.sourceSize = getDouble(argMap, SOURCESIZE, 5.0);
-		this.sourceColor = getColor(argMap, SOURCECOLOR, null); // A null color = line color
+		this.sourceSize = ViewUtils.getDouble(argMap, SOURCESIZE, 5.0);
+		this.sourceColor = ViewUtils.getColor(argMap, SOURCECOLOR, null); // A null color = line color
 
 		// Target Arrow
 		this.targetType = GraphicsUtilities.getArrowType(argMap, TARGETTYPE, ArrowType.NONE);
-		this.targetSize = getDouble(argMap, TARGETSIZE, 5.0);
-		this.targetColor = getColor(argMap, TARGETCOLOR, null); // A null color = line color
+		this.targetSize = ViewUtils.getDouble(argMap, TARGETSIZE, 5.0);
+		this.targetColor = ViewUtils.getColor(argMap, TARGETCOLOR, null); // A null color = line color
 
 		// Figure out the target
 		if (argMap.containsKey(TARGETPOINT)) {
@@ -245,7 +246,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,ArrowAnnotation.class.getName());
 		if (this.lineColor != null)
-			argMap.put(ARROWCOLOR,convertColor(this.lineColor));
+			argMap.put(ARROWCOLOR,ViewUtils.convertColor(this.lineColor));
 		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
 
 		if (source != null)
@@ -254,7 +255,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
 		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
 		if (this.sourceColor != null)
-			argMap.put(SOURCECOLOR,convertColor(this.sourceColor));
+			argMap.put(SOURCECOLOR,ViewUtils.convertColor(this.sourceColor));
 
 		if (target != null && target instanceof Point2D) {
 			Point2D xy = (Point2D) target;
@@ -272,7 +273,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
 		argMap.put(TARGETSIZE, Double.toString(this.targetSize));
 		if (this.targetColor != null)
-			argMap.put(TARGETCOLOR,convertColor(this.targetColor));
+			argMap.put(TARGETCOLOR,ViewUtils.convertColor(this.targetColor));
 		return argMap;
 	}
 
@@ -302,7 +303,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
-		this.target = getNodeCoordinates(target.getX(), target.getY()); 
+		this.target = ViewUtils.getNodeCoordinates(view, target.getX(), target.getY()); 
 		updateBounds();
 		update();
 	}
@@ -606,7 +607,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Point2D targetPoint = null;
 		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
 		if (target instanceof Point2D) {
-			targetPoint = getComponentCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
+			targetPoint = ViewUtils.getComponentCoordinates(view, ((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {
 			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds

@@ -48,7 +48,7 @@ public class GroupAnnotationsTaskFactory implements NetworkViewTaskFactory {
 	public boolean isReady(CyNetworkView networkView) {
 		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
 		// Get all of the selected annotations
-		if (cyAnnotator.getSelectedAnnotations() != null && cyAnnotator.getSelectedAnnotations().size() > 1)
+		if (cyAnnotator.getAnnotationSelection().count() > 1)
 			return true;
 		return false;
 	}

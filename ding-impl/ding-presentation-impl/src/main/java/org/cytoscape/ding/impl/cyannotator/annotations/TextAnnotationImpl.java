@@ -41,8 +41,8 @@ import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-// import org.cytoscape.ding.impl.cyannotator.api.TextAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 @SuppressWarnings("serial")
@@ -93,9 +93,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// Need to make sure all arguments have reasonable options
 	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
 		super(view, argMap, owner);
-		this.font = getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		this.textColor = (Color)getColor(argMap, COLOR, Color.BLACK);
-		this.text = getString(argMap, TEXT, "");
+		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
+		this.textColor = (Color)ViewUtils.getColor(argMap, COLOR, Color.BLACK);
+		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 		if (super.name == null)
@@ -108,7 +108,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,TextAnnotation.class.getName());
 		argMap.put(TEXT,this.text);
-		argMap.put(COLOR,convertColor(this.textColor));
+		argMap.put(COLOR,ViewUtils.convertColor(this.textColor));
 		argMap.put(FONTFAMILY,this.font.getFamily());
 		argMap.put(FONTSIZE,Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE,Integer.toString(this.font.getStyle()));

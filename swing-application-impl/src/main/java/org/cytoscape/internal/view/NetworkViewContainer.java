@@ -27,8 +27,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
@@ -63,6 +63,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
@@ -114,7 +115,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel currentLabel;
 	private JLabel viewTitleLabel;
 	private JTextField viewTitleTextField;
-	private Map<VisualProperty<Boolean>, JToggleButton> selectionModeButtons = new LinkedHashMap<>();
+	private Set<SelectionModeButton> selectionModeButtons = new LinkedHashSet<>();
 	private JPanel selectionModePanel;
 	private JPanel infoPanel;
 	private JLabel selectionIconLabel;
@@ -223,36 +224,36 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	protected void updateTollBar() {
 		gridViewTogglePanel.setVisible(!isDetached() && !isComparing());
-		sep1.setVisible(!isDetached() && !isComparing());
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
-		sep2.setVisible(!isComparing());
 		getExportButton().setVisible(!isComparing());
-		sep3.setVisible(getSelectionModePanel().isVisible());
-		sep4.setVisible(!isComparing());
+		getSelectionModePanel().setVisible(!isComparing() && !selectionModeButtons.isEmpty());
 		getInfoPanel().setVisible(!isComparing());
-		sep5.setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
 		
 		final CyNetworkView view = getNetworkView();
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
-		updateSelectionModePanel();
+		if (getSelectionModePanel().isVisible())
+			updateSelectionModePanel();
+		
 		updateInfoPanel();
 		
 		if (isComparing())
 			updateCurrentLabel();
+		
+		sanitizeToolBar();
 		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
 		updateBirdsEyeViewPanel();
 	}
 	
-	protected void updateSelectionModePanel() {
-		selectionModeButtons.forEach((vp, btn) -> {
-			final boolean selected = networkView.getVisualProperty(vp);
-			btn.setForeground(UIManager.getColor(selected ? "Focus.color" : "Button.foreground"));
+	private void updateSelectionModePanel() {
+		selectionModeButtons.forEach(btn -> {
+			final boolean selected = networkView.getVisualProperty(btn.getVisualProperty());
+			btn.setSelected(selected);
 		});
 	}
 	
@@ -273,9 +274,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			getSelectionIconLabel().setToolTipText(sTooltip);
 			getNodeSelectionLabel().setToolTipText(sTooltip);
 			
-			getSelectionIconLabel().setForeground(
-					sn > 0 || se > 0 ? LookAndFeelUtil.getInfoColor() : UIManager.getColor("Label.disabledForeground"));
-			
 			// Hidden nodes/edges info
 			final int hn = ViewUtil.getHiddenNodeCount(view);
 			final int he = ViewUtil.getHiddenEdgeCount(view);
@@ -285,9 +283,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final String hTooltip = createInfoToolTipText(hn, he, "hidden");
 			getHiddenIconLabel().setToolTipText(hTooltip);
 			getNodeHiddenLabel().setToolTipText(hTooltip);
-			
-			getHiddenIconLabel().setForeground(
-					hn > 0 || he > 0 ? LookAndFeelUtil.getWarnColor() : UIManager.getColor("Label.disabledForeground"));
 		}
 	}
 	
@@ -367,9 +362,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	@SuppressWarnings("unchecked")
 	private void createSelectionModeButtons() {
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-		final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
-		
 		for (SelectionMode mode : SelectionMode.values()) {
 			final VisualProperty<?> vp = lexicon.lookup(CyNetwork.class, mode.getPropertyId());
 			
@@ -379,29 +371,14 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				if (range != null && range.getType() != Boolean.class)
 					continue;
 				
-				final URL tipImgUrl = mode.getToolTipImage() == null ? null :
-						Util.getURL(getClass().getResource(mode.getToolTipImage()).toString());
+				final SelectionModeButton btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
+				styleToolBarButton(btn, null, 3, 2);
 				
-				JToggleButton btn = new JToggleButton(mode.getIconText()) {
-					@Override
-					public JToolTip createToolTip() {
-						return new CyToolTip(
-								this,
-								mode.getText(),
-								mode.getToolTipText(),
-								tipImgUrl == null ? null : new ImageIcon(tipImgUrl)
-						);
-					}
-				};
-				
-				btn.setToolTipText(mode.getText());
-				styleToolBarButton(btn, iconFont, 3, 2);
-				
-				selectionModeButtons.put((VisualProperty<Boolean>) vp, btn);
+				selectionModeButtons.add(btn);
 				
 				btn.addActionListener(evt -> {
+					btn.update();
 					networkView.setLockedValue(vp, btn.isSelected());
-					updateSelectionModePanel();
 				});
 			}
 		}
@@ -458,9 +435,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(RELATED)
 					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(RELATED)
 					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep6, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -571,6 +546,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				selectionModePanel.setOpaque(false);
 			
 			if (selectionModeButtons.isEmpty()) {
+				selectionModePanel.setPreferredSize(new Dimension());
 				selectionModePanel.setVisible(false);
 			} else {
 				final GroupLayout layout = new GroupLayout(selectionModePanel);
@@ -583,7 +559,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				layout.setHorizontalGroup(hGroup);
 				layout.setVerticalGroup(vGroup);
 			
-				selectionModeButtons.forEach((vp, btn) -> {
+				selectionModeButtons.forEach(btn -> {
 					hGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 					vGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 				});
@@ -617,7 +593,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 							.addComponent(getNodeSelectionLabel(), lw, lw, Short.MAX_VALUE)
 							.addComponent(getEdgeSelectionLabel(), lw, lw, Short.MAX_VALUE)
 					)
-					.addGap(4, 4, Short.MAX_VALUE)
+					.addGap(4)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(4)
@@ -625,7 +601,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 							.addComponent(getNodeHiddenLabel(), lw, lw, Short.MAX_VALUE)
 							.addComponent(getEdgeHiddenLabel(), lw, lw, Short.MAX_VALUE)
 					)
-					.addGap(4, 4, Short.MAX_VALUE)
+					.addGap(4)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -672,7 +648,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeSelectionLabel = new JLabel();
 			nodeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeSelectionLabel.setFont(nodeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return nodeSelectionLabel;
@@ -683,7 +658,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeSelectionLabel = new JLabel();
 			edgeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeSelectionLabel.setFont(edgeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return edgeSelectionLabel;
@@ -694,7 +668,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeHiddenLabel = new JLabel();
 			nodeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeHiddenLabel.setFont(nodeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return nodeHiddenLabel;
@@ -705,7 +678,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeHiddenLabel = new JLabel();
 			edgeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeHiddenLabel.setFont(edgeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return edgeHiddenLabel;
@@ -774,6 +746,35 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		
 		tooltip += "</html>";
 		return tooltip;
+	}
+	
+	/**
+	 * Clear duplicate separators.
+	 */
+	public void sanitizeToolBar() {
+		final JPanel toolBar = getToolBar();
+		boolean hasSeparator = false;
+		int visibleCount = 0;
+		
+		for (int i = 0; i < toolBar.getComponentCount(); i++) {
+			Component comp = toolBar.getComponent(i);
+			
+			if (comp instanceof JSeparator) {
+				// Already has one separator? So hide this one.
+				// Also hide if it's the first visible item.
+				if (hasSeparator || visibleCount == 0 || isComparing()) {
+					comp.setVisible(false);
+				} else {
+					comp.setVisible(true);
+					hasSeparator = true;
+				}
+			} else if (comp.isVisible()) {
+				hasSeparator = false;
+			}
+			
+			if (comp.isVisible())
+				visibleCount++;
+		}
 	}
 	
 	private void setKeyBindings(final JComponent comp) {
@@ -870,6 +871,84 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				if (contentPane != null && (contentPane.getWidth() != w || contentPane.getHeight() != h))
 					updateViewSize();
 			}
+		}
+	}
+	
+	@SuppressWarnings("unused")
+	private final class SelectionModeButton extends JToggleButton {
+
+		private static final int ICON_SIZE = 22;
+		
+		private final Color[] selColors = new Color[] {
+				UIManager.getColor("Focus.color"),
+				UIManager.getColor("Focus.color")
+		};
+		private final Color[] unselColors = new Color[] {
+				UIManager.getColor("Button.disabledForeground"),
+				UIManager.getColor("Button.foreground")
+		};
+
+		private final TextIcon selectedIcon;
+		private final TextIcon unselectedIcon;
+		private final ImageIcon tipIcon;
+		
+		private final SelectionMode mode;
+		private final VisualProperty<Boolean> visualProperty;
+
+		public SelectionModeButton(VisualProperty<Boolean> vp, SelectionMode mode) {
+			super("", networkView.getVisualProperty(vp));
+			this.visualProperty = vp;
+			this.mode = mode;
+			
+			// Icons
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
+			final String[] iconTexts = new String[] { IconUtil.SELECTION, mode.getUnselectedIconText() };
+			
+			selectedIcon = new TextIcon(iconTexts, iconFont, selColors, ICON_SIZE, ICON_SIZE);
+			unselectedIcon = new TextIcon(iconTexts, iconFont, unselColors, ICON_SIZE, ICON_SIZE);
+			
+			// Tool Tip
+			final URL tipImgUrl = mode.getToolTipImage() == null ? null :
+				Util.getURL(getClass().getResource(mode.getToolTipImage()).toString());
+			tipIcon = tipImgUrl == null ? null : new ImageIcon(tipImgUrl);
+			
+			init();
+		}
+		
+		@Override
+		public JToolTip createToolTip() {
+			return new CyToolTip(
+					this,
+					mode != null ? mode.getText() : null,
+					mode != null ? mode.getToolTipText() : null,
+					tipIcon
+			);
+		}
+		
+		@Override
+		public void setSelected(boolean b) {
+			if (b != isSelected()) {
+				super.setSelected(b);
+				update();
+			}
+		}
+		
+		public SelectionMode getMode() {
+			return mode;
+		}
+		
+		public VisualProperty<Boolean> getVisualProperty() {
+			return visualProperty;
+		}
+		
+		private void init() {
+			setToolTipText(mode.getText());
+			update();
+		}
+		
+		private void update() {
+			setIcon(isSelected() ? selectedIcon : unselectedIcon);
 		}
 	}
 }

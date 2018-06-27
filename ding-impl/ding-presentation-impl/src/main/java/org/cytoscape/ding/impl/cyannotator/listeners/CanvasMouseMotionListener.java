@@ -25,22 +25,29 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  */
 
 import java.awt.Component;
+import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
 
 import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.property.values.Position;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
@@ -57,15 +64,46 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 	}
 
 	public void mouseDragged(MouseEvent e) {
-		// TODO: handle dragging corners
-		networkCanvas.mouseDragged(e);
+		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
+		DingAnnotation a = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
+		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		if (annotationSelection.isEmpty() || 
+		    !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+			networkCanvas.mouseDragged(e);
+			return;
+		}
+
+		if (a != null && moveAnnotation == null) {
+			cyAnnotator.moveAnnotation(a);
+			annotationSelection.moveSelection(e.getX(), e.getY());
+			// If we're moving, we might have nodes or edges selected and will
+			// want to move them also
+			networkCanvas.mouseDragged(e);
+		} else if (!annotationSelection.isResizing() && a != null) {
+			annotationSelection.moveSelection(e.getX(), e.getY());
+			// If we're moving, we might have nodes or edges selected and will
+			// want to move them also
+			networkCanvas.mouseDragged(e);
+		} else if (annotationSelection.isResizing()) {
+			// Resize
+			annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
+			// For resize, we *don't* want to pass things to the network canvas
+		} else if (annotationSelection.isMoving()) {
+			annotationSelection.moveSelection(e.getX(), e.getY());
+			// If we're moving, we might have nodes or edges selected and will
+			// want to move them also
+			networkCanvas.mouseDragged(e);
+		} else {
+			networkCanvas.mouseDragged(e);
+		}
 	}
 
 	public void mouseMoved(MouseEvent e) {
 		AbstractAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
-		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		// DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
-		if (resizeAnnotation == null && moveAnnotation == null && repositionAnnotation == null) {
+		if (resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null) {
 			networkCanvas.mouseMoved(e);
 			return;
 		}
@@ -73,18 +111,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		int mouseX = e.getX();
 		int mouseY = e.getY();
 
-		if (moveAnnotation != null) {
-    	// Get our current transform
-			double[] nextLocn = new double[2];
-			nextLocn[0] = (double)mouseX;
-			nextLocn[1] = (double)mouseY;
-			view.xformComponentToNodeCoords(nextLocn);
-
-			// OK, now update
-			moveAnnotation.moveAnnotation(new Point2D.Double(nextLocn[0], nextLocn[1]));
-			moveAnnotation.update();
-			moveAnnotation.getCanvas().repaint();
-		} else if (resizeAnnotation != null) {
+		if (resizeAnnotation != null) {
 			Component resizeComponent = resizeAnnotation.getComponent();
 
 			int cornerX1 = resizeComponent.getX();
@@ -183,4 +210,5 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		DNodeView nv = (DNodeView)view.getPickedNodeView(mousePoint);
 		return nv.getModel();
 	}
+
 }

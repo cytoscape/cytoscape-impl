@@ -445,6 +445,7 @@ public class NetworkSearchBar extends JPanel {
 					}
 				}
 			};
+			searchTextField.setBackground(getBackground());
 			searchTextField.setMinimumSize(searchTextField.getPreferredSize());
 			searchTextField.setBorder(BorderFactory.createEmptyBorder(vgap, hgap, vgap, hgap));
 			searchTextField.setFont(searchTextField.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
@@ -753,6 +754,7 @@ public class NetworkSearchBar extends JPanel {
 			super(SwingUtilities.getWindowAncestor(NetworkSearchBar.this), ModalityType.MODELESS);
 			setBackground(getBackground());
 			setUndecorated(true);
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			
 			addWindowListener(new WindowAdapter() {
 				@Override
