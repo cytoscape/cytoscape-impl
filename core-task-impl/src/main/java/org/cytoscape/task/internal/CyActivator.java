@@ -570,6 +570,7 @@ public class CyActivator extends AbstractCyActivator {
 			ExportNetworkImageTaskFactoryImpl factory = new ExportNetworkImageTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(MENU_GRAVITY, "24.2");
 			props.setProperty(TITLE, "Export as Image...");
@@ -2041,6 +2042,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(MENU_GRAVITY, "4.0");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			props.setProperty(TITLE, "New Empty Network");
 			props.setProperty(COMMAND, "create empty");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2153,6 +2155,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ID, "loadNetworkFileTaskFactory");
 			props.setProperty(PREFERRED_MENU, "File");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(ACCELERATOR, "cmd l");
 			props.setProperty(TITLE, "Import Network From File...");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2384,6 +2387,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File");
 			props.setProperty(MENU_GRAVITY, "1.8");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
+			
 			props.setProperty(TITLE, "Close");
 			props.setProperty(COMMAND, "new");
 			props.setProperty(COMMAND_NAMESPACE, "session");

@@ -120,6 +120,15 @@ public class CytoscapeMenuBar extends JMenuBar {
 		gravityTracker.addMenuItem(menu_item, configgedAction.getMenuGravity());
 		if (insertSepAfter)
 			gravityTracker.addMenuSeparator(configgedAction.getMenuGravity()+.0001);
+		
+		boolean SHOW_GRAVITY = false;			// set this true to include the gravity into the menu names (so you can see how to set your own)
+		if (SHOW_GRAVITY)
+		{
+			String debugName = configgedAction.getName();
+			debugName = "[" + configgedAction.getMenuGravity() + "] " + debugName;
+			configgedAction.setName(debugName);
+		}
+		
 		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + configgedAction.getMenuGravity());
 		actionMenuItemMap.put(configgedAction, menu_item);
 //		System.err.println("Inserted action " + configgedAction.getName() + " for menu: " + menu_name + " with gravity: " + configgedAction.getMenuGravity());
