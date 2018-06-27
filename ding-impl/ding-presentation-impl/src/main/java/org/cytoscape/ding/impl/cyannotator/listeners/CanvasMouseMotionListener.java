@@ -73,17 +73,19 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			return;
 		}
 
-		if (a != null && moveAnnotation == null) {
-			cyAnnotator.moveAnnotation(a);
-			annotationSelection.moveSelection(e.getX(), e.getY());
+		if (a != null && moveAnnotation == null && !annotationSelection.isMoving()) {
+			// cyAnnotator.moveAnnotation(a);
+			// annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will
 			// want to move them also
-			networkCanvas.mouseDragged(e);
+			// if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
+				networkCanvas.mouseDragged(e);
 		} else if (!annotationSelection.isResizing() && a != null) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will
 			// want to move them also
-			networkCanvas.mouseDragged(e);
+			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
+				networkCanvas.mouseDragged(e);
 		} else if (annotationSelection.isResizing()) {
 			// Resize
 			annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
@@ -92,7 +94,9 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will
 			// want to move them also
-			networkCanvas.mouseDragged(e);
+			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
+				networkCanvas.mouseDragged(e);
+			}
 		} else {
 			networkCanvas.mouseDragged(e);
 		}
