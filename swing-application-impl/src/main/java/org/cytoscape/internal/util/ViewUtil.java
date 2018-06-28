@@ -4,17 +4,22 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
+import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
@@ -151,7 +156,7 @@ public final class ViewUtil {
 	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font, final boolean addPadding) {
 		int hPad = addPadding ? 5 : 0;
-		int vPad = addPadding ? 3 : 0;
+		int vPad = addPadding ? 2 : 0;
 		styleToolBarButton(btn, font, hPad, vPad);
 	}
 	
@@ -159,16 +164,41 @@ public final class ViewUtil {
 		if (font != null)
 			btn.setFont(font);
 		
-		btn.setBorder(null);
-		btn.setContentAreaFilled(false);
-		btn.setBorderPainted(false);
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
+		btn.setBorder(BorderFactory.createEmptyBorder());
+		btn.setContentAreaFilled(false);
+		btn.setOpaque(true);
 		
 		if (hPad > 0 || vPad > 0) {
 			final Dimension d = btn.getPreferredSize();
 			btn.setPreferredSize(new Dimension(d.width + 2 * hPad, d.height + 2 * vPad));
 		}
+		
+		if (btn instanceof JToggleButton)
+			updateToolBarStyle((JToggleButton) btn);
+	}
+	
+	public static void updateToolBarStyle(final JToggleButton btn) {
+		if (btn.isEnabled()) {
+			btn.setBackground(
+					btn.isSelected() ?
+					UIManager.getColor("ToggleButton.selectedBackground") :
+					UIManager.getColor("ToggleButton.unselectedBackground"));
+			btn.setForeground(
+					btn.isSelected() ?
+					UIManager.getColor("ToggleButton.selectedForeground") :
+					UIManager.getColor("ToggleButton.unselectedForeground"));
+		} else {
+			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
+		}
+	}
+	
+	public static JSeparator createToolBarSeparator() {
+		JSeparator sep = new ToolBarSeparator(JSeparator.VERTICAL);
+		sep.setForeground(UIManager.getColor("Separator.foreground"));
+		
+		return sep;
 	}
 	
 	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {
@@ -298,5 +328,34 @@ public final class ViewUtil {
 	}
 	
 	private ViewUtil() {
+	}
+	
+	@SuppressWarnings("serial")
+	private static class ToolBarSeparator extends JSeparator {
+
+		ToolBarSeparator(int orientation) {
+			super(orientation);
+		}
+		
+		@Override
+		public void paint(Graphics g) {
+			Dimension s = getSize();
+
+			if (getOrientation() == JSeparator.VERTICAL) {
+				g.setColor(getForeground());
+				g.drawLine(0, 0, 0, s.height);
+			} else {
+				g.setColor(getForeground());
+				g.drawLine(0, 0, s.width, 0);
+			}
+		}
+		
+		@Override
+		public Dimension getPreferredSize() {
+			if (getOrientation() == JSeparator.VERTICAL)
+				return new Dimension(1, 0);
+			else
+				return new Dimension(0, 1);
+		}
 	}
 }

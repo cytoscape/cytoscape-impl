@@ -17,7 +17,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.ButtonGroup;
-import javax.swing.ButtonModel;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -25,9 +24,9 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -83,12 +82,8 @@ public class GridViewTogglePanel extends JPanel {
 		final JToggleButton btn = mode == Mode.GRID ? getGridModeButton() : getViewModeButton();
 		getModeButtonGroup().setSelected(btn.getModel(), true);
 		
-		final ButtonModel selBtnModel = modeButtonGroup.getSelection();
-		
-		getGridModeButton().setForeground(UIManager
-				.getColor(selBtnModel == getGridModeButton().getModel() ? "Focus.color" : "Button.foreground"));
-		getViewModeButton().setForeground(UIManager
-				.getColor(selBtnModel == getViewModeButton().getModel() ? "Focus.color" : "Button.foreground"));
+		ViewUtil.updateToolBarStyle(getGridModeButton());
+		ViewUtil.updateToolBarStyle(getViewModeButton());
 	}
 	
 	private void init() {
