@@ -812,7 +812,7 @@ public class CyActivator extends AbstractCyActivator {
 			SelectAllEdgesTaskFactoryImpl factory = new SelectAllEdgesTaskFactoryImpl(undoSupportServiceRef,
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(ACCELERATOR, "cmd alt a");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(TITLE, "Select all edges");
@@ -825,7 +825,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "4");
 			props.setProperty(ACCELERATOR, "cmd a");
 			props.setProperty(TITLE, "Select all nodes");
@@ -837,7 +837,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "6");
 			props.setProperty(ACCELERATOR, "alt e");
 			props.setProperty(TITLE, "Select adjacent edges");
@@ -851,7 +851,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "7");
 			props.setProperty(ACCELERATOR, "cmd 7");
 			props.setProperty(TITLE, "Nodes connected by selected edges");
@@ -871,7 +871,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 //			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(PREFERRED_MENU, "Select.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
 			props.setProperty(MENU_GRAVITY, "6");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.15");
 			props.setProperty(ACCELERATOR, "cmd 6");
@@ -890,7 +890,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.INCOMING);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
 //			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "0.11");
 //			props.setProperty(TITLE, "FirstIncomingNeighbors");
@@ -907,10 +907,10 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.OUTGOING);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.First Neighbors of Selected Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
 //			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "6.2");
-			props.setProperty(TITLE, "FirstOutgoingNeighbors");
+			props.setProperty(TITLE, "Directed: Outgoing");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Directed: Outgoing)");
 			// props.setProperty(COMMAND, "select first neighbors outgoing");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
@@ -936,7 +936,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "5");
 			props.setProperty(ACCELERATOR, "alt shift a");
 			props.setProperty(TITLE, "Deselect all edges");
@@ -948,7 +948,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "5");
 			props.setProperty(ACCELERATOR, "cmd shift a");
 			props.setProperty(TITLE, "Deselect all nodes");
@@ -960,7 +960,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(ACCELERATOR, "alt i");
 			props.setProperty(TITLE, "Invert edge selection");
@@ -972,7 +972,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.2");
 			props.setProperty(ACCELERATOR, "cmd i");
@@ -987,7 +987,7 @@ public class CyActivator extends AbstractCyActivator {
 					cyNetworkViewManagerServiceRef, cyEventHelperRef, tunableSetterServiceRef);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "8");
 			props.setProperty(ACCELERATOR, "cmd alt i");			// this was same as Invert command
 			props.setProperty(TITLE, "From ID List file...");
@@ -1021,7 +1021,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(MENU_GRAVITY, "3.1");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.6");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -1040,7 +1040,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "3.1");
+			props.setProperty(MENU_GRAVITY, "3.11");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.5");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -1063,7 +1063,7 @@ public class CyActivator extends AbstractCyActivator {
 			HideSelectedNodesTaskFactoryImpl factory = new HideSelectedNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "2");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1072,7 +1072,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			HideUnselectedNodesTaskFactoryImpl factory = new HideUnselectedNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "2.1");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1082,7 +1082,7 @@ public class CyActivator extends AbstractCyActivator {
 			HideSelectedEdgesTaskFactoryImpl factory = new HideSelectedEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_EDGES);
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "2");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1091,7 +1091,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			HideUnselectedEdgesTaskFactoryImpl factory = new HideUnselectedEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "2.1");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1101,7 +1101,7 @@ public class CyActivator extends AbstractCyActivator {
 			UnHideAllNodesTaskFactoryImpl factory = new UnHideAllNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "Select.Nodes");
+			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
@@ -1111,7 +1111,7 @@ public class CyActivator extends AbstractCyActivator {
 			UnHideAllEdgesTaskFactoryImpl factory = new UnHideAllEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "Select.Edges");
+			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "3");
 			props.setProperty(TITLE, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
