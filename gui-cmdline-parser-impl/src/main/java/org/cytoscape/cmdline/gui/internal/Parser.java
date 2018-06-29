@@ -1,12 +1,27 @@
 package org.cytoscape.cmdline.gui.internal;
 
+import java.util.Properties;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.CyVersion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape GUI Command Line Parser Impl (gui-cmdline-parser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +39,9 @@ package org.cytoscape.cmdline.gui.internal;
  * #L%
  */
 
-import java.util.Properties;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Parser {
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final String[] args;
 	private final Options options;
@@ -48,7 +50,8 @@ public class Parser {
 	private final StartupConfig startupConfig; 
 	private final Properties props; 
 
-	public Parser(String[] args, CyShutdown shutdown, CyVersion version, StartupConfig startupConfig, Properties props) {
+	public Parser(String[] args, CyShutdown shutdown, CyVersion version, StartupConfig startupConfig,
+			Properties props) {
 		this.args = args;
 		this.shutdown = shutdown;
 		this.version = version;
@@ -63,7 +66,6 @@ public class Parser {
 
 		opt.addOption("h", "help", false, "Print this message.");
 		opt.addOption("v", "version", false, "Print the version number.");
-
 
 		opt.addOption(OptionBuilder
 		              .withLongOpt("session")

@@ -1,12 +1,24 @@
 package org.cytoscape.filter.internal.filters.model;
 
+import java.util.BitSet;
+import java.util.List;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.filter.internal.filters.util.FilterUtil;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
+import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
+import org.cytoscape.filter.internal.widgets.autocomplete.index.TextIndex;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,19 +35,6 @@ package org.cytoscape.filter.internal.filters.model;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.util.BitSet;
-import java.util.List;
-
-import org.cytoscape.filter.internal.filters.util.FilterUtil;
-import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.widgets.autocomplete.index.Hit;
-import org.cytoscape.filter.internal.widgets.autocomplete.index.TextIndex;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * This is a Cytoscape specific filter that will pass nodes if
@@ -57,7 +56,6 @@ public class StringFilter extends AtomicFilter {
 		this.quickFind = quickFind;
 	}
 	
-	
 	public String getSearchStr() {
 		return searchStr;
 	}
@@ -76,9 +74,8 @@ public class StringFilter extends AtomicFilter {
 	 * @param none.
 	 * @return none.
 	 */	
-	
+	@Override
 	public void apply() {
-
 		List<CyNode> nodes_list = null;
 		List<CyEdge> edges_list=null;
 
@@ -95,7 +92,7 @@ public class StringFilter extends AtomicFilter {
 			edge_bits = new BitSet(objectCount); // all the bits are false at very beginning			
 		}
 		else {
-			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("StringFilter: Index_type is undefined.");
+			LoggerFactory.getLogger(CyUserLog.NAME).error("StringFilter: Index_type is undefined.");
 			return;
 		}
 		
@@ -144,6 +141,7 @@ public class StringFilter extends AtomicFilter {
 	/**
 	 * @return the name of this Filter and the search string (keyword).
 	 */
+	@Override
 	public String toString() {
 		return "StringFilter="+controllingAttribute+":" + negation+ ":"+searchStr+":"+index_type;
 	}
@@ -154,5 +152,4 @@ public class StringFilter extends AtomicFilter {
 		return newStringFilter;
 	}
 */
-	
 }

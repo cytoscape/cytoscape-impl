@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -894,8 +895,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setCurrentNetwork(final CyNetwork newValue) {
-		if ((currentNetwork == null && newValue != null)
-				|| (currentNetwork != null && !currentNetwork.equals(newValue))) {
+		if (!Objects.equals(newValue, currentNetwork)) {
 			final CyNetwork oldValue = currentNetwork;
 			currentNetwork = newValue;
 			

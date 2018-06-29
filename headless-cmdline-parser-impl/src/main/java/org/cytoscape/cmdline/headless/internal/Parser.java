@@ -1,12 +1,26 @@
 package org.cytoscape.cmdline.headless.internal;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.CyVersion;
+import org.cytoscape.command.AvailableCommands;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Headless Command Line Parser Impl (headless-cmdline-parser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +38,9 @@ package org.cytoscape.cmdline.headless.internal;
  * #L%
  */
 
-
-import org.cytoscape.application.CyShutdown;
-import org.cytoscape.application.CyVersion;
-import org.cytoscape.command.AvailableCommands;
-
-import java.util.Properties;
-
-import java.awt.Dimension;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.OptionBuilder;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.commons.cli.PosixParser;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class Parser {
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final String[] args;
 	private final Options options;
@@ -61,7 +49,13 @@ public class Parser {
 	private final StartupConfig startupConfig; 
 	private final AvailableCommands availableCommands; 
 
-	public Parser(String[] args, CyShutdown shutdown, CyVersion version, StartupConfig startupConfig, AvailableCommands availableCommands) {
+	public Parser(
+			String[] args,
+			CyShutdown shutdown,
+			CyVersion version,
+			StartupConfig startupConfig,
+			AvailableCommands availableCommands
+	) {
 		this.args = args;
 		this.shutdown = shutdown;
 		this.version = version;

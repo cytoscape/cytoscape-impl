@@ -1,5 +1,28 @@
 package org.cytoscape.search.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.apache.lucene.store.RAMDirectory;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
@@ -24,34 +47,9 @@ package org.cytoscape.search.internal;
  * #L%
  */
 
-
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.apache.lucene.store.RAMDirectory;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class IndexAndSearchTask extends AbstractNetworkTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final EnhancedSearch enhancedSearch;
 	private final String query;
@@ -140,14 +138,12 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 			taskMonitor.setTitle("Search Finished");
 			taskMonitor.setProgress(1.0);
 
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane
-					.showMessageDialog(null, "Could not find any matches.", "No Match", JOptionPane.WARNING_MESSAGE);
-					logger.warn("Could not find any matches.");
-				}
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(null, "Could not find any matches.", "No Match",
+						JOptionPane.WARNING_MESSAGE);
+				logger.warn("Could not find any matches.");
 			});
+			
 			return;
 		}
 
@@ -187,6 +183,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		while (edgeIt.hasNext() && !cancelled) {
 			int currESPIndex = Integer.parseInt(edgeIt.next().toString());
 			CyEdge currEdge = network.getEdge(currESPIndex);
+			
 			if (currEdge != null)
 				network.getRow(currEdge).set(CyNetwork.SELECTED, true);
 			else

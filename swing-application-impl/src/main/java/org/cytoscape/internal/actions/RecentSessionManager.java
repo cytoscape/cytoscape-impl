@@ -14,6 +14,7 @@ import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -36,7 +37,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -60,7 +61,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class RecentSessionManager implements SessionLoadedListener, CyShutdownListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String MENU_CATEGORY = "File.Open Recent[1.2]";
 

@@ -1,12 +1,38 @@
 package org.cytoscape.cmdline.gui.internal;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.SimpleCyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
+import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
+import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
+import org.cytoscape.task.read.OpenSessionTaskFactory;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape GUI Command Line Parser Impl (gui-cmdline-parser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +50,19 @@ package org.cytoscape.cmdline.gui.internal;
  * #L%
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.SimpleCyProperty;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
-import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
-import org.cytoscape.task.read.OpenSessionTaskFactory;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 public class StartupConfig {
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	private final Properties globalProps; 
-	private final Properties localProps = new Properties(); 
-	private final StreamUtil streamUtil; 
-	private boolean taskStart = false;
+	private final Properties globalProps;
+	private final Properties localProps = new Properties();
+	private final StreamUtil streamUtil;
+	private boolean taskStart;
 	private OpenSessionTaskFactory loadSession;
 	private LoadNetworkFileTaskFactory networkFileLoader;
 	private LoadNetworkURLTaskFactory networkURLLoader;
 	private LoadVizmapFileTaskFactory visualStylesLoader;
 	private final TaskManager taskManager;
-	
 	
 	private final CyServiceRegistrar registrar;
 	
@@ -69,10 +71,16 @@ public class StartupConfig {
 	private ArrayList<URL> networkURLs;
 	private ArrayList<File> vizmapFiles;
 
-	public StartupConfig(Properties globalProps, StreamUtil streamUtil,
-			OpenSessionTaskFactory loadSession, LoadNetworkFileTaskFactory networkFileLoader,
-			LoadNetworkURLTaskFactory networkURLLoader, LoadVizmapFileTaskFactory visualStylesLoader, TaskManager taskManager,
-			CyServiceRegistrar registrar) {
+	public StartupConfig(
+			Properties globalProps,
+			StreamUtil streamUtil,
+			OpenSessionTaskFactory loadSession,
+			LoadNetworkFileTaskFactory networkFileLoader,
+			LoadNetworkURLTaskFactory networkURLLoader,
+			LoadVizmapFileTaskFactory visualStylesLoader,
+			TaskManager taskManager,
+			CyServiceRegistrar registrar
+	) {
 		this.globalProps = globalProps;
 		this.streamUtil = streamUtil;
 		this.loadSession = loadSession;
@@ -82,9 +90,9 @@ public class StartupConfig {
 		this.taskManager = taskManager;
 		
 		this.registrar = registrar;
-		networkFiles= new ArrayList<File>();
-		networkURLs = new ArrayList<URL>();
-		vizmapFiles = new ArrayList<File>();
+		networkFiles= new ArrayList<>();
+		networkURLs = new ArrayList<>();
+		vizmapFiles = new ArrayList<>();
 	}
 
 	public void setProperties(String[] potentialProps) {
@@ -166,17 +174,16 @@ public class StartupConfig {
 	}
 
 	public void setNetworks(String[] args){
+		networkFiles = new ArrayList<>();
+		networkURLs = new ArrayList<>();
 		
-		networkFiles = new ArrayList<File>();
-		networkURLs = new ArrayList<URL>();
-		
-		for (String name : args){
-			try{
-			if (name.matches(StreamUtil.URL_PATTERN))
-				networkURLs.add(new URL(name));
-			else 
-				networkFiles.add(new File(name));
-			}catch (Exception e){
+		for (String name : args) {
+			try {
+				if (name.matches(StreamUtil.URL_PATTERN))
+					networkURLs.add(new URL(name));
+				else
+					networkFiles.add(new File(name));
+			} catch (Exception e) {
 				logger.error(e.toString());
 			}
 		}
@@ -185,14 +192,13 @@ public class StartupConfig {
 	}
 
 	public void setVizMapProps(String[] args){
-		
-		vizmapFiles = new ArrayList<File>();
+		vizmapFiles = new ArrayList<>();
 		
 		for (String name: args){
-			try{
+			try {
 				vizmapFiles.add(new File(name));
-			}catch(Exception e){
-				
+			} catch (Exception e) {
+
 			}
 		}
 		
@@ -204,7 +210,7 @@ public class StartupConfig {
 		// no need to do this in a task since it's so fast
 		//globalProps.putAll(localProps);
 		
-		CyProperty<Properties> commandline = new SimpleCyProperty<Properties>("commandline", localProps,
+		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps,
 				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
 		Properties cmdlnProps = new Properties();
 		cmdlnProps.setProperty("cyPropertyName","commandline.props");
@@ -220,18 +226,18 @@ public class StartupConfig {
 		// disable it here.
 		globalProps.setProperty("tempHideWelcomeScreen","true");
 
-		ArrayList<TaskIterator> taskIteratorList = new ArrayList<TaskIterator>();
-		
-		if ( sessionName != null ) 	{
-			taskIteratorList.add( loadSession.createTaskIterator(sessionName));
+		ArrayList<TaskIterator> taskIteratorList = new ArrayList<>();
+
+		if (sessionName != null) {
+			taskIteratorList.add(loadSession.createTaskIterator(sessionName));
 
 		} else {
-			for ( File network : networkFiles )
-				taskIteratorList.add( networkFileLoader.createTaskIterator(network) );
-			for ( URL network : networkURLs )
-				taskIteratorList.add( networkURLLoader.loadCyNetworks(network) );
-			for ( File vizmap : vizmapFiles )
-				taskIteratorList.add( visualStylesLoader.createTaskIterator(vizmap));
+			for (File network : networkFiles)
+				taskIteratorList.add(networkFileLoader.createTaskIterator(network));
+			for (URL network : networkURLs)
+				taskIteratorList.add(networkURLLoader.loadCyNetworks(network));
+			for (File vizmap : vizmapFiles)
+				taskIteratorList.add(visualStylesLoader.createTaskIterator(vizmap));
 		}
 
 		Task initTask = new DummyTask();

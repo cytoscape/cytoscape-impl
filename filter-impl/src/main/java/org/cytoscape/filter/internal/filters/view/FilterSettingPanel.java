@@ -1,30 +1,5 @@
 package org.cytoscape.filter.internal.filters.view;
 
-/*
- * #%L
- * Cytoscape Filters Impl (filter-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -52,6 +27,7 @@ import javax.swing.event.MouseInputAdapter;
 import javax.swing.text.JTextComponent;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.filter.internal.filters.model.AtomicFilter;
 import org.cytoscape.filter.internal.filters.model.CompositeFilter;
@@ -80,6 +56,29 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Filters Impl (filter-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class FilterSettingPanel extends JPanel {
@@ -100,7 +99,7 @@ public class FilterSettingPanel extends JPanel {
 	
 	private final QuickFind quickFind;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public FilterSettingPanel(final QuickFind quickFind, final FilterMainPanel pParent,
 							  final Object pFilterObj,
@@ -400,18 +399,16 @@ public class FilterSettingPanel extends JPanel {
 	/**
 	 * Inner class Mouse listener for double click events on rangeSlider.
 	 */
-	public class RangeSlideMouseAdapter extends MouseAdapter
-	{
-		public void mouseClicked(MouseEvent pMouseEvent)
-		{
-			if (pMouseEvent.getClickCount() >= 2)
-			{
+	public class RangeSlideMouseAdapter extends MouseAdapter {
+		@Override
+		public void mouseClicked(MouseEvent pMouseEvent) {
+			if (pMouseEvent.getClickCount() >= 2) {
 				Object srcObj = pMouseEvent.getSource();
 				if (srcObj instanceof JRangeSliderExtended) {
 					JRangeSliderExtended theSlider = (JRangeSliderExtended) srcObj; 
 					NumberRangeModel model = (NumberRangeModel) theSlider.getModel();
 					
-					Vector<String> boundVect = new Vector<String>();
+					Vector<String> boundVect = new Vector<>();
 					boundVect.add(model.getLowValue().toString());
 					boundVect.add(model.getHighValue().toString());
 					boundVect.add(model.getMinValue().toString());

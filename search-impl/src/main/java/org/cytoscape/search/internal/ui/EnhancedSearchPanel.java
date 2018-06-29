@@ -22,6 +22,7 @@ import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
 import org.cytoscape.search.internal.SearchTaskFactory;
@@ -58,14 +59,13 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class EnhancedSearchPanel extends JPanel {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final EnhancedSearch searchMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private JTextField tfSearchText;
 
-	/** Creates new form NewJPanel */
 	public EnhancedSearchPanel(final EnhancedSearch searchMgr, final CyServiceRegistrar serviceRegistrar) {
 		this.searchMgr = searchMgr;
 		this.serviceRegistrar = serviceRegistrar;

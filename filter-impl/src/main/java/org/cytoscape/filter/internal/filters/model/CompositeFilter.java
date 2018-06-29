@@ -1,12 +1,26 @@
 package org.cytoscape.filter.internal.filters.model;
 
+import java.util.BitSet;
+import java.util.Hashtable;
+import java.util.LinkedList;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +38,6 @@ package org.cytoscape.filter.internal.filters.model;
  * #L%
  */
 
-
-import java.util.BitSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class CompositeFilter implements CyFilter {
 
 	protected List<CyFilter> children;
@@ -52,21 +51,21 @@ public class CompositeFilter implements CyFilter {
 	protected AdvancedSetting advancedSetting = null;
 	//private int indexType = -1; //QuickFind.INDEX_NODES //QuickFind.INDEX_EDGES 
 	protected CyNetwork network;
-	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<CompositeFilter, Boolean>();
+	protected Hashtable<CompositeFilter, Boolean> compositeNotTab = new Hashtable<>();
 	protected CyApplicationManager applicationManager;
 	
-	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public CompositeFilter(CyApplicationManager applicationManager) {
 		advancedSetting = new AdvancedSetting();
-		children = new LinkedList<CyFilter>();
+		children = new LinkedList<>();
 		this.applicationManager = applicationManager;
 	}
 
 	public CompositeFilter(String pName) {
 		name = pName;
 		advancedSetting = new AdvancedSetting();
-		children = new LinkedList<CyFilter>();
+		children = new LinkedList<>();
 	}
 		
 	public void setNetwork(CyNetwork pNetwork) {

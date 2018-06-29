@@ -26,27 +26,55 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.filter.internal.filters.composite.CompositeSeparator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DragHandler<V extends SelectPanelComponent> implements DragGestureListener, DragSourceListener, DropTargetListener {
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-	
+/*
+ * #%L
+ * Cytoscape Filters 2 Impl (filter2-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
+public class DragHandler<V extends SelectPanelComponent>
+		implements DragGestureListener, DragSourceListener, DropTargetListener {
+
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+
 	private JComponent view;
 	private final AbstractPanelController<?, V> controller;
 	private final V parent;
-	
+
 	private Transferable transferable;
 
 	private static Cursor nextCursor;
 	
-	public DragHandler(JComponent view, final AbstractPanelController<?, V> controller, final V parent, JComponent handle) {
+	public DragHandler(JComponent view, final AbstractPanelController<?, V> controller, final V parent,
+			JComponent handle) {
 		this.view = view;
 		this.controller = controller;
 		this.parent = parent;
 		transferable = createTransferable();
-		
+
 		if (handle != null) {
 			DragSource source = DragSource.getDefaultDragSource();
 			source.createDefaultDragGestureRecognizer(handle, DnDConstants.ACTION_COPY_OR_MOVE, this);

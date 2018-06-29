@@ -1,12 +1,23 @@
 package org.cytoscape.filter.internal.filters.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Vector;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.filter.internal.filters.event.FiltersChangedEvent;
+import org.cytoscape.filter.internal.filters.event.FiltersChangedListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +35,12 @@ package org.cytoscape.filter.internal.filters.model;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Vector;
-
-import org.cytoscape.filter.internal.filters.event.FiltersChangedEvent;
-import org.cytoscape.filter.internal.filters.event.FiltersChangedListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class FilterModelLocator {
 
-	private Vector<CompositeFilter> filters = new Vector<CompositeFilter>();
-	private List<FiltersChangedListener> filtersChangedListeners = new ArrayList<FiltersChangedListener>();
+	private Vector<CompositeFilter> filters = new Vector<>();
+	private List<FiltersChangedListener> filtersChangedListeners = new ArrayList<>();
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public void addFilters(Collection<CompositeFilter> filters) {
 		if (filters != null) {
@@ -78,7 +79,7 @@ public class FilterModelLocator {
 	}
 	
 	public Vector<CompositeFilter> getFilters() {
-		return new Vector<CompositeFilter>(filters);
+		return new Vector<>(filters);
 	}
 	
 	public void addListener(FiltersChangedListener listener) {

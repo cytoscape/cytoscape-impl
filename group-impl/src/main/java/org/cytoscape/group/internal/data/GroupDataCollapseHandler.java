@@ -1,12 +1,26 @@
 package org.cytoscape.group.internal.data;
 
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.group.data.Aggregator;
+import org.cytoscape.group.events.GroupAboutToCollapseEvent;
+import org.cytoscape.group.events.GroupAboutToCollapseListener;
+import org.cytoscape.group.internal.CyGroupImpl;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
- * Cytoscape Group Data Impl (group-data-impl)
+ * Cytoscape Groups Impl (group-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,46 +38,22 @@ package org.cytoscape.group.internal.data;
  * #L%
  */
 
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.group.data.Aggregator;
-import org.cytoscape.group.data.AttributeHandlingType;
-import org.cytoscape.group.events.GroupAboutToCollapseEvent;
-import org.cytoscape.group.events.GroupAboutToCollapseListener;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-
-import org.cytoscape.group.internal.CyGroupImpl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Handle the view portion of group collapse/expand
  */
-public class GroupDataCollapseHandler implements GroupAboutToCollapseListener
-{
+public class GroupDataCollapseHandler implements GroupAboutToCollapseListener {
 
 	private final CyGroupManager cyGroupManager;
 	private final CyGroupSettingsImpl cyGroupSettings;
-	private static final Logger logger = 
-		LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	/**
-	 * 
-	 * @param cyEventHelper
-	 */
 	public GroupDataCollapseHandler(final CyGroupManager groupManager, 
 	                                final CyGroupSettingsImpl groupSettings) {
 		this.cyGroupManager = groupManager;
 		this.cyGroupSettings = groupSettings;
 	}
 
+	@Override
 	public void handleEvent(GroupAboutToCollapseEvent e) {
 		CyNetwork network = e.getNetwork();
 		CyGroup group = e.getSource();

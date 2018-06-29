@@ -1,12 +1,18 @@
 package org.cytoscape.property.internal;
 
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.property.AbstractConfigDirPropsReader;
+import org.cytoscape.property.CyProperty;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Property Impl (property-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,20 +30,11 @@ package org.cytoscape.property.internal;
  * #L%
  */
 
-
-import org.cytoscape.property.AbstractConfigDirPropsReader;
-import org.cytoscape.property.CyProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class PropsReader extends AbstractConfigDirPropsReader {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	@SuppressWarnings("unused")
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	/**
-	 * Creates a new PropsReader object.
-	 */
 	public PropsReader(String name, String fileName) {
 		super(name, fileName, CyProperty.SavePolicy.CONFIG_DIR);
 	}

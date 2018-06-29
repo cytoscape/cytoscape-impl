@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.internal.LockedVisualPropertiesManager.Key;
 import org.cytoscape.group.internal.data.CyGroupSettingsImpl;
@@ -56,7 +57,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -84,7 +85,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 	private final LockedVisualPropertiesManager lvpMgr;
 	private final ObjectMapper mapper;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public GroupIO(final CyGroupManagerImpl groupMgr,
 					 final LockedVisualPropertiesManager lvpMgr,
@@ -117,7 +118,7 @@ public class GroupIO implements SessionAboutToBeSavedListener, SessionAboutToBeL
 		if (allGroups.isEmpty())
 			return;
 		
-		final List<File> files = new ArrayList<File>();
+		final List<File> files = new ArrayList<>();
 		
 		try {
 			final File root = File.createTempFile(NAMESPACE, ".temp");

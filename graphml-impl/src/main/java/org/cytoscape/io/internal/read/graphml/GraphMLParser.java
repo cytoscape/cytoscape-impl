@@ -1,29 +1,5 @@
 package org.cytoscape.io.internal.read.graphml;
 
-/*
- * #%L
- * Cytoscape GraphML Impl (graphml-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRNAME;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRTYPE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DATA;
@@ -45,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -63,27 +40,50 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+/*
+ * #%L
+ * Cytoscape GraphML Impl (graphml-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * A SAX Parser for GraphML data file.
  * @author Kozo.Nishida
- *
  */
 public class GraphMLParser extends DefaultHandler {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	// Map of data type to nodes or edges
 	private Map<String, String> datatypeMap;
 	private Map<String, String> datanameMap;
 
-	private CyIdentifiable currentObject = null;
+	private CyIdentifiable currentObject;
 
 	// Attribute values
-	private String currentAttributeKey = null;
-	private String currentAttributeData = null;
-	private String currentAttributeType = null;
+	private String currentAttributeKey;
+	private String currentAttributeData;
+	private String currentAttributeType;
 	
-	private String currentTag = null;
+	private String currentTag;
 
 	private final CyRootNetworkManager rootNetworkManager;
 
@@ -114,13 +114,13 @@ public class GraphMLParser extends DefaultHandler {
 			final CyRootNetworkManager rootNetworkManager, final CyRootNetwork root, final CyNetwork newNetwork) {
 		this.rootNetworkManager = rootNetworkManager;
 
-		networkStack = new Stack<CyNetwork>();
-		cyNetworks = new ArrayList<CyNetwork>();
+		networkStack = new Stack<>();
+		cyNetworks = new ArrayList<>();
 
-		datatypeMap = new HashMap<String, String>();
-		datanameMap = new HashMap<String, String>();
+		datatypeMap = new HashMap<>();
+		datanameMap = new HashMap<>();
 
-		this.nodeid2CyNodeMap = new HashMap<String, CyIdentifiable>();
+		this.nodeid2CyNodeMap = new HashMap<>();
 		this.root = root;
 		this.newNetwork = newNetwork;
 	}
@@ -185,7 +185,7 @@ public class GraphMLParser extends DefaultHandler {
 			final CyNetwork parentNetwork = networkStack.peek();
 			currentNetwork = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
 			if(lastTag != null && lastTag.equals(NODE.getTag())) {
-				Collection<CyNode> toBeRemoved = new ArrayList<CyNode>();
+				Collection<CyNode> toBeRemoved = new ArrayList<>();
 				toBeRemoved.add(lastNode);
 				
 				for(CyNetwork network: networkStack)

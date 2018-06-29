@@ -1,12 +1,26 @@
 package org.cytoscape.filter.internal.filters.model;
 
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +38,11 @@ package org.cytoscape.filter.internal.filters.model;
  * #L%
  */
 
-
-import java.util.BitSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge.Type;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.slf4j.LoggerFactory;
-
-
 public class TopologyFilter extends CompositeFilter {
 	
 	private int minNeighbors = 1;
 	private int withinDistance = 1;
-	private CompositeFilter passFilter = null;
+	private CompositeFilter passFilter;
 	
 	public TopologyFilter(CyApplicationManager applicationManager) {
 		super(applicationManager);
@@ -123,7 +122,7 @@ public class TopologyFilter extends CompositeFilter {
 			objectCount = nodes_list.size();
 			
 			//Create an index mapping between RootGraphIndex and index in current network
-			HashMap<CyNode, Integer> indexMap = new HashMap<CyNode, Integer>();
+			HashMap<CyNode, Integer> indexMap = new HashMap<>();
 			for (int i = 0; i < objectCount; i++) {
 				CyNode node = nodes_list.get(i);
 				indexMap.put(node, i);
@@ -138,7 +137,7 @@ public class TopologyFilter extends CompositeFilter {
 				}
 			}			
 		} else {
-			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("objectType is undefined.");
+			LoggerFactory.getLogger(CyUserLog.NAME).error("objectType is undefined.");
 			return;
 		}
 
@@ -197,7 +196,7 @@ public class TopologyFilter extends CompositeFilter {
 	
 	private boolean isHit(CyNode pObj, HashMap<CyNode, Integer> pIndexMap) {
 		// Get all the neighbors for pNode that pass the given filter
-		Set<CyNode> neighborSet = new HashSet<CyNode>();
+		Set<CyNode> neighborSet = new HashSet<>();
 		getNeighbors(pObj, neighborSet, withinDistance);
 		
 		//Exclude self from the neighbor
