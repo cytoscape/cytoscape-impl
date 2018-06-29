@@ -1,29 +1,5 @@
 package org.cytoscape.filter.internal.filters;
 
-/*
- * #%L
- * Cytoscape Filters Impl (filter-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -38,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.CyStartEvent;
@@ -56,16 +33,37 @@ import org.cytoscape.session.events.SessionLoadedListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
+/*
+ * #%L
+ * Cytoscape Filters Impl (filter-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
  * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyStartListener, SessionAboutToBeSavedListener {
 
 	private final FilterReader reader;
 	private final FilterWriter writer;
 	private final FilterModelLocator modelLocator;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public FilterApp(final FilterReader reader, final FilterWriter writer, final FilterModelLocator modelLocator) {
 		if (reader == null)
@@ -93,8 +91,8 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	@Override
 	public void handleEvent(SessionLoadedEvent e) {
 		// Remove current session-only filters
-		List<CompositeFilter> removeList = new ArrayList<CompositeFilter>();
-		Set<String> globalNames = new HashSet<String>();
+		List<CompositeFilter> removeList = new ArrayList<>();
+		Set<String> globalNames = new HashSet<>();
 		
 		for (CompositeFilter cf : modelLocator.getFilters()) {
 			if (!cf.getAdvancedSetting().isGlobalChecked())
@@ -147,7 +145,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		Vector<CompositeFilter> allFilters = modelLocator.getFilters();
-		List<CompositeFilter> saveList = new ArrayList<CompositeFilter>();
+		List<CompositeFilter> saveList = new ArrayList<>();
 		
 		for (CompositeFilter cf : allFilters) {
 			if (cf.getAdvancedSetting().isSessionChecked())
@@ -164,7 +162,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 				writer.write(saveList, tmpFile);
 				
 				// Add it to the apps list
-				List<File> fileList = new ArrayList<File>();
+				List<File> fileList = new ArrayList<>();
 				fileList.add(tmpFile);
 				e.addAppFiles(FilterUtil.FILTER_APP_NAME, fileList);
 			} catch (Exception ex) {
@@ -217,7 +215,7 @@ public class FilterApp implements CyShutdownListener, SessionLoadedListener, CyS
 	
 	private void saveGlobalFilters() {
 		// Get current global filters
-		Set<CompositeFilter> globalFilters = new LinkedHashSet<CompositeFilter>();
+		Set<CompositeFilter> globalFilters = new LinkedHashSet<>();
 		
 		for (CompositeFilter cf : modelLocator.getFilters()) {
 			if (cf.getAdvancedSetting().isGlobalChecked())

@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
@@ -25,7 +26,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +56,6 @@ import javax.swing.JSeparator;
 import javax.swing.JSlider;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -82,7 +81,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -551,9 +550,9 @@ public class NetworkViewGrid extends JPanel {
 		
 		update(thumbnailSize);
 		
-		addPropertyChangeListener("selectedItems", (PropertyChangeEvent e) -> {
+		addPropertyChangeListener("selectedItems", evt -> {
 			if (!ignoreSelectedItemsEvent)
-				setSelectedNetworkViews(getNetworkViews((Collection<ThumbnailPanel>) e.getNewValue()));
+				setSelectedNetworkViews(getNetworkViews((Collection<ThumbnailPanel>) evt.getNewValue()));
 		});
 	}
 	
@@ -686,10 +685,10 @@ public class NetworkViewGrid extends JPanel {
 			toolBar = new JPanel();
 			toolBar.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
-			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep1 = ViewUtil.createToolBarSeparator();
+			final JSeparator sep2 = ViewUtil.createToolBarSeparator();
+			final JSeparator sep3 = ViewUtil.createToolBarSeparator();
+			final JSeparator sep4 = ViewUtil.createToolBarSeparator();
 			
 			final GroupLayout layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
@@ -699,23 +698,23 @@ public class NetworkViewGrid extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getDetachSelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getReattachAllViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(getViewSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getDestroySelectedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getThumbnailSlider(), 100, 100, 100)
 					.addContainerGap()
 			);

@@ -17,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
 import org.cytoscape.filter.internal.filters.composite.CompositeFilterPanel;
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -105,11 +106,11 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		this.style = style;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+		logger = LoggerFactory.getLogger(CyUserLog.NAME);
 		
-		List<T> modelItems = new ArrayList<T>();
-		namedElementComboBoxModel = new DynamicComboBoxModel<T>(modelItems);
-		namedElementListeners = new CopyOnWriteArrayList<NamedElementListener<T>>();
+		List<T> modelItems = new ArrayList<>();
+		namedElementComboBoxModel = new DynamicComboBoxModel<>(modelItems);
+		namedElementListeners = new CopyOnWriteArrayList<>();
 	}
 
 	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {
@@ -395,6 +396,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		LinkedList<Integer> path = new LinkedList<>();
 		Component current = component;
 		Container nextParent = component.getParent();
+		
 		while (true) {
 			if (!(nextParent instanceof CompositePanelComponent)) {
 				break;

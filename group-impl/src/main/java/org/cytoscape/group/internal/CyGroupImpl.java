@@ -1,30 +1,5 @@
 package org.cytoscape.group.internal;
 
-/*
- * #%L
- * Cytoscape Groups Impl (group-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +10,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.events.GroupAboutToBeRemovedEvent;
@@ -59,6 +35,29 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Groups Impl (group-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CyGroupImpl implements CyGroup {
 
@@ -89,7 +88,7 @@ public class CyGroupImpl implements CyGroup {
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedLocalValuesMap;
 	private Map<Long, Map<CyIdentifiable, Map<String, Object>>> savedHiddenValuesMap;
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final Object lock = new Object();
 
@@ -157,17 +156,17 @@ public class CyGroupImpl implements CyGroup {
 		networkSet.add(network);
 
 		if (nodes == null)
-			nodes = new ArrayList<CyNode>();
+			nodes = new ArrayList<>();
 
 		// This is merely a copy of the "nodes" list but as a set,
 		// so it's fast to call the contains() method.
-		Set<CyNode> nodeMap = new HashSet<CyNode>(nodes);
+		Set<CyNode> nodeMap = new HashSet<>(nodes);
 
 		// This block of code makes the distinction between internal and external edges
 		// based on the edges we were given. If "edges" is null, it's our responsibility
 		// to build the edge list from the parent network's edges in our group.
 		if (edges != null) {
-			List<CyEdge> intEdges = new ArrayList<CyEdge>();
+			List<CyEdge> intEdges = new ArrayList<>();
 			// Remove those edges in the list that aren't attached to nodes in
 			// the list.  Otherwise, we'll wind up adding nodes to the group
 			// that the user didn't request.
@@ -183,7 +182,7 @@ public class CyGroupImpl implements CyGroup {
 			edges = intEdges;
 		} else if (edges == null) {
 			// Create the edge lists
-			edges = new ArrayList<CyEdge>();
+			edges = new ArrayList<>();
 
 			// Get all of the edges and put them in the right lists
 			for (CyNode n: nodes) {
@@ -348,7 +347,7 @@ public class CyGroupImpl implements CyGroup {
 				addNode(n);
 
 				List<CyEdge> adjacentEdges = 
-					new ArrayList<CyEdge>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
+					new ArrayList<>(rootNetwork.getAdjacentEdgeList(n, CyEdge.Type.ANY));
 
 				for (CyEdge edge: adjacentEdges) {
 					// System.out.println("Looking at edge: "+edge);
@@ -430,7 +429,7 @@ public class CyGroupImpl implements CyGroup {
 	@Override
 	public void removeNodes(List<CyNode> nodes) {
 		synchronized (lock) {
-			List<CyEdge> netEdges = new ArrayList<CyEdge>();
+			List<CyEdge> netEdges = new ArrayList<>();
 			for (CyNode node: nodes) {
 				List<CyEdge> edges = rootNetwork.getAdjacentEdgeList(node, CyEdge.Type.ANY);
 				for (CyEdge edge: edges) {
@@ -460,7 +459,7 @@ public class CyGroupImpl implements CyGroup {
 	@Override
 	public void removeEdges(List<CyEdge> edges) {
 		synchronized (lock) {
-			List<CyEdge> netEdges = new ArrayList<CyEdge>();
+			List<CyEdge> netEdges = new ArrayList<>();
 			for (CyEdge edge: edges) {
 				if (getGroupNetwork().containsEdge(edge)) {
 					netEdges.add(edge);
@@ -618,7 +617,7 @@ public class CyGroupImpl implements CyGroup {
 		synchronized (lock) {
 			// Deselect all of our external edges, and check for any possible
 			// collapsed partner groups
-			ListIterator<CyEdge> iterator = (new ArrayList<CyEdge>(externalEdges)).listIterator();
+			ListIterator<CyEdge> iterator = (new ArrayList<>(externalEdges)).listIterator();
 			while (iterator.hasNext()) {
 				CyEdge edge = iterator.next();
 				if (net.containsEdge(edge)) {
@@ -638,7 +637,7 @@ public class CyGroupImpl implements CyGroup {
 								addPartnerMetaEdges(net, edge, group, metaEdge);
 
 								// Get the external edges and make them part of our external
-								ListIterator<CyEdge> edgeIterator = (new ArrayList<CyEdge>(group.getExternalEdgeList())).listIterator();
+								ListIterator<CyEdge> edgeIterator = (new ArrayList<>(group.getExternalEdgeList())).listIterator();
 								while (edgeIterator.hasNext()) {
 									CyEdge partnerEdge = edgeIterator.next();
 									CyEdge partnerMetaEdge = null;
@@ -663,7 +662,7 @@ public class CyGroupImpl implements CyGroup {
 			// Only collapse nodes that are actually in our
 			// network.  This checks for nodes that are in
 			// multiple groups.
-			nodes = new ArrayList<CyNode>();
+			nodes = new ArrayList<>();
 			for (CyNode node: getNodeList()) {
 				if (net.containsNode(node)) {
 					nodes.add(node);
@@ -720,7 +719,7 @@ public class CyGroupImpl implements CyGroup {
 			subnet.getRootNetwork().restoreEdge(edge);
 		}
 
-		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
+		final Set<CyIdentifiable> addedElements = new HashSet<>();
 
 		synchronized (lock) {
 			if (net.containsNode(groupNode)) {
@@ -843,7 +842,7 @@ public class CyGroupImpl implements CyGroup {
 
 		final CyNetworkViewManager netViewMgr = mgr.getService(CyNetworkViewManager.class);
 		final Collection<CyNetworkView> netViewList = netViewMgr.getNetworkViews(net);
-		final Set<CyIdentifiable> addedElements = new HashSet<CyIdentifiable>();
+		final Set<CyIdentifiable> addedElements = new HashSet<>();
 
 		synchronized (lock) {
 			// Remove the group node from the target network only if
@@ -862,7 +861,7 @@ public class CyGroupImpl implements CyGroup {
 					saveLocalAttributes(net, e);
 				}
 
-				groupNodeEdges = new HashSet<CyEdge>();
+				groupNodeEdges = new HashSet<>();
 				// Now, see which of these groupEdges aren't meta-edges
 				for (CyEdge edge: groupEdges) {
 					if (!isMeta(edge))

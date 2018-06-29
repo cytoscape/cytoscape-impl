@@ -1,12 +1,23 @@
 package org.cytoscape.filter.internal.filters.model;
 
+import java.util.BitSet;
+import java.util.List;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.filter.internal.filters.util.FilterUtil;
+import org.cytoscape.filter.internal.quickfind.util.QuickFind;
+import org.cytoscape.filter.internal.widgets.autocomplete.index.NumberIndex;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +35,6 @@ package org.cytoscape.filter.internal.filters.model;
  * #L%
  */
 
-
-import java.util.BitSet;
-import java.util.List;
-
-import org.cytoscape.filter.internal.filters.util.FilterUtil;
-import org.cytoscape.filter.internal.quickfind.util.QuickFind;
-import org.cytoscape.filter.internal.widgets.autocomplete.index.NumberIndex;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * This is a Cytoscape specific filter that will pass nodes if
  * a selected attribute matches a specific value.
@@ -49,9 +48,11 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		this.quickFind = quickFind;
 	}
 
+	@Override
 	public boolean passesFilter(Object obj) {
 		return false;
 	}
+	
 	public T getLowBound(){
 		return lowBound;
 	}
@@ -73,6 +74,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		highBound = pUpBound;
 	}
 	
+	@Override
 	public void apply() {
 		List<CyNode> nodes_list = null;
 		List<CyEdge> edges_list=null;
@@ -88,7 +90,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 			objectCount = edges_list.size();
 			edge_bits = new BitSet(objectCount); // all the bits are false initially
 		} else {
-			LoggerFactory.getLogger("org.cytoscape.application.userlog").error("StringFilter: Index_type is undefined.");
+			LoggerFactory.getLogger(CyUserLog.NAME).error("StringFilter: Index_type is undefined.");
 			return;
 		}
 
@@ -132,9 +134,7 @@ public class NumericFilter<T extends Number> extends AtomicFilter {
 		}		
 	}
 
-	/**
-	 * 
-	 */
+	@Override
 	public String toString() {
 		return "NumericFilter="+controllingAttribute + ":" + negation+ ":"+lowBound+":" + highBound+ ":"+index_type;
 	}

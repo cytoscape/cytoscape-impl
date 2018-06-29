@@ -1,12 +1,32 @@
 package org.cytoscape.filter.internal.write.filter;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.filter.internal.filters.model.AdvancedSetting;
+import org.cytoscape.filter.internal.filters.model.CompositeFilter;
+import org.cytoscape.filter.internal.filters.model.CyFilter;
+import org.cytoscape.filter.internal.filters.model.TopologyFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Filters Impl (filter-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +44,9 @@ package org.cytoscape.filter.internal.write.filter;
  * #L%
  */
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.filter.internal.filters.model.AdvancedSetting;
-import org.cytoscape.filter.internal.filters.model.CompositeFilter;
-import org.cytoscape.filter.internal.filters.model.CyFilter;
-import org.cytoscape.filter.internal.filters.model.TopologyFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class FilterWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public void write(Collection<CompositeFilter> filters, File file) {
 		// Because one filter may depend on the other, CompositeFilters must
@@ -109,7 +110,7 @@ public class FilterWriter {
 			return null;
 		}
 
-		ArrayList<CompositeFilter> retFilterList = new ArrayList<CompositeFilter>();
+		ArrayList<CompositeFilter> retFilterList = new ArrayList<>();
 
 		for (int i = 0; i < pFilters.length; i++) {
 			CompositeFilter theFilter = (CompositeFilter) pFilters[i];
@@ -137,8 +138,8 @@ public class FilterWriter {
 		}
 
 		// Separate TopologyFilter from other CompositeFilter
-		List<TopologyFilter> topoFilterVect = new ArrayList<TopologyFilter>();
-		List<CompositeFilter> otherFilterVect = new ArrayList<CompositeFilter>();
+		List<TopologyFilter> topoFilterVect = new ArrayList<>();
+		List<CompositeFilter> otherFilterVect = new ArrayList<>();
 
 		for (Object obj : pAllFilterVect) {
 			if (obj instanceof TopologyFilter) {
@@ -151,8 +152,8 @@ public class FilterWriter {
 		// TopologyFilters depend on other compositeFilter, they should follow
 		// other compositeFilter
 		CompositeFilter[] sortedFilters = otherFilterVect.toArray(new CompositeFilter[otherFilterVect.size()]);
-		Arrays.sort(sortedFilters, (new CompositeFilterCmp<CompositeFilter>()));
-		List<CompositeFilter> sortedFilterList = new ArrayList<CompositeFilter>();
+		Arrays.sort(sortedFilters, (new CompositeFilterCmp<>()));
+		List<CompositeFilter> sortedFilterList = new ArrayList<>();
 
 		for (int i = 0; i < sortedFilters.length; i++) {
 			sortedFilterList.add(sortedFilters[i]);
@@ -177,13 +178,14 @@ public class FilterWriter {
 			return -1; // depth1 < depth2
 		}
 
+		@Override
 		public boolean equals(Object obj) {
 			return false;
 		}
 		
 		private static int getTreeDepth(CompositeFilter pFilter, int pDepthLevel) {
 			List<CyFilter> childrenList = pFilter.getChildren();
-			List<CompositeFilter> theList = new ArrayList<CompositeFilter>();
+			List<CompositeFilter> theList = new ArrayList<>();
 
 			// Find all the child compositeFilter
 			for (int i = 0; i < childrenList.size(); i++) {

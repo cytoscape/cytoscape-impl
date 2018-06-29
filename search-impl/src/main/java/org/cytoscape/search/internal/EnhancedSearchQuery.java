@@ -1,12 +1,38 @@
 package org.cytoscape.search.internal;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.search.Collector;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Scorer;
+import org.apache.lucene.search.Searcher;
+import org.apache.lucene.store.RAMDirectory;
+import org.apache.lucene.util.Version;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.search.internal.util.AttributeFields;
+import org.cytoscape.search.internal.util.CustomMultiFieldQueryParser;
+import org.cytoscape.search.internal.util.EnhancedSearchUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +50,14 @@ package org.cytoscape.search.internal;
  * #L%
  */
 
-
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.Scorer;
-import org.apache.lucene.search.Searcher;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.util.Version;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.search.internal.util.AttributeFields;
-import org.cytoscape.search.internal.util.CustomMultiFieldQueryParser;
-import org.cytoscape.search.internal.util.EnhancedSearchUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class EnhancedSearchQuery {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;
-	private IdentifiersCollector hitCollector = null;
-	private Searcher searcher = null;
+	private IdentifiersCollector hitCollector;
+	private Searcher searcher;
 
 	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index) {
 		this.network = network;
@@ -92,9 +89,7 @@ public class EnhancedSearchQuery {
 	 * attributeName), search is carried out on all attribute fields. This
 	 * functionality is enabled with the use of MultiFieldQueryParser.
 	 */
-	private void search(final String queryString, final AttributeFields attFields)
-		throws IOException
-	{
+	private void search(final String queryString, final AttributeFields attFields) throws IOException {
 		// Build a Query object.
 		// CustomMultiFieldQueryParser is used to support range queries on numerical attribute fields.
 		final CustomMultiFieldQueryParser queryParser =
@@ -108,22 +103,15 @@ public class EnhancedSearchQuery {
 		} catch (final ParseException pe) {
 			// Parse exceptions occur when colon appear in the query in an
 			// unexpected location, e.g. when attribute or value are
-			// missing in the query. In such case, the hitCollector
-			// variable will be null.
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE);
-				}
+			// missing in the query. In such case, the hitCollector variable will be null.
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE);
 			});
 		} catch (final Exception e) {
 			// Other types of exception may occur
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
-							JOptionPane.ERROR_MESSAGE);
-				}
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
+						JOptionPane.ERROR_MESSAGE);
 			});
 		}			
 	}
@@ -145,8 +133,7 @@ public class EnhancedSearchQuery {
 		}
 	}
 
-	// hitCollector object may be null if this method is called before
-	// ExecuteQuery
+	// hitCollector object may be null if this method is called before ExecuteQuery
 	public ArrayList<String> getNodeHits() {
 		if (hitCollector != null) {
 			return hitCollector.getNodeHits();
@@ -154,6 +141,7 @@ public class EnhancedSearchQuery {
 			return null;
 		}
 	}
+	
 	public ArrayList<String> getEdgeHits() {
 		if (hitCollector != null) {
 			return hitCollector.getEdgeHits();
@@ -161,16 +149,14 @@ public class EnhancedSearchQuery {
 			return null;
 		}
 	}
-
 }
-
 
 class IdentifiersCollector extends Collector {
 
 	private Searcher searcher;
 
-	public ArrayList<String> nodeHitsIdentifiers = new ArrayList<String>();
-	public ArrayList<String> edgeHitsIdentifiers = new ArrayList<String>();
+	public ArrayList<String> nodeHitsIdentifiers = new ArrayList<>();
+	public ArrayList<String> edgeHitsIdentifiers = new ArrayList<>();
 
 	public IdentifiersCollector(Searcher searcher) {
 		this.searcher = searcher;
@@ -190,10 +176,12 @@ class IdentifiersCollector extends Collector {
 		return edgeHitsIdentifiers;
 	}
 
+	@Override
 	public boolean acceptsDocsOutOfOrder() {
 		return true;
 	}
 
+	@Override
 	public void collect(int id) {		
 		try {
 			Document doc = searcher.doc(id);
@@ -210,10 +198,11 @@ class IdentifiersCollector extends Collector {
 		}
 	}
 
+	@Override
 	public void setNextReader(IndexReader reader, int docBase) {
 	}
 
+	@Override
 	public void setScorer(Scorer scorer) {
 	}
-
 }

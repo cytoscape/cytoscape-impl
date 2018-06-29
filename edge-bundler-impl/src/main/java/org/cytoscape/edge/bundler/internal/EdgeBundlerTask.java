@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -70,7 +71,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EdgeBundlerTask extends AbstractNetworkViewTask {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private static final String BEND_MAP_COLUMN = "BEND_MAP_ID";
 

@@ -108,8 +108,12 @@ public class CanvasMouseListener implements MouseListener {
 				annotation.setSelected(true);
 			}
 
-			if (annotationSelection.count() > 0)
+			if (annotationSelection.count() > 0) {
 				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
+				annotationSelection.setMoving(true);
+			} else {
+				annotationSelection.setMoving(false);
+			}
 
 			//We request focus in this window, so that we can move these selected Annotations around using arrow keys
 			annotation.getCanvas().requestFocusInWindow();
@@ -131,6 +135,7 @@ public class CanvasMouseListener implements MouseListener {
 		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		annotationSelection.setResizing(false);
+		annotationSelection.setMoving(false);
 
 		if (mouseDown != null) {
 			double startX = Math.min(mouseDown.getX(), e.getX());

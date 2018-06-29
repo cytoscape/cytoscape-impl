@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
@@ -43,14 +44,13 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.util.Util;
+import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -59,7 +59,7 @@ import org.cytoscape.view.model.CyNetworkView;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -286,26 +286,27 @@ public class NetworkViewComparisonPanel extends JPanel {
 			comparisonToolBar.setBorder(
 					BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			
-			final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
-			final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep1 = ViewUtil.createToolBarSeparator();
+			final JSeparator sep2 = ViewUtil.createToolBarSeparator();
+			final JSeparator sep3 = ViewUtil.createToolBarSeparator();
 			
 			final GroupLayout layout = new GroupLayout(comparisonToolBar);
 			comparisonToolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getDetachComparedViewsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 10, Short.MAX_VALUE)
 					.addComponent(sep3, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(getOptionsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -340,7 +341,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 			styleToolBarButton(optionsBtn,
 					serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE * 4/5));
 			
-			optionsBtn.addActionListener((ActionEvent e) -> {
+			optionsBtn.addActionListener(evt -> {
 				getOptionsMenu().show(optionsBtn, 0, optionsBtn.getHeight());
 			});
 		}
@@ -353,7 +354,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		
 		for (Arrangement arrangement : Arrangement.values()) {
 			final JMenuItem mi = new JCheckBoxMenuItem(arrangement.toString());
-			mi.addActionListener((ActionEvent e) -> {
+			mi.addActionListener(evt -> {
 				setArrangement(arrangement);
 			});
 			mi.setSelected(this.arrangement == arrangement);
@@ -397,7 +398,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 	public static String createUniqueKey(final Collection<CyNetworkView> views) {
 		// Sort the views by SUID first
 		final List<CyNetworkView> list = new ArrayList<>(views);
-		Collections.sort(list, (CyNetworkView o1, CyNetworkView o2) -> {
+		Collections.sort(list, (o1, o2) -> {
 			return o1.getSUID().compareTo(o2.getSUID());
 		});
 		

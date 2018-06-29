@@ -6,6 +6,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
@@ -63,7 +64,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
@@ -124,16 +124,16 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel edgeSelectionLabel;
 	private JLabel nodeHiddenLabel;
 	private JLabel edgeHiddenLabel;
-	private JButton birdsEyeViewButton;
+	private JToggleButton birdsEyeViewButton;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
-	final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
-	final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
-	final JSeparator sep3 = new JSeparator(JSeparator.VERTICAL);
-	final JSeparator sep4 = new JSeparator(JSeparator.VERTICAL);
-	final JSeparator sep5 = new JSeparator(JSeparator.VERTICAL);
-	final JSeparator sep6 = new JSeparator(JSeparator.VERTICAL);
+	final JSeparator sep1 = ViewUtil.createToolBarSeparator();
+	final JSeparator sep2 = ViewUtil.createToolBarSeparator();
+	final JSeparator sep3 = ViewUtil.createToolBarSeparator();
+	final JSeparator sep4 = ViewUtil.createToolBarSeparator();
+	final JSeparator sep5 = ViewUtil.createToolBarSeparator();
+	final JSeparator sep6 = ViewUtil.createToolBarSeparator();
 	
     private boolean detached;
     private boolean comparing;
@@ -294,7 +294,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private void updateBirdsEyeButton() {
 		final boolean bevVisible = getBirdsEyeViewPanel().isVisible();
 		getBirdsEyeViewButton().setToolTipText((bevVisible ? "Hide" : "Show") + " Navigator (N)");
-		getBirdsEyeViewButton().setForeground(UIManager.getColor(bevVisible ? "Focus.color" : "Button.foreground"));
+		ViewUtil.updateToolBarStyle(getBirdsEyeViewButton());
 	}
 	
 	private void updateBirdsEyeViewPanel() {
@@ -372,8 +372,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					continue;
 				
 				final SelectionModeButton btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
-				styleToolBarButton(btn, null, 3, 2);
-				
 				selectionModeButtons.add(btn);
 				
 				btn.addActionListener(evt -> {
@@ -412,7 +410,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final GroupLayout layout = new GroupLayout(toolBar);
 			toolBar.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
@@ -425,6 +423,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(UNRELATED)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(getViewTitleLabel())
@@ -435,10 +434,15 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(sep6, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -552,7 +556,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				final GroupLayout layout = new GroupLayout(selectionModePanel);
 				selectionModePanel.setLayout(layout);
 				layout.setAutoCreateContainerGaps(false);
-				layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+				layout.setAutoCreateGaps(false);
 				
 				final SequentialGroup hGroup = layout.createSequentialGroup();
 				final ParallelGroup vGroup = layout.createParallelGroup(CENTER, false);
@@ -576,32 +580,33 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			if (LookAndFeelUtil.isAquaLAF())
 				infoPanel.setOpaque(false);
 			
-			final JSeparator sep = new JSeparator(JSeparator.VERTICAL);
+			final JSeparator sep = ViewUtil.createToolBarSeparator();
 			
 			LookAndFeelUtil.equalizeSize(getSelectionIconLabel(), getHiddenIconLabel());
-			final int lw = 48; // Preferred label width
+			final int lw = 50; // Preferred label width
+			final int gap = 4;
 			
 			final GroupLayout layout = new GroupLayout(infoPanel);
 			infoPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(4)
+					.addGap(gap)
 					.addGroup(layout.createParallelGroup(TRAILING, true)
 							.addComponent(getNodeSelectionLabel(), lw, lw, Short.MAX_VALUE)
 							.addComponent(getEdgeSelectionLabel(), lw, lw, Short.MAX_VALUE)
 					)
-					.addGap(4)
+					.addGap(gap)
 					.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(gap)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addGap(4)
+					.addGap(gap)
 					.addGroup(layout.createParallelGroup(TRAILING, true)
 							.addComponent(getNodeHiddenLabel(), lw, lw, Short.MAX_VALUE)
 							.addComponent(getEdgeHiddenLabel(), lw, lw, Short.MAX_VALUE)
 					)
-					.addGap(4)
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(LEADING, false)
 					.addComponent(getSelectionIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -610,9 +615,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 							.addComponent(getEdgeSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					)
 					.addGroup(layout.createSequentialGroup()
-							.addGap(4)
+							.addGap(gap)
 							.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-							.addGap(4)
+							.addGap(gap)
 					)
 					.addComponent(getHiddenIconLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGroup(layout.createSequentialGroup()
@@ -629,6 +634,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (selectionIconLabel == null) {
 			selectionIconLabel = new JLabel(ICON_CHECK_SQUARE);
 			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
+			selectionIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return selectionIconLabel;
@@ -637,7 +643,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel getHiddenIconLabel() {
 		if (hiddenIconLabel == null) {
 			hiddenIconLabel = new JLabel(ICON_EYE_SLASH);
-			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(16.0f));
+			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			hiddenIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return hiddenIconLabel;
@@ -648,6 +655,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeSelectionLabel = new JLabel();
 			nodeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeSelectionLabel.setFont(nodeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nodeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return nodeSelectionLabel;
@@ -658,6 +666,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeSelectionLabel = new JLabel();
 			edgeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeSelectionLabel.setFont(edgeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			edgeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return edgeSelectionLabel;
@@ -668,6 +677,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeHiddenLabel = new JLabel();
 			nodeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeHiddenLabel.setFont(nodeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			nodeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return nodeHiddenLabel;
@@ -678,17 +688,17 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeHiddenLabel = new JLabel();
 			edgeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeHiddenLabel.setFont(edgeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			edgeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
 		}
 		
 		return edgeHiddenLabel;
 	}
 	
-	JButton getBirdsEyeViewButton() {
+	JToggleButton getBirdsEyeViewButton() {
 		if (birdsEyeViewButton == null) {
-			birdsEyeViewButton = new JButton(ICON_CROSSHAIRS);
+			birdsEyeViewButton = new JToggleButton(ICON_CROSSHAIRS, getBirdsEyeViewPanel().isVisible());
 			
-			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f),
-					false);
+			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
 			
 			birdsEyeViewButton.addActionListener(evt -> {
 				getBirdsEyeViewPanel().setVisible(!getBirdsEyeViewPanel().isVisible());
@@ -879,19 +889,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 		private static final int ICON_SIZE = 22;
 		
-		private final Color[] selColors = new Color[] {
-				UIManager.getColor("Focus.color"),
-				UIManager.getColor("Focus.color")
-		};
-		private final Color[] unselColors = new Color[] {
-				UIManager.getColor("Button.disabledForeground"),
-				UIManager.getColor("Button.foreground")
-		};
-
-		private final TextIcon selectedIcon;
-		private final TextIcon unselectedIcon;
 		private final ImageIcon tipIcon;
-		
 		private final SelectionMode mode;
 		private final VisualProperty<Boolean> visualProperty;
 
@@ -904,9 +902,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
 			final String[] iconTexts = new String[] { IconUtil.SELECTION, mode.getUnselectedIconText() };
-			
-			selectedIcon = new TextIcon(iconTexts, iconFont, selColors, ICON_SIZE, ICON_SIZE);
-			unselectedIcon = new TextIcon(iconTexts, iconFont, unselColors, ICON_SIZE, ICON_SIZE);
 			
 			// Tool Tip
 			final URL tipImgUrl = mode.getToolTipImage() == null ? null :
@@ -943,12 +938,18 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		private void init() {
+			setText(mode.getSelectedIconText());
 			setToolTipText(mode.getText());
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			final Font font = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
+			styleToolBarButton(this, font);
+			
 			update();
 		}
 		
 		private void update() {
-			setIcon(isSelected() ? selectedIcon : unselectedIcon);
+			ViewUtil.updateToolBarStyle(this);
 		}
 	}
 }

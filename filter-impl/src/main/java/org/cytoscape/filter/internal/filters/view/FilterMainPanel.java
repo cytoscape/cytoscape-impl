@@ -1,29 +1,5 @@
 package org.cytoscape.filter.internal.filters.view;
 
-/*
- * #%L
- * Cytoscape Filters Impl (filter-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -66,6 +42,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.event.CyEventHelper;
@@ -107,6 +84,30 @@ import org.cytoscape.work.TaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Filters Impl (filter-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("serial")
 public class FilterMainPanel extends JPanel implements ActionListener,
 						       ItemListener, SetCurrentNetworkListener, NetworkAddedListener,NetworkDestroyedListener,
@@ -116,7 +117,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	// String constants used for separator entries in the attribute combobox
 	private static final String filtersSeparator = "-- Filters --";
 	private static final String attributesSeperator = "-- Table Columns --";
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final QuickFind quickFind;
 
@@ -136,7 +137,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	private DropDownMenuButton optionButton;
 	
 	private FilterSettingPanel currentFilterSettingPanel;
-	private HashMap<CompositeFilter,FilterSettingPanel> filter2SettingPanelMap = new HashMap<CompositeFilter,FilterSettingPanel>();
+	private HashMap<CompositeFilter,FilterSettingPanel> filter2SettingPanelMap = new HashMap<>();
 
 	/*
 	 * Icons used in this panel.
@@ -172,11 +173,12 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		setupOptionMenu();
 
 		optionButton = new DropDownMenuButton(new AbstractAction() {
-				public void actionPerformed(ActionEvent ae) {
-					DropDownMenuButton b = (DropDownMenuButton) ae.getSource();
-					optionMenu.show(b, 0, b.getHeight());
-				}
-			});
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				DropDownMenuButton b = (DropDownMenuButton) ae.getSource();
+				optionMenu.show(b, 0, b.getHeight());
+			}
+		});
 
 		optionButton.setToolTipText("Options...");
 		optionButton.setIcon(optionIcon);
@@ -360,7 +362,6 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 
 	}
 
-
 	private void updateFeedbackTableModel(){
 		String netName = null;
 		String nodeCount = null;
@@ -434,7 +435,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 	 * "String" nor "numeric" will be excluded
 	 */
 	private List<String> getCyAttributesList(final CyNetwork network, final String pType) {
-		final Vector<String> attributeList = new Vector<String>();
+		final Vector<String> attributeList = new Vector<>();
 		CyTable table = null;
 		
 		if (pType.equalsIgnoreCase("node") && network.getNodeCount() > 0) {
@@ -444,7 +445,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		}
 		
 		if (table != null) {
-			final Collection<CyColumn> columns = new HashSet<CyColumn>(table.getColumns());
+			final Collection<CyColumn> columns = new HashSet<>(table.getColumns());
 			
 			for (final CyColumn column : columns) {
 				if (column!= null){
@@ -1216,7 +1217,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		String newFilterName = null;
 		
 		while (true) {
-			Vector<String> nameVect = new Vector<String>();
+			Vector<String> nameVect = new Vector<>();
 			nameVect.add(tmpName);
 			
 			EditNameDialog theDialog = new EditNameDialog("Copy Filter", "Please enter a new Filter name:", nameVect, 300,170);
@@ -1258,7 +1259,7 @@ public class FilterMainPanel extends JPanel implements ActionListener,
 		String newFilterName = "";
 		
 		while (true) {
-			Vector<String> nameVect = new Vector<String>();
+			Vector<String> nameVect = new Vector<>();
 			nameVect.add(oldFilterName);
 			
 			EditNameDialog theDialog = new EditNameDialog("Edit Filter Name", "Please enter a new Filter name:", nameVect, 300,170);

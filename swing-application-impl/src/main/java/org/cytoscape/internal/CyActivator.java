@@ -6,6 +6,11 @@ import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeTyp
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isWindows;
 import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
@@ -114,7 +119,6 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -301,7 +305,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(ACCELERATOR, "cmd g");
-			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
 			props.setProperty(TITLE, "Grid");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			registerService(bc, arrangeGridTaskFactory, TaskFactory.class, props);
@@ -309,7 +313,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
 			props.setProperty(TITLE, "Cascade");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class, props);
@@ -317,7 +321,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
 			props.setProperty(TITLE, "Vertical Stack");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class, props);
@@ -325,7 +329,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Network Windows[8]");
+			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
 			props.setProperty(TITLE, "Side by Side");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class, props);
@@ -416,7 +420,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, netSearchMediator::addNetworkSearchTaskFactory, netSearchMediator::removeNetworkSearchTaskFactory, NetworkSearchTaskFactory.class);
 		registerServiceListener(bc, layoutMenuPopulator::addLayout, layoutMenuPopulator::removeLayout, CyLayoutAlgorithm.class);
 		
-		if (LookAndFeelUtil.isMac()) {
+		if (isMac()) {
 			try {
 				new MacCyActivator().start(bc);
 			} catch (Exception e) {
@@ -435,7 +439,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Full screen actions.  This is platform dependent
 		FullScreenAction fullScreenAction = null;
 		
-		if (LookAndFeelUtil.isMac() && MacFullScreenEnabler.supportsNativeFullScreenMode())
+		if (isMac() && MacFullScreenEnabler.supportsNativeFullScreenMode())
 			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
 		else
 			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
@@ -536,10 +540,9 @@ public class CyActivator extends AbstractCyActivator {
 		String lookAndFeel = props.getProperty("lookAndFeel");
 		
 		if (lookAndFeel == null) {
-			if (LookAndFeelUtil.isMac() || LookAndFeelUtil.isWindows())
+			if (isMac() || isWindows())
 				lookAndFeel = UIManager.getSystemLookAndFeelClassName();
 			else // Use Nimbus on *nix systems
-				// lookAndFeel = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 				lookAndFeel = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
 		}
 			
@@ -550,7 +553,7 @@ public class CyActivator extends AbstractCyActivator {
 			logger.error("Unexpected error", e);
 		}
 		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (isAquaLAF()) {
 			final boolean useScreenMenuBar;
 			String useScreenMenuBarVal = props.getProperty("useScreenMenuBar");
 			
@@ -584,7 +587,7 @@ public class CyActivator extends AbstractCyActivator {
 			
 			if (tsb != null) {
 				HSLColor hsl = new HSLColor(tsb);
-				tsb = hsl.adjustLuminance(LookAndFeelUtil.isAquaLAF() ? 94.0f : 90.0f);
+				tsb = hsl.adjustLuminance(isAquaLAF() ? 94.0f : 90.0f);
 			}
 			
 			final Color tableSelectionBg = tsb != null && !tsb.equals(Color.WHITE) ? tsb : new Color(222, 234, 252);
@@ -596,7 +599,7 @@ public class CyActivator extends AbstractCyActivator {
 			
 			Color originalDisabledFg = null;
 			
-			if (LookAndFeelUtil.isNimbusLAF()) {
+			if (isNimbusLAF()) {
 				originalDisabledFg = UIManager.getColor("nimbusDisabledText");
 				
 				// Because Nimbus colors are usually of class javax.swing.plaf.nimbus.DerivedColor
@@ -613,7 +616,10 @@ public class CyActivator extends AbstractCyActivator {
 				originalDisabledFg = Color.LIGHT_GRAY;
 			
 			// The default disabled color is usually too dark, so let's make it look more like the native one
-			final Color disabledFg = LookAndFeelUtil.isNimbusLAF() ? originalDisabledFg : originalDisabledFg.brighter();
+			Color disabledFg = originalDisabledFg;
+			
+			if (isWinLAF() || isAquaLAF())
+				disabledFg = disabledFg.brighter();
 			
 			UIManager.put("Label.disabledForeground", disabledFg);
 			UIManager.put("Button.disabledForeground", disabledFg);
@@ -640,7 +646,7 @@ public class CyActivator extends AbstractCyActivator {
 			
 			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
-			if (LookAndFeelUtil.isAquaLAF()) {
+			if (isAquaLAF()) {
 				// Mac OS X + Aqua:
 				UIManager.put(
 						"TableHeader.cellBorder",
@@ -659,7 +665,7 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Table.font", tableFont);
 				UIManager.put("Tree.font", tableFont);
-			} else if (LookAndFeelUtil.isWindows()) {
+			} else if (isWinLAF()) {
 				// Windows:
 				UIManager.put(
 						"TableHeader.cellBorder", 
@@ -679,7 +685,7 @@ public class CyActivator extends AbstractCyActivator {
 				
 				if (selBgColor != null)
 					UIManager.put("Focus.color", new Color(selBgColor.getRGB()));
-			} else if (LookAndFeelUtil.isNimbusLAF()) {
+			} else if (isNimbusLAF()) {
 				// Nimbus (usually Linux)
 				// Translating Nimbus default colors to more standard UIManager keys
 				// in order to make it easier for Cytoscape to reuse the LAF colors.
@@ -730,6 +736,18 @@ public class CyActivator extends AbstractCyActivator {
 						)
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
+			}
+			
+			// Created for Cytoscape
+			UIManager.put("ToggleButton.unselectedBackground", UIManager.getColor("Button.background"));
+			UIManager.put("ToggleButton.unselectedForeground", UIManager.getColor("Button.foreground"));
+			
+			if (isNimbusLAF()) {
+				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
+				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
+			} else {
+				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
+				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
 			}
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);

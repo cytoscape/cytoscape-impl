@@ -7,7 +7,11 @@ import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH_WEST;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -42,6 +46,7 @@ import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyShutdown;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
@@ -81,7 +86,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -116,7 +121,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private static final String SMALL_ICON = "/images/logo.png";
 	
 	@SuppressWarnings("unused")
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/**
 	 * The CyMenus object provides access to the all of the menus and toolbars
