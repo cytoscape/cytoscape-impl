@@ -73,23 +73,23 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 			return;
 		}
 
-		if (a != null && moveAnnotation == null && !annotationSelection.isMoving()) {
+		if (annotationSelection.isResizing()) {
+			// Resize
+			annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
+			// For resize, we *don't* want to pass things to the network canvas
+		} else if (a != null && moveAnnotation == null && !annotationSelection.isMoving()) {
 			// cyAnnotator.moveAnnotation(a);
 			// annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will
 			// want to move them also
 			// if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
-		} else if (!annotationSelection.isResizing() && a != null) {
+		} else if (a != null) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will
 			// want to move them also
 			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
-		} else if (annotationSelection.isResizing()) {
-			// Resize
-			annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
-			// For resize, we *don't* want to pass things to the network canvas
 		} else if (annotationSelection.isMoving()) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will

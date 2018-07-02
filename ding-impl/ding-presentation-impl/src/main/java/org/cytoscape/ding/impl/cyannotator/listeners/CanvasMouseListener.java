@@ -126,7 +126,7 @@ public class CanvasMouseListener implements MouseListener {
 				a.setOffset(e.getPoint());
 			}
 
-			// Let the network canvas know...
+			// Let the network canvas know -- NOTE: this messes up double-click for some reason.
 			networkCanvas.processMouseEvent(e);
 		}
 	}
