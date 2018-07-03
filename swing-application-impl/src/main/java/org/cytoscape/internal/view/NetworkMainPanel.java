@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -428,9 +429,14 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public void setSelectedNetworks(final Collection<CyNetwork> selectedNetworks) {
-		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false)))
+		if (Util.equalSets(selectedNetworks, getSelectedNetworks(false))) {
+			if (selectedNetworks.isEmpty()) {
+				// Even if there are no selected networks still make sure we don't cause a memory leak.
+				selectionHead = selectionTail = lastSelected = null;
+			}
 			return;
-		
+		}
+
 		ignoreSelectionEvents = true;
 		
 		try {
@@ -894,8 +900,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setCurrentNetwork(final CyNetwork newValue) {
-		if ((currentNetwork == null && newValue != null)
-				|| (currentNetwork != null && !currentNetwork.equals(newValue))) {
+		if (!Objects.equals(newValue, currentNetwork)) {
 			final CyNetwork oldValue = currentNetwork;
 			currentNetwork = newValue;
 			
@@ -988,8 +993,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 
 	private void selectRange(final AbstractNetworkPanel<?> target) {
-		if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected()
-				&& selectionHead != target) {
+		if (selectionHead != null && selectionHead.isVisible() && selectionHead.isSelected() && selectionHead != target) {
 			final Set<CyRootNetwork> oldRootSelection = getSelectedRootNetworks();
 			final Set<CyNetwork> oldSubSelection = getSelectedNetworks(false);
 			boolean changed = false;
