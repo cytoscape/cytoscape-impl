@@ -42,6 +42,7 @@ import org.cytoscape.model.events.RemovedNodesListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -144,8 +145,14 @@ public class NetworkMediator implements NetworkAddedListener, NetworkViewAddedLi
 	@Override
 	public void handleEvent(final NetworkAboutToBeDestroyedEvent e) {
 		if (e.getNetwork() instanceof CySubNetwork) {
-			networkMainPanel.removeNetwork((CySubNetwork) e.getNetwork());
+			CySubNetwork network = (CySubNetwork) e.getNetwork();
+			networkMainPanel.removeNetwork(network);
 			networkMainPanel.updateNodeEdgeCount();
+			
+			CyRootNetwork rootNetwork = network.getRootNetwork();
+			if(rootNetwork.getSubNetworkList().size() == 1 && rootNetwork.equals(networkMainPanel.getCurrentNetwork())) {
+				networkMainPanel.setCurrentNetwork(null);
+			}
 		}
 	}
 
