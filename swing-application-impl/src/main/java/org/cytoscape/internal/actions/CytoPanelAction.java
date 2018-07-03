@@ -62,11 +62,12 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent ev) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 
-		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.HIDE)			// #4100
+		// #4100 if west is hidden show southwest must show west
+		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.HIDE)		
 		{
 			CytoPanel west = desktop.getCytoPanel(CytoPanelName.WEST);
 			CytoPanelState westState = west.getState();
-			if (	westState == CytoPanelState.HIDE)
+			if (westState == CytoPanelState.HIDE)
 				west.setState(CytoPanelState.DOCK);
 		}
 		if (curState == CytoPanelState.HIDE)
@@ -82,6 +83,14 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void menuSelected(MenuEvent me) {
 		CytoPanelState curState = desktop.getCytoPanel(position).getState();
 		
+		// #4100 if west is hidden, southwest must be hidden
+		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.DOCK)		
+		{
+			CytoPanelState westState = desktop.getCytoPanel(CytoPanelNameInternal.WEST).getState();
+			if (westState == CytoPanelState.HIDE)
+				curState = CytoPanelState.HIDE;
+		}
+			
 		if (curState == CytoPanelState.HIDE)
 			putValue(Action.NAME, SHOW + position.getTitle());
 		else
