@@ -25,6 +25,15 @@ package org.cytoscape.browser.internal.view;
  */
 
 
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellEditor;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -35,15 +44,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableCellEditor;
 
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -61,7 +61,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 		textArea.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
-		Font f = textArea.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()); 		// #4145
+		Font f = textArea.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()); 		//   #4145
 		textArea.setFont(f);
 	}
 

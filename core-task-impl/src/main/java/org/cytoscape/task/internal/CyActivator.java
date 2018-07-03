@@ -879,7 +879,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Undirected)");
-			// props.setProperty(COMMAND, "select first neighbors undirected");
+			// props.setProperty(C	OMMAND, "select first neighbors undirected");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectFirstNeighborsTaskFactory.class, props);
