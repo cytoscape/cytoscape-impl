@@ -48,18 +48,15 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	}
 
 	@Override
-	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
+	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 
-		if (type.equals(ShapeAnnotation.class)) {
-			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView, argMap, getActiveWindow());
-			a.update();
-			return (ShapeAnnotation) a;
-		} 
+		if (type.equals(ShapeAnnotation.class))
+			return new ShapeAnnotationImpl(dView, argMap, getActiveWindow());
+
 		return null;
 	}
 }

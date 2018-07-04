@@ -6,7 +6,6 @@ import java.util.Map;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
@@ -52,23 +51,16 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	}
 
 	@Override
-	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view,
-			Map<String, String> argMap) {
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 
 		if (ImageAnnotation.class.equals(clazz)) {
-			final CustomGraphicsManager customGraphicsManager = serviceRegistrar
-					.getService(CustomGraphicsManager.class);
-			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView, argMap,
-					customGraphicsManager, getActiveWindow());
-			a.update();
-
-			return (ImageAnnotation) a;
-		} else {
-			return null;
+			final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+			return new ImageAnnotationImpl(dView, argMap, customGraphicsManager, getActiveWindow());
 		}
+		return null;
 	}
 }

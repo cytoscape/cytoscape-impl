@@ -48,20 +48,15 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 	}
 
 	@Override
-	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
+	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 		
-		if (type.equals(BoundedTextAnnotation.class)) {
-			final BoundedTextAnnotationImpl a = new BoundedTextAnnotationImpl(dView, argMap, getActiveWindow());
-			a.update();
-			
-			return (BoundedTextAnnotation) a;
-		} else {
-			return null;
-		}
+		if (type.equals(BoundedTextAnnotation.class))
+			return new BoundedTextAnnotationImpl(dView, argMap, getActiveWindow());
+		
+		return null;
 	}
 }

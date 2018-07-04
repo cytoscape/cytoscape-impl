@@ -47,20 +47,15 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 	}
 
 	@Override
-	public GroupAnnotation createAnnotation(Class<? extends GroupAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
+	public GroupAnnotation createAnnotation(Class<? extends GroupAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 
-		if (type.equals(GroupAnnotation.class)) {
-			final GroupAnnotationImpl a = new GroupAnnotationImpl(dView, argMap, getActiveWindow());
-			a.update();
-			
-			return (GroupAnnotation) a;
-		} else {
-			return null;
-		}
+		if (type.equals(GroupAnnotation.class))
+			return new GroupAnnotationImpl(dView, argMap, getActiveWindow());
+		
+		return null;
 	}
 }

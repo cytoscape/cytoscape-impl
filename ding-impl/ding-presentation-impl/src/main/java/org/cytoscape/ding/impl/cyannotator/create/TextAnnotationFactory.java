@@ -48,18 +48,15 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 	}
 
 	@Override
-	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
+	public TextAnnotation createAnnotation(Class<? extends TextAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 		
-		if (type.equals(TextAnnotation.class)) {
-			final TextAnnotationImpl a = new TextAnnotationImpl(dView, argMap, getActiveWindow());
-			a.update();
-			return (TextAnnotation) a;
-		}
+		if (type.equals(TextAnnotation.class))
+			return new TextAnnotationImpl(dView, argMap, getActiveWindow());
+		
 		return null;
 	}
 }

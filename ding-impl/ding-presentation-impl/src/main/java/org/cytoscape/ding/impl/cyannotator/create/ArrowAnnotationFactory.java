@@ -48,15 +48,14 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 	}
 
 	@Override
-	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
+	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view, Map<String, String> argMap) {
 		if (!(view instanceof DGraphView))
 			return null;
 
 		DGraphView dView = (DGraphView) view;
 
 		if (type.equals(ArrowAnnotation.class))
-			return (ArrowAnnotation) (new ArrowAnnotationImpl(dView, argMap, getActiveWindow()));
+			return new ArrowAnnotationImpl(dView, argMap, getActiveWindow());
 
 		return null;
 	}
