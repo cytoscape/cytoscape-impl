@@ -48,13 +48,16 @@ public class AnnotationFactoryManager {
 	}
 
 	// This method is used to create annotations when we're reading the serialization from a saved
-	// session.  Note that we need to do some funky things with the type to support backwares compatibility
-	public Annotation createAnnotation(String type, CyNetworkView view, Map<String,String> argMap) {
-		Class clazz = null;
-		try{
+	// session.  Note that we need to do some funky things with the type to support backwards compatibility
+	public Annotation createAnnotation(String type, CyNetworkView view, Map<String, String> argMap) {
+		Class<?> clazz = null;
+		
+		try {
 			clazz = Class.forName(type);
+			
 			if (Annotation.class.isAssignableFrom(clazz))
 				return createAnnotation(clazz, view, argMap);
+			
 			return null;
 		} catch (Exception e) {
 			clazz = null;
@@ -78,25 +81,26 @@ public class AnnotationFactoryManager {
 		return null;
 	}
 
-	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String,String> argMap) {
+	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String, String> argMap) {
 		Annotation annotation = null;
-		for (AnnotationFactory factory: annotationFactories) {
-			annotation =  factory.createAnnotation(type, view, argMap);
-			if (annotation != null) {
+		
+		for (AnnotationFactory<? extends Annotation> factory : annotationFactories) {
+			annotation = factory.createAnnotation(type, view, argMap);
+
+			if (annotation != null)
 				break;
-			}
 		}
 
 		return annotation;
 	}
 
-	public void addAnnotationFactory(AnnotationFactory factory, Map props) {
-		if ( factory != null )
+	public void addAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
 			annotationFactories.add(factory);
 	}
 
-	public void removeAnnotationFactory(AnnotationFactory factory, Map props) {
-		if ( factory != null )
+	public void removeAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
 			annotationFactories.remove(factory);
 	}
 	

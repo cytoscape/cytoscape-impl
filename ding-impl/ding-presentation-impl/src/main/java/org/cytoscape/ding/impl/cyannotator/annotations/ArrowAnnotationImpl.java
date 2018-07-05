@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -44,12 +20,35 @@ import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
@@ -238,7 +237,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 		updateBounds();
 		if (super.name == null)
-			super.name = "ArrowAnnotation_"+instanceCount;
+			super.name = "ArrowAnnotation_" + instanceCount;
 		instanceCount++;
 	}
 	
@@ -247,7 +246,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		return ArrowAnnotation.class;
 	}
 
-	public Map<String,String> getArgMap() {
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,ArrowAnnotation.class.getName());
 		if (this.lineColor != null)
@@ -282,30 +282,38 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		return argMap;
 	}
 
+	@Override
 	public Annotation getSource() { return this.source; }
+	@Override
 	public void setSource(Annotation source) { 
 		if (this.source != null)
 			((DingAnnotation)source).removeArrow(this);
 		this.source = (DingAnnotation)source; 
-		source.addArrow(this);
+		
+		if (source != null)
+			source.addArrow(this);
 
 		updateBounds();
 		update();
 	}
-
+	
+	@Override
 	public Object getTarget() { return this.target; }
+	@Override
 	public void setTarget(Annotation target) { 
 		this.target = target; 
 		updateBounds();
 		update();
 	}
 
+	@Override
 	public void setTarget(CyNode target) { 
 		this.target = target; 
 		updateBounds();
 		update();
 	}
 
+	@Override
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
 		this.target = ViewUtils.getNodeCoordinates(view, target.getX(), target.getY()); 
@@ -313,15 +321,19 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public double getLineWidth() { return (double)lineWidth; }
+	@Override
 	public void setLineWidth(double width) { this.lineWidth = (float)width; update();}
 
+	@Override
 	public double getArrowSize(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceSize; 
 		else
 			return this.targetSize; 
 	}
+	@Override
 	public void setArrowSize(ArrowEnd end, double width) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceSize = width; 
@@ -330,6 +342,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public String getArrowType(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceType.arrowName(); 
@@ -337,6 +350,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetType.arrowName(); 
 	}
 
+	@Override
 	public void setArrowType(ArrowEnd end, String type) { 
 		ArrowType aType = null;
 
@@ -355,6 +369,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public AnchorType getAnchorType(ArrowEnd end) {
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceAnchorType; 
@@ -362,6 +377,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetAnchorType; 
 	}
 
+	@Override
 	public void setAnchorType(ArrowEnd end, AnchorType type) {
 		if (end == ArrowEnd.SOURCE)
 			this.sourceAnchorType = type;
@@ -370,15 +386,18 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public Paint getLineColor() { 
 		return this.lineColor;
 	}
 
+	@Override
 	public void setLineColor(Paint clr) { 
 		this.lineColor = clr;
 		update();
 	}
 
+	@Override
 	public Paint getArrowColor(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceColor; 
@@ -386,6 +405,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetColor; 
 	}
 
+	@Override
 	public void setArrowColor(ArrowEnd end, Paint color) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceColor = color; 

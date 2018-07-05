@@ -26,7 +26,7 @@ import org.cytoscape.view.presentation.events.AnnotationsRemovedEvent;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -55,24 +55,21 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**********************************************************************************
-	 *                   AnnotationManager implementation methods                     *
-	 **********************************************************************************/
 	@Override
 	public void addAnnotation(final Annotation annotation) {
 		if (!(annotation instanceof DingAnnotation))
 			return;
 
-		DingAnnotation dAnnotation = (DingAnnotation)annotation;
+		DingAnnotation dAnnotation = (DingAnnotation) annotation;
 		CyNetworkView view = annotation.getNetworkView();
 
 		invokeOnEDTAndWait(() -> {
 			((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
-			if (dAnnotation.getCanvas() != null) {
+			
+			if (dAnnotation.getCanvas() != null)
 				dAnnotation.getCanvas().add(dAnnotation.getComponent());
-			} else {
+			else
 				((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
-			}
 		});
 		
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
@@ -81,13 +78,15 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	 
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		Map<DGraphView,List<DingAnnotation>> annotationsByView = groupByView(annotations);
-		if(annotationsByView.isEmpty())
+		Map<DGraphView, List<DingAnnotation>> annotationsByView = groupByView(annotations);
+		
+		if (annotationsByView.isEmpty())
 			return;
 		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
-				Map<ArbitraryGraphicsCanvas,List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
+				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
+						viewAnnotations);
 				view.getCyAnnotator().addAnnotations(viewAnnotations);
 				annotationsByCanvas.forEach(ArbitraryGraphicsCanvas::addAnnotations);
 			});
@@ -104,6 +103,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	@Override
 	public void removeAnnotation(final Annotation annotation) {
 		CyNetworkView view = annotation.getNetworkView();
+		
 		if (!(view instanceof DGraphView))
 			return;
 		
@@ -118,21 +118,23 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 	@Override
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
-		Map<DGraphView,List<DingAnnotation>> annotationsByView = groupByView(annotations);
-		if(annotationsByView.isEmpty())
+		Map<DGraphView, List<DingAnnotation>> annotationsByView = groupByView(annotations);
+		
+		if (annotationsByView.isEmpty())
 			return;
 		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
-				Map<ArbitraryGraphicsCanvas,List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
+				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
+						viewAnnotations);
 				annotationsByCanvas.forEach((canvas, dingAnnotations) -> {
 
 					// The following code is a batch version of Annotation.removeAnnotation()
-					for(DingAnnotation a : dingAnnotations) {
+					for (DingAnnotation a : dingAnnotations) {
 						GroupAnnotation parent = a.getGroupParent();
-						if(parent != null) {
+
+						if (parent != null)
 							parent.removeMember(a);
-						}
 					}
 
 					List<DingAnnotation> arrows = getArrows(dingAnnotations);
@@ -178,5 +180,4 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			return ((DGraphView)networkView).getCyAnnotator().getAnnotations();
 		return null;
 	}
-
 }

@@ -3,9 +3,23 @@ package org.cytoscape.internal.view;
 import static org.cytoscape.application.swing.CytoPanelState.DOCK;
 import static org.cytoscape.application.swing.CytoPanelState.FLOAT;
 import static org.cytoscape.application.swing.CytoPanelState.HIDE;
-import static org.cytoscape.internal.view.CytoPanelNameInternal.*;
-import static org.cytoscape.internal.view.CytoPanelUtil.*;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
+import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
+import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
+import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
+import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
+import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
+import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
+import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
+import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -318,7 +332,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		update();
 	}
 	
-	private JTabbedPane getTabbedPane() {
+	JTabbedPane getTabbedPane() {
 		if (tabbedPane == null) {
 			tabbedPane = new JTabbedPane(tabPlacement);
 			tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

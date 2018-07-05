@@ -1,12 +1,25 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
+import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,89 +37,48 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * #L%
  */
 
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-
-
 public interface DingAnnotation extends Annotation {
-	public static final String BACKGROUND =  "background";
-	public static final String FOREGROUND =  "foreground";
 
-	public String getCanvasName();
-	public void setCanvas(String canvas);
-	public void changeCanvas(String canvas);
-	public CyNetworkView getNetworkView();
-	public ArbitraryGraphicsCanvas getCanvas();
+	void changeCanvas(String canvas);
 
-	public JComponent getComponent();
-	public void addComponent(JComponent canvas);
+	ArbitraryGraphicsCanvas getCanvas();
 
-	public UUID getUUID();
+	JComponent getComponent();
 
-	public CyAnnotator getCyAnnotator();
+	void addComponent(JComponent canvas);
 
-	public void moveAnnotation(Point2D location);
-	public void moveAnnotationRelative(Point2D location);
-	public void removeAnnotation();
+	CyAnnotator getCyAnnotator();
 
-	public double getZoom();
-	public void setZoom(double zoom);
+	void moveAnnotationRelative(Point2D location);
 
-	public String getName();
-	public void setName(String name);
+	void drawAnnotation(Graphics g, double x, double y, double scaleFactor);
 
-	public double getSpecificZoom();
-	public void setSpecificZoom(double zoom);
+	boolean usedForPreviews();
 
-	public boolean isSelected();
-	public void setSelected(boolean selected);
+	void setUsedForPreviews(boolean v);
 
-	public void addArrow(ArrowAnnotation arrow);
-	public void removeArrow(ArrowAnnotation arrow);
-	public Set<ArrowAnnotation> getArrows();
+	void contentChanged();
 
-	public Map<String,String> getArgMap();
-
-	public void drawAnnotation(Graphics g, double x, 
-	                           double y, double scaleFactor);
-
-	public boolean usedForPreviews();
-	public void setUsedForPreviews(boolean v);
-
-	public void update();
-	public void contentChanged();
-
-	public JDialog getModifyDialog();
+	JDialog getModifyDialog();
 
 	// Overrides of Component
-	public void paint(Graphics g);
-	public Point getLocation();
+	void paint(Graphics g);
+
+	Point getLocation();
 
 	// Group support
-	public void setGroupParent(GroupAnnotation parent);
-	public GroupAnnotation getGroupParent();
+	void setGroupParent(GroupAnnotation parent);
+
+	GroupAnnotation getGroupParent();
 
 	// Drag support
-	public void setOffset(Point2D offset);
-	public Point2D getOffset();
+	void setOffset(Point2D offset);
 
-	public void saveBounds();
-	public Rectangle2D getInitialBounds();
+	Point2D getOffset();
+
+	void saveBounds();
+
+	Rectangle2D getInitialBounds();
 	
 	Class<? extends Annotation> getType();
 }

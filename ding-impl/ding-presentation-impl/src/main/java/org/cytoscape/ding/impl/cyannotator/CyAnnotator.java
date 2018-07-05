@@ -1,27 +1,4 @@
 package org.cytoscape.ding.impl.cyannotator;
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
 
 import java.awt.Component;
 import java.awt.geom.Point2D;
@@ -50,8 +27,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasKeyListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseMotionListener;
@@ -63,12 +38,34 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-// import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-// import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.work.Task;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CyAnnotator {
+	
 	private static final String ANNOTATION_ATTRIBUTE="__Annotations";
 
 	private final DGraphView view;
@@ -78,14 +75,13 @@ public class CyAnnotator {
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
 	private final AnnotationSelection annotationSelection;
-	private MyViewportChangeListener myViewportChangeListener=null;
-	private AbstractAnnotation resizing = null;
-	private ArrowAnnotationImpl repositioning = null;
-	private DingAnnotation moving = null;
-	private Point2D mousePressed = null;
+	private MyViewportChangeListener myViewportChangeListener;
+	private AbstractAnnotation resizing;
+	private ArrowAnnotationImpl repositioning;
+	private DingAnnotation moving;
+	private Point2D mousePressed;
 
-	private Map<DingAnnotation, Map<String,String>> annotationMap = 
-	        new HashMap<DingAnnotation, Map<String,String>>();
+	private Map<DingAnnotation, Map<String, String>> annotationMap = new HashMap<>();
 
 	private CanvasMouseMotionListener mouseMotionListener;
 	private CanvasMouseListener mouseListener;
@@ -94,18 +90,16 @@ public class CyAnnotator {
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 
-	public CyAnnotator(final DGraphView view, final AnnotationFactoryManager annotationFactoryManager, 
-	                   final CyServiceRegistrar registrar) {
+	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager,
+			CyServiceRegistrar registrar) {
 		this.view = view;
 		this.registrar = registrar;
-		this.foreGroundCanvas = 
-			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.backGroundCanvas = 
-			(ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
+		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
+		this.backGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 		this.networkCanvas = view.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		annotationSelection = new AnnotationSelection(this);
-		initListeners();  
+		initListeners();
 	}
 
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -145,8 +139,7 @@ public class CyAnnotator {
 	
 	public void dispose() {
 		// Bug #1178: Swing's focus subsystem is leaking foreGroundCanvas.
-		// We need to remove all our listeners from that class to ensure we
-		// don't leak anything further.
+		// We need to remove all our listeners from that class to ensure we don't leak anything further.
 		foreGroundCanvas.removeMouseListener(mouseListener);
 		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
 		foreGroundCanvas.removeKeyListener(keyListener);
@@ -161,41 +154,31 @@ public class CyAnnotator {
 	public void loadAnnotations() {
 		// Make sure we're on the EDT since we directly add annotations to the canvas
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() { loadAnnotations(); }
-			});
+			SwingUtilities.invokeLater(() -> loadAnnotations());
 			return;
 		}
 
 		// System.out.println("Loading annotations");
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
-		final CyTable networkAttributes = 
-			network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
+		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
-		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null) {
-			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE,
-			                                   String.class,false,Collections.EMPTY_LIST);
-		}
+		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null)
+			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.EMPTY_LIST);
 
 		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).
-		                                          getList(ANNOTATION_ATTRIBUTE,String.class);
-
-		List<Map<String,String>> arrowList = 
-		    new ArrayList<Map<String, String>>(); // Keep a list of arrows
-
-		Map<GroupAnnotation,String> groupMap = 
-		    new HashMap<GroupAnnotation, String>(); // Keep a map of groups and uuids
-
-		Map<String, Annotation> uuidMap = new HashMap<String, Annotation> ();
-
-		Map<Object,Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+				getList(ANNOTATION_ATTRIBUTE,String.class);
+		List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
+		Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
+		Map<String, Annotation> uuidMap = new HashMap<>();
+		Map<Object, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 
 		if (annotations != null) {
 			for (String s: annotations) {
 				Map<String, String> argMap = createArgMap(s);
 				DingAnnotation annotation = null;
 				String type = argMap.get("type");
+				
 				if (type == null)
 					continue;
 
@@ -205,6 +188,7 @@ public class CyAnnotator {
 				}
 
 				Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
+				
 				if (a == null || !(a instanceof DingAnnotation))
 					continue;
 
@@ -223,6 +207,7 @@ public class CyAnnotator {
 
 				if (argMap.containsKey(Annotation.Z)) {
 					int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
+					
 					if (zOrder >= 0) {
 						if (!zOrderMap.containsKey(canvas))
 							zOrderMap.put(canvas, new TreeMap<>());
@@ -244,6 +229,7 @@ public class CyAnnotator {
 			for (GroupAnnotation group: groupMap.keySet()) {
 				String uuids = groupMap.get(group);
 				String[] uuidArray = uuids.split(",");
+				
 				for (String uuid: uuidArray) {
 					if (uuidMap.containsKey(uuid)) {
 						Annotation child = uuidMap.get(uuid);
@@ -253,13 +239,15 @@ public class CyAnnotator {
 			}
 
 			// Now, handle all of our arrows
-			for (Map<String,String> argMap: arrowList) {
+			for (Map<String, String> argMap : arrowList) {
 				String type = argMap.get("type");
 				Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
+				
 				if (annotation instanceof ArrowAnnotationImpl) {
 					ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
 					arrow.getSource().addArrow(arrow);
 					Object canvas;
+					
 					if (arrow.getCanvas() != null) {
 						arrow.getCanvas().add(arrow.getComponent());
 						canvas = arrow.getCanvas();
@@ -270,6 +258,7 @@ public class CyAnnotator {
 
 					if (argMap.containsKey(Annotation.Z)) {
 						int zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
+						
 						if (zOrder >= 0) {
 							if (!zOrderMap.containsKey(canvas))
 								zOrderMap.put(canvas, new TreeMap<>());
@@ -286,8 +275,8 @@ public class CyAnnotator {
 			// We use a TreeMap so that the keys (the zOrder are ordered)
 			for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
 				for (Integer zOrder: map.keySet()) {
-					// System.out.println("zOrder = "+zOrder);
 					DingAnnotation a = map.get(zOrder);
+					
 					if (a.getCanvas() != null)
 						a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
 					else
@@ -321,14 +310,12 @@ public class CyAnnotator {
  	 */
 	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
-		for (DingAnnotation a: annotationMap.keySet()) {
-			// System.out.println("Looking at component "+a.toString());
+		
+		for (DingAnnotation a : annotationMap.keySet()) {
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
-				// System.out.println("Found component "+a.toString()+".  Z-order = "+cnvs.getComponentZOrder(a.getComponent()));
-				if ((top == null) || 
-				    (cnvs.getComponentZOrder(top.getComponent()) >
-             cnvs.getComponentZOrder(a.getComponent()))) {
-						top = a;
+				if ((top == null)
+						|| (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
+					top = a;
 				}
 			}
 		}
@@ -457,30 +444,28 @@ public class CyAnnotator {
 
 	public List<Annotation> getAnnotations() {
 		if (annotationMap.keySet() != null && annotationMap.keySet().size() > 0)
-			return new ArrayList<Annotation>(annotationMap.keySet());
+			return new ArrayList<>(annotationMap.keySet());
+		
 		return null;
 	}
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {setSelectedAnnotation(a, selected);}
-			});
+			SwingUtilities.invokeLater(() -> setSelectedAnnotation(a, selected));
 			return;
 		}
 
 		if (selected) {
 			requestFocusInWindow(a);
 			annotationSelection.add(a);
-		} else
+		} else {
 			annotationSelection.remove(a);
+		}
 	}
 
 	public void clearSelectedAnnotations() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {clearSelectedAnnotations();}
-			});
+			SwingUtilities.invokeLater(() -> clearSelectedAnnotations());
 			return;
 		}
 
@@ -488,7 +473,7 @@ public class CyAnnotator {
 		boolean repaintBackGround = false;
 
 		// We need to get a copy of the set to avoid a concurrent modification
-		for (DingAnnotation a: new ArrayList<DingAnnotation>(annotationSelection.getSelectedAnnotations())) {
+		for (DingAnnotation a: new ArrayList<>(annotationSelection.getSelectedAnnotations())) {
 			a.setSelected(false);
 			if (a.getCanvasName().equals(Annotation.FOREGROUND))
 				repaintForeGround = true;
@@ -548,7 +533,7 @@ public class CyAnnotator {
 
 	private void updateNetworkAttributes(CyNetwork network) {
 		// Convert the annotation to a list
-		List<Map<String,String>> networkAnnotations = new ArrayList<Map<String, String>>();
+		List<Map<String,String>> networkAnnotations = new ArrayList<>();
 		for (DingAnnotation annotation: annotationMap.keySet()) {
 			if (view.getModel().equals(network))
 				networkAnnotations.add(annotationMap.get(annotation));
@@ -565,7 +550,7 @@ public class CyAnnotator {
 	}
 
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 
 		if (networkAnnotations == null || networkAnnotations.size() == 0) return result;
 
@@ -586,7 +571,7 @@ public class CyAnnotator {
 	}
 
 	private Map<String, String> createArgMap(String mapstring) {
-		Map<String, String> result = new HashMap<String, String>();
+		Map<String, String> result = new HashMap<>();
 		String[] argList = mapstring.split("[|]");
 		if (argList.length == 0) return result;
 
@@ -601,9 +586,7 @@ public class CyAnnotator {
 
 	private void requestFocusInWindow(final Annotation annotation) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() { requestFocusInWindow(annotation); }
-			});
+			SwingUtilities.invokeLater(() -> requestFocusInWindow(annotation));
 			return;
 		}
 		if (annotation != null && annotation instanceof DingAnnotation) {
