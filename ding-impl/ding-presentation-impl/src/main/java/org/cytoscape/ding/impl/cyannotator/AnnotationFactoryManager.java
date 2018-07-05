@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -28,9 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.cytoscape.view.model.CyNetworkView; 
-import org.cytoscape.ding.impl.DGraphView;
-
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -39,19 +39,12 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
-
 public class AnnotationFactoryManager {
 
-	List<AnnotationFactory> annotationFactories;
+	private List<AnnotationFactory<? extends Annotation>> annotationFactories;
 
 	public AnnotationFactoryManager() {
-		annotationFactories = new CopyOnWriteArrayList<AnnotationFactory>();
+		annotationFactories = new CopyOnWriteArrayList<>();
 	}
 
 	// This method is used to create annotations when we're reading the serialization from a saved
@@ -105,5 +98,9 @@ public class AnnotationFactoryManager {
 	public void removeAnnotationFactory(AnnotationFactory factory, Map props) {
 		if ( factory != null )
 			annotationFactories.remove(factory);
+	}
+	
+	public List<AnnotationFactory<?>> getAnnotationFactories() {
+		return new ArrayList<>(annotationFactories);
 	}
 }

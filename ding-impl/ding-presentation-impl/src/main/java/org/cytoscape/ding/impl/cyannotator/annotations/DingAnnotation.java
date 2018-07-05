@@ -107,4 +107,6 @@ public interface DingAnnotation extends Annotation {
 
 	public void saveBounds();
 	public Rectangle2D getInitialBounds();
+	
+	Class<? extends Annotation> getType();
 }

@@ -240,7 +240,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (super.name == null)
 			super.name = "ArrowAnnotation_"+instanceCount;
 		instanceCount++;
-  }
+	}
+	
+	@Override
+	public Class<? extends Annotation> getType() {
+		return ArrowAnnotation.class;
+	}
 
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();

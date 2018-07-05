@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl.cyannotator;
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,6 +41,7 @@ import java.util.TreeMap;
 import java.util.UUID;
 
 import javax.swing.SwingUtilities;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
@@ -89,6 +91,8 @@ public class CyAnnotator {
 	private CanvasMouseListener mouseListener;
 	private CanvasKeyListener keyListener;
 	private CanvasMouseWheelListener mouseWheelListener;
+	
+	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 
 	public CyAnnotator(final DGraphView view, final AnnotationFactoryManager annotationFactoryManager, 
 	                   final CyServiceRegistrar registrar) {
@@ -104,6 +108,22 @@ public class CyAnnotator {
 		initListeners();  
 	}
 
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		propChangeSupport.addPropertyChangeListener(listener);
+	}
+
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		propChangeSupport.removePropertyChangeListener(listener);
+	}
+
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propChangeSupport.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		propChangeSupport.removePropertyChangeListener(propertyName, listener);
+	}
+	
 	private void initListeners() {
 		mouseListener = new CanvasMouseListener(this, view);
 		mouseMotionListener = new CanvasMouseMotionListener(this, view);
@@ -391,33 +411,48 @@ public class CyAnnotator {
 	public void addAnnotation(Annotation annotation) {
 		if (!(annotation instanceof DingAnnotation))
 			return;
-		DingAnnotation dingAnnotation = (DingAnnotation)annotation;
+		
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		
+		DingAnnotation dingAnnotation = (DingAnnotation) annotation;
 		annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
 		updateNetworkAttributes(view.getModel());
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
 	}
 	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		for(Annotation annotation : annotations) {
-			if(annotation instanceof DingAnnotation) {
-				DingAnnotation dingAnnotation = (DingAnnotation)annotation;
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		
+		for (Annotation annotation : annotations) {
+			if (annotation instanceof DingAnnotation) {
+				DingAnnotation dingAnnotation = (DingAnnotation) annotation;
 				annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
 			}
 		}
+		
 		updateNetworkAttributes(view.getModel());
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
 	}
 
 	public void removeAnnotation(Annotation annotation) {
-		annotationMap.remove((DingAnnotation)annotation);
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		
+		annotationMap.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
 		updateNetworkAttributes(view.getModel());
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
 	}
-	
+
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
-		for(Annotation annotation : annotations) {
-			annotationMap.remove((DingAnnotation)annotation);
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		
+		for (Annotation annotation : annotations) {
+			annotationMap.remove((DingAnnotation) annotation);
 			annotationSelection.remove(annotation);
 		}
+		
 		updateNetworkAttributes(view.getModel());
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
 	}
 
 	public List<Annotation> getAnnotations() {

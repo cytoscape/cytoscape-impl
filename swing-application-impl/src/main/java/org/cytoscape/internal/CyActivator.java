@@ -374,8 +374,6 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		registerAllServices(bc, cytoscapeDesktop);
-		registerAllServices(bc, netMainPanel);
-		registerAllServices(bc, commandToolPanel);
 		registerAllServices(bc, netMediator);
 		registerAllServices(bc, netViewMediator);
 		registerService(bc, undoMonitor, SetCurrentNetworkViewListener.class);
@@ -419,6 +417,11 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, netMediator::addCyAction, netMediator::removeCyAction, CyAction.class, CONTEXT_MENU_FILTER);
 		registerServiceListener(bc, netSearchMediator::addNetworkSearchTaskFactory, netSearchMediator::removeNetworkSearchTaskFactory, NetworkSearchTaskFactory.class);
 		registerServiceListener(bc, layoutMenuPopulator::addLayout, layoutMenuPopulator::removeLayout, CyLayoutAlgorithm.class);
+		
+		// Only register CytoPanelComponents after corresponding OSGI listeners for CytoscapeDesktop
+		// are registered, otherwise the CytoPanelComponent order is messed up ("Network" must be the first tab!)
+		registerAllServices(bc, netMainPanel);
+		registerAllServices(bc, commandToolPanel);
 		
 		if (isMac()) {
 			try {
@@ -469,6 +472,7 @@ public class CyActivator extends AbstractCyActivator {
 		gridViewToggleModel = new GridViewToggleModel(GridViewToggleModel.Mode.VIEW);
 		netViewMainPanel = new NetworkViewMainPanel(gridViewToggleModel, cytoscapeMenus, viewComparator, serviceRegistrar);
 		netViewMediator = new NetworkViewMediator(netViewMainPanel, netMediator, gridViewToggleModel, serviceRegistrar);
+		
 		cytoscapeDesktop = new CytoscapeDesktop(cytoscapeMenus, netViewMediator, serviceRegistrar);
 
 		final SessionIO sessionIO = new SessionIO();

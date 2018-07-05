@@ -119,14 +119,20 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		instanceCount++;
 	}
 
-	public Map<String,String> getArgMap() {
+	@Override
+	public Class<? extends Annotation> getType() {
+		return BoundedTextAnnotation.class;
+	}
+	
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,BoundedTextAnnotation.class.getName());
-		argMap.put(TEXT,this.text);
-		argMap.put(COLOR,ViewUtils.convertColor((Paint)this.textColor));
-		argMap.put(FONTFAMILY,this.font.getFamily());
-		argMap.put(FONTSIZE,Integer.toString(this.font.getSize()));
-		argMap.put(FONTSTYLE,Integer.toString(this.font.getStyle()));
+		argMap.put(TYPE, BoundedTextAnnotation.class.getName());
+		argMap.put(TEXT, this.text);
+		argMap.put(COLOR, ViewUtils.convertColor((Paint) this.textColor));
+		argMap.put(FONTFAMILY, this.font.getFamily());
+		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
+		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
 		return argMap;
 	}
 

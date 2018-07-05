@@ -73,13 +73,13 @@ public class LoadImageDialog extends JDialog {
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public LoadImageDialog(final DGraphView view, final Point2D location, final CustomGraphicsManager cgm,
+	public LoadImageDialog(final DGraphView view, final Point2D start, final CustomGraphicsManager cgm,
 			final Window owner) {
 		super(owner);
 		this.view = view;
 		this.cgm = cgm;
 		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = location;
+		this.startingLocation = start != null ? start : view.getCenter();
 
 		initComponents();
 	}

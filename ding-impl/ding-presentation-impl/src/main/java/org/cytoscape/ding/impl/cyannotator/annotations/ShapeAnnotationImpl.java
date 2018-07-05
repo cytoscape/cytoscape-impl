@@ -135,6 +135,11 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	@Override
+	public Class<? extends Annotation> getType() {
+		return ShapeAnnotation.class;
+	}
+	
+	@Override
 	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE, ShapeAnnotation.class.getName());

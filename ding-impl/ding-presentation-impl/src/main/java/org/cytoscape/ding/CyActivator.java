@@ -11,7 +11,6 @@ import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
 import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
 import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
 import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
 import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
 import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
@@ -72,11 +71,10 @@ import org.cytoscape.ding.impl.cyannotator.tasks.ChangeAnnotationCanvasTaskFacto
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.LayerAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.MoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.ResizeAnnotationTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.SelectAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
 import org.cytoscape.ding.impl.editor.EdgeBendEditor;
@@ -245,16 +243,50 @@ public class CyActivator extends AbstractCyActivator {
 		Properties dingNetworkViewFactoryServiceProps = new Properties();
 		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
-		// Annotations
+		// Annotation Manager
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
 		registerService(bc, annotationManager, AnnotationManager.class);
 
-		// Arrow
+		// Annotations UI
+		AnnotationMainPanel annotationMainPanel = new AnnotationMainPanel(serviceRegistrar);
+		registerAllServices(bc, annotationMainPanel);
+		
+		AnnotationMediator annotationMediator = new AnnotationMediator(annotationMainPanel, serviceRegistrar);
+		registerServiceListener(bc, annotationMediator::addAnnotationFactory, annotationMediator::removeAnnotationFactory, AnnotationFactory.class);
+		registerAllServices(bc, annotationMediator);
+		
+		// Annotation Factories (the order they are registered is the order they appear in the UI)
+		AnnotationFactory<?> textAnnotationFactory = new TextAnnotationFactory(serviceRegistrar);
+		Properties textFactory = new Properties();
+		textFactory.setProperty("type","TextAnnotation.class");
+		registerService(bc, textAnnotationFactory, AnnotationFactory.class, textFactory);
+		
+		AnnotationFactory<?> boundedAnnotationFactory = new BoundedTextAnnotationFactory(serviceRegistrar);
+		Properties boundedFactory = new Properties();
+		boundedFactory.setProperty("type","BoundedTextAnnotation.class");
+		registerService(bc, boundedAnnotationFactory, AnnotationFactory.class, boundedFactory);
+		
+		AnnotationFactory<?> shapeAnnotationFactory = new ShapeAnnotationFactory(serviceRegistrar);
+		Properties shapeFactory = new Properties();
+		shapeFactory.setProperty("type","ShapeAnnotation.class");
+		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
+		
+		AnnotationFactory<?> imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
+		Properties imageFactory = new Properties();
+		imageFactory.setProperty("type","ImageAnnotation.class");
+		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
+		
 		AnnotationFactory<?> arrowAnnotationFactory = new ArrowAnnotationFactory(serviceRegistrar);
 		Properties arrowFactory = new Properties();
 		arrowFactory.setProperty("type","ArrowAnnotation.class");
 		registerService(bc, arrowAnnotationFactory, AnnotationFactory.class, arrowFactory);
-
+		
+		AnnotationFactory<?> groupAnnotationFactory = new GroupAnnotationFactory(serviceRegistrar);
+		Properties groupFactory = new Properties();
+		groupFactory.setProperty("type","GroupAnnotation.class");
+		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);
+		
+		// Annotation Task Factories
 		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory);
 		Properties addArrowTaskFactoryProps = new Properties();
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -262,12 +294,6 @@ public class CyActivator extends AbstractCyActivator {
 		addArrowTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
 		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation");
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
-
-		// Image annotation
-		AnnotationFactory<?> imageAnnotationFactory = new ImageAnnotationFactory(serviceRegistrar);
-		Properties imageFactory = new Properties();
-		imageFactory.setProperty("type","ImageAnnotation.class");
-		registerService(bc, imageAnnotationFactory, AnnotationFactory.class, imageFactory);
 
 		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
 		Properties addImageTaskFactoryProps = new Properties();
@@ -277,12 +303,6 @@ public class CyActivator extends AbstractCyActivator {
 		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
-		// Shape annotation
-		AnnotationFactory<?> shapeAnnotationFactory = new ShapeAnnotationFactory(serviceRegistrar);
-		Properties shapeFactory = new Properties();
-		shapeFactory.setProperty("type","ShapeAnnotation.class");
-		registerService(bc, shapeAnnotationFactory, AnnotationFactory.class, shapeFactory);
-
 		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -290,12 +310,6 @@ public class CyActivator extends AbstractCyActivator {
 		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
 		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
-
-		// Text annotation
-		AnnotationFactory<?> textAnnotationFactory = new TextAnnotationFactory(serviceRegistrar);
-		Properties textFactory = new Properties();
-		textFactory.setProperty("type","TextAnnotation.class");
-		registerService(bc, textAnnotationFactory, AnnotationFactory.class, textFactory);
 
 		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
 		Properties addTextTaskFactoryProps = new Properties();
@@ -305,12 +319,6 @@ public class CyActivator extends AbstractCyActivator {
 		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
-		// Bounded Text annotation
-		AnnotationFactory<?> boundedAnnotationFactory = new BoundedTextAnnotationFactory(serviceRegistrar);
-		Properties boundedFactory = new Properties();
-		boundedFactory.setProperty("type","BoundedTextAnnotation.class");
-		registerService(bc, boundedAnnotationFactory, AnnotationFactory.class, boundedFactory);
-
 		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory);
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
@@ -319,11 +327,6 @@ public class CyActivator extends AbstractCyActivator {
 		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation");
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
-
-		AnnotationFactory<?> groupAnnotationFactory = new GroupAnnotationFactory(serviceRegistrar);
-		Properties groupFactory = new Properties();
-		groupFactory.setProperty("type","GroupAnnotation.class");
-		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);
 
 		// Annotation edit
 		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory();

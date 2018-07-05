@@ -113,6 +113,11 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			super.name = "GroupAnnotation_"+instanceCount;
 		instanceCount++;
 	}
+	
+	@Override
+	public Class<? extends Annotation> getType() {
+		return GroupAnnotation.class;
+	}
 
 	@Override
 	public void addMember(final Annotation member) {

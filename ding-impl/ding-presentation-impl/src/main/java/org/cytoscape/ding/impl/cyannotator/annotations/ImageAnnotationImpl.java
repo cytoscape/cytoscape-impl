@@ -158,9 +158,14 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	@Override
-	public Map<String,String> getArgMap() {
+	public Class<? extends Annotation> getType() {
+		return ImageAnnotation.class;
+	}
+	
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,ImageAnnotation.class.getName());
+		argMap.put(TYPE, ImageAnnotation.class.getName());
 		if (url != null)
 			argMap.put(URL, url.toString());
 		argMap.put(ImageAnnotation.WIDTH, Double.toString(shapeWidth));

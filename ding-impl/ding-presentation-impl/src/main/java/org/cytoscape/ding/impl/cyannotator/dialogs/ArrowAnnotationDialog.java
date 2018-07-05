@@ -55,7 +55,7 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -95,7 +95,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.annotation = new ArrowAnnotationImpl(view, owner);
-		this.source = cyAnnotator.getAnnotationAt(start);
+		this.source = cyAnnotator.getAnnotationAt(start != null ? start : view.getCenter());
 		this.create = true;
 
 		initComponents();

@@ -53,8 +53,11 @@ public class AddArrowTask extends AbstractNetworkViewTask {
 			SwingUtilities.invokeLater(() -> {
 				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
 						.createAnnotationDialog((DGraphView) view, location);
-				dialog.setLocation((int) location.getX(), (int) location.getY());
-				dialog.setVisible(true);
+				
+				if (dialog != null) {
+					dialog.setLocation((int) location.getX(), (int) location.getY());
+					dialog.setVisible(true);
+				}
 			});
 		}
 	}

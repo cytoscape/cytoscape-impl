@@ -116,6 +116,11 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	@Override
+	public Class<? extends Annotation> getType() {
+		return TextAnnotation.class;
+	}
+	
+	@Override
 	public void setZoom(double zoom) {
 		fontSize = (float)((zoom/getZoom())*fontSize);
 		font=font.deriveFont(fontSize);
