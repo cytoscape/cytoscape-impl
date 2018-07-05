@@ -41,7 +41,6 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.table.AbstractTableModel;
 
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DGraphView;
@@ -55,8 +54,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -109,8 +106,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
 	public AnnotationMainPanel(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -179,6 +174,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	public JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
 		final AnnotationToggleButton btn = new AnnotationToggleButton(f);
+		btn.setFocusable(false);
+		btn.setFocusPainted(false);
+		
 		buttonGroup.add(btn);
 		buttonMap.put(f.getId(), btn);
 		iconMap.put(f.getType(), f.getIcon());
@@ -186,10 +184,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		btnHGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		btnVGroup.addComponent(btn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE);
 		
-		if (isAquaLAF()) {
-			btn.putClientProperty("JButton.buttonType", "segmentedTextured");
-			updateSegmentedButtonStyles();
-		}
+		if (isAquaLAF())
+			btn.putClientProperty("JButton.buttonType", "gradient");
 		
 		return btn;
 	}
@@ -198,12 +194,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		JToggleButton btn = buttonMap.remove(f.getId());
 		iconMap.remove(f.getType());
 		
-		if (btn != null) {
+		if (btn != null)
 			getButtonPanel().remove(btn);
-			
-			if (isAquaLAF())
-				updateSegmentedButtonStyles();
-		}
 	}
 	
 	public void addAnnotations(Collection<Annotation> list) {
@@ -235,26 +227,51 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		super.setEnabled(enabled);
 		
 		if (!enabled)
-			buttonGroup.clearSelection();
+			clearAnnotationButtonSelection();
 		
 		buttonMap.values().forEach(btn -> btn.setEnabled(enabled));
 		updateRemoveAnnotationsButton();
 	}
 	
+	void clearAnnotationButtonSelection() {
+		// Don't do buttonGroup.clearSelection(),
+		// because we want the click event to be captured by the mediator
+		for (AnnotationToggleButton btn : buttonMap.values()) {
+			if (btn.isSelected()) {
+				btn.doClick();
+				break;
+			}
+		}
+	}
+	
 	void update(CyNetworkView view, Collection<Annotation> annotations) {
+		// Always clear the toggle button selection when annotations are added or removed
+		clearAnnotationButtonSelection();
+		
 		setEnabled(view instanceof DGraphView);
 		((AnnotationTableModel) getListTable().getModel()).setData(annotations);
+		
+		if (isEnabled()) {
+			for (AnnotationToggleButton btn : buttonMap.values()) {
+				if (ArrowAnnotation.class.equals(btn.getFactory().getType())) {
+					// The ArrowAnnotation requires at least one other annotation before it can be added
+					btn.setEnabled(getListTable().getRowCount() > 0);
+					break;
+				}
+			}
+		}
+		
 		updateInfoLabel();
 		updateSelectionLabel();
 	}
 	
 	private void updateInfoLabel() {
 		if (buttonGroup.getSelection() == null) {
-			getInfoLabel().setText("Select the Annotation you want to add...");
+			getInfoLabel().setText(isEnabled() ? "Select the Annotation you want to add..." : " ");
 		} else {
 			for (AnnotationToggleButton btn : buttonMap.values()) {
 				if (btn.isSelected()) {
-					if (btn.getFactory().getType() == ArrowAnnotation.class)
+					if (ArrowAnnotation.class.equals(btn.getFactory().getType()))
 						getInfoLabel().setText("Click another Annotation in the view...");
 					else
 						getInfoLabel().setText("Click anywhere on the view...");
@@ -275,31 +292,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			getSelectionLabel().setText(
 					selected + " of " + total + " Annotation" + (total == 1 ? "" : "s") + " selected");
 		}
-	}
-	
-	private void updateSegmentedButtonStyles() {
-		final List<JToggleButton> buttons = new ArrayList<>(buttonMap.values());
-		final int total = buttons.size();
-		
-		if (total == 1) {
-			buttons.get(0).putClientProperty("JButton.segmentPosition", "only");
-		} else {
-			for (int i = 0; i < total; i++) {
-				final JToggleButton btn = buttons.get(i);
-				final String position;
-				
-				if (i == 0)
-					position = "first";
-				else if (i == total - 1)
-					position = "last";
-				else
-					position = "middle";
-				
-				btn.putClientProperty("JButton.segmentPosition", position);
-			}
-		}
-		
-		getButtonPanel().repaint();
 	}
 	
 	private void updateRemoveAnnotationsButton() {
@@ -491,6 +483,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 			
 			fireTableDataChanged();
+		}
+		
+		public List<Annotation> getData() {
+			return new ArrayList<>(data);
 		}
 
 		public void addRows(Collection<Annotation> list) {

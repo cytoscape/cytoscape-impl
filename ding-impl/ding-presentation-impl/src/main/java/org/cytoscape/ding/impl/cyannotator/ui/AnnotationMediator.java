@@ -25,6 +25,9 @@ import org.cytoscape.application.events.CyStartEvent;
 import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -80,7 +83,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AnnotationMediator implements CyStartListener, CyShutdownListener, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, SetCurrentNetworkViewListener, AnnotationsAddedListener, AnnotationsRemovedListener,
-		PropertyChangeListener {
+		PropertyChangeListener, CytoPanelComponentSelectedListener {
 
 	private final AnnotationMainPanel mainPanel;
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
@@ -164,6 +167,14 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				mainPanel.update(view, list);
 			});
 		}
+	}
+	
+	@Override
+	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
+		// When the panel component changes, disable all annotation buttons,
+		// so the user doesn't add an annotation by accident
+		if (appStarted && CytoPanelName.WEST == evt.getCytoPanel().getCytoPanelName())
+			invokeOnEDT(() -> mainPanel.clearAnnotationButtonSelection());
 	}
 
 	@Override
