@@ -24,9 +24,9 @@ import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -158,9 +158,14 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	@Override
-	public Map<String,String> getArgMap() {
+	public Class<? extends Annotation> getType() {
+		return ImageAnnotation.class;
+	}
+	
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,ImageAnnotation.class.getName());
+		argMap.put(TYPE, ImageAnnotation.class.getName());
 		if (url != null)
 			argMap.put(URL, url.toString());
 		argMap.put(ImageAnnotation.WIDTH, Double.toString(shapeWidth));

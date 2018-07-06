@@ -1,12 +1,28 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Font;
+import java.awt.geom.Point2D;
+import java.util.Map;
+
+import javax.swing.Icon;
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +40,17 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-
 public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeAnnotation> {
 
+	public static final String NAME = "Shape";
+
+	private final Icon icon;
+	
 	public ShapeAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar);
+		super(ShapeAnnotation.class, serviceRegistrar);
+		
+		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
+		icon = new TextIcon(IconManager.ICON_STAR_O, font, ICON_SIZE, ICON_SIZE);
 	}
 	
 	@Override
@@ -50,16 +61,24 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	@Override
 	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view,
 			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView))
+		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		DGraphView dView = (DGraphView) view;
+		return new ShapeAnnotationImpl((DGraphView) view, argMap, getActiveWindow());
+	}
+	
+	@Override
+	public String getId() {
+		return NAMESPACE + "Shape";
+	}
+	
+	@Override
+	public String getName() {
+		return NAME;
+	}
 
-		if (type.equals(ShapeAnnotation.class)) {
-			final ShapeAnnotationImpl a = new ShapeAnnotationImpl(dView, argMap, getActiveWindow());
-			a.update();
-			return (ShapeAnnotation) a;
-		} 
-		return null;
+	@Override
+	public Icon getIcon() {
+		return icon;
 	}
 }

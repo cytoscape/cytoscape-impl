@@ -1,16 +1,19 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
+import javax.swing.Icon;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 
@@ -20,7 +23,7 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,8 +43,15 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 
 public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageAnnotation> {
 	
+	public static final String NAME = "Image";
+
+	private final Icon icon;
+	
 	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar);
+		super(ImageAnnotation.class, serviceRegistrar);
+		
+		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
+		icon = new TextIcon(IconManager.ICON_IMAGE, font, ICON_SIZE, ICON_SIZE);
 	}
 
 	@Override
@@ -52,23 +62,27 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	}
 
 	@Override
-	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> clazz, CyNetworkView view,
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> type, CyNetworkView view,
 			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView))
+		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		DGraphView dView = (DGraphView) view;
+		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
+		return new ImageAnnotationImpl((DGraphView) view, argMap, customGraphicsManager, getActiveWindow());
+	}
+	
+	@Override
+	public String getId() {
+		return NAMESPACE + "Image";
+	}
+	
+	@Override
+	public String getName() {
+		return NAME;
+	}
 
-		if (ImageAnnotation.class.equals(clazz)) {
-			final CustomGraphicsManager customGraphicsManager = serviceRegistrar
-					.getService(CustomGraphicsManager.class);
-			final ImageAnnotationImpl a = new ImageAnnotationImpl(dView, argMap,
-					customGraphicsManager, getActiveWindow());
-			a.update();
-
-			return (ImageAnnotation) a;
-		} else {
-			return null;
-		}
+	@Override
+	public Icon getIcon() {
+		return icon;
 	}
 }

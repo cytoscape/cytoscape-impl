@@ -1,12 +1,31 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Font;
+import java.awt.geom.Point2D;
+import java.util.Map;
+
+import javax.swing.Icon;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +43,54 @@ package org.cytoscape.ding.impl.cyannotator.create;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-
 public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowAnnotation> {
 
+	public static final String NAME = "Arrow";
+
+	private final Icon icon;
+
 	public ArrowAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar);
+		super(ArrowAnnotation.class, serviceRegistrar);
+		
+		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
+		icon = new TextIcon(IconManager.ICON_ARROW_UP, font, ICON_SIZE, ICON_SIZE);
 	}
-	
+
 	@Override
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+		// We need to be over an annotation
+		CyAnnotator cyAnnotator = ((DGraphView) view).getCyAnnotator();
+		DingAnnotation annotation = cyAnnotator.getAnnotationAt(location);
+		
+		if (annotation instanceof ArrowAnnotationImpl == false) {
+			JOptionPane.showMessageDialog(view.getCanvas(), "Please click another annotation.");
+			return null;
+		}
+		
 		return new ArrowAnnotationDialog(view, location, getActiveWindow());
 	}
 
 	@Override
 	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view,
 			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView))
+		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		DGraphView dView = (DGraphView) view;
+		return new ArrowAnnotationImpl((DGraphView) view, argMap, getActiveWindow());
+	}
+	
+	@Override
+	public String getId() {
+		return NAMESPACE + "Arrow";
+	}
+	
+	@Override
+	public String getName() {
+		return NAME;
+	}
 
-		if (type.equals(ArrowAnnotation.class))
-			return (ArrowAnnotation) (new ArrowAnnotationImpl(dView, argMap, getActiveWindow()));
-
-		return null;
+	@Override
+	public Icon getIcon() {
+		return icon;
 	}
 }

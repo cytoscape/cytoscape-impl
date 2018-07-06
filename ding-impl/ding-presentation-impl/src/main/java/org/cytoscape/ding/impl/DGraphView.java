@@ -2103,7 +2103,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			annotationsLoaded = true;
 			cyAnnotator.loadAnnotations();
 		}
-
 	}
 
 	@Override

@@ -65,7 +65,7 @@ public class TextAnnotationDialog extends JDialog {
 		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start;
+		this.startingLocation = start != null ? start : view.getCenter();
 		this.mAnnotation = new TextAnnotationImpl(view, owner);
 		create = true;
 		initComponents();
