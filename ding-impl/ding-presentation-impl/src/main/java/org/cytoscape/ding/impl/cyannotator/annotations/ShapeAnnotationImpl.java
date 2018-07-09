@@ -173,6 +173,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public void setZoom(double zoom) {
+		if (zoom == getZoom())
+			return;
+	
 		float factor = (float) (zoom / getZoom());
 
 		shapeWidth *= factor;
@@ -184,6 +187,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public void setSpecificZoom(double zoom) {
+		if (zoom == getSpecificZoom())
+			return;
+		
 		float factor = (float) (zoom / getSpecificZoom());
 
 		shapeWidth *= factor;

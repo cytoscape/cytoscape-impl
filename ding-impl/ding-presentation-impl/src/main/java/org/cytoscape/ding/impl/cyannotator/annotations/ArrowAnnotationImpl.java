@@ -416,6 +416,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setZoom(double zoom) {
+		if (zoom == getZoom())
+			return;
+		
 		float factor=(float)(zoom/getZoom());
 		lineWidth*=factor;
 		updateBounds();
@@ -424,6 +427,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setSpecificZoom(double zoom) {
+		if (zoom == getSpecificZoom())
+			return;
+		
 		super.setSpecificZoom(zoom);		
 	}
 
@@ -521,7 +527,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		g2.setPaint(lineColor);
 		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
-		Line2D relativeLine = getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border);
+		Line2D relativeLine = arrowLine != null ? getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border) : null;
 
 		if (relativeLine != null) {
 			// Handle opacity
@@ -615,12 +621,15 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		// Update our bounds
 		if (source != null && target != null) {
 			arrowLine = getArrowLine(target, source);
-			double x1 = arrowLine.getX1();
-			double y1 = arrowLine.getY1();
-			double x2 = arrowLine.getX2();
-			double y2 = arrowLine.getY2();
-			setLocation((int)(Math.min(x1, x2)-xOffset), (int)(Math.min(y1, y2)-yOffset));
-			setSize(Math.abs(x1-x2)+xOffset*2, Math.abs(y1-y2)+yOffset*2);
+			
+			if (arrowLine != null) {
+				double x1 = arrowLine.getX1();
+				double y1 = arrowLine.getY1();
+				double x2 = arrowLine.getX2();
+				double y2 = arrowLine.getY2();
+				setLocation((int) (Math.min(x1, x2) - xOffset), (int) (Math.min(y1, y2) - yOffset));
+				setSize(Math.abs(x1 - x2) + xOffset * 2, Math.abs(y1 - y2) + yOffset * 2);
+			}
 		}
 	}
 
@@ -648,7 +657,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		Rectangle sourceBounds = source.getComponent().getBounds();
 		Point2D sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
-		return new Line2D.Double(sourcePoint, targetPoint);
+		
+		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;
 	}
 
 	private Point2D centerPoint(Rectangle2D bounds) {
@@ -659,9 +669,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	// Find the mid point to draw the target to
 	private Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
-		if (anchorType == AnchorType.CENTER) {
+		if (source == null || target == null)
+			return null;
+		
+		if (anchorType == AnchorType.CENTER)
 			return new Point2D.Double(target.getX()+target.getWidth()/2, target.getY()+target.getHeight()/2);
-		}
+		
 		Point2D.Double left = new Point2D.Double(target.getX(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double right = new Point2D.Double(target.getX()+target.getWidth(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double top = new Point2D.Double(target.getX()+target.getWidth()/2.0, target.getY());
@@ -714,6 +727,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	private Rectangle2D getNodeBounds(DNodeView nv) {
+		if (nv == null)
+			return null;
+		
 		double[] nextLocn = new double[2];
 
 		// First, get our starting and ending points in node coordinates

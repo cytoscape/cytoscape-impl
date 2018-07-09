@@ -122,6 +122,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	@Override
 	public void setZoom(double zoom) {
+		if (zoom == getZoom())
+			return;
+		
 		fontSize = (float)((zoom/getZoom())*fontSize);
 		font=font.deriveFont(fontSize);
 
@@ -132,6 +135,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setSpecificZoom(double zoom) {
+		if (zoom == getSpecificZoom())
+			return;
 		// font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
 		fontSize = (float)((zoom/getSpecificZoom())*fontSize);
 		font=font.deriveFont(fontSize);

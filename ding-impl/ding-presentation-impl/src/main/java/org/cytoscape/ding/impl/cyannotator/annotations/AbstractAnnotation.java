@@ -308,15 +308,40 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	public void setName(String name) { this.name = name; update();}
 
 	public double getZoom() { return globalZoom; }
-	public void setZoom(double zoom) {  globalZoom = zoom; update();}
-      
-	public double getSpecificZoom() {return myZoom; }
-	public void setSpecificZoom(double zoom) { myZoom = zoom;  update();}
+	@Override
+	public void setZoom(double zoom) {
+		if (zoom != globalZoom) {
+			globalZoom = zoom;
+			update();
+		}
+	}
 
-	public boolean isSelected() { return selected; }
+	@Override
+	public double getSpecificZoom() {
+		return myZoom;
+	}
+
+	@Override
+	public void setSpecificZoom(double zoom) {
+		if (zoom != myZoom) {
+			myZoom = zoom;
+			update();
+		}
+	}
+
+	@Override
+	public boolean isSelected() {
+		return selected;
+	}
+
+	@Override
 	public void setSelected(boolean selected) {
-		this.selected = selected;
-		cyAnnotator.setSelectedAnnotation(this, selected);
+		if (selected != this.selected) {
+			this.selected = selected;
+			cyAnnotator.setSelectedAnnotation(this, selected);
+		}
+	}
+
 	}
 
 	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); update();}

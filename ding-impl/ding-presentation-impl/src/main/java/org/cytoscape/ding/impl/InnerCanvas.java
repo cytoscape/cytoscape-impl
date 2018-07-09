@@ -32,7 +32,6 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
@@ -192,6 +191,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
+		boolean resized = (this.getWidth() != width) || (this.getHeight() != height);
+        boolean moved = (this.getX() != x) || (this.getY() != y);
+        
+        if (!resized && !moved)
+            return;
+		
 		super.setBounds(x, y, width, height);
 
 		if ((width > 0) && (height > 0)) {

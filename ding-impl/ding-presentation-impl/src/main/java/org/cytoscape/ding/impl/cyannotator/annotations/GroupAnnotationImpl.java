@@ -384,19 +384,27 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
+		if (newZoom == getSpecificZoom())
+			return;
+		
 		if (annotations != null && annotations.size() > 0) {
 			for (DingAnnotation child: annotations)
 				child.setSpecificZoom(newZoom);
 		}
+		
 		super.setSpecificZoom(newZoom);		
 	}
 
 	@Override
 	public void setZoom(double newZoom) {
+		if (newZoom == getZoom())
+			return;
+		
 		if (annotations != null && annotations.size() > 0) {
 			for (DingAnnotation child: annotations)
 				child.setZoom(newZoom);
 		}
+		
 		super.setZoom(newZoom);		
 	}
 

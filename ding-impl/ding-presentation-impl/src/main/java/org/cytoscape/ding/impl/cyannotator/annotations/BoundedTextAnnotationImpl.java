@@ -239,6 +239,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setSpecificZoom(double zoom) {
+		if (zoom == getSpecificZoom())
+			return;
+		
 		fontSize = (float)((zoom/getSpecificZoom())*fontSize);
 		font=font.deriveFont(fontSize);
 		super.setSpecificZoom(zoom);		
@@ -246,6 +249,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setZoom(double zoom) {
+		if (zoom == getZoom())
+			return;
+		
 		fontSize = (float)((zoom/getZoom())*fontSize);
 		font=font.deriveFont(fontSize);
 		super.setZoom(zoom);
