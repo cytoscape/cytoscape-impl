@@ -462,7 +462,6 @@ public class CyAnnotator {
 		}
 
 		if (selected) {
-			requestFocusInWindow(a);
 			annotationSelection.add(a);
 		} else {
 			annotationSelection.remove(a);
