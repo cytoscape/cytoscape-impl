@@ -111,7 +111,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			set.forEach(f -> addAnnotationButton(f));
 			mainPanel.setEnabled(false);
 			mainPanel.getListTable().getSelectionModel().addListSelectionListener(e -> {
-				if (!e.getValueIsAdjusting())
+				if (!e.getValueIsAdjusting() && !mainPanel.getListTable().isEditing())
 					selectAnnotationsFromSelectedRows();
 			});
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());

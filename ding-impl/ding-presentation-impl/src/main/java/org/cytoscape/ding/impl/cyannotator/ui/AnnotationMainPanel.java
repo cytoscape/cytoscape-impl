@@ -104,6 +104,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** Default icon for Annotations that provide no icon */
 	private final Icon defIcon;
 	
+	private CyNetworkView view;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public AnnotationMainPanel(CyServiceRegistrar serviceRegistrar) {
@@ -222,6 +224,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
+	public CyNetworkView getView() {
+		return view;
+	}
+	
 	@Override
 	public void setEnabled(boolean enabled) {
 		super.setEnabled(enabled);
@@ -245,6 +251,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void update(CyNetworkView view, Collection<Annotation> annotations) {
+		this.view = view;
+		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
 		
@@ -410,13 +418,18 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			listTable.setShowHorizontalLines(true);
 			listTable.setShowVerticalLines(false);
 			listTable.setGridColor(UIManager.getColor("Separator.foreground"));
-			listTable.setIntercellSpacing(new Dimension(0, 0));
-			listTable.setRowHeight(24);
+			listTable.setIntercellSpacing(new Dimension(0, 4));
+			listTable.setRowHeight(32);
 			listTable.setTableHeader(null);
+			listTable.setBackground(UIManager.getColor("Panel.background"));
+			listTable.setSelectionBackground(UIManager.getColor("Table.focusCellBackground"));
+			listTable.setSelectionForeground(UIManager.getColor("Table.focusCellForeground"));
 			
-			listTable.getColumnModel().getColumn(0).setWidth(24);
-			listTable.getColumnModel().getColumn(0).setPreferredWidth(24);
-			listTable.getColumnModel().getColumn(0).setMaxWidth(24);
+			listTable.getColumnModel().getColumn(0).setWidth(32);
+			listTable.getColumnModel().getColumn(0).setPreferredWidth(32);
+			listTable.getColumnModel().getColumn(0).setMaxWidth(32);
+			
+			makeSmall(listTable);
 		}
 		
 		return listTable;
@@ -425,6 +438,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	JScrollPane getListScrollPane() {
 		if (listScrollPane == null) {
 			listScrollPane = new JScrollPane(getListTable());
+			listScrollPane.getViewport().setBackground(UIManager.getColor("Label.background"));
 			listScrollPane.getViewport().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mousePressed(MouseEvent e) {
@@ -556,7 +570,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public void setValueAt(Object value, int row, int col) {
-			// Nothing to do here...
+			if (col == 1 && row >= 0 && row < getRowCount() - 1 && value instanceof String)
+				data.get(row).setName((String) value);
 		}
 		
 		private void sortData() {
