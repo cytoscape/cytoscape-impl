@@ -158,7 +158,6 @@ public class CyAnnotator {
 			return;
 		}
 
-		// System.out.println("Loading annotations");
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
 		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
@@ -294,11 +293,18 @@ public class CyAnnotator {
 		return null;
 	}
 
-	public void update() { view.updateView(); }
+	public void update() {
+		view.updateView();
+	}
 
-	public DGraphView getView() { return view; }
-	public CyServiceRegistrar getRegistrar() { return registrar; }
+	public DGraphView getView() {
+		return view;
+	}
 
+	public CyServiceRegistrar getRegistrar() {
+		return registrar;
+	}
+	
 	/**
  	 * Find all of our annotations that are at this point.  Return the top annotation
  	 * (the one with the lowest Z value) if there are more than one.

@@ -1640,7 +1640,6 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 
 		// synchronized (m_lock) {
 		try {
-			// System.out.println("Calling renderGraph to draw snapshot: bgPaint="+bgPaint);
 			GraphRenderer.renderGraph(this, dummySpacialFactory.createSpacialIndex2D(), lod, m_nodeDetails,
 			                          m_edgeDetails, new LongHash(), new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder, dependencies);

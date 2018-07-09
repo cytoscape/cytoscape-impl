@@ -1,12 +1,32 @@
 package org.cytoscape.ding.impl.cyannotator.listeners;
 
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.geom.Point2D;
+import java.util.List;
+
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DNodeView;
+import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
+import org.cytoscape.model.CyNode;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +44,8 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
-import java.awt.geom.Point2D;
-
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.presentation.property.values.Position;
-
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.InnerCanvas;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-
-import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-
-public class CanvasMouseMotionListener implements MouseMotionListener{
+public class CanvasMouseMotionListener implements MouseMotionListener {
+	
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
 	private final DGraphView view;
@@ -63,10 +56,12 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		this.networkCanvas = view.getCanvas();
 	}
 
+	@Override
 	public void mouseDragged(MouseEvent e) {
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		DingAnnotation a = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
+		
 		if (annotationSelection.isEmpty() || 
 		    !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.mouseDragged(e);
@@ -102,11 +97,13 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		}
 	}
 
+	@Override
 	public void mouseMoved(MouseEvent e) {
 		AbstractAnnotation resizeAnnotation = cyAnnotator.getResizeShape();
 		// DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		ArrowAnnotationImpl repositionAnnotation = cyAnnotator.getRepositioningArrow();
+		
 		if (resizeAnnotation == null && annotationSelection.isEmpty() && repositionAnnotation == null) {
 			networkCanvas.mouseMoved(e);
 			return;
@@ -214,5 +211,4 @@ public class CanvasMouseMotionListener implements MouseMotionListener{
 		DNodeView nv = (DNodeView)view.getPickedNodeView(mousePoint);
 		return nv.getModel();
 	}
-
 }

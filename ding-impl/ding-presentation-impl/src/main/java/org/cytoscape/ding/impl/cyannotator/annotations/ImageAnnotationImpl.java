@@ -432,7 +432,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void paint(Graphics g) {				
-
 		Graphics2D g2=(Graphics2D)g;
 
 		if (image == null)
@@ -459,16 +458,15 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
-		super.setSpecificZoom(newZoom);		
-		resizedImage=resizeImage((int)Math.round(shapeWidth), (int)Math.round(shapeHeight));
+		super.setSpecificZoom(newZoom);
+		resizedImage = resizeImage((int) Math.round(shapeWidth), (int) Math.round(shapeHeight));
 	}
 
 	@Override
 	public void setZoom(double newZoom) {
-		super.setZoom(newZoom);		
-		resizedImage=resizeImage((int)Math.round(shapeWidth), (int)Math.round(shapeHeight));
+		super.setZoom(newZoom);
+		resizedImage = resizeImage((int) Math.round(shapeWidth), (int) Math.round(shapeHeight));
 	}
-
 
 	public int getAnnotationWidth() {
 		return (int)Math.round(shapeWidth);
@@ -478,6 +476,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		return (int)Math.round(shapeHeight);
 	}
 
+	@Override
 	public String toString() {
 		String s = super.toString();
 		s += "\nopacity = "+opacity+", brightness = "+brightness+", contrast = "+contrast;

@@ -96,7 +96,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.owner = owner;
 		this.view = view;
 		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
-		arrowList = new HashSet<ArrowAnnotation>();
+		arrowList = new HashSet<>();
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = view.getZoom();
@@ -104,7 +104,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	protected AbstractAnnotation(AbstractAnnotation c, Window owner) {
 		this(c.view, owner);
-		arrowList = new HashSet<ArrowAnnotation>(c.arrowList);
+		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
@@ -137,6 +137,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	//------------------------------------------------------------------------
 
+	@Override
 	public String toString() {
 		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
 	}
@@ -304,10 +305,22 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void resizeAnnotation(double width, double height) {};
 
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; update();}
+	@Override
+	public String getName() {
+		return name;
+	}
 
-	public double getZoom() { return globalZoom; }
+	@Override
+	public void setName(String name) {
+		this.name = name;
+		update();
+	}
+
+	@Override
+	public double getZoom() {
+		return globalZoom;
+	}
+
 	@Override
 	public void setZoom(double zoom) {
 		if (zoom != globalZoom) {
@@ -342,16 +355,26 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
+	@Override
+	public void addArrow(ArrowAnnotation arrow) {
+		arrowList.add(arrow);
+		update();
 	}
 
-	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); update();}
-	public void removeArrow(ArrowAnnotation arrow) { arrowList.remove(arrow); update();}
-	public Set<ArrowAnnotation> getArrows() { return arrowList; }
+	@Override
+	public void removeArrow(ArrowAnnotation arrow) {
+		arrowList.remove(arrow);
+		update();
+	}
 
-	
+	@Override
+	public Set<ArrowAnnotation> getArrows() {
+		return arrowList;
+	}
+
 	@Override
 	public Map<String,String> getArgMap() {
-		Map<String, String> argMap = new HashMap<String, String>();
+		Map<String, String> argMap = new HashMap<>();
 		if (name != null)
 			argMap.put(NAME, this.name);
 		ViewUtils.addNodeCoordinates(view, argMap, getX(), getY());
@@ -370,15 +393,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 		return argMap;
 	}
-
+	
+	@Override
 	public boolean usedForPreviews() { return usedForPreviews; }
 
+	@Override
 	public void setUsedForPreviews(boolean v) { usedForPreviews = v; }
 
-	public void drawAnnotation(Graphics g, double x,
-	                           double y, double scaleFactor) {
+	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 	}
 
+	@Override
 	public void update() {
 		updateAnnotationAttributes();
 		getCanvas().repaint();
@@ -412,6 +438,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
+	@Override
 	public JDialog getModifyDialog() {return null;}
 
 	// Protected methods
@@ -423,15 +450,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	// Save the bounds (in node coordinages)
+	@Override
 	public void saveBounds() {
 		initialBounds = ViewUtils.getNodeCoordinates(view, getBounds().getBounds2D());
 	}
 
+	@Override
 	public Rectangle2D getInitialBounds() {
 		return initialBounds;
 	}
 
 	// Save the offset in node coordinates
+	@Override
 	public void setOffset(Point2D offset) {
 		if (offset == null) {
 			this.offset = null;
@@ -444,9 +474,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
 	}
 
+	@Override
 	public Point2D getOffset() { return offset; }
 
-
+	@Override
 	public void contentChanged() {
 		if (view == null) return;
 		final ContentChangeListener lis = view.getContentChangeListener();

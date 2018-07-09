@@ -249,9 +249,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,ArrowAnnotation.class.getName());
+		argMap.put(TYPE, ArrowAnnotation.class.getName());
+
 		if (this.lineColor != null)
-			argMap.put(ARROWCOLOR,ViewUtils.convertColor(this.lineColor));
+			argMap.put(ARROWCOLOR, ViewUtils.convertColor(this.lineColor));
+
 		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
 
 		if (source != null)
@@ -259,26 +261,31 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
 		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
+
 		if (this.sourceColor != null)
-			argMap.put(SOURCECOLOR,ViewUtils.convertColor(this.sourceColor));
+			argMap.put(SOURCECOLOR, ViewUtils.convertColor(this.sourceColor));
 
 		if (target != null && target instanceof Point2D) {
 			Point2D xy = (Point2D) target;
-			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
+			argMap.put(TARGETPOINT, Double.toString(xy.getX()) + "," + Double.toString(xy.getY()));
 		} else if (target != null && target instanceof Annotation) {
-			argMap.put(TARGETANN,((DingAnnotation)target).getUUID().toString());
+			argMap.put(TARGETANN, ((DingAnnotation) target).getUUID().toString());
 		} else if (target != null && target instanceof CyNode) {
-			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
-			double xCenter = nv.getXPosition();
-			double yCenter = nv.getYPosition();
-			argMap.put(TARGETNODE,
-			           Double.toString(xCenter)+","+Double.toString(yCenter));
+			DNodeView nv = (DNodeView) view.getNodeView((CyNode) target);
+
+			if (nv != null) {
+				double xCenter = nv.getXPosition();
+				double yCenter = nv.getYPosition();
+				argMap.put(TARGETNODE, Double.toString(xCenter) + "," + Double.toString(yCenter));
+			}
 		}
 
 		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
 		argMap.put(TARGETSIZE, Double.toString(this.targetSize));
+
 		if (this.targetColor != null)
-			argMap.put(TARGETCOLOR,ViewUtils.convertColor(this.targetColor));
+			argMap.put(TARGETCOLOR, ViewUtils.convertColor(this.targetColor));
+
 		return argMap;
 	}
 
@@ -418,9 +425,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	public void setZoom(double zoom) {
 		if (zoom == getZoom())
 			return;
-		
-		float factor=(float)(zoom/getZoom());
-		lineWidth*=factor;
+
+		float factor = (float) (zoom / getZoom());
+		lineWidth *= factor;
 		updateBounds();
 		super.setZoom(zoom);
 	}
@@ -511,7 +518,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	public void drawArrow(Graphics g, boolean isPrinting) {
-		if ( (source == null || target == null) && !usedForPreviews ) return;
+		if ((source == null || target == null) && !usedForPreviews)
+			return;
 
 		if (!usedForPreviews)
 			updateBounds();
@@ -609,13 +617,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// We need to take into account our arrows
 		if (targetType != ArrowType.NONE) {
-			xOffset = targetSize*10.0*getZoom() + lineWidth;
-			yOffset = targetSize*10.0*getZoom() + lineWidth;
+			xOffset = targetSize * 10.0 * getZoom() + lineWidth;
+			yOffset = targetSize * 10.0 * getZoom() + lineWidth;
 		}
 
 		if (sourceType != ArrowType.NONE) {
-			xOffset += sourceSize*10.0*getZoom() + lineWidth;
-			yOffset += sourceSize*10.0*getZoom() + lineWidth;
+			xOffset += sourceSize * 10.0 * getZoom() + lineWidth;
+			yOffset += sourceSize * 10.0 * getZoom() + lineWidth;
 		}
 
 		// Update our bounds
@@ -634,12 +642,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	private Line2D getArrowLine(Object target, DingAnnotation source) {
-		if (usedForPreviews) {
+		if (usedForPreviews)
 			return new Line2D.Double(10.0, shapeHeight/2, shapeWidth-20.0, shapeHeight/2);
-		}
 
 		Point2D targetPoint = null;
 		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
+		
 		if (target instanceof Point2D) {
 			targetPoint = ViewUtils.getComponentCoordinates(view, ((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {

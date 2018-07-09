@@ -79,12 +79,12 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public TextAnnotationImpl(DGraphView view, 
 	                          int x, int y, String text, int compCount, double zoom, Window owner){
 		super(view, x, y, zoom, owner);
-		this.text=text;
-		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float)initialFontSize;
+		this.text = text;
+		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float) initialFontSize;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
 		if (super.name == null)
-			super.name = "TextAnnotation_"+instanceCount;
+			super.name = "TextAnnotation_" + instanceCount;
 		instanceCount++;
 	}
 
@@ -124,12 +124,13 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setZoom(double zoom) {
 		if (zoom == getZoom())
 			return;
-		
-		fontSize = (float)((zoom/getZoom())*fontSize);
-		font=font.deriveFont(fontSize);
 
-		if(!usedForPreviews)
+		fontSize = (float) ((zoom / getZoom()) * fontSize);
+		font = font.deriveFont(fontSize);
+
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+
 		super.setZoom(zoom);
 	}
 
@@ -137,26 +138,29 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	public void setSpecificZoom(double zoom) {
 		if (zoom == getSpecificZoom())
 			return;
+		
 		// font=font.deriveFont(((float)(zoom/getSpecificZoom()))*font.getSize2D());
-		fontSize = (float)((zoom/getSpecificZoom())*fontSize);
-		font=font.deriveFont(fontSize);
-				
-		if(!usedForPreviews)
+		fontSize = (float) ((zoom / getSpecificZoom()) * fontSize);
+		font = font.deriveFont(fontSize);
+
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		
 		super.setSpecificZoom(zoom);
 	}
 
 	@Override
 	public void setText(String text) {
 		this.text = text;
-		if(!usedForPreviews)
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
 
 	@Override
-	public String getText() { return this.text; }
-
+	public String getText() {
+		return this.text;
+	}
 
 	@Override
 	public void setTextColor(Color color) {
@@ -165,25 +169,28 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	@Override
-	public Color getTextColor() { return textColor; }
+	public Color getTextColor() {
+		return textColor;
+	}
 
 	@Override
 	public void setFontSize(double size) {
-		this.fontSize = (float)size;
-		font = font.deriveFont((float)(fontSize));
-		if(!usedForPreviews)
+		this.fontSize = (float) size;
+		font = font.deriveFont((float) (fontSize));
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
 
 	@Override
-	public double getFontSize() { return this.fontSize; }
-
+	public double getFontSize() {
+		return this.fontSize;
+	}
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float)(fontSize));
-		if(!usedForPreviews)
+		font = font.deriveFont(style, (float) (fontSize));
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
@@ -195,8 +202,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontFamily(String family) {
-		font = new Font(family, font.getStyle(), (int)fontSize);
-		if(!usedForPreviews)
+		font = new Font(family, font.getStyle(), (int) fontSize);
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
@@ -207,13 +214,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	@Override
-	public Font getFont() { return this.font; }
+	public Font getFont() {
+		return this.font;
+	}
 
 	@Override
-	public void setFont(Font font) { 
-		this.font = font; 
+	public void setFont(Font font) {
+		this.font = font;
 		this.fontSize = font.getSize2D();
-		if(!usedForPreviews)
+		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
@@ -289,7 +298,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 		g2.drawString(text, halfWidth, halfHeight);
 
-		if(isSelected()) {
+		if (isSelected()) {
       //Selected Annotations will have a yellow border
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f));
