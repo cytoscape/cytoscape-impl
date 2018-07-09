@@ -3,7 +3,8 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DGraphView;
