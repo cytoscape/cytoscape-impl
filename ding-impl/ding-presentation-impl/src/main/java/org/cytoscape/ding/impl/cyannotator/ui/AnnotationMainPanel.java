@@ -16,6 +16,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -93,8 +94,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private JLabel infoLabel;
 	private JLabel selectionLabel;
 	private JButton removeAnnotationsButton;
-	private JTable listTable;
-	private JScrollPane listScrollPane;
+	private JTable foregroundTable;
+	private JTable backgroundTable;
+	private JScrollPane ftScrollPane;
+	private JScrollPane btScrollPane;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	private final Map<String, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
@@ -144,7 +147,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		init();
 		
-		getListTable().getSelectionModel().addListSelectionListener(e -> {
+		getBackgroundTable().getSelectionModel().addListSelectionListener(e -> {
+			if (!e.getValueIsAdjusting()) {
+				updateSelectionLabel();
+				updateRemoveAnnotationsButton();
+			}
+		});
+		getForegroundTable().getSelectionModel().addListSelectionListener(e -> {
 			if (!e.getValueIsAdjusting()) {
 				updateSelectionLabel();
 				updateRemoveAnnotationsButton();
@@ -204,20 +213,32 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	public void addAnnotations(Collection<Annotation> list) {
-		((AnnotationTableModel) getListTable().getModel()).addRows(list);
+		Map<String, Collection<Annotation>> map = separateByLayers(list);
+		((AnnotationTableModel) getBackgroundTable().getModel()).addRows(map.get(Annotation.BACKGROUND));
+		((AnnotationTableModel) getForegroundTable().getModel()).addRows(map.get(Annotation.FOREGROUND));
 	}
 	
 	public void removeAnnotations(Collection<Annotation> list) {
-		((AnnotationTableModel) getListTable().getModel()).removeRows(list);
+		Map<String, Collection<Annotation>> map = separateByLayers(list);
+		((AnnotationTableModel) getBackgroundTable().getModel()).removeRows(map.get(Annotation.BACKGROUND));
+		((AnnotationTableModel) getForegroundTable().getModel()).removeRows(map.get(Annotation.FOREGROUND));
 	}
 	
 	public Collection<Annotation> getSelectedAnnotations() {
 		final Set<Annotation> set = new HashSet<>();
-		final int rowCount = getListTable().getRowCount();
+		set.addAll(getSelectedAnnotations(getBackgroundTable()));
+		set.addAll(getSelectedAnnotations(getForegroundTable()));
+		
+		return set;
+	}
+	
+	Collection<Annotation> getSelectedAnnotations(JTable table) {
+		final Set<Annotation> set = new HashSet<>();
+		final int rowCount = table.getRowCount();
 		
 		for (int i = 0; i < rowCount; i++) {
-			if (getListTable().isRowSelected(i)) {
-				Annotation a = ((AnnotationTableModel) getListTable().getModel()).getAnnotation(i);
+			if (table.isRowSelected(i)) {
+				Annotation a = ((AnnotationTableModel) table.getModel()).getAnnotation(i);
 				
 				if (a != null)
 					set.add(a);
@@ -243,6 +264,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateSelectionButtons();
 	}
 	
+	int getAnnotationCount() {
+		return getBackgroundTable().getRowCount() + getForegroundTable().getRowCount();
+	}
+	
+	int getSelectedAnnotationCount() {
+		return getBackgroundTable().getSelectedRowCount() + getForegroundTable().getSelectedRowCount();
+	}
+	
 	void clearAnnotationButtonSelection() {
 		// Don't do buttonGroup.clearSelection(),
 		// because we want the click event to be captured by the mediator
@@ -259,20 +288,26 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
-		
+		// Enable/disable before next steps
 		setEnabled(view instanceof DGraphView);
-		((AnnotationTableModel) getListTable().getModel()).setData(annotations);
 		
+		// Update annotation tables data
+		Map<String, Collection<Annotation>> map = separateByLayers(annotations);
+		((AnnotationTableModel) getBackgroundTable().getModel()).setData(map.get(Annotation.BACKGROUND));
+		((AnnotationTableModel) getForegroundTable().getModel()).setData(map.get(Annotation.FOREGROUND));
+		
+		// Enable/disable annotation add buttons
 		if (isEnabled()) {
 			for (AnnotationToggleButton btn : buttonMap.values()) {
 				if (ArrowAnnotation.class.equals(btn.getFactory().getType())) {
 					// The ArrowAnnotation requires at least one other annotation before it can be added
-					btn.setEnabled(getListTable().getRowCount() > 0);
+					btn.setEnabled(getBackgroundTable().getRowCount() > 0);
 					break;
 				}
 			}
 		}
 		
+		// Labels and other components
 		updateInfoLabel();
 		updateSelectionLabel();
 		updateSelectionButtons();
@@ -296,39 +331,57 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void updateSelectionLabel() {
-		final int total = getListTable().getRowCount();
+		final int total = getAnnotationCount();
 		
 		if (total == 0) {
 			getSelectionLabel().setText(null);
 		} else {
-			final int selected = getListTable().getSelectedRowCount();
+			final int selected = getSelectedAnnotationCount();
 			getSelectionLabel().setText(
 					selected + " of " + total + " Annotation" + (total == 1 ? "" : "s") + " selected");
 		}
 	}
 	
 	private void updateRemoveAnnotationsButton() {
-		getRemoveAnnotationsButton().setEnabled(isEnabled() && getListTable().getSelectedRowCount() > 0);
+		getRemoveAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount() > 0);
 	}
 	
 	void updateSelectionButtons() {
-		final int total = getListTable().getRowCount();
-		final int selected = getListTable().getSelectedRowCount();
+		final int total = getAnnotationCount();
+		final int selected = getSelectedAnnotationCount();
 		
 		getSelectAllButton().setEnabled(isEnabled() && selected < total);
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
 	
-	void stopTableCellEditing() {
-		TableCellEditor cellEditor = getListTable().getCellEditor();
+	void stopTableCellEditing(JTable table) {
+		TableCellEditor cellEditor = table.getCellEditor();
 		
 		if (cellEditor != null)
 			cellEditor.stopCellEditing();
 	}
 	
+	private static Map<String, Collection<Annotation>> separateByLayers(Collection<Annotation> list) {
+		Map<String, Collection<Annotation>> map = new HashMap<>();
+		map.put(Annotation.BACKGROUND, new HashSet<>());
+		map.put(Annotation.FOREGROUND, new HashSet<>());
+		
+		list.forEach(a -> {
+			Collection<Annotation> set = map.get(a.getCanvasName());
+			
+			if (set != null) // Should never be null, unless a new canvas name is created!
+				set.add(a);
+		});
+		
+		return map;
+	}
+	
 	private void init() {
 		setOpaque(!isAquaLAF()); // Transparent if Aqua
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
+		
+		JLabel fgLabel = createLayerTitleLabel(Annotation.FOREGROUND);
+		JLabel bgLabel = createLayerTitleLabel(Annotation.BACKGROUND);
 		
 		// I don't know of a better way to center the selection label perfectly
 		// other than by using this "filler" panel hack...
@@ -352,7 +405,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addContainerGap()
 				)
-				.addComponent(getListScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(fgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getFtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addContainerGap()
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -368,7 +424,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addComponent(getListScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(fgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getFtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(bgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getBtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(CENTER, true)
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -441,66 +500,49 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return removeAnnotationsButton;
 	}
 	
-	JTable getListTable() {
-		if (listTable == null) {
-			listTable = new JTable(new AnnotationTableModel());
-			listTable.setShowHorizontalLines(true);
-			listTable.setShowVerticalLines(false);
-			listTable.setGridColor(UIManager.getColor("Separator.foreground"));
-			listTable.setIntercellSpacing(new Dimension(0, 4));
-			listTable.setRowHeight(32);
-			listTable.setTableHeader(null);
-			listTable.setBackground(UIManager.getColor("Panel.background"));
-			listTable.setColumnSelectionAllowed(false);
-			
-			listTable.getColumnModel().getColumn(0).setWidth(32);
-			listTable.getColumnModel().getColumn(0).setPreferredWidth(32);
-			listTable.getColumnModel().getColumn(0).setMaxWidth(32);
-			
-			listTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-				@Override
-				public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-						boolean hasFocus, int row, int column) {
-					super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-					
-					// Do not highlight the focused cell when the row is not selected
-					this.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-					this.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-						
-					return this;
-				}
-			});
-			
-			makeSmall(listTable);
+	JTable getForegroundTable() {
+		if (foregroundTable == null) {
+			foregroundTable = createAnnotationLayerTable();
 		}
 		
-		return listTable;
+		return foregroundTable;
 	}
 	
-	JScrollPane getListScrollPane() {
-		if (listScrollPane == null) {
-			listScrollPane = new JScrollPane(getListTable());
-			listScrollPane.getViewport().setBackground(UIManager.getColor("Label.background"));
-			listScrollPane.getViewport().addMouseListener(new MouseAdapter() {
-				@Override
-				public void mousePressed(MouseEvent e) {
-					stopTableCellEditing();
-					getListTable().clearSelection();
-					listScrollPane.requestFocusInWindow();
-				}
-			});
+	JTable getBackgroundTable() {
+		if (backgroundTable == null) {
+			backgroundTable = createAnnotationLayerTable();
 		}
 		
-		return listScrollPane;
+		return backgroundTable;
+	}
+
+	JScrollPane getFtScrollPane() {
+		if (ftScrollPane == null) {
+			ftScrollPane = createTableScrollPane(getForegroundTable());
+		}
+		
+		return ftScrollPane;
+	}
+	
+	JScrollPane getBtScrollPane() {
+		if (btScrollPane == null) {
+			btScrollPane = createTableScrollPane(getBackgroundTable());
+		}
+		
+		return btScrollPane;
 	}
 	
 	JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
 			selectAllButton.addActionListener(evt -> {
-				if (getListTable().getRowCount() > 0) {
-					stopTableCellEditing();
-					getListTable().setRowSelectionInterval(0, getListTable().getRowCount() - 1);
+				if (getBackgroundTable().getRowCount() > 0) {
+					stopTableCellEditing(getBackgroundTable());
+					getBackgroundTable().selectAll();
+				}
+				if (getForegroundTable().getRowCount() > 0) {
+					stopTableCellEditing(getForegroundTable());
+					getForegroundTable().selectAll();
 				}
 			});
 			
@@ -519,8 +561,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
 			selectNoneButton.addActionListener(evt -> {
-				stopTableCellEditing();
-				getListTable().clearSelection();
+				stopTableCellEditing(getBackgroundTable());
+				stopTableCellEditing(getForegroundTable());
+				getBackgroundTable().clearSelection();
+				getForegroundTable().clearSelection();
 			});
 			
 			makeSmall(selectNoneButton);
@@ -532,6 +576,68 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		return selectNoneButton;
+	}
+	
+	private JTable createAnnotationLayerTable() {
+		JTable table = new JTable(new AnnotationTableModel());
+		table.setShowHorizontalLines(true);
+		table.setShowVerticalLines(false);
+		table.setGridColor(UIManager.getColor("Separator.foreground"));
+		table.setIntercellSpacing(new Dimension(0, 4));
+		table.setRowHeight(32);
+		table.setTableHeader(null);
+		table.setBackground(UIManager.getColor("Panel.background"));
+		table.setColumnSelectionAllowed(false);
+		
+		table.getColumnModel().getColumn(0).setWidth(32);
+		table.getColumnModel().getColumn(0).setPreferredWidth(32);
+		table.getColumnModel().getColumn(0).setMaxWidth(32);
+		
+		table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+			@Override
+			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+					boolean hasFocus, int row, int column) {
+				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				
+				// Do not highlight the focused cell when the row is not selected
+				this.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
+				this.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
+					
+				return this;
+			}
+		});
+		
+		makeSmall(table);
+		
+		return table;
+	}
+	
+	private JScrollPane createTableScrollPane(JTable table) {
+		JScrollPane sp = new JScrollPane(table);
+		sp.getViewport().setBackground(UIManager.getColor("Label.background"));
+		sp.getViewport().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				stopTableCellEditing(table);
+				table.clearSelection();
+				sp.requestFocusInWindow();
+			}
+		});
+		
+		return sp;
+	}
+	
+	private JLabel createLayerTitleLabel(String name) {
+		JLabel label = new JLabel(name.toUpperCase() + " Layer");
+		label.setFont(label.getFont().deriveFont(Font.BOLD));
+		label.setBorder(BorderFactory.createEmptyBorder(6, 12, 2, 12	));
+		
+		makeSmall(label);
+		
+		if (isAquaLAF())
+			label.putClientProperty("JComponent.sizeVariant", "mini");
+		
+		return label;
 	}
 	
 	private void styleToolBarButton(AbstractButton btn, Font font) {
