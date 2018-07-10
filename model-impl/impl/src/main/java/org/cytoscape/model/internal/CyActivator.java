@@ -1,11 +1,13 @@
 package org.cytoscape.model.internal;
 
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.equations.event.EquationFunctionAddedListener;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
+import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -61,5 +63,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, tableManager, NetworkAboutToBeDestroyedListener.class);
 		registerService(bc, tableManager, EquationFunctionAddedListener.class);
 		registerService(bc, networkManager, CyNetworkManager.class);
+		
+		SelectionMediator selectionMediator = new SelectionMediator(serviceRegistrar);
+		registerService(bc, selectionMediator, RowsSetListener.class);
+		registerService(bc, selectionMediator, SetCurrentNetworkListener.class);
 	}
 }
