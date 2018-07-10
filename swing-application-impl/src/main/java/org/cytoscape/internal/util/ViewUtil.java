@@ -18,6 +18,7 @@ import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -169,6 +170,8 @@ public final class ViewUtil {
 		btn.setBorder(BorderFactory.createEmptyBorder());
 		btn.setContentAreaFilled(false);
 		btn.setOpaque(true);
+		btn.setHorizontalTextPosition(SwingConstants.CENTER);
+		btn.setVerticalTextPosition(SwingConstants.TOP);
 		
 		if (hPad > 0 || vPad > 0) {
 			final Dimension d = btn.getPreferredSize();

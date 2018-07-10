@@ -9,6 +9,9 @@ import javax.swing.ImageIcon;
 
 public final class IconUtil {
 
+	public static final String CY_FONT_NAME = "cytoscape-3";
+	public static final String ICON_ANNOTATION = "A";
+	
 	public static ImageIcon resizeIcon(final ImageIcon icon, int width, int height) {
 		final Image img = icon.getImage().getScaledInstance(width, height, Image.SCALE_AREA_AVERAGING);
 		final BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);

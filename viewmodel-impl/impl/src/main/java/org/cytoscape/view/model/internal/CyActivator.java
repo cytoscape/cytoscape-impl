@@ -44,8 +44,5 @@ public class CyActivator extends AbstractCyActivator {
 		Properties nullViewFactoryProperties = new Properties();
 		nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
 		registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
-		
-		SelectionMediator selectionMediator = new SelectionMediator(serviceRegistrar);
-		registerAllServices(bc, selectionMediator);
 	}
 }

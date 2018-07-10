@@ -68,7 +68,7 @@ public class CyActivator extends AbstractCyActivator {
 				unifiedNetworkImportDialog,
 				"File.Import[23]",
 				0.5f,
-				"Network From Public Databases...",
+				"Network from Public Databases...",
 				networkImportShortcut,
 				"Import a network from a curated database",
 				serviceRegistrar
@@ -77,7 +77,7 @@ public class CyActivator extends AbstractCyActivator {
 				unifiedTableImportDialog,
 				"File.Import[23]",
 				7.0f,
-				"Table From Public Databases...",
+				"Table from Public Databases...",
 				tableImportShortcut,
 				serviceRegistrar
 		);

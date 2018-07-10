@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import java.util.ArrayList;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -28,9 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.cytoscape.view.model.CyNetworkView; 
-import org.cytoscape.ding.impl.DGraphView;
-
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -39,29 +39,25 @@ import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
-import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
-
 public class AnnotationFactoryManager {
 
-	List<AnnotationFactory> annotationFactories;
+	private List<AnnotationFactory<? extends Annotation>> annotationFactories;
 
 	public AnnotationFactoryManager() {
-		annotationFactories = new CopyOnWriteArrayList<AnnotationFactory>();
+		annotationFactories = new CopyOnWriteArrayList<>();
 	}
 
 	// This method is used to create annotations when we're reading the serialization from a saved
-	// session.  Note that we need to do some funky things with the type to support backwares compatibility
-	public Annotation createAnnotation(String type, CyNetworkView view, Map<String,String> argMap) {
-		Class clazz = null;
-		try{
+	// session.  Note that we need to do some funky things with the type to support backwards compatibility
+	public Annotation createAnnotation(String type, CyNetworkView view, Map<String, String> argMap) {
+		Class<?> clazz = null;
+		
+		try {
 			clazz = Class.forName(type);
+			
 			if (Annotation.class.isAssignableFrom(clazz))
 				return createAnnotation(clazz, view, argMap);
+			
 			return null;
 		} catch (Exception e) {
 			clazz = null;
@@ -85,25 +81,30 @@ public class AnnotationFactoryManager {
 		return null;
 	}
 
-	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String,String> argMap) {
+	public Annotation createAnnotation(Class type, CyNetworkView view, Map<String, String> argMap) {
 		Annotation annotation = null;
-		for (AnnotationFactory factory: annotationFactories) {
-			annotation =  factory.createAnnotation(type, view, argMap);
-			if (annotation != null) {
+		
+		for (AnnotationFactory<? extends Annotation> factory : annotationFactories) {
+			annotation = factory.createAnnotation(type, view, argMap);
+
+			if (annotation != null)
 				break;
-			}
 		}
 
 		return annotation;
 	}
 
-	public void addAnnotationFactory(AnnotationFactory factory, Map props) {
-		if ( factory != null )
+	public void addAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
 			annotationFactories.add(factory);
 	}
 
-	public void removeAnnotationFactory(AnnotationFactory factory, Map props) {
-		if ( factory != null )
+	public void removeAnnotationFactory(AnnotationFactory<?> factory, Map<?, ?> props) {
+		if (factory != null)
 			annotationFactories.remove(factory);
+	}
+	
+	public List<AnnotationFactory<?>> getAnnotationFactories() {
+		return new ArrayList<>(annotationFactories);
 	}
 }

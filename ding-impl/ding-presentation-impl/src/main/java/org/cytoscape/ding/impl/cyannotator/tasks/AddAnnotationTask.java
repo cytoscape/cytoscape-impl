@@ -1,12 +1,25 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+
+import java.awt.geom.Point2D;
+
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +37,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-import java.awt.geom.Point2D;
-
-import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.work.TaskMonitor;
-
 public class AddAnnotationTask extends AbstractNetworkViewTask {
 
 	private final Point2D location;
@@ -51,11 +52,18 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
-			SwingUtilities.invokeLater(() -> {
+			invokeOnEDT(() -> {
 				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
 						.createAnnotationDialog((DGraphView) view, location);
-				dialog.setLocation((int) location.getX(), (int) location.getY());
-				dialog.setVisible(true);
+				
+				if (dialog != null) {
+					if (location != null)
+						dialog.setLocation((int) location.getX(), (int) location.getY());
+					else
+						dialog.setLocationRelativeTo(((DGraphView) view).getCanvas());
+					
+					dialog.setVisible(true);
+				}
 			});
 		}
 	}

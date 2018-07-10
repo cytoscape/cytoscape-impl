@@ -1,12 +1,26 @@
 package org.cytoscape.ding.impl.cyannotator.utils;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.LinearGradientPaint;
+import java.awt.MultipleGradientPaint.CycleMethod;
+import java.awt.Paint;
+import java.awt.RadialGradientPaint;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.Map;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +38,6 @@ package org.cytoscape.ding.impl.cyannotator.utils;
  * #L%
  */
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Paint;
-import java.awt.LinearGradientPaint;
-import java.awt.MultipleGradientPaint.CycleMethod;
-import java.awt.RadialGradientPaint;
-
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
-import java.util.Map;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.view.presentation.annotations.Annotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
-@SuppressWarnings("serial")
 public class ViewUtils {
 
   static public String convertColor(Paint clr) {

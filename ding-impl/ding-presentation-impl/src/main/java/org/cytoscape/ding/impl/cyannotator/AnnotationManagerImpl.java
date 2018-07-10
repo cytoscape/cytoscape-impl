@@ -11,11 +11,14 @@ import java.util.Map;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.view.presentation.events.AnnotationsAddedEvent;
+import org.cytoscape.view.presentation.events.AnnotationsRemovedEvent;
 
 /*
  * #%L
@@ -23,7 +26,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,38 +55,47 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	/**********************************************************************************
-	 *                   AnnotationManager implementation methods                     *
-	 **********************************************************************************/
 	@Override
 	public void addAnnotation(final Annotation annotation) {
 		if (!(annotation instanceof DingAnnotation))
 			return;
 
-		DingAnnotation dAnnotation = (DingAnnotation)annotation;
+		DingAnnotation dAnnotation = (DingAnnotation) annotation;
 		CyNetworkView view = annotation.getNetworkView();
 
 		invokeOnEDTAndWait(() -> {
 			((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
-			if (dAnnotation.getCanvas() != null) {
+			
+			if (dAnnotation.getCanvas() != null)
 				dAnnotation.getCanvas().add(dAnnotation.getComponent());
-			} else {
+			else
 				((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
-			}
 		});
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.addEventPayload(view, annotation, AnnotationsAddedEvent.class);
 	}
 	 
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		Map<DGraphView,List<DingAnnotation>> annotationsByView = groupByView(annotations);
-		if(annotationsByView.isEmpty())
+		Map<DGraphView, List<DingAnnotation>> annotationsByView = groupByView(annotations);
+		
+		if (annotationsByView.isEmpty())
 			return;
 		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
-				Map<ArbitraryGraphicsCanvas,List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
+				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
+						viewAnnotations);
 				view.getCyAnnotator().addAnnotations(viewAnnotations);
 				annotationsByCanvas.forEach(ArbitraryGraphicsCanvas::addAnnotations);
+			});
+		});
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		annotationsByView.values().forEach(list -> {
+			list.forEach(a -> {
+				eventHelper.addEventPayload(a.getNetworkView(), a, AnnotationsAddedEvent.class);
 			});
 		});
 	}
@@ -91,6 +103,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	@Override
 	public void removeAnnotation(final Annotation annotation) {
 		CyNetworkView view = annotation.getNetworkView();
+		
 		if (!(view instanceof DGraphView))
 			return;
 		
@@ -98,31 +111,46 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			annotation.removeAnnotation();
 			((DGraphView)view).getCyAnnotator().removeAnnotation(annotation);
 		});
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.addEventPayload(view, annotation, AnnotationsRemovedEvent.class);
 	}
 
 	@Override
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
-		Map<DGraphView,List<DingAnnotation>> annotationsByView = groupByView(annotations);
-		if(annotationsByView.isEmpty())
+		Map<DGraphView, List<DingAnnotation>> annotationsByView = groupByView(annotations);
+		
+		if (annotationsByView.isEmpty())
 			return;
 		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
-				Map<ArbitraryGraphicsCanvas,List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
+				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
+						viewAnnotations);
 				annotationsByCanvas.forEach((canvas, dingAnnotations) -> {
 
 					// The following code is a batch version of Annotation.removeAnnotation()
-					for(DingAnnotation a : dingAnnotations) {
+					for (DingAnnotation a : dingAnnotations) {
 						GroupAnnotation parent = a.getGroupParent();
-						if(parent != null) {
+
+						if (parent != null)
 							parent.removeMember(a);
-						}
 					}
-					canvas.removeAnnotations(getArrows(dingAnnotations));
+
+					List<DingAnnotation> arrows = getArrows(dingAnnotations);
+					canvas.removeAnnotations(arrows);
 					canvas.removeAnnotations(dingAnnotations);
 					canvas.repaint();
+					
+					view.getCyAnnotator().removeAnnotations(arrows);
+					view.getCyAnnotator().removeAnnotations(dingAnnotations);
 				});
 			});
+		});
+		
+		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		annotationsByView.values().forEach(list -> {
+			list.forEach(a -> eventHelper.addEventPayload(a.getNetworkView(), a, AnnotationsRemovedEvent.class));
 		});
 	}
 	
@@ -152,5 +180,4 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			return ((DGraphView)networkView).getCyAnnotator().getAnnotations();
 		return null;
 	}
-
 }

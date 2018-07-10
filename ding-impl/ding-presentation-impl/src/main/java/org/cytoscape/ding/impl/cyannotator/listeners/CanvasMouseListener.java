@@ -1,12 +1,34 @@
 package org.cytoscape.ding.impl.cyannotator.listeners;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+
+import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+import java.util.Collections;
+import java.util.List;
+
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.property.values.Position;
+import org.cytoscape.work.swing.DialogTaskManager;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +46,11 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
  * #L%
  */
 
-import java.awt.Cursor;
-import java.awt.Point;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-
-import java.util.List;
-import java.util.Set;
-
-import javax.swing.JComponent;
-
-import org.cytoscape.view.presentation.property.values.Position;
-
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.InnerCanvas;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.swing.DialogTaskManager;
-
-
 public class CanvasMouseListener implements MouseListener {
+	
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
 	private final DGraphView view;
-	private JComponent anchorComponent;
 	private Point2D mouseDown;
 
 	public CanvasMouseListener(CyAnnotator c, DGraphView view) {
@@ -64,23 +60,24 @@ public class CanvasMouseListener implements MouseListener {
 	}
 
 	// TODO: create annotation-specific popup?
+	@Override
 	public void mousePressed(MouseEvent e) {
 		mouseDown = null;
+		
 		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.processMouseEvent(e);
 			return;
 		}
 
 		// Assuming we're not handling a special annotation-specific context menu
-		if (e.getButton() != MouseEvent.BUTTON1 ||
-        (LookAndFeelUtil.isMac() && e.isControlDown() && !e.isMetaDown()))
-		{
+		if (e.getButton() != MouseEvent.BUTTON1 || (LookAndFeelUtil.isMac() && e.isControlDown() && !e.isMetaDown())) {
 			networkCanvas.processMouseEvent(e);
 			return;
 		}
 
 		DingAnnotation annotation = getAnnotation(e);
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
+		
 		if (annotationSelection.count() > 0 &&
 			  annotationSelection.overAnchor(e.getX(), e.getY()) != null) {
 			Position anchor = annotationSelection.overAnchor(e.getX(), e.getY());
@@ -88,6 +85,7 @@ public class CanvasMouseListener implements MouseListener {
 			annotationSelection.setResizing(true);
 			annotationSelection.initialPosition(e.getX(), e.getY(), anchor);
 			annotationSelection.saveBounds();
+			
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 
 				a.saveBounds();
 		} else if (annotation == null) {
@@ -173,6 +171,7 @@ public class CanvasMouseListener implements MouseListener {
 		}
 	}
 
+	@Override
 	public void mouseClicked(MouseEvent e) {
 		// Check to see if we're resizing
 		if (cyAnnotator.getResizeShape() != null) {
@@ -217,10 +216,12 @@ public class CanvasMouseListener implements MouseListener {
 		}
 	}
 
+	@Override
 	public void mouseEntered(MouseEvent e) {
 		networkCanvas.processMouseEvent(e);
 	}
 
+	@Override
 	public void mouseExited(MouseEvent e) {
 		networkCanvas.processMouseEvent(e);
 	}
@@ -234,7 +235,6 @@ public class CanvasMouseListener implements MouseListener {
 			return null;
 
 		return annotation;
-
 	}
 
 	public void setResizeCursor(Position anchor) {

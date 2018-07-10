@@ -881,7 +881,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Undirected)");
-			// props.setProperty(COMMAND, "select first neighbors undirected");
+			// props.setProperty(C	OMMAND, "select first neighbors undirected");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectFirstNeighborsTaskFactory.class, props);
@@ -2124,7 +2124,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ACCELERATOR, "cmd n");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
-			props.setProperty(TITLE, "From Selected Nodes, All edges");
+			props.setProperty(TITLE, "From Selected Nodes, All Edges");
 			props.setProperty(TOOL_BAR_GRAVITY, "16.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "2.0");

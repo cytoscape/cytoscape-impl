@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -44,12 +20,35 @@ import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
@@ -238,15 +237,23 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 		updateBounds();
 		if (super.name == null)
-			super.name = "ArrowAnnotation_"+instanceCount;
+			super.name = "ArrowAnnotation_" + instanceCount;
 		instanceCount++;
-  }
+	}
+	
+	@Override
+	public Class<? extends Annotation> getType() {
+		return ArrowAnnotation.class;
+	}
 
-	public Map<String,String> getArgMap() {
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,ArrowAnnotation.class.getName());
+		argMap.put(TYPE, ArrowAnnotation.class.getName());
+
 		if (this.lineColor != null)
-			argMap.put(ARROWCOLOR,ViewUtils.convertColor(this.lineColor));
+			argMap.put(ARROWCOLOR, ViewUtils.convertColor(this.lineColor));
+
 		argMap.put(ARROWTHICKNESS, Float.toString(this.lineWidth));
 
 		if (source != null)
@@ -254,53 +261,66 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		argMap.put(SOURCETYPE, Integer.toString(this.sourceType.ordinal()));
 		argMap.put(SOURCESIZE, Double.toString(this.sourceSize));
+
 		if (this.sourceColor != null)
-			argMap.put(SOURCECOLOR,ViewUtils.convertColor(this.sourceColor));
+			argMap.put(SOURCECOLOR, ViewUtils.convertColor(this.sourceColor));
 
 		if (target != null && target instanceof Point2D) {
 			Point2D xy = (Point2D) target;
-			argMap.put(TARGETPOINT,Double.toString(xy.getX())+","+Double.toString(xy.getY()));
+			argMap.put(TARGETPOINT, Double.toString(xy.getX()) + "," + Double.toString(xy.getY()));
 		} else if (target != null && target instanceof Annotation) {
-			argMap.put(TARGETANN,((DingAnnotation)target).getUUID().toString());
+			argMap.put(TARGETANN, ((DingAnnotation) target).getUUID().toString());
 		} else if (target != null && target instanceof CyNode) {
-			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
-			double xCenter = nv.getXPosition();
-			double yCenter = nv.getYPosition();
-			argMap.put(TARGETNODE,
-			           Double.toString(xCenter)+","+Double.toString(yCenter));
+			DNodeView nv = (DNodeView) view.getNodeView((CyNode) target);
+
+			if (nv != null) {
+				double xCenter = nv.getXPosition();
+				double yCenter = nv.getYPosition();
+				argMap.put(TARGETNODE, Double.toString(xCenter) + "," + Double.toString(yCenter));
+			}
 		}
 
 		argMap.put(TARGETTYPE, Integer.toString(this.targetType.ordinal()));
 		argMap.put(TARGETSIZE, Double.toString(this.targetSize));
+
 		if (this.targetColor != null)
-			argMap.put(TARGETCOLOR,ViewUtils.convertColor(this.targetColor));
+			argMap.put(TARGETCOLOR, ViewUtils.convertColor(this.targetColor));
+
 		return argMap;
 	}
 
+	@Override
 	public Annotation getSource() { return this.source; }
+	@Override
 	public void setSource(Annotation source) { 
 		if (this.source != null)
 			((DingAnnotation)source).removeArrow(this);
 		this.source = (DingAnnotation)source; 
-		source.addArrow(this);
+		
+		if (source != null)
+			source.addArrow(this);
 
 		updateBounds();
 		update();
 	}
-
+	
+	@Override
 	public Object getTarget() { return this.target; }
+	@Override
 	public void setTarget(Annotation target) { 
 		this.target = target; 
 		updateBounds();
 		update();
 	}
 
+	@Override
 	public void setTarget(CyNode target) { 
 		this.target = target; 
 		updateBounds();
 		update();
 	}
 
+	@Override
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
 		this.target = ViewUtils.getNodeCoordinates(view, target.getX(), target.getY()); 
@@ -308,15 +328,19 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public double getLineWidth() { return (double)lineWidth; }
+	@Override
 	public void setLineWidth(double width) { this.lineWidth = (float)width; update();}
 
+	@Override
 	public double getArrowSize(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceSize; 
 		else
 			return this.targetSize; 
 	}
+	@Override
 	public void setArrowSize(ArrowEnd end, double width) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceSize = width; 
@@ -325,6 +349,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public String getArrowType(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceType.arrowName(); 
@@ -332,6 +357,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetType.arrowName(); 
 	}
 
+	@Override
 	public void setArrowType(ArrowEnd end, String type) { 
 		ArrowType aType = null;
 
@@ -350,6 +376,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public AnchorType getAnchorType(ArrowEnd end) {
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceAnchorType; 
@@ -357,6 +384,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetAnchorType; 
 	}
 
+	@Override
 	public void setAnchorType(ArrowEnd end, AnchorType type) {
 		if (end == ArrowEnd.SOURCE)
 			this.sourceAnchorType = type;
@@ -365,15 +393,18 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		update();
 	}
 
+	@Override
 	public Paint getLineColor() { 
 		return this.lineColor;
 	}
 
+	@Override
 	public void setLineColor(Paint clr) { 
 		this.lineColor = clr;
 		update();
 	}
 
+	@Override
 	public Paint getArrowColor(ArrowEnd end) { 
 		if (end == ArrowEnd.SOURCE)
 			return this.sourceColor; 
@@ -381,6 +412,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return this.targetColor; 
 	}
 
+	@Override
 	public void setArrowColor(ArrowEnd end, Paint color) { 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceColor = color; 
@@ -391,14 +423,20 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setZoom(double zoom) {
-		float factor=(float)(zoom/getZoom());
-		lineWidth*=factor;
+		if (zoom == getZoom())
+			return;
+
+		float factor = (float) (zoom / getZoom());
+		lineWidth *= factor;
 		updateBounds();
 		super.setZoom(zoom);
 	}
 
 	@Override
 	public void setSpecificZoom(double zoom) {
+		if (zoom == getSpecificZoom())
+			return;
+		
 		super.setSpecificZoom(zoom);		
 	}
 
@@ -480,7 +518,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	public void drawArrow(Graphics g, boolean isPrinting) {
-		if ( (source == null || target == null) && !usedForPreviews ) return;
+		if ((source == null || target == null) && !usedForPreviews)
+			return;
 
 		if (!usedForPreviews)
 			updateBounds();
@@ -496,7 +535,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		g2.setPaint(lineColor);
 		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
-		Line2D relativeLine = getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border);
+		Line2D relativeLine = arrowLine != null ? getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border) : null;
 
 		if (relativeLine != null) {
 			// Handle opacity
@@ -578,34 +617,37 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// We need to take into account our arrows
 		if (targetType != ArrowType.NONE) {
-			xOffset = targetSize*10.0*getZoom() + lineWidth;
-			yOffset = targetSize*10.0*getZoom() + lineWidth;
+			xOffset = targetSize * 10.0 * getZoom() + lineWidth;
+			yOffset = targetSize * 10.0 * getZoom() + lineWidth;
 		}
 
 		if (sourceType != ArrowType.NONE) {
-			xOffset += sourceSize*10.0*getZoom() + lineWidth;
-			yOffset += sourceSize*10.0*getZoom() + lineWidth;
+			xOffset += sourceSize * 10.0 * getZoom() + lineWidth;
+			yOffset += sourceSize * 10.0 * getZoom() + lineWidth;
 		}
 
 		// Update our bounds
 		if (source != null && target != null) {
 			arrowLine = getArrowLine(target, source);
-			double x1 = arrowLine.getX1();
-			double y1 = arrowLine.getY1();
-			double x2 = arrowLine.getX2();
-			double y2 = arrowLine.getY2();
-			setLocation((int)(Math.min(x1, x2)-xOffset), (int)(Math.min(y1, y2)-yOffset));
-			setSize(Math.abs(x1-x2)+xOffset*2, Math.abs(y1-y2)+yOffset*2);
+			
+			if (arrowLine != null) {
+				double x1 = arrowLine.getX1();
+				double y1 = arrowLine.getY1();
+				double x2 = arrowLine.getX2();
+				double y2 = arrowLine.getY2();
+				setLocation((int) (Math.min(x1, x2) - xOffset), (int) (Math.min(y1, y2) - yOffset));
+				setSize(Math.abs(x1 - x2) + xOffset * 2, Math.abs(y1 - y2) + yOffset * 2);
+			}
 		}
 	}
 
 	private Line2D getArrowLine(Object target, DingAnnotation source) {
-		if (usedForPreviews) {
+		if (usedForPreviews)
 			return new Line2D.Double(10.0, shapeHeight/2, shapeWidth-20.0, shapeHeight/2);
-		}
 
 		Point2D targetPoint = null;
 		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
+		
 		if (target instanceof Point2D) {
 			targetPoint = ViewUtils.getComponentCoordinates(view, ((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {
@@ -623,7 +665,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		Rectangle sourceBounds = source.getComponent().getBounds();
 		Point2D sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
-		return new Line2D.Double(sourcePoint, targetPoint);
+		
+		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;
 	}
 
 	private Point2D centerPoint(Rectangle2D bounds) {
@@ -634,9 +677,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	// Find the mid point to draw the target to
 	private Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
-		if (anchorType == AnchorType.CENTER) {
+		if (source == null || target == null)
+			return null;
+		
+		if (anchorType == AnchorType.CENTER)
 			return new Point2D.Double(target.getX()+target.getWidth()/2, target.getY()+target.getHeight()/2);
-		}
+		
 		Point2D.Double left = new Point2D.Double(target.getX(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double right = new Point2D.Double(target.getX()+target.getWidth(), target.getY()+target.getHeight()/2.0);
 		Point2D.Double top = new Point2D.Double(target.getX()+target.getWidth()/2.0, target.getY());
@@ -689,6 +735,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	private Rectangle2D getNodeBounds(DNodeView nv) {
+		if (nv == null)
+			return null;
+		
 		double[] nextLocn = new double[2];
 
 		// First, get our starting and ending points in node coordinates

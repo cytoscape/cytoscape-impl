@@ -1,12 +1,33 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Composite;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Paint;
+import java.awt.Window;
+import java.awt.font.FontRenderContext;
+import java.util.Map;
+
+import javax.swing.JDialog;
+
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
+import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,27 +44,6 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Composite;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Window;
-import java.awt.font.FontRenderContext;
-import java.util.Map;
-
-import javax.swing.JDialog;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
-import org.cytoscape.view.presentation.annotations.BoundedTextAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
 @SuppressWarnings("serial")
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
@@ -119,24 +119,29 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		instanceCount++;
 	}
 
-	public Map<String,String> getArgMap() {
+	@Override
+	public Class<? extends Annotation> getType() {
+		return BoundedTextAnnotation.class;
+	}
+	
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
-		argMap.put(TYPE,BoundedTextAnnotation.class.getName());
-		argMap.put(TEXT,this.text);
-		argMap.put(COLOR,ViewUtils.convertColor((Paint)this.textColor));
-		argMap.put(FONTFAMILY,this.font.getFamily());
-		argMap.put(FONTSIZE,Integer.toString(this.font.getSize()));
-		argMap.put(FONTSTYLE,Integer.toString(this.font.getStyle()));
+		argMap.put(TYPE, BoundedTextAnnotation.class.getName());
+		argMap.put(TEXT, this.text);
+		argMap.put(COLOR, ViewUtils.convertColor((Paint) this.textColor));
+		argMap.put(FONTFAMILY, this.font.getFamily());
+		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
+		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
 		return argMap;
 	}
 
+	@Override
 	public void fitShapeToText() {
 		Graphics2D graphics = (Graphics2D)this.getGraphics();
 		double width = getTextWidth(graphics)+8;
 		double height = getTextHeight(graphics)+8;
 		shapeIsFit = true;
-
-		// System.out.println("Fitting shape to text: "+width+"x"+height);
 
 		// Different depending on the type...
 		ShapeType shapeType = getShapeTypeInt();
@@ -164,7 +169,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	
 	@Override
 	public JDialog getModifyDialog() {
-			return new BoundedTextAnnotationDialog(this, owner);
+		return new BoundedTextAnnotationDialog(this, owner);
 	}
 
 	@Override
@@ -232,21 +237,28 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setSpecificZoom(double zoom) {
-		fontSize = (float)((zoom/getSpecificZoom())*fontSize);
-		font=font.deriveFont(fontSize);
-		super.setSpecificZoom(zoom);		
+		if (zoom == getSpecificZoom())
+			return;
+
+		fontSize = (float) ((zoom / getSpecificZoom()) * fontSize);
+		font = font.deriveFont(fontSize);
+		super.setSpecificZoom(zoom);
 	}
 
 	@Override
 	public void setZoom(double zoom) {
-		fontSize = (float)((zoom/getZoom())*fontSize);
-		font=font.deriveFont(fontSize);
+		if (zoom == getZoom())
+			return;
+
+		fontSize = (float) ((zoom / getZoom()) * fontSize);
+		font = font.deriveFont(fontSize);
 		super.setZoom(zoom);
 	}
 
 	@Override
 	public void setText(String text) {
 		this.text = text;
+
 		if (shapeIsFit)
 			fitShapeToText();
 
@@ -255,8 +267,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 
 	@Override
-	public String getText() { return this.text; }
-
+	public String getText() {
+		return this.text;
+	}
 
 	@Override
 	public void setTextColor(Color color) {
@@ -265,7 +278,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 
 	@Override
-	public Color getTextColor() { return textColor; }
+	public Color getTextColor() {
+		return textColor;
+	}
 
 	@Override
 	public void setFontSize(double size) {
@@ -275,20 +290,21 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	// A method that can be used for group resizing
 	public void setFontSize(double size, boolean updateBounds) {
-		this.fontSize = (float)size;
-		font = font.deriveFont((float)(fontSize));
+		this.fontSize = (float) size;
+		font = font.deriveFont((float) (fontSize));
 		if (updateBounds)
 			updateBounds();
 		update();
 	}
 
 	@Override
-	public double getFontSize() { return this.fontSize; }
-
+	public double getFontSize() {
+		return this.fontSize;
+	}
 
 	@Override
 	public void setFontStyle(int style) {
-		font = font.deriveFont(style, (float)(fontSize));
+		font = font.deriveFont(style, (float) (fontSize));
 		update();
 	}
 
@@ -299,7 +315,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void setFontFamily(String family) {
-		font = new Font(family, font.getStyle(), (int)fontSize);
+		font = new Font(family, font.getStyle(), (int) fontSize);
 		update();
 	}
 
@@ -308,10 +324,14 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		return font.getFamily();
 	}
 
-	public Font getFont() { return this.font; }
+	@Override
+	public Font getFont() {
+		return this.font;
+	}
 
-	public void setFont(Font font) { 
-		this.font = font; 
+	@Override
+	public void setFont(Font font) {
+		this.font = font;
 		this.fontSize = font.getSize2D();
 		updateBounds();
 		update();
@@ -323,9 +343,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth((Graphics2D)this.getGraphics()), shapeWidth);
-		double yBound = Math.max(getTextHeight((Graphics2D)this.getGraphics()), shapeHeight);
-		setSize(xBound+4, yBound+4);
+		double xBound = Math.max(getTextWidth((Graphics2D) this.getGraphics()), shapeWidth);
+		double yBound = Math.max(getTextHeight((Graphics2D) this.getGraphics()), shapeHeight);
+		setSize(xBound + 4, yBound + 4);
 	}
 
 	double getTextWidth(Graphics2D g2) {
@@ -358,5 +378,4 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		int style = Integer.parseInt(argMap.get(FONTSTYLE));
 		return new Font(family, style, size);
 	}
-
 }

@@ -1,29 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -45,7 +21,6 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -53,6 +28,30 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
@@ -113,17 +112,18 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			super.name = "GroupAnnotation_"+instanceCount;
 		instanceCount++;
 	}
+	
+	@Override
+	public Class<? extends Annotation> getType() {
+		return GroupAnnotation.class;
+	}
 
 	@Override
 	public void addMember(final Annotation member) {
 		// We muck with the ZOrder directly, so we need
 		// to make sure we're on the EDT
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() {
-					addMember(member);
-				}
-			});
+			SwingUtilities.invokeLater(() -> addMember(member));
 			return;
 		}
 
@@ -166,7 +166,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public List<Annotation> getMembers() {
-		return new ArrayList<Annotation>(annotations);
+		return new ArrayList<>(annotations);
 	}
 
 	@Override
@@ -201,8 +201,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			canvas.repaint();
 		});
 	}
-
-	public Map<String,String> getArgMap() {
+	
+	@Override
+	public Map<String, String> getArgMap() {
 		Map<String, String> argMap = super.getArgMap();
 		argMap.put(TYPE,GroupAnnotation.class.getName());
 		String members = "";
@@ -219,9 +220,10 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		return argMap;
 	}
 
+	@Override
 	public JDialog getModifyDialog() {
-			// return new GroupAnnotationDialog(this);
-			return null;
+		// return new GroupAnnotationDialog(this);
+		return null;
 	}
 
 	@Override
@@ -264,6 +266,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	 * 2) move each child
 	 * 3) reset the size of each child
 	 */
+	@Override
 	public void setSize(Dimension d) {
 		// Get our width
 		double width = getWidth();
@@ -381,19 +384,27 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void setSpecificZoom(double newZoom) {
+		if (newZoom == getSpecificZoom())
+			return;
+		
 		if (annotations != null && annotations.size() > 0) {
 			for (DingAnnotation child: annotations)
 				child.setSpecificZoom(newZoom);
 		}
+		
 		super.setSpecificZoom(newZoom);		
 	}
 
 	@Override
 	public void setZoom(double newZoom) {
+		if (newZoom == getZoom())
+			return;
+		
 		if (annotations != null && annotations.size() > 0) {
 			for (DingAnnotation child: annotations)
 				child.setZoom(newZoom);
 		}
+		
 		super.setZoom(newZoom);		
 	}
 
@@ -403,9 +414,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	private void updateBounds() {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater( new Runnable() {
-				public void run() { updateBounds(); }
-			});
+			SwingUtilities.invokeLater(() -> updateBounds());
 			return;
 		}
 
@@ -420,6 +429,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		bounds = union;
 	}
 
+	@Override
 	public Rectangle getBounds() {
 		return getBounds2D().getBounds();
 	}

@@ -281,7 +281,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			expandAllButton.setFocusPainted(false);
 			expandAllButton.setBorder(BorderFactory.createEmptyBorder());
 			
-			expandAllButton.addActionListener((ActionEvent e) -> {
+			expandAllButton.addActionListener(e -> {
 				expandAllRootNetworks();
 			});
 		}
@@ -301,9 +301,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			collapseAllButton.setFocusPainted(false);
 			collapseAllButton.setBorder(BorderFactory.createEmptyBorder());
 			
-			collapseAllButton.addActionListener((ActionEvent e) -> {
-				collapseAllRootNetworks();
-			});
+			collapseAllButton.addActionListener(e -> collapseAllRootNetworks());
 		}
 		
 		return collapseAllButton;
@@ -321,7 +319,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			optionsBtn.setFocusPainted(false);
 			optionsBtn.setBorder(BorderFactory.createEmptyBorder());
 			
-			optionsBtn.addActionListener((ActionEvent e) -> {
+			optionsBtn.addActionListener(e -> {
 				getNetworkOptionsMenu().show(optionsBtn, 0, optionsBtn.getHeight());
 			});
 		}
@@ -344,7 +342,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		{
 			final JMenuItem mi = new JCheckBoxMenuItem("Show Network Provenance Hierarchy");
-			mi.addActionListener((ActionEvent e) -> {
+			mi.addActionListener(e -> {
 				setShowNetworkProvenanceHierarchy(mi.isSelected());
 			});
 			mi.setSelected(isShowNetworkProvenanceHierarchy());
@@ -352,7 +350,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		{
 			final JMenuItem mi = new JCheckBoxMenuItem("Show Number of Nodes and Edges");
-			mi.addActionListener((ActionEvent e) -> {
+			mi.addActionListener(e -> {
 				setShowNodeEdgeCount(mi.isSelected());
 			});
 			mi.setSelected(isShowNodeEdgeCount());

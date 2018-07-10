@@ -1,37 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.AlphaComposite;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.Window;
@@ -53,10 +26,32 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public abstract class AbstractAnnotation extends JComponent implements DingAnnotation {
@@ -101,7 +96,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.owner = owner;
 		this.view = view;
 		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
-		arrowList = new HashSet<ArrowAnnotation>();
+		arrowList = new HashSet<>();
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = view.getZoom();
@@ -109,7 +104,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	protected AbstractAnnotation(AbstractAnnotation c, Window owner) {
 		this(c.view, owner);
-		arrowList = new HashSet<ArrowAnnotation>(c.arrowList);
+		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
@@ -142,6 +137,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	//------------------------------------------------------------------------
 
+	@Override
 	public String toString() {
 		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
 	}
@@ -309,29 +305,76 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	public void resizeAnnotation(double width, double height) {};
 
-	public String getName() { return name; }
-	public void setName(String name) { this.name = name; update();}
-
-	public double getZoom() { return globalZoom; }
-	public void setZoom(double zoom) {  globalZoom = zoom; update();}
-      
-	public double getSpecificZoom() {return myZoom; }
-	public void setSpecificZoom(double zoom) { myZoom = zoom;  update();}
-
-	public boolean isSelected() { return selected; }
-	public void setSelected(boolean selected) {
-		this.selected = selected;
-		cyAnnotator.setSelectedAnnotation(this, selected);
+	@Override
+	public String getName() {
+		return name;
 	}
 
-	public void addArrow(ArrowAnnotation arrow) { arrowList.add(arrow); update();}
-	public void removeArrow(ArrowAnnotation arrow) { arrowList.remove(arrow); update();}
-	public Set<ArrowAnnotation> getArrows() { return arrowList; }
+	@Override
+	public void setName(String name) {
+		this.name = name;
+		update();
+	}
 
-	
+	@Override
+	public double getZoom() {
+		return globalZoom;
+	}
+
+	@Override
+	public void setZoom(double zoom) {
+		if (zoom != globalZoom) {
+			globalZoom = zoom;
+			update();
+		}
+	}
+
+	@Override
+	public double getSpecificZoom() {
+		return myZoom;
+	}
+
+	@Override
+	public void setSpecificZoom(double zoom) {
+		if (zoom != myZoom) {
+			myZoom = zoom;
+			update();
+		}
+	}
+
+	@Override
+	public boolean isSelected() {
+		return selected;
+	}
+
+	@Override
+	public void setSelected(boolean selected) {
+		if (selected != this.selected) {
+			this.selected = selected;
+			cyAnnotator.setSelectedAnnotation(this, selected);
+		}
+	}
+
+	@Override
+	public void addArrow(ArrowAnnotation arrow) {
+		arrowList.add(arrow);
+		update();
+	}
+
+	@Override
+	public void removeArrow(ArrowAnnotation arrow) {
+		arrowList.remove(arrow);
+		update();
+	}
+
+	@Override
+	public Set<ArrowAnnotation> getArrows() {
+		return arrowList;
+	}
+
 	@Override
 	public Map<String,String> getArgMap() {
-		Map<String, String> argMap = new HashMap<String, String>();
+		Map<String, String> argMap = new HashMap<>();
 		if (name != null)
 			argMap.put(NAME, this.name);
 		ViewUtils.addNodeCoordinates(view, argMap, getX(), getY());
@@ -350,15 +393,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 		return argMap;
 	}
-
+	
+	@Override
 	public boolean usedForPreviews() { return usedForPreviews; }
 
+	@Override
 	public void setUsedForPreviews(boolean v) { usedForPreviews = v; }
 
-	public void drawAnnotation(Graphics g, double x,
-	                           double y, double scaleFactor) {
+	@Override
+	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 	}
 
+	@Override
 	public void update() {
 		updateAnnotationAttributes();
 		getCanvas().repaint();
@@ -392,6 +438,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
+	@Override
 	public JDialog getModifyDialog() {return null;}
 
 	// Protected methods
@@ -403,15 +450,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	// Save the bounds (in node coordinages)
+	@Override
 	public void saveBounds() {
 		initialBounds = ViewUtils.getNodeCoordinates(view, getBounds().getBounds2D());
 	}
 
+	@Override
 	public Rectangle2D getInitialBounds() {
 		return initialBounds;
 	}
 
 	// Save the offset in node coordinates
+	@Override
 	public void setOffset(Point2D offset) {
 		if (offset == null) {
 			this.offset = null;
@@ -424,9 +474,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
 	}
 
+	@Override
 	public Point2D getOffset() { return offset; }
 
-
+	@Override
 	public void contentChanged() {
 		if (view == null) return;
 		final ContentChangeListener lis = view.getContentChangeListener();
