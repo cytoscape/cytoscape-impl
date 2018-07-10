@@ -366,12 +366,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		map.put(Annotation.BACKGROUND, new HashSet<>());
 		map.put(Annotation.FOREGROUND, new HashSet<>());
 		
-		list.forEach(a -> {
-			Collection<Annotation> set = map.get(a.getCanvasName());
-			
-			if (set != null) // Should never be null, unless a new canvas name is created!
-				set.add(a);
-		});
+		if (list != null) {
+			list.forEach(a -> {
+				Collection<Annotation> set = map.get(a.getCanvasName());
+				
+				if (set != null) // Should never be null, unless a new canvas name is created!
+					set.add(a);
+			});
+		}
 		
 		return map;
 	}
