@@ -62,7 +62,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		CyAnnotator cyAnnotator = ((DGraphView) view).getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(location);
 		
-		if (annotation instanceof ArrowAnnotationImpl == false) {
+		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
 			JOptionPane.showMessageDialog(view.getCanvas(), "Please click another annotation.");
 			return null;
 		}
