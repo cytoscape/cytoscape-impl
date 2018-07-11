@@ -1,6 +1,5 @@
 package org.cytoscape.model.internal;
 
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.equations.event.EquationFunctionAddedListener;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
@@ -66,6 +65,5 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SelectionMediator selectionMediator = new SelectionMediator(serviceRegistrar);
 		registerService(bc, selectionMediator, RowsSetListener.class);
-		registerService(bc, selectionMediator, SetCurrentNetworkListener.class);
 	}
 }

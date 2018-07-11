@@ -1,8 +1,6 @@
 package org.cytoscape.model.internal;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkTableManager;
@@ -19,7 +17,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * selection event.
  * 
  */
-public class SelectionMediator implements RowsSetListener, SetCurrentNetworkListener {
+public class SelectionMediator implements RowsSetListener {
 
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -49,14 +47,6 @@ public class SelectionMediator implements RowsSetListener, SetCurrentNetworkList
 		else if(source == network.getDefaultEdgeTable())
 			getEventHelper().fireEvent(new SelectedNodesAndEdgesEvent(network, isCurrent, false, true));
 	}
-	
-	
-	@Override
-	public void handleEvent(SetCurrentNetworkEvent e) {
-		CyNetwork network = e.getNetwork();
-		getEventHelper().fireEvent(new SelectedNodesAndEdgesEvent(network, true, true, true));
-	}
-	
 	
 	// save the service references for a minor performance boost, it takes a bit of time to look up a service
 	private CyNetworkTableManager getNetworkTableManager() {
