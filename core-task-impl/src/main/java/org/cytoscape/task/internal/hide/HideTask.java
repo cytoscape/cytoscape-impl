@@ -79,6 +79,8 @@ public class HideTask extends AbstractNetworkViewTask {
 		if (edges != null)
 			elements.addAll(edges);
 		
+		tm.setProgress(0.2);
+		
 		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
