@@ -8,6 +8,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -40,9 +41,11 @@ import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
@@ -89,6 +92,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private static final String TITLE = "Annotation";
 	private static final String ID = "org.cytoscape.Annotation";
 	
+	private static final int NAME_COL_IDX = 1;
+	
 	private JPanel buttonPanel;
 	private JLabel infoLabel;
 	private JLabel selectionLabel;
@@ -124,7 +129,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				AbstractDingAnnotationFactory.ICON_SIZE
 		);
 		
-		// When a selected button is clicked again, we want it to be be deselected
+		// When a selected button is clicked again, we want it to be be unselected
 		buttonGroup = new ButtonGroup() {
 			private boolean isAdjusting;
 			private ButtonModel prevModel;
@@ -382,6 +387,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
 	
+	void stopTableCellEditing() {
+		stopTableCellEditing(getBackgroundTable());
+		stopTableCellEditing(getForegroundTable());
+	}
+	
 	void stopTableCellEditing(JTable table) {
 		TableCellEditor cellEditor = table.getCellEditor();
 		
@@ -465,6 +475,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		);
 		
 		setEnabled(false);
+		
+		// Stop editing when selection changes
+		ListSelectionListener listSelectionListener = evt -> stopTableCellEditing();
+		getBackgroundTable().getSelectionModel().addListSelectionListener(listSelectionListener);
+		getForegroundTable().getSelectionModel().addListSelectionListener(listSelectionListener);
 	}
 	
 	JPanel getButtonPanel() {
@@ -566,14 +581,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
 			selectAllButton.addActionListener(evt -> {
-				if (getBackgroundTable().getRowCount() > 0) {
-					stopTableCellEditing(getBackgroundTable());
+				if (getBackgroundTable().getRowCount() > 0)
 					getBackgroundTable().selectAll();
-				}
-				if (getForegroundTable().getRowCount() > 0) {
-					stopTableCellEditing(getForegroundTable());
+				if (getForegroundTable().getRowCount() > 0)
 					getForegroundTable().selectAll();
-				}
 			});
 			
 			makeSmall(selectAllButton);
@@ -591,8 +602,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (selectNoneButton == null) {
 			selectNoneButton = new JButton("Select None");
 			selectNoneButton.addActionListener(evt -> {
-				stopTableCellEditing(getBackgroundTable());
-				stopTableCellEditing(getForegroundTable());
 				getBackgroundTable().clearSelection();
 				getForegroundTable().clearSelection();
 			});
@@ -609,33 +618,44 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private JTable createAnnotationLayerTable() {
-		JTable table = new JTable(new AnnotationTableModel());
+		final DefaultTableCellRenderer renderer = new AnnotationTableCellRenderer();
+		
+		final JTable table = new JTable(new AnnotationTableModel()) {
+			@Override
+			public void changeSelection(int row, int col, boolean toggle, boolean expand) {
+				// This method is called when the user tries to move to a different cell.
+				// If the cell they're trying to move to is not editable, just select the "name" cell.
+				if (!getModel().isCellEditable(row, col))
+					col = NAME_COL_IDX;
+
+				super.changeSelection(row, col, toggle, expand);
+			}
+			@Override
+			public TableCellRenderer getCellRenderer(int row, int column) {
+				return renderer;
+			}
+			@Override
+			public Color getBackground() {
+				// This guarantees the color will come from the correct Look-And-Feel,
+				// even if this component is initialized before swing-application-impl
+				return UIManager.getColor("Panel.background");
+			}
+			@Override
+			public Color getGridColor() {
+				return UIManager.getColor("Separator.foreground");
+			}
+		};
+		
 		table.setShowHorizontalLines(true);
 		table.setShowVerticalLines(false);
-		table.setGridColor(UIManager.getColor("Separator.foreground"));
-		table.setIntercellSpacing(new Dimension(0, 4));
-		table.setRowHeight(32);
+		table.setIntercellSpacing(new Dimension(0, 2));
+		table.setRowHeight(28);
 		table.setTableHeader(null);
-		table.setBackground(UIManager.getColor("Panel.background"));
 		table.setColumnSelectionAllowed(false);
 		
 		table.getColumnModel().getColumn(0).setWidth(32);
 		table.getColumnModel().getColumn(0).setPreferredWidth(32);
 		table.getColumnModel().getColumn(0).setMaxWidth(32);
-		
-		table.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-			@Override
-			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-					boolean hasFocus, int row, int column) {
-				super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				
-				// Do not highlight the focused cell when the row is not selected
-				this.setBackground(isSelected ? table.getSelectionBackground() : table.getBackground());
-				this.setForeground(isSelected ? table.getSelectionForeground() : table.getForeground());
-					
-				return this;
-			}
-		});
 		
 		makeSmall(table);
 		
@@ -643,8 +663,16 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private JScrollPane createTableScrollPane(JTable table) {
-		JScrollPane sp = new JScrollPane(table);
-		sp.getViewport().setBackground(UIManager.getColor("Label.background"));
+		JScrollPane sp = new JScrollPane() {
+			@Override
+			public Color getBackground() {
+				// This guarantees the color will come from the correct Look-And-Feel,
+				// even if this component is initialized before swing-application-impl
+				return UIManager.getColor("Panel.background");
+			}
+		};
+		sp.setViewportView(table);
+		sp.getViewport().setOpaque(false);
 		sp.getViewport().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -771,7 +799,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public boolean isCellEditable(int row, int col) {
-			return col == 1;
+			return col == NAME_COL_IDX;
 		}
 
 		@Override
@@ -822,6 +850,42 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				icon = iconMap.get(((DingAnnotation) a).getType());
 
 			return icon != null ? icon : defIcon;
+		}
+	}
+	
+	private final class AnnotationTableCellRenderer extends DefaultTableCellRenderer {
+		
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
+				boolean hasFocus, int row, int column) {
+			super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+			
+			this.setOpaque(true);
+			this.setBorder(null); // Do not highlight the focused cell
+			
+			if (value instanceof String)
+				this.setToolTipText((String) value);
+			else
+				this.setToolTipText(null);
+			
+			if (value instanceof Icon) {
+				this.setIcon((Icon) value);
+				this.setText(null);
+				this.setHorizontalAlignment(CENTER);
+			} else {
+				this.setIcon(null);
+				this.setHorizontalAlignment(LEFT);
+			}
+			
+			if (isSelected) {
+				this.setForeground(UIManager.getColor("Table.selectionForeground"));
+				this.setBackground(UIManager.getColor("Table.selectionBackground"));
+			} else {
+				this.setBackground(UIManager.getColor("Panel.background"));
+				this.setForeground(UIManager.getColor("Table.foreground"));
+			}
+				
+			return this;
 		}
 	}
 }

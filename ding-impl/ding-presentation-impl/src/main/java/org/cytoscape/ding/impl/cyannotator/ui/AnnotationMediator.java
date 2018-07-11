@@ -97,6 +97,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
 	private boolean appStarted;
 	private boolean loadingSession;
+	private boolean ignoreSelectedPropChangeEvents;
 	
 	private ClickToAddAnnotationListener clickToAddAnnotationListener;
 	
@@ -132,7 +133,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 					selectAnnotationsFromSelectedRows();
 			});
 		});
-
+		
 		appStarted = true;
 	}
 
@@ -242,7 +243,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				invokeOnEDT(() -> mainPanel.update(view));
 			}
 		} else if (source instanceof DingAnnotation) {
-			if ("selected".equals(evt.getPropertyName())) {
+			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
 				invokeOnEDT(() -> {
 					if (view != null && view.equals(mainPanel.getDGraphView()))
 						mainPanel.setSelected((DingAnnotation) source, (boolean) evt.getNewValue());
@@ -322,8 +323,14 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		final List<Annotation> all = view.getCyAnnotator().getAnnotations();
 		
 		if (all != null && !all.isEmpty()) {
-			final Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
-			all.forEach(a -> a.setSelected(selList.contains(a)));
+			ignoreSelectedPropChangeEvents = true;
+			
+			try {
+				final Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
+				all.forEach(a -> a.setSelected(selList.contains(a)));
+			} finally {
+				ignoreSelectedPropChangeEvents = false;
+			}
 		}
 	}
 	
