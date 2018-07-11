@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+
 import java.awt.Component;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -66,7 +68,7 @@ import org.cytoscape.work.Task;
 
 public class CyAnnotator {
 	
-	private static final String ANNOTATION_ATTRIBUTE="__Annotations";
+	private static final String ANNOTATION_ATTRIBUTE = "__Annotations";
 
 	private final DGraphView view;
 	private final ArbitraryGraphicsCanvas foreGroundCanvas;
@@ -99,6 +101,7 @@ public class CyAnnotator {
 		this.networkCanvas = view.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		annotationSelection = new AnnotationSelection(this);
+		
 		initListeners();
 	}
 
@@ -453,42 +456,36 @@ public class CyAnnotator {
 	}
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> setSelectedAnnotation(a, selected));
-			return;
-		}
-
-		if (selected) {
-			annotationSelection.add(a);
-		} else {
-			annotationSelection.remove(a);
-		}
+		invokeOnEDT(() -> {
+			if (selected)
+				annotationSelection.add(a);
+			else
+				annotationSelection.remove(a);
+		});
 	}
 
 	public void clearSelectedAnnotations() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> clearSelectedAnnotations());
-			return;
-		}
+		invokeOnEDT(() -> {
+			boolean repaintForeGround = false;
+			boolean repaintBackGround = false;
+	
+			// We need to get a copy of the set to avoid a concurrent modification
+			for (DingAnnotation a : new ArrayList<>(annotationSelection.getSelectedAnnotations())) {
+				a.setSelected(false);
 
-		boolean repaintForeGround = false;
-		boolean repaintBackGround = false;
+				if (a.getCanvasName().equals(Annotation.FOREGROUND))
+					repaintForeGround = true;
+				else
+					repaintBackGround = true;
+			}
 
-		// We need to get a copy of the set to avoid a concurrent modification
-		for (DingAnnotation a: new ArrayList<>(annotationSelection.getSelectedAnnotations())) {
-			a.setSelected(false);
-			if (a.getCanvasName().equals(Annotation.FOREGROUND))
-				repaintForeGround = true;
-			else
-				repaintBackGround = true;
-		}
-		if (repaintForeGround)
-			foreGroundCanvas.repaint();
-		if (repaintBackGround)
-			backGroundCanvas.repaint();
+			if (repaintForeGround)
+				foreGroundCanvas.repaint();
+			if (repaintBackGround)
+				backGroundCanvas.repaint();
 
-		annotationSelection.clear();
-
+			annotationSelection.clear();
+		});
 	}
 
 	public AnnotationSelection getAnnotationSelection() {
