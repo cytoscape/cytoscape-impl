@@ -53,6 +53,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	private static int instanceCount = 0;
 
 	protected float fontSize = 0.0f;
+	protected float savedFontSize = 0.0f;
 	protected Font font = null;
 	protected int initialFontSize=12;
 	protected Color textColor = Color.BLACK;
@@ -182,9 +183,23 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		update();
 	}
 
+	public void setFontSizeRelative(double factor) {
+		if (savedFontSize != 0.0) {
+			setFontSize(savedFontSize*factor);
+		} else {
+			setFontSize(fontSize*factor);
+		}
+	}
+
 	@Override
 	public double getFontSize() {
 		return this.fontSize;
+	}
+
+	@Override
+	public void saveBounds() {
+		super.saveBounds();
+		savedFontSize = fontSize;
 	}
 
 	@Override

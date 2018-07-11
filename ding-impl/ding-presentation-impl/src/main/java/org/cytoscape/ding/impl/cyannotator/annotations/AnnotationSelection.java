@@ -212,16 +212,16 @@ public class AnnotationSelection extends JComponent
 			((AbstractAnnotation)da).resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
 
 			// Handle any special cases
+			// XXX This doesn't work!  Need to preserve font size in order for this to work right
 			if (da instanceof TextAnnotationImpl) {
 				TextAnnotationImpl textChild = (TextAnnotationImpl)da;
-				double fontSize = textChild.getFontSize();
-				textChild.setFontSize(fontSize*deltaW);
+				textChild.setFontSizeRelative(deltaW);
 			}
 
+			// XXX This doesn't work!  Need to preserve font size in order for this to work right
 			if (da instanceof BoundedTextAnnotationImpl) {
 				BoundedTextAnnotationImpl textChild = (BoundedTextAnnotationImpl)da;
-				double fontSize = textChild.getFontSize();
-				textChild.setFontSize(fontSize*deltaW, false);
+				textChild.setFontSizeRelative(deltaW);
 			}
 
 			// OK, now update
