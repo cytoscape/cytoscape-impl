@@ -61,7 +61,6 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
-
 	private DGraphView.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
@@ -132,7 +131,6 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
-
 	}
 
 	//------------------------------------------------------------------------
@@ -349,9 +347,16 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void setSelected(boolean selected) {
+		setSelected(selected, true);
+	}
+	
+	protected void setSelected(boolean selected, boolean firePropertyChangeEvent) {
 		if (selected != this.selected) {
 			this.selected = selected;
 			cyAnnotator.setSelectedAnnotation(this, selected);
+			
+			if (firePropertyChangeEvent)
+				firePropertyChange("selected", !selected, selected);
 		}
 	}
 

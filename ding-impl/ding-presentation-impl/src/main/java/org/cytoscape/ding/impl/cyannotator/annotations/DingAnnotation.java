@@ -4,6 +4,7 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -81,4 +82,8 @@ public interface DingAnnotation extends Annotation {
 	Rectangle2D getInitialBounds();
 	
 	Class<? extends Annotation> getType();
+	
+	void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
+	
+	void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
 }

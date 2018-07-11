@@ -53,7 +53,6 @@ import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -110,7 +109,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** Default icon for Annotations that provide no icon */
 	private final Icon defIcon;
 	
-	private CyNetworkView view;
+	private DGraphView view;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -186,7 +185,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return null;
 	}
 	
-	public JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
+	JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
 		final AnnotationToggleButton btn = new AnnotationToggleButton(f);
 		btn.setFocusable(false);
 		btn.setFocusPainted(false);
@@ -204,7 +203,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return btn;
 	}
 	
-	public void removeAnnotationButton(AnnotationFactory<? extends Annotation> f) {
+	void removeAnnotationButton(AnnotationFactory<? extends Annotation> f) {
 		JToggleButton btn = buttonMap.remove(f.getId());
 		iconMap.remove(f.getType());
 		
@@ -212,19 +211,27 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			getButtonPanel().remove(btn);
 	}
 	
-	public void addAnnotations(Collection<Annotation> list) {
+	void addAnnotations(Collection<Annotation> list) {
 		Map<String, Collection<Annotation>> map = separateByLayers(list);
 		((AnnotationTableModel) getBackgroundTable().getModel()).addRows(map.get(Annotation.BACKGROUND));
 		((AnnotationTableModel) getForegroundTable().getModel()).addRows(map.get(Annotation.FOREGROUND));
 	}
 	
-	public void removeAnnotations(Collection<Annotation> list) {
+	void removeAnnotations(Collection<Annotation> list) {
 		Map<String, Collection<Annotation>> map = separateByLayers(list);
 		((AnnotationTableModel) getBackgroundTable().getModel()).removeRows(map.get(Annotation.BACKGROUND));
 		((AnnotationTableModel) getForegroundTable().getModel()).removeRows(map.get(Annotation.FOREGROUND));
 	}
 	
-	public Collection<Annotation> getSelectedAnnotations() {
+	Set<Annotation> getAllAnnotations() {
+		final Set<Annotation> set = new HashSet<>();
+		set.addAll(((AnnotationTableModel) getBackgroundTable().getModel()).getData());
+		set.addAll(((AnnotationTableModel) getForegroundTable().getModel()).getData());
+		
+		return set;
+	}
+	
+	Collection<Annotation> getSelectedAnnotations() {
 		final Set<Annotation> set = new HashSet<>();
 		set.addAll(getSelectedAnnotations(getBackgroundTable()));
 		set.addAll(getSelectedAnnotations(getForegroundTable()));
@@ -248,7 +255,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
-	public CyNetworkView getView() {
+	DGraphView getDGraphView() {
 		return view;
 	}
 	
@@ -283,13 +290,34 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
-	void update(CyNetworkView view, Collection<Annotation> annotations) {
+	void setSelected(DingAnnotation a, boolean selected) {
+		if (view == null || getAnnotationCount() == 0)
+			return;
+		
+		final JTable table = Annotation.FOREGROUND.equals(a.getCanvasName()) ?
+				getForegroundTable() : getBackgroundTable();
+		final AnnotationTableModel model = (AnnotationTableModel) table.getModel();
+		final int row = model.rowOf(a);
+		
+		if (row < 0 || row > table.getRowCount() - 1)
+			return;
+		
+		if (selected)
+			table.addRowSelectionInterval(row, row);
+		else
+			table.removeRowSelectionInterval(row, row);
+	}
+	
+	void update(DGraphView view) {
 		this.view = view;
+		
+		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
+				: Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
 		// Enable/disable before next steps
-		setEnabled(view instanceof DGraphView);
+		setEnabled(view != null);
 		
 		// Update annotation tables data
 		Map<String, Collection<Annotation>> map = separateByLayers(annotations);
@@ -693,6 +721,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		public List<Annotation> getData() {
 			return new ArrayList<>(data);
+		}
+		
+		public int rowOf(Annotation a) {
+			return data.indexOf(a);
 		}
 
 		public void addRows(Collection<Annotation> list) {

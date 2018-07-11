@@ -28,32 +28,20 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Shape;
-import java.awt.Window;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.view.presentation.property.values.Position;
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.view.presentation.property.values.Position;
 
 @SuppressWarnings("serial")
 public class AnnotationSelection extends JComponent 
@@ -74,7 +62,7 @@ public class AnnotationSelection extends JComponent
 
 	public AnnotationSelection(CyAnnotator cyAnnotator) {
 		this.cyAnnotator = cyAnnotator;
-		selectedAnnotations = new HashSet<DingAnnotation>();
+		selectedAnnotations = new HashSet<>();
 	}
 
 	// Set methods
