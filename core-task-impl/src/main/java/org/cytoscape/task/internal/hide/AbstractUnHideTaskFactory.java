@@ -34,7 +34,7 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 	
 	@Override
 	public TaskIterator createTaskIterator(final CyNetworkView view) {
-		return new TaskIterator(new UnHideTask(description, unhideNodes, unhideEdges, view, serviceRegistrar));
+		return new TaskIterator(new UnHideAllTask(description, unhideNodes, unhideEdges, view, serviceRegistrar));
 	}
 	
 	@Override
