@@ -449,10 +449,7 @@ public class CyAnnotator {
 	}
 
 	public List<Annotation> getAnnotations() {
-		if (annotationMap.keySet() != null && annotationMap.keySet().size() > 0)
-			return new ArrayList<>(annotationMap.keySet());
-		
-		return null;
+		return annotationMap.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationMap.keySet());
 	}
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {

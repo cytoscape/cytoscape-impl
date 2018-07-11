@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
@@ -30,6 +31,7 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
@@ -39,6 +41,11 @@ import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.model.events.NetworkViewAddedEvent;
+import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -82,8 +89,9 @@ import org.slf4j.LoggerFactory;
  * This class mediates the communication between the Annotations UI and the rest of Cytoscape.
  */
 public class AnnotationMediator implements CyStartListener, CyShutdownListener, SessionAboutToBeLoadedListener,
-		SessionLoadedListener, SetCurrentNetworkViewListener, AnnotationsAddedListener, AnnotationsRemovedListener,
-		PropertyChangeListener, CytoPanelComponentSelectedListener {
+		SessionLoadedListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener,
+		SetCurrentNetworkViewListener, AnnotationsAddedListener, AnnotationsRemovedListener, PropertyChangeListener,
+		CytoPanelComponentSelectedListener {
 
 	private final AnnotationMainPanel mainPanel;
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
@@ -142,38 +150,52 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	public void handleEvent(SessionLoadedEvent evt) {
 		loadingSession = false;
 		disposeClickToAddAnnotationListener();
-		DGraphView view = getCurrentDGraphView();
 		
-		invokeOnEDT(() -> {
-			List<Annotation> list = null;
-			
-			if (view != null) {
-				list = view.getCyAnnotator().getAnnotations();
-//				list = serviceRegistrar.getService(AnnotationManager.class).getAnnotations(view);
-				addPropertyListener(view);
+		final Set<CyNetworkView> allViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet();
+		
+		allViews.forEach(view -> {
+			if (view instanceof DGraphView) {
+				addPropertyListeners((DGraphView) view);
+				addPropertyListeners(((DGraphView) view).getCyAnnotator().getAnnotations());
 			}
-		
-			mainPanel.update(view, list);
 		});
+		
+		final DGraphView view = getCurrentDGraphView();
+		invokeOnEDT(() -> mainPanel.update(view));
 	}
 
+	@Override
+	public void handleEvent(NetworkViewAddedEvent evt) {
+		if (!appStarted || loadingSession)
+			return;
+		
+		final CyNetworkView view = evt.getNetworkView() instanceof DGraphView ?
+				(DGraphView) evt.getNetworkView() : null;
+				
+		if (view instanceof DGraphView) {
+			addPropertyListeners((DGraphView) view);
+			addPropertyListeners(((DGraphView) view).getCyAnnotator().getAnnotations());
+		}
+	}
+	
+	@Override
+	public void handleEvent(NetworkViewAboutToBeDestroyedEvent evt) {
+		CyNetworkView view = evt.getNetworkView();
+		
+		if (view instanceof DGraphView) {
+			removePropertyListeners((DGraphView) view);
+			removePropertyListeners(((DGraphView) view).getCyAnnotator().getAnnotations());
+		}
+	}
+	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent evt) {
 		if (appStarted && !loadingSession) {
 			disposeClickToAddAnnotationListener();
-			CyNetworkView view = evt.getNetworkView();
-			
-			invokeOnEDT(() -> {
-				List<Annotation> list = null;
-				
-				if (view instanceof DGraphView) {
-					list = ((DGraphView) view).getCyAnnotator().getAnnotations();
-//					list = serviceRegistrar.getService(AnnotationManager.class).getAnnotations(view);
-					addPropertyListener((DGraphView) view);
-				}
-			
-				mainPanel.update(view, list);
-			});
+			final DGraphView view = evt.getNetworkView() instanceof DGraphView ?
+					(DGraphView) evt.getNetworkView() : null;
+
+			invokeOnEDT(() -> mainPanel.update(view));
 		}
 	}
 	
@@ -206,11 +228,27 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		DGraphView view = getCurrentDGraphView();
 		CyAnnotator cyAnnotator = view != null ? view.getCyAnnotator() : null;
 		
-		if (!evt.getSource().equals(cyAnnotator))
-			return;
+		Object source = evt.getSource();
 		
-		if ("annotations".equals(evt.getPropertyName()))
-			invokeOnEDT(() -> mainPanel.update(view, (Collection<Annotation>) evt.getNewValue()));
+		if (source.equals(cyAnnotator)) {
+			if ("annotations".equals(evt.getPropertyName())) {
+				// First remove property listeners from deleted annotations and add them to the new ones
+				Set<Annotation> oldList = mainPanel.getAllAnnotations();
+				List<Annotation> newList = cyAnnotator.getAnnotations();
+				oldList.removeAll(newList);
+				removePropertyListeners(oldList);
+				addPropertyListeners((Collection<Annotation>) evt.getNewValue());
+				// Now update the UI
+				invokeOnEDT(() -> mainPanel.update(view));
+			}
+		} else if (source instanceof DingAnnotation) {
+			if ("selected".equals(evt.getPropertyName())) {
+				invokeOnEDT(() -> {
+					if (view != null && view.equals(mainPanel.getDGraphView()))
+						mainPanel.setSelected((DingAnnotation) source, (boolean) evt.getNewValue());
+				});
+			}
+		}
 	}
 	
 	public void addAnnotationFactory(AnnotationFactory<? extends Annotation> f, Map<?, ?> props) {
@@ -276,7 +314,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	}
 	
 	private void selectAnnotationsFromSelectedRows() {
-		final DGraphView view = getCurrentDGraphView();
+		final DGraphView view = mainPanel.getDGraphView();
 		
 		if (view == null || view.getCyAnnotator() == null)
 			return;
@@ -285,15 +323,12 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		if (all != null && !all.isEmpty()) {
 			final Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
-			
-			all.forEach(a -> {
-				a.setSelected(selList.contains(a));
-			});
+			all.forEach(a -> a.setSelected(selList.contains(a)));
 		}
 	}
 	
 	private void removeSelectedAnnotations() {
-		final DGraphView view = getCurrentDGraphView();
+		final DGraphView view = mainPanel.getDGraphView();
 		
 		if (view == null)
 			return;
@@ -304,12 +339,37 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(selList);
 	}
 	
-	private void addPropertyListener(DGraphView view) {
+	private void addPropertyListeners(DGraphView view) {
+		if (view == null || view.getCyAnnotator() == null)
+			return;
+		
+		removePropertyListeners(view);
+		view.getCyAnnotator().addPropertyChangeListener("annotations", this);
+	}
+	
+	private void removePropertyListeners(DGraphView view) {
 		if (view == null || view.getCyAnnotator() == null)
 			return;
 		
 		view.getCyAnnotator().removePropertyChangeListener("annotations", this);
-		view.getCyAnnotator().addPropertyChangeListener("annotations", this);
+	}
+	
+	private void addPropertyListeners(Collection<Annotation> list) {
+		if (list != null)
+			list.forEach(a -> {
+				if (a instanceof DingAnnotation) {
+					((DingAnnotation) a).removePropertyChangeListener("selected", this);
+					((DingAnnotation) a).addPropertyChangeListener("selected", this);
+				}
+			});
+	}
+	
+	private void removePropertyListeners(Collection<Annotation> list) {
+		if (list != null)
+			list.forEach(a -> {
+				if (a instanceof DingAnnotation)
+					((DingAnnotation) a).removePropertyChangeListener("selected", this);
+			});
 	}
 	
 	private void disposeClickToAddAnnotationListener() {
