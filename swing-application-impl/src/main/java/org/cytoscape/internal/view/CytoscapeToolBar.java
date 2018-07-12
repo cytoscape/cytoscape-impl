@@ -76,7 +76,7 @@ public class CytoscapeToolBar extends JToolBar {
 	public static int ICON_HEIGHT = 32;
 	private static int BUTTON_BORDER_SIZE = 2;
 	
-	private Map<CyAction, JButton> actionButtonMap;
+	private Map<CyAction, ActionButton> actionButtonMap;
 	private List<Object> orderedList;
 	private Map<Object, Float> componentGravity;
 	private HashSet<String> stopList = new HashSet<>();
@@ -212,26 +212,35 @@ public class CytoscapeToolBar extends JToolBar {
 			insertSepAfter = ((AbstractCyAction) action).insertToolbarSeparatorAfter();
 		}
 
-		final JButton button = createToolBarButton(action);
+		ActionButton button = new ActionButton(createToolBarButton(action), insertSepBefore, insertSepAfter);
 		
-		if (insertSepBefore)
-			addSeparator(action.getToolbarGravity() - .0001f);
-		if (insertSepAfter)
-			addSeparator(action.getToolbarGravity() + .0001f);
-
 		componentGravity.put(button, action.getToolbarGravity());
 		actionButtonMap.put(action, button);
 		int addIndex = getInsertLocation(action.getToolbarGravity());
 		orderedList.add(addIndex, button);
 		
 		if (stopList.contains(action.getName()))
-			button.setVisible(false);
+			button.component.setVisible(false);
 
 		addComponents();
 
 		return true;
 	}
 
+	
+	private static class ActionButton {
+		final JButton component;
+		final boolean separatorBefore;
+		final boolean separatorAfter;
+		
+		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
+			this.component = button;
+			this.separatorBefore = separatorBefore;
+			this.separatorAfter = separatorAfter;
+		}
+	}
+	
+	
 	public void showAll() {
 		for (Object o : orderedList)
 			if (o instanceof Component)
@@ -254,6 +263,14 @@ public class CytoscapeToolBar extends JToolBar {
 				addSeparator();
 			else if (o instanceof ToolBarComponent)
 				add(((ToolBarComponent) o).getComponent());
+			else if (o instanceof ActionButton) {
+				ActionButton ab = (ActionButton) o;
+				if(ab.separatorBefore)
+					addSeparator();
+				add(ab.component);
+				if(ab.separatorAfter)
+					addSeparator();
+			}
 		}
 		
 		validate();
@@ -283,13 +300,13 @@ public class CytoscapeToolBar extends JToolBar {
 	 * otherwise if there's a button for the action, remove it.
 	 */
 	public boolean removeAction(CyAction action) {
-		JButton button = actionButtonMap.remove(action);
+		ActionButton button = actionButtonMap.remove(action);
 
 		if (button == null)
 			return false;
 
 		orderedList.remove(button);
-		remove(button);
+		addComponents();
 
 		return true;
 	}
