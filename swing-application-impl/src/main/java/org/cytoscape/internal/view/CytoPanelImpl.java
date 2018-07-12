@@ -176,7 +176,11 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		return compassDirection;
 	}
 
-	public void add(final CytoPanelComponent comp) {
+	public void add(CytoPanelComponent comp) {
+		insert(comp, getCytoPanelComponentCount());
+	}
+	
+	public void insert(CytoPanelComponent comp, int index) {
 		if (comp instanceof CytoPanelComponent2) {
 			final CytoPanelComponent2 comp2 = (CytoPanelComponent2) comp;
 			
@@ -189,7 +193,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		// Check our sizes, and override, if necessary
 		checkSizes(comp.getComponent());
 		// add tab to JTabbedPane
-		getTabbedPane().addTab(comp.getTitle(), comp.getIcon(), comp.getComponent());
+		getTabbedPane().insertTab(comp.getTitle(), comp.getIcon(), comp.getComponent(), null, index);
 		// send out a notification
 		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
 	}

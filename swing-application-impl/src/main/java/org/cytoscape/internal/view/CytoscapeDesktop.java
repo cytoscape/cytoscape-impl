@@ -24,7 +24,9 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
@@ -57,6 +59,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
@@ -153,6 +156,14 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private StarterPanel starterPanel;
 	private StatusBarPanelFactory taskStatusPanelFactory;
 	private StatusBarPanelFactory jobStatusPanelFactory;
+	
+	// These Control Panel components must respect this order
+	private List<String> controlComponentsOrder = Arrays.asList(
+			"org.cytoscape.Network",
+			"org.cytoscape.Style",
+			"org.cytoscape.Filter",
+			"org.cytoscape.Annotation"
+	);
 	
 	/** Holds frames that contain floating CytoPanels */
 	private final  Map<CytoPanel, JFrame> floatingFrames = new HashMap<>();
@@ -360,22 +371,27 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	public void addCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImpl impl;
-			if(cp instanceof CommandToolPanel)
+			final CytoPanelImpl impl;
+			
+			if (cp instanceof CommandToolPanel)
 				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
-			else		
+			else
 				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
-			impl.add(cp);
+
+			int index = getInsertIndex(cp, impl);
+			impl.insert(cp, index);
 		});
 	}
 
 	public void removeCytoPanelComponent(CytoPanelComponent cp, Map<?, ?> props) {
 		invokeOnEDTAndWait(() -> {
-			CytoPanelImpl impl;
-			if(cp instanceof CommandToolPanel)
+			final CytoPanelImpl impl;
+			
+			if (cp instanceof CommandToolPanel)
 				impl = getCytoPanelInternal(CytoPanelNameInternal.BOTTOM);
-			else		
+			else
 				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
+			
 			impl.remove(cp);
 		});
 	}
@@ -512,6 +528,37 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	public boolean isStarterPanelVisible() {
 		return getStarterPanel().isVisible();
+	}
+	
+	private int getInsertIndex(CytoPanelComponent cp, CytoPanelImpl impl) {
+		int index = -1;
+		int total = impl.getCytoPanelComponentCount();
+		
+		if (impl.getCytoPanelName() == CytoPanelName.WEST && cp instanceof CytoPanelComponent2) {
+			String id = ((CytoPanelComponent2) cp).getIdentifier();
+			index = controlComponentsOrder.indexOf(id);
+			
+			// If any of the next components have been inserted already, add the new one before that one
+			if (index >= 0 && controlComponentsOrder.size() > index + 1) {
+				for (int i = index + 1; i < controlComponentsOrder.size(); i++) {
+					String nextId = controlComponentsOrder.get(i);
+					int nextIndex = impl.indexOfComponent(nextId);
+					
+					if (nextIndex < 0)
+						continue;
+					
+					if (index >= nextIndex) {
+						index = nextIndex;
+						break;
+					}
+				}
+			}
+		}
+		
+		if (index < 0 || index > total)
+			index = total;
+		
+		return index;
 	}
 	
 	private void floatCytoPanel(CytoPanelImpl cytoPanel) {
