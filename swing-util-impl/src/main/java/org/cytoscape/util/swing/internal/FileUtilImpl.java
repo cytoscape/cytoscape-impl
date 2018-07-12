@@ -246,14 +246,19 @@ class FileUtilImpl implements FileUtil {
 								}
 							}
 							if (!extensionFound) {
-									JOptionPane.showMessageDialog(
-										chooser,
-										"Cytoscape does not recognize files with suffix '"
-										+ path.substring(path.lastIndexOf("."))
-										+ "' . Please choose another file.",
-										"File extension incorrect",
-										JOptionPane.WARNING_MESSAGE);
-									return null;
+								String message;
+								int index = path.lastIndexOf(".");
+								if(index == -1)
+									message = "Chosen file does not have an extension.";
+								else
+									message = "Chosen file has wrong extension '" + path.substring(index) + "' .";
+								
+								JOptionPane.showMessageDialog(
+									chooser, 
+									message + " Please choose another file.", 
+									"File extension incorrect",
+									JOptionPane.WARNING_MESSAGE);
+								return null;
 							}
 							extensionFound = false;
 						}
