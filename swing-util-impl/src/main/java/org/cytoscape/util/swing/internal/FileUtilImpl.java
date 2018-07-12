@@ -70,6 +70,16 @@ class FileUtilImpl implements FileUtil {
 	}
 
 	@Override
+	public File getFile(final Component parent, final String title, final int loadSaveCustom,
+	                    final String startDir, final String fileName, final String customApproveText,
+	                    final Collection<FileChooserFilter> filters) {
+		File[] result = getFiles(parent, title, loadSaveCustom, startDir,
+					 fileName, customApproveText, false, filters);
+
+		return ((result == null) || (result.length <= 0)) ? null : result[0];
+	}
+
+	@Override
 	public File[] getFiles(final Component parent, final String title,
 	                       final int loadSaveCustom,
 	                       final Collection<FileChooserFilter> filters) {
@@ -88,6 +98,13 @@ class FileUtilImpl implements FileUtil {
 	@Override
 	public File[] getFiles(final Component parent, final String title, final int loadSaveCustom, String startDir,
 			final String customApproveText, final boolean multiselect, final Collection<FileChooserFilter> filters) {
+			return getFiles(parent, title, loadSaveCustom, startDir, null, customApproveText, multiselect, filters);
+	}
+
+
+	@Override
+	public File[] getFiles(final Component parent, final String title, final int loadSaveCustom, String startDir,
+			final String fileName, final String customApproveText, final boolean multiselect, final Collection<FileChooserFilter> filters) {
 		
 		if (parent == null)
 			throw new NullPointerException("\"parent\" must not be null.");
@@ -120,6 +137,8 @@ class FileUtilImpl implements FileUtil {
 				else
 					chooser.setDirectory(applicationManager.getCurrentDirectory().getAbsolutePath());
 				
+				if (fileName != null)
+					chooser.setFile(fileName);
 				chooser.setModal(true);
 				chooser.setFilenameFilter(new CombinedFilenameFilter(filters));
 				chooser.setLocationRelativeTo(parent);
@@ -175,6 +194,10 @@ class FileUtilImpl implements FileUtil {
 				chooser = new JFileChooser(new File(startDir));
 			else
 				chooser = new JFileChooser(applicationManager.getCurrentDirectory());
+
+			if (fileName != null) {
+				chooser.setSelectedFile(new File(fileName));
+			}
 			
 			// set multiple selection, if applicable
 			chooser.setMultiSelectionEnabled(multiselect);
