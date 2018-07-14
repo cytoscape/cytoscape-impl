@@ -113,6 +113,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	 * For Gradient panel only.
 	 */
 	private JPanel palettesPanel;
+	private Palette lastPalette;
 	private JComboBox<Palette> paletteBox;
 	private BelowAndAbovePanel abovePanel;
 	private BelowAndAbovePanel belowPanel;
@@ -147,6 +148,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected final Class<K> columnType;
 	protected final Class<V> vpValueType;
+
+	protected PaletteProviderManager paletteProviderMgr;
 	
 	private final ContinuousMapping<K, V> original;
 	boolean commitChanges;
@@ -175,6 +178,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		final String controllingAttrName = mapping.getMappingColumnName();
 
+		paletteProviderMgr = servicesUtil.get(PaletteProviderManager.class);
+
 		// TODO more error checking
 		final CyColumn col = table.getColumn(controllingAttrName);
 
@@ -194,8 +199,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (mapping.getPointCount() > 0)
 			userEdited = true;
 
-		initComponents();
 		initRangeValues();
+		initComponents();
 		setSpinner();
 		getSlider().addMouseListener(new ThumbMouseListener());
 	}
@@ -334,10 +339,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JComboBox<Palette> getPaletteBox() {
 		if (paletteBox == null) {
 			Palette defaultPalette = null;
-			PaletteProviderManager paletteProviderMgr = servicesUtil.get(PaletteProviderManager.class);
 			List<Palette> paletteList = new ArrayList<>();
-			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(BrewerType.DIVERGING, false)) {
-				for (String paletteName: provider.listPaletteNames(BrewerType.DIVERGING, false)) {
+			BrewerType paletteType;
+			if (tracer.getMax(type) > 0.0 && tracer.getMin(type) < 0.0) {
+				paletteType = BrewerType.DIVERGING;
+			} else {
+				paletteType = BrewerType.SEQUENTIAL;
+			}
+
+			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(paletteType, false)) {
+				for (String paletteName: provider.listPaletteNames(paletteType, false)) {
 					Palette palette = provider.getPalette(paletteName);
 					if (palette.toString().equalsIgnoreCase(DEFAULT_PALETTE))
 						defaultPalette = palette;
@@ -345,10 +356,21 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				}
 			}
 			paletteBox = new JComboBox<Palette>(paletteList.toArray(new Palette[0]));
-			if (defaultPalette != null)
+			lastPalette = retrievePalette();
+			if (lastPalette != null)
+				paletteBox.setSelectedItem(lastPalette);
+			else if (defaultPalette != null)
 				paletteBox.setSelectedItem(defaultPalette);
 		}
 		return paletteBox;
+	}
+
+	protected void savePalette(Palette palette) {
+		paletteProviderMgr.savePalette(style.getTitle()+" "+type.getIdString(), palette);
+	}
+
+	protected Palette retrievePalette() {
+		return paletteProviderMgr.retrievePalette(style.getTitle()+" "+type.getIdString());
 	}
 	
 	private JPanel getEditorPanel() {
@@ -806,6 +828,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		
 		for (ContinuousMappingPoint<K, V> point : original.getAllPoints()) {
 			mapping.addPoint(point.getValue(), point.getRange());
+		}
+
+		if (lastPalette != null) {
+			savePalette(lastPalette);
 		}
 		
 		cancelChanges();

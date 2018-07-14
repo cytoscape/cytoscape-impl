@@ -42,7 +42,9 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
@@ -76,7 +78,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			final ValueEditor<Paint> colorEditor, final ServicesUtil servicesUtil) {
 		super(style, mapping, attr, servicesUtil);
 		this.colorEditor = colorEditor;
-	
+
 		getIconPanel().setVisible(false);
 
 		getPaletteBox().addActionListener(new ActionListener() {
@@ -84,13 +86,16 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			public void actionPerformed(ActionEvent evt) {
 				JComboBox<Palette> cb = (JComboBox<Palette>)evt.getSource();
 				currentPalette = (Palette)cb.getSelectedItem();
-				Color[] colors = currentPalette.getColors(9);
-				DEF_BELOW_LOWER_COLOR = colors[8];
-				DEF_LOWER_COLOR = colors[7];
-				DEF_MID_COLOR = colors[4];
+				Color[] colors = currentPalette.getColors();
+				if (colors.length < 9)
+					colors = currentPalette.getColors(9);
+				DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
+				DEF_LOWER_COLOR = colors[colors.length-2];
+				DEF_MID_COLOR = colors[(colors.length-1)/2];
 				DEF_UPPER_COLOR = colors[1];
 				DEF_ABOVE_UPPER_COLOR = colors[0];
 				if (!userEdited) {
+					savePalette(currentPalette);
 					createSimpleGradient();
 				} else if (userEdited) {
 					// error?
@@ -103,6 +108,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 					   		                                  JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
 					     		                                null, options, options[1]);
 							if (n == 0) {
+								savePalette(currentPalette);
 								createSimpleGradient();
 							}
 						}
@@ -113,10 +119,12 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		currentPalette = (Palette)getPaletteBox().getSelectedItem();
 		if (currentPalette != null) {
-			Color[] colors = currentPalette.getColors(9);
-			DEF_BELOW_LOWER_COLOR = colors[8];
-			DEF_LOWER_COLOR = colors[7];
-			DEF_MID_COLOR = colors[4];
+			Color[] colors = currentPalette.getColors();
+			if (colors.length < 9)
+				colors = currentPalette.getColors(9);
+			DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
+			DEF_LOWER_COLOR = colors[colors.length-2];
+			DEF_MID_COLOR = colors[(colors.length-1)/2];
 			DEF_UPPER_COLOR = colors[1];
 			DEF_ABOVE_UPPER_COLOR = colors[0];
 		}
@@ -247,35 +255,97 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			initSlider();
 		} else if (minValue>=0) { // all positive values
 
-			getSlider().getModel().addThumb(0f, DEF_MID_COLOR);
-			getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
+			// TODO: Provide more bins
+			//
+			if (currentPalette != null && currentPalette.getType() == BrewerType.SEQUENTIAL) {
+				// Add more thumbs
+				/*
+				int size = currentPalette.size();
+				Color[] colors = currentPalette.getColors();
+				float increment = 100f/(float)size;
+				if (increment < 10f) increment = 10f;
+				for (float i = 0; i < 100; i = i+increment) {
+					int colorIndex = size-(int)(size*i/100)-1;
+					getSlider().getModel().addThumb(i, colors[colorIndex]);
+					BoundaryRangeValues brv = new BoundaryRangeValues<Color>(colors[colorIndex], colors[colorIndex], colors[colorIndex]);
+					mapping.addPoint(
+						NumberConverter.convert(columnType, ((float)(maxValue-minValue)/100.0f)*i+minValue),
+						brv);
+				}
+				*/
 
-			lowerRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+				// For Sequential palettes, we want to go from light to dark.
+				getSlider().getModel().addThumb(0f, DEF_UPPER_COLOR);
+				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
+				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 
-			// Add three points.
-			mapping.addPoint(
-				NumberConverter.convert(columnType, minValue),
-				lowerRange);
-			mapping.addPoint(
-				NumberConverter.convert(columnType, maxValue),
-				upperRange);
+				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+
+				// Add three points.
+				mapping.addPoint(
+					NumberConverter.convert(columnType, minValue),
+					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, ((float)(maxValue-minValue)/2f)+minValue),
+					midRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, maxValue),
+					upperRange);
+			} else {
+				getSlider().getModel().addThumb(0f, DEF_LOWER_COLOR);
+				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
+
+				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+
+				// Add three points.
+				mapping.addPoint(
+					NumberConverter.convert(columnType, minValue),
+					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, maxValue),
+					upperRange);
+			}
 			initSlider();
 		} else if (maxValue<=0) { // all negative values
+			if (currentPalette != null && currentPalette.getType() == BrewerType.SEQUENTIAL) {
+				getSlider().getModel().addThumb(0f, DEF_LOWER_COLOR);
+				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
+				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-			getSlider().getModel().addThumb(0f, DEF_LOWER_COLOR);
-			getSlider().getModel().addThumb(100f, DEF_MID_COLOR);
+				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
-			lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-			upperRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-
-			// Add three points.
-			mapping.addPoint(
-				NumberConverter.convert(columnType, minValue),
-				lowerRange);
-			mapping.addPoint(
-				NumberConverter.convert(columnType, maxValue),
-				upperRange);
+				// Add three points.
+				mapping.addPoint(
+					NumberConverter.convert(columnType, minValue),
+					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, ((float)(maxValue-minValue)/2f)+minValue),
+					midRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, maxValue),
+					upperRange);
+			} else {
+				// TODO: Provide more bins
+				//
+				getSlider().getModel().addThumb(0f, DEF_UPPER_COLOR);
+				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
+	
+				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+	
+				// Add three points.
+				mapping.addPoint(
+					NumberConverter.convert(columnType, minValue),
+					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, maxValue),
+					upperRange);
+			}
 			initSlider();
 		}
 

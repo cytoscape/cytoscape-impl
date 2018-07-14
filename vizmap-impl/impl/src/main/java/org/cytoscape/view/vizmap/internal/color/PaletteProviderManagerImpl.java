@@ -36,15 +36,18 @@ import org.cytoscape.util.color.PaletteType;
 
 public class PaletteProviderManagerImpl implements PaletteProviderManager {
 	Map<String,PaletteProvider> providerMap;
+	Map<Object,Palette> savedPaletteMap;
 
 	public PaletteProviderManagerImpl() {
 		providerMap = new HashMap<>();
+		savedPaletteMap = new HashMap<>();
 
 		// Create our built-in palette providers
 		addPaletteProvider(new RainbowPaletteProvider());
 		addPaletteProvider(new RainbowOSCPaletteProvider());
 		addPaletteProvider(new RandomPaletteProvider());
 		addPaletteProvider(new ColorBrewerPaletteProvider());
+		addPaletteProvider(new ViridisPaletteProvider());
 		addPaletteProvider(new BuiltinDivergentPaletteProvider());
 	}
 
@@ -76,5 +79,15 @@ public class PaletteProviderManagerImpl implements PaletteProviderManager {
 	public void removePaletteProvider(PaletteProvider provider) {
 		if (providerMap.containsKey(provider.getProviderName()))
 			providerMap.remove(provider.getProviderName());
+	}
+
+	public void savePalette(Object key, Palette palette) {
+		savedPaletteMap.put(key, palette);
+	}
+
+	public Palette retrievePalette(Object key) {
+		if (!savedPaletteMap.containsKey(key))
+			return null;
+		return savedPaletteMap.get(key);
 	}
 }
