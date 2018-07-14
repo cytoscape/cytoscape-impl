@@ -452,8 +452,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		// Draw the line
 		Graphics2D g2 = (Graphics2D)g;
 
-		boolean selected = isSelected();
-		setSelected(false, false);
+		boolean saveSelected = isSelected();
+		selected = false;
 
 		double scale = scaleFactor/getZoom();
 
@@ -497,7 +497,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, color, targetSize*10.0*scaleFactor, targetType);
 		}
 
-		setSelected(selected, false);
+		selected = saveSelected;
 	}
 
 	@Override
@@ -511,10 +511,10 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void print(Graphics g) {
-		boolean selected = isSelected();
-		setSelected(false, false);
+		boolean saveSelected = isSelected();
+		selected = false;
 		paint(g);
-		setSelected(selected, false);
+		selected = saveSelected;
 	}
 
 	public void drawArrow(Graphics g, boolean isPrinting) {

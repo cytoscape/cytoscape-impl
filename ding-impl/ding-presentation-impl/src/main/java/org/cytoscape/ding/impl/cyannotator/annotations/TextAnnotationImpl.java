@@ -325,10 +325,10 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void print(Graphics g) {
-		boolean selected = isSelected();
-		setSelected(false, false);
+		boolean saveSelected = isSelected();
+		selected = false;
 		paint(g);
-		setSelected(selected, false);
+		selected = saveSelected;
 	}
 
 	int getAnnotationWidth() {
