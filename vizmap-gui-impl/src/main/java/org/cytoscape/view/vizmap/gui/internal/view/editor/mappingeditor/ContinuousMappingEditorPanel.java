@@ -357,9 +357,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 			paletteBox = new JComboBox<Palette>(paletteList.toArray(new Palette[0]));
 			lastPalette = retrievePalette();
-			if (lastPalette != null)
-				paletteBox.setSelectedItem(lastPalette);
-			else if (defaultPalette != null)
+			if (lastPalette != null) {
+				setCurrentPalette(lastPalette);
+			} else if (defaultPalette != null)
 				paletteBox.setSelectedItem(defaultPalette);
 		}
 		return paletteBox;
@@ -371,6 +371,18 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	protected Palette retrievePalette() {
 		return paletteProviderMgr.retrievePalette(style.getTitle()+" "+type.getIdString());
+	}
+
+	protected void setCurrentPalette(Palette palette) {
+		for (int i = 0; i < paletteBox.getItemCount(); i++) {
+			Palette p = paletteBox.getItemAt(i);
+			if (p.toString().equalsIgnoreCase(palette.toString())) {
+				paletteBox.setSelectedIndex(i);
+				return;
+			}
+
+		}
+		return;
 	}
 	
 	private JPanel getEditorPanel() {
