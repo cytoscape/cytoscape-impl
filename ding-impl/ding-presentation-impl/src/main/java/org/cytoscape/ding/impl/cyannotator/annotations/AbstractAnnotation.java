@@ -56,7 +56,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 @SuppressWarnings("serial")
 public abstract class AbstractAnnotation extends JComponent implements DingAnnotation {
 	
-	private boolean selected;
+	protected boolean selected;
 
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;

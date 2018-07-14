@@ -457,9 +457,10 @@ public class CyAnnotator {
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
 		invokeOnEDT(() -> {
-			if (selected)
+			if (selected) {
+				requestFocusInWindow(a);
 				annotationSelection.add(a);
-			else
+			} else
 				annotationSelection.remove(a);
 		});
 	}

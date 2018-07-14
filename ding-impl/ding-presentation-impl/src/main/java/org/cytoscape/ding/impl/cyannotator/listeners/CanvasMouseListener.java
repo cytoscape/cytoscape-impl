@@ -114,7 +114,7 @@ public class CanvasMouseListener implements MouseListener {
 			}
 
 			//We request focus in this window, so that we can move these selected Annotations around using arrow keys
-			annotation.getCanvas().requestFocusInWindow();
+			// annotation.getCanvas().requestFocusInWindow();
 
 			//Repaint the canvas
 			annotation.getCanvas().repaint();	
@@ -126,6 +126,9 @@ public class CanvasMouseListener implements MouseListener {
 
 			// Let the network canvas know -- NOTE: this messes up double-click for some reason.
 			networkCanvas.processMouseEvent(e);
+
+			//We request focus in this window, so that we can move these selected Annotations around using arrow keys
+			annotation.getCanvas().requestFocusInWindow();
 		}
 	}
 
