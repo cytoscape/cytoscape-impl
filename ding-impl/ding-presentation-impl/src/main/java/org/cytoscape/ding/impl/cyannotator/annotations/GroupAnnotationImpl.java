@@ -19,15 +19,12 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -56,63 +53,54 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
 
-	List<DingAnnotation> annotations = null;
-	Rectangle2D bounds = null;
-	private static int instanceCount = 0;
+	List<DingAnnotation> annotations = new ArrayList<>();
+	Rectangle2D bounds;
 
-	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-
-	public GroupAnnotationImpl(DGraphView view, Window owner) { 
-		super(view, owner); 
-		if (super.name == null)
-			super.name = "GroupAnnotation_"+instanceCount;
-		this.annotations  = new ArrayList<DingAnnotation>();
-		instanceCount++;
+	public GroupAnnotationImpl(DGraphView view, Window owner) {
+		super(view, owner, false);
 	}
 
-	public GroupAnnotationImpl(GroupAnnotationImpl c, Window owner) { 
-		super(c, owner);
-		super.name = c.getName();
+	public GroupAnnotationImpl(GroupAnnotationImpl c, Window owner) {
+		super(c, owner, false);
+		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
-	public GroupAnnotationImpl(DGraphView view, double x, double y, 
-	                           List<Annotation> annList, double zoom, Window owner) {
-		super(view, owner);
-		this.annotations  = new ArrayList<DingAnnotation>();
-		for (Annotation a: annList) {
+	public GroupAnnotationImpl(
+			DGraphView view,
+			double x,
+			double y,
+			List<Annotation> annList,
+			double zoom,
+			Window owner
+	) {
+		super(view, owner, false);
+		
+		for (Annotation a : annList) {
 			if (a instanceof DingAnnotation)
-				this.annotations.add((DingAnnotation)a);
+				annotations.add((DingAnnotation) a);
 		}
-		if (super.name == null)
-			super.name = "GroupAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
-	public GroupAnnotationImpl(DGraphView view, 
-	                           Map<String, String> argMap, Window owner) {
+	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
 		super(view, argMap, owner);
-		this.annotations = new ArrayList<DingAnnotation>();
 
 		// Get the UUIDs of all of the annotations
 		if (argMap.containsKey(MEMBERS)) {
 			String[] members = argMap.get(MEMBERS).split(",");
-			for (String uuid: members) {
+
+			for (String uuid : members) {
 				// Create the uuid
 				UUID u = UUID.fromString(uuid);
 
 				// See if this annotation already exists
 				DingAnnotation a = cyAnnotator.getAnnotation(u);
-				if (a != null) {
-					// Yup, add it in to our list
+
+				if (a != null) // Yup, add it in to our list
 					annotations.add(a);
-				}
 			}
 		}
-		if (super.name == null)
-			super.name = "GroupAnnotation_"+instanceCount;
-		instanceCount++;
 	}
-	
+
 	@Override
 	public Class<? extends Annotation> getType() {
 		return GroupAnnotation.class;

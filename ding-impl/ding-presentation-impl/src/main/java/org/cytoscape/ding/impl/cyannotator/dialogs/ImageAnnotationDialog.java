@@ -69,7 +69,7 @@ public class ImageAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start != null ? start : view.getCenter();
-		this.annotation = new ImageAnnotationImpl(view, owner);
+		this.annotation = new ImageAnnotationImpl(view, owner, false);
 		this.create = true;
 
 		initComponents();
@@ -93,14 +93,13 @@ public class ImageAnnotationDialog extends JDialog {
 		setResizable(false);
 		
 		// Create the preview panel
-		preview = new ImageAnnotationImpl(annotation, getOwner());
+		preview = new ImageAnnotationImpl(annotation, getOwner(), true);
 		Image img = annotation.getImage();
 		double width = (double) img.getWidth(this);
 		double height = (double) img.getHeight(this);
 		double scale = (Math.max(width, height)) / (PREVIEW_HEIGHT - 50);
 
 		preview.setImage(img);
-		preview.setUsedForPreviews(true);
 		preview.setSize(width / scale, height / scale);
 		PreviewPanel previewPanel = new PreviewPanel(preview);
 

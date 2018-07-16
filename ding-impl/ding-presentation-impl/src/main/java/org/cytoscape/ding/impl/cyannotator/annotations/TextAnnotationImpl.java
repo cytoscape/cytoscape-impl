@@ -50,43 +50,48 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	private String text = "";
 
-	private static int instanceCount = 0;
-
-	protected float fontSize = 0.0f;
-	protected float savedFontSize = 0.0f;
-	protected Font font = null;
-	protected int initialFontSize=12;
+	protected float fontSize;
+	protected float savedFontSize;
+	protected Font font;
+	protected int initialFontSize = 12;
 	protected Color textColor = Color.BLACK;
 
-	public TextAnnotationImpl(DGraphView view, Window owner) { 
-		super(view, owner); 
-		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float)initialFontSize;
+	/** Initially, the name is the same as the text */
+	private boolean updateNameFromText = true;
+
+	public TextAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) { 
+		super(view, owner, usedForPreviews); 
+		
+		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float) initialFontSize;
 		this.text = "Text Annotation";
-		if (super.name == null)
-			super.name = "TextAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
-	public TextAnnotationImpl(TextAnnotationImpl c, Window owner) {
-		super(c, owner);
-		this.text = c.getText();
-		this.textColor = c.getTextColor();
-		this.fontSize = (float)c.getFontSize();
-		this.font = c.getFont();
-		super.name = c.getName();
+	public TextAnnotationImpl(TextAnnotationImpl c, Window owner, boolean usedForPreviews) {
+		super(c, owner, usedForPreviews);
+		
+		text = c.getText();
+		textColor = c.getTextColor();
+		fontSize = (float) c.getFontSize();
+		font = c.getFont();
+		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
-	public TextAnnotationImpl(DGraphView view, 
-	                          int x, int y, String text, int compCount, double zoom, Window owner){
+	public TextAnnotationImpl(
+			DGraphView view,
+			int x,
+			int y,
+			String text,
+			int compCount,
+			double zoom,
+			Window owner
+	) {
 		super(view, x, y, zoom, owner);
+
 		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 		setSize(getAnnotationWidth(), getAnnotationHeight());
-		if (super.name == null)
-			super.name = "TextAnnotation_" + instanceCount;
-		instanceCount++;
 	}
 
 	// This constructor is used to construct a text annotation from an
@@ -94,14 +99,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// Need to make sure all arguments have reasonable options
 	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
 		super(view, argMap, owner);
-		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		this.textColor = (Color)ViewUtils.getColor(argMap, COLOR, Color.BLACK);
-		this.text = ViewUtils.getString(argMap, TEXT, "");
-		this.fontSize = font.getSize();
+		
+		font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
+		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
+		text = ViewUtils.getString(argMap, TEXT, "");
+		fontSize = font.getSize();
+		
+		if (text != null && !text.trim().isEmpty())
+			name = text.trim();
+		
 		setSize(getAnnotationWidth(), getAnnotationHeight());
-		if (super.name == null)
-			super.name = "TextAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
 	@Override
@@ -113,9 +120,20 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		argMap.put(FONTFAMILY, this.font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
+		
 		return argMap;
 	}
 
+	@Override
+	public void setName(String name) {
+		// Assuming setName() is called by an app or the UI,
+		// we no longer want it to automatically update the name from the Annotation text.
+		if (name != null && !name.isEmpty())
+			updateNameFromText  = false;
+		
+		super.setName(name);
+	}
+	
 	@Override
 	public Class<? extends Annotation> getType() {
 		return TextAnnotation.class;
@@ -153,14 +171,19 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	@Override
 	public void setText(String text) {
 		this.text = text;
+		
+		if (updateNameFromText)
+			name = text != null ? text.trim() : "";
+		
 		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
+		
 		update();
 	}
 
 	@Override
 	public String getText() {
-		return this.text;
+		return text;
 	}
 
 	@Override

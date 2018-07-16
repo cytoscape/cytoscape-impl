@@ -94,7 +94,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		super(owner);
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
-		this.annotation = new ArrowAnnotationImpl(view, owner);
+		this.annotation = new ArrowAnnotationImpl(view, owner, false);
 		this.source = cyAnnotator.getAnnotationAt(start != null ? start : view.getCenter());
 		this.create = true;
 
@@ -118,8 +118,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		setResizable(false);
 
 		// Create the preview panel
-		preview = new ArrowAnnotationImpl(view, getOwner());
-		preview.setUsedForPreviews(true);
+		preview = new ArrowAnnotationImpl(view, getOwner(), true);
 		((ArrowAnnotationImpl) preview).setSize(400.0, 100.0);
 		
 		final PreviewPanel previewPanel = new PreviewPanel(preview);

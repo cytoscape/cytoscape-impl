@@ -13,7 +13,9 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
+import java.net.URI;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,69 +62,75 @@ import org.slf4j.LoggerFactory;
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	
 	private BufferedImage image;
-	private	URL url = null;
+	private	URL url;
 
 	private BufferedImage resizedImage;
 	private float opacity = 1.0f;
-	private int brightness = 0;
-	private int contrast = 0;
+	private int brightness;
+	private int contrast;
 	private CyCustomGraphics<?> cg;
 	protected CustomGraphicsManager customGraphicsManager;
 
 	private static final Logger logger = LoggerFactory.getLogger(ImageAnnotationImpl.class);
-	private static int instanceCount = 0;
-
+	
 	// XXX HACK to force the custom graphics manager to respect these graphics
 	public void preserveCustomGraphics() {
-		for (CyCustomGraphics<?> cg: customGraphicsManager.getAllCustomGraphics())
+		for (CyCustomGraphics<?> cg : customGraphicsManager.getAllCustomGraphics())
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
 
-	public ImageAnnotationImpl(DGraphView view, Window owner) {
-		super(view, 0, 0, owner);
-		if (super.name == null)
-			super.name = "ImageAnnotation_"+instanceCount;
-		instanceCount++;
+	public ImageAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) {
+		super(view, 0, 0, owner, usedForPreviews);
 	}
 
-	public ImageAnnotationImpl(ImageAnnotationImpl c, Window owner) { 
-		super((ShapeAnnotationImpl)c, 0, 0, owner);
+	public ImageAnnotationImpl(ImageAnnotationImpl c, Window owner, boolean usedForPreviews) { 
+		super((ShapeAnnotationImpl) c, 0, 0, owner, usedForPreviews);
+		
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
-		shapeWidth=image.getWidth();
-		shapeHeight=image.getHeight();
+		shapeWidth = image.getWidth();
+		shapeHeight = image.getHeight();
 		this.url = c.url;
 		this.opacity = c.opacity;
 		this.brightness = c.brightness;
 		this.contrast = c.contrast;
 		setBorderWidth(0.0); // Our default border width is 0
-		super.name = c.getName();
+		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
-	public ImageAnnotationImpl(DGraphView view, double x, double y, 
-	                           URL url, BufferedImage image, double zoom, 
-	                           CustomGraphicsManager customGraphicsManager,
-	                           Window owner) {
-		super( view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
-		this.image=image;
+	public ImageAnnotationImpl(
+			DGraphView view,
+			double x,
+			double y,
+			URL url,
+			BufferedImage image,
+			double zoom,
+			CustomGraphicsManager customGraphicsManager,
+			Window owner
+	) {
+		super(view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
+
+		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
-		shapeWidth=image.getWidth();
-		shapeHeight=image.getHeight();
+		shapeWidth = image.getWidth();
+		shapeHeight = image.getHeight();
 		this.url = url;
-		resizedImage=resizeImage((int)shapeWidth, (int)shapeHeight);
+		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
 		final Long id = customGraphicsManager.getNextAvailableID();
 		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
 		customGraphicsManager.setUsedInCurrentSession(cg, true);
-		if (super.name == null)
-			super.name = "ImageAnnotation_"+instanceCount;
-		instanceCount++;
+		name = getDefaultName();
 	}
 
-	public ImageAnnotationImpl(DGraphView view, 
-	                           Map<String, String> argMap, CustomGraphicsManager customGraphicsManager,
-	                           Window owner) {
+	public ImageAnnotationImpl(
+			DGraphView view,
+			Map<String, String> argMap,
+			CustomGraphicsManager customGraphicsManager,
+			Window owner
+	) {
 		super(view, argMap, owner);
+		
 		this.customGraphicsManager = customGraphicsManager;
 
 		shapeWidth = ViewUtils.getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
@@ -142,19 +150,19 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		try {
 			this.url = new URL(argMap.get(URL));
 			this.cg = customGraphicsManager.getCustomGraphicsBySourceURL(this.url);
+			
 			if (cg != null) {
 				this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
 				customGraphicsManager.addCustomGraphics(cg, this.url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
-				resizedImage=resizeImage((int)image.getWidth(), (int)image.getHeight());
+				resizedImage = resizeImage((int) image.getWidth(), (int) image.getHeight());
 			}
+			
+			name = getDefaultName();
 		} catch (Exception e) {
-			logger.warn("Unable to restore image '"+argMap.get(URL)+"'",e);
+			logger.warn("Unable to restore image '" + argMap.get(URL) + "'", e);
 			return;
 		}
-		if (super.name == null)
-			super.name = "ImageAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
 	@Override
@@ -193,7 +201,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			logger.warn("Unable to restore image '"+this.url+"'",e);
 			return;
 		}
-		resizedImage=resizeImage((int)shapeWidth, (int)shapeHeight);
+		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
 	}
 
 	@Override
@@ -220,7 +228,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			height = (int)resizedImage.getHeight();
 		}
 		resizedImage=resizeImage((int)width, (int)height);
-		if (!usedForPreviews())
+		if (!isUsedForPreviews())
 			getCanvas().repaint();
 		update();
 	}
@@ -293,7 +301,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		// Resize the image
 		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
-		if (!usedForPreviews())
+		if (!isUsedForPreviews())
 			getCanvas().repaint();
 	}
 
@@ -333,7 +341,20 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		return new Rectangle2D.Double((double) getX(), (double) getY(), shapeWidth, shapeHeight);
 	}
 	
-
+	@Override
+	protected String getDefaultName() {
+		if (url != null) {
+			try {
+				String fileName = Paths.get(new URI(url.toString()).getPath()).getFileName().toString();
+				return cyAnnotator.getDefaultAnnotationName(fileName);
+			} catch (Exception e) {
+				// Just ignore...
+			}
+		}
+		
+		return super.getDefaultName();
+	}
+	
 	//Returns a resizeImaged high quality BufferedImage
 	private BufferedImage resizeImage(int width, int height) {
 		if (image == null) {

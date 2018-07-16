@@ -71,7 +71,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start != null ? start : view.getCenter();
-		this.mAnnotation = new BoundedTextAnnotationImpl(view, owner);
+		this.mAnnotation = new BoundedTextAnnotationImpl(view, owner, false);
 		this.create = true;
 
 		initComponents();		        
@@ -79,7 +79,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 
 	public BoundedTextAnnotationDialog(final BoundedTextAnnotationImpl mAnnotation, final Window owner) {
 		super(owner);
-		this.mAnnotation=mAnnotation;
+		this.mAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
 		this.view = cyAnnotator.getView();
 		this.create = false;
@@ -95,8 +95,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Bounded Text Annotation" : "Modify Bounded Text Annotation");
 		
 		// Create the preview panel
-		preview = new BoundedTextAnnotationImpl(view, getOwner());
-		preview.setUsedForPreviews(true);
+		preview = new BoundedTextAnnotationImpl(view, getOwner(), true);
 		preview.setText(mAnnotation.getText());
 		preview.setFont(mAnnotation.getFont());
 		preview.fitShapeToText();

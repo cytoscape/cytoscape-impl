@@ -48,76 +48,74 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 @SuppressWarnings("serial")
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
+	
 	private String text;
-	private boolean shapeIsFit = false;
+	private boolean shapeIsFit;
 
-	protected float fontSize = 0.0f;
-	protected float savedFontSize = 0.0f;
-	protected Font font = null;
-	protected int initialFontSize=12;
+	protected float fontSize;
+	protected float savedFontSize;
+	protected Font font;
+	protected int initialFontSize = 12;
 	protected Color textColor = Color.BLACK;
 
-	private static int instanceCount = 0;
-	
-	public BoundedTextAnnotationImpl(DGraphView view, Window owner) { 
-		super(view, 100, 100, owner);
-		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float)initialFontSize;
+	public BoundedTextAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) { 
+		super(view, 100, 100, owner, usedForPreviews);
+		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float) initialFontSize;
 		this.text = "Text Annotation";
-		Graphics2D graphics = (Graphics2D)this.getGraphics();
-		super.setSize(getTextWidth(graphics)+4, getTextHeight(graphics)+4);
-		super.name = "BoundedTextAnnotation_"+instanceCount;
-		instanceCount++;
+		Graphics2D graphics = (Graphics2D) this.getGraphics();
+		super.setSize(getTextWidth(graphics) + 4, getTextHeight(graphics) + 4);
 	}
 
-	public BoundedTextAnnotationImpl(DGraphView view, double width, double height,
-			Window owner) { 
-		super(view, width, height, owner);
-		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float)initialFontSize;
+	public BoundedTextAnnotationImpl(DGraphView view, double width, double height, Window owner) {
+		super(view, width, height, owner, false);
+		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float) initialFontSize;
 		this.text = "Text Annotation";
-		super.name = "BoundedTextAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
-	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) { 
-		super(c, 100, 100, owner);
+	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) {
+		super(c, 100, 100, owner, false);
 		this.text = c.getText();
 		this.textColor = c.getTextColor();
-		this.fontSize = (float)c.getFontSize();
+		this.fontSize = (float) c.getFontSize();
 		this.font = c.getFont();
-		super.name = c.getName();
 	}
 
-	public BoundedTextAnnotationImpl(DGraphView view,
-                                   double x, double y, ShapeType shapeType,
-                                   double width, double height,
-                                   Paint fillColor, Paint edgeColor,
-                                   float edgeThickness, String text, int compCount, double zoom,
-                                   Window owner) {
+	public BoundedTextAnnotationImpl(
+			DGraphView view,
+			double x,
+			double y,
+			ShapeType shapeType,
+			double width,
+			double height,
+			Paint fillColor,
+			Paint edgeColor,
+			float edgeThickness,
+			String text,
+			int compCount,
+			double zoom,
+			Window owner
+	) {
 		super(view, x, y, shapeType, width, height, fillColor, edgeColor, edgeThickness, owner);
-		this.text=text;
-		this.font=new Font("Arial", Font.PLAIN, initialFontSize);
-		this.fontSize = (float)initialFontSize;
-		super.name = "BoundedTextAnnotation_"+instanceCount;
-		instanceCount++;
+		this.text = text;
+		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
+		this.fontSize = (float) initialFontSize;
 	}
 
 	public BoundedTextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
 		super(view, argMap, owner);
 		this.font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
-		this.textColor = (Color)ViewUtils.getColor(argMap, COLOR, Color.BLACK);
+		this.textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
 		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
-			Graphics2D graphics = (Graphics2D)this.getGraphics();
-			double width = getTextWidth(graphics)+8;
-			double height = getTextHeight(graphics)+8;
+			Graphics2D graphics = (Graphics2D) this.getGraphics();
+			double width = getTextWidth(graphics) + 8;
+			double height = getTextHeight(graphics) + 8;
 			super.setSize(width, height);
 		}
-		super.name = "BoundedTextAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
 	@Override

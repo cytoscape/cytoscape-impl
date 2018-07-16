@@ -64,15 +64,15 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private DGraphView.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
-	private Set<ArrowAnnotation> arrowList;
+	private Set<ArrowAnnotation> arrowList = new HashSet<>();
 
-	protected boolean usedForPreviews;
+	protected final boolean usedForPreviews;
 	protected DGraphView view;
 	protected ArbitraryGraphicsCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
-	protected String name = null;
-	protected Point2D offset = null; // Offset in node coordinates
+	protected String name;
+	protected Point2D offset; // Offset in node coordinates
 	protected Rectangle2D initialBounds;
 
 	protected static final String ID = "id";
@@ -81,47 +81,51 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected static final String PARENT_ID = "parent";
 
 	protected Map<String, String> savedArgMap;
-	protected double zOrder = 0;
+	protected double zOrder;
 
 	protected final Window owner;
-
+	
 	/**
 	 * This constructor is used to create an empty annotation
 	 * before adding to a specific view.  In order for this annotation
 	 * to be functional, it must be added to the AnnotationManager
 	 * and setView must be called.
 	 */
-	protected AbstractAnnotation(DGraphView view, Window owner) {
+	protected AbstractAnnotation(DGraphView view, Window owner, boolean usedForPreviews) {
 		this.owner = owner;
 		this.view = view;
 		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
-		arrowList = new HashSet<>();
+		this.usedForPreviews = usedForPreviews;
 		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = view.getZoom();
+		name = getDefaultName();
 	}
 
-	protected AbstractAnnotation(AbstractAnnotation c, Window owner) {
-		this(c.view, owner);
+	protected AbstractAnnotation(AbstractAnnotation c, Window owner, boolean usedForPreviews) {
+		this(c.view, owner, usedForPreviews);
 		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
 
 	protected AbstractAnnotation(DGraphView view, double x, double y, double zoom, Window owner) {
-		this(view, owner);
+		this(view, owner, false);
 		setLocation((int)x, (int)y);
 	}
 
 	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap, Window owner) {
-		this(view, owner);
+		this(view, owner, false);
 
 		Point2D coords = ViewUtils.getComponentCoordinates(view, argMap);
 		this.globalZoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
 		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0);
-		name = argMap.containsKey(NAME) ? argMap.get(NAME) : null;
+		
+		if (argMap.get(NAME) != null)
+			name = argMap.get(NAME);
 		
 		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
+		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
 			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
@@ -135,6 +139,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	//------------------------------------------------------------------------
 
+	protected String getDefaultName() {
+		return cyAnnotator.getDefaultAnnotationName(getType().getSimpleName());
+	}
+	
 	@Override
 	public String toString() {
 		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
@@ -400,10 +408,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 	
 	@Override
-	public boolean usedForPreviews() { return usedForPreviews; }
-
-	@Override
-	public void setUsedForPreviews(boolean v) { usedForPreviews = v; }
+	public boolean isUsedForPreviews() {
+		return usedForPreviews;
+	}
 
 	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
@@ -426,7 +433,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 
-    // High quality color rendering is ON.
+		// High quality color rendering is ON.
 		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -437,14 +444,16 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
 
-		if (!usedForPreviews()) {
+		if (!isUsedForPreviews()) {
 			// We need to control composite ourselves for previews...
 			g2.setComposite(AlphaComposite.Src);
 		}
 	}
 
 	@Override
-	public JDialog getModifyDialog() {return null;}
+	public JDialog getModifyDialog() {
+		return null;
+	}
 
 	// Protected methods
 	protected void updateAnnotationAttributes() {
@@ -454,7 +463,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
-	// Save the bounds (in node coordinages)
+	// Save the bounds (in node coordinates)
 	@Override
 	public void saveBounds() {
 		initialBounds = ViewUtils.getNodeCoordinates(view, getBounds().getBounds2D());
@@ -480,12 +489,17 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	@Override
-	public Point2D getOffset() { return offset; }
+	public Point2D getOffset() {
+		return offset;
+	}
 
 	@Override
 	public void contentChanged() {
-		if (view == null) return;
+		if (view == null)
+			return;
+		
 		final ContentChangeListener lis = view.getContentChangeListener();
+		
 		if (lis != null)
 			lis.contentChanged();
 	}

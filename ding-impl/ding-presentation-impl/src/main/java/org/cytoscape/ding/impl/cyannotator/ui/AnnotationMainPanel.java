@@ -12,6 +12,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -33,11 +35,13 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.JViewport;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
@@ -50,6 +54,7 @@ import javax.swing.table.TableCellRenderer;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator.ReorderType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -307,10 +312,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (row < 0 || row > table.getRowCount() - 1)
 			return;
 		
-		if (selected)
+		if (selected) {
 			table.addRowSelectionInterval(row, row);
-		else
+			
+			if (!isRowVisible(table, row))
+				table.scrollRectToVisible(table.getCellRect(row, 0, true));
+		} else {
 			table.removeRowSelectionInterval(row, row);
+		}
 	}
 	
 	void update(DGraphView view) {
@@ -334,7 +343,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			for (AnnotationToggleButton btn : buttonMap.values()) {
 				if (ArrowAnnotation.class.equals(btn.getFactory().getType())) {
 					// The ArrowAnnotation requires at least one other annotation before it can be added
-					btn.setEnabled(getBackgroundTable().getRowCount() > 0);
+					btn.setEnabled(getAnnotationCount() > 0);
 					break;
 				}
 			}
@@ -387,6 +396,23 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
 	
+	void updateAnnotationsOrder(ReorderType type) {
+		if (type == ReorderType.CANVAS) {
+			// Update all annotation tables data, because an annotation may have been moved to another layer
+			final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
+					: Collections.emptyList();
+			
+			Map<String, Collection<Annotation>> map = separateByLayers(annotations);
+			((AnnotationTableModel) getBackgroundTable().getModel()).setData(map.get(Annotation.BACKGROUND));
+			((AnnotationTableModel) getForegroundTable().getModel()).setData(map.get(Annotation.FOREGROUND));
+		} else {
+			((AnnotationTableModel) getBackgroundTable().getModel()).sortData();
+			((AnnotationTableModel) getForegroundTable().getModel()).sortData();
+			((AnnotationTableModel) getBackgroundTable().getModel()).fireTableDataChanged();
+			((AnnotationTableModel) getForegroundTable().getModel()).fireTableDataChanged();
+		}
+	}
+	
 	void stopTableCellEditing() {
 		stopTableCellEditing(getBackgroundTable());
 		stopTableCellEditing(getForegroundTable());
@@ -397,6 +423,24 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		if (cellEditor != null)
 			cellEditor.stopCellEditing();
+	}
+	
+	private boolean isRowVisible(JTable table, int row) {
+		if (table.getParent() instanceof JViewport == false)
+			return true;
+
+		JViewport viewport = (JViewport) table.getParent();
+		// This rectangle is relative to the table where the
+		// northwest corner of cell (0,0) is always (0,0)
+		Rectangle rect = table.getCellRect(row, 0, false);
+		// The location of the viewport relative to the table
+		Point pt = viewport.getViewPosition();
+		// Translate the cell location so that it is relative
+		// to the view, assuming the northwest corner of the view is (0,0)
+		rect.setLocation(rect.x - pt.x, rect.y - pt.y);
+		rect.width = 1;
+
+		return viewport.contains(rect.getLocation());
 	}
 	
 	private static Map<String, Collection<Annotation>> separateByLayers(Collection<Annotation> list) {
@@ -831,12 +875,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				return;
 			
 			Collections.sort(data, (a1, a2) -> {
-				if (a1.getCanvasName().equals(a2.getCanvasName())) {
-					// TODO sort by Z-index
-				} else if (a1.getCanvasName().equals(Annotation.BACKGROUND)) {
-					return -1;
-				} else {
-					return 1;
+				if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
+					JComponent canvas1 = ((DingAnnotation) a1).getCanvas();
+					JComponent canvas2 = ((DingAnnotation) a2).getCanvas();
+					int z1 = canvas1.getComponentZOrder(((DingAnnotation) a1).getComponent());
+					int z2 = canvas2.getComponentZOrder(((DingAnnotation) a2).getComponent());
+					
+					return Integer.compare(z1, z2);
 				}
 				
 				return 0;

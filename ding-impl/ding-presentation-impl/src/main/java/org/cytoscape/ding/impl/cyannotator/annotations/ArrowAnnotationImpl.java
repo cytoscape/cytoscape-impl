@@ -56,28 +56,25 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
 	private float lineWidth = 1.0f;
 
-	private DingAnnotation source = null;
+	private DingAnnotation source;
 	private ArrowType sourceType = ArrowType.NONE;
 	private AnchorType sourceAnchorType = AnchorType.ANCHOR;
-	private Paint sourceColor = null;
+	private Paint sourceColor;
 	private double sourceSize = 1.0;
 
-	private Object target = null;
+	private Object target;
 	private ArrowType targetType = ArrowType.OPEN;
 	private AnchorType targetAnchorType = AnchorType.ANCHOR;
-	private Paint targetColor = null;
+	private Paint targetColor;
 	private double targetSize = 1.0;
 
-	private double shapeWidth = 0.0;
-	private double shapeHeight = 0.0;
+	private double shapeWidth;
+	private double shapeHeight;
 
-	private double xOffset = 0.0;
-	private double yOffset = 0.0;
+	private double xOffset;
+	private double yOffset;
 
-	private static int instanceCount = 0;
-
-
-	private Line2D arrowLine = null;
+	private Line2D arrowLine;
 
 	protected static final String ARROWCOLOR = "lineColor";
 	protected static final String ARROWTHICKNESS = "lineThickness";
@@ -94,7 +91,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	protected static final String TARGETTYPE = "targetType";
 	protected static final String TARGETSIZE = "targetSize";
 	protected static final String TARGETCOLOR = "targetColor";
-
 
 	public enum ArrowType {
 		CIRCLE("Circle"),
@@ -122,15 +118,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	public ArrowAnnotationImpl(DGraphView view, Window owner) {
-		super(view, owner);
-		if (super.name == null)
-			super.name = "ArrowAnnotation_"+instanceCount;
-		instanceCount++;
+	public ArrowAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) {
+		super(view, owner, usedForPreviews);
 	}
 
-	public ArrowAnnotationImpl(ArrowAnnotationImpl c, Window owner) {
-		super(c, owner);
+	public ArrowAnnotationImpl(ArrowAnnotationImpl c, Window owner, boolean usedForPreviews) {
+		super(c, owner, usedForPreviews);
 
 		// Line parameters
 		this.lineColor = c.lineColor;
@@ -147,7 +140,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetType = c.targetType;
 		this.targetColor = c.targetColor;
 		this.targetSize = c.targetSize;
-		super.name = c.getName();
+		
+		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
 	public ArrowAnnotationImpl(
@@ -164,8 +158,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			float targetSize,
 			Window owner
 	) {
-		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(),
-				owner);
+		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(), owner);
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -184,9 +177,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		this.targetSize = targetSize;
 
 		updateBounds();
-		if (super.name == null)
-			super.name = "ArrowAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
 	public ArrowAnnotationImpl(
@@ -235,10 +225,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			DNodeView nv = (DNodeView) view.getPickedNodeView(new Point2D.Double(x, y));
 			target = nv.getModel();
 		}
+		
 		updateBounds();
-		if (super.name == null)
-			super.name = "ArrowAnnotation_" + instanceCount;
-		instanceCount++;
 	}
 	
 	@Override

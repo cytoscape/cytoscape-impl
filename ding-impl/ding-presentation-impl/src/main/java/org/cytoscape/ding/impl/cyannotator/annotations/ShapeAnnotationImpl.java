@@ -49,43 +49,48 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	private ShapeType shapeType;
 	private double borderWidth = 1.0;
 	private Paint borderColor = Color.BLACK; // These are paint's so we can do gradients
-	private Paint fillColor = null; // These are paint's so we can do gradients
+	private Paint fillColor; // These are paint's so we can do gradients
 	private double borderOpacity = 100.0;
 	private double fillOpacity = 100.0;
-	private	Shape shape = null;
-	protected double shapeWidth = 0.0;
-	protected double shapeHeight = 0.0;
+	private Shape shape;
+	protected double shapeWidth;
+	protected double shapeHeight;
 	protected double factor = 1.0;
-	protected static int instanceCount = 0;
 
-	public ShapeAnnotationImpl(DGraphView view, double width, double height, Window owner) {
-		super(view, owner);
+	public ShapeAnnotationImpl(DGraphView view, double width, double height, Window owner, boolean usedForPreviews) {
+		super(view, owner, usedForPreviews);
+		
 		shapeWidth = width;
 		shapeHeight = height;
 		shapeType = ShapeType.RECTANGLE;
 		borderWidth = 1.0;
-		if (super.name == null)
-			super.name = "ShapeAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
-	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, Window owner) {
-		super(c, owner);
+	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, Window owner, boolean usedForPreviews) {
+		super(c, owner, usedForPreviews);
+		
 		shapeWidth = width;
 		shapeHeight = height;
 		shapeType = GraphicsUtilities.getShapeType(c.getShapeType());
 		borderColor = c.getBorderColor();
 		borderWidth = c.getBorderWidth();
 		fillColor = c.getFillColor();
-		super.name = c.getName();
 		shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
-		if (super.name == null)
-			super.name = "ShapeAnnotation_"+instanceCount;
-		instanceCount++;
+		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
-	public ShapeAnnotationImpl(DGraphView view, double x, double y, ShapeType shapeType,
-			double width, double height, Paint fillColor, Paint edgeColor, float edgeThickness, Window owner) {
+	public ShapeAnnotationImpl(
+			DGraphView view,
+			double x,
+			double y,
+			ShapeType shapeType,
+			double width,
+			double height,
+			Paint fillColor,
+			Paint edgeColor,
+			float edgeThickness,
+			Window owner
+	) {
 		super(view, x, y, view.getZoom(), owner);
 
 		this.shapeType = shapeType;
@@ -98,9 +103,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
-		if (super.name == null)
-			super.name = "ShapeAnnotation_"+instanceCount;
-		instanceCount++;
 	}
 
 	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
@@ -127,10 +129,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			this.shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
 
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
-		if (super.name == null) {
-			super.name = "ShapeAnnotation_"+instanceCount;
-		}
-		instanceCount++;
 	}
 
 	@Override

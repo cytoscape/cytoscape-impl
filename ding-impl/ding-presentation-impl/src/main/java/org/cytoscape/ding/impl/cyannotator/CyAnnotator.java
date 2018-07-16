@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.SwingPropertyChangeSupport;
@@ -68,7 +70,12 @@ import org.cytoscape.work.Task;
 
 public class CyAnnotator {
 	
+	public enum ReorderType { Z_INDEX, CANVAS }
+	
 	private static final String ANNOTATION_ATTRIBUTE = "__Annotations";
+	
+	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
+	private static final int MAX_NAME_LENGH = 200;
 
 	private final DGraphView view;
 	private final ArbitraryGraphicsCanvas foreGroundCanvas;
@@ -81,10 +88,9 @@ public class CyAnnotator {
 	private AbstractAnnotation resizing;
 	private ArrowAnnotationImpl repositioning;
 	private DingAnnotation moving;
-	private Point2D mousePressed;
-
+	
 	private Map<DingAnnotation, Map<String, String>> annotationMap = new HashMap<>();
-
+	
 	private CanvasMouseMotionListener mouseMotionListener;
 	private CanvasMouseListener mouseListener;
 	private CanvasKeyListener keyListener;
@@ -531,6 +537,42 @@ public class CyAnnotator {
 		return moving;
 	}
 
+	public String getDefaultAnnotationName(String desiredName) {
+		if (desiredName == null || "".equals(desiredName.trim()))
+			desiredName = DEF_ANNOTATION_NAME_PREFIX;
+		
+		Pattern p = Pattern.compile(".*_(\\d*)$"); // capture just the digits
+		Matcher m = p.matcher(desiredName);
+		int start = 0;
+
+		if (m.matches()) {
+			desiredName = desiredName.substring(0, m.start(1) - 1);
+			String gr = m.group(1); // happens to be "" (empty str.) because of \\d*
+			start = (gr.isEmpty()) ? 1 : Integer.decode(gr) + 1;
+		}
+
+		if (desiredName.length() > MAX_NAME_LENGH)
+			desiredName = desiredName.substring(0, MAX_NAME_LENGH);
+
+		for (int i = start; true; i++) {
+			final String candidate = desiredName + ((i == 0) ? "" : ("_" + i));
+
+			if (!isAnnotationNameTaken(candidate))
+				return candidate;
+		}
+	}
+	
+	private boolean isAnnotationNameTaken(String candidate) {
+		for (Annotation a : getAnnotations()) {
+			final String name = a.getName();
+
+			if (name != null && name.equals(candidate))
+				return true;
+		}
+
+		return false;
+	}
+	
 	private void updateNetworkAttributes(CyNetwork network) {
 		// Convert the annotation to a list
 		List<Map<String,String>> networkAnnotations = new ArrayList<>();
@@ -569,6 +611,10 @@ public class CyAnnotator {
 		}
 		return result;
 	}
+	
+	public void annotationsReordered(ReorderType type) {
+		propChangeSupport.firePropertyChange("annotationsReordered", null, type);
+	}
 
 	private Map<String, String> createArgMap(String mapstring) {
 		Map<String, String> result = new HashMap<>();
@@ -585,13 +631,10 @@ public class CyAnnotator {
 	}
 
 	private void requestFocusInWindow(final Annotation annotation) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> requestFocusInWindow(annotation));
-			return;
-		}
-		if (annotation != null && annotation instanceof DingAnnotation) {
-			((DingAnnotation)annotation).getCanvas().requestFocusInWindow();
-		}
+		invokeOnEDT(() -> {
+			if (annotation != null && annotation instanceof DingAnnotation)
+				((DingAnnotation) annotation).getCanvas().requestFocusInWindow();
+		});
 	}
 
 /*
@@ -615,6 +658,8 @@ public class CyAnnotator {
 */
 
 	class MyViewportChangeListener implements ViewportChangeListener {
+		
+		@Override
 		public void viewportChanged(int x, int y, double width, double height, double newZoom) {
 			//We adjust the font size of all the created annotations if the  if there are changes in viewport
 			Component[] annotations=foreGroundCanvas.getComponents();
@@ -635,11 +680,14 @@ public class CyAnnotator {
 	}
 
 	class ZComparator implements Comparator<DingAnnotation> {
+		
 		final ArbitraryGraphicsCanvas cnvs;
+		
 		public ZComparator(final ArbitraryGraphicsCanvas c) {
 			this.cnvs = c;
 		}
-
+		
+		@Override
 		public int compare(DingAnnotation o1, DingAnnotation o2) {
 			int z1 = cnvs.getComponentZOrder(o1.getComponent());
 			int z2 = cnvs.getComponentZOrder(o2.getComponent());

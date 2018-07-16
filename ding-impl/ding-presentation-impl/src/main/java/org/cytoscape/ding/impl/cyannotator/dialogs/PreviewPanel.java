@@ -47,7 +47,6 @@ public class PreviewPanel extends JPanel {
 	public PreviewPanel(DingAnnotation annotation) {
 		this.annotation = annotation;
 		
-		annotation.setUsedForPreviews(true);
 		final Color background = (Color) annotation.getCyAnnotator().getView().getBackgroundPaint();
 		
 		final JComponent c = annotation.getComponent();

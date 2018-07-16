@@ -31,6 +31,7 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator.ReorderType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
@@ -53,10 +54,7 @@ import org.cytoscape.view.presentation.events.AnnotationsAddedEvent;
 import org.cytoscape.view.presentation.events.AnnotationsAddedListener;
 import org.cytoscape.view.presentation.events.AnnotationsRemovedEvent;
 import org.cytoscape.view.presentation.events.AnnotationsRemovedListener;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,8 +168,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (!appStarted || loadingSession)
 			return;
 		
-		final CyNetworkView view = evt.getNetworkView() instanceof DGraphView ?
-				(DGraphView) evt.getNetworkView() : null;
+		CyNetworkView view = evt.getNetworkView();
 				
 		if (view instanceof DGraphView) {
 			addPropertyListeners((DGraphView) view);
@@ -241,13 +238,14 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				addPropertyListeners((Collection<Annotation>) evt.getNewValue());
 				// Now update the UI
 				invokeOnEDT(() -> mainPanel.update(view));
+			} else if ("annotationsReordered".equals(evt.getPropertyName())) {
+				if (view != null && view.equals(mainPanel.getDGraphView()))
+					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder((ReorderType) evt.getNewValue()));
 			}
 		} else if (source instanceof DingAnnotation) {
 			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
-				invokeOnEDT(() -> {
-					if (view != null && view.equals(mainPanel.getDGraphView()))
-						mainPanel.setSelected((DingAnnotation) source, (boolean) evt.getNewValue());
-				});
+				if (view != null && view.equals(mainPanel.getDGraphView()))
+					invokeOnEDT(() -> mainPanel.setSelected((DingAnnotation) source, (boolean) evt.getNewValue()));
 			}
 		}
 	}
@@ -295,17 +293,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			return; // TODO For now, only DING annotations are supported!
 		
 		TaskIterator iterator = new TaskIterator(new AddAnnotationTask(view, point, f));
-		
-		serviceRegistrar.getService(DialogTaskManager.class).execute(iterator, new TaskObserver() {
-			@Override
-			public void taskFinished(ObservableTask task) {
-				// TODO
-			}
-			@Override
-			public void allFinished(FinishStatus finishStatus) {
-				// TODO Add to list?
-			}
-		});
+		serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 	}
 
 	private DGraphView getCurrentDGraphView() {
@@ -352,6 +340,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		removePropertyListeners(view);
 		view.getCyAnnotator().addPropertyChangeListener("annotations", this);
+		view.getCyAnnotator().addPropertyChangeListener("annotationsReordered", this);
 	}
 	
 	private void removePropertyListeners(DGraphView view) {
@@ -359,6 +348,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			return;
 		
 		view.getCyAnnotator().removePropertyChangeListener("annotations", this);
+		view.getCyAnnotator().removePropertyChangeListener("annotationsReordered", this);
 	}
 	
 	private void addPropertyListeners(Collection<Annotation> list) {

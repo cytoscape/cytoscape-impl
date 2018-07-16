@@ -54,9 +54,7 @@ public interface DingAnnotation extends Annotation {
 
 	void drawAnnotation(Graphics g, double x, double y, double scaleFactor);
 
-	boolean usedForPreviews();
-
-	void setUsedForPreviews(boolean v);
+	boolean isUsedForPreviews();
 
 	void contentChanged();
 
