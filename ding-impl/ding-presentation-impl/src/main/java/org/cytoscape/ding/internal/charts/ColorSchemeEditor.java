@@ -188,7 +188,7 @@ public class ColorSchemeEditor<T extends AbstractCustomGraphics2<?>> extends JPa
 	}
 	
 	protected void updateColorList(final boolean newScheme) {
-		List<Color> colors = chart.getList(COLORS, Color.class);
+		List<Color> colors = new ArrayList<>(chart.getList(COLORS, Color.class));
 		final ColorScheme scheme = chart.get(COLOR_SCHEME, ColorScheme.class, ColorScheme.DEFAULT);
 		final int nColors = getTotal();
 		
