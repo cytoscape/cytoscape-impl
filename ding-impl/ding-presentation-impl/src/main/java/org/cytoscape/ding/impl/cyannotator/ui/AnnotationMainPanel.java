@@ -866,7 +866,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public void setValueAt(Object value, int row, int col) {
-			if (col == 1 && row >= 0 && row < getRowCount() - 1 && value instanceof String)
+			if (col == 1 && row >= 0 && row < getRowCount() && value instanceof String)
 				data.get(row).setName((String) value);
 		}
 		
