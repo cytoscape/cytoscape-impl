@@ -255,6 +255,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
     
 	// Assumes location is node coordinates
+	@Override
 	public void moveAnnotationRelative(Point2D location) {
 		if (offset == null) {
 			moveAnnotation(location);
@@ -266,6 +267,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	// Assumes location is node coordinates.
+	@Override
 	public void moveAnnotation(Point2D location) {
 		// Location is in "node coordinates"
 		Point2D coords = ViewUtils.getComponentCoordinates(view, location.getX(), location.getY());
@@ -274,6 +276,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		}
 	}
 
+	@Override
 	public void setLocation(final int x, final int y) {
 		ViewUtil.invokeOnEDTAndWait(() -> {
 			super.setLocation(x, y);
@@ -281,20 +284,26 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		});
 	}
 
+	@Override
 	public void setSize(final int width, final int height) {
 		ViewUtil.invokeOnEDTAndWait(() -> {
 			super.setSize(width, height);
 		});
 	}
 
-	public Point getLocation() { return super.getLocation(); }
+	@Override
+	public Point getLocation() {
+		return super.getLocation();
+	}
 
+	@Override
 	public boolean contains(int x, int y) {
 		if (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight())
 			return true;
 		return false;
 	}
 
+	@Override
 	public void removeAnnotation() {
 		ViewUtil.invokeOnEDTAndWait(() -> {
 			canvas.remove(this);
@@ -310,7 +319,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		});
 	}
 
-	public void resizeAnnotation(double width, double height) {};
+	public void resizeAnnotation(double width, double height) {
+		// Nothing to do here...
+	}
 
 	@Override
 	public String getName() {
