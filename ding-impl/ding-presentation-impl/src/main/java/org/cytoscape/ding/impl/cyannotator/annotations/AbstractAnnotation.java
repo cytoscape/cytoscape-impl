@@ -13,6 +13,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -318,8 +319,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void setName(String name) {
-		this.name = name;
-		update();
+		if (!Objects.equals(name, this.name)) {
+			this.name = name;
+			update();
+		}
 	}
 
 	@Override

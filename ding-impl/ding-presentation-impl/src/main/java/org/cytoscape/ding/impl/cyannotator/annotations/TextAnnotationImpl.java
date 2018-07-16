@@ -48,6 +48,8 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 @SuppressWarnings("serial")
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	
+	private static final String DEF_TEXT = "Text Annotation";
+
 	private String text = "";
 
 	protected float fontSize;
@@ -64,7 +66,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
-		this.text = "Text Annotation";
+		this.text = DEF_TEXT;
 	}
 
 	public TextAnnotationImpl(TextAnnotationImpl c, Window owner, boolean usedForPreviews) {
@@ -129,8 +131,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		// Assuming setName() is called by an app or the UI,
 		// we no longer want it to automatically update the name from the Annotation text.
 		if (name != null && !name.isEmpty())
-			updateNameFromText  = false;
-		
+			updateNameFromText = false;
+
 		super.setName(name);
 	}
 	
@@ -353,9 +355,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		paint(g);
 		selected = saveSelected;
 	}
+	
+	@Override
+	protected String getDefaultName() {
+		return text != null ? text : DEF_TEXT;
+	}
 
 	int getAnnotationWidth() {
-		return (int)(getTextWidth((Graphics2D)this.getGraphics())+1.0);
+		return (int) (getTextWidth((Graphics2D) this.getGraphics()) + 1.0);
 	}
 
 	int getAnnotationHeight() {

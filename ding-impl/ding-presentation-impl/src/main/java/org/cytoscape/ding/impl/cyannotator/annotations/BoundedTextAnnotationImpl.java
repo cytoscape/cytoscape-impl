@@ -49,14 +49,18 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	
+	private static final String DEF_TEXT = "Text Annotation";
+	
 	private String text;
 	private boolean shapeIsFit;
-
 	protected float fontSize;
 	protected float savedFontSize;
 	protected Font font;
 	protected int initialFontSize = 12;
 	protected Color textColor = Color.BLACK;
+	
+	/** Initially, the name is the same as the text */
+	private boolean updateNameFromText = true;
 
 	public BoundedTextAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) { 
 		super(view, 100, 100, owner, usedForPreviews);
@@ -71,7 +75,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		super(view, width, height, owner, false);
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
-		this.text = "Text Annotation";
+		this.text = DEF_TEXT;
 	}
 
 	public BoundedTextAnnotationImpl(BoundedTextAnnotationImpl c, Window owner) {
@@ -110,12 +114,25 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.text = ViewUtils.getString(argMap, TEXT, "");
 		this.fontSize = font.getSize();
 
+		if (text != null && !text.trim().isEmpty())
+			name = text.trim();
+		
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
 			Graphics2D graphics = (Graphics2D) this.getGraphics();
 			double width = getTextWidth(graphics) + 8;
 			double height = getTextHeight(graphics) + 8;
 			super.setSize(width, height);
 		}
+	}
+	
+	@Override
+	public void setName(String name) {
+		// Assuming setName() is called by an app or the UI,
+		// we no longer want it to automatically update the name from the Annotation text.
+		if (name != null && !name.isEmpty())
+			updateNameFromText = false;
+
+		super.setName(name);
 	}
 
 	@Override
@@ -258,6 +275,9 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	public void setText(String text) {
 		this.text = text;
 
+		if (updateNameFromText)
+			name = text != null ? text.trim() : "";
+		
 		if (shapeIsFit)
 			fitShapeToText();
 
@@ -348,6 +368,11 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.fontSize = font.getSize2D();
 		updateBounds();
 		update();
+	}
+
+	@Override
+	protected String getDefaultName() {
+		return text != null ? text : DEF_TEXT;
 	}
 
 	private void updateBounds() {

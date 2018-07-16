@@ -65,7 +65,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private final BoundedTextAnnotationImpl mAnnotation;
 	private BoundedTextAnnotationImpl preview;
 	private final boolean create;
-		
+	
 	public BoundedTextAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
 		super(owner);
 		this.view = view;
@@ -149,6 +149,11 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();           
 		
+		String name = shapeAnnotationPanel.getAnnotationName();
+
+		if (name != null && !name.equals(mAnnotation.getName()))
+			mAnnotation.setName(name);
+		
 		mAnnotation.setFont(textAnnotationPanel.getNewFont());
 		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
 		mAnnotation.setText(textAnnotationPanel.getText());
@@ -158,8 +163,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		mAnnotation.setBorderColor(preview.getBorderColor());
 		mAnnotation.setBorderOpacity(preview.getBorderOpacity());
 		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
-		mAnnotation.setName(shapeAnnotationPanel.getName());
-
+		
 		if (!create) {
 			mAnnotation.update(); 
 			return;
