@@ -7,12 +7,14 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -47,13 +49,10 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 
 	public static final String NAME = "Arrow";
 
-	private final Icon icon;
+	private Icon icon;
 
 	public ArrowAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(ArrowAnnotation.class, serviceRegistrar);
-		
-		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
-		icon = new TextIcon(IconManager.ICON_ARROW_UP, font, ICON_SIZE, ICON_SIZE);
 	}
 
 	@Override
@@ -91,6 +90,18 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 
 	@Override
 	public Icon getIcon() {
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet,
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
+			icon = new TextIcon(
+					IconUtil.ICON_ANNOTATION_ARROW,
+					font,
+					UIManager.getColor("Label.foreground"),
+					ICON_SIZE, ICON_SIZE
+			);
+		}
+		
 		return icon;
 	}
 }

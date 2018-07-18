@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -44,13 +46,10 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 
 	public static final String NAME = "Shape";
 
-	private final Icon icon;
+	private Icon icon;
 	
 	public ShapeAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(ShapeAnnotation.class, serviceRegistrar);
-		
-		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
-		icon = new TextIcon(IconManager.ICON_STAR_O, font, ICON_SIZE, ICON_SIZE);
 	}
 	
 	@Override
@@ -79,6 +78,19 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 
 	@Override
 	public Icon getIcon() {
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			icon = new TextIcon(
+					new String[] { IconUtil.ICON_ANNOTATION_SHAPE_1, IconUtil.ICON_ANNOTATION_SHAPE_2 },
+					font,
+					new Color[] { Color.BLACK, Color.WHITE },
+					ICON_SIZE, ICON_SIZE,
+					1
+			);
+		}
+		
 		return icon;
 	}
 }

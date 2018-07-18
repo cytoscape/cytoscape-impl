@@ -1,16 +1,19 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -45,13 +48,10 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	
 	public static final String NAME = "Image";
 
-	private final Icon icon;
+	private Icon icon;
 	
 	public ImageAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(ImageAnnotation.class, serviceRegistrar);
-		
-		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
-		icon = new TextIcon(IconManager.ICON_IMAGE, font, ICON_SIZE, ICON_SIZE);
 	}
 
 	@Override
@@ -83,6 +83,19 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 
 	@Override
 	public Icon getIcon() {
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
+			icon = new TextIcon(
+					new String[] { IconUtil.ICON_ANNOTATION_IMAGE_1, IconUtil.ICON_ANNOTATION_IMAGE_2 },
+					font,
+					new Color[] { Color.WHITE, UIManager.getColor("Label.foreground") },
+					ICON_SIZE, ICON_SIZE,
+					0
+			);
+		}
+		
 		return icon;
 	}
 }

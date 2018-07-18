@@ -1,15 +1,18 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -44,18 +47,10 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 
 	public static final String NAME = "Bounded Text";
 
-	private final Icon icon;
+	private Icon icon;
 	
 	public BoundedTextAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(BoundedTextAnnotation.class, serviceRegistrar);
-		
-		Font font1 = serviceRegistrar.getService(IconManager.class).getIconFont(18f);
-		Font font2 = new Font("Serif", Font.BOLD, 10); // This font is used as an icon--Don't change it!
-		icon = new TextIcon(
-				new String[] { IconManager.ICON_SQUARE_O, "T" },
-				new Font[] { font1, font2 },
-				ICON_SIZE, ICON_SIZE
-		);
 	}
 	
 	@Override
@@ -84,6 +79,19 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 
 	@Override
 	public Icon getIcon() {
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet,
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
+			icon = new TextIcon(
+					new String[] { IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_1, IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_2 },
+					font,
+					new Color[] { Color.WHITE, UIManager.getColor("Label.foreground") },
+					ICON_SIZE, ICON_SIZE,
+					0
+			);
+		}
+		
 		return icon;
 	}
 }

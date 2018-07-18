@@ -6,11 +6,14 @@ import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
+import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
@@ -43,13 +46,10 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 
 	public static final String NAME = "Text";
 
-	private final Icon icon;
+	private Icon icon;
 	
 	public TextAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(TextAnnotation.class, serviceRegistrar);
-		
-		Font font = new Font("Serif", Font.BOLD, 16); // This font is used as an icon--Don't change it!
-		icon = new TextIcon("T", font, ICON_SIZE, ICON_SIZE);
 	}
 	
 	@Override
@@ -78,6 +78,18 @@ public class TextAnnotationFactory extends AbstractDingAnnotationFactory<TextAnn
 
 	@Override
 	public Icon getIcon() {
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet,
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14f);
+			icon = new TextIcon(
+					IconUtil.ICON_ANNOTATION_TEXT,
+					font,
+					UIManager.getColor("Label.foreground"),
+					ICON_SIZE, ICON_SIZE
+			);
+		}
+		
 		return icon;
 	}
 }

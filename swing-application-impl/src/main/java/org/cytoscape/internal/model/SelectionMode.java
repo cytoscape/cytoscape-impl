@@ -1,8 +1,5 @@
 package org.cytoscape.internal.model;
 
-import static org.cytoscape.internal.util.IconUtil.ANNOTATIONS;
-import static org.cytoscape.internal.util.IconUtil.EDGES;
-import static org.cytoscape.internal.util.IconUtil.NODES;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_ANNOTATIONS;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_EDGES;
 import static org.cytoscape.internal.util.IconUtil.SELECTION_MODE_NODES;
@@ -36,7 +33,6 @@ public enum SelectionMode {
 	NODE_SELECTION(
 			"Toggle Node Selection",
 			SELECTION_MODE_NODES,
-			NODES,
 			"Turn off this option if you don't want nodes to be selected when they are clicked or drag-selected.",
 			"/images/tooltips/selection-mode-nodes.gif",
 			"NETWORK_NODE_SELECTION"
@@ -44,7 +40,6 @@ public enum SelectionMode {
 	EDGE_SELECTION(
 			"Toggle Edge Selection",
 			SELECTION_MODE_EDGES,
-			EDGES,
 			"Turn off this option if you don't want edges to be selected when they are clicked or drag-selected.",
 			"/images/tooltips/selection-mode-edges.gif",
 			"NETWORK_EDGE_SELECTION"
@@ -52,30 +47,26 @@ public enum SelectionMode {
 	ANNOTATION_SELECTION(
 			"Toggle Annotation Selection",
 			SELECTION_MODE_ANNOTATIONS,
-			ANNOTATIONS,
 			"Turn off this option if you don't want annotations to be selected when they are clicked or drag-selected.",
 			null,
 			"NETWORK_ANNOTATION_SELECTION"
 	);
 	
 	private final String text;
-	private final String selectedIconText;
-	private final String unselectedIconText;
+	private final String iconText;
 	private final String toolTipText;
 	private final String toolTipImage;
 	private final String propertyId;
 
 	private SelectionMode(
 			String text,
-			String selectedIconText,
-			String unselectedIconText,
+			String iconText,
 			String toolTipText,
 			String toolTipImage,
 			String propertyId
 	) {
 		this.text = text;
-		this.selectedIconText = selectedIconText;
-		this.unselectedIconText = unselectedIconText;
+		this.iconText = iconText;
 		this.toolTipText = toolTipText;
 		this.toolTipImage = toolTipImage;
 		this.propertyId = propertyId;
@@ -85,12 +76,8 @@ public enum SelectionMode {
 		return text;
 	}
 	
-	public String getSelectedIconText() {
-		return selectedIconText;
-	}
-	
-	public String getUnselectedIconText() {
-		return unselectedIconText;
+	public String getIconText() {
+		return iconText;
 	}
 	
 	public String getPropertyId() {

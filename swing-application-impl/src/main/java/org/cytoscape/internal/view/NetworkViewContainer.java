@@ -901,7 +901,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			// Icons
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			final Font iconFont = iconManager.getIconFont(IconUtil.CY_FONT_NAME, 20.0f);
-			final String[] iconTexts = new String[] { IconUtil.SELECTION, mode.getUnselectedIconText() };
 			
 			// Tool Tip
 			final URL tipImgUrl = mode.getToolTipImage() == null ? null :
@@ -938,7 +937,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 		
 		private void init() {
-			setText(mode.getSelectedIconText());
+			setText(mode.getIconText());
 			setToolTipText(mode.getText());
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);

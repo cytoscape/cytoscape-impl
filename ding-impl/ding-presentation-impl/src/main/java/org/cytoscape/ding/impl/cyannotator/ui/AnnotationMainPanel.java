@@ -117,7 +117,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private ParallelGroup btnVGroup;
 	
 	/** Default icon for Annotations that provide no icon */
-	private final Icon defIcon;
+	private Icon defIcon;
 	
 	private DGraphView view;
 	
@@ -125,14 +125,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	public AnnotationMainPanel(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		
-		Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 30f);
-		defIcon = new TextIcon(
-				IconUtil.ICON_ANNOTATION,
-				font,
-				AbstractDingAnnotationFactory.ICON_SIZE,
-				AbstractDingAnnotationFactory.ICON_SIZE
-		);
 		
 		// When a selected button is clicked again, we want it to be be unselected
 		buttonGroup = new ButtonGroup() {
@@ -755,6 +747,24 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		btn.setVerticalTextPosition(SwingConstants.TOP);
 	}
 	
+	private Icon getDefIcon() {
+		if (defIcon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet,
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 30f);
+			defIcon = new TextIcon(
+					new String[] { IconUtil.ICON_ANNOTATION_1, IconUtil.ICON_ANNOTATION_2 },
+					font,
+					new Color[] { UIManager.getColor("Label.foreground"), Color.WHITE },
+					AbstractDingAnnotationFactory.ICON_SIZE,
+					AbstractDingAnnotationFactory.ICON_SIZE,
+					1
+			);
+		}
+		
+		return defIcon;
+	}
+	
 	class AnnotationToggleButton extends JToggleButton {
 		
 		private final AnnotationFactory<? extends Annotation> factory;
@@ -763,7 +773,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			this.factory = f;
 			Icon icon = f.getIcon();
 			
-			setIcon(icon != null ? icon : defIcon);
+			setIcon(icon != null ? icon : getDefIcon());
 			setToolTipText(f.getName());
 			setHorizontalTextPosition(SwingConstants.CENTER);
 		}
@@ -894,7 +904,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (a instanceof DingAnnotation)
 				icon = iconMap.get(((DingAnnotation) a).getType());
 
-			return icon != null ? icon : defIcon;
+			return icon != null ? icon : getDefIcon();
 		}
 	}
 	
