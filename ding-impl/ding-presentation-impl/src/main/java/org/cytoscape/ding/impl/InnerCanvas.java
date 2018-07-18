@@ -228,7 +228,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_fontMetrics = g.getFontMetrics();
 
 		synchronized (m_lock) {
-			if (m_view.isDirty()) {
+			if (m_view != null && m_view.isDirty()) {
 				contentChanged = m_view.isContentChanged();
 				viewportChanged = m_view.isViewportChanged();
 				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
@@ -265,14 +265,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 		}
 
-		if (contentChanged) {
+		if (contentChanged && m_view != null) {
 			final ContentChangeListener lis = m_view.m_cLis[0];
 
 			if (lis != null)
 				lis.contentChanged();
 		}
 
-		if (viewportChanged) {
+		if (viewportChanged && m_view != null) {
 			final ViewportChangeListener lis = m_view.m_vLis[0];
 
 			if (lis != null)
@@ -900,7 +900,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
         m_xCenter = x;
         m_yCenter = y;
 
-        if( addEdgeMode.addingEdge() )
+        if(addEdgeMode != null && addEdgeMode.addingEdge() )
         {
             Point2D sourcePoint = AddEdgeStateMonitor.getSourcePoint(m_view);
             double newX = sourcePoint.getX() - changeX;

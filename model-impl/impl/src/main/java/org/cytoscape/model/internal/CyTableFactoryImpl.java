@@ -81,15 +81,14 @@ public class CyTableFactoryImpl implements CyTableFactory, SessionLoadedListener
 		
 		List<WeakReference<TableAddedListener>> tables = new ArrayList<>();
 
-		public void addListener(TableAddedListener t) {
+		public synchronized void addListener(TableAddedListener t) {
 			tables.add(new WeakReference<TableAddedListener>(t));
 		}
 
 		@Override
-		public void handleEvent(TableAddedEvent e) {
+		public synchronized void handleEvent(TableAddedEvent e) {
 			for (WeakReference<TableAddedListener> ref : tables) {
 				TableAddedListener l = ref.get();
-				
 				if (l != null)
 					l.handleEvent(e);
 			}
