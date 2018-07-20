@@ -1074,7 +1074,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "3.1");
+			props.setProperty(MENU_GRAVITY, "4.1");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.6");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -1093,7 +1093,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "3.11");
+			props.setProperty(MENU_GRAVITY, "4.11");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.5");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -1106,7 +1106,7 @@ public class CyActivator extends AbstractCyActivator {
 			HideUnselectedTaskFactoryImpl factory = new HideUnselectedTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Select");
-			props.setProperty(MENU_GRAVITY, "3.2");
+			props.setProperty(MENU_GRAVITY, "4.2");
 			props.setProperty(TITLE, factory.getDescription());
 			props.setProperty(TOOLTIP, factory.getDescription());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
