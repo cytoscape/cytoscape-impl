@@ -62,7 +62,7 @@ public class SelectModeAction extends AbstractCyAction {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		useCheckBoxMenuItem = true;
-		setPreferredMenu("Select.Mouse Drag Selects");
+		setPreferredMenu("Select.Mouse Drag Selects[1]");
 		setMenuGravity(gravity);
 	}
 	
