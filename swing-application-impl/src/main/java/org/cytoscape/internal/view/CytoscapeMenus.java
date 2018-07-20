@@ -75,9 +75,9 @@ public class CytoscapeMenus {
 		menuBar.addMenu("Select", 0.0);
 //		menuBar.addMenu("Select.Nodes", 1.0);
 //		menuBar.addMenu("Select.Edges", 1.1);
-		menuBar.addSeparator("Select", 0.2);
-		menuBar.addSeparator("Select", 1.0);
-		menuBar.addSeparator("Select", 1.1);
+//		menuBar.addSeparator("Select", 0.2);
+//		menuBar.addSeparator("Select", 1.0);
+//		menuBar.addSeparator("Select", 1.1);
 		menuBar.addMenu("Layout", 0.0);
 		menuBar.addMenu("Apps", 0.0);
 		menuBar.addMenu("Tools", 0.0);
@@ -106,9 +106,8 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("View", 6.0);
 		menuBar.addSeparator("View", 9.0);
 
-		menuBar.addSeparator("Select", 2.0);
 		menuBar.addSeparator("Select", 4.0);
-		menuBar.addSeparator("Select", 6.0);
+		menuBar.addSeparator("Select", 5.0);
 
 		menuBar.addSeparator("Layout", 2.0);
 		menuBar.addSeparator("Layout", 4.0);
