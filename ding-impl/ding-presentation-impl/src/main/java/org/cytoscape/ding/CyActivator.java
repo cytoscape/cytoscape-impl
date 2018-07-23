@@ -1,5 +1,6 @@
 package org.cytoscape.ding;
 
+import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
 import static org.cytoscape.work.ServiceProperties.ID;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
 import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
@@ -67,11 +68,10 @@ import org.cytoscape.ding.impl.cyannotator.create.TextAnnotationFactory;
 // Annotation edits and changes
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddArrowTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.ChangeAnnotationCanvasTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.LayerAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
@@ -139,6 +139,9 @@ import org.osgi.framework.BundleContext;
  */
 
 public class CyActivator extends AbstractCyActivator {
+	
+	/** View Context Menu - Reorder Right-Clicked Annotation */
+	private static final String REORDER_ANNOTATION_MENU = NETWORK_EDIT_MENU + ".Reorder Annotation[2.2]";
 	
 	private CustomGraphicsManager cgManager;
 	private CyCustomGraphics2Manager cg2Manager;
@@ -349,62 +352,63 @@ public class CyActivator extends AbstractCyActivator {
 		                moveAnnotationTaskFactoryProps);
 		*/
 
-
-		LayerAnnotationTaskFactory moveTFAnnotationTaskFactory = new LayerAnnotationTaskFactory(-10000);
-		Properties moveTFAnnotationTaskFactoryProps = new Properties();
-		moveTFAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		moveTFAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.1");
-		moveTFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		moveTFAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation To Front");
-		registerService(bc, moveTFAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                moveTFAnnotationTaskFactoryProps);
-
-		LayerAnnotationTaskFactory moveFAnnotationTaskFactory = new LayerAnnotationTaskFactory(-1);
-		Properties moveFAnnotationTaskFactoryProps = new Properties();
-		moveFAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		moveFAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.2");
-		moveFAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		moveFAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation Forwards");
-		registerService(bc, moveFAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                moveFAnnotationTaskFactoryProps);
-
-		LayerAnnotationTaskFactory moveBAnnotationTaskFactory = new LayerAnnotationTaskFactory(1);
-		Properties moveBAnnotationTaskFactoryProps = new Properties();
-		moveBAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		moveBAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.3");
-		moveBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		moveBAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation Backwards");
-		registerService(bc, moveBAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                moveBAnnotationTaskFactoryProps);
-
-		LayerAnnotationTaskFactory moveTBAnnotationTaskFactory = new LayerAnnotationTaskFactory(10000);
-		Properties moveTBAnnotationTaskFactoryProps = new Properties();
-		moveTBAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		moveTBAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.4");
-		moveTBAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		moveTBAnnotationTaskFactoryProps.setProperty(TITLE, "Move Annotation To Back");
-		moveTBAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_AFTER, "true");
-		registerService(bc, moveTBAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                moveTBAnnotationTaskFactoryProps);
-
-		ChangeAnnotationCanvasTaskFactory pullAnnotationTaskFactory = new ChangeAnnotationCanvasTaskFactory(Annotation.FOREGROUND);
-		Properties pullAnnotationTaskFactoryProps = new Properties();
-		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		pullAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.5");
-		pullAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		pullAnnotationTaskFactoryProps.setProperty(TITLE, "Pull Annotation to Foreground Canvas");
-		registerService(bc, pullAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                pullAnnotationTaskFactoryProps);
-
-		ChangeAnnotationCanvasTaskFactory pushAnnotationTaskFactory = new ChangeAnnotationCanvasTaskFactory(Annotation.BACKGROUND);
-		Properties pushAnnotationTaskFactoryProps = new Properties();
-		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
-		pushAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "3.6");
-		pushAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU+".Reorder Annotations[2.2]");
-		pushAnnotationTaskFactoryProps.setProperty(TITLE, "Push Annotation to Background Canvas");
-		registerService(bc, pushAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
-		                pushAnnotationTaskFactoryProps);
-
+		// Reorder Selected Annotations - Edit Menu
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MIN_VALUE);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Bring Annotations To Front");
+			props.setProperty(ACCELERATOR, "shift cmd CLOSE_BRACKET");
+			props.setProperty(MENU_GRAVITY, "6.1");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(-1);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Bring Annotations Forward");
+			props.setProperty(ACCELERATOR, "cmd CLOSE_BRACKET");
+			props.setProperty(MENU_GRAVITY, "6.2");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(1);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Send Annotations Backward");
+			props.setProperty(ACCELERATOR, "cmd OPEN_BRACKET");
+			props.setProperty(MENU_GRAVITY, "6.3");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MAX_VALUE);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Send Annotations To Back");
+			props.setProperty(ACCELERATOR, "shift cmd OPEN_BRACKET");
+			props.setProperty(MENU_GRAVITY, "6.4");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Annotation.FOREGROUND);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(MENU_GRAVITY, "6.5");
+			props.setProperty(TITLE, "Pull Annotations to Foreground Layer");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Annotation.BACKGROUND);
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
+			props.setProperty(TITLE, "Push Annotations to Background Layer");
+			props.setProperty(MENU_GRAVITY, "6.6");
+			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
+			registerService(bc, factory, NetworkViewTaskFactory.class, props);
+		}
+		
 		/*
 		ResizeAnnotationTaskFactory resizeAnnotationTaskFactory = new ResizeAnnotationTaskFactory();
 		Properties resizeAnnotationTaskFactoryProps = new Properties();

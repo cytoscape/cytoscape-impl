@@ -18,7 +18,6 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 
 import org.cytoscape.application.swing.CyAction;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -98,9 +97,8 @@ public class CytoscapeMenus {
 
 		menuBar.addSeparator("Edit", 2.0);
 		menuBar.addSeparator("Edit", 4.0);
-		menuBar.addSeparator("Edit", 6.0);
 
-		menuBar.addMenu("Edit.Preferences", 10.0);
+		menuBar.addMenu("Edit.Preferences", 100.0);
 
 		menuBar.addSeparator("View", 2.0);
 		menuBar.addSeparator("View", 6.0);

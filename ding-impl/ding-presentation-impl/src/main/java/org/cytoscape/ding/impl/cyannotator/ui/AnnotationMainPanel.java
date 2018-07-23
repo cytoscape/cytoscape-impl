@@ -45,7 +45,6 @@ import javax.swing.JViewport;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
@@ -150,12 +149,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		getBackgroundTable().getSelectionModel().addListSelectionListener(e -> {
 			if (!e.getValueIsAdjusting()) {
+				stopTableCellEditing();
 				updateSelectionLabel();
 				updateRemoveAnnotationsButton();
 			}
 		});
 		getForegroundTable().getSelectionModel().addListSelectionListener(e -> {
 			if (!e.getValueIsAdjusting()) {
+				stopTableCellEditing();
 				updateSelectionLabel();
 				updateRemoveAnnotationsButton();
 			}
@@ -241,7 +242,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
-	Collection<Annotation> getSelectedAnnotations(JTable table) {
+	private Collection<Annotation> getSelectedAnnotations(JTable table) {
 		final Set<Annotation> set = new HashSet<>();
 		final int rowCount = table.getRowCount();
 		
@@ -292,7 +293,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
-	void setSelected(DingAnnotation a, boolean selected) {
+	void setSelected(Annotation a, boolean selected) {
 		if (view == null || getAnnotationCount() == 0)
 			return;
 		
@@ -389,19 +390,42 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void updateAnnotationsOrder(ReorderType type) {
-		if (type == ReorderType.CANVAS) {
-			// Update all annotation tables data, because an annotation may have been moved to another layer
-			final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
-					: Collections.emptyList();
+		AnnotationTableModel bgModel = (AnnotationTableModel) getBackgroundTable().getModel();
+		AnnotationTableModel fgModel = (AnnotationTableModel) getForegroundTable().getModel();
+		
+		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
+		
+		getBackgroundTable().getSelectionModel().setValueIsAdjusting(true);
+		getForegroundTable().getSelectionModel().setValueIsAdjusting(true);
+		
+		try {
+			if (type == ReorderType.CANVAS) {
+				// Update all annotation tables data, because an annotation may have been moved to another layer
+				final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
+						: Collections.emptyList();
+				
+				Map<String, Collection<Annotation>> map = separateByLayers(annotations);
+				bgModel.setData(map.get(Annotation.BACKGROUND));
+				fgModel.setData(map.get(Annotation.FOREGROUND));
+			} else {
+				bgModel.sortData();
+				fgModel.sortData();
+	
+				if (getBackgroundTable().getRowCount() > 0)
+					bgModel.fireTableRowsUpdated(0, getBackgroundTable().getRowCount() - 1);
+				if (getForegroundTable().getRowCount() > 0)
+					fgModel.fireTableRowsUpdated(0, getForegroundTable().getRowCount() - 1);
+			}
 			
-			Map<String, Collection<Annotation>> map = separateByLayers(annotations);
-			((AnnotationTableModel) getBackgroundTable().getModel()).setData(map.get(Annotation.BACKGROUND));
-			((AnnotationTableModel) getForegroundTable().getModel()).setData(map.get(Annotation.FOREGROUND));
-		} else {
-			((AnnotationTableModel) getBackgroundTable().getModel()).sortData();
-			((AnnotationTableModel) getForegroundTable().getModel()).sortData();
-			((AnnotationTableModel) getBackgroundTable().getModel()).fireTableDataChanged();
-			((AnnotationTableModel) getForegroundTable().getModel()).fireTableDataChanged();
+			// Restore the row selection (the annotations that were selected before must be still selected)
+			getBackgroundTable().clearSelection();
+			getForegroundTable().clearSelection();
+			Map<String, Collection<Annotation>> map = separateByLayers(selectedAnnotations);
+			map.get(Annotation.BACKGROUND).forEach(a -> setSelected(a, true));
+			map.get(Annotation.FOREGROUND).forEach(a -> setSelected(a, true));
+		} finally {
+			getBackgroundTable().getSelectionModel().setValueIsAdjusting(false);
+			getForegroundTable().getSelectionModel().setValueIsAdjusting(false);
 		}
 	}
 	
@@ -511,11 +535,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		);
 		
 		setEnabled(false);
-		
-		// Stop editing when selection changes
-		ListSelectionListener listSelectionListener = evt -> stopTableCellEditing();
-		getBackgroundTable().getSelectionModel().addListSelectionListener(listSelectionListener);
-		getForegroundTable().getSelectionModel().addListSelectionListener(listSelectionListener);
 	}
 	
 	JPanel getButtonPanel() {
@@ -583,7 +602,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	JTable getForegroundTable() {
 		if (foregroundTable == null) {
-			foregroundTable = createAnnotationLayerTable();
+			foregroundTable = createLayerTable(Annotation.FOREGROUND);
 		}
 		
 		return foregroundTable;
@@ -591,10 +610,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	JTable getBackgroundTable() {
 		if (backgroundTable == null) {
-			backgroundTable = createAnnotationLayerTable();
+			backgroundTable = createLayerTable(Annotation.BACKGROUND);
 		}
 		
 		return backgroundTable;
+	}
+	
+	JTable getLayerTable(String canvasName) {
+		return Annotation.BACKGROUND.equals(canvasName) ? getBackgroundTable() : getForegroundTable();
 	}
 
 	JScrollPane getFtScrollPane() {
@@ -653,7 +676,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return selectNoneButton;
 	}
 	
-	private JTable createAnnotationLayerTable() {
+	private JTable createLayerTable(String name) {
 		final DefaultTableCellRenderer renderer = new AnnotationTableCellRenderer();
 		
 		final JTable table = new JTable(new AnnotationTableModel()) {
@@ -682,6 +705,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 		};
 		
+		table.setName(name);
+		table.setFillsViewportHeight(true); // Otherwise Drag&Drop won't work when target table is empty!
+		
 		table.setShowHorizontalLines(true);
 		table.setShowVerticalLines(false);
 		table.setIntercellSpacing(new Dimension(0, 2));
@@ -694,6 +720,18 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		table.getColumnModel().getColumn(0).setMaxWidth(32);
 		
 		makeSmall(table);
+		
+		table.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent evt) {
+				int row = table.rowAtPoint(evt.getPoint());
+				
+				if (row < 0) {
+					stopTableCellEditing(table);
+					table.clearSelection();
+				}
+			}
+		});
 		
 		return table;
 	}
@@ -711,7 +749,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		sp.getViewport().setOpaque(false);
 		sp.getViewport().addMouseListener(new MouseAdapter() {
 			@Override
-			public void mousePressed(MouseEvent e) {
+			public void mousePressed(MouseEvent evt) {
 				stopTableCellEditing(table);
 				table.clearSelection();
 				sp.requestFocusInWindow();

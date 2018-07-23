@@ -44,19 +44,19 @@ import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
 
 @SuppressWarnings("serial")
-public class AnnotationSelection extends JComponent 
-                                 implements Iterable<DingAnnotation> {
+public class AnnotationSelection extends JComponent implements Iterable<DingAnnotation> {
+	
 	Rectangle2D union;
 	Rectangle2D[] anchors = new Rectangle2D[8];
 	double zoom;
 	CyAnnotator cyAnnotator;
 	static float border = 2f;
-	static float[] dash = {10.0f,10.0f};
-	Point2D initialPos = null;
+	static float[] dash = { 10.0f, 10.0f };
+	Point2D initialPos;
 	Rectangle2D initialBounds;
-	Position anchor = null;
-	boolean resizing = false;
-	boolean moving = false;
+	Position anchor;
+	boolean resizing;
+	boolean moving;
 
 	private Set<DingAnnotation> selectedAnnotations;
 
@@ -65,7 +65,6 @@ public class AnnotationSelection extends JComponent
 		selectedAnnotations = new HashSet<>();
 	}
 
-	// Set methods
 	public void add(DingAnnotation e) {
 		if (selectedAnnotations.size() == 0) {
 			selectedAnnotations.add(e);
@@ -78,16 +77,18 @@ public class AnnotationSelection extends JComponent
 		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
-	public boolean isEmpty() { return selectedAnnotations.isEmpty(); }
+	public boolean isEmpty() {
+		return selectedAnnotations.isEmpty();
+	}
 
 	public Set<DingAnnotation> getSelectedAnnotations() {
-		return selectedAnnotations;
+		return new HashSet<>(selectedAnnotations);
 	}
 
 	public void clear() {
-		for (DingAnnotation a: selectedAnnotations) {
+		for (DingAnnotation a: selectedAnnotations)
 			a.setOffset(null);
-		}
+		
 		selectedAnnotations.clear();
 		cyAnnotator.getForeGroundCanvas().remove(this);
 	}
@@ -96,18 +97,23 @@ public class AnnotationSelection extends JComponent
 		return selectedAnnotations.contains(e);
 	}
 
+	@Override
 	public Iterator<DingAnnotation> iterator() {
 		return selectedAnnotations.iterator();
 	}
 
-	public int count() { return selectedAnnotations.size(); }
+	public int count() {
+		return selectedAnnotations.size();
+	}
 
 	public void remove(Object e) {
 		selectedAnnotations.remove(e);
+		
 		if (selectedAnnotations.isEmpty())
 			cyAnnotator.getForeGroundCanvas().remove(this);
 		else
 			updateBounds();
+		
 		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
@@ -125,21 +131,21 @@ public class AnnotationSelection extends JComponent
 	}
 
 	public Position overAnchor(int x, int y) {
-		// System.out.println("Mouse: "+x+","+y);
-  	// Get our current transform
+		// Get our current transform
 		double[] nextLocn = new double[2];
-		nextLocn[0] = (double)x-getX();
-		nextLocn[1] = (double)y-getY();
+		nextLocn[0] = (double) x - getX();
+		nextLocn[1] = (double) y - getY();
+		
 		return overAnchor(nextLocn[0], nextLocn[1]);
 	}
 
 	public Position overAnchor(double x, double y) {
-		// OK, now given our current selection, we need to see if we're over
-		// an anchor
+		// OK, now given our current selection, we need to see if we're over an anchor
 		for (int pos = 0; pos < 8; pos++) {
 			if (isOver(x, y, anchors[pos]))
 				return getPosition(pos);
 		}
+		
 		return null;
 	}
 

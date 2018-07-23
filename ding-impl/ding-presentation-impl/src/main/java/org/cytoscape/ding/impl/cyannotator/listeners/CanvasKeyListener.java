@@ -3,8 +3,7 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 import java.awt.Component;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DGraphView;
@@ -155,11 +154,10 @@ public class CanvasKeyListener implements KeyListener {
 
 		if (code == KeyEvent.VK_DELETE) {
 			if (annotationSelection.count() > 0) {
-				List<DingAnnotation> selectedAnnotations = 
-				                new ArrayList<>(annotationSelection.getSelectedAnnotations());
-				for (DingAnnotation ann: selectedAnnotations) {
+				Set<DingAnnotation> selectedAnnotations = annotationSelection.getSelectedAnnotations();
+				
+				for (DingAnnotation ann: selectedAnnotations)
 					ann.removeAnnotation();
-				}
 			}
 		}
 

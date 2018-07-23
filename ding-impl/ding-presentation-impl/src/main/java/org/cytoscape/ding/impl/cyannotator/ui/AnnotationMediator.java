@@ -3,10 +3,17 @@ package org.cytoscape.ding.impl.cyannotator.ui;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Point;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -15,8 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.DropMode;
+import javax.swing.JComponent;
+import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -36,6 +47,8 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel.AnnotationTableModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -119,17 +132,19 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mainPanel.setEnabled(false);
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());
 			mainPanel.getBackgroundTable().getSelectionModel().addListSelectionListener(e -> {
-				mainPanel.updateSelectionButtons();
-				
-				if (!e.getValueIsAdjusting() && !mainPanel.getBackgroundTable().isEditing())
+				if (!e.getValueIsAdjusting() && !mainPanel.getBackgroundTable().isEditing()) {
+					mainPanel.updateSelectionButtons();
 					selectAnnotationsFromSelectedRows();
+				}
 			});
 			mainPanel.getForegroundTable().getSelectionModel().addListSelectionListener(e -> {
-				mainPanel.updateSelectionButtons();
-				
-				if (!e.getValueIsAdjusting() && !mainPanel.getForegroundTable().isEditing())
+				if (!e.getValueIsAdjusting() && !mainPanel.getForegroundTable().isEditing()) {
+					mainPanel.updateSelectionButtons();
 					selectAnnotationsFromSelectedRows();
+				}
 			});
+			addDragAndDropSupport(mainPanel.getBackgroundTable());
+			addDragAndDropSupport(mainPanel.getForegroundTable());
 		});
 		
 		appStarted = true;
@@ -242,17 +257,17 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				if (view != null && view.equals(mainPanel.getDGraphView()))
 					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder((ReorderType) evt.getNewValue()));
 			}
-		} else if (source instanceof DingAnnotation) {
+		} else if (source instanceof Annotation) {
 			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
 				if (view != null && view.equals(mainPanel.getDGraphView()))
-					invokeOnEDT(() -> mainPanel.setSelected((DingAnnotation) source, (boolean) evt.getNewValue()));
+					invokeOnEDT(() -> mainPanel.setSelected((Annotation) source, (boolean) evt.getNewValue()));
 			}
 		}
 	}
 	
 	public void addAnnotationFactory(AnnotationFactory<? extends Annotation> f, Map<?, ?> props) {
 		if (f instanceof AbstractDingAnnotationFactory == false)
-			return; // TODO For now, only DING annotations are supported!
+			return; // For now, only DING annotations are supported!
 		
 		if (f instanceof GroupAnnotationFactory)
 			return;
@@ -290,7 +305,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 
 	private void createAnnotation(DGraphView view, AnnotationFactory<? extends Annotation> f, Point point) {
 		if (view == null || f instanceof AbstractDingAnnotationFactory == false)
-			return; // TODO For now, only DING annotations are supported!
+			return; // For now, only DING annotations are supported!
 		
 		TaskIterator iterator = new TaskIterator(new AddAnnotationTask(view, point, f));
 		serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
@@ -332,6 +347,16 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		if (!selList.isEmpty())
 			serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(selList);
+	}
+	
+	private void addDragAndDropSupport(JTable table) {
+		try {
+			table.setTransferHandler(new AnnotationTransferHandler());
+			table.setDragEnabled(true);
+			table.setDropMode(DropMode.INSERT_ROWS);
+		} catch (ClassNotFoundException e) {
+			logger.error("Cannot enable Drag&Drop on Annotation table", e);
+		}
 	}
 	
 	private void addPropertyListeners(DGraphView view) {
@@ -378,6 +403,21 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		});
 	}
 	
+	private static List<Annotation> getAnnotations(JTable table, int[] indexes) {
+		final List<Annotation> list = new ArrayList<>();
+		
+		for (int i = 0; i < indexes.length; i++) {
+			if (table.getRowCount() > indexes[i]) {
+				Annotation a = ((AnnotationTableModel) table.getModel()).getAnnotation(indexes[i]);
+				
+				if (a != null)
+					list.add(a);
+			}
+		}
+		
+		return list;
+	}
+	
 	private class ClickToAddAnnotationListener extends MouseAdapter {
 		
 		private final DGraphView view;
@@ -397,9 +437,155 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		public DGraphView getView() {
 			return view;
 		}
-		
-		public AnnotationFactory<? extends Annotation> getFactory() {
-			return factory;
+	}
+	
+	@SuppressWarnings("serial")
+	private final class AnnotationTransferHandler extends TransferHandler {
+
+		private final DataFlavor dataFlavor;
+		private int[] rows;
+
+		public AnnotationTransferHandler() throws ClassNotFoundException {
+			String mimeType = DataFlavor.javaJVMLocalObjectMimeType + ";class=java.util.List";
+			dataFlavor = new DataFlavor(mimeType);
+		}
+
+		@Override
+		public int getSourceActions(JComponent comp) {
+			return MOVE;
+		}
+
+		@Override
+		public Transferable createTransferable(JComponent comp) {
+			final JTable table = (JTable) comp;
+			rows = table.getSelectedRows();
+
+			if (rows == null || rows.length == 0 || rows.length > table.getRowCount())
+				return null;
+
+			List<Annotation> annotations = getAnnotations(table, rows);
+
+			return new AnnotationTransferable(annotations, dataFlavor);
+		}
+
+		@Override
+		public boolean canImport(TransferHandler.TransferSupport support) {
+			// For now, we'll only support drops (not clipboard paste)
+			if (!support.isDrop())
+				return false;
+
+			if (!support.isDataFlavorSupported(dataFlavor))
+				return false;
+
+			int action = TransferHandler.MOVE;
+			boolean actionSupported = (action & support.getSourceDropActions()) == action;
+			
+			if (actionSupported) {
+				support.setDropAction(action);
+				return true;
+			}
+
+			return false;
+		}
+
+		@Override
+		@SuppressWarnings("unchecked")
+		public boolean importData(TransferHandler.TransferSupport support) {
+			if (!canImport(support))
+				return false;
+
+			// Fetch the data and bail if this fails
+			final List<DingAnnotation> annotations = new ArrayList<>();
+
+			try {
+				List<Annotation> data = (List<Annotation>) support.getTransferable().getTransferData(dataFlavor);
+				
+				if (data != null) {
+					data.forEach(a -> {
+						if (a instanceof DingAnnotation)
+							annotations.add((DingAnnotation) a);
+					});
+				}
+			} catch (UnsupportedFlavorException e) {
+				return false;
+			} catch (IOException e) {
+				return false;
+			}
+			
+			if (annotations.isEmpty())
+				return false; // Should not happen..
+			
+			final DingAnnotation firstAnnotation = annotations.get(0);
+			final DingAnnotation lastAnnotation = annotations.get(annotations.size() - 1);
+			
+			JTable sourceTable = mainPanel.getLayerTable(firstAnnotation.getCanvasName());
+			JTable targetTable = (JTable) support.getComponent();
+			
+			// Dropping into another table/canvas?
+			final String canvasName = targetTable != sourceTable ? targetTable.getName() : null;
+			
+			// Calculate offset
+			final JTable.DropLocation dl = (JTable.DropLocation) support.getDropLocation();
+			int targetRow = dl.getRow();
+			int firstRow = ((AnnotationTableModel) targetTable.getModel()).rowOf(firstAnnotation);
+			Integer offset = canvasName == null ? targetRow - firstRow : targetRow - targetTable.getRowCount();
+
+			if (targetTable == sourceTable) {
+				if (offset == 0 || annotations.size() == targetTable.getRowCount())
+					return false;
+				
+				if (targetRow > firstRow) {
+					--targetRow;
+					--offset;
+				}
+				
+				if (offset == 0)
+					return false;
+				
+				int lastRow = ((AnnotationTableModel) targetTable.getModel()).rowOf(lastAnnotation);
+				
+				if (targetRow < lastRow && lastRow + offset >= targetTable.getRowCount())
+					return false;
+			}
+			
+			final TaskIterator ti = new TaskIterator(
+					new ReorderAnnotationsTask(mainPanel.getDGraphView(), annotations, canvasName, offset));
+			serviceRegistrar.getService(DialogTaskManager.class).execute(ti);
+			
+			return true;
+		}
+	}
+	
+	public static class AnnotationTransferable implements Transferable, ClipboardOwner {
+
+		private List<Annotation> data;
+		private DataFlavor dataFlavor;
+
+		public AnnotationTransferable(List<Annotation> data, DataFlavor dataFlavor) {
+			this.data = data;
+			this.dataFlavor = dataFlavor;
+		}
+
+		@Override
+		public DataFlavor[] getTransferDataFlavors() {
+			return new DataFlavor[] { dataFlavor };
+		}
+
+		@Override
+		public boolean isDataFlavorSupported(DataFlavor flavor) {
+			return flavor.equals(dataFlavor);
+		}
+
+		@Override
+		public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+			if (flavor.equals(dataFlavor))
+				return data;
+			else
+				throw new UnsupportedFlavorException(flavor);
+		}
+
+		@Override
+		public void lostOwnership(Clipboard clipboard, Transferable contents) {
 		}
 	}
 }

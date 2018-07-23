@@ -89,7 +89,7 @@ public class CyAnnotator {
 	private ArrowAnnotationImpl repositioning;
 	private DingAnnotation moving;
 	
-	private Map<DingAnnotation, Map<String, String>> annotationMap = new HashMap<>();
+	private Set<DingAnnotation> annotationSet = new HashSet<>();
 	
 	private CanvasMouseMotionListener mouseMotionListener;
 	private CanvasMouseListener mouseListener;
@@ -295,10 +295,11 @@ public class CyAnnotator {
 	}
 
 	public DingAnnotation getAnnotation(UUID annotationID) {
-		for (DingAnnotation a: annotationMap.keySet()) {
+		for (DingAnnotation a: annotationSet) {
 			if (a.getUUID().equals(annotationID))
 				return a;
 		}
+		
 		return null;
 	}
 
@@ -326,7 +327,7 @@ public class CyAnnotator {
 	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		
-		for (DingAnnotation a : annotationMap.keySet()) {
+		for (DingAnnotation a : annotationSet) {
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
 				if ((top == null)
 						|| (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
@@ -348,16 +349,19 @@ public class CyAnnotator {
  	 */
 	public List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
-		for (DingAnnotation a: annotationMap.keySet()) {
+
+		for (DingAnnotation a : annotationSet) {
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
 				// Make sure to find the parent if this is a group
 				while (a.getGroupParent() != null) {
-					a = (DingAnnotation)a.getGroupParent();
+					a = (DingAnnotation) a.getGroupParent();
 				}
+
 				if (!list.contains(a))
 					list.add(a);
 			}
 		}
+
 		// Now sort the list by Z order, smallest to largest
 		Collections.sort(list, new ZComparator(cnvs));
 		return list;
@@ -414,51 +418,48 @@ public class CyAnnotator {
 		if (!(annotation instanceof DingAnnotation))
 			return;
 		
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
-		DingAnnotation dingAnnotation = (DingAnnotation) annotation;
-		annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
-		updateNetworkAttributes(view.getModel());
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
+		annotationSet.add((DingAnnotation) annotation);
+		updateNetworkAttributes();
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		for (Annotation annotation : annotations) {
-			if (annotation instanceof DingAnnotation) {
-				DingAnnotation dingAnnotation = (DingAnnotation) annotation;
-				annotationMap.put(dingAnnotation, dingAnnotation.getArgMap());
-			}
+			if (annotation instanceof DingAnnotation)
+				annotationSet.add((DingAnnotation) annotation);
 		}
 		
-		updateNetworkAttributes(view.getModel());
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
+		updateNetworkAttributes();
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 
 	public void removeAnnotation(Annotation annotation) {
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
-		annotationMap.remove((DingAnnotation) annotation);
+		annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
-		updateNetworkAttributes(view.getModel());
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
+		updateNetworkAttributes();
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
-		Set<DingAnnotation> oldValue = new HashSet<>(annotationMap.keySet());
+		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		for (Annotation annotation : annotations) {
-			annotationMap.remove((DingAnnotation) annotation);
+			annotationSet.remove((DingAnnotation) annotation);
 			annotationSelection.remove(annotation);
 		}
 		
-		updateNetworkAttributes(view.getModel());
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationMap.keySet()));
+		updateNetworkAttributes();
+		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 
 	public List<Annotation> getAnnotations() {
-		return annotationMap.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationMap.keySet());
+		return annotationSet.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationSet);
 	}
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
@@ -476,8 +477,7 @@ public class CyAnnotator {
 			boolean repaintForeGround = false;
 			boolean repaintBackGround = false;
 	
-			// We need to get a copy of the set to avoid a concurrent modification
-			for (DingAnnotation a : new ArrayList<>(annotationSelection.getSelectedAnnotations())) {
+			for (DingAnnotation a : annotationSelection.getSelectedAnnotations()) {
 				a.setSelected(false);
 
 				if (a.getCanvasName().equals(Annotation.FOREGROUND))
@@ -573,19 +573,20 @@ public class CyAnnotator {
 		return false;
 	}
 	
-	private void updateNetworkAttributes(CyNetwork network) {
+	private void updateNetworkAttributes() {
 		// Convert the annotation to a list
-		List<Map<String,String>> networkAnnotations = new ArrayList<>();
-		for (DingAnnotation annotation: annotationMap.keySet()) {
-			if (view.getModel().equals(network))
-				networkAnnotations.add(annotationMap.get(annotation));
-		}
+		final List<Map<String, String>> networkAnnotations = new ArrayList<>();
+		final CyNetwork network = view.getModel();
+		
+		for (DingAnnotation annotation : annotationSet)
+			networkAnnotations.add(annotation.getArgMap());
+		
 		// Save it in the network attributes
-		List<String>networkAnnotation = convertAnnotationMap(networkAnnotations);
+		List<String> networkAnnotation = convertAnnotationMap(networkAnnotations);
 
 		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
-			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE,
-			                                   String.class,false,Collections.EMPTY_LIST);
+			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false,
+					Collections.EMPTY_LIST);
 		}
 
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
@@ -594,7 +595,8 @@ public class CyAnnotator {
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
 		List<String> result = new ArrayList<>();
 
-		if (networkAnnotations == null || networkAnnotations.size() == 0) return result;
+		if (networkAnnotations == null || networkAnnotations.size() == 0)
+			return result;
 
 		for (Map<String,String> map: networkAnnotations) {
 			StringBuilder props = new StringBuilder();
@@ -613,6 +615,7 @@ public class CyAnnotator {
 	}
 	
 	public void annotationsReordered(ReorderType type) {
+		updateNetworkAttributes();
 		propChangeSupport.firePropertyChange("annotationsReordered", null, type);
 	}
 

@@ -81,7 +81,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 		if (icon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 22f);
 			icon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_SHAPE_1, IconUtil.ICON_ANNOTATION_SHAPE_2 },
 					font,
