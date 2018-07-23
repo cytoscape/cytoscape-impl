@@ -1,7 +1,10 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.event.InputEvent;
+
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 
 /*
@@ -58,6 +61,16 @@ public final class ViewUtil {
 					e.printStackTrace();
 			}
 		}
+	}
+	
+	public static boolean isDragSelectionKeyDown(final InputEvent e) {
+		return e.isShiftDown() || isControlOrMetaDown(e);
+	}
+	
+	public static boolean isControlOrMetaDown(final InputEvent e) {
+		final boolean isMac = LookAndFeelUtil.isMac();
+		
+		return (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
 	}
 	
 	private ViewUtil() {

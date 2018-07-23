@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.listeners;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
 
 import java.awt.Cursor;
 import java.awt.Point;
@@ -101,8 +102,10 @@ public class CanvasMouseListener implements MouseListener {
 			if (selected && e.isShiftDown()) {
 				annotation.setSelected(false);
 			} else {
-				if (!selected && !e.isShiftDown())
+				if (!selected && !e.isPopupTrigger() && !e.isShiftDown() 
+						&& !((e.isControlDown() || e.isMetaDown()) && !e.isAltDown()))
 					cyAnnotator.clearSelectedAnnotations();
+				
 				annotation.setSelected(true);
 			}
 
@@ -166,8 +169,11 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: annotationSelection) {
 				a.setOffset(null);
 			}
-		} else if (annotationSelection.count() > 0) {
-			cyAnnotator.clearSelectedAnnotations();
+		} else if (!annotationSelection.isEmpty()) {
+			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+			if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
+				cyAnnotator.clearSelectedAnnotations();
+			
 			networkCanvas.processMouseEvent(e);
 		} else {
 			networkCanvas.processMouseEvent(e);
@@ -198,7 +204,9 @@ public class CanvasMouseListener implements MouseListener {
 		DingAnnotation annotation = getAnnotation(e);
 		if (annotation == null) {
 			if (view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
-				cyAnnotator.clearSelectedAnnotations();
+				// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+				if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
+					cyAnnotator.clearSelectedAnnotations();
 			}
 
 			// if (!e.isConsumed()){
