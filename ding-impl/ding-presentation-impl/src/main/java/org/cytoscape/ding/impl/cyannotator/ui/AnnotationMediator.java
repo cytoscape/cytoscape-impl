@@ -24,6 +24,7 @@ import java.util.Set;
 
 import javax.swing.DropMode;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JTable;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
@@ -141,6 +142,18 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				if (!e.getValueIsAdjusting() && !mainPanel.getForegroundTable().isEditing()) {
 					mainPanel.updateSelectionButtons();
 					selectAnnotationsFromSelectedRows();
+				}
+			});
+			mainPanel.getBackgroundTable().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					maybeShowAnnotationEditor(mainPanel.getBackgroundTable(), e);
+				}
+			});
+			mainPanel.getForegroundTable().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					maybeShowAnnotationEditor(mainPanel.getForegroundTable(), e);
 				}
 			});
 			addDragAndDropSupport(mainPanel.getBackgroundTable());
@@ -416,6 +429,32 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 		
 		return list;
+	}
+	
+	/**
+	 * Show Annotation Dialog when double-clicking the icon cell.
+	 */
+	private void maybeShowAnnotationEditor(JTable table, MouseEvent evt) {
+		if (evt.getClickCount() == 2) {
+			Point point = evt.getPoint();
+	        int row = table.rowAtPoint(point);
+	        int col = table.columnAtPoint(point);
+	        
+	        if (row >= 0 && col == 0) {
+	        		Annotation a = ((AnnotationTableModel) table.getModel()).getAnnotation(row);
+	        		
+				if (a instanceof DingAnnotation) {
+					invokeOnEDT(() -> {
+						final JDialog dialog = ((DingAnnotation) a).getModifyDialog();
+
+						if (dialog != null) {
+							dialog.setLocation(point);
+							dialog.setVisible(true);
+						}
+					});
+				}
+			}
+		}
 	}
 	
 	private class ClickToAddAnnotationListener extends MouseAdapter {
