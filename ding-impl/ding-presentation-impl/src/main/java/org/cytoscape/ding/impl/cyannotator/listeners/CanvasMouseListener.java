@@ -9,7 +9,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Collections;
 import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -79,7 +78,7 @@ public class CanvasMouseListener implements MouseListener {
 		DingAnnotation annotation = getAnnotation(e);
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		
-		if (annotationSelection.count() > 0 &&
+		if (!annotationSelection.isEmpty() &&
 			  annotationSelection.overAnchor(e.getX(), e.getY()) != null) {
 			Position anchor = annotationSelection.overAnchor(e.getX(), e.getY());
 			setResizeCursor(anchor);
@@ -90,13 +89,12 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 
 				a.saveBounds();
 		} else if (annotation == null) {
-				if (e.isShiftDown()) {
-					// Remember where we did the mouse down.  We may be doing
-					// a sweep select
-					mouseDown = new Point2D.Double(e.getX(), e.getY());
-				}
-				// Let the InnerCanvas handle this event
-				networkCanvas.processMouseEvent(e);
+			if (e.isShiftDown()) {
+				// Remember where we did the mouse down. We may be doing a sweep select
+				mouseDown = new Point2D.Double(e.getX(), e.getY());
+			}
+			// Let the InnerCanvas handle this event
+			networkCanvas.processMouseEvent(e);
 		} else {
 			boolean selected = annotation.isSelected();
 			if (selected && e.isShiftDown()) {
@@ -109,7 +107,7 @@ public class CanvasMouseListener implements MouseListener {
 				annotation.setSelected(true);
 			}
 
-			if (annotationSelection.count() > 0) {
+			if (!annotationSelection.isEmpty()) {
 				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
 				annotationSelection.setMoving(true);
 			} else {
@@ -160,7 +158,7 @@ public class CanvasMouseListener implements MouseListener {
 		}
 
 		DingAnnotation annotation = getAnnotation(e);
-		if (annotationSelection.count() == 0 ||
+		if (annotationSelection.isEmpty() ||
 				!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			// Let the InnerCanvas handle this event
 			networkCanvas.processMouseEvent(e);

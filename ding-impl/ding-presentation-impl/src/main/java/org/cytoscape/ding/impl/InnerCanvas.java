@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
+import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -14,7 +17,6 @@ import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -69,7 +71,7 @@ import org.cytoscape.work.TaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -497,7 +499,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		int chosenNodeSelected = 0;
 		final boolean wasSelected = m_view.getDNodeView(chosenNode).isSelected();
 		
-		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
 			chosenNodeSelected = -1;
 		} else if (!wasSelected) {
@@ -536,7 +538,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
 		} else {
 			final boolean wasSelected = m_view.m_selectedAnchors.count(chosenAnchor) > 0;
-			//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 			if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
 				m_view.m_selectedAnchors.delete(chosenAnchor);
 			} else if (!wasSelected) {
@@ -583,7 +585,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_view.m_selectedAnchors.insert(((chosenEdge) << 6) | chosenInx);
 		}
 
-		//Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
 			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
 			chosenEdgeSelected = -1;
@@ -1179,16 +1181,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			List<CyEdge> unselectedEdgeList = DGraphView.makeEdgeList(unselectedEdges, m_view);
 			m_view.select(unselectedEdgeList, CyEdge.class, false);
 		}
-	}
-	
-	private static boolean isDragSelectionKeyDown(final InputEvent e) {
-		return e.isShiftDown() || isControlOrMetaDown(e);
-	}
-	
-	private static boolean isControlOrMetaDown(final InputEvent e) {
-		final boolean isMac = LookAndFeelUtil.isMac();
-		
-		return (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
 	}
 	
 	private class AddEdgeMousePressedDelegator extends ButtonDelegator {
