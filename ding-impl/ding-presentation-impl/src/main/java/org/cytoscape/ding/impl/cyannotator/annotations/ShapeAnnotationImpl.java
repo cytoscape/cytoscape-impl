@@ -95,7 +95,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
-		setFillColor(fillColor);
 		this.borderColor = edgeColor;
 		this.borderWidth = edgeThickness;
 		this.shapeWidth = width;
@@ -109,7 +108,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		super(view, argMap, owner);
 
 		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
-		setFillColor(fillColor);
 		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
 
 		// If this is an old bounded text, we might not (yet) have a width or
