@@ -24,8 +24,10 @@ public class EquationSupport implements ColumnData {
 	public boolean put(Object key, Object value) {
 		if(value instanceof Equation) {
 			equations.put(key, value);
+			delegate.remove(key);
 			return true; // hard to know if value of equation changed, so best to be conservative
 		} else {
+			equations.remove(key);
 			return delegate.put(key, value);
 		}
 	}

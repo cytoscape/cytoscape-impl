@@ -66,6 +66,8 @@ public class LongToBooleanColumn implements ColumnData {
 	
 	@Override
 	public boolean put(Object key, Object value) {
+		if(value == null)
+			return remove(key);
 		boolean changed = false;
 		if(Boolean.TRUE.equals(value)) {
 			changed = trueKeys.add((Long)key);
