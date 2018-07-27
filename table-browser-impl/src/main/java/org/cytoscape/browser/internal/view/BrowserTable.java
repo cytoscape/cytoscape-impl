@@ -14,6 +14,7 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -246,6 +247,56 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			} else {
 				editorComp.setBounds(cellRect);
 			}
+			
+			editorComp.addKeyListener(new KeyListener() {
+
+				private void deselect(KeyEvent e) {
+					e.consume();
+					Component comp = e.getComponent();
+					comp.removeKeyListener(this);
+					editor.stopCellEditing();
+					
+				}
+
+				@Override
+				public void keyTyped(KeyEvent e) {
+					
+				}
+
+				@Override
+				public void keyReleased(KeyEvent e) {
+					ignoreRowSetEvents = false;
+				}
+
+				@Override
+				public void keyPressed(KeyEvent event) {
+					int new_row = row, new_column = column;
+					final int modifiers = event.getModifiers();
+
+					if (event.getKeyCode() == KeyEvent.VK_ENTER) {
+						if (modifiers == 0) {
+							new_row += 1;
+						} else if (modifiers == KeyEvent.VK_SHIFT) {
+							new_row -= 1;
+						} else {
+							return;
+						}
+					} else if (event.getKeyCode() == KeyEvent.VK_TAB) {
+						if (modifiers == 0) {
+							new_column += 1;
+						} else if (modifiers == KeyEvent.VK_SHIFT) {
+							new_column -= 1;
+						} else {
+							return;
+						}
+					} else {
+						return;
+					}
+					ignoreRowSetEvents = true;
+					deselect(event);
+					changeSelection(new_row, new_column, false, false);
+				}
+			});
 
 			add(editorComp);
 			editorComp.validate();
