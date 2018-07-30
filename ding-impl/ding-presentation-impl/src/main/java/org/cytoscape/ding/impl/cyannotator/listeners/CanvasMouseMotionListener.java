@@ -125,32 +125,9 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 			if (resizeAnnotation instanceof ShapeAnnotationImpl)
 				borderWidth = ((ShapeAnnotationImpl)resizeAnnotation).getBorderWidth();
 
-			/*
-			 * TODO: change over to use anchors at some point
-			 */ 
-			/*
-			if (Math.abs(mouseX-cornerX1) < Math.abs(mouseX-cornerX2)) {
-				// Left
-				cornerX1 = mouseX;
-			} else {
-				// Right
-				cornerX2 = mouseX;
-			}
-			*/
-
 			// System.out.println("X1 = "+cornerX1+", X2 = "+cornerX2+" width = "+resizeComponent.getWidth());
 			double width = (double)cornerX2-(double)cornerX1-(borderWidth*2*resizeAnnotation.getZoom());
 			// System.out.println("width = "+width);
-
-			/*
-			if (mouseY <= cornerY1) {
-				// Upper
-				cornerY1 = mouseY;
-			} else if (mouseY >= cornerY2-resizeComponent.getHeight()/2) {
-				// Lower
-				cornerY2 = mouseY;
-			}
-			*/
 
 			double height = (double)cornerY2-(double)cornerY1-(borderWidth*2*resizeAnnotation.getZoom());
 			// System.out.println("height = "+height);

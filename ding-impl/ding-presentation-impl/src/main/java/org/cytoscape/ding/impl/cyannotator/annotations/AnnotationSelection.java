@@ -39,6 +39,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -349,33 +350,35 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		Rectangle2D shape = new Rectangle2D.Double(border*4,border*4,union.getWidth()+border*2,union.getHeight()+border*2);
 		g2.draw(shape);
 
-		g2.setPaint(Color.GRAY);
+		if (cyAnnotator.getView().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+			g2.setPaint(Color.GRAY);
 
-		// Draw the anchors
-		// g2.setStroke(new BasicStroke(1.0f));
-		anchors[0] = new Rectangle2D.Double(0, 0, border*4, border*4);
-		g2.fill(anchors[0]);
+			// Draw the anchors
+			// g2.setStroke(new BasicStroke(1.0f));
+			anchors[0] = new Rectangle2D.Double(0, 0, border*4, border*4);
+			g2.fill(anchors[0]);
 
-		anchors[1] = new Rectangle2D.Double(shape.getWidth()/2, 0, border*4,border*4);
-		g2.fill(anchors[1]);
+			anchors[1] = new Rectangle2D.Double(shape.getWidth()/2, 0, border*4,border*4);
+			g2.fill(anchors[1]);
 
-		anchors[2] = new Rectangle2D.Double(shape.getWidth()+border*2, 0, border*4, border*4);
-		g2.fill(anchors[2]);
+			anchors[2] = new Rectangle2D.Double(shape.getWidth()+border*2, 0, border*4, border*4);
+			g2.fill(anchors[2]);
 
-		anchors[3] = new Rectangle2D.Double(shape.getWidth()+border*2, shape.getHeight()/2, border*4, border*4);
-		g2.fill(anchors[3]);
+			anchors[3] = new Rectangle2D.Double(shape.getWidth()+border*2, shape.getHeight()/2, border*4, border*4);
+			g2.fill(anchors[3]);
 
-		anchors[4] = new Rectangle2D.Double(shape.getWidth()+border*2, shape.getHeight()+border*2, border*4, border*4);
-		g2.fill(anchors[4]);
+			anchors[4] = new Rectangle2D.Double(shape.getWidth()+border*2, shape.getHeight()+border*2, border*4, border*4);
+			g2.fill(anchors[4]);
 
-		anchors[5] = new Rectangle2D.Double(shape.getWidth()/2, shape.getHeight()+border*2, border*4, border*4);
-		g2.fill(anchors[5]);
+			anchors[5] = new Rectangle2D.Double(shape.getWidth()/2, shape.getHeight()+border*2, border*4, border*4);
+			g2.fill(anchors[5]);
 
-		anchors[6] = new Rectangle2D.Double(0, shape.getHeight()+border*2, border*4, border*4);
-		g2.fill(anchors[6]);
+			anchors[6] = new Rectangle2D.Double(0, shape.getHeight()+border*2, border*4, border*4);
+			g2.fill(anchors[6]);
 
-		anchors[7] = new Rectangle2D.Double(0, shape.getHeight()/2, border*4, border*4);
-		g2.fill(anchors[7]);
+			anchors[7] = new Rectangle2D.Double(0, shape.getHeight()/2, border*4, border*4);
+			g2.fill(anchors[7]);
+		}
 
 		g2.setComposite(originalComposite);
 	}

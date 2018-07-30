@@ -207,6 +207,7 @@ class GraphicsUtilities {
     if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
       float opacity = clamp((float) (((ShapeAnnotationImpl)annotation).getBorderOpacity() / 100.0), 0.0f, 1.0f);
       final Composite originalComposite = g2.getComposite();
+
   		if (annotation.getBorderColor() != null && !annotation.isSelected()) {
   			// System.out.println("drawShape: border color = "+annotation.getBorderColor());
   			g2.setPaint(annotation.getBorderColor());
@@ -225,6 +226,7 @@ class GraphicsUtilities {
   			g2.setStroke(new BasicStroke(border));
   			g2.draw(shape);
   		}
+
       g2.setComposite(originalComposite);
     }
 	}
