@@ -107,7 +107,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		text = ViewUtils.getString(argMap, TEXT, "");
 		fontSize = font.getSize();
 		
-		if (text != null && !text.trim().isEmpty())
+		if (name == null && text != null && !text.trim().isEmpty())
 			name = text.trim();
 		
 		setSize(getAnnotationWidth(), getAnnotationHeight());
