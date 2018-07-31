@@ -129,9 +129,14 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
 						viewAnnotations);
 				annotationsByCanvas.forEach((canvas, dingAnnotations) -> {
-
 					// The following code is a batch version of Annotation.removeAnnotation()
 					for (DingAnnotation a : dingAnnotations) {
+						if (a instanceof GroupAnnotation) {
+							// Remove all of its children
+							for (Annotation aa: ((GroupAnnotation) a).getMembers())
+								removeAnnotation(aa);
+						}
+						
 						GroupAnnotation parent = a.getGroupParent();
 
 						if (parent != null)
