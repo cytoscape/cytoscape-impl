@@ -2,7 +2,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -47,11 +46,12 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			group.addComponent(null); // Need to add this first so we can update things appropriately
 			cyAnnotator.addAnnotation(group);
 
-			// Now, add all of the children
-			for (DingAnnotation child : cyAnnotator.getAnnotationSelection()) {
-				group.addMember(child);
-				child.setSelected(false);
-			}
+			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw
+			// ConcurrentModifcationExceptions
+			cyAnnotator.getAnnotationSelection().getSelectedAnnotations().forEach(a -> {
+				group.addMember(a);
+				a.setSelected(false);
+			});
 
 			// Finally, set ourselves to be the selected component
 			group.setSelected(true);
