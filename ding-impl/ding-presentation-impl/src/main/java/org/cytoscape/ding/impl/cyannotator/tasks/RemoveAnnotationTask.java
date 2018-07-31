@@ -1,12 +1,20 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +32,12 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
  * #L%
  */
 
-
-
-import java.awt.datatransfer.Transferable;
-import java.awt.geom.Point2D;
-
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.TaskMonitor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class RemoveAnnotationTask extends AbstractNetworkViewTask {
-	private final DingAnnotation annotation; 
+	
+	private final DingAnnotation annotation;
 
 	private static final Logger logger = LoggerFactory.getLogger(RemoveAnnotationTask.class);
-	
-	
+
 	public RemoveAnnotationTask(CyNetworkView view, DingAnnotation annotation) {
 		super(view);
 		this.annotation = annotation;
@@ -55,8 +45,7 @@ public class RemoveAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView ) {
+		if (view instanceof DGraphView)
 			annotation.removeAnnotation();
-		}
 	}
 }

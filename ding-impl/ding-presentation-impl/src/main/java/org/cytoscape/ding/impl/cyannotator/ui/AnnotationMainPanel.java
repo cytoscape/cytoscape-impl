@@ -91,8 +91,6 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 @SuppressWarnings("serial")
 public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
-	public static final float ICON_FONT_SIZE = 18.0f;
-	
 	private static final String TITLE = "Annotation";
 	private static final String ID = "org.cytoscape.Annotation";
 	
@@ -789,7 +787,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (defIcon == null) {
 			// Lazily initialize the icon here, because the LAF might not have been set yet,
 			// and we need to get the correct colors
-			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 30f);
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 18f);
 			defIcon = new TextIcon(
 					new String[] { IconUtil.ICON_ANNOTATION_1, IconUtil.ICON_ANNOTATION_2 },
 					font,

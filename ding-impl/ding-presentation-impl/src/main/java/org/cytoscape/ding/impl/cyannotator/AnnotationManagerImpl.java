@@ -147,7 +147,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 					canvas.removeAnnotations(arrows);
 					canvas.removeAnnotations(dingAnnotations);
 					canvas.repaint();
-					
+
 					view.getCyAnnotator().removeAnnotations(arrows);
 					view.getCyAnnotator().removeAnnotations(dingAnnotations);
 				});

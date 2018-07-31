@@ -173,19 +173,20 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public void removeAnnotation() {
 		ViewUtil.invokeOnEDTAndWait(() -> {
 			// Remove all of our children
-			for (DingAnnotation dAnn: annotations) {
-				AbstractAnnotation ann = (AbstractAnnotation)dAnn;
-				canvas.remove(ann);
-				cyAnnotator.removeAnnotation(ann);
-				// We don't need to worry about clearing the member list
+			for (DingAnnotation a: annotations) {
+				canvas.remove(a.getComponent());
+				cyAnnotator.removeAnnotation(a);
 			}
+			
 			annotations.clear();
 
 			// Now remove ourselves
 			canvas.remove(this);
 			cyAnnotator.removeAnnotation(this);
+			
 			if (parent != null)
 				parent.removeMember(this);
+			
 			canvas.repaint();
 		});
 	}

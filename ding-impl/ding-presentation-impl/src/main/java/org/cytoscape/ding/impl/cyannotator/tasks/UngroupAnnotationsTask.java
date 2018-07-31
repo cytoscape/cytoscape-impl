@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
@@ -46,13 +45,12 @@ public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if ( view instanceof DGraphView ) {
-			DGraphView dView = (DGraphView) view;
-			CyAnnotator cyAnnotator = dView.getCyAnnotator();
-			for (Annotation child: group.getMembers()) {
+		if (view instanceof DGraphView) {
+			for (Annotation child : group.getMembers()) {
 				group.removeMember(child);
 				child.setSelected(true);
 			}
+			
 			group.removeAnnotation();
 		}
 	}
