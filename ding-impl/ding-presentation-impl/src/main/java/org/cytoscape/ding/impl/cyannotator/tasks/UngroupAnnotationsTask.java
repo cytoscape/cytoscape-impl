@@ -1,11 +1,15 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -34,24 +38,31 @@ import org.cytoscape.work.TaskMonitor;
 
 public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
 	
-	private GroupAnnotationImpl group;
+	private Set<GroupAnnotation> groups;
 
 	public UngroupAnnotationsTask(CyNetworkView view, DingAnnotation annotation) {
 		super(view);
 		
-		if (annotation instanceof GroupAnnotationImpl)
-			group = (GroupAnnotationImpl) annotation;
+		if (annotation instanceof GroupAnnotation)
+			groups = Collections.singleton((GroupAnnotation) annotation);
+	}
+	
+	public UngroupAnnotationsTask(CyNetworkView view, Collection<GroupAnnotation> annotations) {
+		super(view);
+		groups = annotations != null ? new LinkedHashSet<>(annotations) : Collections.emptySet();
 	}
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (view instanceof DGraphView) {
-			for (Annotation child : group.getMembers()) {
-				group.removeMember(child);
-				child.setSelected(true);
-			}
-			
-			group.removeAnnotation();
+			groups.forEach(ga -> {
+				ga.getMembers().forEach(a -> {
+					ga.removeMember(a);
+					a.setSelected(true);
+				});
+				
+				ga.removeAnnotation();
+			});
 		}
 	}
 }

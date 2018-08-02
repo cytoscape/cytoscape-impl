@@ -25,6 +25,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -111,6 +112,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private JPanel buttonPanel;
 	private JLabel infoLabel;
 	private JLabel selectionLabel;
+	private JButton groupAnnotationsButton;
+	private JButton ungroupAnnotationsButton;
 	private JButton removeAnnotationsButton;
 	private JTree foregroundTree;
 	private JTree backgroundTree;
@@ -164,11 +167,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 			stopTreeCellEditing();
 			updateSelectionLabel();
+			updateGroupUngroupButton();
 			updateRemoveAnnotationsButton();
 		});
 		getForegroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 			stopTreeCellEditing();
 			updateSelectionLabel();
+			updateGroupUngroupButton();
 			updateRemoveAnnotationsButton();
 		});
 	}
@@ -196,6 +201,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	@Override
 	public Icon getIcon() {
 		return null;
+	}
+	
+	@Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		
+		if (!enabled)
+			clearAnnotationButtonSelection();
+		
+		buttonMap.values().forEach(btn -> btn.setEnabled(enabled));
+		updateGroupUngroupButton();
+		updateRemoveAnnotationsButton();
+		updateSelectionButtons();
 	}
 	
 	JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
@@ -253,15 +271,28 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	List<Annotation> getSelectedAnnotations(JTree tree) {
-		final List<Annotation> set = new ArrayList<>();
+		return getSelectedAnnotations(tree, Annotation.class);
+	}
+	
+	<T extends Annotation> Collection<T> getSelectedAnnotations(Class<T> type) {
+		final Set<T> set = new LinkedHashSet<>();
+		set.addAll(getSelectedAnnotations(getBackgroundTree(), type));
+		set.addAll(getSelectedAnnotations(getForegroundTree(), type));
+		
+		return set;
+	}
+	
+	@SuppressWarnings("unchecked")
+	<T extends Annotation> List<T> getSelectedAnnotations(JTree tree, Class<T> type) {
+		final List<T> set = new ArrayList<>();
 		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
 		
 		for (TreePath path : treePaths) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
 			Object obj = node.getUserObject();
 			
-			if (obj instanceof Annotation)
-				set.add((Annotation) obj);
+			if (type.isAssignableFrom(obj.getClass()))
+				set.add((T) obj);
 		}
 		
 		return set;
@@ -271,24 +302,32 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return view;
 	}
 	
-	@Override
-	public void setEnabled(boolean enabled) {
-		super.setEnabled(enabled);
-		
-		if (!enabled)
-			clearAnnotationButtonSelection();
-		
-		buttonMap.values().forEach(btn -> btn.setEnabled(enabled));
-		updateRemoveAnnotationsButton();
-		updateSelectionButtons();
-	}
-	
 	int getAnnotationCount() {
 		return getBackgroundTree().getRowCount() + getForegroundTree().getRowCount();
 	}
 	
 	int getSelectedAnnotationCount() {
 		return getBackgroundTree().getSelectionCount() + getForegroundTree().getSelectionCount();
+	}
+	
+	int getSelectedAnnotationCount(Class<? extends Annotation> type) {
+		return getSelectedAnnotationCount(getBackgroundTree(), type)
+				+ getSelectedAnnotationCount(getForegroundTree(), type);
+	}
+	
+	int getSelectedAnnotationCount(JTree tree, Class<? extends Annotation> type) {
+		int count = 0;
+		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
+		
+		for (TreePath path : treePaths) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+			Object obj = node.getUserObject();
+			
+			if (type.isAssignableFrom(obj.getClass()))
+				count++;
+		}
+		
+		return count;
 	}
 	
 	void clearAnnotationButtonSelection() {
@@ -392,6 +431,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getRemoveAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount() > 0);
 	}
 	
+	private void updateGroupUngroupButton() {
+		getGroupAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount() > 1);
+		getUngroupAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount(GroupAnnotation.class) > 0);
+	}
+	
 	void updateSelectionButtons() {
 		final int total = getAnnotationCount();
 		final int selected = getSelectedAnnotationCount();
@@ -476,6 +520,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private void init() {
 		setOpaque(!isAquaLAF()); // Transparent if Aqua
+		equalizeSize(getGroupAnnotationsButton(), getUngroupAnnotationsButton(), getRemoveAnnotationsButton());
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
 		JLabel fgLabel = createLayerTitleLabel(Annotation.FOREGROUND);
@@ -483,9 +528,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		// I don't know of a better way to center the selection label perfectly
 		// other than by using this "filler" panel hack...
-		JPanel leftFiller = new JPanel();
-		leftFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
-		leftFiller.setOpaque(!isAquaLAF());
+		JPanel rightFiller = new JPanel();
+		rightFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
+		rightFiller.setOpaque(!isAquaLAF());
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -496,10 +541,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				.addComponent(getButtonPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addContainerGap()
-						.addComponent(leftFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
 						.addComponent(getSelectionLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addContainerGap()
 				)
@@ -518,8 +565,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(getButtonPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGroup(layout.createParallelGroup(CENTER, true)
-						.addComponent(leftFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getGroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getUngroupAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectionLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(fgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -584,6 +633,32 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return selectionLabel;
 	}
 	
+	JButton getGroupAnnotationsButton() {
+		if (groupAnnotationsButton == null) {
+			groupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_GROUP);
+			groupAnnotationsButton.setToolTipText("Group Selected Annotations");
+			groupAnnotationsButton.setBorderPainted(false);
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			styleToolBarButton(groupAnnotationsButton, iconManager.getIconFont(16f));
+		}
+		
+		return groupAnnotationsButton;
+	}
+	
+	JButton getUngroupAnnotationsButton() {
+		if (ungroupAnnotationsButton == null) {
+			ungroupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_UNGROUP);
+			ungroupAnnotationsButton.setToolTipText("Ungroup Selected Annotations");
+			ungroupAnnotationsButton.setBorderPainted(false);
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			styleToolBarButton(ungroupAnnotationsButton, iconManager.getIconFont(16f));
+		}
+		
+		return ungroupAnnotationsButton;
+	}
+	
 	JButton getRemoveAnnotationsButton() {
 		if (removeAnnotationsButton == null) {
 			removeAnnotationsButton = new JButton(IconManager.ICON_TRASH_O);
@@ -592,7 +667,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(removeAnnotationsButton, iconManager.getIconFont(18f));
-			updateRemoveAnnotationsButton();
 		}
 		
 		return removeAnnotationsButton;

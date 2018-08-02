@@ -1,7 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.util.Collection;
+
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -33,7 +36,17 @@ import org.cytoscape.work.TaskMonitor;
 
 public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
+	/**
+	 * Group the selected annotations, if any.
+	 */
 	public GroupAnnotationsTask(CyNetworkView view) {
+		super(view);
+	}
+	
+	/**
+	 * Group the passed annotations.
+	 */
+	public GroupAnnotationsTask(CyNetworkView view, Collection<DingAnnotation> annotations) {
 		super(view);
 	}
 

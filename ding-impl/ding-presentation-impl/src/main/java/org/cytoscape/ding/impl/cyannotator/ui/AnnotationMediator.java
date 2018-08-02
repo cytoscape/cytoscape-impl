@@ -47,7 +47,9 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel.AnnotationTreeModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -63,6 +65,7 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.events.AnnotationsAddedEvent;
 import org.cytoscape.view.presentation.events.AnnotationsAddedListener;
 import org.cytoscape.view.presentation.events.AnnotationsRemovedEvent;
@@ -130,6 +133,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		invokeOnEDT(() -> {
 			set.forEach(f -> addAnnotationButton(f));
 			mainPanel.setEnabled(false);
+			mainPanel.getGroupAnnotationsButton().addActionListener(e -> groupSelectedAnnotations());
+			mainPanel.getUngroupAnnotationsButton().addActionListener(e -> ungroupSelectedAnnotations());
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());
 			mainPanel.getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 				if (!mainPanel.getBackgroundTree().isEditing()) {
@@ -346,6 +351,34 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			} finally {
 				ignoreSelectedPropChangeEvents = false;
 			}
+		}
+	}
+	
+	private void groupSelectedAnnotations() {
+		final DGraphView view = mainPanel.getDGraphView();
+		
+		if (view == null)
+			return;
+		
+		final Collection<DingAnnotation> selList = mainPanel.getSelectedAnnotations(DingAnnotation.class);
+		
+		if (!selList.isEmpty()) {
+			GroupAnnotationsTask task = new GroupAnnotationsTask(view, selList);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+		}
+	}
+	
+	private void ungroupSelectedAnnotations() {
+		final DGraphView view = mainPanel.getDGraphView();
+		
+		if (view == null)
+			return;
+		
+		final Collection<GroupAnnotation> selList = mainPanel.getSelectedAnnotations(GroupAnnotation.class);
+		
+		if (!selList.isEmpty()) {
+			UngroupAnnotationsTask task = new UngroupAnnotationsTask(view, selList);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
 	}
 	
