@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -354,13 +356,17 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-
 		updateBounds();
-		Graphics2D g2=(Graphics2D)g;
-		if(isSelected()) {
+		
+		if (bounds == null)
+			return;
+		
+		Graphics2D g2 = (Graphics2D) g;
+		
+		if (isSelected()) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
-			g2.drawRect(0, 0, (int)bounds.getWidth(), (int)bounds.getHeight());
+			g2.drawRect(0, 0, (int) bounds.getWidth(), (int) bounds.getHeight());
 		}
 		/*
 		else {
@@ -402,24 +408,22 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	private void updateBounds() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> updateBounds());
-			return;
-		}
+		invokeOnEDT(() -> {
+			Rectangle2D union = null;
 
-		Rectangle2D union = null;
-		for (DingAnnotation child: annotations) {
-			if (union == null)
-				union = child.getComponent().getBounds().getBounds2D();
-			else
-				union = union.createUnion(child.getComponent().getBounds().getBounds2D());
-		}
+			for (DingAnnotation child : annotations) {
+				if (union == null)
+					union = child.getComponent().getBounds().getBounds2D();
+				else
+					union = union.createUnion(child.getComponent().getBounds().getBounds2D());
+			}
 
-		bounds = union;
+			bounds = union;
+		});
 	}
 
 	@Override
 	public Rectangle getBounds() {
-		return getBounds2D().getBounds();
+		return getBounds2D() != null ? getBounds2D().getBounds() : new Rectangle();
 	}
 }
