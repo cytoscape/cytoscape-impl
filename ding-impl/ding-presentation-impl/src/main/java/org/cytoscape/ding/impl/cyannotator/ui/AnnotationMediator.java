@@ -24,9 +24,8 @@ import java.util.Set;
 
 import javax.swing.DropMode;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JTable;
 import javax.swing.JToggleButton;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 
@@ -49,7 +48,7 @@ import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
-import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel.AnnotationTableModel;
+import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel.AnnotationTreeModel;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
 import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
@@ -132,32 +131,32 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			set.forEach(f -> addAnnotationButton(f));
 			mainPanel.setEnabled(false);
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());
-			mainPanel.getBackgroundTable().getSelectionModel().addListSelectionListener(e -> {
-				if (!e.getValueIsAdjusting() && !mainPanel.getBackgroundTable().isEditing()) {
+			mainPanel.getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
+				if (!mainPanel.getBackgroundTree().isEditing()) {
 					mainPanel.updateSelectionButtons();
 					selectAnnotationsFromSelectedRows();
 				}
 			});
-			mainPanel.getForegroundTable().getSelectionModel().addListSelectionListener(e -> {
-				if (!e.getValueIsAdjusting() && !mainPanel.getForegroundTable().isEditing()) {
+			mainPanel.getForegroundTree().getSelectionModel().addTreeSelectionListener(e -> {
+				if (!mainPanel.getForegroundTree().isEditing()) {
 					mainPanel.updateSelectionButtons();
 					selectAnnotationsFromSelectedRows();
 				}
 			});
-			mainPanel.getBackgroundTable().addMouseListener(new MouseAdapter() {
+			mainPanel.getBackgroundTree().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					maybeShowAnnotationEditor(mainPanel.getBackgroundTable(), e);
+					maybeShowAnnotationEditor(mainPanel.getBackgroundTree(), e);
 				}
 			});
-			mainPanel.getForegroundTable().addMouseListener(new MouseAdapter() {
+			mainPanel.getForegroundTree().addMouseListener(new MouseAdapter() {
 				@Override
 				public void mouseClicked(MouseEvent e) {
-					maybeShowAnnotationEditor(mainPanel.getForegroundTable(), e);
+					maybeShowAnnotationEditor(mainPanel.getForegroundTree(), e);
 				}
 			});
-			addDragAndDropSupport(mainPanel.getBackgroundTable());
-			addDragAndDropSupport(mainPanel.getForegroundTable());
+			addDragAndDropSupport(mainPanel.getBackgroundTree());
+			addDragAndDropSupport(mainPanel.getForegroundTree());
 		});
 		
 		appStarted = true;
@@ -362,13 +361,13 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(selList);
 	}
 	
-	private void addDragAndDropSupport(JTable table) {
+	private void addDragAndDropSupport(JTree tree) {
 		try {
-			table.setTransferHandler(new AnnotationTransferHandler());
-			table.setDragEnabled(true);
-			table.setDropMode(DropMode.INSERT_ROWS);
+			tree.setTransferHandler(new AnnotationTransferHandler());
+			tree.setDragEnabled(true);
+			tree.setDropMode(DropMode.INSERT);
 		} catch (ClassNotFoundException e) {
-			logger.error("Cannot enable Drag&Drop on Annotation table", e);
+			logger.error("Cannot enable Drag&Drop on Annotation tree", e);
 		}
 	}
 	
@@ -416,45 +415,34 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		});
 	}
 	
-	private static List<Annotation> getAnnotations(JTable table, int[] indexes) {
-		final List<Annotation> list = new ArrayList<>();
-		
-		for (int i = 0; i < indexes.length; i++) {
-			if (table.getRowCount() > indexes[i]) {
-				Annotation a = ((AnnotationTableModel) table.getModel()).getAnnotation(indexes[i]);
-				
-				if (a != null)
-					list.add(a);
-			}
-		}
-		
-		return list;
-	}
-	
 	/**
 	 * Show Annotation Dialog when double-clicking the icon cell.
 	 */
-	private void maybeShowAnnotationEditor(JTable table, MouseEvent evt) {
-		if (evt.getClickCount() == 2) {
-			Point point = evt.getPoint();
-	        int row = table.rowAtPoint(point);
-	        int col = table.columnAtPoint(point);
-	        
-	        if (row >= 0 && col == 0) {
-	        		Annotation a = ((AnnotationTableModel) table.getModel()).getAnnotation(row);
-	        		
-				if (a instanceof DingAnnotation) {
-					invokeOnEDT(() -> {
-						final JDialog dialog = ((DingAnnotation) a).getModifyDialog();
-
-						if (dialog != null) {
-							dialog.setLocation(point);
-							dialog.setVisible(true);
-						}
-					});
-				}
-			}
-		}
+	private void maybeShowAnnotationEditor(JTree tree, MouseEvent evt) {
+//		if (evt.getClickCount() == 2) {
+//			Point point = evt.getPoint();
+//			TreePath path = tree.getPathForLocation(point.x, point.y);
+//	        
+//			if (path == null)
+//				return;
+//			
+//			Object obj = path.getLastPathComponent();
+//			
+//			if (obj instanceof AnnotationNode) {
+//	        		Annotation a = ((AnnotationNode) obj).getUserObject();
+//	        		
+//				if (a instanceof DingAnnotation) {
+//					invokeOnEDT(() -> {
+//						final JDialog dialog = ((DingAnnotation) a).getModifyDialog();
+//
+//						if (dialog != null) {
+//							dialog.setLocation(point);
+//							dialog.setVisible(true);
+//						}
+//					});
+//				}
+//			}
+//		}
 	}
 	
 	private class ClickToAddAnnotationListener extends MouseAdapter {
@@ -496,13 +484,16 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 
 		@Override
 		public Transferable createTransferable(JComponent comp) {
-			final JTable table = (JTable) comp;
-			rows = table.getSelectedRows();
+			if (comp instanceof JTree == false)
+				return null;
+			
+			final JTree tree = (JTree) comp;
+			rows = tree.getSelectionRows();
 
-			if (rows == null || rows.length == 0 || rows.length > table.getRowCount())
+			if (rows == null || rows.length == 0 || rows.length > tree.getRowCount())
 				return null;
 
-			List<Annotation> annotations = getAnnotations(table, rows);
+			List<Annotation> annotations = mainPanel.getSelectedAnnotations(tree);
 
 			return new AnnotationTransferable(annotations, dataFlavor);
 		}
@@ -557,16 +548,16 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			final DingAnnotation firstAnnotation = annotations.get(0);
 			final DingAnnotation lastAnnotation = annotations.get(annotations.size() - 1);
 			
-			JTable sourceTable = mainPanel.getLayerTable(firstAnnotation.getCanvasName());
-			JTable targetTable = (JTable) support.getComponent();
+			JTree sourceTable = mainPanel.getLayerTree(firstAnnotation.getCanvasName());
+			JTree targetTable = (JTree) support.getComponent();
 			
-			// Dropping into another table/canvas?
+			// Dropping into another tree/canvas?
 			final String canvasName = targetTable != sourceTable ? targetTable.getName() : null;
 			
 			// Calculate offset
-			final JTable.DropLocation dl = (JTable.DropLocation) support.getDropLocation();
-			int targetRow = dl.getRow();
-			int firstRow = ((AnnotationTableModel) targetTable.getModel()).rowOf(firstAnnotation);
+			final JTree.DropLocation dl = (JTree.DropLocation) support.getDropLocation();
+			int targetRow = dl.getChildIndex();
+			int firstRow = ((AnnotationTreeModel) targetTable.getModel()).rowOf(firstAnnotation);
 			Integer offset = canvasName == null ? targetRow - firstRow : targetRow - targetTable.getRowCount();
 
 			if (targetTable == sourceTable) {
@@ -581,7 +572,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				if (offset == 0)
 					return false;
 				
-				int lastRow = ((AnnotationTableModel) targetTable.getModel()).rowOf(lastAnnotation);
+				int lastRow = ((AnnotationTreeModel) targetTable.getModel()).rowOf(lastAnnotation);
 				
 				if (targetRow < lastRow && lastRow + offset >= targetTable.getRowCount())
 					return false;
