@@ -1,14 +1,18 @@
 package org.cytoscape.ding.impl.cyannotator.create;
 
+import java.awt.Font;
 import java.awt.geom.Point2D;
 import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JDialog;
+import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -39,6 +43,8 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupAnnotation> {
 
 	public static final String NAME = "Group";
+	
+	private Icon icon;
 
 	public GroupAnnotationFactory(final CyServiceRegistrar serviceRegistrar) {
 		super(GroupAnnotation.class, serviceRegistrar);
@@ -70,6 +76,18 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null) {
+			// Lazily initialize the icon here, because the LAF might not have been set yet,
+			// and we need to get the correct colors
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(14f);
+			icon = new TextIcon(
+					IconManager.ICON_OBJECT_GROUP,
+					font,
+					UIManager.getColor("Label.foreground"),
+					ICON_SIZE, ICON_SIZE
+			);
+		}
+		
+		return icon;
 	}
 }

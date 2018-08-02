@@ -52,7 +52,6 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
-import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
@@ -749,6 +748,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final JTextField textField = new JTextField();
 		textField.setEditable(true);
 		makeSmall(textField);
+		
 		TreeCellEditor txtEditor = new DefaultCellEditor(textField);
 		TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
 		tree.setCellEditor(editor);
@@ -1059,29 +1059,28 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	private final class AnnotationTreeCellRenderer extends DefaultTreeCellRenderer {
         
-		final Border defBorder = BorderFactory.createEmptyBorder(0, 4, 0, 0);
-		
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded,
 				boolean leaf, int row, boolean hasFocus) {
 			super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 			
 			setOpaque(true);
-			setBorder(null); // Do not highlight the focused cell
+			setBorder(BorderFactory.createEmptyBorder()); // Do not highlight the focused cell
 			setHorizontalAlignment(LEFT);
 			
 			if (value instanceof AnnotationNode) {
 				Annotation annotation = ((AnnotationNode) value).getUserObject();
 				setText(annotation.getName());
 				setToolTipText(annotation.getName());
-				setIconTextGap(10);
-				setBorder(defBorder);
+				setIconTextGap(8);
 				
 				if (annotation instanceof GroupAnnotation) {
 					setOpenIcon(getOpenAnnotationIcon());
 					setClosedIcon(getClosedAnnotationIcon());
 				} else {
-					setIcon(getAnnotationIcon(annotation));
+					Icon icon = getAnnotationIcon(annotation);
+					setLeafIcon(icon);
+					setIcon(icon);
 				}
 			} else if (value instanceof DefaultMutableTreeNode) {
 				setText(((DefaultMutableTreeNode) value).getUserObject() + " Layer");
