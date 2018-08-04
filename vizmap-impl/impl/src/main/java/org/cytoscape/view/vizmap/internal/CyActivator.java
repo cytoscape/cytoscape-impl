@@ -4,13 +4,11 @@ import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
 import org.cytoscape.view.vizmap.internal.mappings.ContinuousMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.DiscreteMappingFactory;
 import org.cytoscape.view.vizmap.internal.mappings.PassthroughMappingFactory;
-import org.cytoscape.view.vizmap.internal.color.PaletteProviderManagerImpl;
 import org.cytoscape.view.vizmap.mappings.ValueTranslator;
 import org.osgi.framework.BundleContext;
 
@@ -76,10 +74,5 @@ public class CyActivator extends AbstractCyActivator {
 		final VisualMappingManagerImpl visualMappingManager = new VisualMappingManagerImpl(visualStyleFactory, serviceRegistrar);
 		registerAllServices(bc, visualMappingManager);
 
-		// PaletteProviderManager
-		{
-			final PaletteProviderManager paletteManager = new PaletteProviderManagerImpl();
-			registerService(bc, paletteManager, PaletteProviderManager.class, new Properties());
-		}
 	}
 }
