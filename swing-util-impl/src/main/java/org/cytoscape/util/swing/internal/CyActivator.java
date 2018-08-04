@@ -7,6 +7,8 @@ import java.util.Properties;
 
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.OpenBrowser;
@@ -41,6 +43,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		final PaletteProviderManager paletteProviderManager = getService(bc, PaletteProviderManager.class);
 
 		final OpenBrowserImpl openBrowser = new OpenBrowserImpl();
 		registerService(bc, openBrowser, OpenBrowser.class, new Properties());
@@ -50,6 +53,9 @@ public class CyActivator extends AbstractCyActivator {
 
 		final IconManagerImpl iconManager = new IconManagerImpl();
 		registerService(bc, iconManager, IconManager.class, new Properties());
+
+		final CyColorPaletteChooserFactory paletteChooser = new CyColorPaletteChooserFactoryImpl(paletteProviderManager);
+		registerService(bc, paletteChooser, CyColorPaletteChooserFactory.class, new Properties());
 		
 		// Register the font used for custom Cytoscape icons
 		try {

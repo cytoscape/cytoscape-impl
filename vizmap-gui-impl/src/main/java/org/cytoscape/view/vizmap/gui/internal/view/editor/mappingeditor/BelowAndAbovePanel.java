@@ -87,7 +87,7 @@ final class BelowAndAbovePanel extends JPanel {
 			if (Paint.class.isAssignableFrom(vp.getRange().getType()) == false)
 				return;
 
-			newValue = ((GradientEditorPanel)parentPanel).colorEditor.showEditor(this, boxColor);
+			newValue = ((GradientEditorPanel)parentPanel).changeThumbColor(boxColor);
 			
 			if (newValue == null)
 				return;

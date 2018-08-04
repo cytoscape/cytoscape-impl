@@ -1,0 +1,190 @@
+/*
+ * BioJava development code
+ *
+ * This code may be freely distributed and modified under the
+ * terms of the GNU Lesser General Public Licence. This should
+ * be distributed with the code. If you do not have a copy,
+ * see:
+ *
+ * http://www.gnu.org/copyleft/lesser.html
+ *
+ * Copyright for this code is held jointly by the individual
+ * authors. These should be listed in @author doc comments.
+ *
+ * For more information on the BioJava project and its aims,
+ * or to join the biojava-l mailing list, visit the home page
+ * at:
+ *
+ * http://www.biojava.org/
+ *
+ * This code was contributed from the Molecular Biology Toolkit
+ * (MBT) project at the University of California San Diego.
+ *
+ * Please reference J.L. Moreland, A.Gramada, O.V. Buzko, Qing
+ * Zhang and P.E. Bourne 2005 The Molecular Biology Toolkit (MBT):
+ * A Modular Platform for Developing Molecular Visualization
+ * Applications. BMC Bioinformatics, 6:21.
+ *
+ * The MBT project was funded as part of the National Institutes
+ * of Health PPG grant number 1-P01-GM63208 and its National
+ * Institute of General Medical Sciences (NIGMS) division. Ongoing
+ * development for the MBT project is managed by the RCSB
+ * Protein Data Bank(http://www.pdb.org) and supported by funds
+ * from the National Science Foundation (NSF), the National
+ * Institute of General Medical Sciences (NIGMS), the Office of
+ * Science, Department of Energy (DOE), the National Library of
+ * Medicine (NLM), the National Cancer Institute (NCI), the
+ * National Center for Research Resources (NCRR), the National
+ * Institute of Biomedical Imaging and Bioengineering (NIBIB),
+ * the National Institute of Neurological Disorders and Stroke
+ * (NINDS), and the National Institute of Diabetes and Digestive
+ * and Kidney Diseases (NIDDK).
+ *
+ * Created on 2011/11/08
+ *
+ */
+package org.cytoscape.util.swing.internal;
+
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.Icon;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.border.Border;
+import javax.swing.colorchooser.AbstractColorChooserPanel;
+import javax.swing.colorchooser.ColorSelectionModel;
+import javax.swing.event.ChangeEvent;
+
+import org.cytoscape.util.color.Palette;
+
+/**
+ * Creates a color palette of qualitative colors defined by ColorBrewer
+ * 
+ * @author Peter Rose
+ */
+public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
+                               implements ActionListener {
+	private static final long serialVersionUID = 1L;
+	// protected String selectedPalette = null;
+	private JToggleButton selectedButton = null;
+	Border normalBorder = BorderFactory.createEmptyBorder(2,4,2,4);
+	Border selectedBorder = BorderFactory.createLineBorder(Color.blue, 2);
+
+	protected JToggleButton createPalette(Palette palette, Border normalBorder) {
+		JToggleButton paletteButton = new JToggleButton();
+		paletteButton.setActionCommand(palette.getName());
+		paletteButton.addActionListener(this);
+		Icon icon = new PaletteIcon(palette, 8, 15, 15);
+		paletteButton.setIcon(icon);
+		paletteButton.setToolTipText(palette.getName());
+		paletteButton.setBorder(normalBorder);
+		return paletteButton;
+	}
+
+	protected void buildChooser() {
+		setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+
+		//ButtonGroup boxOfPalettes = new ButtonGroup();
+		for (ColorBrewer palette: ColorBrewer.getQualitativeColorPalettes(isShowColorBlindSafe())) {
+			if ( isShowColorBlindSafe() ){
+				if (!  palette.isColorBlindSafe()) {
+					continue;
+				}
+			}
+
+			JToggleButton button = createPalette(palette, normalBorder);
+			add(button);
+			currentButtons.add(button);
+		}
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		ColorSelectionModel model = getColorSelectionModel();
+
+		if (selectedButton != null)
+			selectedButton.setBorder(normalBorder);
+
+		String command;
+		if (e.getSource() instanceof JButton) {
+			command = ((JButton)e.getSource()).getActionCommand();
+		} else if (e.getSource() instanceof JToggleButton) {
+			command = ((JToggleButton)e.getSource()).getActionCommand();
+			selectedButton = (JToggleButton)e.getSource();
+			selectedButton.setBorder(selectedBorder);
+		} else {
+			return; // Shouldn't happen
+		}
+		String[] colorSplit = command.split(":");
+		selectedPalette = colorSplit[0];
+
+		if (colorSplit.length == 2) {
+			Color color = new Color(Integer.parseInt(colorSplit[1]));
+			model.setSelectedColor(color);
+		}
+
+		for (ColorBrewer palette: ColorBrewer.getQualitativeColorPalettes(isShowColorBlindSafe())) {
+			if (palette.name().equals(selectedPalette)) {
+				((ColorPanelSelectionModel) model).setColorBrewer(palette);
+				break;
+			}
+		}
+	}
+
+	public String getDisplayName() {return "Qualitative";}
+	
+	public void stateChanged(ChangeEvent ce) {
+		getColorSelectionModel().setSelectedColor(new Color(1));
+	}
+
+	@Override
+	public void setSelectedPalette(String palette) {
+		ColorSelectionModel model = getColorSelectionModel();
+		for (ColorBrewer plt: ColorBrewer.getQualitativeColorPalettes(isShowColorBlindSafe())) {
+			if (plt.name().equals(palette)) {
+				selectedPalette = palette;
+				((ColorPanelSelectionModel) model).setColorBrewer(plt);
+				for (Container ctn: currentButtons) {
+					String command;
+					if (ctn instanceof JToggleButton)
+						command = ((JToggleButton)ctn).getActionCommand();
+					else
+						continue;
+					String btnPalette = command.split(":")[0];
+					if (selectedPalette.equals(btnPalette)) {
+						if (selectedButton != null)
+							selectedButton.setBorder(normalBorder);
+
+						selectedButton = (JToggleButton)ctn;
+						selectedButton.setBorder(selectedBorder);
+						break;
+					}
+				}
+				break;
+			}
+		}
+	}
+
+	@Override
+	public Icon getLargeDisplayIcon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Icon getSmallDisplayIcon() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	
+}

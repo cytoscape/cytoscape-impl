@@ -48,7 +48,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -64,6 +63,7 @@ import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
@@ -114,7 +114,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	 */
 	private JPanel palettesPanel;
 	private Palette lastPalette;
-	private JComboBox<Palette> paletteBox;
+	protected Palette currentPalette;
+	protected PaletteType paletteType;
+	private JButton paletteButton;
 	private BelowAndAbovePanel abovePanel;
 	private BelowAndAbovePanel belowPanel;
 	private static String DEFAULT_PALETTE = "ColorBrewer Red-Blue";
@@ -316,7 +318,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JPanel getPalettesPanel() {
 		if (palettesPanel == null) {
 			palettesPanel = new JPanel();
-			JLabel label = new JLabel("Palettes: ");
+			JLabel label = new JLabel("Current Palette: ");
 			// paletteBox = new JComboBox<Palette>(getPalettes().toArray(new Palette[1]));
 			final GroupLayout layout = new GroupLayout(palettesPanel);
 			palettesPanel.setLayout(layout);
@@ -325,17 +327,35 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(2)
-					.addComponent(getPaletteBox(), DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getPaletteButton(), DEFAULT_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.BASELINE)
 					.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getPaletteBox(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getPaletteButton(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
 		return palettesPanel;
 	}
 
+	protected JButton getPaletteButton() {
+		if (paletteButton == null) {
+			paletteButton = new JButton("None");
+
+			if (tracer.getMax(type) > 0.0 && tracer.getMin(type) < 0.0) {
+				paletteType = BrewerType.DIVERGING;
+			} else {
+				paletteType = BrewerType.SEQUENTIAL;
+			}
+
+			lastPalette = retrievePalette();
+			if (lastPalette != null) {
+				setCurrentPalette(lastPalette);
+			}
+		}
+		return paletteButton;
+	}
+	/*
 	protected JComboBox<Palette> getPaletteBox() {
 		if (paletteBox == null) {
 			Palette defaultPalette = null;
@@ -364,6 +384,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		}
 		return paletteBox;
 	}
+	*/
 
 	protected void savePalette(Palette palette) {
 		paletteProviderMgr.savePalette(style.getTitle()+" "+type.getIdString(), palette);
@@ -374,6 +395,9 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 
 	protected void setCurrentPalette(Palette palette) {
+		paletteButton.setText(palette.toString());
+		currentPalette = palette;
+		/*
 		for (int i = 0; i < paletteBox.getItemCount(); i++) {
 			Palette p = paletteBox.getItemAt(i);
 			if (p.toString().equalsIgnoreCase(palette.toString())) {
@@ -382,6 +406,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			}
 
 		}
+		*/
 		return;
 	}
 	

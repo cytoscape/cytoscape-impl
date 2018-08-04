@@ -65,6 +65,7 @@
 		<module>edge-bundler-impl</module>
 		<module>scripting-impl</module>
 		<module>core-task-impl</module>
+		<module>util-impl</module>
 		<module>headless-application-impl</module>
 		<module>headless-cmdline-parser-impl</module>
 	</modules>
