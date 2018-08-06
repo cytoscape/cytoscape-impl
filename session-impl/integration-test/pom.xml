@@ -49,6 +49,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.cytoscape</groupId>
+			<artifactId>util-impl</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.cytoscape</groupId>
 			<artifactId>event-impl</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
