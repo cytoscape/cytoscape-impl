@@ -96,7 +96,7 @@ public class Utils {
 			int indexCloseQuote = pyIndexOfChar(s, indexQuote + 1, '"');
 			indexDelimiter = pyIndexOfChar(s, indexCloseQuote + 1,
 					delimiter);
-			indexQuote = pyIndexOfChar(s, indexDelimiter, '"');
+			indexQuote = pyIndexOfChar(s, indexCloseQuote + 1, '"');
 		}
 		return indexDelimiter;
 	}
