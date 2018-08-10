@@ -88,7 +88,11 @@ public class ImportNetworkTableReaderTask extends AbstractTask implements CyNetw
 			}
 			os.flush();
 			os.close();
-			
+
+			try {
+				is.close();
+			}catch(Exception e) {
+			}
 			ntmp = new NetworkTableMappingParameters(new FileInputStream(tempFile) , fileType);
 			this.is = new FileInputStream(tempFile);
 		} catch(Exception e) {
