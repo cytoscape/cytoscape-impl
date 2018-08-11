@@ -107,7 +107,7 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 			JButton colorButton = new JButton();
 			colorButton.setActionCommand(palette.getName()+":"+String.valueOf(colors[colorIndex].getRGB()));
 			colorButton.addActionListener(this);
-			colorButton.setIcon(new ColorIcon(colors[colorIndex], 15, 15));
+			colorButton.setIcon(new ColorIcon(colors[colorIndex], 15, 15, paletteOnly));
 			// colorButton.setBorder(normalBorder);
 			colorButton.setBorder(BorderFactory.createEmptyBorder());
 			colorButton.setToolTipText(palette.getName());
@@ -128,7 +128,7 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 	protected void buildChooser() {
 		setLayout(new FlowLayout(FlowLayout.RIGHT, 0, 0));
 
-		Border border = BorderFactory.createEmptyBorder(2,4,2,4);
+		Border border = BorderFactory.createEmptyBorder(2,6,2,6);
 		Border selectedBorder = BorderFactory.createLineBorder(Color.blue, 2);
 
 		if (selectedPalette == null) {
@@ -167,9 +167,12 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 			JPanel selectedPanel = paletteMap.get(palette.getName());
 			if (palette.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(palette);
-				selectedPanel.setBorder(BorderFactory.createLineBorder(Color.blue, 2));
+				selectedPanel.setBorder(
+					BorderFactory.createCompoundBorder(
+							BorderFactory.createEmptyBorder(2,4,2,4),
+							BorderFactory.createLineBorder(Color.blue, 2)));
 			} else {
-				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,4,2,4));
+				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
 			}
 		}
 	}
@@ -185,9 +188,12 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 			JPanel selectedPanel = paletteMap.get(plt.getName());
 			if (plt.getName().equals(selectedPalette)) {
 				((ColorPanelSelectionModel) model).setPalette(plt);
-				selectedPanel.setBorder(BorderFactory.createLineBorder(Color.blue, 2));
+				selectedPanel.setBorder(
+					BorderFactory.createCompoundBorder(
+							BorderFactory.createEmptyBorder(2,4,2,4),
+							BorderFactory.createLineBorder(Color.blue, 2)));
 			} else {
-				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,4,2,4));
+				selectedPanel.setBorder(BorderFactory.createEmptyBorder(2,6,2,6));
 			}
 		}
 	}

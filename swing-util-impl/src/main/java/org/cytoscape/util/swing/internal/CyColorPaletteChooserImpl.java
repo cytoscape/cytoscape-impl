@@ -188,6 +188,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		// overwrite the color chooser panels
 		if (paletteOnly) {
 			colorChooser.setChooserPanels(palettePanels);
+			colorChooser.setPreviewPanel(new JPanel()); // Hide the preview panel
 		} else {
 			AbstractColorChooserPanel[] oldPanels = colorChooser.getChooserPanels();
 			AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[oldPanels.length+palettePanels.length];

@@ -60,18 +60,22 @@ public class ColorIcon implements Icon {
 	private int width;
 	private int height;
 	private Color color;
+	private boolean paletteOnly;
 	
-	public ColorIcon(Color color, int width, int height) {
+	public ColorIcon(Color color, int width, int height, boolean paletteOnly) {
 		this.color = color;
 		this.width = width;
 		this.height= height;
+		this.paletteOnly= paletteOnly;
 	}
 	
 	public void paintIcon(Component c, Graphics g, int x, int y) {
 		g.setColor(color);
 		g.fillRect(x, y, width, height);
-		g.setColor(Color.BLACK);
-		g.drawRect(x, y, width, height);
+		if (!paletteOnly) {
+			g.setColor(Color.BLACK);
+			g.drawRect(x, y, width, height);
+		}
 	}
 	
 	public int getIconWidth() {
