@@ -355,36 +355,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		}
 		return paletteButton;
 	}
-	/*
-	protected JComboBox<Palette> getPaletteBox() {
-		if (paletteBox == null) {
-			Palette defaultPalette = null;
-			List<Palette> paletteList = new ArrayList<>();
-			BrewerType paletteType;
-			if (tracer.getMax(type) > 0.0 && tracer.getMin(type) < 0.0) {
-				paletteType = BrewerType.DIVERGING;
-			} else {
-				paletteType = BrewerType.SEQUENTIAL;
-			}
-
-			for (PaletteProvider provider: paletteProviderMgr.getPaletteProviders(paletteType, false)) {
-				for (String paletteName: provider.listPaletteNames(paletteType, false)) {
-					Palette palette = provider.getPalette(paletteName);
-					if (palette.toString().equalsIgnoreCase(DEFAULT_PALETTE))
-						defaultPalette = palette;
-					paletteList.add(palette);
-				}
-			}
-			paletteBox = new JComboBox<Palette>(paletteList.toArray(new Palette[0]));
-			lastPalette = retrievePalette();
-			if (lastPalette != null) {
-				setCurrentPalette(lastPalette);
-			} else if (defaultPalette != null)
-				paletteBox.setSelectedItem(defaultPalette);
-		}
-		return paletteBox;
-	}
-	*/
 
 	protected void savePalette(Palette palette) {
 		paletteProviderMgr.savePalette(style.getTitle()+" "+type.getIdString(), palette);
@@ -397,16 +367,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected void setCurrentPalette(Palette palette) {
 		paletteButton.setText(palette.toString());
 		currentPalette = palette;
-		/*
-		for (int i = 0; i < paletteBox.getItemCount(); i++) {
-			Palette p = paletteBox.getItemAt(i);
-			if (p.toString().equalsIgnoreCase(palette.toString())) {
-				paletteBox.setSelectedIndex(i);
-				return;
-			}
-
-		}
-		*/
 		return;
 	}
 	

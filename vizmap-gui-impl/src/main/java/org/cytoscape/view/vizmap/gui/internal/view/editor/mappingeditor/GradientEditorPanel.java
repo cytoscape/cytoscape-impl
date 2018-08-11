@@ -99,6 +99,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
 				Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
 
+				if (newPalette == null) return;
+
 				// Get the palette
 				Color[] colors = newPalette.getColors();
 				if (colors.length < 9)
@@ -145,8 +147,16 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			DEF_MID_COLOR = colors[(colors.length-1)/2];
 			DEF_UPPER_COLOR = colors[1];
 			DEF_ABOVE_UPPER_COLOR = colors[0];
-		}
-
+		} else {
+			if (paletteType == BrewerType.SEQUENTIAL) {
+				// Use the Viridis palette by default
+				DEF_BELOW_LOWER_COLOR = Color.decode("#fde725");
+				DEF_LOWER_COLOR = Color.decode("#fbe723");
+				DEF_MID_COLOR = Color.decode("#21918c");
+				DEF_UPPER_COLOR = Color.decode("#440256");
+				DEF_ABOVE_UPPER_COLOR = Color.decode("#440154");
+			}
+		} 
 		initSlider();
 	
 		getSlider().addMouseListener(new MouseAdapter() {
@@ -333,15 +343,20 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 					upperRange);
 			} else {
 				getSlider().getModel().addThumb(0f, DEF_LOWER_COLOR);
+				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
 				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
 				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
 					NumberConverter.convert(columnType, minValue),
 					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, ((float)(maxValue-minValue)/2f)+minValue),
+					midRange);
 				mapping.addPoint(
 					NumberConverter.convert(columnType, maxValue),
 					upperRange);
@@ -371,15 +386,20 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				// TODO: Provide more bins
 				//
 				getSlider().getModel().addThumb(0f, DEF_UPPER_COLOR);
+				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 	
 				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
 				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
 	
 				// Add three points.
 				mapping.addPoint(
 					NumberConverter.convert(columnType, minValue),
 					lowerRange);
+				mapping.addPoint(
+					NumberConverter.convert(columnType, ((float)(maxValue-minValue)/2f)+minValue),
+					midRange);
 				mapping.addPoint(
 					NumberConverter.convert(columnType, maxValue),
 					upperRange);
