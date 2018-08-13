@@ -29,6 +29,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -285,7 +286,12 @@ public class ShapeAnnotationPanel extends JPanel {
 				)
 		);
 
-		iModifySAPreview();	
+		iModifySAPreview();
+		
+		makeSmall(label1, label2, label3, label4, label5, label6);
+		makeSmall(shapeList, fillColorCheck, fillColorButton, fillOpacitySlider, borderColorCheck, borderColorButton,
+				borderOpacitySlider, borderWidthCombo);
+		makeSmall(scrollPane);
 	}
 	
 	public ShapeAnnotationImpl getPreview(){
@@ -353,6 +359,5 @@ public class ShapeAnnotationPanel extends JPanel {
 		preview.setBorderOpacity((double)opacity);
 		previewPanel.repaint();
 	}
-
 }
 

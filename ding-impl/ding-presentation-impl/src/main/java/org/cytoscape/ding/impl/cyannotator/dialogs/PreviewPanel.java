@@ -3,6 +3,18 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
+import java.awt.Color;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /*
  * #%L
@@ -10,7 +22,7 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,17 +40,6 @@ import static javax.swing.GroupLayout.Alignment.LEADING;
  * #L%
  */
 
-import java.awt.Color;
-
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.UIManager;
-
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-
 @SuppressWarnings("serial")
 public class PreviewPanel extends JPanel {
 	
@@ -54,6 +55,7 @@ public class PreviewPanel extends JPanel {
 		c.setBackground(new Color(255, 255, 255, 0)); // Make the component background transparent
 
 		final JLabel label = new JLabel("Preview:");
+		makeSmall(label);
 		
 		final JPanel panel = new JPanel();
 		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));

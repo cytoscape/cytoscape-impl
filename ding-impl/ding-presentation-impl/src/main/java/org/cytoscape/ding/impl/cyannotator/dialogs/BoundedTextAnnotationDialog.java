@@ -127,14 +127,14 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		layout.setAutoCreateGaps(true);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addComponent(shapeAnnotationPanel)
 				.addComponent(textAnnotationPanel)
+				.addComponent(shapeAnnotationPanel)
 				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_WIDTH, Short.MAX_VALUE)
 				.addComponent(buttonPanel)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addComponent(shapeAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(textAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(shapeAnnotationPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addComponent(previewPanel, DEFAULT_SIZE, PREVIEW_HEIGHT, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);

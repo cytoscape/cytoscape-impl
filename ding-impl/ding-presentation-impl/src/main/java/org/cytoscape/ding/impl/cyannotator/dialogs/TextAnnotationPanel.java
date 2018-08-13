@@ -1,12 +1,41 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GraphicsEnvironment;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+
+import javax.swing.AbstractListModel;
+import javax.swing.GroupLayout;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+
+import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.TextAnnotation;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,37 +52,6 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-
-import javax.swing.AbstractListModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
-import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.TextAnnotation;
-
-import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 
 @SuppressWarnings("serial")
 public class TextAnnotationPanel extends JPanel {
@@ -259,6 +257,10 @@ public class TextAnnotationPanel extends JPanel {
 						)
 		);
 		layout.setVerticalGroup(vGroup);
+		
+		makeSmall(label1, label2, label3, label4);
+		makeSmall(annotationText, textColorButton, fontTypeList, fontStyleList, fontSizeList);
+		makeSmall(scrollPane1, scrollPane2, scrollPane3);
 	}
 
 	public String getText() {
