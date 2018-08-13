@@ -1,12 +1,45 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static javax.swing.GroupLayout.Alignment.TRAILING;
+
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.List;
+
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
+import org.cytoscape.util.swing.ColorButton;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,46 +57,9 @@ package org.cytoscape.ding.impl.cyannotator.dialogs;
  * #L%
  */
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static javax.swing.GroupLayout.Alignment.CENTER;
-import static javax.swing.GroupLayout.Alignment.LEADING;
-import static javax.swing.GroupLayout.Alignment.TRAILING;
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.List;
-
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
-import org.cytoscape.util.swing.ColorButton;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.AnchorType;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
-
 @SuppressWarnings("serial")
 public class ArrowAnnotationPanel extends JPanel {
 	
-	private JTextField nameField;
 	private PreviewPanel previewPanel;
 	private ArrowAnnotationImpl preview;
 	
@@ -77,26 +73,13 @@ public class ArrowAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
-	// We need to expose this in case the user just presses "return", which
-	// fires the OK button action in the parent dialog
-	public String getAnnotationName() {
-		return nameField.getText();
-	}
-
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Line Color:");
 		final JLabel label2 = new JLabel("Line Opacity:");
 		final JLabel label3 = new JLabel("Line Width:");
 
-		nameField = new JTextField(32);
-		if (annotation.getName() != null) {
-			nameField.setText(annotation.getName());
-		}
-		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
-		
 		final ColorButton lineColorButton = new ColorButton((Color) preview.getLineColor());
 		lineColorButton.setToolTipText("Select line color...");
 		

@@ -58,7 +58,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl
 @SuppressWarnings("serial")
 public class TextAnnotationPanel extends JPanel {
 	
-	private JTextField nameField;
 	private JTextField annotationText;
 	private JList<String> fontSizeList;
 	private JList<String> fontStyleList;
@@ -76,28 +75,13 @@ public class TextAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
-	// We need to expose this in case the user just presses "return", which
-	// fires the OK button action in the parent dialog
-	public String getAnnotationName() {
-		return nameField.getText();
-	}
-
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 		
-		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Text:");
 		final JLabel label2 = new JLabel("Font Family:");
 		final JLabel label3 = new JLabel("Style:");
 		final JLabel label4 = new JLabel("Size:");
-
-		nameField = new JTextField(32);
-		if (!(annotation instanceof BoundedTextAnnotationImpl)) {
-			if (annotation.getName() != null) {
-				nameField.setText(annotation.getName());
-			}
-			nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
-		}
 
 		annotationText = new JTextField(annotation.getText());
 		textColorButton = new ColorButton(getTextColor());
@@ -225,12 +209,6 @@ public class TextAnnotationPanel extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		GroupLayout.Group hGroup = layout.createParallelGroup(LEADING, true);
-		if (!(annotation instanceof BoundedTextAnnotationImpl)) {
-				hGroup.addGroup(layout.createSequentialGroup()
-					.addComponent(nameLabel)
-					.addComponent(nameField)
-				);
-		}
 		hGroup.addGroup(layout.createSequentialGroup()
 						.addComponent(label1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addPreferredGap(ComponentPlacement.RELATED)
@@ -260,12 +238,6 @@ public class TextAnnotationPanel extends JPanel {
 		layout.setHorizontalGroup(hGroup);
 
 		GroupLayout.SequentialGroup vGroup = layout.createSequentialGroup();
-		if (!(annotation instanceof BoundedTextAnnotationImpl)) {
-			vGroup.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-						.addComponent(nameLabel)
-						.addComponent(nameField)
-					);
-		}
 		vGroup.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(label1)
 						.addComponent(annotationText, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

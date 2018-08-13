@@ -44,7 +44,6 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -63,7 +62,6 @@ public class ImageAnnotationPanel extends JPanel {
 	private JSlider opacitySlider;
 	private JSlider brightnessSlider;
 	private JSlider contrastSlider;
-	private JTextField nameField;
 
 	private ImageAnnotationImpl preview;
 	private PreviewPanel previewPanel;
@@ -78,12 +76,6 @@ public class ImageAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
-	// We need to expose this in case the user just presses "return", which
-	// fires the OK button action in the parent dialog
-	public String getAnnotationName() {
-		return nameField.getText();
-	}
-
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
@@ -95,12 +87,6 @@ public class ImageAnnotationPanel extends JPanel {
 		final JLabel label5 = new JLabel("Brightness:");
 		final JLabel label6 = new JLabel("Contrast:");
 
-		nameField = new JTextField(32);
-		if (annotation.getName() != null) {
-			nameField.setText(annotation.getName());
-		}
-		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
-		
 		borderColorCheck = new JCheckBox();
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);
 		borderColorCheck.addActionListener(new ActionListener() {

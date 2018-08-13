@@ -33,8 +33,6 @@ import static javax.swing.GroupLayout.Alignment.TRAILING;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -50,7 +48,6 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -66,7 +63,6 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 @SuppressWarnings("serial")
 public class ShapeAnnotationPanel extends JPanel {
 	
-	private JTextField nameField;
 	private JList<String> shapeList;
 	private JCheckBox fillColorCheck;
 	private JCheckBox borderColorCheck;
@@ -89,16 +85,9 @@ public class ShapeAnnotationPanel extends JPanel {
 		initComponents();
 	}
 
-	// We need to expose this in case the user just presses "return", which
-	// fires the OK button action in the parent dialog
-	public String getAnnotationName() {
-		return nameField.getText();
-	}
-
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Shape:");
 		final JLabel label2 = new JLabel("Fill Color:");
 		final JLabel label3 = new JLabel("Fill Opacity:");
@@ -106,12 +95,6 @@ public class ShapeAnnotationPanel extends JPanel {
 		final JLabel label5 = new JLabel("Border Opacity:");
 		final JLabel label6 = new JLabel("Border Width:");
 
-		nameField = new JTextField(32);
-		if (annotation.getName() != null) {
-			nameField.setText(annotation.getName());
-		}
-		nameField.addMouseListener(new TextFieldMouseListener(nameField, preview));
-		
 		shapeList = new JList<>();
 		shapeList.setModel(new AbstractListModel<String>() {
 			List<String> typeList = annotation.getSupportedShapes();
@@ -243,10 +226,6 @@ public class ShapeAnnotationPanel extends JPanel {
 		layout.setAutoCreateGaps(!LookAndFeelUtil.isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-				.addGroup(layout.createSequentialGroup()
-					.addComponent(nameLabel)
-					.addComponent(nameField)
-				)
 				.addComponent(label1)
 				.addGroup(layout.createSequentialGroup()
 						.addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -275,10 +254,6 @@ public class ShapeAnnotationPanel extends JPanel {
 				)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
-				.addGroup(layout.createParallelGroup(Alignment.BASELINE)
-					.addComponent(nameLabel)
-					.addComponent(nameField)
-				)
 				.addComponent(label1)
 				.addGroup(layout.createParallelGroup(LEADING, true)
 						.addComponent(scrollPane)
