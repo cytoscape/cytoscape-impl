@@ -505,8 +505,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		} else if (!wasSelected) {
 			chosenNodeSelected = 1;
 		}
-
-		m_button1NodeDrag = true;
 		
 		return chosenNodeSelected;
 	}
@@ -532,7 +530,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 			
 			ev.removeHandle(anchorInx);
-			m_button1NodeDrag = false;
 			m_lod[0].setDrawEdges(true);
 			// final GraphViewChangeListener listener = m_view.m_lis[0];
 			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
@@ -548,7 +545,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_view.m_selectedAnchors.insert(chosenAnchor);
 			}
 
-			m_button1NodeDrag = true;
 		}
 		m_view.setContentChanged();	
 	}
@@ -610,7 +606,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 		}
 
-		m_button1NodeDrag = true;
 		m_view.setContentChanged();
 		return chosenEdgeSelected;
 	}
@@ -1241,7 +1236,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if ((chosenNode >= 0 || chosenEdge >= 0) && !(e.isShiftDown() || isControlOrMetaDown(e)))
 					m_view.m_selectedAnchors.empty();
 				
-				if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor < 0) {
+				if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor < 0 
+						&& m_view.getCyAnnotator().getAnnotationSelection().isEmpty()) {
+					
 					m_button1NodeDrag = false;
 					
 					if (isDragSelectionKeyDown(e)) {
@@ -1250,6 +1247,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					} else {
 						changeCursor(getMoveCursor());
 					}
+				} else {
+					m_button1NodeDrag = true;
 				}
 			}
 	
