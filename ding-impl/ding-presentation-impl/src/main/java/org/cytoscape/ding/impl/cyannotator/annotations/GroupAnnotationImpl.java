@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -56,7 +55,6 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnnotation {
 
 	List<DingAnnotation> annotations = new ArrayList<>();
-	Rectangle2D bounds;
 
 	public GroupAnnotationImpl(DGraphView view, Window owner) {
 		super(view, owner, false);
@@ -137,6 +135,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 			// Set the bounding box and our location
 			updateBounds();
+			Rectangle2D bounds = getBounds();
 			setLocation((int)bounds.getX(), (int)bounds.getY());
 			setSize((int)bounds.getWidth(), (int)bounds.getHeight());
 			dMember.getCanvas().setComponentZOrder(dMember.getComponent(), 
@@ -318,6 +317,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	@Override
 	public Dimension adjustAspectRatio(Dimension d) {
 		double ratio = d.getWidth() / d.getHeight();
+		Rectangle2D bounds = getBounds();
 		double aspectRatio = bounds.getWidth() / bounds.getHeight();
 		double width, height;
 
@@ -358,15 +358,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.paint(g);
 		updateBounds();
 		
-		if (bounds == null)
-			return;
-		
 		Graphics2D g2 = (Graphics2D) g;
 		
 		if (isSelected()) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
-			g2.drawRect(0, 0, (int) bounds.getWidth(), (int) bounds.getHeight());
+			g2.drawRect(0, 0, getWidth(), getHeight());
 		}
 		/*
 		else {
@@ -403,10 +400,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		super.setZoom(newZoom);		
 	}
 
-	public Rectangle2D getBounds2D() {
-		return bounds;
-	}
-
 	private void updateBounds() {
 		invokeOnEDT(() -> {
 			Rectangle2D union = null;
@@ -418,12 +411,10 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 					union = union.createUnion(child.getComponent().getBounds().getBounds2D());
 			}
 
-			bounds = union;
+			if(union != null) {
+				setBounds(union.getBounds());
+			}
 		});
 	}
 
-	@Override
-	public Rectangle getBounds() {
-		return getBounds2D() != null ? getBounds2D().getBounds() : new Rectangle();
-	}
 }
