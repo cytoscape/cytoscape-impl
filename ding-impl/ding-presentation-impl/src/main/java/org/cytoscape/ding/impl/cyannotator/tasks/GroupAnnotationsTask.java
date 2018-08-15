@@ -8,6 +8,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -36,6 +37,9 @@ import org.cytoscape.work.TaskMonitor;
 
 public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
+	
+	private Collection<DingAnnotation> annotations;
+	
 	/**
 	 * Group the selected annotations, if any.
 	 */
@@ -48,23 +52,42 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 	 */
 	public GroupAnnotationsTask(CyNetworkView view, Collection<DingAnnotation> annotations) {
 		super(view);
+		this.annotations = annotations;
 	}
+	
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (view instanceof DGraphView) {
 			DGraphView dView = (DGraphView) view;
+			
 			CyAnnotator cyAnnotator = dView.getCyAnnotator();
+			
+			Collection<DingAnnotation> selectedAnnotations;
+			if(annotations == null)
+				selectedAnnotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
+			else
+				selectedAnnotations = annotations;
+			
+
+			// remove the annotations from any existing groups
+			for(DingAnnotation a : selectedAnnotations) {
+				GroupAnnotation group = a.getGroupParent();
+				if(group != null) {
+					group.removeMember(a);
+				}
+			}
+			
 			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, null);
 			group.addComponent(null); // Need to add this first so we can update things appropriately
 			cyAnnotator.addAnnotation(group);
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw
 			// ConcurrentModifcationExceptions
-			cyAnnotator.getAnnotationSelection().getSelectedAnnotations().forEach(a -> {
+			for(DingAnnotation a : selectedAnnotations) {
 				group.addMember(a);
 				a.setSelected(false);
-			});
+			};
 
 			// Finally, set ourselves to be the selected component
 			group.setSelected(true);
