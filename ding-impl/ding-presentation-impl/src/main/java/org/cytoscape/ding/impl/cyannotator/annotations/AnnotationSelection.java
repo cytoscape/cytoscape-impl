@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
+import static org.cytoscape.view.presentation.property.values.Position.*;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -185,7 +187,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	}
 
 	public void resizeAnnotationsRelative(int x, int y) {
-  	// Get our current transform
+		// Get our current transform
 		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
 
 		Rectangle2D outlineBounds = resize(anchor, initialBounds, mouse.getX(), mouse.getY());
@@ -194,7 +196,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
 		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
 
-		for (DingAnnotation da: selectedAnnotations) {
+		for (DingAnnotation da : selectedAnnotations) {
 			Rectangle2D daBounds = da.getInitialBounds();
 
 			double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
@@ -249,60 +251,61 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 	// NOTE: bounds, mouseX and mouseY should be in node coordinates
 	private Rectangle2D resize(Position anchor, Rectangle2D bounds, double mouseX, double mouseY) {
-		double positionX = bounds.getX();
-		double positionY = bounds.getY();
-		double width = bounds.getWidth();
-		double height = bounds.getHeight();
-		Rectangle2D newBounds;
+		if(anchor == NONE || anchor == CENTER)
+			return null;
+		
+		final double boundsX = bounds.getX();
+		final double boundsY = bounds.getY();
+		final double boundsWidth = bounds.getWidth();
+		final double boundsHeight = bounds.getHeight();
+		final double boundsYBottom = boundsY + boundsHeight;
+		final double boundsXLeft = boundsX + boundsWidth;
 
-		switch (anchor) {
-			case NORTH_EAST:
-				{
-					double deltaX = mouseX - positionX;
-					double deltaY = positionY - mouseY;
-					return new Rectangle2D.Double(positionX, mouseY, deltaX, height+deltaY);
-				}
-			case NORTH:
-				{
-					double deltaY = positionY - mouseY;
-					return new Rectangle2D.Double(positionX, mouseY, width, height+deltaY);
-				}
-			case NORTH_WEST:
-				{
-					double deltaY = positionY - mouseY;
-					double deltaX = positionX - mouseX;
-					return new Rectangle2D.Double(mouseX, mouseY, width+deltaX, height+deltaY);
-				}
-			case WEST:
-				{
-					double deltaX = positionX - mouseX;
-					return new Rectangle2D.Double(mouseX, positionY, width+deltaX, height);
-				}
-			case SOUTH_WEST:
-				{
-					double deltaX = positionX - mouseX;
-					return new Rectangle2D.Double(mouseX, positionY, width+deltaX, mouseY-positionY);
-				}
-			case SOUTH:
-				{
-					return new Rectangle2D.Double(positionX, positionY, width, mouseY-positionY);
-				}
-			case SOUTH_EAST:
-				{
-					double deltaX = mouseX - positionX;
-					double deltaY = mouseY - positionY;
-					double delta = Math.max(deltaX, deltaY);
-					return new Rectangle2D.Double(positionX, positionY, deltaX, deltaY);
-				}
-			case EAST:
-				{
-					return new Rectangle2D.Double(positionX, positionY, mouseX-positionX, height);
-				}
+		double x = boundsX;
+		double y = boundsY;
+		double width = boundsWidth;
+		double height = boundsHeight;
+		
+		// y and height
+		if(anchor == NORTH || anchor == NORTH_EAST || anchor == NORTH_WEST) {
+			if(mouseY > boundsYBottom) {
+				y = boundsYBottom;
+				height = mouseY - boundsYBottom;
+			} else {
+				y = mouseY;
+				height = boundsYBottom - mouseY;
+			}
+		} else if(anchor == SOUTH || anchor == SOUTH_EAST || anchor == SOUTH_WEST) {
+			if(mouseY < boundsY) {
+				y = mouseY;
+				height = boundsY - mouseY;
+			} else {
+				height = mouseY - boundsY;
+			}
 		}
-
-		return null;
+		
+		// x and width
+		if(anchor == WEST || anchor == NORTH_WEST || anchor == SOUTH_WEST) {
+			if(mouseX > boundsXLeft) {
+				x = boundsXLeft;
+				width = mouseX - boundsXLeft;
+			} else {
+				x = mouseX;
+				width = boundsXLeft - mouseX;
+			}
+		} else if(anchor == EAST || anchor == NORTH_EAST || anchor == SOUTH_EAST) {
+			if(mouseX < boundsX) {
+				x = mouseX;
+				width = boundsX - mouseX;
+			} else {
+				width = mouseX - boundsX; 
+			}
+		}
+		
+		return new Rectangle2D.Double(x, y, width, height);
 	}
 
+	
 	private void updateBounds() {
 		if (selectedAnnotations.size() == 0)
 			return;
@@ -330,7 +333,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 		g2.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 
-    // High quality color rendering is ON.
+		// High quality color rendering is ON.
 		g2.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
 		g2.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
 		g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
@@ -341,7 +344,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		g2.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 
 		final Composite originalComposite = g2.getComposite();
-    g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
+		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1.0f));
 
 		g2.setPaint(Color.YELLOW);
 		g2.setStroke(new BasicStroke(0.5f, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER, 1.0f, dash, 0.0f));
