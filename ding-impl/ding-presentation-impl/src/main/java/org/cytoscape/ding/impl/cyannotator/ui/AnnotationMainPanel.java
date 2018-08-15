@@ -348,18 +348,16 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final JTree tree = Annotation.FOREGROUND.equals(a.getCanvasName()) ?
 				getForegroundTree() : getBackgroundTree();
 		final AnnotationTreeModel model = (AnnotationTreeModel) tree.getModel();
-		final int row = model.rowOf(a);
 		
-		if (row < 0 || row > tree.getRowCount() - 1)
+		TreePath path = model.pathTo(a);
+		if(path == null)
 			return;
 		
-		if (selected) {
-			tree.addSelectionInterval(row, row);
-			
-			if (!isRowVisible(tree, row))
-				tree.scrollRectToVisible(tree.getRowBounds(row));
+		if(selected) {
+			tree.addSelectionPath(path);
+			tree.scrollPathToVisible(path);
 		} else {
-			tree.removeSelectionInterval(row, row);
+			tree.removeSelectionPath(path);
 		}
 	}
 	
@@ -1020,6 +1018,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			AnnotationNode node = a != null ? all.get(a) : null;
 			
 			return node != null ? getRootNode().getIndex(node) : -1;
+		}
+		
+		public TreePath pathTo(Annotation a) {
+			AnnotationNode node = a != null ? all.get(a) : null;
+			return node != null ? new TreePath(node.getPath()) : null;
 		}
 
 		public void addRows(Collection<Annotation> list) {
