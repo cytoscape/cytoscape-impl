@@ -51,6 +51,8 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
@@ -788,6 +790,19 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		TreeCellEditor txtEditor = new DefaultCellEditor(textField);
 		TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
+		editor.addCellEditorListener(new CellEditorListener() {
+			@Override
+			public void editingStopped(ChangeEvent evt) {
+				// Repaint both trees when a node's name has changed,
+				// because a GroupAnnotation can have a corresponding node in each one
+				getBackgroundTree().repaint();
+				getForegroundTree().repaint();
+			}
+			@Override
+			public void editingCanceled(ChangeEvent evt) {
+				// Ignore...
+			}
+		});
 		tree.setCellEditor(editor);
 		
 		tree.setShowsRootHandles(true);
