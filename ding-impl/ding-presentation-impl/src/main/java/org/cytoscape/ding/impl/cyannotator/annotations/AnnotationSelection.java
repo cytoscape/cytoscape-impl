@@ -72,7 +72,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		if (selectedAnnotations.size() == 0) {
 			selectedAnnotations.add(e);
 			updateBounds();
-			cyAnnotator.getForeGroundCanvas().add(this);
+			cyAnnotator.getForeGroundCanvas().add(this, 0);
 		} else {
 			selectedAnnotations.add(e);
 			updateBounds();
