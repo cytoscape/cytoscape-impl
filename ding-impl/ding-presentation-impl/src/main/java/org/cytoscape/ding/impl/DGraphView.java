@@ -1597,6 +1597,12 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 					Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY,
 					Float.POSITIVE_INFINITY, m_extentsBuff, 0, false)
 					.numRemaining() == 0) {
+				
+				extentsBuff[0] = 0;
+				extentsBuff[1] = 0;
+				extentsBuff[2] = 0;
+				extentsBuff[3] = 0;
+				
 				return false;
 			}
 

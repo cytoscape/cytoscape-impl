@@ -235,23 +235,23 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
-			if (viewModel.getExtents(m_extents)) {				
-
-				// Adjust for foreground/background components
-				foregroundCanvas.adjustBounds(m_extents);
-				backgroundCanvas.adjustBounds(m_extents);
-
+			
+			boolean hasComponents = viewModel.getExtents(m_extents);
+			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
+			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
+			
+			if(hasComponents) {
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
 				m_myYCenter = (m_extents[1] + m_extents[3]) / 2.0d;
 				m_myScaleFactor = SCALE_FACTOR * 
 				                  Math.min(((double) getWidth()) / (m_extents[2] - m_extents[0]), 
 				                           ((double) getHeight()) / (m_extents[3] - m_extents[1]));
-			} else {				
+			} else {
 				m_myXCenter = 0.0d;
 				m_myYCenter = 0.0d;
 				m_myScaleFactor = 1.0d;
 			}
-
+			
 			// System.out.println("BirdsEyeView: extent[0] = "+m_extents[0]+" extent[1] = "+m_extents[1]+" extent[2] = "+m_extents[2]+" extent[3] = "+m_extents[3]);
 			// System.out.println("BirdsEyeView: component = "+getWidth()+"x"+getHeight());
 			// System.out.println("BirdsEyeView: image = "+imageWidth+"x"+imageHeight);

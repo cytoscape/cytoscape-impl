@@ -228,8 +228,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * include all of the child elements
 	 */
 	public boolean adjustBounds(double[] currentBounds) {
-		final double[] nodeCanvasCoordinates = new double[2];
-
 		// get list of child components
 		Component[] components = getComponents();
 
@@ -241,6 +239,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// going to walk our children and make sure the extents
 		// are large enought to cover them
 
+		final double[] nodeCanvasCoordinates = new double[2];
+		
 		// iterate through the components
 		for (Component c : components) {
 			// get position of this component in network coordinates
