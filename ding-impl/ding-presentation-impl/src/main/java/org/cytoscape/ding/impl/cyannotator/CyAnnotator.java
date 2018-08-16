@@ -415,6 +415,9 @@ public class CyAnnotator {
 	}
 
 	public void addAnnotation(Annotation annotation) {
+		if (annotationSet.contains(annotation))
+			return;
+		
 		if (!(annotation instanceof DingAnnotation))
 			return;
 		
@@ -426,6 +429,9 @@ public class CyAnnotator {
 	}
 	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
+		if (annotationSet.containsAll(annotations))
+			return;
+		
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		for (Annotation annotation : annotations) {
@@ -440,22 +446,30 @@ public class CyAnnotator {
 	public void removeAnnotation(Annotation annotation) {
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
-		annotationSet.remove((DingAnnotation) annotation);
+		boolean changed = annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
-		updateNetworkAttributes();
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		
+		if (changed) {
+			updateNetworkAttributes();
+			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		}
 	}
 
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
+		boolean changed = false;
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		for (Annotation annotation : annotations) {
-			annotationSet.remove((DingAnnotation) annotation);
+			if (annotationSet.remove((DingAnnotation) annotation))
+				changed = true;
+			
 			annotationSelection.remove(annotation);
 		}
 		
-		updateNetworkAttributes();
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		if (changed) {
+			updateNetworkAttributes();
+			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		}
 	}
 
 	public List<Annotation> getAnnotations() {
