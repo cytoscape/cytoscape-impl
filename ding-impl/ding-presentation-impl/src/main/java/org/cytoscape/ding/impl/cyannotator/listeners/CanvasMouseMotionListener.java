@@ -62,8 +62,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		DingAnnotation a = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
 		
-		if (annotationSelection.isEmpty() || 
-		    !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (annotationSelection.isEmpty() || !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.mouseDragged(e);
 			return;
 		}

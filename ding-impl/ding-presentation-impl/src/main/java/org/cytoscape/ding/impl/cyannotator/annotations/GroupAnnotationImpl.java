@@ -1,6 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -250,7 +250,23 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 		cyAnnotator.moveAnnotation(this);
 	}
-
+	
+	@Override
+	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+		for(DingAnnotation da : annotations) {
+			((AbstractAnnotation)da).resizeAnnotationRelative(initialBounds, outlineBounds);
+		}
+		updateBounds();
+	}
+	
+	@Override
+	public void saveBounds() {
+		super.saveBounds();
+		for(DingAnnotation da : annotations) {
+			((AbstractAnnotation)da).saveBounds();
+		}
+	}
+	
 	/*
 	 * 1) update our bounds
 	 * 2) move each child
@@ -401,7 +417,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	private void updateBounds() {
-		invokeOnEDT(() -> {
+		invokeOnEDTAndWait(() -> {
 			Rectangle2D union = null;
 
 			for (DingAnnotation child : annotations) {

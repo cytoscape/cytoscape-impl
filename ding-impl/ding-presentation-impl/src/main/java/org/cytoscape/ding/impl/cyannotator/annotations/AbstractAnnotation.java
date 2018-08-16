@@ -319,6 +319,35 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		});
 	}
 
+	
+	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+		Rectangle2D daBounds = getInitialBounds();
+		
+		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
+		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
+		
+		double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
+		double deltaY = (daBounds.getY()-initialBounds.getY())/initialBounds.getHeight();
+		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
+
+		// Now, switch back to component coordinates
+		Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getView(), newBounds);
+		getComponent().setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
+		resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
+	}
+	
+	
+	private static Rectangle2D adjustBounds(Rectangle2D bounds, 
+            Rectangle2D outerBounds,
+            double dx, double dy, 
+            double dw, double dh) {
+		double newX = outerBounds.getX() + dx*outerBounds.getWidth();
+		double newY = outerBounds.getY() + dy*outerBounds.getHeight();
+		double newWidth = bounds.getWidth()*dw;
+		double newHeight = bounds.getHeight()*dh;
+		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
+	}
+	
 	public void resizeAnnotation(double width, double height) {
 		// Nothing to do here...
 	}

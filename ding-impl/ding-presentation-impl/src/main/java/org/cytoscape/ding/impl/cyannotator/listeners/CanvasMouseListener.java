@@ -78,8 +78,7 @@ public class CanvasMouseListener implements MouseListener {
 		DingAnnotation annotation = getAnnotation(e);
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		
-		if (!annotationSelection.isEmpty() &&
-			  annotationSelection.overAnchor(e.getX(), e.getY()) != null) {
+		if (!annotationSelection.isEmpty() && annotationSelection.overAnchor(e.getX(), e.getY()) != null) {
 			Position anchor = annotationSelection.overAnchor(e.getX(), e.getY());
 			setResizeCursor(anchor);
 			annotationSelection.setResizing(true);

@@ -11,6 +11,7 @@ import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -272,6 +273,15 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		return new TextAnnotationDialog(this, owner);
 	}
 
+	
+	@Override
+	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+		super.resizeAnnotationRelative(initialBounds, outlineBounds);
+		// XXX This doesn't work!  Need to preserve font size in order for this to work right
+		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
+		setFontSizeRelative(deltaW);
+	}
+	
 	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		if (text == null) return;

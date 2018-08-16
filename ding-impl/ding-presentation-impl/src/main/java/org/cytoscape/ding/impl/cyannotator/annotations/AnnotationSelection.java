@@ -127,6 +127,9 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 	public void saveBounds() {
 		initialBounds = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), getBounds().getBounds2D());
+		for(DingAnnotation da : selectedAnnotations) {
+			da.saveBounds();
+		}
 	}
 
 	public Rectangle2D getInitialBounds() {
@@ -190,36 +193,11 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		// Get our current transform
 		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
 
+		// OutlineBounds is in node coordinates!
 		Rectangle2D outlineBounds = resize(anchor, initialBounds, mouse.getX(), mouse.getY());
 
-		// OutlineBounds is in node coordinates!
-		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
-
 		for (DingAnnotation da : selectedAnnotations) {
-			Rectangle2D daBounds = da.getInitialBounds();
-
-			double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
-			double deltaY = (daBounds.getY()-initialBounds.getY())/initialBounds.getHeight();
-			Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
-
-			// Now, switch back to component coordinates
-			Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getView(), newBounds);
-			da.getComponent().setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
-			((AbstractAnnotation)da).resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
-
-			// Handle any special cases
-			// XXX This doesn't work!  Need to preserve font size in order for this to work right
-			if (da instanceof TextAnnotationImpl) {
-				TextAnnotationImpl textChild = (TextAnnotationImpl)da;
-				textChild.setFontSizeRelative(deltaW);
-			}
-
-			// XXX This doesn't work!  Need to preserve font size in order for this to work right
-			if (da instanceof BoundedTextAnnotationImpl) {
-				BoundedTextAnnotationImpl textChild = (BoundedTextAnnotationImpl)da;
-				textChild.setFontSizeRelative(deltaW);
-			}
+			((AbstractAnnotation)da).resizeAnnotationRelative(initialBounds, outlineBounds);
 
 			// OK, now update
 			da.update();
@@ -228,19 +206,8 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 		updateBounds();
 		cyAnnotator.getForeGroundCanvas().repaint();
-
 	}
 
-	private Rectangle2D adjustBounds(Rectangle2D bounds, 
-	                                 Rectangle2D outerBounds,
-	                                 double dx, double dy, 
-	                                 double dw, double dh) {
-		double newX = outerBounds.getX() + dx*outerBounds.getWidth();
-		double newY = outerBounds.getY() + dy*outerBounds.getHeight();
-		double newWidth = bounds.getWidth()*dw;
-		double newHeight = bounds.getHeight()*dh;
-		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
-	}
 
 	// NOTE: mouseX and mouseY should be in node coordinates
 	private Rectangle2D resize(Position anchor, DingAnnotation ann, double mouseX, double mouseY) {
