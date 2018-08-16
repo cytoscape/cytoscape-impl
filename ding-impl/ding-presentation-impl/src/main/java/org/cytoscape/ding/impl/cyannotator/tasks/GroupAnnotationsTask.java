@@ -80,7 +80,6 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			
 			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, null);
 			group.addComponent(null); // Need to add this first so we can update things appropriately
-			cyAnnotator.addAnnotation(group);
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw
 			// ConcurrentModifcationExceptions
@@ -88,6 +87,8 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 				group.addMember(a);
 				a.setSelected(false);
 			};
+			
+			cyAnnotator.addAnnotation(group);
 
 			// Finally, set ourselves to be the selected component
 			group.setSelected(true);

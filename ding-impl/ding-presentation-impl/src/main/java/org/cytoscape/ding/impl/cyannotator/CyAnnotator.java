@@ -587,7 +587,7 @@ public class CyAnnotator {
 		return false;
 	}
 	
-	private void updateNetworkAttributes() {
+	public void updateNetworkAttributes() {
 		// Convert the annotation to a list
 		final List<Map<String, String>> networkAnnotations = new ArrayList<>();
 		final CyNetwork network = view.getModel();

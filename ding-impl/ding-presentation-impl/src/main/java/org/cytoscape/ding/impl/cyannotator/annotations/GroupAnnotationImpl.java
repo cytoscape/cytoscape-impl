@@ -149,7 +149,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				//  java.lang.IllegalArgumentException: component and container should be in the same top-level window
 				// getCanvas().setComponentZOrder(getComponent(), z);
 			}
-			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
+			cyAnnotator.updateNetworkAttributes(); // This forces an update of the argMap
 		}
 	}
 
@@ -166,7 +166,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				annotations.remove(dMember);
 				dMember.setGroupParent(null);
 			}
-			cyAnnotator.addAnnotation(this); // This forces an update of the argMap
+			cyAnnotator.updateNetworkAttributes(); // This forces an update of the argMap
 		}
 	}
 
