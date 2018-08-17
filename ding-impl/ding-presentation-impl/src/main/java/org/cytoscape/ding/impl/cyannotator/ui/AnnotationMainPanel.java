@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator.ui;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.util.swing.LookAndFeelUtil.createPanelBorder;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
@@ -18,6 +19,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
@@ -29,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -115,10 +118,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private JButton groupAnnotationsButton;
 	private JButton ungroupAnnotationsButton;
 	private JButton removeAnnotationsButton;
-	private JTree foregroundTree;
-	private JTree backgroundTree;
-	private JScrollPane ftScrollPane;
-	private JScrollPane btScrollPane;
+	private JButton pullToForegroundButton;
+	private JButton pushToBackgroundButton;
+	private LayerPanel foregroundLayerPanel;
+	private LayerPanel backgroundLayerPanel;
 	private JButton selectAllButton;
 	private JButton selectNoneButton;
 	private final Map<String, AnnotationToggleButton> buttonMap = new LinkedHashMap<>();
@@ -163,19 +166,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		};
 		
 		init();
-		
-		getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
-			stopTreeCellEditing();
-			updateSelectionLabel();
-			updateGroupUngroupButton();
-			updateRemoveAnnotationsButton();
-		});
-		getForegroundTree().getSelectionModel().addTreeSelectionListener(e -> {
-			stopTreeCellEditing();
-			updateSelectionLabel();
-			updateGroupUngroupButton();
-			updateRemoveAnnotationsButton();
-		});
 	}
 	
 	@Override
@@ -214,6 +204,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateGroupUngroupButton();
 		updateRemoveAnnotationsButton();
 		updateSelectionButtons();
+		updateMoveToCanvasButtons();
+		
+		getBackgroundLayerPanel().setEnabled(enabled);
+		getForegroundLayerPanel().setEnabled(enabled);
 	}
 	
 	JToggleButton addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
@@ -363,10 +357,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		// Update annotation trees
 		Map<String, Collection<Annotation>> map = separateByLayers(annotations);
-		getBackgroundTree().setModel(
-				new AnnotationTreeModel(Annotation.BACKGROUND, map.get(Annotation.BACKGROUND)));
-		getForegroundTree().setModel(
-				new AnnotationTreeModel(Annotation.FOREGROUND, map.get(Annotation.FOREGROUND)));
+		getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
+		getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
 		
 		// Enable/disable annotation add buttons
 		if (isEnabled()) {
@@ -383,6 +375,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		updateInfoLabel();
 		updateSelectionLabel();
 		updateSelectionButtons();
+		updateMoveToCanvasButtons();
 	}
 	
 	private void updateInfoLabel() {
@@ -431,6 +424,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
 	
+	void updateMoveToCanvasButtons() {
+		getPushToBackgroundButton().setEnabled(
+				getSelectedAnnotationCount(getForegroundTree(), DingAnnotation.class) > 0);
+		getPullToForegroundButton().setEnabled(
+				getSelectedAnnotationCount(getBackgroundTree(), DingAnnotation.class) > 0);
+	}
+	
 	void updateAnnotationsOrder(ReorderType type) {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
@@ -439,10 +439,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				: Collections.emptyList();
 		{
 			Map<String, Collection<Annotation>> map = separateByLayers(annotations);
-			getBackgroundTree().setModel(
-					new AnnotationTreeModel(Annotation.BACKGROUND, map.get(Annotation.BACKGROUND)));
-			getForegroundTree().setModel(
-					new AnnotationTreeModel(Annotation.FOREGROUND, map.get(Annotation.FOREGROUND)));
+			getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
+			getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
 		}
 		// Restore the row selection (the annotations that were selected before must be still selected)
 		getBackgroundTree().clearSelection();
@@ -450,6 +448,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		Map<String, Collection<Annotation>> map = separateByLayers(selectedAnnotations);
 		map.get(Annotation.BACKGROUND).forEach(a -> setSelected(a, true));
 		map.get(Annotation.FOREGROUND).forEach(a -> setSelected(a, true));
+		getBackgroundLayerPanel().updateButtons();
+		getForegroundLayerPanel().updateButtons();
 	}
 	
 	void stopTreeCellEditing() {
@@ -488,9 +488,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		equalizeSize(getGroupAnnotationsButton(), getUngroupAnnotationsButton(), getRemoveAnnotationsButton());
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
-		JLabel fgLabel = createLayerTitleLabel(Annotation.FOREGROUND);
-		JLabel bgLabel = createLayerTitleLabel(Annotation.BACKGROUND);
-		
 		// I don't know of a better way to center the selection label perfectly
 		// other than by using this "filler" panel hack...
 		JPanel rightFiller = new JPanel();
@@ -515,10 +512,15 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addContainerGap()
 				)
-				.addComponent(fgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getFtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(bgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getBtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createSequentialGroup()
+						.addGap(0, 0, Short.MAX_VALUE)
+						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addPreferredGap(ComponentPlacement.UNRELATED)
+						.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addGap(0, 0, Short.MAX_VALUE)
+				)
+				.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
 						.addContainerGap()
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -536,11 +538,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addComponent(fgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getFtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(bgLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addComponent(getBtScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-				.addGroup(layout.createParallelGroup(CENTER, true)
+				.addPreferredGap(ComponentPlacement.RELATED)
+				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(CENTER, false)
+						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(getPullToForegroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addComponent(getBackgroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(getSelectAllButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getSelectNoneButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
@@ -602,7 +607,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (groupAnnotationsButton == null) {
 			groupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_GROUP);
 			groupAnnotationsButton.setToolTipText("Group Selected Annotations");
-			groupAnnotationsButton.setBorderPainted(false);
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(groupAnnotationsButton, iconManager.getIconFont(16f));
@@ -615,7 +619,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (ungroupAnnotationsButton == null) {
 			ungroupAnnotationsButton = new JButton(IconManager.ICON_OBJECT_UNGROUP);
 			ungroupAnnotationsButton.setToolTipText("Ungroup Selected Annotations");
-			ungroupAnnotationsButton.setBorderPainted(false);
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(ungroupAnnotationsButton, iconManager.getIconFont(16f));
@@ -628,7 +631,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (removeAnnotationsButton == null) {
 			removeAnnotationsButton = new JButton(IconManager.ICON_TRASH_O);
 			removeAnnotationsButton.setToolTipText("Remove Selected Annotations");
-			removeAnnotationsButton.setBorderPainted(false);
 			
 			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 			styleToolBarButton(removeAnnotationsButton, iconManager.getIconFont(18f));
@@ -637,42 +639,58 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return removeAnnotationsButton;
 	}
 	
-	JTree getForegroundTree() {
-		if (foregroundTree == null) {
-			foregroundTree = createLayerTree(Annotation.FOREGROUND);
+	JButton getPushToBackgroundButton() {
+		if (pushToBackgroundButton == null) {
+			pushToBackgroundButton = new JButton(IconManager.ICON_ARROW_DOWN);
+			pushToBackgroundButton.setToolTipText("Push Annotations to Background Layer");
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			styleToolBarButton(pushToBackgroundButton, iconManager.getIconFont(12f));
 		}
 		
-		return foregroundTree;
+		return pushToBackgroundButton;
+	}
+	
+	JButton getPullToForegroundButton() {
+		if (pullToForegroundButton == null) {
+			pullToForegroundButton = new JButton(IconManager.ICON_ARROW_UP);
+			pullToForegroundButton.setToolTipText("Pull Annotations to Foreground Layer");
+			
+			final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+			styleToolBarButton(pullToForegroundButton, iconManager.getIconFont(12f));
+		}
+		
+		return pullToForegroundButton;
+	}
+	
+	LayerPanel getForegroundLayerPanel() {
+		if (foregroundLayerPanel == null) {
+			foregroundLayerPanel = new LayerPanel(Annotation.FOREGROUND);
+		}
+		
+		return foregroundLayerPanel;
+	}
+	
+	LayerPanel getBackgroundLayerPanel() {
+		if (backgroundLayerPanel == null) {
+			backgroundLayerPanel = new LayerPanel(Annotation.BACKGROUND);
+		}
+		
+		return backgroundLayerPanel;
+	}
+	
+	JTree getForegroundTree() {
+		return getForegroundLayerPanel().getTree();
 	}
 	
 	JTree getBackgroundTree() {
-		if (backgroundTree == null) {
-			backgroundTree = createLayerTree(Annotation.BACKGROUND);
-		}
-		
-		return backgroundTree;
+		return getBackgroundLayerPanel().getTree();
 	}
 	
 	JTree getLayerTree(String canvasName) {
 		return Annotation.BACKGROUND.equals(canvasName) ? getBackgroundTree() : getForegroundTree();
 	}
 
-	JScrollPane getFtScrollPane() {
-		if (ftScrollPane == null) {
-			ftScrollPane = createTreeScrollPane(getForegroundTree());
-		}
-		
-		return ftScrollPane;
-	}
-	
-	JScrollPane getBtScrollPane() {
-		if (btScrollPane == null) {
-			btScrollPane = createTreeScrollPane(getBackgroundTree());
-		}
-		
-		return btScrollPane;
-	}
-	
 	JButton getSelectAllButton() {
 		if (selectAllButton == null) {
 			selectAllButton = new JButton("Select All");
@@ -711,162 +729,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		return selectNoneButton;
-	}
-	
-	private JTree createLayerTree(String name) {
-		final AnnotationTreeCellRenderer annotationCellRenderer = new AnnotationTreeCellRenderer();
-		
-		final JTree tree = new JTree(new AnnotationTreeModel(name)) {
-			@Override
-			public TreeCellRenderer getCellRenderer() {
-				return annotationCellRenderer;
-			}
-			@Override
-			public Color getBackground() {
-				// This guarantees the color will come from the correct Look-And-Feel,
-				// even if this component is initialized before swing-application-impl
-				return UIManager.getColor("Panel.background");
-			}
-			@Override
-			public void paintComponent(Graphics g) {
-				// Highlight entire JTree row on selection...
-				g.setColor(getBackground());
-				g.fillRect(0, 0, getWidth(), getHeight());
-				
-				if (getSelectionCount() > 0) {
-					for (int i : getSelectionRows()) {
-						Rectangle r = getRowBounds(i);
-						g.setColor(UIManager.getColor("Table.selectionBackground"));
-						g.fillRect(0, r.y, getWidth(), r.height);
-					}
-				}
-				
-				super.paintComponent(g);
-			}
-			@Override
-			public void setModel(TreeModel newModel) {
-				super.setModel(newModel);
-				// Or expand icons of first annotation groups won't be displayed
-				setRootVisible(true);
-				
-				setRootVisible(false);
-				expandRow(0);
-			}
-		};
-		// Highlight entire JTree row on selection...
-		tree.setUI(new BasicTreeUI() {
-			@Override
-			public Rectangle getPathBounds(JTree tree, TreePath path) {
-				if (tree != null && treeState != null)
-					return getPathBounds(path, tree.getInsets(), new Rectangle());
-				
-				return null;
-			}
-			
-			private Rectangle getPathBounds(TreePath path, Insets insets, Rectangle bounds) {
-				bounds = treeState.getBounds(path, bounds);
-				
-				if (bounds != null) {
-					bounds.width = tree.getWidth();
-					bounds.y += insets.top;
-				}
-				
-				return bounds;
-			}
-		});
-		tree.setName(name);
-		tree.setOpaque(false);
-		tree.setRowHeight(24);
-		makeSmall(tree);
-		
-		tree.setEditable(true);
-		// Start editing with space key
-		tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing");
-		tree.setInvokesStopCellEditing(true); // this helps stop editing within focus of tree
-		
-		final JTextField textField = new JTextField();
-		textField.setEditable(true);
-		makeSmall(textField);
-		
-		TreeCellEditor txtEditor = new DefaultCellEditor(textField);
-		TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
-		editor.addCellEditorListener(new CellEditorListener() {
-			@Override
-			public void editingStopped(ChangeEvent evt) {
-				// Repaint both trees when a node's name has changed,
-				// because a GroupAnnotation can have a corresponding node in each one
-				getBackgroundTree().repaint();
-				getForegroundTree().repaint();
-			}
-			@Override
-			public void editingCanceled(ChangeEvent evt) {
-				// Ignore...
-			}
-		});
-		tree.setCellEditor(editor);
-		
-		tree.setShowsRootHandles(true);
-		tree.expandRow(0);
-		tree.setRootVisible(false);
-		
-		tree.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent evt) {
-				int row = tree.getRowForLocation(evt.getPoint().x, evt.getPoint().y);
-				
-				if (row < 0) {
-					stopCellEditing(tree);
-					tree.clearSelection();
-				}
-			}
-			@Override
-			public void mouseClicked(MouseEvent evt) {
-				if (evt.getClickCount() == 2) {
-					TreePath selectionPath = tree.getSelectionPath();
-
-					if (selectionPath != null)
-						tree.startEditingAtPath(selectionPath);
-				}
-			}
-		});
-		
-		return tree;
-	}
-	
-	private JScrollPane createTreeScrollPane(JTree tree) {
-		JScrollPane sp = new JScrollPane() {
-			@Override
-			public Color getBackground() {
-				// This guarantees the color will come from the correct Look-And-Feel,
-				// even if this component is initialized before swing-application-impl
-				return UIManager.getColor("Panel.background");
-			}
-		};
-		sp.setViewportView(tree);
-		sp.getViewport().setOpaque(false);
-		sp.getViewport().addMouseListener(new MouseAdapter() {
-			@Override
-			public void mousePressed(MouseEvent evt) {
-				stopCellEditing(tree);
-				tree.clearSelection();
-				sp.requestFocusInWindow();
-			}
-		});
-		
-		return sp;
-	}
-	
-	private JLabel createLayerTitleLabel(String name) {
-		JLabel label = new JLabel(name.toUpperCase() + " Layer");
-		label.setFont(label.getFont().deriveFont(Font.BOLD));
-		label.setBorder(BorderFactory.createEmptyBorder(6, 12, 2, 12	));
-		
-		makeSmall(label);
-		
-		if (isAquaLAF())
-			label.putClientProperty("JComponent.sizeVariant", "mini");
-		
-		return label;
 	}
 	
 	private void styleToolBarButton(AbstractButton btn, Font font) {
@@ -941,6 +803,321 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			icon = iconMap.get(((DingAnnotation) a).getType());
 
 		return icon != null ? icon : getDefIcon();
+	}
+	
+	//------[ CLASSES ]--------------------------------------------------------------------------------------
+	
+	class LayerPanel extends JPanel {
+		
+		private JButton forwardButton;
+		private JButton backwardButton;
+		private JScrollPane scrollPane;
+		private JTree tree;
+		
+		private final String canvasName;
+		
+		public LayerPanel(String canvasName) {
+			this.canvasName = canvasName;
+			init();
+			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
+			getTree().getSelectionModel().addTreeSelectionListener(e -> {
+				stopTreeCellEditing();
+				updateSelectionLabel();
+				updateGroupUngroupButton();
+				updateRemoveAnnotationsButton();
+				updateMoveToCanvasButtons();
+				updateButtons();
+			});
+		}
+		
+		@Override
+		public void setEnabled(boolean enabled) {
+			super.setEnabled(enabled);
+			getTree().setEnabled(enabled);
+			updateButtons();
+		}
+
+		JButton getForwardButton() {
+			if (forwardButton == null) {
+				forwardButton = new JButton(IconManager.ICON_CARET_UP);
+				forwardButton.setToolTipText("Bring Annotations Forward");
+				
+				final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+				styleToolBarButton(forwardButton, iconManager.getIconFont(17f));
+			}
+			
+			return forwardButton;
+		}
+		
+		JButton getBackwardButton() {
+			if (backwardButton == null) {
+				backwardButton = new JButton(IconManager.ICON_CARET_DOWN);
+				backwardButton.setToolTipText("Send Annotations Backward");
+				
+				final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+				styleToolBarButton(backwardButton, iconManager.getIconFont(17f));
+			}
+			
+			return backwardButton;
+		}
+		
+		JScrollPane getScrollPane() {
+			if (scrollPane == null) {
+				scrollPane = new JScrollPane(getTree()) {
+					@Override
+					public Color getBackground() {
+						// This guarantees the color will come from the correct Look-And-Feel,
+						// even if this component is initialized before swing-application-impl
+						return UIManager.getColor("Panel.background");
+					}
+				};
+				scrollPane.setViewportView(getTree());
+				scrollPane.getViewport().setOpaque(false);
+				scrollPane.getViewport().addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent evt) {
+						stopCellEditing(getTree());
+						getTree().clearSelection();
+						scrollPane.requestFocusInWindow();
+					}
+				});
+				scrollPane.setBorder(
+						BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+			}
+			
+			return scrollPane;
+		}
+		
+		JTree getTree() {
+			if (tree == null) {
+				final AnnotationTreeCellRenderer annotationCellRenderer = new AnnotationTreeCellRenderer();
+				
+				tree = new JTree(new AnnotationTreeModel(canvasName)) {
+					@Override
+					public TreeCellRenderer getCellRenderer() {
+						return annotationCellRenderer;
+					}
+					@Override
+					public Color getBackground() {
+						// This guarantees the color will come from the correct Look-And-Feel,
+						// even if this component is initialized before swing-application-impl
+						return UIManager.getColor("Panel.background");
+					}
+					@Override
+					public void paintComponent(Graphics g) {
+						// Highlight entire JTree row on selection...
+						g.setColor(getBackground());
+						g.fillRect(0, 0, getWidth(), getHeight());
+						int[] rows = getSelectionRows();
+						
+						if (rows != null) {
+							for (int i : rows) {
+								Rectangle r = getRowBounds(i);
+								g.setColor(UIManager.getColor("Table.selectionBackground"));
+								g.fillRect(0, r.y, getWidth(), r.height);
+							}
+						}
+						
+						super.paintComponent(g);
+					}
+					@Override
+					public void setModel(TreeModel newModel) {
+						super.setModel(newModel);
+						// Or expand icons of first annotation groups won't be displayed
+						setRootVisible(true);
+						
+						setRootVisible(false);
+						expandRow(0);
+					}
+				};
+				// Highlight entire JTree row on selection...
+				tree.setUI(new BasicTreeUI() {
+					@Override
+					public Rectangle getPathBounds(JTree tree, TreePath path) {
+						if (tree != null && treeState != null)
+							return getPathBounds(path, tree.getInsets(), new Rectangle());
+						
+						return null;
+					}
+					
+					private Rectangle getPathBounds(TreePath path, Insets insets, Rectangle bounds) {
+						bounds = treeState.getBounds(path, bounds);
+						
+						if (bounds != null) {
+							bounds.width = tree.getWidth();
+							bounds.y += insets.top;
+						}
+						
+						return bounds;
+					}
+				});
+				tree.setName(canvasName);
+				tree.setOpaque(false);
+				tree.setRowHeight(24);
+				makeSmall(tree);
+				
+				tree.setEditable(true);
+				// Start editing with space key
+				tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing");
+				tree.setInvokesStopCellEditing(true); // this helps stop editing within focus of tree
+				
+				final JTextField textField = new JTextField();
+				textField.setEditable(true);
+				makeSmall(textField);
+				
+				TreeCellEditor txtEditor = new DefaultCellEditor(textField);
+				TreeCellEditor editor = new AnnotationTreeCellEditor(tree, annotationCellRenderer, txtEditor);
+				editor.addCellEditorListener(new CellEditorListener() {
+					@Override
+					public void editingStopped(ChangeEvent evt) {
+						// Repaint both trees when a node's name has changed,
+						// because a GroupAnnotation can have a corresponding node in each one
+						getBackgroundTree().repaint();
+						getForegroundTree().repaint();
+					}
+					@Override
+					public void editingCanceled(ChangeEvent evt) {
+						// Ignore...
+					}
+				});
+				tree.setCellEditor(editor);
+				
+				tree.setShowsRootHandles(true);
+				tree.expandRow(0);
+				tree.setRootVisible(false);
+				
+				tree.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mousePressed(MouseEvent evt) {
+						int row = tree.getRowForLocation(evt.getPoint().x, evt.getPoint().y);
+						
+						if (row < 0) {
+							stopCellEditing(tree);
+							tree.clearSelection();
+						}
+					}
+					@Override
+					public void mouseClicked(MouseEvent evt) {
+						if (evt.getClickCount() == 2) {
+							TreePath selectionPath = tree.getSelectionPath();
+
+							if (selectionPath != null)
+								tree.startEditingAtPath(selectionPath);
+						}
+					}
+				});
+			}
+			
+			return tree;
+		}
+		
+		private void init() {
+			setOpaque(!isAquaLAF());
+			
+			JLabel label = createTitleLabel();
+			
+			final GroupLayout layout = new GroupLayout(this);
+			setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
+					.addGroup(layout.createSequentialGroup()
+							.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addGap(10, 10, Short.MAX_VALUE)
+							.addComponent(getForwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(getBackwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGroup(layout.createParallelGroup(LEADING, false)
+							.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getForwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getBackwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addComponent(getScrollPane(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+			);
+		}
+		
+		private JLabel createTitleLabel() {
+			JLabel label = new JLabel(canvasName.toUpperCase() + " Layer");
+			label.setVerticalAlignment(SwingConstants.BOTTOM);
+			label.setFont(label.getFont().deriveFont(Font.BOLD));
+			label.setBorder(BorderFactory.createEmptyBorder(0, 12, 2, 12));
+			
+			makeSmall(label);
+			
+			if (isAquaLAF())
+				label.putClientProperty("JComponent.sizeVariant", "mini");
+			
+			return label;
+		}
+		
+		private void update(Collection<Annotation> collection) {
+			getTree().setModel(new AnnotationTreeModel(canvasName, collection));
+			updateButtons();
+		}
+		
+		private void updateButtons() {
+			final int selectionCount = getTree().getSelectionCount();
+			boolean b = isEnabled() && selectionCount > 0;
+			
+			if (!b) {
+				getForwardButton().setEnabled(false);
+				getBackwardButton().setEnabled(false);
+				
+				return;
+			}
+			
+			final int[] selRows = getTree().getSelectionRows();
+			int size = getTree().getRowCount();
+			int firstIdx = -1;
+			int lastIdx = size;
+			
+			if (selRows == null || selRows.length == 0)
+				b = false;
+			
+			if (b) {
+				final Set<TreeNode> parents = new HashSet<>();
+				
+				for (int i = 0; i < selRows.length; i++) {
+					TreePath path = tree.getPathForRow(selRows[i]);
+					DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+					parents.add(node.getParent());
+					
+					// Cannot reorder when nodes from different parents are selected
+					if (parents.size() > 1)
+						break;
+				}
+				
+				if (b) {
+					DefaultMutableTreeNode pn = (DefaultMutableTreeNode) parents.iterator().next();
+					size = pn.getChildCount();
+					
+					if (selectionCount == size) {
+						// If, all nodes selected, it does not make sense to reorder all of them at once
+						b = false;
+					} else {
+						TreeSet<Integer> selIdxSet = new TreeSet<>(); // So we can sort the selected indexes
+						selIdxSet.addAll(Arrays.stream(selRows).boxed().collect(Collectors.toList()));
+						
+						TreePath path1 = tree.getPathForRow(selIdxSet.first());
+						DefaultMutableTreeNode n1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+						firstIdx = pn.getIndex(n1);
+						
+						TreePath path2 = tree.getPathForRow(selIdxSet.last());
+						DefaultMutableTreeNode n2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+						lastIdx = pn.getIndex(n2);
+					}
+				}
+			}
+			
+			getForwardButton().setEnabled(b && firstIdx > 0);
+			getBackwardButton().setEnabled(b && lastIdx < size - 1);
+		}
 	}
 	
 	class AnnotationToggleButton extends JToggleButton {
@@ -1149,7 +1326,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 		@Override
 		public boolean isCellEditable(EventObject e) {
-			return super.isCellEditable(e) && lastPath.getLastPathComponent() instanceof AnnotationNode;
+			return super.isCellEditable(e) && lastPath != null
+					&& lastPath.getLastPathComponent() instanceof AnnotationNode;
 		}
 	}
 

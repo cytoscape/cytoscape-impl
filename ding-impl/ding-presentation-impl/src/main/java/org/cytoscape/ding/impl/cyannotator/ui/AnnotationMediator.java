@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl.cyannotator.ui;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.view.presentation.annotations.Annotation.BACKGROUND;
+import static org.cytoscape.view.presentation.annotations.Annotation.FOREGROUND;
 
 import java.awt.Point;
 import java.awt.event.MouseAdapter;
@@ -15,10 +17,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.DropMode;
+import javax.swing.JDialog;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -39,6 +45,8 @@ import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTask;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeLoadedEvent;
@@ -107,6 +115,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public AnnotationMediator(AnnotationMainPanel mainPanel, CyServiceRegistrar serviceRegistrar) {
@@ -122,9 +131,15 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		invokeOnEDT(() -> {
 			set.forEach(f -> addAnnotationButton(f));
 			mainPanel.setEnabled(false);
-			mainPanel.getGroupAnnotationsButton().addActionListener(e -> groupSelectedAnnotations());
-			mainPanel.getUngroupAnnotationsButton().addActionListener(e -> ungroupSelectedAnnotations());
-			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeSelectedAnnotations());
+			mainPanel.getGroupAnnotationsButton().addActionListener(e -> groupAnnotations(mainPanel.getBackgroundTree(), mainPanel.getForegroundTree()));
+			mainPanel.getUngroupAnnotationsButton().addActionListener(e -> ungroupAnnotations(mainPanel.getBackgroundTree(), mainPanel.getForegroundTree()));
+			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeAnnotations());
+			mainPanel.getPushToBackgroundButton().addActionListener(e -> moveAnnotationsToCanvas(BACKGROUND));
+			mainPanel.getPullToForegroundButton().addActionListener(e -> moveAnnotationsToCanvas(FOREGROUND));
+			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getBackgroundTree(), -1));
+			mainPanel.getBackgroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getBackgroundTree(), +1));
+			mainPanel.getForegroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getForegroundTree(), -1));
+			mainPanel.getForegroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getForegroundTree(), +1));
 			mainPanel.getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 				if (!mainPanel.getBackgroundTree().isEditing()) {
 					mainPanel.updateSelectionButtons();
@@ -139,14 +154,24 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			});
 			mainPanel.getBackgroundTree().addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
-					maybeShowAnnotationEditor(mainPanel.getBackgroundTree(), e);
+				public void mousePressed(MouseEvent e) {
+					maybeShowPopupMenu(mainPanel.getBackgroundTree(), e);
+				}
+				/** On Windows, popup is triggered by mouse release, not press. */
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					maybeShowPopupMenu(mainPanel.getBackgroundTree(), e);
 				}
 			});
 			mainPanel.getForegroundTree().addMouseListener(new MouseAdapter() {
 				@Override
-				public void mouseClicked(MouseEvent e) {
-					maybeShowAnnotationEditor(mainPanel.getForegroundTree(), e);
+				public void mousePressed(MouseEvent e) {
+					maybeShowPopupMenu(mainPanel.getForegroundTree(), e);
+				}
+				/** On Windows, popup is triggered by mouse release, not press. */
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					maybeShowPopupMenu(mainPanel.getForegroundTree(), e);
 				}
 			});
 		});
@@ -341,44 +366,73 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void groupSelectedAnnotations() {
-		final DGraphView view = mainPanel.getDGraphView();
+	private void groupAnnotations(JTree... trees) {
+		DGraphView view = mainPanel.getDGraphView();
 		
 		if (view == null)
 			return;
 		
-		final Collection<DingAnnotation> selList = mainPanel.getSelectedAnnotations(DingAnnotation.class);
+		TaskIterator iterator = new TaskIterator();
 		
-		if (!selList.isEmpty()) {
-			GroupAnnotationsTask task = new GroupAnnotationsTask(view, selList);
-			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+		for (JTree tree : trees) {
+			Collection<DingAnnotation> selList = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+			
+			if (!selList.isEmpty())
+				iterator.append(new GroupAnnotationsTask(view, selList));
 		}
+		
+		if (iterator.getNumTasks() > 0)
+			serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 	}
 	
-	private void ungroupSelectedAnnotations() {
-		final DGraphView view = mainPanel.getDGraphView();
+	private void ungroupAnnotations(JTree... trees) {
+		DGraphView view = mainPanel.getDGraphView();
 		
 		if (view == null)
 			return;
 		
-		final Collection<GroupAnnotation> selList = mainPanel.getSelectedAnnotations(GroupAnnotation.class);
+		TaskIterator iterator = new TaskIterator();
 		
-		if (!selList.isEmpty()) {
-			UngroupAnnotationsTask task = new UngroupAnnotationsTask(view, selList);
-			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+		for (JTree tree : trees) {
+			Collection<GroupAnnotation> selList = mainPanel.getSelectedAnnotations(tree, GroupAnnotation.class);
+			
+			if (!selList.isEmpty())
+				iterator.append(new UngroupAnnotationsTask(view, selList));
 		}
+		
+		if (iterator.getNumTasks() > 0)
+			serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 	}
 	
-	private void removeSelectedAnnotations() {
-		final DGraphView view = mainPanel.getDGraphView();
+	private void removeAnnotations() {
+		DGraphView view = mainPanel.getDGraphView();
 		
 		if (view == null)
 			return;
 		
-		final Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
+		Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
 		
 		if (!selList.isEmpty())
 			serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(selList);
+	}
+	
+	private void moveAnnotationsToCanvas(String canvasName) {
+		DGraphView view = getCurrentDGraphView();
+		
+		if (view != null) {
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(canvasName);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(factory.createTaskIterator(view));
+		}
+	}
+	
+	private void reorderAnnotations(JTree tree, int offset) {
+		DGraphView view = getCurrentDGraphView();
+		
+		if (view != null) {
+			List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+			ReorderAnnotationsTask task = new ReorderAnnotationsTask(view, annotations, null, offset);
+			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
+		}
 	}
 	
 	private void addPropertyListeners(DGraphView view) {
@@ -425,34 +479,104 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		});
 	}
 	
-	/**
-	 * Show Annotation Dialog when double-clicking the icon cell.
-	 */
-	private void maybeShowAnnotationEditor(JTree tree, MouseEvent evt) {
-//		if (evt.getClickCount() == 2) {
-//			Point point = evt.getPoint();
-//			TreePath path = tree.getPathForLocation(point.x, point.y);
-//	        
-//			if (path == null)
-//				return;
-//			
-//			Object obj = path.getLastPathComponent();
-//			
-//			if (obj instanceof AnnotationNode) {
-//	        		Annotation a = ((AnnotationNode) obj).getUserObject();
-//	        		
-//				if (a instanceof DingAnnotation) {
-//					invokeOnEDT(() -> {
-//						final JDialog dialog = ((DingAnnotation) a).getModifyDialog();
-//
-//						if (dialog != null) {
-//							dialog.setLocation(point);
-//							dialog.setVisible(true);
-//						}
-//					});
-//				}
-//			}
-//		}
+	private void maybeShowPopupMenu(JTree tree, MouseEvent e) {
+		// Ignore if not valid trigger.
+		if (!e.isPopupTrigger())
+			return;
+
+		DGraphView view = getCurrentDGraphView();
+		
+		if (view == null)
+			return;
+		
+		// If the item is not selected, select it first
+		DefaultMutableTreeNode node = getNodeAt(tree, e.getPoint());
+		List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+
+		if (node != null && !annotations.contains(node.getUserObject()))
+			mainPanel.setSelected((Annotation) node.getUserObject(), true);
+		
+		int selCount = mainPanel.getSelectedAnnotationCount(tree, DingAnnotation.class);
+		int selGroupCount = mainPanel.getSelectedAnnotationCount(tree, GroupAnnotation.class);
+
+		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
+		final JPopupMenu popup = new JPopupMenu();
+
+		// Edit
+		{
+			List<DingAnnotation> list = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
+			DingAnnotation a = list.size() == 1 ? list.get(0) : null;
+			
+			JMenuItem mi = new JMenuItem("Modify Annotation...");
+			mi.addActionListener(evt -> {
+				JDialog dialog = a != null ? a.getModifyDialog() : null;
+
+				if (dialog != null) {
+					dialog.setLocation(e.getPoint());
+					dialog.setVisible(true);
+				}
+			});
+			popup.add(mi);
+			mi.setEnabled(a != null && !(a instanceof GroupAnnotation));
+		}
+		popup.addSeparator();
+		// Reorder
+		{
+			ReorderSelectedAnnotationsTaskFactory factory =
+					new ReorderSelectedAnnotationsTaskFactory(Integer.MIN_VALUE);
+			
+			JMenuItem mi = new JMenuItem("Bring Annotations to Front");
+			mi.addActionListener(evt -> {
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popup.add(mi);
+			mi.setEnabled(factory.isReady(view));
+		}
+		{
+			ReorderSelectedAnnotationsTaskFactory factory =
+					new ReorderSelectedAnnotationsTaskFactory(Integer.MAX_VALUE);
+			
+			JMenuItem mi = new JMenuItem("Send Annotations to Back");
+			mi.addActionListener(evt -> {
+				taskMgr.execute(factory.createTaskIterator(view));
+			});
+			popup.add(mi);
+			mi.setEnabled(factory.isReady(view));
+		}
+		popup.addSeparator();
+		{
+			String text = FOREGROUND.equalsIgnoreCase(tree.getName()) ?
+					"Push Annotations to Background Layer" : "Pull Annotations to Foreground Layer";
+			String canvasName = FOREGROUND.equalsIgnoreCase(tree.getName()) ? BACKGROUND : FOREGROUND;
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(canvasName);
+			
+			JMenuItem mi = new JMenuItem(text);
+			mi.addActionListener(evt -> taskMgr.execute(factory.createTaskIterator(view)));
+			popup.add(mi);
+			mi.setEnabled(factory.isReady(view));
+		}
+		popup.addSeparator();
+		// Group/Ungroup
+		{
+			JMenuItem mi = new JMenuItem("Group Annotations");
+			mi.addActionListener(evt -> groupAnnotations(tree));
+			popup.add(mi);
+			mi.setEnabled(selCount > 1);
+		}
+		{
+			JMenuItem mi = new JMenuItem("Ungroup Annotations");
+			mi.addActionListener(evt -> ungroupAnnotations(tree));
+			popup.add(mi);
+			mi.setEnabled(selGroupCount > 0);
+		}
+
+		popup.show(e.getComponent(), e.getX(), e.getY());
+	}
+	
+	private DefaultMutableTreeNode getNodeAt(JTree tree, Point point) {
+		TreePath path = tree.getPathForLocation(point.x, point.y);
+        
+		return path == null ? null : (DefaultMutableTreeNode) path.getLastPathComponent();
 	}
 	
 	private class ClickToAddAnnotationListener extends MouseAdapter {

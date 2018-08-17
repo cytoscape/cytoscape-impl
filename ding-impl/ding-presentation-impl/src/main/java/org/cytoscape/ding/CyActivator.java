@@ -357,7 +357,7 @@ public class CyActivator extends AbstractCyActivator {
 			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MIN_VALUE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-			props.setProperty(TITLE, "Bring Annotations To Front");
+			props.setProperty(TITLE, "Bring Annotations to Front");
 			props.setProperty(ACCELERATOR, "shift cmd CLOSE_BRACKET");
 			props.setProperty(MENU_GRAVITY, "6.1");
 			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
@@ -385,7 +385,7 @@ public class CyActivator extends AbstractCyActivator {
 			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MAX_VALUE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-			props.setProperty(TITLE, "Send Annotations To Back");
+			props.setProperty(TITLE, "Send Annotations to Back");
 			props.setProperty(ACCELERATOR, "shift cmd OPEN_BRACKET");
 			props.setProperty(MENU_GRAVITY, "6.4");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");

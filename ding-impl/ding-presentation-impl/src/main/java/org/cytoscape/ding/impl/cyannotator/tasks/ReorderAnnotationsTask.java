@@ -113,7 +113,10 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 			
 			for (Annotation a : ((GroupAnnotation) annotation).getMembers()) {
 				DingAnnotation da = (DingAnnotation) a;
-				zz += 1;
+				zz++;
+				int total = da.getCanvas().getComponentCount();
+				zz = Math.min(zz, total - 1);
+				zz = Math.max(zz, 0);
 				da.getCanvas().setComponentZOrder(da.getComponent(), zz);
 			}
 		}
