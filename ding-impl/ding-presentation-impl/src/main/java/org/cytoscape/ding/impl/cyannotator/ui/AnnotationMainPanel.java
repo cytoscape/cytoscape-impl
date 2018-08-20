@@ -11,6 +11,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Insets;
@@ -1329,6 +1330,29 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			return super.isCellEditable(e) && lastPath != null
 					&& lastPath.getLastPathComponent() instanceof AnnotationNode;
 		}
+
+		@Override
+		protected Container createContainer() {
+	        return new EditorContainer() {
+	        		@Override
+	        		public void paint(Graphics g) {
+	        			// There's a weird race condition that prevents the cell editor from rendering the
+	        			// actual leaf icon for the editing row when double-clicking to edit the annotation name
+	        			// (no problem when pressing SPACE), so let's force it to get the icon again
+	        			// right before painting it.
+	        			if (lastPath != null) {
+	        				Object obj = lastPath.getLastPathComponent();
+	        				
+	        				if (obj instanceof AnnotationNode) {
+	        					if (((AnnotationNode) obj).getUserObject() instanceof GroupAnnotation == false)
+	        						editingIcon = getAnnotationIcon(((AnnotationNode) obj).getUserObject());
+	        				}
+	        			}
+					
+					super.paint(g);
+	        		}
+	        };
+	    }
 	}
 
 	public static class AnnotationNode extends DefaultMutableTreeNode {
