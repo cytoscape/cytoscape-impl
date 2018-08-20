@@ -45,6 +45,7 @@ import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTask;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTask;
@@ -61,7 +62,6 @@ import org.cytoscape.view.model.events.NetworkViewAddedEvent;
 import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
-import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.events.AnnotationsAddedEvent;
 import org.cytoscape.view.presentation.events.AnnotationsAddedListener;
@@ -412,8 +412,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		Collection<Annotation> selList = mainPanel.getSelectedAnnotations();
 		
-		if (!selList.isEmpty())
-			serviceRegistrar.getService(AnnotationManager.class).removeAnnotations(selList);
+		if (!selList.isEmpty()) {
+			TaskIterator iterator = new TaskIterator(new RemoveAnnotationsTask(view, selList, serviceRegistrar));
+			serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
+		}
 	}
 	
 	private void moveAnnotationsToCanvas(String canvasName) {
