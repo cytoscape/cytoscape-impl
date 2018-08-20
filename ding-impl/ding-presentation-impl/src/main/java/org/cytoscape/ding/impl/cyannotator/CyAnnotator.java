@@ -40,6 +40,8 @@ import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.Task;
@@ -68,7 +70,7 @@ import org.cytoscape.work.Task;
  * #L%
  */
 
-public class CyAnnotator {
+public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	public enum ReorderType { Z_INDEX, CANVAS }
 	
@@ -98,8 +100,7 @@ public class CyAnnotator {
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 
-	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager,
-			CyServiceRegistrar registrar) {
+	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.view = view;
 		this.registrar = registrar;
 		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
@@ -172,10 +173,9 @@ public class CyAnnotator {
 		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
 		if (networkAttributes.getColumn(ANNOTATION_ATTRIBUTE) == null)
-			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.EMPTY_LIST);
+			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
 
-		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).
-				getList(ANNOTATION_ATTRIBUTE,String.class);
+		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(ANNOTATION_ATTRIBUTE,String.class);
 		List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
 		Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
 		Map<String, Annotation> uuidMap = new HashMap<>();
@@ -424,7 +424,6 @@ public class CyAnnotator {
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		annotationSet.add((DingAnnotation) annotation);
-		updateNetworkAttributes();
 		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 	
@@ -439,7 +438,6 @@ public class CyAnnotator {
 				annotationSet.add((DingAnnotation) annotation);
 		}
 		
-		updateNetworkAttributes();
 		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 	}
 
@@ -450,7 +448,6 @@ public class CyAnnotator {
 		annotationSelection.remove(annotation);
 		
 		if (changed) {
-			updateNetworkAttributes();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -467,7 +464,6 @@ public class CyAnnotator {
 		}
 		
 		if (changed) {
-			updateNetworkAttributes();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -587,7 +583,8 @@ public class CyAnnotator {
 		return false;
 	}
 	
-	public void updateNetworkAttributes() {
+	@Override
+	public void handleEvent(SessionAboutToBeSavedEvent e) {
 		// Convert the annotation to a list
 		final List<Map<String, String>> networkAnnotations = new ArrayList<>();
 		final CyNetwork network = view.getModel();
@@ -599,8 +596,7 @@ public class CyAnnotator {
 		List<String> networkAnnotation = convertAnnotationMap(networkAnnotations);
 
 		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
-			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false,
-					Collections.EMPTY_LIST);
+			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
 		}
 
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
@@ -629,7 +625,6 @@ public class CyAnnotator {
 	}
 	
 	public void annotationsReordered(ReorderType type) {
-		updateNetworkAttributes();
 		propChangeSupport.firePropertyChange("annotationsReordered", null, type);
 	}
 

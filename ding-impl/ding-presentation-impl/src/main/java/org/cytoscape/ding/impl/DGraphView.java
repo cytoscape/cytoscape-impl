@@ -85,6 +85,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
 import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
@@ -459,7 +460,8 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		setGraphLOD(dingGraphLOD);
 
 		// Finally, intialize our annotations
-		this.cyAnnotator = new CyAnnotator(this, annMgr, registrar);
+		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
+		serviceRegistrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
 		
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());
@@ -2607,6 +2609,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			
 			// m_lis[0] = null;
 			cyAnnotator.dispose();
+			serviceRegistrar.unregisterAllServices(cyAnnotator);
 			m_networkCanvas.dispose();
 		}
 	}
