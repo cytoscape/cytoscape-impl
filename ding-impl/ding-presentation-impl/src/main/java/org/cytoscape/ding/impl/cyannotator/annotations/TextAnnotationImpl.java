@@ -49,7 +49,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 @SuppressWarnings("serial")
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	
-	private static final String DEF_TEXT = "Text Annotation";
+	private static final String DEF_TEXT = "Text";
 
 	private String text = "";
 
