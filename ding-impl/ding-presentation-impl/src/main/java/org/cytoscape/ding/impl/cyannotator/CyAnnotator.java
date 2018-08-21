@@ -551,9 +551,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (desiredName == null || "".equals(desiredName.trim()))
 			desiredName = DEF_ANNOTATION_NAME_PREFIX;
 		
-		Pattern p = Pattern.compile(".*_(\\d*)$"); // capture just the digits
+		Pattern p = Pattern.compile(".*\\s(\\d*)$"); // capture just the digits
 		Matcher m = p.matcher(desiredName);
-		int start = 0;
+		int start = 1;
 
 		if (m.matches()) {
 			desiredName = desiredName.substring(0, m.start(1) - 1);
@@ -565,7 +565,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			desiredName = desiredName.substring(0, MAX_NAME_LENGH);
 
 		for (int i = start; true; i++) {
-			final String candidate = desiredName + ((i == 0) ? "" : ("_" + i));
+			final String candidate = desiredName + " " + i;
 
 			if (!isAnnotationNameTaken(candidate))
 				return candidate;

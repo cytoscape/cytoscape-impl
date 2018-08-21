@@ -346,7 +346,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		if (url != null) {
 			try {
 				String fileName = Paths.get(new URI(url.toString()).getPath()).getFileName().toString();
-				return cyAnnotator.getDefaultAnnotationName(fileName);
+				return fileName;
 			} catch (Exception e) {
 				// Just ignore...
 			}

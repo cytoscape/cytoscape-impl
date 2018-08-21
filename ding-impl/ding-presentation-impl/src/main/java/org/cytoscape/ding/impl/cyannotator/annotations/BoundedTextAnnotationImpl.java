@@ -50,7 +50,7 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	
-	private static final String DEF_TEXT = "Text Annotation";
+	private static final String DEF_TEXT = "Text";
 	
 	private String text;
 	private boolean shapeIsFit;
@@ -67,7 +67,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		super(view, 100, 100, owner, usedForPreviews);
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
-		this.text = "Text Annotation";
+		this.text = DEF_TEXT;
 		Graphics2D graphics = (Graphics2D) this.getGraphics();
 		super.setSize(getTextWidth(graphics) + 4, getTextHeight(graphics) + 4);
 	}
@@ -189,7 +189,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		return new BoundedTextAnnotationDialog(this, owner);
 	}
 	
-	
 	@Override
 	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
 		super.resizeAnnotationRelative(initialBounds, outlineBounds);
@@ -198,7 +197,6 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		setFontSizeRelative(deltaW);
 	}
 	
-
 	@Override
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
