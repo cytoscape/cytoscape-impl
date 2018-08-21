@@ -42,6 +42,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.swing.JComponent;
+
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNode;
@@ -84,6 +86,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * Rendered image.
 	 */
 	private Image img;
+	
+	private JComponent selection;
 
 	/**
 	 * Constructor.
@@ -131,11 +135,15 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 */
     @Override
 	public Component add(Component component) {
-    		Component c = addInternal(component);
+    	Component c = addInternal(component);
 		// do our stuff
 		contentChanged();
 		return c;
 	}
+    
+    public void setSelection(JComponent selection) {
+    	this.selection = selection;
+    }
     
     /**
 	 * Our implementation of add
@@ -328,8 +336,16 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			clearImage(image2D);
 
 			// now paint children
-			if (isVisible())
-				this.paintChildren(image2D);
+			if (isVisible()) {
+				if(selection != null) {
+					// always paint the selection rectangle on top
+					super.add(selection, 0);
+					paintChildren(image2D);
+					super.remove(selection);
+				} else {
+					paintChildren(image2D);
+				}
+			}
 			
 			image2D.dispose();
 			// render image

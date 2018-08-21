@@ -72,7 +72,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		if (selectedAnnotations.size() == 0) {
 			selectedAnnotations.add(e);
 			updateBounds();
-			cyAnnotator.getForeGroundCanvas().add(this, 0);
+			cyAnnotator.getForeGroundCanvas().setSelection(this);
 		} else {
 			selectedAnnotations.add(e);
 			updateBounds();
@@ -93,7 +93,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 			a.setOffset(null);
 		
 		selectedAnnotations.clear();
-		cyAnnotator.getForeGroundCanvas().remove(this);
+		cyAnnotator.getForeGroundCanvas().setSelection(null);
 	}
 
 	public boolean contains(Object e) {
@@ -113,7 +113,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		selectedAnnotations.remove(e);
 		
 		if (selectedAnnotations.isEmpty())
-			cyAnnotator.getForeGroundCanvas().remove(this);
+			cyAnnotator.getForeGroundCanvas().setSelection(null);
 		else
 			updateBounds();
 		
