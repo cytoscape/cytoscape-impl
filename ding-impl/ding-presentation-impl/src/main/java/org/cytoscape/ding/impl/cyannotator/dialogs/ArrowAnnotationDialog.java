@@ -167,6 +167,8 @@ public class ArrowAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();
 
+		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+		
 		annotation.setLineColor(preview.getLineColor());
 		annotation.setLineWidth(preview.getLineWidth());
 		annotation.setArrowType(ArrowEnd.SOURCE, preview.getArrowType(ArrowEnd.SOURCE));
@@ -180,6 +182,7 @@ public class ArrowAnnotationDialog extends JDialog {
 
 		if (!create) {
 			annotation.update();
+			cyAnnotator.postUndoEdit();
 			return;
 		}
 

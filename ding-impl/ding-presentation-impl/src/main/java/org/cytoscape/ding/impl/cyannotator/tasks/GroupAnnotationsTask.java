@@ -69,6 +69,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			else
 				selectedAnnotations = annotations;
 			
+			cyAnnotator.markUndoEdit("Group Annotations");
 
 			// remove the annotations from any existing groups
 			for(DingAnnotation a : selectedAnnotations) {
@@ -93,6 +94,8 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			// Finally, set ourselves to be the selected component
 			group.setSelected(true);
 			group.update();
+			
+			cyAnnotator.postUndoEdit();
 		}
 	}
 }

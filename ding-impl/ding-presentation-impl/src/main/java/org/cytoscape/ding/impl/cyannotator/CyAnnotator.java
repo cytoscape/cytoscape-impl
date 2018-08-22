@@ -35,6 +35,7 @@ import org.cytoscape.ding.impl.cyannotator.listeners.CanvasKeyListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseMotionListener;
 import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseWheelListener;
+import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
@@ -98,6 +99,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private CanvasKeyListener keyListener;
 	private CanvasMouseWheelListener mouseWheelListener;
 	
+	private AnnotationEdit undoEdit;
+	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
 
 	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
@@ -112,6 +115,22 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		initListeners();
 	}
 
+	
+	public void markUndoEdit(String label) {
+		undoEdit = new AnnotationEdit(label, this, registrar);
+	}
+	
+	public void postUndoEdit() {
+		if(undoEdit != null) {
+			undoEdit.post();
+		}
+	}
+	
+	public void clearUndoEdit() {
+		undoEdit = null;
+	}
+	
+	
 	public void addPropertyChangeListener(PropertyChangeListener listener) {
 		propChangeSupport.addPropertyChangeListener(listener);
 	}
@@ -129,7 +148,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void initListeners() {
-		mouseListener = new CanvasMouseListener(this, view);
+		mouseListener = new CanvasMouseListener(this, view, registrar);
 		mouseMotionListener = new CanvasMouseMotionListener(this, view);
 		keyListener = new CanvasKeyListener(this, view);
 		mouseWheelListener = new CanvasMouseWheelListener(this, view);
@@ -161,13 +180,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		backGroundCanvas.dispose();
 	}
 
+	
 	public void loadAnnotations() {
-		// Make sure we're on the EDT since we directly add annotations to the canvas
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> loadAnnotations());
-			return;
-		}
-
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
 		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
@@ -176,6 +190,16 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			networkAttributes.createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
 
 		List<String> annotations = network.getRow(network, CyNetwork.LOCAL_ATTRS).getList(ANNOTATION_ATTRIBUTE,String.class);
+		loadAnnotations(annotations);
+	}
+	
+	public void loadAnnotations(List<String> annotations) {
+		// Make sure we're on the EDT since we directly add annotations to the canvas
+		if (!SwingUtilities.isEventDispatchThread()) {
+			SwingUtilities.invokeLater(() -> loadAnnotations());
+			return;
+		}
+		
 		List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
 		Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
 		Map<String, Annotation> uuidMap = new HashMap<>();
@@ -467,6 +491,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
+	
 
 	public List<Annotation> getAnnotations() {
 		return annotationSet.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationSet);
@@ -585,16 +610,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		// Convert the annotation to a list
-		final List<Map<String, String>> networkAnnotations = new ArrayList<>();
-		final CyNetwork network = view.getModel();
+		CyNetwork network = view.getModel();
+		List<String> networkAnnotation = createSavableNetworkAttribute();
 		
-		for (DingAnnotation annotation : annotationSet)
-			networkAnnotations.add(annotation.getArgMap());
-		
-		// Save it in the network attributes
-		List<String> networkAnnotation = convertAnnotationMap(networkAnnotations);
-
 		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
 			network.getDefaultNetworkTable().createListColumn(ANNOTATION_ATTRIBUTE, String.class, false, Collections.emptyList());
 		}
@@ -602,6 +620,16 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		network.getRow(network, CyNetwork.LOCAL_ATTRS).set(ANNOTATION_ATTRIBUTE, networkAnnotation);
 	}
 
+	public List<String> createSavableNetworkAttribute() {
+		List<Map<String,String>> networkAnnotations = new ArrayList<>();
+		
+		for (DingAnnotation annotation : annotationSet)
+			networkAnnotations.add(annotation.getArgMap());
+		
+		// Save it in the network attributes
+		return convertAnnotationMap(networkAnnotations);
+	}
+	
 	private List<String> convertAnnotationMap(List<Map<String, String>>networkAnnotations) {
 		List<String> result = new ArrayList<>();
 

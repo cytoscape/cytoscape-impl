@@ -144,10 +144,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return cyAnnotator.getDefaultAnnotationName(getType().getSimpleName().replace("Annotation", ""));
 	}
 	
-	@Override
-	public String toString() {
-		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
-	}
+//	@Override
+//	public String toString() {
+//		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
+//	}
 
 	@Override
 	public String getCanvasName() {

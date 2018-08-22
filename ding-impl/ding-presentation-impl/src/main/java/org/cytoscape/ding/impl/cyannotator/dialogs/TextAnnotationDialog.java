@@ -140,12 +140,15 @@ public class TextAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();
 
+		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+		
 		mAnnotation.setFont(textAnnotationPanel.getNewFont());
 		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
 		mAnnotation.setText(textAnnotationPanel.getText());
 		
 		if (!create) {
 			mAnnotation.update();
+			cyAnnotator.postUndoEdit();
 			return;
 		}
 

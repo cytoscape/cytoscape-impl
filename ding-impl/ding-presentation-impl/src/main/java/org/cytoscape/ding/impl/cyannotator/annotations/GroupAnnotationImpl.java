@@ -18,7 +18,6 @@ import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -110,46 +109,43 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public void addMember(final Annotation member) {
 		// We muck with the ZOrder directly, so we need
 		// to make sure we're on the EDT
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> addMember(member));
-			return;
-		}
+		ViewUtil.invokeOnEDTAndWait(() -> {
+			if (member instanceof DingAnnotation) {
+				DingAnnotation dMember = (DingAnnotation)member;
 
-		if (member instanceof DingAnnotation) {
-			DingAnnotation dMember = (DingAnnotation)member;
+				// First, we need to make sure that this annotation is
+				// already registered and added to the canvas
+				if (dMember.getCanvas() != null) {
+					dMember.addComponent(dMember.getCanvas());
+				} else {
+					dMember.addComponent(cyAnnotator.getForeGroundCanvas());
+				}
 
-			// First, we need to make sure that this annotation is
-			// already registered and added to the canvas
-			if (dMember.getCanvas() != null) {
-				dMember.addComponent(dMember.getCanvas());
-			} else {
-				dMember.addComponent(cyAnnotator.getForeGroundCanvas());
+				dMember.update();
+
+				if (!annotations.contains(dMember))
+					annotations.add(dMember);
+
+				dMember.setGroupParent(this);
+
+				// Set the bounding box and our location
+				updateBounds();
+				Rectangle2D bounds = getBounds();
+				setLocation((int)bounds.getX(), (int)bounds.getY());
+				setSize((int)bounds.getWidth(), (int)bounds.getHeight());
+				dMember.getCanvas().setComponentZOrder(dMember.getComponent(), 
+				                                       (int)((AbstractAnnotation)dMember).getZOrder());
+				// Now, update our Z-order
+				int z = dMember.getCanvas().getComponentZOrder(dMember.getComponent());
+				// System.out.println("Canvas = "+dMember.getCanvas());
+				// System.out.println("Component = "+((JComponent)dMember.getComponent()).toString());
+				if (z > getCanvas().getComponentZOrder(getComponent())) {
+					// Not sure why, but this gives me an error: 
+					//  java.lang.IllegalArgumentException: component and container should be in the same top-level window
+					// getCanvas().setComponentZOrder(getComponent(), z);
+				}
 			}
-
-			dMember.update();
-
-			if (!annotations.contains(dMember))
-				annotations.add(dMember);
-
-			dMember.setGroupParent(this);
-
-			// Set the bounding box and our location
-			updateBounds();
-			Rectangle2D bounds = getBounds();
-			setLocation((int)bounds.getX(), (int)bounds.getY());
-			setSize((int)bounds.getWidth(), (int)bounds.getHeight());
-			dMember.getCanvas().setComponentZOrder(dMember.getComponent(), 
-			                                       (int)((AbstractAnnotation)dMember).getZOrder());
-			// Now, update our Z-order
-			int z = dMember.getCanvas().getComponentZOrder(dMember.getComponent());
-			// System.out.println("Canvas = "+dMember.getCanvas());
-			// System.out.println("Component = "+((JComponent)dMember.getComponent()).toString());
-			if (z > getCanvas().getComponentZOrder(getComponent())) {
-				// Not sure why, but this gives me an error: 
-				//  java.lang.IllegalArgumentException: component and container should be in the same top-level window
-				// getCanvas().setComponentZOrder(getComponent(), z);
-			}
-		}
+		});
 	}
 
 	@Override

@@ -107,6 +107,7 @@ public class CanvasKeyListener implements KeyListener {
 			if (cyAnnotator.getResizeShape() != null) {
 				cyAnnotator.getResizeShape().contentChanged();
 				cyAnnotator.resizeShape(null);
+				cyAnnotator.postUndoEdit();
 				return;
 			}
 

@@ -17,7 +17,9 @@ import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -53,16 +55,22 @@ public class CanvasMouseListener implements MouseListener {
 	private final DGraphView view;
 	private Point2D mouseDown;
 
-	public CanvasMouseListener(CyAnnotator c, DGraphView view) {
+	private AnnotationEdit undoEdit;
+	
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public CanvasMouseListener(CyAnnotator c, DGraphView view, CyServiceRegistrar serviceRegistrar) {
 		this.cyAnnotator = c;
 		this.view = view;
 		this.networkCanvas = view.getCanvas();
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	// TODO: create annotation-specific popup?
 	@Override
 	public void mousePressed(MouseEvent e) {
 		mouseDown = null;
+		undoEdit = null;
 		
 		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.processMouseEvent(e);
@@ -87,6 +95,9 @@ public class CanvasMouseListener implements MouseListener {
 			
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 
 				a.saveBounds();
+			
+			undoEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, serviceRegistrar);
+			
 		} else if (annotation == null) {
 			if (e.isShiftDown()) {
 				// Remember where we did the mouse down. We may be doing a sweep select
@@ -138,6 +149,9 @@ public class CanvasMouseListener implements MouseListener {
 		annotationSelection.setResizing(false);
 		annotationSelection.setMoving(false);
 
+		if(undoEdit != null) 
+			undoEdit.post();
+		
 		if (mouseDown != null) {
 			double startX = Math.min(mouseDown.getX(), e.getX());
 			double startY = Math.min(mouseDown.getY(), e.getY());
@@ -157,8 +171,7 @@ public class CanvasMouseListener implements MouseListener {
 		}
 
 		DingAnnotation annotation = getAnnotation(e);
-		if (annotationSelection.isEmpty() ||
-				!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (annotationSelection.isEmpty() || !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			// Let the InnerCanvas handle this event
 			networkCanvas.processMouseEvent(e);
 		} else if (annotation != null) {
@@ -183,6 +196,7 @@ public class CanvasMouseListener implements MouseListener {
 		if (cyAnnotator.getResizeShape() != null) {
 			cyAnnotator.getResizeShape().contentChanged();
 			cyAnnotator.resizeShape(null);
+			cyAnnotator.postUndoEdit();
 			return;
 		}
 

@@ -140,6 +140,8 @@ public class ShapeAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();
 
+		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+		
 		shapeAnnotation.setShapeType(preview.getShapeType());
 		shapeAnnotation.setFillColor(preview.getFillColor());
 		shapeAnnotation.setFillOpacity(preview.getFillOpacity());
@@ -149,9 +151,10 @@ public class ShapeAnnotationDialog extends JDialog {
 
 		if (!create) {
 			shapeAnnotation.update(); 
+			cyAnnotator.postUndoEdit();
 			return;
 		}
-
+		
 		shapeAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		shapeAnnotation.addComponent(null);
 		shapeAnnotation.update();
@@ -161,6 +164,7 @@ public class ShapeAnnotationDialog extends JDialog {
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(shapeAnnotation);
+		
 
 		try {
 			// Warp the mouse to the starting location (if supported)

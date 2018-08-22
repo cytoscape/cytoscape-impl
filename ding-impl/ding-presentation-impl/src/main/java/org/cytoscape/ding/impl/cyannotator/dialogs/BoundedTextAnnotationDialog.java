@@ -149,6 +149,8 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();           
 		
+		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+		
 		mAnnotation.setFont(textAnnotationPanel.getNewFont());
 		mAnnotation.setTextColor(textAnnotationPanel.getTextColor());
 		mAnnotation.setText(textAnnotationPanel.getText());
@@ -160,7 +162,8 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		mAnnotation.setBorderWidth((int)preview.getBorderWidth());
 		
 		if (!create) {
-			mAnnotation.update(); 
+			mAnnotation.update();
+			cyAnnotator.postUndoEdit();
 			return;
 		}
 

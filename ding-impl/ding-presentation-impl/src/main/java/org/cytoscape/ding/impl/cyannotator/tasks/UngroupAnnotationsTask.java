@@ -6,9 +6,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.TaskMonitor;
 
@@ -55,14 +57,20 @@ public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (view instanceof DGraphView) {
-			groups.forEach(ga -> {
-				ga.getMembers().forEach(a -> {
+			
+			CyAnnotator annotator = ((DGraphView)view).getCyAnnotator();
+			annotator.markUndoEdit("Ungroup Annotations");
+			
+			for(GroupAnnotation ga : groups) {
+				for(Annotation a : ga.getMembers()) {
 					ga.removeMember(a);
 					a.setSelected(true);
-				});
+				}
 				
 				ga.removeAnnotation();
-			});
+			}
+			
+			annotator.postUndoEdit();
 		}
 	}
 }

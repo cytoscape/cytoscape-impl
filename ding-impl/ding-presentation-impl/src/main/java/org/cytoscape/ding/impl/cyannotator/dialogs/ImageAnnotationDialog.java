@@ -148,6 +148,8 @@ public class ImageAnnotationDialog extends JDialog {
 	private void applyButtonActionPerformed(ActionEvent evt) {
 		dispose();
 
+		cyAnnotator.markUndoEdit(create ? "Create Annotation" : "Edit Annotation");
+		
 		// Apply
 		annotation.setBorderColor(preview.getBorderColor());
 		annotation.setBorderOpacity(preview.getBorderOpacity());
@@ -158,6 +160,7 @@ public class ImageAnnotationDialog extends JDialog {
 
 		if (!create) {
 			annotation.update();
+			cyAnnotator.postUndoEdit();
 			return;
 		}
 
