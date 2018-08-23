@@ -45,7 +45,7 @@ public final class CoreImplDocumentationConstants {
 	 * org.cytoscape.task.internal.networkobjects.SetNetworkPropertiesTask.run(TaskMonitor)
 	 * org.cytoscape.task.internal.networkobjects.SetNodePropertiesTask.run(TaskMonitor)
 	 */
-	public static final String PROPERTY_LIST_LONG_DESCRIPTION = "A list of property names separated by commas.";
+	public static final String PROPERTY_LIST_LONG_DESCRIPTION = "A list of property names separated by commas. Refer to the 'list properties' command avalable for node, edge and network namespaces.";
 
 	/**
 	 * Renaming is the equivalent of a set/PUT, and doesn't need to return anything.
