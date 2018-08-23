@@ -101,6 +101,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private AnnotationEdit undoEdit;
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
+	private boolean loading = false;
+	
 
 	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.view = view;
@@ -198,6 +200,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			SwingUtilities.invokeLater(() -> loadAnnotations());
 			return;
 		}
+		
+		loading = true;
 		
 		List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
 		Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
@@ -315,6 +319,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				}
 			}
 		}
+		
+		loading = false;
+		propChangeSupport.firePropertyChange("annotations", Collections.emptySet(), new HashSet<>(annotationSet));
 	}
 
 	public DingAnnotation getAnnotation(UUID annotationID) {
@@ -447,7 +454,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		annotationSet.add((DingAnnotation) annotation);
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		
+		if (!loading) {
+			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		}
 	}
 	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
@@ -461,7 +471,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				annotationSet.add((DingAnnotation) annotation);
 		}
 		
-		propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		if (!loading) {
+			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+		}
 	}
 
 	public void removeAnnotation(Annotation annotation) {
@@ -470,7 +482,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		boolean changed = annotationSet.remove((DingAnnotation) annotation);
 		annotationSelection.remove(annotation);
 		
-		if (changed) {
+		if (changed && !loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -486,7 +498,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			annotationSelection.remove(annotation);
 		}
 		
-		if (changed) {
+		if (changed && !loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
