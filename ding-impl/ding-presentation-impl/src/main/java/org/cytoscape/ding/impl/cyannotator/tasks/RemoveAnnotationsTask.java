@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTask;
@@ -45,8 +46,7 @@ public class RemoveAnnotationsTask extends AbstractNetworkViewTask {
 	private final Collection<Annotation> annotations;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public RemoveAnnotationsTask(CyNetworkView view, Collection<Annotation> annotations,
-			CyServiceRegistrar serviceRegistrar) {
+	public RemoveAnnotationsTask(CyNetworkView view, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
 		super(view);
 		this.annotations = annotations;
 		this.serviceRegistrar = serviceRegistrar;
@@ -55,13 +55,19 @@ public class RemoveAnnotationsTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(-1);
-		
+
 		if (view instanceof DGraphView) {
+			
+			CyAnnotator annotator = ((DGraphView)view).getCyAnnotator();
+			annotator.markUndoEdit("Remove Annotations");
+			
 			Collection<? extends Annotation> newList = annotations;
 
 			do {
 				newList = remove(newList);
 			} while (!newList.isEmpty());
+			
+			annotator.postUndoEdit();
 		}
 	}
 

@@ -133,8 +133,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				Rectangle2D bounds = getBounds();
 				setLocation((int)bounds.getX(), (int)bounds.getY());
 				setSize((int)bounds.getWidth(), (int)bounds.getHeight());
-				dMember.getCanvas().setComponentZOrder(dMember.getComponent(), 
-				                                       (int)((AbstractAnnotation)dMember).getZOrder());
+				dMember.getCanvas().setComponentZOrder(dMember.getComponent(), (int)((AbstractAnnotation)dMember).getZOrder());
 				// Now, update our Z-order
 				int z = dMember.getCanvas().getComponentZOrder(dMember.getComponent());
 				// System.out.println("Canvas = "+dMember.getCanvas());

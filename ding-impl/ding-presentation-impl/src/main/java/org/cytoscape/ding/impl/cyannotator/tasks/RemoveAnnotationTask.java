@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -45,7 +46,13 @@ public class RemoveAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if (view instanceof DGraphView)
+		if (view instanceof DGraphView) {
+			CyAnnotator annotator = annotation.getCyAnnotator();
+			annotator.markUndoEdit("Delete Annotation");
+			
 			annotation.removeAnnotation();
+			
+			annotator.postUndoEdit();
+		}
 	}
 }

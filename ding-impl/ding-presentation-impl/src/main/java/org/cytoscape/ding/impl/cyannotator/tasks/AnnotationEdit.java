@@ -29,14 +29,10 @@ public class AnnotationEdit extends AbstractCyEdit {
 	
 	private void saveOldAnnotations() {
 		oldState = annotator.createSavableNetworkAttribute();
-		System.out.println("AnnotationEdit.saveOldAnnotations()");
-		System.out.println(oldState);
 	}
 
 	private void saveNewAnnotations() {
 		newState = annotator.createSavableNetworkAttribute();
-		System.out.println("AnnotationEdit.saveNewAnnotations()");
-		System.out.println(newState);
 	}
 	
 	public void post() {
