@@ -90,7 +90,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private MyViewportChangeListener myViewportChangeListener;
 	private AbstractAnnotation resizing;
 	private ArrowAnnotationImpl repositioning;
-	private DingAnnotation moving;
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
 	
@@ -558,19 +557,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return new ReloadImagesTask(this);
 	}
 
-	public void moveAnnotation(DingAnnotation annotation) {
-		// Get the top-level group
-		while ((annotation != null) && (annotation.getGroupParent() != null)) {
-			annotation = (DingAnnotation)annotation.getGroupParent();
-		}
-		moving = annotation;
-		if (moving != null)
-			requestFocusInWindow(moving);
-	}
-
-	public DingAnnotation getMovingAnnotation() {
-		return moving;
-	}
 
 	public String getDefaultAnnotationName(String desiredName) {
 		if (desiredName == null || "".equals(desiredName.trim()))

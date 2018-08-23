@@ -60,7 +60,6 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 	public void mouseDragged(MouseEvent e) {
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		DingAnnotation a = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
-		DingAnnotation moveAnnotation = cyAnnotator.getMovingAnnotation();
 		
 		if (annotationSelection.isEmpty() || !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.mouseDragged(e);
@@ -71,7 +70,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 			// Resize
 			annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
 			// For resize, we *don't* want to pass things to the network canvas
-		} else if (a != null && moveAnnotation == null && !annotationSelection.isMoving()) {
+		} else if (a != null && !annotationSelection.isMoving()) {
 			// cyAnnotator.moveAnnotation(a);
 			// annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will

@@ -238,11 +238,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		setLocation((int)compLocation.getX(), (int)compLocation.getY());
 
 		updateBounds();
-
-		for (DingAnnotation child: annotations) {
-			cyAnnotator.moveAnnotation(child);
-		}
-		cyAnnotator.moveAnnotation(this);
 	}
 	
 	@Override

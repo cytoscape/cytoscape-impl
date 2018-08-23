@@ -55,7 +55,8 @@ public class CanvasMouseListener implements MouseListener {
 	private final DGraphView view;
 	private Point2D mouseDown;
 
-	private AnnotationEdit undoEdit;
+	private AnnotationEdit resizeUndoEdit;
+	private AnnotationEdit movingUndoEdit;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -70,7 +71,8 @@ public class CanvasMouseListener implements MouseListener {
 	@Override
 	public void mousePressed(MouseEvent e) {
 		mouseDown = null;
-		undoEdit = null;
+		resizeUndoEdit = null;
+		movingUndoEdit = null;
 		
 		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.processMouseEvent(e);
@@ -96,7 +98,7 @@ public class CanvasMouseListener implements MouseListener {
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 
 				a.saveBounds();
 			
-			undoEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, serviceRegistrar);
+			resizeUndoEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, serviceRegistrar);
 			
 		} else if (annotation == null) {
 			if (e.isShiftDown()) {
@@ -120,6 +122,9 @@ public class CanvasMouseListener implements MouseListener {
 			if (!annotationSelection.isEmpty()) {
 				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
 				annotationSelection.setMoving(true);
+				
+				movingUndoEdit = new AnnotationEdit("Move Annotation", cyAnnotator, serviceRegistrar);
+				
 			} else {
 				annotationSelection.setMoving(false);
 			}
@@ -149,8 +154,10 @@ public class CanvasMouseListener implements MouseListener {
 		annotationSelection.setResizing(false);
 		annotationSelection.setMoving(false);
 
-		if(undoEdit != null) 
-			undoEdit.post();
+		if(resizeUndoEdit != null) 
+			resizeUndoEdit.post();
+		if(movingUndoEdit != null)
+			movingUndoEdit.post();
 		
 		if (mouseDown != null) {
 			double startX = Math.min(mouseDown.getX(), e.getX());
@@ -196,19 +203,14 @@ public class CanvasMouseListener implements MouseListener {
 		if (cyAnnotator.getResizeShape() != null) {
 			cyAnnotator.getResizeShape().contentChanged();
 			cyAnnotator.resizeShape(null);
-			cyAnnotator.postUndoEdit();
+			cyAnnotator.postUndoEdit(); // markUndoEdit() is in the dialogs like ShapeAnnotationDialog
 			return;
 		}
 
 		if (cyAnnotator.getRepositioningArrow() != null) {
 			cyAnnotator.getRepositioningArrow().contentChanged();
 			cyAnnotator.positionArrow(null);
-			return;
-		}
-
-		if (cyAnnotator.getMovingAnnotation() != null) {
-			cyAnnotator.getMovingAnnotation().contentChanged();
-			cyAnnotator.moveAnnotation(null);
+			cyAnnotator.postUndoEdit(); // markUndoEdit() is in ArrowAnnotationDialog
 			return;
 		}
 

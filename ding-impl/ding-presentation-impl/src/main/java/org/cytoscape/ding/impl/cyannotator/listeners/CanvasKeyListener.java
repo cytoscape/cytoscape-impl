@@ -114,12 +114,7 @@ public class CanvasKeyListener implements KeyListener {
 			if (cyAnnotator.getRepositioningArrow() != null) {
 				cyAnnotator.getRepositioningArrow().contentChanged();
 				cyAnnotator.positionArrow(null);
-				return;
-			}
-
-			if (cyAnnotator.getMovingAnnotation() != null) {
-				cyAnnotator.getMovingAnnotation().contentChanged();
-				cyAnnotator.moveAnnotation(null);
+				cyAnnotator.postUndoEdit();
 				return;
 			}
 		} 
