@@ -2132,8 +2132,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
 			props.setProperty(MENU_GRAVITY, "1.0");
-//			props.setProperty(TITLE, "Clone Current Network");
-			props.setProperty(TITLE, "From All Nodes, All Edges");
+			props.setProperty(TITLE, "Clone Current Network");
+//			props.setProperty(TITLE, "From All Nodes, All Edges");
 			props.setProperty(COMMAND, "clone");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Make a copy of the current network");
