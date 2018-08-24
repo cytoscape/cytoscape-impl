@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
@@ -243,14 +244,33 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	public void showAll() {
 		for (Object o : orderedList)
+		{	
+			System.out.println(o.getClass());
 			if (o instanceof Component)
 				((Component) o).setVisible(true);
+			if (o instanceof ActionButton)
+			{
+				ActionButton b= ((ActionButton) o);
+				String s = b.component.getActionCommand();
+				System.out.println(b.component.getName());
+				b.component.setVisible(true);
+			}
+		}
 	}
 
 	public void hideAll() {
 		for (Object o : orderedList)
+		{	
 			if (o instanceof Component)
 				((Component) o).setVisible(false);
+			if (o instanceof ActionButton)
+			{
+				ActionButton b= ((ActionButton) o);
+				String s = b.component.getActionCommand();
+//				System.out.println(s);
+				b.component.setVisible(false);
+			}
+		}
 	}
 
 	private void addComponents() {

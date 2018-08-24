@@ -565,7 +565,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 		
 		@Override
-		public void mouseClicked(MouseEvent e) {
+		public void mousePressed(MouseEvent e) {
 			if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1)
 				createAnnotation(view, factory, e.getPoint());
 		}

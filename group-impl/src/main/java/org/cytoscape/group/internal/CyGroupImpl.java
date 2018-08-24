@@ -381,7 +381,7 @@ public class CyGroupImpl implements CyGroup {
 		}
 
 		cyEventHelper.flushPayloadEvents();
-		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
+//		cyEventHelper.fireEvent(new GroupNodesAddedEvent(CyGroupImpl.this, nodes));
 	}
 
 	/**
@@ -420,7 +420,7 @@ public class CyGroupImpl implements CyGroup {
 			}
 			// printGroup();
 		}
-		cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edges));
+//		cyEventHelper.fireEvent(new GroupEdgesAddedEvent(CyGroupImpl.this, edges));
 	}
 
 	/**
@@ -450,7 +450,7 @@ public class CyGroupImpl implements CyGroup {
 				updateCountAttributes(net);
 			}
 		}
-		cyEventHelper.fireEvent(new GroupNodesRemovedEvent(CyGroupImpl.this, nodes));
+//		cyEventHelper.fireEvent(new GroupNodesRemovedEvent(CyGroupImpl.this, nodes));
 	}
 
 	/**
@@ -478,7 +478,7 @@ public class CyGroupImpl implements CyGroup {
 			}
 		}
 
-		cyEventHelper.fireEvent(new GroupEdgesRemovedEvent(CyGroupImpl.this, edges));
+//		cyEventHelper.fireEvent(new GroupEdgesRemovedEvent(CyGroupImpl.this, edges));
 	}
 
 	/**
