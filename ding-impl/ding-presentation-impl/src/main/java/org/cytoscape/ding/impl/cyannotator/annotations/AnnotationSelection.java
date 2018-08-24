@@ -57,6 +57,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	static float[] dash = { 10.0f, 10.0f };
 	Point2D initialPos;
 	Rectangle2D initialBounds;
+	Rectangle2D initialUnion;
 	Position anchor;
 	boolean resizing;
 	boolean moving;
@@ -127,6 +128,8 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 	public void saveBounds() {
 		initialBounds = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), getBounds().getBounds2D());
+		initialUnion  = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), union.getBounds2D());
+		
 		for(DingAnnotation da : selectedAnnotations) {
 			da.saveBounds();
 		}
@@ -190,14 +193,28 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	}
 
 	public void resizeAnnotationsRelative(int x, int y) {
-		// Get our current transform
+		// Get our current transform, and compensate for the border
 		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
-
+		
+		// compensate for the border
+		final float d = border * 2;
+		double mouseX = mouse.getX();
+		double mouseY = mouse.getY();
+		
+		if(isNorth(anchor))
+			mouseY += d;
+		if(isSouth(anchor))
+			mouseY -= d;
+		if(isWest(anchor))
+			mouseX += d;
+		if(isEast(anchor))
+			mouseX -= d;
+		
 		// OutlineBounds is in node coordinates!
-		Rectangle2D outlineBounds = resize(anchor, initialBounds, mouse.getX(), mouse.getY());
+		Rectangle2D outlineBounds = resize(anchor, initialUnion, mouseX, mouseY);
 
 		for (DingAnnotation da : selectedAnnotations) {
-			((AbstractAnnotation)da).resizeAnnotationRelative(initialBounds, outlineBounds);
+			((AbstractAnnotation)da).resizeAnnotationRelative(initialUnion, outlineBounds);
 
 			// OK, now update
 			da.update();
@@ -206,14 +223,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 		updateBounds();
 		cyAnnotator.getForeGroundCanvas().repaint();
-	}
-
-
-	// NOTE: mouseX and mouseY should be in node coordinates
-	private Rectangle2D resize(Position anchor, DingAnnotation ann, double mouseX, double mouseY) {
-		Rectangle2D bounds = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), 
-		                                                  ann.getComponent().getBounds().getBounds2D());
-		return resize(anchor, bounds, mouseX, mouseY);
 	}
 
 	// NOTE: bounds, mouseX and mouseY should be in node coordinates
@@ -234,7 +243,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		double height = boundsHeight;
 		
 		// y and height
-		if(anchor == NORTH || anchor == NORTH_EAST || anchor == NORTH_WEST) {
+		if(isNorth(anchor)) {
 			if(mouseY > boundsYBottom) {
 				y = boundsYBottom;
 				height = mouseY - boundsYBottom;
@@ -242,7 +251,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 				y = mouseY;
 				height = boundsYBottom - mouseY;
 			}
-		} else if(anchor == SOUTH || anchor == SOUTH_EAST || anchor == SOUTH_WEST) {
+		} else if(isSouth(anchor)) {
 			if(mouseY < boundsY) {
 				y = mouseY;
 				height = boundsY - mouseY;
@@ -252,7 +261,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		}
 		
 		// x and width
-		if(anchor == WEST || anchor == NORTH_WEST || anchor == SOUTH_WEST) {
+		if(isWest(anchor)) {
 			if(mouseX > boundsXLeft) {
 				x = boundsXLeft;
 				width = mouseX - boundsXLeft;
@@ -260,7 +269,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 				x = mouseX;
 				width = boundsXLeft - mouseX;
 			}
-		} else if(anchor == EAST || anchor == NORTH_EAST || anchor == SOUTH_EAST) {
+		} else if(isEast(anchor)) {
 			if(mouseX < boundsX) {
 				x = mouseX;
 				width = boundsX - mouseX;
@@ -377,6 +386,22 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 				return Position.WEST;
 		}
 		return null;
+	}
+	
+	private static boolean isNorth(Position anchor) {
+		return anchor == NORTH || anchor == NORTH_EAST || anchor == NORTH_WEST;
+	}
+	
+	private static boolean isSouth(Position anchor) {
+		return anchor == SOUTH || anchor == SOUTH_EAST || anchor == SOUTH_WEST;
+	}
+	
+	private static boolean isWest(Position anchor) {
+		return anchor == WEST || anchor == NORTH_WEST || anchor == SOUTH_WEST;
+	}
+	
+	private static boolean isEast(Position anchor) {
+		return anchor == EAST || anchor == NORTH_EAST || anchor == SOUTH_EAST;
 	}
 
 }
