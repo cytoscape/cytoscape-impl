@@ -158,7 +158,8 @@ import org.slf4j.LoggerFactory;
 public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
-
+	private static final String ARRANGE_VIEWS_MENU = "View.Arrange Detached Views[8]";
+	
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private CytoscapeMenus cytoscapeMenus;
@@ -305,7 +306,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(ACCELERATOR, "cmd g");
-			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
+			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Grid");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			registerService(bc, arrangeGridTaskFactory, TaskFactory.class, props);
@@ -313,7 +314,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
+			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Cascade");
 			props.setProperty(MENU_GRAVITY, "2.0");
 			registerService(bc, arrangeCascadeTaskFactory, TaskFactory.class, props);
@@ -321,7 +322,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
+			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Vertical Stack");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			registerService(bc, arrangeHorizontalTaskFactory, TaskFactory.class, props);
@@ -329,7 +330,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(PREFERRED_MENU, "View.Arrange Detached Windows[8]");
+			props.setProperty(PREFERRED_MENU, ARRANGE_VIEWS_MENU);
 			props.setProperty(TITLE, "Side by Side");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			registerService(bc, arrangeVerticalTaskFactory, TaskFactory.class, props);
