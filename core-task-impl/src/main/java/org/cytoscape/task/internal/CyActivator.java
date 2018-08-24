@@ -2109,7 +2109,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
 			props.setProperty(MENU_GRAVITY, "4.0");
 			props.setProperty(TITLE, "Empty");
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(COMMAND, "create empty");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Create an empty network");
@@ -2131,9 +2130,10 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
-			props.setProperty(MENU_GRAVITY, "1.0");
+			props.setProperty(MENU_GRAVITY, "3.0");
 			props.setProperty(TITLE, "Clone Current Network");
 //			props.setProperty(TITLE, "From All Nodes, All Edges");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(COMMAND, "clone");
 			props.setProperty(COMMAND_NAMESPACE, "network");
 			props.setProperty(COMMAND_DESCRIPTION, "Make a copy of the current network");
@@ -2155,7 +2155,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
-			props.setProperty(MENU_GRAVITY, "3.0");
+			props.setProperty(MENU_GRAVITY, "2.0");
 			props.setProperty(ACCELERATOR, "cmd shift n");
 			props.setProperty(TITLE, "From Selected Nodes, Selected Edges");
 			// props.setProperty(COMMAND, "create from selected nodes and edges");
@@ -2182,7 +2182,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "From Selected Nodes, All Edges");
 			props.setProperty(TOOL_BAR_GRAVITY, "16.1");
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "2.0");
+			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOLTIP, "New Network From Selection (all edges)");
 			// props.setProperty(COMMAND, "create from selected nodes and all edges");
 			// props.setProperty(COMMAND_NAMESPACE, "network");
