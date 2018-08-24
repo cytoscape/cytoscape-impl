@@ -73,7 +73,6 @@ import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderSelectedAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
-import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMainPanel;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
@@ -251,10 +250,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, annotationManager, AnnotationManager.class);
 
 		// Annotations UI
-		AnnotationMainPanel annotationMainPanel = new AnnotationMainPanel(serviceRegistrar);
-		registerAllServices(bc, annotationMainPanel);
-		
-		AnnotationMediator annotationMediator = new AnnotationMediator(annotationMainPanel, serviceRegistrar);
+		AnnotationMediator annotationMediator = new AnnotationMediator(serviceRegistrar);
 		registerServiceListener(bc, annotationMediator::addAnnotationFactory, annotationMediator::removeAnnotationFactory, AnnotationFactory.class);
 		registerAllServices(bc, annotationMediator);
 		

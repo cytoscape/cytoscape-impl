@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JDialog;
@@ -104,7 +105,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		SetCurrentNetworkViewListener, AnnotationsAddedListener, AnnotationsRemovedListener, PropertyChangeListener,
 		CytoPanelComponentSelectedListener {
 
-	private final AnnotationMainPanel mainPanel;
+	private AnnotationMainPanel mainPanel;
 	private final Map<String, AnnotationFactory<? extends Annotation>> factories = new LinkedHashMap<>();
 	private boolean appStarted;
 	private boolean loadingSession;
@@ -118,9 +119,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	public AnnotationMediator(AnnotationMainPanel mainPanel, CyServiceRegistrar serviceRegistrar) {
+	public AnnotationMediator(CyServiceRegistrar serviceRegistrar) {
 		super();
-		this.mainPanel = mainPanel;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
@@ -129,6 +129,13 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		final HashSet<AnnotationFactory<? extends Annotation>> set = new LinkedHashSet<>(factories.values());
 		
 		invokeOnEDT(() -> {
+			if (mainPanel == null) {
+				// We have to initialize and register the panel here,
+				// after we know the correct Look And Feel has already been initialized
+				mainPanel = new AnnotationMainPanel(serviceRegistrar);
+				serviceRegistrar.registerAllServices(mainPanel, new Properties());
+			}
+			
 			set.forEach(f -> addAnnotationButton(f));
 			mainPanel.setEnabled(false);
 			mainPanel.getGroupAnnotationsButton().addActionListener(e -> groupAnnotations());

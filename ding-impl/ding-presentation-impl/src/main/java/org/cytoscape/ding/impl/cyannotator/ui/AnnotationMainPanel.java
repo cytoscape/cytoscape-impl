@@ -55,6 +55,8 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.basic.BasicTreeUI;
@@ -77,6 +79,7 @@ import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -485,7 +488,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void init() {
-		setOpaque(!isAquaLAF()); // Transparent if Aqua
+		if (isAquaLAF())
+			setOpaque(false);
+		
 		equalizeSize(getGroupAnnotationsButton(), getUngroupAnnotationsButton(), getRemoveAnnotationsButton());
 		equalizeSize(getSelectAllButton(), getSelectNoneButton());
 		
@@ -493,7 +498,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		// other than by using this "filler" panel hack...
 		JPanel rightFiller = new JPanel();
 		rightFiller.setPreferredSize(getRemoveAnnotationsButton().getPreferredSize());
-		rightFiller.setOpaque(!isAquaLAF());
+		
+		if (isAquaLAF())
+			rightFiller.setOpaque(false);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -559,7 +566,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
 			buttonPanel.setBorder(createPanelBorder());
-			buttonPanel.setOpaque(!isAquaLAF()); // Transparent if Aqua
+			
+			if (isAquaLAF())
+				buttonPanel.setOpaque(false);
 			
 			final GroupLayout layout = new GroupLayout(buttonPanel);
 			buttonPanel.setLayout(layout);
@@ -810,6 +819,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	class LayerPanel extends JPanel {
 		
+		private JLabel titleLabel;
 		private JButton forwardButton;
 		private JButton backwardButton;
 		private JScrollPane scrollPane;
@@ -836,6 +846,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		public void setEnabled(boolean enabled) {
 			super.setEnabled(enabled);
 			getTree().setEnabled(enabled);
+			getTitleLabel().setEnabled(enabled);
 			updateButtons();
 		}
 
@@ -865,14 +876,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getTree()) {
-					@Override
-					public Color getBackground() {
-						// This guarantees the color will come from the correct Look-And-Feel,
-						// even if this component is initialized before swing-application-impl
-						return UIManager.getColor("Panel.background");
-					}
-				};
+				scrollPane = new JScrollPane(getTree());
 				scrollPane.setViewportView(getTree());
 				scrollPane.getViewport().setOpaque(false);
 				scrollPane.getViewport().addMouseListener(new MouseAdapter() {
@@ -883,6 +887,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						scrollPane.requestFocusInWindow();
 					}
 				});
+				scrollPane.setBackground(UIManager.getColor("Panel.background"));
 				scrollPane.setBorder(
 						BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			}
@@ -1014,9 +1019,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		private void init() {
-			setOpaque(!isAquaLAF());
-			
-			JLabel label = createTitleLabel();
+			if (isAquaLAF())
+				setOpaque(false);
 			
 			final GroupLayout layout = new GroupLayout(this);
 			setLayout(layout);
@@ -1025,7 +1029,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addGroup(layout.createSequentialGroup()
-							.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getTitleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							.addGap(10, 10, Short.MAX_VALUE)
 							.addComponent(getForwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
@@ -1035,7 +1039,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(LEADING, false)
-							.addComponent(label, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getTitleLabel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 							.addComponent(getForwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getBackwardButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
@@ -1043,18 +1047,24 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			);
 		}
 		
-		private JLabel createTitleLabel() {
-			JLabel label = new JLabel(canvasName.toUpperCase() + " Layer");
-			label.setVerticalAlignment(SwingConstants.BOTTOM);
-			label.setFont(label.getFont().deriveFont(Font.BOLD));
-			label.setBorder(BorderFactory.createEmptyBorder(0, 12, 2, 12));
+		private JLabel getTitleLabel() {
+			if (titleLabel == null) {
+				String text = canvasName.toLowerCase() + " Layer";
+				text = text.substring(0, 1).toUpperCase() + text.substring(1); // capitalize the first letter
+				
+				titleLabel = new JLabel(text);
+				titleLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+				titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 6, 2, 12));
+				
+				Border tb = LookAndFeelUtil.createTitledBorder(text);
+				
+				if (tb instanceof TitledBorder)
+					titleLabel.setFont(((TitledBorder) tb).getTitleFont());
+				else
+					makeSmall(titleLabel);
+			}
 			
-			makeSmall(label);
-			
-			if (isAquaLAF())
-				label.putClientProperty("JComponent.sizeVariant", "mini");
-			
-			return label;
+			return titleLabel;
 		}
 		
 		private void update(Collection<Annotation> collection) {
