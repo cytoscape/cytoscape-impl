@@ -158,6 +158,8 @@ import org.slf4j.LoggerFactory;
 public class CyActivator extends AbstractCyActivator {
 	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
+	
+	private static final String HELP_MENU = "Help";
 	private static final String ARRANGE_VIEWS_MENU = "View.Arrange Detached Views[8]";
 	
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -282,7 +284,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		{
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(TITLE, "User Manual");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOLTIP, "Show User Manual");
@@ -290,14 +292,14 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(MENU_GRAVITY, "7.0");
 			props.setProperty(TITLE, "Contact Help Desk...");
 			registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(TITLE, "Report a Bug...");
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
@@ -432,7 +434,7 @@ public class CyActivator extends AbstractCyActivator {
 			}
 		} else {
 			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "Help");
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(TITLE, "About");
 			props.setProperty(MENU_GRAVITY,"10.0");
 			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
