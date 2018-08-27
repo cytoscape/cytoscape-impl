@@ -21,9 +21,9 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.SwingUtilities;
 import javax.swing.event.SwingPropertyChangeSupport;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
@@ -46,6 +46,8 @@ import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.Task;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -101,8 +103,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private AnnotationEdit undoEdit;
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
-	private boolean loading = false;
+	private boolean loading;
 	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.view = view;
@@ -115,7 +118,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		initListeners();
 	}
-
 	
 	public void markUndoEdit(String label) {
 		undoEdit = new AnnotationEdit(label, this, registrar);
@@ -181,7 +183,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		backGroundCanvas.dispose();
 	}
 
-	
 	public void loadAnnotations() {
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
@@ -195,133 +196,31 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void loadAnnotations(List<String> annotations) {
-		// Make sure we're on the EDT since we directly add annotations to the canvas
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(() -> loadAnnotations());
-			return;
-		}
+		invokeOnEDT(() -> {
+			loading = true;
+			
+			try {
+				List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
+				Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
+				Map<String, Annotation> uuidMap = new HashMap<>();
+				Map<Object, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 		
-		loading = true;
-		
-		List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
-		Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
-		Map<String, Annotation> uuidMap = new HashMap<>();
-		Map<Object, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
-
-		if (annotations != null) {
-			for (String s: annotations) {
-				Map<String, String> argMap = createArgMap(s);
-				DingAnnotation annotation = null;
-				String type = argMap.get("type");
-				
-				if (type == null)
-					continue;
-
-				if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation")) {
-					arrowList.add(argMap);
-					continue;
+				if (annotations != null) {
+					loadRegularAnnotations(annotations, arrowList, groupMap, uuidMap, zOrderMap);
+					loadGroups(groupMap, uuidMap);
+					loadArrows(arrowList, zOrderMap);
+					// Now, handle our Z-Order.  This needs to be done after everything else is
+					// added to make sure that we have the proper number of components
+					// We use a TreeMap so that the keys (the zOrder are ordered)
+					restoreZOrder(zOrderMap);
 				}
-
-				Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
-				
-				if (a == null || !(a instanceof DingAnnotation))
-					continue;
-
-				annotation = (DingAnnotation)a;
-
-				uuidMap.put(annotation.getUUID().toString(), annotation);
-				Object canvas;
-
-				if (annotation.getCanvas() != null) {
-					annotation.getCanvas().add(annotation.getComponent());
-					canvas = annotation.getCanvas();
-				} else {
-					canvas = foreGroundCanvas;
-					foreGroundCanvas.add(annotation.getComponent());
-				}
-
-				if (argMap.containsKey(Annotation.Z)) {
-					int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
-					
-					if (zOrder >= 0) {
-						if (!zOrderMap.containsKey(canvas))
-							zOrderMap.put(canvas, new TreeMap<>());
-						zOrderMap.get(canvas).put(zOrder,annotation);
-					}
-				}
-
-				addAnnotation(annotation);
-
-				// If this is a group, save the annotation and the memberUIDs list
-				if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
-					// Don't bother adding the group if it doesn't have any children
-					if (argMap.containsKey("memberUUIDs"))
-						groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
-				}
+			} catch (Exception e) {
+				logger.error("Annotations were not loaded correctly.", e);
+			} finally {
+				loading = false;
+				propChangeSupport.firePropertyChange("annotations", Collections.emptySet(), new HashSet<>(annotationSet));
 			}
-
-			// Now, handle all of our groups
-			for (GroupAnnotation group: groupMap.keySet()) {
-				String uuids = groupMap.get(group);
-				String[] uuidArray = uuids.split(",");
-				
-				for (String uuid: uuidArray) {
-					if (uuidMap.containsKey(uuid)) {
-						Annotation child = uuidMap.get(uuid);
-						group.addMember(child);
-					}
-				}
-			}
-
-			// Now, handle all of our arrows
-			for (Map<String, String> argMap : arrowList) {
-				String type = argMap.get("type");
-				Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
-				
-				if (annotation instanceof ArrowAnnotationImpl) {
-					ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
-					arrow.getSource().addArrow(arrow);
-					Object canvas;
-					
-					if (arrow.getCanvas() != null) {
-						arrow.getCanvas().add(arrow.getComponent());
-						canvas = arrow.getCanvas();
-					} else {
-						foreGroundCanvas.add(arrow.getComponent());
-						canvas = foreGroundCanvas;
-					}
-
-					if (argMap.containsKey(Annotation.Z)) {
-						int zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
-						
-						if (zOrder >= 0) {
-							if (!zOrderMap.containsKey(canvas))
-								zOrderMap.put(canvas, new TreeMap<>());
-							zOrderMap.get(canvas).put(zOrder,arrow);
-						}
-					}
-
-					addAnnotation(arrow);
-				}
-			}
-
-			// Now, handle our Z-Order.  This needs to be done after everything else is
-			// added to make sure that we have the proper number of components
-			// We use a TreeMap so that the keys (the zOrder are ordered)
-			for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
-				for (Integer zOrder: map.keySet()) {
-					DingAnnotation a = map.get(zOrder);
-					
-					if (a.getCanvas() != null)
-						a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
-					else
-						foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrder);
-				}
-			}
-		}
-		
-		loading = false;
-		propChangeSupport.firePropertyChange("annotations", Collections.emptySet(), new HashSet<>(annotationSet));
+		});
 	}
 
 	public DingAnnotation getAnnotation(UUID annotationID) {
@@ -654,17 +553,143 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		propChangeSupport.firePropertyChange("annotationsReordered", null, type);
 	}
 
+	private void loadRegularAnnotations(
+			List<String> annotations,
+			List<Map<String, String>> arrowList,
+			Map<GroupAnnotation, String> groupMap,
+			Map<String, Annotation> uuidMap,
+			Map<Object, Map<Integer, DingAnnotation>> zOrderMap
+	) {
+		for (String s: annotations) {
+			Map<String, String> argMap = createArgMap(s);
+			DingAnnotation annotation = null;
+			String type = argMap.get("type");
+			
+			if (type == null)
+				continue;
+
+			if (type.equals("ARROW") || type.equals("org.cytoscape.view.presentation.annotations.ArrowAnnotation")) {
+				arrowList.add(argMap);
+				continue;
+			}
+
+			Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
+			
+			if (a == null || !(a instanceof DingAnnotation))
+				continue;
+
+			annotation = (DingAnnotation)a;
+
+			uuidMap.put(annotation.getUUID().toString(), annotation);
+			Object canvas;
+
+			if (annotation.getCanvas() != null) {
+				annotation.getCanvas().add(annotation.getComponent());
+				canvas = annotation.getCanvas();
+			} else {
+				canvas = foreGroundCanvas;
+				foreGroundCanvas.add(annotation.getComponent());
+			}
+
+			if (argMap.containsKey(Annotation.Z)) {
+				int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
+				
+				if (zOrder >= 0) {
+					if (!zOrderMap.containsKey(canvas))
+						zOrderMap.put(canvas, new TreeMap<>());
+					zOrderMap.get(canvas).put(zOrder,annotation);
+				}
+			}
+
+			addAnnotation(annotation);
+
+			// If this is a group, save the annotation and the memberUIDs list
+			if (type.equals("GROUP") || type.equals("org.cytoscape.view.presentation.annotations.GroupAnnotation")) {
+				// Don't bother adding the group if it doesn't have any children
+				if (argMap.containsKey("memberUUIDs"))
+					groupMap.put((GroupAnnotation)a, argMap.get("memberUUIDs"));
+			}
+		}
+	}
+	
+	private void loadGroups(Map<GroupAnnotation, String> groupMap, Map<String, Annotation> uuidMap) {
+		for (GroupAnnotation group: groupMap.keySet()) {
+			String uuids = groupMap.get(group);
+			String[] uuidArray = uuids.split(",");
+			
+			for (String uuid: uuidArray) {
+				if (uuidMap.containsKey(uuid)) {
+					Annotation child = uuidMap.get(uuid);
+					group.addMember(child);
+				}
+			}
+		}
+	}
+	
+	private void loadArrows(List<Map<String, String>> arrowList, Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
+		for (Map<String, String> argMap : arrowList) {
+			String type = argMap.get("type");
+			Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
+			
+			if (annotation instanceof ArrowAnnotationImpl) {
+				ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
+				arrow.getSource().addArrow(arrow);
+				Object canvas;
+				
+				if (arrow.getCanvas() != null) {
+					arrow.getCanvas().add(arrow.getComponent());
+					canvas = arrow.getCanvas();
+				} else {
+					foreGroundCanvas.add(arrow.getComponent());
+					canvas = foreGroundCanvas;
+				}
+
+				if (argMap.containsKey(Annotation.Z)) {
+					int zOrder = Integer.parseInt(argMap.get(Annotation.Z	));
+					
+					if (zOrder >= 0) {
+						if (!zOrderMap.containsKey(canvas))
+							zOrderMap.put(canvas, new TreeMap<>());
+						
+						zOrderMap.get(canvas).put(zOrder,arrow);
+					}
+				}
+
+				addAnnotation(arrow);
+			}
+		}
+	}
+	
+	private void restoreZOrder(Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
+		for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
+			for (Integer zOrder: map.keySet()) {
+				DingAnnotation a = map.get(zOrder);
+				
+				if (a.getCanvas() != null)
+					a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
+				else
+					foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrder);
+			}
+		}
+	}
+	
 	private Map<String, String> createArgMap(String mapstring) {
 		Map<String, String> result = new HashMap<>();
 		String[] argList = mapstring.split("[|]");
-		if (argList.length == 0) return result;
+
+		if (argList.length == 0)
+			return result;
 
 		for (int argIndex = 0; argIndex < argList.length; argIndex++) {
 			String arg = argList[argIndex];
 			String[] keyValue = arg.split("=");
-			if (keyValue.length != 2) continue;
+
+			if (keyValue.length != 2)
+				continue;
+			
 			result.put(keyValue[0], keyValue[1]);
 		}
+
 		return result;
 	}
 
