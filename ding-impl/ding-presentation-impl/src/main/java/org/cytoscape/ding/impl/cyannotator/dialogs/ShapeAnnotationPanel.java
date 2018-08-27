@@ -32,10 +32,8 @@ import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
+import java.awt.Paint;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -51,10 +49,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.util.swing.ColorButton;
@@ -99,45 +94,30 @@ public class ShapeAnnotationPanel extends JPanel {
 		shapeList = new JList<>();
 		shapeList.setModel(new AbstractListModel<String>() {
 			List<String> typeList = annotation.getSupportedShapes();
-
-			@Override
-			public int getSize() {
-				return typeList.size();
-			}
-			@Override
-			public String getElementAt(int i) {
-				return typeList.get(i);
-			}
+			@Override public int getSize() { return typeList.size(); }
+			@Override public String getElementAt(int i) { return typeList.get(i); }
 		});
 		shapeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		shapeList.setSelectedValue(annotation.getShapeType(), true);
-		shapeList.addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-				shapeListValueChanged(evt);
-			}
-		});
+		shapeList.addListSelectionListener(this::shapeListValueChanged);
 		
 		final JScrollPane scrollPane = new JScrollPane(shapeList);
 
+		final Paint fillColor = preview.getFillColor();
+		final Paint borderColor = preview.getBorderColor();
+		final boolean fillColorSupported = fillColor == null || fillColor instanceof Color;
+		final boolean borderColorSupported = borderColor == null || borderColor instanceof Color;
+		
 		fillColorCheck = new JCheckBox();
 		fillColorCheck.setSelected(annotation.getFillColor() != null);
-		fillColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				fillColorCheckActionPerformed(evt);
-			}
-		});
-
-		fillColorButton = new ColorButton((Color) preview.getFillColor());
+		fillColorCheck.addActionListener(this::fillColorCheckActionPerformed);
+		
+		fillColorButton = new ColorButton(fillColorSupported ? (Color)fillColor : Color.GRAY);
 		fillColorButton.setToolTipText("Select fill color...");
 		fillColorButton.setEnabled(fillColorCheck.isSelected());
-		fillColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setFillColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
+		fillColorButton.addPropertyChangeListener("color", evt -> {
+			preview.setFillColor((Color) evt.getNewValue());
+			previewPanel.repaint();
 		});
 
 		fillOpacitySlider = new JSlider(0, 100);
@@ -154,31 +134,20 @@ public class ShapeAnnotationPanel extends JPanel {
 			fillOpacitySlider.setEnabled(false);
 		}
 
-		fillOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateFillOpacity(fillOpacitySlider.getValue());
-			}
+		fillOpacitySlider.addChangeListener(evt -> {
+			updateFillOpacity(fillOpacitySlider.getValue());
 		});
 
 		borderColorCheck = new JCheckBox();
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);
-		borderColorCheck.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				borderColorCheckActionPerformed(evt);
-			}
-		});
+		borderColorCheck.addActionListener(this::borderColorCheckActionPerformed);
 
-		borderColorButton = new ColorButton((Color) preview.getBorderColor());
+		borderColorButton = new ColorButton(borderColorSupported ? (Color)borderColor : Color.GRAY);
 		borderColorButton.setToolTipText("Select border color...");
 		borderColorButton.setEnabled(borderColorCheck.isSelected());
-		borderColorButton.addPropertyChangeListener("color", new PropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent evt) {
-				preview.setBorderColor((Color) evt.getNewValue());
-				previewPanel.repaint();
-			}
+		borderColorButton.addPropertyChangeListener("color", evt -> {
+			preview.setBorderColor((Color) evt.getNewValue());
+			previewPanel.repaint();
 		});
 		
 		borderOpacitySlider = new JSlider(0, 100);
@@ -195,12 +164,23 @@ public class ShapeAnnotationPanel extends JPanel {
 			borderOpacitySlider.setEnabled(false);
 		}
 
-		borderOpacitySlider.addChangeListener(new ChangeListener() {
-			@Override
-			public void stateChanged(ChangeEvent evt) {
-				updateBorderOpacity(borderOpacitySlider.getValue());
-			}
+		borderOpacitySlider.addChangeListener(evt -> {
+			updateBorderOpacity(borderOpacitySlider.getValue());
 		});
+		
+		
+		// Its possible for an app to set the annotation color to a gradient, which won't work
+		if(!fillColorSupported) {
+			fillColorButton.setEnabled(false);
+			fillColorCheck.setEnabled(false);
+			fillOpacitySlider.setEnabled(false);
+		}
+		if(!borderColorSupported) {
+			borderColorButton.setEnabled(false);
+			borderColorCheck.setEnabled(false);
+			borderOpacitySlider.setEnabled(false);
+		}
+				
 
 		borderWidthCombo = new JComboBox<>();
 		borderWidthCombo.setModel(new DefaultComboBoxModel<String>(
@@ -214,12 +194,8 @@ public class ShapeAnnotationPanel extends JPanel {
 			}
 		}
 
-		borderWidthCombo.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				borderWidthActionPerformed(evt);
-			}
-		});
+		borderWidthCombo.addActionListener(this::borderWidthActionPerformed);
+		
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);

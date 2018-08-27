@@ -37,6 +37,7 @@ import javax.swing.JLabel;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
@@ -1237,7 +1238,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					m_view.m_selectedAnchors.empty();
 				
 				if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor < 0 
-						&& m_view.getCyAnnotator().getAnnotationSelection().isEmpty()) {
+						&& (m_view.getCyAnnotator().getAnnotationSelection().isEmpty() || !m_view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION))) {
 					
 					m_button1NodeDrag = false;
 					
