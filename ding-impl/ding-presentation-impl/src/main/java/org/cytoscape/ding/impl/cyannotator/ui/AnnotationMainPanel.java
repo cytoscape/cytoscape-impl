@@ -322,14 +322,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void clearAnnotationButtonSelection() {
-		// Don't do buttonGroup.clearSelection(),
-		// because we want the click event to be captured by the mediator
-		for (AnnotationToggleButton btn : buttonMap.values()) {
-			if (btn.isSelected()) {
-				btn.doClick();
-				break;
-			}
-		}
+		buttonGroup.clearSelection();
 	}
 	
 	void setSelected(Annotation a, boolean selected) {

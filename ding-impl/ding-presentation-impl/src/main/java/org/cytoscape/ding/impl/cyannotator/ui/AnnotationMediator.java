@@ -5,6 +5,7 @@ import static org.cytoscape.view.presentation.annotations.Annotation.BACKGROUND;
 import static org.cytoscape.view.presentation.annotations.Annotation.FOREGROUND;
 
 import java.awt.Point;
+import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
@@ -199,7 +200,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	@Override
 	public void handleEvent(SessionLoadedEvent evt) {
 		loadingSession = false;
-		disposeClickToAddAnnotationListener();
+		mainPanel.clearAnnotationButtonSelection();
 		
 		final Set<CyNetworkView> allViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet();
 		
@@ -240,7 +241,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent evt) {
 		if (appStarted && !loadingSession) {
-			disposeClickToAddAnnotationListener();
+			mainPanel.clearAnnotationButtonSelection();
 			final DGraphView view = evt.getNetworkView() instanceof DGraphView ?
 					(DGraphView) evt.getNetworkView() : null;
 
@@ -258,14 +259,16 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 
 	@Override
 	public void handleEvent(AnnotationsAddedEvent evt) {
+		// FIXME AnnotationManager is not firing this event consistently so we have to listen to CyAnnotator PropertyChangeEvents
 //		if (appStarted && !loadingSession && evt.getSource().equals(getCurrentDGraphView()))
-//			invokeOnEDT(() -> mainPanel.addAnnotations(evt.getPayloadCollection()));
+//			invokeOnEDT(() -> mainPanel.update((DGraphView) evt.getSource()));
 	}
 	
 	@Override
 	public void handleEvent(AnnotationsRemovedEvent evt) {
+		// FIXME AnnotationManager is not firing this event consistently so we have to listen to CyAnnotator PropertyChangeEvents
 //		if (appStarted && !loadingSession && evt.getSource().equals(getCurrentDGraphView()))
-//			invokeOnEDT(() -> mainPanel.removeAnnotations(evt.getPayloadCollection()));
+//			invokeOnEDT(() -> mainPanel.update((DGraphView) evt.getSource()));
 	}
 	
 	@Override
@@ -325,10 +328,11 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	
 	private void addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
 		final JToggleButton btn = mainPanel.addAnnotationButton(f);
-		btn.addActionListener(evt -> {
+		btn.addItemListener(evt -> {
 			disposeClickToAddAnnotationListener();
+			int state = evt.getStateChange();
 			
-			if (btn.isSelected()) {
+			if (state == ItemEvent.SELECTED) {
 				DGraphView view = getCurrentDGraphView();
 				
 				if (view != null) {
@@ -573,8 +577,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1)
+			if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
+				mainPanel.clearAnnotationButtonSelection();
 				createAnnotation(view, factory, e.getPoint());
+			}
 		}
 		
 		public DGraphView getView() {
