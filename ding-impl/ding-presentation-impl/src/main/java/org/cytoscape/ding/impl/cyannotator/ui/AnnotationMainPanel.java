@@ -116,6 +116,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	private static final String TITLE = "Annotation";
 	private static final String ID = "org.cytoscape.Annotation";
 	
+	private static final Color TREE_BG_COLOR = UIManager.getColor("Table.background");
+	private static final Color TREE_FG_COLOR = UIManager.getColor("Table.foreground");
+	private static final Color TREE_SEL_BG_COLOR = UIManager.getColor("Table.selectionBackground");
+	private static final Color TREE_SEL_FG_COLOR = UIManager.getColor("Table.selectionForeground");
+	
 	private JPanel buttonPanel;
 	private JLabel infoLabel;
 	private JLabel selectionLabel;
@@ -887,7 +892,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						scrollPane.requestFocusInWindow();
 					}
 				});
-				scrollPane.setBackground(UIManager.getColor("Panel.background"));
+				scrollPane.setBackground(TREE_BG_COLOR);
 				scrollPane.setBorder(
 						BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			}
@@ -908,7 +913,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					public Color getBackground() {
 						// This guarantees the color will come from the correct Look-And-Feel,
 						// even if this component is initialized before swing-application-impl
-						return UIManager.getColor("Panel.background");
+						return TREE_BG_COLOR;
 					}
 					@Override
 					public void paintComponent(Graphics g) {
@@ -920,7 +925,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						if (rows != null) {
 							for (int i : rows) {
 								Rectangle r = getRowBounds(i);
-								g.setColor(UIManager.getColor("Table.selectionBackground"));
+								g.setColor(TREE_SEL_BG_COLOR);
 								g.fillRect(0, r.y, getWidth(), r.height);
 							}
 						}
@@ -1309,11 +1314,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 			
 			if (selected) {
-				setForeground(UIManager.getColor("Table.selectionForeground"));
-				setBackground(UIManager.getColor("Table.selectionBackground"));
+				setForeground(TREE_SEL_FG_COLOR);
+				setBackground(TREE_SEL_BG_COLOR);
 			} else {
-				setBackground(UIManager.getColor("Panel.background"));
-				setForeground(UIManager.getColor("Table.foreground"));
+				setBackground(TREE_BG_COLOR);
+				setForeground(TREE_FG_COLOR);
 			}
 			
 			return this;
