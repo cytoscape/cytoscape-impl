@@ -962,6 +962,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				makeSmall(tree);
 				
 				tree.setEditable(true);
+				tree.setToggleClickCount(0);
 				// Start editing with space key
 				tree.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0), "startEditing");
 				tree.setInvokesStopCellEditing(true); // this helps stop editing within focus of tree
