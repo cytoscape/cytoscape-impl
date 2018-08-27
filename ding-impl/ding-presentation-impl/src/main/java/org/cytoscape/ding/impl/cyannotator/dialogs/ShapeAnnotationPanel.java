@@ -105,12 +105,14 @@ public class ShapeAnnotationPanel extends JPanel {
 
 		final Paint fillColor = preview.getFillColor();
 		final Paint borderColor = preview.getBorderColor();
+		final boolean fillColorSupported = fillColor == null || fillColor instanceof Color;
+		final boolean borderColorSupported = borderColor == null || borderColor instanceof Color;
 		
 		fillColorCheck = new JCheckBox();
 		fillColorCheck.setSelected(annotation.getFillColor() != null);
 		fillColorCheck.addActionListener(this::fillColorCheckActionPerformed);
 		
-		fillColorButton = new ColorButton(fillColor instanceof Color ? (Color)fillColor : Color.GRAY);
+		fillColorButton = new ColorButton(fillColorSupported ? (Color)fillColor : Color.GRAY);
 		fillColorButton.setToolTipText("Select fill color...");
 		fillColorButton.setEnabled(fillColorCheck.isSelected());
 		fillColorButton.addPropertyChangeListener("color", evt -> {
@@ -140,7 +142,7 @@ public class ShapeAnnotationPanel extends JPanel {
 		borderColorCheck.setSelected(annotation.getBorderColor() != null);
 		borderColorCheck.addActionListener(this::borderColorCheckActionPerformed);
 
-		borderColorButton = new ColorButton(borderColor instanceof Color ? (Color)borderColor : Color.GRAY);
+		borderColorButton = new ColorButton(borderColorSupported ? (Color)borderColor : Color.GRAY);
 		borderColorButton.setToolTipText("Select border color...");
 		borderColorButton.setEnabled(borderColorCheck.isSelected());
 		borderColorButton.addPropertyChangeListener("color", evt -> {
@@ -167,13 +169,13 @@ public class ShapeAnnotationPanel extends JPanel {
 		});
 		
 		
-		// Its possible for an app to set the annotation color to a gradient, which won't work here
-		if(!(fillColor instanceof Color)) {
+		// Its possible for an app to set the annotation color to a gradient, which won't work
+		if(!fillColorSupported) {
 			fillColorButton.setEnabled(false);
 			fillColorCheck.setEnabled(false);
 			fillOpacitySlider.setEnabled(false);
 		}
-		if(!(borderColor instanceof Color)) {
+		if(!borderColorSupported) {
 			borderColorButton.setEnabled(false);
 			borderColorCheck.setEnabled(false);
 			borderOpacitySlider.setEnabled(false);
