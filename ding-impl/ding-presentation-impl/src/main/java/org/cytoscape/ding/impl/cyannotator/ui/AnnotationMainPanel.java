@@ -1067,7 +1067,38 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		private void update(Collection<Annotation> collection) {
-			getTree().setModel(new AnnotationTreeModel(canvasName, collection));
+			// Save collapsed groups
+			JTree tree = getTree();
+			Set<GroupAnnotation> collapsedGroups = new HashSet<>();
+			
+			for (int i = 0; i < tree.getRowCount(); i++) {
+				TreePath path = tree.getPathForRow(i);
+				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
+				Annotation a = node.getUserObject();
+				
+				if (a instanceof GroupAnnotation && tree.isCollapsed(path))
+					collapsedGroups.add((GroupAnnotation) a);
+			}
+			
+			// Update Tree Model
+			tree.setModel(new AnnotationTreeModel(canvasName, collection));
+			
+			// Collapse groups that were collapsed before the update and expand all other groups by default.
+			// IMPORTANT: getRowCount() increases after each expansion, so don't store it in a variable!
+			for (int i = 0; i < tree.getRowCount(); i++) {
+				TreePath path = tree.getPathForRow(i);
+				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
+				Annotation a = node.getUserObject();
+				
+				if (a instanceof GroupAnnotation) {
+					if (collapsedGroups.contains(a))
+						tree.collapsePath(path);
+					else
+						tree.expandPath(path);
+				}
+			}
+			
+			// Update everything else
 			updateButtons();
 		}
 		
@@ -1179,6 +1210,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		
 		public List<Annotation> getData() {
 			return new ArrayList<>(all.keySet());
+		}
+		
+		public AnnotationNode getNode(Annotation a) {
+			return all.get(a);
 		}
 		
 		public int rowOf(Annotation a) {
