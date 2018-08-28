@@ -1,6 +1,15 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.view.presentation.property.values.Position.*;
+import static org.cytoscape.view.presentation.property.values.Position.CENTER;
+import static org.cytoscape.view.presentation.property.values.Position.EAST;
+import static org.cytoscape.view.presentation.property.values.Position.NONE;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
+import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
+import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
+import static org.cytoscape.view.presentation.property.values.Position.WEST;
 
 /*
  * #%L
@@ -151,8 +160,10 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	public Position overAnchor(double x, double y) {
 		// OK, now given our current selection, we need to see if we're over an anchor
 		for (int pos = 0; pos < 8; pos++) {
-			if (isOver(x, y, anchors[pos]))
+			Rectangle2D rect = anchors[pos];
+			if (rect != null && rect.contains(x, y)) {
 				return getPosition(pos);
+			}
 		}
 		
 		return null;
@@ -360,10 +371,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		}
 
 		g2.setComposite(originalComposite);
-	}
-
-	private boolean isOver(double x, double y, Rectangle2D anchor) {
-		return anchor.contains(x, y);
 	}
 
 	private Position getPosition(int pos) {
