@@ -651,6 +651,8 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("List.disabledForeground", disabledFg);
 			UIManager.put("ComboBox.disabledForeground", disabledFg);
 			
+			UIManager.put("Tree.hash", new Color(255, 255, 255, 0)); // Hide tree lines properly
+			
 			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
 			if (isAquaLAF()) {
