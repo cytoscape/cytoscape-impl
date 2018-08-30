@@ -55,45 +55,20 @@ public class CytoscapeMenus {
 		
 		viewFrameActions = new LinkedHashSet<>();
 
-
-//		menuBar.addSeparator("File", 1.99);
-//		menuBar.addSeparator("File", 2.99);
-//		menuBar.addSeparator("File",5.5);
-//		menuBar.addSeparator("File.Import[23]",5.5);
-//		menuBar.addSeparator("File.Import[23]",17.5);
-//		menuBar.addSeparator("File",23.99);
-//		menuBar.addSeparator("File",25);
-//		if (!LookAndFeelUtil.isMac())
-//			menuBar.addSeparator("File", 27.0);
-
 		
 		menuBar.addMenu("File.New Network", 3.0);
 		menuBar.addSeparator("File",3.1);
 		menuBar.addMenu("Edit", 0.0);
 		menuBar.addMenu("View", 0.0);
 		menuBar.addMenu("Select", 0.0);
-//		menuBar.addMenu("Select.Nodes", 1.0);
-//		menuBar.addMenu("Select.Edges", 1.1);
-//		menuBar.addSeparator("Select", 0.2);
-//		menuBar.addSeparator("Select", 1.0);
-//		menuBar.addSeparator("Select", 1.1);
 		menuBar.addMenu("Layout", 0.0);
 		menuBar.addMenu("Apps", 0.0);
 		menuBar.addMenu("Tools", 0.0);
-		menuBar.addSeparator("Tools", 20.0);
-		menuBar.addSeparator("Tools", 30.0);
-		menuBar.addSeparator("Tools", 50.0);
-		menuBar.addSeparator("Tools", 150.0);
+//		menuBar.addSeparator("Tools", 20.0);
+//		menuBar.addSeparator("Tools", 30.0);
+//		menuBar.addSeparator("Tools", 50.0);
+//		menuBar.addSeparator("Tools", 150.0);
 		menuBar.addMenu("Help", 0.0);
-
-//		menuBar.addSeparator("File", 6.0);
-//		menuBar.addSeparator("File", 7.0);
-
-//		menuBar.addMenu("File.New", 0.0);
-//		menuBar.addMenu("File.New.Network", 0.0);
-//
-//		
-
 
 		menuBar.addSeparator("Edit", 2.0);
 		menuBar.addSeparator("Edit", 4.0);
@@ -104,8 +79,8 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("View", 6.0);
 		menuBar.addSeparator("View", 9.0);
 
-		menuBar.addSeparator("Select", 4.0);
-		menuBar.addSeparator("Select", 5.0);
+//		menuBar.addSeparator("Select", 4.0);
+//		menuBar.addSeparator("Select", 5.0);
 
 		menuBar.addSeparator("Layout", 2.0);
 		menuBar.addSeparator("Layout", 4.0);
