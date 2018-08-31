@@ -33,6 +33,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
@@ -132,6 +134,8 @@ public class UpdateManager implements AppsFinishedStartingListener {
 
 	@Override
 	public void handleEvent(AppsFinishedStartingEvent event) {
+		final ExecutorService service = Executors.newSingleThreadExecutor();
+		service.submit(()-> {
 		for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
 			appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
 			appManager.getWebQuerier().getAllApps();
@@ -143,5 +147,6 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		if(updates.size() > 0)
 			userLogger.info(updates.size() + " " + 
 						(updates.size() == 1 ? "update" : "updates") + " available" );
+		});
 	}
 }
