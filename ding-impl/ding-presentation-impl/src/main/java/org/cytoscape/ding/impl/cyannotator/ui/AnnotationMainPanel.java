@@ -349,8 +349,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	void update(DGraphView view) {
 		this.view = view;
 		
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
-				: Collections.emptyList();
+		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
@@ -358,7 +357,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		setEnabled(view != null);
 		
 		// Update annotation trees
-		Map<String, Collection<Annotation>> map = separateByLayers(annotations);
+		Map<String, Collection<Annotation>> map = separateByLayers(annotations, false);
 		getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
 		getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
 		
@@ -437,17 +436,16 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations()
-				: Collections.emptyList();
+		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
-			Map<String, Collection<Annotation>> map = separateByLayers(annotations);
+			Map<String, Collection<Annotation>> map = separateByLayers(annotations, false);
 			getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
 			getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
 		}
 		// Restore the row selection (the annotations that were selected before must be still selected)
 		getBackgroundTree().clearSelection();
 		getForegroundTree().clearSelection();
-		Map<String, Collection<Annotation>> map = separateByLayers(selectedAnnotations);
+		Map<String, Collection<Annotation>> map = separateByLayers(selectedAnnotations, true);
 		map.get(Annotation.BACKGROUND).forEach(a -> setSelected(a, true));
 		map.get(Annotation.FOREGROUND).forEach(a -> setSelected(a, true));
 		getBackgroundLayerPanel().updateButtons();
@@ -464,14 +462,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			tree.stopEditing();
 	}
 	
-	private static Map<String, Collection<Annotation>> separateByLayers(Collection<Annotation> list) {
+	private static Map<String, Collection<Annotation>> separateByLayers(Collection<Annotation> list, boolean includeGroups) {
 		Map<String, Collection<Annotation>> map = new HashMap<>();
 		map.put(Annotation.BACKGROUND, new HashSet<>());
 		map.put(Annotation.FOREGROUND, new HashSet<>());
 		
 		if (list != null) {
-			list.forEach(a -> {
-				if (a instanceof GroupAnnotation == false) {
+			for (Annotation a : list) {
+				if (includeGroups || a instanceof GroupAnnotation == false) {
 					// Don't add GroupAnnotations now, because their actual canvas doesn't matter,
 					// as a group can contain annotations from both layers
 					Collection<Annotation> set = map.get(a.getCanvasName());
@@ -479,7 +477,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					if (set != null) // Should never be null, unless a new canvas name is created!
 						set.add(a);
 				}
-			});
+			};
 		}
 		
 		return map;
@@ -1326,7 +1324,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			if (value instanceof AnnotationNode) {
 				Annotation annotation = ((AnnotationNode) value).getUserObject();
-				setText(annotation.getName());
+				DingAnnotation da = (DingAnnotation)annotation;
+				setText(annotation.getName() + " (z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
 				setToolTipText(annotation.getName());
 				setIconTextGap(8);
 				
