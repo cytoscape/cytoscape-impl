@@ -848,6 +848,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(TITLE, "Select all nodes and edges");
 			props.setProperty(MENU_GRAVITY, "5.0");
+			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectAllTaskFactory.class, props);
