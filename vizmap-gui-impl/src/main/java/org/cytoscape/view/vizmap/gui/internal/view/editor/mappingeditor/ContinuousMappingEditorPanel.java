@@ -39,7 +39,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.util.ArrayList;
+import java.lang.ref.WeakReference;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -61,7 +61,6 @@ import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
-import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteProviderManager;
 import org.cytoscape.util.color.PaletteType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -131,7 +130,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	// Only accepts Continuous Mapping
 	protected final ContinuousMapping<K, V> mapping;
 	protected final VisualProperty<V> type;
-	private final CyTable dataTable;
+	private final WeakReference<CyTable> dataTable;
 
 	private SpinnerNumberModel spinnerModel;
 
@@ -171,7 +170,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.mapping = mapping;
 		this.type = mapping.getVisualProperty();
 		this.style = style;
-		this.dataTable = table;
+		this.dataTable = new WeakReference<>(table);
 		this.servicesUtil = servicesUtil;
 		this.original = createCopy(mapping);
 
@@ -628,36 +627,39 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	// ///////////////// Action Listeners //////////////////////
 
 	protected void minMaxButtonActionPerformed(ActionEvent evt) {
-		CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
-		
-		// Get new column's min/max values
-		double minTgtVal = Double.POSITIVE_INFINITY;
-		double maxTgtVal = Double.NEGATIVE_INFINITY;
-		final List<?> valueList = col.getValues(col.getType());
-
-		for (final Object o : valueList) {
-			if (o instanceof Number) {
-				double val = ((Number) o).doubleValue();
-				
-				if (!Double.isNaN(val)) {
-					maxTgtVal = Math.max(maxTgtVal, val);
-					minTgtVal = Math.min(minTgtVal, val);
+		CyTable table = dataTable.get();
+		if(table != null) {
+			CyColumn col = table.getColumn(mapping.getMappingColumnName());
+			
+			// Get new column's min/max values
+			double minTgtVal = Double.POSITIVE_INFINITY;
+			double maxTgtVal = Double.NEGATIVE_INFINITY;
+			final List<?> valueList = col.getValues(col.getType());
+	
+			for (final Object o : valueList) {
+				if (o instanceof Number) {
+					double val = ((Number) o).doubleValue();
+					
+					if (!Double.isNaN(val)) {
+						maxTgtVal = Math.max(maxTgtVal, val);
+						minTgtVal = Math.min(minTgtVal, val);
+					}
 				}
 			}
+			
+			
+			final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
+			
+			final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), minTgtVal, maxTgtVal, dialog);
+	
+			if (newVal == null)
+				return;
+	
+			tracer.setMin(type, newVal[0]);
+			tracer.setMax(type, newVal[1]);
+			updateMap();
+			this.repaint();
 		}
-		
-		
-		final JDialog dialog = (JDialog) getMainPanel().getRootPane().getParent();
-		
-		final Double[] newVal = MinMaxDialog.getMinMax(tracer.getMin(type), tracer.getMax(type), minTgtVal, maxTgtVal, dialog);
-
-		if (newVal == null)
-			return;
-
-		tracer.setMin(type, newVal[0]);
-		tracer.setMax(type, newVal[1]);
-		updateMap();
-		this.repaint();
 	}
 
 	abstract protected void deleteButtonActionPerformed(ActionEvent evt);
@@ -670,34 +672,36 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private void initRangeValues() {
 		// Set range values
 		if (tracer.getRange(type) == 0) {
-			final CyColumn col = dataTable.getColumn(mapping.getMappingColumnName());
-
-			if (col != null) {
-				// If the current mapping already have points, start with the actual mapping's min/max values
-				Double max = VisualPropertyUtil.getMaxValue(mapping);
-				Double min = VisualPropertyUtil.getMinValue(mapping);
-				if (max == null || min == null) {
-					max = max == null ? Double.NEGATIVE_INFINITY : max;
-					min = min == null ? Double.POSITIVE_INFINITY : min;
-				
-					final List<?> valueList = col.getValues(col.getType());
-
-					for (Object o : valueList) {
-						if (o instanceof Number) {
-							Number val = (Number) o;
+			CyTable table = dataTable.get();
+			if(table != null) {
+				final CyColumn col = table.getColumn(mapping.getMappingColumnName());
+				if (col != null) {
+					// If the current mapping already have points, start with the actual mapping's min/max values
+					Double max = VisualPropertyUtil.getMaxValue(mapping);
+					Double min = VisualPropertyUtil.getMinValue(mapping);
+					if (max == null || min == null) {
+						max = max == null ? Double.NEGATIVE_INFINITY : max;
+						min = min == null ? Double.POSITIVE_INFINITY : min;
+					
+						final List<?> valueList = col.getValues(col.getType());
 	
-							if (val.doubleValue() > max)
-								max = val.doubleValue();
+						for (Object o : valueList) {
+							if (o instanceof Number) {
+								Number val = (Number) o;
+		
+								if (val.doubleValue() > max)
+									max = val.doubleValue();
+		
+								if (val.doubleValue() < min)
+									min = val.doubleValue();
+							}
 	
-							if (val.doubleValue() < min)
-								min = val.doubleValue();
 						}
-
 					}
+	
+					tracer.setMax(type, max);
+					tracer.setMin(type, min);
 				}
-
-				tracer.setMax(type, max);
-				tracer.setMin(type, min);
 			}
 		}
 	}
