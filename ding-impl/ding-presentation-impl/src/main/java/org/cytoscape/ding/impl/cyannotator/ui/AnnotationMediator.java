@@ -494,7 +494,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				JDialog dialog = a != null ? a.getModifyDialog() : null;
 
 				if (dialog != null) {
-					dialog.setLocation(e.getPoint());
+					dialog.setLocationRelativeTo(mainPanel);
 					dialog.setVisible(true);
 				}
 			});

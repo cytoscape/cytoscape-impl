@@ -14,6 +14,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -58,7 +59,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
 		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
 		
-		return new LoadImageDialog(view, location, customGraphicsManager, getActiveWindow());
+		return new LoadImageDialog(view, location, customGraphicsManager, ViewUtil.getActiveWindow(view));
 	}
 
 	@Override
@@ -68,7 +69,7 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 			return null;
 
 		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		return new ImageAnnotationImpl((DGraphView) view, argMap, customGraphicsManager, getActiveWindow());
+		return new ImageAnnotationImpl((DGraphView) view, argMap, customGraphicsManager);
 	}
 	
 	@Override

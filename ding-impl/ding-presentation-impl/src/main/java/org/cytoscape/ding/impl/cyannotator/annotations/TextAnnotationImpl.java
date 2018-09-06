@@ -9,7 +9,6 @@ import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
@@ -19,6 +18,7 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -62,16 +62,16 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	/** Initially, the name is the same as the text */
 	private boolean updateNameFromText = true;
 
-	public TextAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) { 
-		super(view, owner, usedForPreviews); 
+	public TextAnnotationImpl(DGraphView view, boolean usedForPreviews) { 
+		super(view, usedForPreviews); 
 		
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 		this.text = DEF_TEXT;
 	}
 
-	public TextAnnotationImpl(TextAnnotationImpl c, Window owner, boolean usedForPreviews) {
-		super(c, owner, usedForPreviews);
+	public TextAnnotationImpl(TextAnnotationImpl c, boolean usedForPreviews) {
+		super(c, usedForPreviews);
 		
 		text = c.getText();
 		textColor = c.getTextColor();
@@ -86,10 +86,9 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			int y,
 			String text,
 			int compCount,
-			double zoom,
-			Window owner
+			double zoom
 	) {
-		super(view, x, y, zoom, owner);
+		super(view, x, y, zoom);
 
 		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
@@ -100,8 +99,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options
-	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
-		super(view, argMap, owner);
+	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap) {
+		super(view, argMap);
 		
 		font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
@@ -270,7 +269,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new TextAnnotationDialog(this, owner);
+		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(view));
 	}
 
 	

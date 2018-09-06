@@ -61,7 +61,7 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		return new GroupAnnotationImpl((DGraphView) view, argMap, getActiveWindow());
+		return new GroupAnnotationImpl((DGraphView) view, argMap);
 	}
 	
 	@Override

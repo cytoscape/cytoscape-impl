@@ -15,6 +15,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -66,7 +67,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 			return null;
 		}
 		
-		return new ArrowAnnotationDialog(view, location, getActiveWindow());
+		return new ArrowAnnotationDialog(view, location, ViewUtil.getActiveWindow(view));
 	}
 
 	@Override
@@ -75,7 +76,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		return new ArrowAnnotationImpl((DGraphView) view, argMap, getActiveWindow());
+		return new ArrowAnnotationImpl((DGraphView) view, argMap);
 	}
 	
 	@Override

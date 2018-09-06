@@ -68,7 +68,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start != null ? start : view.getCenter();
-		this.shapeAnnotation = new ShapeAnnotationImpl(view, 400, 400, owner, false);
+		this.shapeAnnotation = new ShapeAnnotationImpl(view, 400, 400, false);
 		this.create = true;
 
 		initComponents();		        
@@ -92,7 +92,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Shape Annotation" : "Modify Shape Annotation");
 		
 		// Create the preview panel
-		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150, getOwner(), true);
+		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150, true);
 		preview.getComponent().setSize(152, 152);
 		final PreviewPanel previewPanel = new PreviewPanel(preview);
 

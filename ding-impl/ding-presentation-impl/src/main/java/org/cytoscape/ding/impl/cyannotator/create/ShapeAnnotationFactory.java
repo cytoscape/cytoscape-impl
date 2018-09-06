@@ -12,6 +12,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -54,7 +55,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	
 	@Override
 	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new ShapeAnnotationDialog(view, location, getActiveWindow());
+		return new ShapeAnnotationDialog(view, location, ViewUtil.getActiveWindow(view));
 	}
 
 	@Override
@@ -63,7 +64,7 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 		if (!(view instanceof DGraphView) || !this.type.equals(type))
 			return null;
 
-		return new ShapeAnnotationImpl((DGraphView) view, argMap, getActiveWindow());
+		return new ShapeAnnotationImpl((DGraphView) view, argMap);
 	}
 	
 	@Override

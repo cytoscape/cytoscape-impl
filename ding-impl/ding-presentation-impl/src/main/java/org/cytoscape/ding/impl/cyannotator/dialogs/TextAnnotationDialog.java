@@ -66,7 +66,7 @@ public class TextAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start != null ? start : view.getCenter();
-		this.mAnnotation = new TextAnnotationImpl(view, owner, false);
+		this.mAnnotation = new TextAnnotationImpl(view, false);
 		create = true;
 		initComponents();
 	}
@@ -89,7 +89,7 @@ public class TextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Text Annotation" : "Modify Text Annotation");
 		
 		// Create the preview panel
-		preview = new TextAnnotationImpl(view, getOwner(), true);
+		preview = new TextAnnotationImpl(view, true);
 		preview.getComponent().setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
 		PreviewPanel previewPanel = new PreviewPanel(preview);
 

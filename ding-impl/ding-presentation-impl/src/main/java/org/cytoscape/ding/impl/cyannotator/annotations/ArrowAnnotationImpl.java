@@ -8,7 +8,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.Rectangle;
-import java.awt.Window;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -22,6 +21,7 @@ import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DNodeView;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
@@ -118,12 +118,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	public ArrowAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) {
-		super(view, owner, usedForPreviews);
+	public ArrowAnnotationImpl(DGraphView view, boolean usedForPreviews) {
+		super(view, usedForPreviews);
 	}
 
-	public ArrowAnnotationImpl(ArrowAnnotationImpl c, Window owner, boolean usedForPreviews) {
-		super(c, owner, usedForPreviews);
+	public ArrowAnnotationImpl(ArrowAnnotationImpl c, boolean usedForPreviews) {
+		super(c, usedForPreviews);
 
 		// Line parameters
 		this.lineColor = c.lineColor;
@@ -155,10 +155,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			float sourceSize,
 			ArrowType targetType,
 			Paint targetColor,
-			float targetSize,
-			Window owner
+			float targetSize
 	) {
-		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom(), owner);
+		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom());
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -179,12 +178,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		updateBounds();
 	}
 
-	public ArrowAnnotationImpl(
-			DGraphView view,
-			Map<String, String> argMap,
-			Window owner
-	) {
-		super(view, argMap, owner);
+	public ArrowAnnotationImpl(DGraphView view, Map<String, String> argMap) {
+		super(view, argMap);
 
 		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
 		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f);
@@ -569,7 +564,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ArrowAnnotationDialog(this, owner);
+		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(view));
 	}
 
 	private Line2D getRelativeLine(Line2D line, double x, double y, 

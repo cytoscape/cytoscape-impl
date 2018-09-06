@@ -8,7 +8,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
-import java.awt.Window;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -55,12 +54,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	List<DingAnnotation> annotations = new ArrayList<>();
 
-	public GroupAnnotationImpl(DGraphView view, Window owner) {
-		super(view, owner, false);
+	public GroupAnnotationImpl(DGraphView view) {
+		super(view, false);
 	}
 
-	public GroupAnnotationImpl(GroupAnnotationImpl c, Window owner) {
-		super(c, owner, false);
+	public GroupAnnotationImpl(GroupAnnotationImpl c) {
+		super(c, false);
 		name = c.getName() != null ? c.getName() : getDefaultName();
 	}
 
@@ -69,10 +68,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			double x,
 			double y,
 			List<Annotation> annList,
-			double zoom,
-			Window owner
+			double zoom
 	) {
-		super(view, owner, false);
+		super(view, false);
 		
 		for (Annotation a : annList) {
 			if (a instanceof DingAnnotation)
@@ -80,8 +78,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		}
 	}
 
-	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
-		super(view, argMap, owner);
+	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap) {
+		super(view, argMap);
 
 		// Get the UUIDs of all of the annotations
 		if (argMap.containsKey(MEMBERS)) {

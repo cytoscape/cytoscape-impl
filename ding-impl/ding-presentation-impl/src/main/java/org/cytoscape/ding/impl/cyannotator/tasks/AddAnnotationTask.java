@@ -2,6 +2,8 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
+import java.awt.Rectangle;
+import java.awt.Window;
 import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
@@ -57,10 +59,14 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 						.createAnnotationDialog((DGraphView) view, location);
 				
 				if (dialog != null) {
-					if (location != null)
-						dialog.setLocation((int) location.getX(), (int) location.getY());
-					else
+					Window owner = dialog.getOwner();
+					
+					if (location != null && owner != null) {
+						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
+						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
+					} else {
 						dialog.setLocationRelativeTo(((DGraphView) view).getCanvas());
+					}
 					
 					dialog.setVisible(true);
 				}

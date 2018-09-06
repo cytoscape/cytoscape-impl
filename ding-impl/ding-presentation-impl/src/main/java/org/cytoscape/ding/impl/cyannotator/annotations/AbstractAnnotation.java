@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.Window;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -84,16 +83,13 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	protected Map<String, String> savedArgMap;
 	protected double zOrder;
 
-	protected final Window owner;
-	
 	/**
 	 * This constructor is used to create an empty annotation
 	 * before adding to a specific view.  In order for this annotation
 	 * to be functional, it must be added to the AnnotationManager
 	 * and setView must be called.
 	 */
-	protected AbstractAnnotation(DGraphView view, Window owner, boolean usedForPreviews) {
-		this.owner = owner;
+	protected AbstractAnnotation(DGraphView view, boolean usedForPreviews) {
 		this.view = view;
 		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
 		this.usedForPreviews = usedForPreviews;
@@ -103,20 +99,20 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		name = getDefaultName();
 	}
 
-	protected AbstractAnnotation(AbstractAnnotation c, Window owner, boolean usedForPreviews) {
-		this(c.view, owner, usedForPreviews);
+	protected AbstractAnnotation(AbstractAnnotation c, boolean usedForPreviews) {
+		this(c.view, usedForPreviews);
 		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
 
-	protected AbstractAnnotation(DGraphView view, double x, double y, double zoom, Window owner) {
-		this(view, owner, false);
+	protected AbstractAnnotation(DGraphView view, double x, double y, double zoom) {
+		this(view, false);
 		setLocation((int)x, (int)y);
 	}
 
-	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap, Window owner) {
-		this(view, owner, false);
+	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap) {
+		this(view, false);
 
 		Point2D coords = ViewUtils.getComponentCoordinates(view, argMap);
 		this.globalZoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);

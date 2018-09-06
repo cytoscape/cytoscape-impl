@@ -1,10 +1,14 @@
 package org.cytoscape.ding.internal.util;
 
+import java.awt.Window;
 import java.awt.event.InputEvent;
 
+import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
 
 /*
@@ -71,6 +75,18 @@ public final class ViewUtil {
 		final boolean isMac = LookAndFeelUtil.isMac();
 		
 		return (isMac && e.isMetaDown()) || (!isMac && e.isControlDown());
+	}
+	
+	public static Window getActiveWindow(CyNetworkView view) {
+		Window window = null;
+		
+		if (view instanceof DGraphView)
+			window = SwingUtilities.getWindowAncestor(((DGraphView) view).getComponent());
+		
+		if (window == null)
+			window = FocusManager.getCurrentManager().getActiveWindow();
+		
+		return window;
 	}
 	
 	private ViewUtil() {

@@ -147,7 +147,7 @@ public class LoadImageDialog extends JDialog {
 					view,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
-					url, image, view.getZoom(), cgm, getOwner()
+					url, image, view.getZoom(), cgm
 			);
 
 			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());

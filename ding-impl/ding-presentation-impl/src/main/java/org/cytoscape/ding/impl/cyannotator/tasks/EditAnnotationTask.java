@@ -1,5 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
+
+import java.awt.Rectangle;
+import java.awt.Window;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -27,7 +32,6 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -49,11 +53,19 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (view instanceof DGraphView) {
-			SwingUtilities.invokeLater(() -> {
+			invokeOnEDT(() -> {
 				final JDialog dialog = annotation.getModifyDialog();
 				
 				if (dialog != null) {
-					dialog.setLocation((int) location.getX(), (int) location.getY());
+					Window owner = dialog.getOwner();
+					
+					if (location != null && owner != null) {
+						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
+						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
+					} else {
+						dialog.setLocationRelativeTo(((DGraphView) view).getCanvas());
+					}
+					
 					dialog.setVisible(true);
 				}
 			});

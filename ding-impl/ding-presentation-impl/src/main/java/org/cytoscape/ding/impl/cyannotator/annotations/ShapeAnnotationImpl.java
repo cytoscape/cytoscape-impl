@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Window;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +15,7 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 
@@ -57,8 +57,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeHeight;
 	protected double factor = 1.0;
 
-	public ShapeAnnotationImpl(DGraphView view, double width, double height, Window owner, boolean usedForPreviews) {
-		super(view, owner, usedForPreviews);
+	public ShapeAnnotationImpl(DGraphView view, double width, double height, boolean usedForPreviews) {
+		super(view, usedForPreviews);
 		
 		shapeWidth = width;
 		shapeHeight = height;
@@ -66,8 +66,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		borderWidth = 1.0;
 	}
 
-	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, Window owner, boolean usedForPreviews) {
-		super(c, owner, usedForPreviews);
+	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, boolean usedForPreviews) {
+		super(c, usedForPreviews);
 		
 		shapeWidth = width;
 		shapeHeight = height;
@@ -88,10 +88,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			double height,
 			Paint fillColor,
 			Paint edgeColor,
-			float edgeThickness,
-			Window owner
+			float edgeThickness
 	) {
-		super(view, x, y, view.getZoom(), owner);
+		super(view, x, y, view.getZoom());
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
@@ -104,8 +103,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
 	}
 
-	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap, Window owner) {
-		super(view, argMap, owner);
+	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap) {
+		super(view, argMap);
 
 		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
 		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
@@ -367,7 +366,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ShapeAnnotationDialog(this, owner);
+		return new ShapeAnnotationDialog(this, ViewUtil.getActiveWindow(view));
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {

@@ -8,7 +8,6 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.RenderingHints;
 import java.awt.Shape;
-import java.awt.Window;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.RescaleOp;
@@ -28,6 +27,7 @@ import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ImageAnnotation;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -79,12 +79,12 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
 
-	public ImageAnnotationImpl(DGraphView view, Window owner, boolean usedForPreviews) {
-		super(view, 0, 0, owner, usedForPreviews);
+	public ImageAnnotationImpl(DGraphView view, boolean usedForPreviews) {
+		super(view, 0, 0, usedForPreviews);
 	}
 
-	public ImageAnnotationImpl(ImageAnnotationImpl c, Window owner, boolean usedForPreviews) { 
-		super((ShapeAnnotationImpl) c, 0, 0, owner, usedForPreviews);
+	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) { 
+		super((ShapeAnnotationImpl) c, 0, 0, usedForPreviews);
 		
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
@@ -105,10 +105,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			URL url,
 			BufferedImage image,
 			double zoom,
-			CustomGraphicsManager customGraphicsManager,
-			Window owner
+			CustomGraphicsManager customGraphicsManager
 	) {
-		super(view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f, owner);
+		super(view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 
 		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
@@ -126,10 +125,9 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	public ImageAnnotationImpl(
 			DGraphView view,
 			Map<String, String> argMap,
-			CustomGraphicsManager customGraphicsManager,
-			Window owner
+			CustomGraphicsManager customGraphicsManager
 	) {
-		super(view, argMap, owner);
+		super(view, argMap);
 		
 		this.customGraphicsManager = customGraphicsManager;
 
@@ -419,7 +417,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ImageAnnotationDialog(this, owner);
+		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(view));
 	}
 
 	@Override
