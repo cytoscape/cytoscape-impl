@@ -65,10 +65,6 @@ import org.cytoscape.view.model.events.NetworkViewAddedListener;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
-import org.cytoscape.view.presentation.events.AnnotationsAddedEvent;
-import org.cytoscape.view.presentation.events.AnnotationsAddedListener;
-import org.cytoscape.view.presentation.events.AnnotationsRemovedEvent;
-import org.cytoscape.view.presentation.events.AnnotationsRemovedListener;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
@@ -103,7 +99,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AnnotationMediator implements CyStartListener, CyShutdownListener, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener,
-		SetCurrentNetworkViewListener, AnnotationsAddedListener, AnnotationsRemovedListener, PropertyChangeListener,
+		SetCurrentNetworkViewListener, PropertyChangeListener,
 		CytoPanelComponentSelectedListener {
 
 	private AnnotationMainPanel mainPanel;
@@ -257,20 +253,6 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			invokeOnEDT(() -> mainPanel.clearAnnotationButtonSelection());
 	}
 
-	@Override
-	public void handleEvent(AnnotationsAddedEvent evt) {
-		// FIXME AnnotationManager is not firing this event consistently so we have to listen to CyAnnotator PropertyChangeEvents
-//		if (appStarted && !loadingSession && evt.getSource().equals(getCurrentDGraphView()))
-//			invokeOnEDT(() -> mainPanel.update((DGraphView) evt.getSource()));
-	}
-	
-	@Override
-	public void handleEvent(AnnotationsRemovedEvent evt) {
-		// FIXME AnnotationManager is not firing this event consistently so we have to listen to CyAnnotator PropertyChangeEvents
-//		if (appStarted && !loadingSession && evt.getSource().equals(getCurrentDGraphView()))
-//			invokeOnEDT(() -> mainPanel.update((DGraphView) evt.getSource()));
-	}
-	
 	@Override
 	@SuppressWarnings("unchecked")
 	public void propertyChange(PropertyChangeEvent evt) {
