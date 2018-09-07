@@ -1,9 +1,8 @@
 package org.cytoscape.work.internal;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Properties;
 
+import org.cytoscape.application.events.CyStartListener;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.write.CyWriterFactory;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -14,8 +13,6 @@ import org.cytoscape.work.internal.task.CyUserLogAppender;
 import org.cytoscape.work.internal.task.JDialogTaskManager;
 import org.cytoscape.work.internal.task.JPanelTaskManager;
 import org.cytoscape.work.internal.task.TaskHistory;
-import org.cytoscape.work.internal.task.TaskHistoryWindow;
-import org.cytoscape.work.internal.task.TaskStatusBar;
 import org.cytoscape.work.internal.tunables.BooleanHandler;
 import org.cytoscape.work.internal.tunables.BoundedHandler;
 import org.cytoscape.work.internal.tunables.DoubleHandler;
@@ -31,11 +28,11 @@ import org.cytoscape.work.internal.tunables.StringHandler;
 import org.cytoscape.work.internal.tunables.URLHandlerFactory;
 import org.cytoscape.work.internal.tunables.UserActionHandler;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
+import org.cytoscape.work.internal.view.TaskMediator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
-import org.cytoscape.work.swing.StatusBarPanelFactory;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
 import org.cytoscape.work.swing.util.UserAction;
 import org.cytoscape.work.undo.UndoSupport;
@@ -88,28 +85,12 @@ public class CyActivator extends AbstractCyActivator {
 		JDialogTunableMutator jDialogTunableMutator = new JDialogTunableMutator();
 		JPanelTunableMutator jPanelTunableMutator = new JPanelTunableMutator();
 
-		final TaskStatusBar taskStatusBar = new TaskStatusBar(serviceRegistrar);
-		final TaskHistory taskHistory = new TaskHistory();
-		taskStatusBar.addPropertyChangeListener(TaskStatusBar.TASK_HISTORY_CLICK, new PropertyChangeListener() {
-			TaskHistoryWindow window = null;
-			// don't need to wrap this method in a SwingUtilities.invokeLater -- it will only be called on the EDT anyway
-			@Override
-			public void propertyChange(PropertyChangeEvent e) {
-				if (window == null) 
-					window = new TaskHistoryWindow(taskHistory);
-				
-				window.open();
-			}
-		});
-		{
-			Properties props = new Properties();
-			props.setProperty("type", "TaskStatus");
-			registerService(bc, taskStatusBar, StatusBarPanelFactory.class, props);
-		}
+		TaskHistory taskHistory = new TaskHistory();
+		TaskMediator taskMediator = new TaskMediator(taskHistory, serviceRegistrar);
+		registerService(bc, taskMediator, CyStartListener.class);
+		registerService(bc, new CyUserLogAppender(taskMediator, taskHistory), PaxAppender.class, ezProps("org.ops4j.pax.logging.appender.name", "CyUserLog"));
 
-		registerService(bc, new CyUserLogAppender(taskStatusBar, taskHistory), PaxAppender.class, ezProps("org.ops4j.pax.logging.appender.name", "CyUserLog"));
-
-		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, taskStatusBar, taskHistory, serviceRegistrar);
+		JDialogTaskManager jDialogTaskManager = new JDialogTaskManager(jDialogTunableMutator, taskMediator, taskHistory, serviceRegistrar);
 		PanelTaskManager jPanelTaskManager = new JPanelTaskManager(jPanelTunableMutator, jDialogTaskManager);
 
 		SupportedFileTypesManager supportedFileTypesManager = new SupportedFileTypesManager();

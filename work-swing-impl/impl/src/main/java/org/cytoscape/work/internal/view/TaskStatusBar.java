@@ -1,12 +1,10 @@
-package org.cytoscape.work.internal.task;
+package org.cytoscape.work.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -14,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -25,6 +22,30 @@ import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults.TaskIcon;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
+
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Manages the task's status bar's UI at the bottom of the Cytoscape desktop.
@@ -52,28 +73,23 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		
 		showBtn = new JButton(GUIDefaults.TaskIcon.TASKS.getText());
 		showBtn.setFont(iconManager.getIconFont(14.0f));
-		showBtn.putClientProperty("JButton.buttonType", "gradient"); // Aqua LAF only
-		showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		showBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showBtn.setText(GUIDefaults.TaskIcon.TASKS.getText());
-				showBtn.setForeground(GUIDefaults.TaskIcon.TASKS.getForeground());
-				firePropertyChange(TASK_HISTORY_CLICK, null, null);
-			}
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			showBtn.putClientProperty("JButton.buttonType", "gradient");
+			showBtn.putClientProperty("JComponent.sizeVariant", "small");
+		} else {
+			showBtn.setPreferredSize(new Dimension(32, showBtn.getPreferredSize().height));
+		}
+		
+		showBtn.addActionListener(evt -> {
+			showBtn.setText(GUIDefaults.TaskIcon.TASKS.getText());
+			showBtn.setForeground(GUIDefaults.TaskIcon.TASKS.getForeground());
+			firePropertyChange(TASK_HISTORY_CLICK, null, null);
 		});
-		showBtn.setToolTipText("Show Tasks...");
+		showBtn.setToolTipText("Show Tasks");
 		showBtn.setFocusPainted(false);
 		
-		if (!LookAndFeelUtil.isAquaLAF())
-			showBtn.setPreferredSize(new Dimension(32, showBtn.getPreferredSize().height));
-		
-		clearingTimer = new Timer(CLEAR_DELAY_MS, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				clearStatusBar();
-			}
-		});
+		clearingTimer = new Timer(CLEAR_DELAY_MS, evt -> clearStatusBar());
 		clearingTimer.setRepeats(false);
 
 		final GroupLayout layout = new GroupLayout(this);
@@ -146,16 +162,6 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 	}
 	
 	public void setTitle(final String type, final TaskIcon icon, final String title) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setTitle(type, icon, title);
-				}
-			});
-			return;
-		}
-		
 		String iconText = null;
 		Color iconColor = null;
 		

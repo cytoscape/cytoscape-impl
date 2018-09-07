@@ -1,28 +1,7 @@
 package org.cytoscape.work.internal.task;
 
-/*
- * #%L
- * Cytoscape Work Swing Impl (work-swing-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Window;
 import java.util.Properties;
@@ -48,9 +27,34 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.TunableRecorder;
 import org.cytoscape.work.internal.tunables.JDialogTunableMutator;
+import org.cytoscape.work.internal.view.TaskMediator;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Uses Swing components to create a user interface for the <code>Task</code>.
@@ -85,7 +89,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	/**
 	 * Display the user of the latest task information
 	 */
-	private final TaskStatusBar taskStatusBar;
+	private final TaskMediator taskMediator;
 
 	/**
 	 * Record task history
@@ -139,13 +143,13 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	 */
 	public JDialogTaskManager(
 			final JDialogTunableMutator tunableMutator,
-			final TaskStatusBar taskStatusBar,
+			final TaskMediator taskMediator,
 			final TaskHistory taskHistory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		super(tunableMutator);
 		this.dialogTunableMutator = tunableMutator;
-		this.taskStatusBar = taskStatusBar;
+		this.taskMediator = taskMediator;
 		this.taskHistory = taskHistory;
 		this.serviceRegistrar = serviceRegistrar;
 
@@ -340,19 +344,20 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			return FinishStatus.getSucceeded();
 		}
 		
+		@Override
 		public void run() {
 			FinishStatus finishStatus = null;
+			
 			try {
 				finishStatus = innerRun();
 				taskMonitor.close();
-				taskStatusBar.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
+				taskMediator.setTitle(finishStatus.getType(), taskMonitor.getFirstTitle());
 			} catch (Exception exception) {
 				finishStatus = FinishStatus.newFailed(task, exception);
 				logger.warn("Caught exception executing task. ", exception);
 				taskMonitor.showException(exception);
 				history.addMessage(TaskMonitor.Level.ERROR, exception.getMessage());
-			} catch (Throwable notAnException)
-			{
+			} catch (Throwable notAnException) {
 			    //The catch clause for a Throwable that is not an exception is necessary - otherwise a NoClassDefFoundError in the task goes silent and breaks the app
 				Exception surrogateException = new Exception(notAnException);
 				finishStatus = FinishStatus.newFailed(task, surrogateException);
