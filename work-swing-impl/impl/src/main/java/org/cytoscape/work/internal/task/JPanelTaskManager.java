@@ -1,12 +1,23 @@
 package org.cytoscape.work.internal.task;
 
+import javax.swing.JPanel;
+
+import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.internal.tunables.JPanelTunableMutator;
+import org.cytoscape.work.swing.PanelTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +35,12 @@ package org.cytoscape.work.internal.task;
  * #L%
  */
 
-
-import javax.swing.JPanel;
-
-import org.cytoscape.work.AbstractTaskManager;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.internal.tunables.JPanelTunableMutator;
-import org.cytoscape.work.swing.PanelTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Uses Swing components to create a user interface for the <code>Task</code>.
  *
  * This will not work if the application is running in headless mode.
  */
-public class JPanelTaskManager extends AbstractTaskManager<JPanel,JPanel> implements PanelTaskManager {
+public class JPanelTaskManager extends AbstractTaskManager<JPanel, JPanel> implements PanelTaskManager {
 
 	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private final JDialogTaskManager dtm;

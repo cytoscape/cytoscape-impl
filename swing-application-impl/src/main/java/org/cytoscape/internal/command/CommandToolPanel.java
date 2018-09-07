@@ -170,7 +170,9 @@ public class CommandToolPanel extends JPanel implements CytoPanelComponent2, Act
 		clearButton.setToolTipText("Clear Log");
 		clearButton.setActionCommand(CLEAR_ACTION);
 		clearButton.addActionListener(this);
-		clearButton.putClientProperty("JButton.buttonType", "gradient");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			clearButton.putClientProperty("JButton.buttonType", "gradient");
 
 		LookAndFeelUtil.makeSmall(inputLabel, clearButton);
 		

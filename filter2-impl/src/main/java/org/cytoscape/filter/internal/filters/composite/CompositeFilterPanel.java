@@ -42,6 +42,7 @@ import org.cytoscape.filter.model.ValidatableTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 @SuppressWarnings("serial")
 public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel implements CompositePanelComponent {
@@ -205,14 +206,15 @@ public class CompositeFilterPanel<P extends SelectPanelComponent> extends JPanel
 		button.setFont(filterPanelController.getIconManager().getIconFont(11.0f));
 		String tooltip = compositeFilterController.getAddButtonTooltip();
 		button.setToolTipText(tooltip == null ? "Add new condition..." : tooltip);
-		button.putClientProperty("JButton.buttonType", "gradient");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				JPopupMenu menu = filterPanelController.createAddConditionMenu(CompositeFilterPanel.this);
-				menu.show(button, 0, button.getHeight());
-			}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			button.putClientProperty("JButton.buttonType", "gradient");
+		
+		button.addActionListener(evt -> {
+			JPopupMenu menu = filterPanelController.createAddConditionMenu(CompositeFilterPanel.this);
+			menu.show(button, 0, button.getHeight());
 		});
+		
 		return button;
 	}
 	

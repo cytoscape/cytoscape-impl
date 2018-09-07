@@ -1,16 +1,39 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
+
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Makes the species combo box searchable.
@@ -29,12 +52,10 @@ public class JComboBoxDecorator {
 
 		textField.addKeyListener(new KeyAdapter() {
 			public void keyReleased(KeyEvent e) {
-				SwingUtilities.invokeLater(new Runnable() {
-				 	public void run() {
-						int currentCaretPosition=textField.getCaretPosition();
-						comboFilter(textField.getText(), jcb, entries, begins);
-						textField.setCaretPosition(currentCaretPosition);
-				 	}
+				invokeOnEDT(() -> {
+					int currentCaretPosition = textField.getCaretPosition();
+					comboFilter(textField.getText(), jcb, entries, begins);
+					textField.setCaretPosition(currentCaretPosition);
 				});
 			}
 		});

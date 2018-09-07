@@ -5,30 +5,20 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
 import java.util.Collection;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingUtilities;
-import javax.swing.Timer;
 import javax.swing.UIManager;
 
 import org.cytoscape.jobs.CyJobStatus;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
 
 /**
@@ -88,18 +78,20 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		showBtn = new JButton();
 		showBtn.setFont(iconManager.getIconFont(14.0f));
 		showBtn.setText(JobsIcon.JOBS.getText());
-		showBtn.putClientProperty("JButton.buttonType", "gradient"); // Aqua LAF only
-		showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		showBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				showBtn.setText(JobsIcon.JOBS.getText());
-				showBtn.setForeground(JobsIcon.JOBS.getForeground());
-				if (statusDialog != null)
-					statusDialog.setVisible(true);
-			}
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			showBtn.putClientProperty("JButton.buttonType", "gradient");
+			showBtn.putClientProperty("JComponent.sizeVariant", "small");
+		}
+		
+		showBtn.addActionListener(evt -> {
+			showBtn.setText(JobsIcon.JOBS.getText());
+			showBtn.setForeground(JobsIcon.JOBS.getForeground());
+			
+			if (statusDialog != null)
+				statusDialog.setVisible(true);
 		});
-		showBtn.setToolTipText("Show Job Status...");
+		showBtn.setToolTipText("Show Job Status");
 		showBtn.setFocusPainted(false);
 		
 		if (!LookAndFeelUtil.isAquaLAF())

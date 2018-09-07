@@ -533,7 +533,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected JButton getColorButton() {
 		if (colorButton == null) {
 			colorButton = new JButton();
-			colorButton.putClientProperty("JButton.buttonType", "gradient"); // Aqua LAF only
+			
+			if (LookAndFeelUtil.isAquaLAF())
+				colorButton.putClientProperty("JButton.buttonType", "gradient");
+			
 			colorButton.setHorizontalTextPosition(JButton.CENTER);
 			colorButton.setVerticalTextPosition(JButton.CENTER);
 			colorButton.setEnabled(false);

@@ -1,11 +1,11 @@
-package org.cytoscape.work.internal.task;
+package org.cytoscape.work.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.AbstractAction;
 import javax.swing.GroupLayout;
@@ -14,14 +14,38 @@ import javax.swing.JDialog;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.SwingUtilities;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.internal.task.TaskHistory;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
+
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 @SuppressWarnings("serial")
 public class TaskHistoryWindow {
@@ -44,12 +68,9 @@ public class TaskHistoryWindow {
 		styleSheet.addRule("ul {list-style-type: none;}");
 
 		final JButton clearButton = new JButton("Clear Display");
-		clearButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				taskHistory.clear();
-				update();
-			}
+		clearButton.addActionListener(evt -> {
+			taskHistory.clear();
+			update();
 		});
 		
 		final JButton closeButton = new JButton(new AbstractAction("Close") {
@@ -241,16 +262,6 @@ public class TaskHistoryWindow {
 
 	public void update() {
 		final String content = generateHistoryHTML();
-
-		if (SwingUtilities.isEventDispatchThread()) {
-			pane.setText(content);
-		} else {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					pane.setText(content);
-				}
-			});
-		}
+		invokeOnEDT(() -> pane.setText(content));
 	}
 }

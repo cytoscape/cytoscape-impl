@@ -1,8 +1,6 @@
 package org.cytoscape.filter.internal.filters.composite;
 
 import java.awt.dnd.DropTarget;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +28,7 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -113,14 +112,15 @@ public class CompositeTransformerPanel extends JPanel implements CompositePanelC
 		final JButton button = new JButton(IconManager.ICON_PLUS);
 		button.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11.0f));
 		button.setToolTipText("Add new chain entry...");
-		button.putClientProperty("JButton.buttonType", "gradient");
-		button.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
-				menu.show(button, 0, button.getHeight());
-			}
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			button.putClientProperty("JButton.buttonType", "gradient");
+		
+		button.addActionListener(evt -> {
+			JPopupMenu menu = transformerPanelController.createAddChainEntryMenu(CompositeTransformerPanel.this, parent);
+			menu.show(button, 0, button.getHeight());
 		});
+		
 		return button;
 	}
 

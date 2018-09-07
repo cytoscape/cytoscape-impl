@@ -291,7 +291,7 @@ public class CyActivator extends AbstractCyActivator {
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addArrowTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addArrowTaskFactoryProps.setProperty(MENU_GRAVITY, "1.2");
-		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation");
+		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation...");
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
 
 		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
@@ -299,7 +299,7 @@ public class CyActivator extends AbstractCyActivator {
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addImageTaskFactoryProps.setProperty(MENU_GRAVITY, "1.3");
-		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation");
+		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation...");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
 		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
@@ -307,7 +307,7 @@ public class CyActivator extends AbstractCyActivator {
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
 		addShapeTaskFactoryProps.setProperty(MENU_GRAVITY, "1.4");
-		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation");
+		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation...");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
 		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
@@ -315,7 +315,7 @@ public class CyActivator extends AbstractCyActivator {
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
 		addTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
-		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation");
+		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation...");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
 		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory);
@@ -323,7 +323,7 @@ public class CyActivator extends AbstractCyActivator {
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
-		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation");
+		addBoundedTextTaskFactoryProps.setProperty(TITLE, "Bounded Text Annotation...");
 		registerService(bc, addBoundedTextTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                addBoundedTextTaskFactoryProps);
 
@@ -333,7 +333,8 @@ public class CyActivator extends AbstractCyActivator {
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		editAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
-		editAnnotationTaskFactoryProps.setProperty(TITLE, "Modify Annotation");
+		editAnnotationTaskFactoryProps.setProperty(TITLE, "Modify Annotation...");
+		editAnnotationTaskFactoryProps.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 		registerService(bc, editAnnotationTaskFactory, NetworkViewLocationTaskFactory.class, 
 		                editAnnotationTaskFactoryProps);
 

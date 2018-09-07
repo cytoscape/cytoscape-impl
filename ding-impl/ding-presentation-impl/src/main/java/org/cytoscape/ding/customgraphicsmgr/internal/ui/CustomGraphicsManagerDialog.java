@@ -6,7 +6,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -133,26 +132,24 @@ public class CustomGraphicsManagerDialog extends JDialog {
 		addButton.setText(IconManager.ICON_PLUS);
 		addButton.setFont(iconManager.getIconFont(18.0f));
 		addButton.setToolTipText("Add Images");
-		addButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
-		addButton.putClientProperty("JButton.segmentPosition", "middle"); // Mac OS only
-		addButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				addButtonActionPerformed(evt);
-			}
-		});
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			addButton.putClientProperty("JButton.buttonType", "segmentedGradient");
+			addButton.putClientProperty("JButton.segmentPosition", "middle");
+		}
+		
+		addButton.addActionListener(evt -> addButtonActionPerformed(evt));
 		
 		deleteButton.setText(IconManager.ICON_TRASH_O);
 		deleteButton.setFont(iconManager.getIconFont(18.0f));
 		deleteButton.setToolTipText("Remove Selected Images");
-		deleteButton.putClientProperty("JButton.buttonType", "segmentedGradient"); // Mac OS only
-		deleteButton.putClientProperty("JButton.segmentPosition", "only"); // Mac OS only
-		deleteButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				deleteButtonActionPerformed(evt);
-			}
-		});
+		
+		if (LookAndFeelUtil.isAquaLAF()) {
+			deleteButton.putClientProperty("JButton.buttonType", "segmentedGradient");
+			deleteButton.putClientProperty("JButton.segmentPosition", "only");
+		}
+		
+		deleteButton.addActionListener(evt -> deleteButtonActionPerformed(evt));
 
 		closeButton = new JButton(new AbstractAction("Close") {
 			@Override

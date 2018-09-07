@@ -7,8 +7,6 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 
 import javax.swing.GroupLayout;
@@ -148,48 +146,40 @@ class MemStatusPanel extends JPanel {
 		memAmountLabel.setVisible(false);
 
 		final JButton gcBtn = new JButton("Free Unused Memory");
-		gcBtn.putClientProperty("JButton.buttonType", "gradient");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			gcBtn.putClientProperty("JButton.buttonType", "gradient");
+		
 		makeSmall(gcBtn);
-		gcBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				gcBtn.setEnabled(false);
-				gcBtn.setText("Freeing Memory...");
-				
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						performGC();
-						updateMemStatus();
-						gcBtn.setText("Free Unusued Memory");
-						gcBtn.setEnabled(true);
-					}
-				});
-			}
+		gcBtn.addActionListener(evt -> {
+			gcBtn.setEnabled(false);
+			gcBtn.setText("Freeing Memory...");
+			
+			SwingUtilities.invokeLater(() -> {
+				performGC();
+				updateMemStatus();
+				gcBtn.setText("Free Unusued Memory");
+				gcBtn.setEnabled(true);
+			});
 		});
 		gcBtn.setToolTipText("<html>Try to free memory&mdash;may temporarily freeze Cytoscape</html>");
 		gcBtn.setVisible(false);
 
 		memStatusBtn = new JToggleButton("Memory", MemState.MEM_OK.getIcon());
 		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
-		memStatusBtn.putClientProperty("JButton.buttonType", "gradient");
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			memStatusBtn.putClientProperty("JButton.buttonType", "gradient");
+		
 		makeSmall(memStatusBtn);
-		memStatusBtn.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				memAmountLabel.setVisible(memStatusBtn.isSelected());
-				gcBtn.setVisible(memStatusBtn.isSelected());
-			}
+		memStatusBtn.addActionListener(evt -> {
+			memAmountLabel.setVisible(memStatusBtn.isSelected());
+			gcBtn.setVisible(memStatusBtn.isSelected());
 		});
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
 		memStatusBtn.setFocusPainted(false);
 
-		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				updateMemStatus();
-			}
-		});
+		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, evt -> updateMemStatus());
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 

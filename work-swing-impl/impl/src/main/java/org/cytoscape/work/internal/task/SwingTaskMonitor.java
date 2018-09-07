@@ -1,12 +1,25 @@
 package org.cytoscape.work.internal.task;
 
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
+
+import java.awt.Window;
+import java.util.concurrent.ExecutorService;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
+import org.cytoscape.work.internal.view.TaskDialog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,21 +36,6 @@ package org.cytoscape.work.internal.task;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.awt.Window;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.util.concurrent.ExecutorService;
-
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 class SwingTaskMonitor implements TaskMonitor {
 
@@ -99,69 +97,52 @@ class SwingTaskMonitor implements TaskMonitor {
 
 	public void setExpectedNumTasks(final int expectedNumTasks) {
 		this.expectedNumTasks = expectedNumTasks;
-		this.fractionOfOverall = 1.0/(double)expectedNumTasks;
+		this.fractionOfOverall = 1.0 / (double) expectedNumTasks;
 	}
 
 	public void setTask(final Task newTask) {
 		this.currentTaskNum++;	
 		this.task = newTask;
-		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX+"."+newTask.getClass().getName());
+		this.thisLog = LoggerFactory.getLogger(LOG_PREFIX + "." + newTask.getClass().getName());
 	}
 
 	public void open() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					open();
+		invokeOnEDT(() -> {
+			synchronized(this) {
+				if (dialog != null)
+					return;
+	
+				dialog = new TaskDialog(parent, serviceRegistrar);
+				dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, evt -> close());
+				dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, evt -> cancel());
+	
+				if (firstTitle != null && firstTitle != title /* don't need to call firstTitle.equals() */)
+					dialog.setTaskTitle(firstTitle);
+				if (title != null)
+					dialog.setTaskTitle(title);
+	
+				if (exception == null) {
+					if (statusMessage != null) {
+						if (statusMessageLevel == null)
+							dialog.setStatus(null, null, statusMessage);
+						else
+							dialog.setStatus(
+									GUIDefaults.getIconText(statusMessageLevel),
+									GUIDefaults.getForeground(statusMessageLevel),
+									statusMessage
+							);
+					}
+					
+					if (progress != 0)
+						dialog.setPercentCompleted((float) progress);
+				} else {
+					dialog.setException(exception);
+					exception = null;
 				}
-			});
-			return;
-		}
-
-		synchronized(this) {
-			if (dialog != null)
-				return;
-
-			dialog = new TaskDialog(parent, serviceRegistrar);
-			dialog.addPropertyChangeListener(TaskDialog.CLOSE_EVENT, new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					close();
-				}
-			});
-			dialog.addPropertyChangeListener(TaskDialog.CANCEL_EVENT, new PropertyChangeListener() {
-				public void propertyChange(PropertyChangeEvent e) {
-					cancel();
-				}
-			});
-
-			if (firstTitle != null && firstTitle != title /* don't need to call firstTitle.equals() */) {
-				dialog.setTaskTitle(firstTitle);
+	
+				dialog.setVisible(showDialog);
 			}
-			if (title != null) {
-				dialog.setTaskTitle(title);
-			}
-
-			if (exception == null) {
-				if (statusMessage != null) {
-					if (statusMessageLevel == null)
-						dialog.setStatus(null, null, statusMessage);
-					else
-						dialog.setStatus(
-								GUIDefaults.getIconText(statusMessageLevel),
-								GUIDefaults.getForeground(statusMessageLevel),
-								statusMessage
-						);
-				}
-				if (progress != 0)
-					dialog.setPercentCompleted((float) progress);
-			} else {
-				dialog.setException(exception);
-				exception = null;
-			}
-
-			dialog.setVisible(showDialog);
-		}
+		});
 	}
 
 	/**
@@ -170,45 +151,31 @@ class SwingTaskMonitor implements TaskMonitor {
 	 * issues.
 	 */
 	public void showDialog(final boolean sd) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showDialog(sd);
+		invokeOnEDT(() -> {
+			showDialog = sd;
+			
+			if (dialog != null && dialog.isVisible() != showDialog) {
+				if (showDialog == false) {
+					dialog.dispose();
+				} else {
+					dialog.pack();
+					dialog.setVisible(true);
 				}
-			});
-			return;
-		}
-
-		showDialog = sd;
-		if (dialog != null && dialog.isVisible() != showDialog) {
-			if (showDialog == false) {
-				dialog.dispose();
-			} else {
-				dialog.pack();
-				dialog.setVisible(true);
 			}
-		}
+		});
 	}
 
 	public void close() {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					close();
+		invokeOnEDT(() -> {
+			synchronized(this) {
+				if (dialog != null) {
+					dialog.dispose();
+					dialog = null;
 				}
-			});
-			return;
-		}
-
-		synchronized(this) {
-			if (dialog != null) {
-				dialog.dispose();
-				dialog = null;
+				
+				task = null;
 			}
-			task = null;
-		}
+		});
 	}
 
 	public void cancel() {
@@ -216,11 +183,7 @@ class SwingTaskMonitor implements TaskMonitor {
 		// to prevent Swing from freezing if the Tasks's cancel
 		// method takes too long to finish
 		cancelled = true;
-		Runnable cancel = new Runnable() {
-			public void run() {
-				task.cancel();
-			}
-		};
+		Runnable cancel = () -> task.cancel();
 		cancelExecutorService.submit(cancel);
 		
 		/* Do NOT close the dialog here; dialog closes when the task terminates itself after its cancel method is invoked */
@@ -230,30 +193,26 @@ class SwingTaskMonitor implements TaskMonitor {
 		return cancelled;
 	}
 
+	@Override
 	public void setTitle(final String title) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setTitle(title);
-				}
-			});
-			return;
-		}
+		invokeOnEDT(() -> {
+			if (this.firstTitle == null)
+				this.firstTitle = title;
 
-		if (this.firstTitle == null) {
-			this.firstTitle = title;
-		}
-		this.title = title;
-		history.setTitle(title);
-		if (dialog != null)
-			dialog.setTaskTitle(title);
+			this.title = title;
+			history.setTitle(title);
+			
+			if (dialog != null)
+				dialog.setTaskTitle(title);
+		});
 	}
 
+	@Override
 	public void setStatusMessage(final String statusMessage) {
 		showMessage(TaskMonitor.Level.INFO, statusMessage);
 	}
 
+	@Override
 	public void showMessage(TaskMonitor.Level level, String message) {
 		switch (level) {
 		case ERROR:
@@ -269,49 +228,35 @@ class SwingTaskMonitor implements TaskMonitor {
 		showStatusMessage(level, message);
 	}
 
+	@Override
 	public void setProgress(final double newProgress) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setProgress(newProgress);
-				}
-			});
-			return;
-		}
-		if ( newProgress < 0.0 ) {
-			this.progress = -1.0;
-			if (dialog != null)
-				dialog.setPercentCompleted(-1.0f);
-		} else {
-			if(currentTaskNum < expectedNumTasks) 
-				this.progress = (newProgress * fractionOfOverall) + 
-					((double)currentTaskNum/(double)expectedNumTasks);
-			else
-				this.progress = newProgress;
-			if (dialog != null)
-				dialog.setPercentCompleted((float) this.progress);
-		}
+		invokeOnEDT(() -> {
+			if (newProgress < 0.0) {
+				this.progress = -1.0;
+				if (dialog != null)
+					dialog.setPercentCompleted(-1.0f);
+			} else {
+				if (currentTaskNum < expectedNumTasks)
+					this.progress = (newProgress * fractionOfOverall)
+							+ ((double) currentTaskNum / (double) expectedNumTasks);
+				else
+					this.progress = newProgress;
+				if (dialog != null)
+					dialog.setPercentCompleted((float) this.progress);
+			}
+		});
 	}
 
 	public void showException(final Exception exception) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showException(exception);
-				}
-			});
-			return;
-		}
-		
-		// force the dialog box to be created if the Task throws an exception
-		if (dialog == null) {
-			this.exception = exception;
-			open();
-		} else {
-			dialog.setException(exception);
-		}
+		invokeOnEDT(() -> {
+			// force the dialog box to be created if the Task throws an exception
+			if (dialog == null) {
+				this.exception = exception;
+				open();
+			} else {
+				dialog.setException(exception);
+			}
+		});
 	}
 
 	public boolean isClosed() {
@@ -319,26 +264,19 @@ class SwingTaskMonitor implements TaskMonitor {
 	}
 
 	private void showStatusMessage(final TaskMonitor.Level level, final String statusMessage) {
-		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					showStatusMessage(level, statusMessage);
-				}
-			});
-			return;
-		}
-		this.statusMessage = statusMessage;
-		this.statusMessageLevel = level;
-		
-		if (dialog != null)
-			dialog.setStatus(
-					GUIDefaults.getIconText(statusMessageLevel),
-					GUIDefaults.getForeground(statusMessageLevel),
-					statusMessage
-			);
-		
-		history.addMessage(level, statusMessage);
+		invokeOnEDT(() -> {
+			this.statusMessage = statusMessage;
+			this.statusMessageLevel = level;
+			
+			if (dialog != null)
+				dialog.setStatus(
+						GUIDefaults.getIconText(statusMessageLevel),
+						GUIDefaults.getForeground(statusMessageLevel),
+						statusMessage
+				);
+			
+			history.addMessage(level, statusMessage);
+		});
 	}
 
 	public String getFirstTitle() {

@@ -1,8 +1,9 @@
-package org.cytoscape.work.internal.task;
+package org.cytoscape.work.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -19,7 +20,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -27,8 +27,32 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
 
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 @SuppressWarnings("serial")
-class TaskDialog extends JDialog {
+public class TaskDialog extends JDialog {
 
 	public static final String CANCEL_EVENT = "task-cancel-event";
 	public static final String CLOSE_EVENT = "task-close-event";
@@ -164,34 +188,28 @@ class TaskDialog extends JDialog {
 	}
 
 	public void setTaskTitle(final String taskTitle) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				final String currentTitle = titleLabel.getText();
+		invokeOnEDT(() -> {
+			final String currentTitle = titleLabel.getText();
 
-				if (currentTitle == null || currentTitle.length() == 0) {
-					titleLabel.setText(taskTitle);
-					setTitle("Cytoscape: " + taskTitle);
-				} else {
-					subtitleLabel.setVisible(true);
-					subtitleLabel.setText(taskTitle);
-				}
-
-				updateLabels();
-				pack();
+			if (currentTitle == null || currentTitle.length() == 0) {
+				titleLabel.setText(taskTitle);
+				setTitle("Cytoscape: " + taskTitle);
+			} else {
+				subtitleLabel.setVisible(true);
+				subtitleLabel.setText(taskTitle);
 			}
+
+			updateLabels();
+			pack();
 		});
 	}
 
 	public void setPercentCompleted(final float percent) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				if (percent < 0.0f)
-					progressBar.setIndeterminate();
-				else
-					progressBar.setProgress(percent);
-			}
+		invokeOnEDT(() -> {
+			if (percent < 0.0f)
+				progressBar.setIndeterminate();
+			else
+				progressBar.setProgress(percent);
 		});
 	}
 
@@ -199,30 +217,24 @@ class TaskDialog extends JDialog {
 		t.printStackTrace();
 		errorOccurred = true;
 
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), t.getMessage());
-				progressBar.setVisible(false);
-				closeButton.setVisible(true);
-				cancelButton.setVisible(false);
-				cancelLabel.setVisible(false);
-				updateLabels();
-				pack();
-			}
+		invokeOnEDT(() -> {
+			setStatus(GUIDefaults.ICON_ERROR, LookAndFeelUtil.getErrorColor(), t.getMessage());
+			progressBar.setVisible(false);
+			closeButton.setVisible(true);
+			cancelButton.setVisible(false);
+			cancelLabel.setVisible(false);
+			updateLabels();
+			pack();
 		});
 	}
 
 	public void setStatus(final String iconText, final Color iconForeground, final String message) {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				msgIconLabel.setText(iconText);
-				msgIconLabel.setForeground(iconForeground != null ? iconForeground : msgArea.getForeground());
-				msgArea.setText(message);
-				updateLabels();
-				pack();
-			}
+		invokeOnEDT(() -> {
+			msgIconLabel.setText(iconText);
+			msgIconLabel.setForeground(iconForeground != null ? iconForeground : msgArea.getForeground());
+			msgArea.setText(message);
+			updateLabels();
+			pack();
 		});
 	}
 
@@ -242,22 +254,9 @@ class TaskDialog extends JDialog {
 	}
 	
 	private void updateLabels() {
-		invokeOnEDT(new Runnable() {
-			@Override
-			public void run() {
-				titleLabel.setVisible(titleLabel.getText() != null && !titleLabel.getText().trim().isEmpty());
-				subtitleLabel.setVisible(subtitleLabel.getText() != null && !subtitleLabel.getText().trim().isEmpty());
-			}
+		invokeOnEDT(() -> {
+			titleLabel.setVisible(titleLabel.getText() != null && !titleLabel.getText().trim().isEmpty());
+			subtitleLabel.setVisible(subtitleLabel.getText() != null && !subtitleLabel.getText().trim().isEmpty());
 		});
-	}
-
-	/**
-	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
-	 */
-	private void invokeOnEDT(final Runnable runnable) {
-		if (SwingUtilities.isEventDispatchThread())
-			runnable.run();
-		else
-			SwingUtilities.invokeLater(runnable);
 	}
 }

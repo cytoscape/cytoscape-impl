@@ -13,8 +13,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import javax.swing.JDialog;
-import javax.swing.SwingUtilities;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskManager;
@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  */
 public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> implements DialogTaskManager {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	/**
 	 * The delay between the execution of the <code>Task</code> and
@@ -260,7 +260,7 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 	                                    final Future<?> executorFuture) {
 		final Runnable timedOpen = () -> {
 			if (!(executorFuture.isDone() || executorFuture.isCancelled())) {
-				SwingUtilities.invokeLater(() -> {
+				invokeOnEDT(() -> {
 					if (!taskMonitor.isClosed())
 						taskMonitor.open();
 				});
@@ -365,14 +365,16 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 				taskMonitor.showException(surrogateException);
 				history.addMessage(TaskMonitor.Level.ERROR, notAnException.getMessage());				
 			} finally {
-				if (finishStatus == null)
-				{
+				if (finishStatus == null) {
 					//This clause is just a defensive measure if something went wrong during exception handling (finishStatus should always be set, but who knows) 
 					finishStatus = FinishStatus.newFailed(task, new IllegalStateException("Finish status was not set"));
 				}
+				
 				history.setFinishType(finishStatus.getType());
+				
 				if (observer != null)
 					observer.allFinished(finishStatus);
+				
 				parent = initialParent;
 				dialogTunableMutator.setConfigurationContext(null,true);
 			}
@@ -396,12 +398,9 @@ public class JDialogTaskManager extends AbstractTaskManager<JDialog,Window> impl
 			taskMonitor.showDialog(false);
 
 			ValidateTunables validateTunables = new ValidateTunables(task, ret);
-			if (!SwingUtilities.isEventDispatchThread())
-				SwingUtilities.invokeAndWait(validateTunables);
-			else
-				validateTunables.run();
+			invokeOnEDTAndWait(validateTunables);
 
-			for ( TunableRecorder ti : tunableRecorders ) 
+			for (TunableRecorder ti : tunableRecorders)
 				ti.recordTunableState(task);
 
 			taskMonitor.showDialog(true);
