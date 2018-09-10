@@ -1,10 +1,8 @@
 package org.cytoscape.jobs.internal;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.util.Collection;
 
 import javax.swing.GroupLayout;
@@ -79,10 +77,8 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		showBtn.setFont(iconManager.getIconFont(14.0f));
 		showBtn.setText(JobsIcon.JOBS.getText());
 		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (LookAndFeelUtil.isAquaLAF())
 			showBtn.putClientProperty("JButton.buttonType", "gradient");
-			showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		}
 		
 		showBtn.addActionListener(evt -> {
 			showBtn.setText(JobsIcon.JOBS.getText());
@@ -93,9 +89,8 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		});
 		showBtn.setToolTipText("Show Job Status");
 		showBtn.setFocusPainted(false);
-		
-		if (!LookAndFeelUtil.isAquaLAF())
-			showBtn.setPreferredSize(new Dimension(45, showBtn.getPreferredSize().height));
+
+		final int w = Math.max(48, showBtn.getPreferredSize().width);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -103,13 +98,11 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		layout.setAutoCreateGaps(false);
 
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addComponent(showBtn)
+				.addComponent(showBtn, w, w, w)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(showBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(showBtn, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
-
-		setPreferredSize(new Dimension(showBtn.getPreferredSize().width, getPreferredSize().height));
 	}
 
 	public void setDialog(JDialog dialog) { this.statusDialog = dialog; }
