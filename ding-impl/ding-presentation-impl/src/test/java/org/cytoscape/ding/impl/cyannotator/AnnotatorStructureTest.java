@@ -12,7 +12,7 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class AnnotationStructureTest extends AnnotationTest {
+public class AnnotatorStructureTest extends AnnotationTest {
 
 	
 	@Test

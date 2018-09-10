@@ -1,8 +1,11 @@
 package org.cytoscape.ding.impl.cyannotator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -165,15 +168,59 @@ public class AnnotationTreeTest extends AnnotationTest {
 	}
 	
 	
+	@Test
 	public void testConvertToTree() {
+		GroupAnnotation group2 = createGroupAnnotation("group2", 0);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 1);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4);
+		group1.addMember(shape1);
+		group1.addMember(shape2);
+		group2.addMember(group1);
+		group2.addMember(shape3);
 		
+		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
+		AnnotationTree root = AnnotationTree.buildTree(annotations);
 		
+		// the root of the tree does not contain an annotation
+		assertNull(root.getAnnotation());
+		assertEquals(1, root.childCount());
 		
+		AnnotationTree ng2 = root.getChildren().get(0);
+		assertEquals("group2", ng2.getAnnotation().getName());
+		assertEquals(2, ng2.childCount());
+		assertEquals("shape3", ng2.getChildren().get(1).getAnnotation().getName());
+		AnnotationTree ng1 = ng2.getChildren().get(0);
+		assertEquals("group1", ng1.getAnnotation().getName());
+		assertEquals(2, ng1.childCount());
+		assertEquals("shape1", ng1.getChildren().get(0).getAnnotation().getName());
+		assertEquals("shape2", ng1.getChildren().get(1).getAnnotation().getName());
+		
+		List<Annotation> depthFirst = root.depthFirstOrder();
+		assertEquals(5, depthFirst.size());
+		assertEquals("group2", depthFirst.get(0).getName());
+		assertEquals("group1", depthFirst.get(1).getName());
+		assertEquals("shape1", depthFirst.get(2).getName());
+		assertEquals("shape2", depthFirst.get(3).getName());
+		assertEquals("shape3", depthFirst.get(4).getName());
+		
+		assertEquals(ng2, root.get(group2));
+		assertEquals(ng1, root.get(group1));
+		assertEquals(ng1.getChildren().get(0), ng1.get(shape1));
 	}
 	
 	
+	@Test
 	public void testDetectDuplicateMembership() {
-		
+		GroupAnnotation group1 = createGroupAnnotation();
+		GroupAnnotation group2 = createGroupAnnotation();
+		ShapeAnnotation shape1 = createShapeAnnotation();
+		group1.addMember(shape1);
+		try {
+			group2.addMember(shape1);
+			fail();
+		} catch(IllegalAnnotationStructureException e) {}
 	}
 	
 

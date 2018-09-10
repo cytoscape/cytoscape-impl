@@ -19,11 +19,15 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public class AnnotationTree {
 
-	private DingAnnotation annotation;
+	// The root of the tree will be null, all other nodes must not be null
+	private Annotation annotation;
+	
 	private List<AnnotationTree> children = new ArrayList<>();
+	private AnnotationTree parent;
 	
+	private Map<Annotation,AnnotationTree> quickLookup;
 	
-	private AnnotationTree(DingAnnotation annotation) {
+	private AnnotationTree(Annotation annotation) {
 		this.annotation = Objects.requireNonNull(annotation);
 	}
 	
@@ -32,6 +36,7 @@ public class AnnotationTree {
 	
 	
 	public void add(AnnotationTree child) {
+		child.parent = this;
 		children.add(child);
 	}
 	
@@ -47,7 +52,7 @@ public class AnnotationTree {
 		return Collections.unmodifiableList(children);
 	}
 	
-	public DingAnnotation getAnnotation() {
+	public Annotation getAnnotation() {
 		return annotation;
 	}
 	
@@ -55,15 +60,38 @@ public class AnnotationTree {
 		return children.indexOf(child);
 	}
 	
+	public AnnotationTree parent() {
+		return parent;
+	}
 	
-	public List<DingAnnotation> depthFirstOrder() {
-		List<DingAnnotation> annotations = new ArrayList<>();
+	
+	public AnnotationTree get(Annotation a) {
+		if(annotation == null)
+			return quickLookup.get(a);
+		
+		if(annotation.equals(a))
+			return this;
+		
+		for(AnnotationTree child : children) {
+			AnnotationTree result = child.get(a);
+			if(result != null) {
+				return result;
+			}
+		}
+		return null;
+	}
+	
+	
+	public List<Annotation> depthFirstOrder() {
+		List<Annotation> annotations = new ArrayList<>();
 		depthFirstOrder(annotations);
 		return annotations;
 	}
 	
-	private void depthFirstOrder(List<DingAnnotation> annotations) {
-		annotations.add(annotation);
+	private void depthFirstOrder(List<Annotation> annotations) {
+		if(annotation != null)
+			annotations.add(annotation);
+		
 		for(AnnotationTree child : children) {
 			child.depthFirstOrder(annotations);
 		}
@@ -75,27 +103,28 @@ public class AnnotationTree {
 	 * its possible the old session files might have annotations that contain cycles. So when loading we
 	 * need to silently convert into a tree.
 	 */
-	public static AnnotationTree buildTree(Set<DingAnnotation> annotations) {
+	public static AnnotationTree buildTree(Collection<? extends Annotation> annotations) {
 		// We sort the annotations so that if an app created a "wrong" z-order we can make a best
 		// attempt at ordering the annotations in a way that is similar to the original.
-		List<DingAnnotation> sortedAnnotations = new ArrayList<>(annotations);
+		List<Annotation> sortedAnnotations = new ArrayList<>(annotations);
 		sortAnnotations(sortedAnnotations);
 		
 		// Build the annotation tree bottom-up, cycles and duplicate membership is ignored.
 		AnnotationTree root = new AnnotationTree();
-		Map<DingAnnotation,AnnotationTree> all = new HashMap<>();
-		for(DingAnnotation a : annotations) {
+		Map<Annotation,AnnotationTree> all = new HashMap<>();
+		for(Annotation a : sortedAnnotations) {
 			addNode(a, root, all);
 		}
+		root.quickLookup = all;
 		return root;
 	}
 	
 
-	private static void addNode(DingAnnotation a, AnnotationTree root, Map<DingAnnotation,AnnotationTree> all) {
+	private static void addNode(Annotation a, AnnotationTree root, Map<Annotation,AnnotationTree> all) {
 		AnnotationTree n = all.computeIfAbsent(a, AnnotationTree::new);
 		
-		if(a.getGroupParent() != null) {
-			DingAnnotation ga = (DingAnnotation)a.getGroupParent();
+		if(a instanceof DingAnnotation && ((DingAnnotation)a).getGroupParent() != null) {
+			DingAnnotation ga = (DingAnnotation)((DingAnnotation)a).getGroupParent();
 			AnnotationTree pn = all.get(ga);
 			if(pn == null) {
 				// Now we can create the Nodes for each GroupAnnotation we find,
@@ -163,11 +192,11 @@ public class AnnotationTree {
 	}
 	
 	
-	private static void sortAnnotations(List<DingAnnotation> annotations) {
+	private static void sortAnnotations(List<Annotation> annotations) {
 		// Sort the annotations by existing z-order.
 		// This will give us a decent heuristic for how to order the annotations if their z-order is screwed up.
 		// Once the z-order is "fixed" this will maintain the established order.
-		Comparator<DingAnnotation> comparator = (a1, a2) -> {
+		Comparator<Annotation> comparator = (a1, a2) -> {
 			if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
 				DingAnnotation da1 = (DingAnnotation) a1;
 				DingAnnotation da2 = (DingAnnotation) a2;
@@ -175,7 +204,11 @@ public class AnnotationTree {
 				JComponent canvas2 = da2.getCanvas();
 				int z1 = canvas1.getComponentZOrder(da1.getComponent());
 				int z2 = canvas2.getComponentZOrder(da2.getComponent());
-				return Integer.compare(z1, z2);
+				if(z1 >= 0 && z2 >= 0) {
+					return Integer.compare(z1, z2);
+				} else {
+					return a1.getName().compareToIgnoreCase(a2.getName());
+				}
 			}
 			return 0;
 		};

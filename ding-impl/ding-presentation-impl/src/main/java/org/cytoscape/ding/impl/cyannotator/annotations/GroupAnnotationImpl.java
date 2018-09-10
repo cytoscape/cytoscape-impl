@@ -115,14 +115,14 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			
 			// We muck with the ZOrder directly, so we need to make sure we're on the EDT
 			ViewUtil.invokeOnEDTAndWait(() -> {
-				// First, we need to make sure that this annotation is already registered and added to the canvas
-				if (dMember.getCanvas() != null) {
-					dMember.addComponent(dMember.getCanvas());
-				} else {
-					dMember.addComponent(cyAnnotator.getForeGroundCanvas());
-				}
-
-				dMember.update();
+//				// First, we need to make sure that this annotation is already registered and added to the canvas
+//				if (dMember.getCanvas() != null) {
+//					dMember.addComponent(dMember.getCanvas());
+//				} else {
+//					dMember.addComponent(cyAnnotator.getForeGroundCanvas());
+//				}
+//
+//				dMember.update();
 
 				if (!annotations.contains(dMember))
 					annotations.add(dMember);

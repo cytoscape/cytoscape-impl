@@ -183,6 +183,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		backGroundCanvas.dispose();
 	}
 
+	public AnnotationTree getAnnotationTree() {
+		return AnnotationTree.buildTree(annotationSet);
+	}
+	
 	public void loadAnnotations() {
 		CyNetwork network = view.getModel();
 		// Now, see if this network has any existing annotations
