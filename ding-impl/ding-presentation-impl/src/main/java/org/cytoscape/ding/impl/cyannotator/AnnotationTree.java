@@ -4,20 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.JComponent;
+import javax.swing.tree.TreeNode;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
-public class AnnotationTree {
+public class AnnotationTree implements TreeNode {
 
 	// The root of the tree will be null, all other nodes must not be null
 	private Annotation annotation;
@@ -35,17 +38,50 @@ public class AnnotationTree {
 	}
 	
 	
-	public void add(AnnotationTree child) {
+	@Override
+	public AnnotationTree getChildAt(int childIndex) {
+		return children.get(childIndex);
+	}
+
+	@Override
+	public int getChildCount() {
+		return children.size();
+	}
+
+	@Override
+	public AnnotationTree getParent() {
+		return parent;
+	}
+
+	@Override
+	public int getIndex(TreeNode node) {
+		return children.indexOf((AnnotationTree)node);
+	}
+
+	@Override
+	public boolean getAllowsChildren() {
+		return true;
+	}
+
+	@Override
+	public boolean isLeaf() {
+		return !(annotation instanceof GroupAnnotation);
+	}
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public Enumeration children() {
+		return Collections.enumeration(children);
+	}
+	
+	
+	private void add(AnnotationTree child) {
 		child.parent = this;
 		children.add(child);
 	}
 	
 	public boolean hasChildren() {
 		return !children.isEmpty();
-	}
-	
-	public int childCount() {
-		return children.size();
 	}
 	
 	public List<AnnotationTree> getChildren() {
@@ -56,13 +92,6 @@ public class AnnotationTree {
 		return annotation;
 	}
 	
-	public int indexOf(AnnotationTree child) {
-		return children.indexOf(child);
-	}
-	
-	public AnnotationTree parent() {
-		return parent;
-	}
 	
 	
 	public AnnotationTree get(Annotation a) {
@@ -97,6 +126,16 @@ public class AnnotationTree {
 		}
 	}
 	
+	
+	public AnnotationTree[] getPath() {
+		LinkedList<AnnotationTree> list = new LinkedList<>();
+		AnnotationTree n = this;
+		while(n != null) {
+			list.addFirst(n);
+			n = n.getParent();
+		}
+		return list.toArray(new AnnotationTree[list.size()]);
+	}
 	
 	/**
 	 * This method will not detect cycles in the given Set of annotations. The reason is that however unlikely
@@ -134,10 +173,10 @@ public class AnnotationTree {
 				addNode(ga, root, all);
 			}
 			
-			if(pn.indexOf(n) < 0)
+			if(pn.getIndex(n) < 0)
 				pn.add(n);
 			
-		} else if (root.indexOf(n) < 0) {
+		} else if (root.getIndex(n) < 0) {
 			root.add(n);
 		}
 	}
@@ -214,4 +253,6 @@ public class AnnotationTree {
 		};
 		Collections.sort(annotations, comparator);
 	}
+
+	
 }

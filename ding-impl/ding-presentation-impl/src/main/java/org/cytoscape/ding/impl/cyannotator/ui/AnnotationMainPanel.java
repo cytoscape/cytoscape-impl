@@ -44,7 +44,6 @@ import javax.swing.GroupLayout.ParallelGroup;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.Icon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -73,6 +72,7 @@ import javax.swing.tree.TreePath;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator.ReorderType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -85,6 +85,7 @@ import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+
 
 /*
  * #%L
@@ -895,7 +896,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (tree == null) {
 				final AnnotationTreeCellRenderer annotationCellRenderer = new AnnotationTreeCellRenderer();
 				
-				tree = new JTree(new AnnotationTreeModel(canvasName)) {
+				tree = new JTree(new AnnotationTreeModel(Collections.emptySet())) {
 					@Override
 					public TreeCellRenderer getCellRenderer() {
 						return annotationCellRenderer;
@@ -1071,22 +1072,22 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			for (int i = 0; i < tree.getRowCount(); i++) {
 				TreePath path = tree.getPathForRow(i);
-				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-				Annotation a = node.getUserObject();
+				AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+				Annotation a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation && tree.isCollapsed(path))
 					collapsedGroups.add((GroupAnnotation) a);
 			}
 			
 			// Update Tree Model
-			tree.setModel(new AnnotationTreeModel(canvasName, collection));
+			tree.setModel(new AnnotationTreeModel(collection));
 			
 			// Collapse groups that were collapsed before the update and expand all other groups by default.
 			// IMPORTANT: getRowCount() increases after each expansion, so don't store it in a variable!
 			for (int i = 0; i < tree.getRowCount(); i++) {
 				TreePath path = tree.getPathForRow(i);
-				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
-				Annotation a = node.getUserObject();
+				AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+				Annotation a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation) {
 					if (collapsedGroups.contains(a))
@@ -1179,135 +1180,22 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	class AnnotationTreeModel extends DefaultTreeModel {
 		
-		private final Map<Annotation, AnnotationNode> all = new LinkedHashMap<>();
-		
-		public AnnotationTreeModel(String name) {
-			super(new DefaultMutableTreeNode(name.toUpperCase()));
+		public AnnotationTreeModel(Collection<Annotation> data) {
+			super(AnnotationTree.buildTree(data));
 		}
 		
-		public AnnotationTreeModel(String name, Collection<Annotation> data) {
-			this(name);
-			
-			if (data != null) {
-				TreeSet<Annotation> set = new TreeSet<>((a1, a2) -> {
-					if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
-						JComponent canvas1 = ((DingAnnotation) a1).getCanvas();
-						JComponent canvas2 = ((DingAnnotation) a2).getCanvas();
-						int z1 = canvas1.getComponentZOrder(((DingAnnotation) a1).getComponent());
-						int z2 = canvas2.getComponentZOrder(((DingAnnotation) a2).getComponent());
-						
-						return Integer.compare(z1, z2);
-					}
-					
-					return 0;
-				});
-				set.addAll(data);
-				set.forEach(a -> addNode(a));
-			}
+		@Override
+		public AnnotationTree getRoot() {
+			return (AnnotationTree) super.getRoot();
 		}
 		
 		public List<Annotation> getData() {
-			return new ArrayList<>(all.keySet());
-		}
-		
-		public AnnotationNode getNode(Annotation a) {
-			return all.get(a);
-		}
-		
-		public int rowOf(Annotation a) {
-			AnnotationNode node = a != null ? all.get(a) : null;
-			
-			return node != null ? getRootNode().getIndex(node) : -1;
+			return getRoot().depthFirstOrder();
 		}
 		
 		public TreePath pathTo(Annotation a) {
-			AnnotationNode node = a != null ? all.get(a) : null;
-			return node != null ? new TreePath(node.getPath()) : null;
-		}
-
-		public int getNodeCount() {
-			return getNodeCount(getRoot());  
-		}
-
-		public int getNodeCount(Object node) {
-			int count = 1;
-			int childCount = getChildCount(node);
-
-			for (int i = 0; i < childCount; i++)
-				count += getChildCount(getChild(node, i));
-
-			return count;
-		}
-
-		@Override
-		public Object getChild(Object parent, int index) {
-			if (parent instanceof AnnotationNode && !((AnnotationNode) parent).isLeaf() &&
-					index >= 0 && index < ((AnnotationNode) parent).getChildCount())
-				return ((AnnotationNode) parent).getChildAt(index);
-			
-			DefaultMutableTreeNode rootNode = getRootNode();
-			
-			return rootNode.equals(parent) && index >= 0 && index < rootNode.getChildCount() ?
-					rootNode.getChildAt(index) : null;
-		}
-
-		@Override
-		public int getChildCount(Object parent) {
-			if (parent instanceof AnnotationNode)
-				return ((AnnotationNode) parent).getChildCount();
-			
-			DefaultMutableTreeNode rootNode = getRootNode();
-			
-			return rootNode.equals(parent) ? rootNode.getChildCount() : 0;
-		}
-
-		@Override
-		public int getIndexOfChild(Object parent, Object child) {
-			if (parent instanceof AnnotationNode) {
-				Annotation annotation = ((AnnotationNode) parent).getUserObject();
-				
-				if (annotation instanceof GroupAnnotation)
-					return ((GroupAnnotation) annotation).getMembers().indexOf(child);
-			}
-			
-			DefaultMutableTreeNode rootNode = getRootNode();
-			
-			return rootNode.equals(parent) && child instanceof AnnotationNode ?
-					rootNode.getIndex((AnnotationNode) child) : -1;
-		}
-		
-		@Override
-	    public boolean isLeaf(Object node) {
-			return node instanceof TreeNode ? ((TreeNode) node).isLeaf() : true;
-	    }
-		
-		private DefaultMutableTreeNode getRootNode() {
-			return (DefaultMutableTreeNode) getRoot();
-		}
-		
-		private void addNode(Annotation a) {
-			AnnotationNode n = all.get(a);
-			
-			if (n == null)
-				all.put(a, n = new AnnotationNode(a));
-			
-			if (a instanceof DingAnnotation && ((DingAnnotation) a).getGroupParent() != null) {
-				GroupAnnotation ga = ((DingAnnotation) a).getGroupParent();
-				AnnotationNode pn = all.get(ga);
-				
-				if (pn == null) {
-					// Now we can create the Nodes for each GroupAnnotation we find,
-					// because a group node can be added to both background and foreground trees,
-					// since it may contain child annotations from different canvases
-					all.put(ga, pn = new AnnotationNode(ga));
-					addNode(ga);
-				}
-				
-				if (pn.getIndex(n) < 0)
-					pn.add(n);
-			} else if (getRootNode().getIndex(n) < 0) {
-				getRootNode().add(n);
-			}
+			AnnotationTree node = getRoot().get(a);
+			return node == null ? null : new TreePath(node.getPath());
 		}
 	}
 	
@@ -1322,8 +1210,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			setBorder(BorderFactory.createEmptyBorder()); // Do not highlight the focused cell
 			setHorizontalAlignment(LEFT);
 			
-			if (value instanceof AnnotationNode) {
-				Annotation annotation = ((AnnotationNode) value).getUserObject();
+			if (value instanceof AnnotationTree) {
+				Annotation annotation = ((AnnotationTree) value).getAnnotation();
 				DingAnnotation da = (DingAnnotation)annotation;
 				setText(annotation.getName() + " (z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
 				setToolTipText(annotation.getName());
@@ -1362,8 +1250,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		@Override
 		public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded,
 				boolean leaf, int row) {
-			if (value instanceof AnnotationNode)
-				value = ((AnnotationNode) value).getUserObject().getName();
+			if (value instanceof AnnotationTree)
+				value = ((AnnotationTree) value).getAnnotation().getName();
 			
 			return super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
 		}
@@ -1371,7 +1259,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		@Override
 		public boolean isCellEditable(EventObject e) {
 			return super.isCellEditable(e) && lastPath != null
-					&& lastPath.getLastPathComponent() instanceof AnnotationNode;
+					&& lastPath.getLastPathComponent() instanceof AnnotationTree;
 		}
 
 		@Override
@@ -1386,9 +1274,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	        			if (lastPath != null) {
 	        				Object obj = lastPath.getLastPathComponent();
 	        				
-	        				if (obj instanceof AnnotationNode) {
-	        					if (((AnnotationNode) obj).getUserObject() instanceof GroupAnnotation == false)
-	        						editingIcon = getAnnotationIcon(((AnnotationNode) obj).getUserObject());
+	        				if (obj instanceof AnnotationTree) {
+	        					if (((AnnotationTree) obj).getAnnotation() instanceof GroupAnnotation == false)
+	        						editingIcon = getAnnotationIcon(((AnnotationTree) obj).getAnnotation());
 	        				}
 	        			}
 					
@@ -1398,26 +1286,4 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	    }
 	}
 
-	public static class AnnotationNode extends DefaultMutableTreeNode {
-
-		AnnotationNode(Annotation annotation) {
-	        super(annotation);
-	    }
-		
-		@Override
-		public Annotation getUserObject() {
-			return (Annotation) super.getUserObject();
-		}
-		
-		@Override
-		public void setUserObject(Object obj) {
-			if (obj instanceof String)
-				getUserObject().setName((String) obj);
-		}
-		
-		@Override
-		public boolean getAllowsChildren() {
-			return getUserObject() instanceof GroupAnnotation;
-		}
-	}
 }

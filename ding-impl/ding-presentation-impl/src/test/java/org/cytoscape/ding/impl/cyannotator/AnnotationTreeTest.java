@@ -185,15 +185,15 @@ public class AnnotationTreeTest extends AnnotationTest {
 		
 		// the root of the tree does not contain an annotation
 		assertNull(root.getAnnotation());
-		assertEquals(1, root.childCount());
+		assertEquals(1, root.getChildCount());
 		
 		AnnotationTree ng2 = root.getChildren().get(0);
 		assertEquals("group2", ng2.getAnnotation().getName());
-		assertEquals(2, ng2.childCount());
+		assertEquals(2, ng2.getChildCount());
 		assertEquals("shape3", ng2.getChildren().get(1).getAnnotation().getName());
 		AnnotationTree ng1 = ng2.getChildren().get(0);
 		assertEquals("group1", ng1.getAnnotation().getName());
-		assertEquals(2, ng1.childCount());
+		assertEquals(2, ng1.getChildCount());
 		assertEquals("shape1", ng1.getChildren().get(0).getAnnotation().getName());
 		assertEquals("shape2", ng1.getChildren().get(1).getAnnotation().getName());
 		
@@ -223,5 +223,32 @@ public class AnnotationTreeTest extends AnnotationTest {
 		} catch(IllegalAnnotationStructureException e) {}
 	}
 	
+	
+	@Test
+	public void testTreePath() {
+		ShapeAnnotation shape1 = createShapeAnnotation();
+		ShapeAnnotation shape2 = createShapeAnnotation();
+		ShapeAnnotation shape3 = createShapeAnnotation();
+		GroupAnnotation group1 = createGroupAnnotation();
+		GroupAnnotation group2 = createGroupAnnotation();
+		group1.addMember(shape1);
+		group1.addMember(shape2);
+		group2.addMember(group1);
+		group2.addMember(shape3);
+		
+		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
+		AnnotationTree root = AnnotationTree.buildTree(annotations);
+		
+		AnnotationTree shape1Node = root.get(shape1);
+		AnnotationTree group1Node = root.get(group1);
+		AnnotationTree group2Node = root.get(group2);
+		
+		AnnotationTree[] path = shape1Node.getPath();
+		assertEquals(4, path.length);
+		assertEquals(root, path[0]);
+		assertEquals(group2Node, path[1]);
+		assertEquals(group1Node, path[2]);
+		assertEquals(shape1Node, path[3]);
+	}
 
 }
