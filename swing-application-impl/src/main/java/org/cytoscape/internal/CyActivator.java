@@ -25,6 +25,7 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.text.Collator;
 import java.util.Comparator;
@@ -652,6 +653,10 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("ComboBox.disabledForeground", disabledFg);
 			
 			UIManager.put("Tree.hash", new Color(255, 255, 255, 0)); // Hide tree lines properly
+			
+			// Hide the separator line and increase the gap
+			UIManager.put("ToolBar.separatorSize", new Dimension(1, 20));
+			UIManager.put("ToolBarSeparatorUI", "javax.swing.plaf.basic.BasicToolBarSeparatorUI");
 			
 			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			

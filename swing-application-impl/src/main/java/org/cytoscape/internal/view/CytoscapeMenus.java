@@ -98,6 +98,7 @@ public class CytoscapeMenus {
 		toolBar.addSeparator(6.0f);
 		toolBar.addSeparator(8.0f);
 		toolBar.addSeparator(10.0f);
+		toolBar.addSeparator(11.0f);
 	}
 
 	public JMenu getJMenu(String s) {

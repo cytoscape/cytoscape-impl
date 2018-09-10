@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
@@ -92,7 +91,10 @@ public class CytoscapeToolBar extends JToolBar {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		setFloatable(false);
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()));
+		setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()),
+				BorderFactory.createEmptyBorder(0, 10, 0, 10)
+		));
 		buildPopup();
 //		createCustomToolbar();
 		readStopList();

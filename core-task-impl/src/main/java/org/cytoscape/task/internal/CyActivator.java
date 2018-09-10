@@ -2181,7 +2181,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ACCELERATOR, "cmd n");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
 			props.setProperty(TITLE, "From Selected Nodes, All Edges");
-			props.setProperty(TOOL_BAR_GRAVITY, "16.1");
+			props.setProperty(TOOL_BAR_GRAVITY, "10.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOLTIP, "New Network From Selection (all edges)");
