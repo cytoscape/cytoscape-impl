@@ -27,13 +27,12 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public static final String TASK_HISTORY_CLICK = "job-status-click";
 
-	private static final int CLEAR_DELAY_MS = 5000;
-
 	public static final String ICON_RUNNING = IconManager.ICON_HOURGLASS_1;
 	public static final String ICON_WARN = IconManager.ICON_EXCLAMATION_TRIANGLE;
 	public static final String ICON_ERROR = IconManager.ICON_MINUS_CIRCLE;
 	public static final String ICON_CANCELLED = IconManager.ICON_BAN;
 	public static final String ICON_FINISHED = IconManager.ICON_CLOUD_DOWNLOAD;
+	public static final String ICON_JOBS = IconManager.ICON_CLOUD;
 						  
 	public static enum JobsIcon {
 		RUNNING(ICON_RUNNING),
@@ -41,7 +40,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		ERROR(ICON_ERROR),
 		CANCELLED(ICON_CANCELLED),
 		FINISHED(ICON_FINISHED),
-		JOBS(IconManager.ICON_CLOUD);
+		JOBS(ICON_JOBS);
 
 		private final String text;
 
@@ -117,10 +116,12 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		if (values != null && values.size() > 0) {
 			for (CyJobStatus status: values) {
 				CyJobStatus.Status jobStatus = status.getStatus();
+				
 				if (jobStatus.equals(CyJobStatus.Status.FINISHED)) {
 					icon = JobsIcon.FINISHED;
 					break;
 				}
+				
 				if (jobStatus.equals(CyJobStatus.Status.ERROR) ||
 				    jobStatus.equals(CyJobStatus.Status.FAILED)) {
 					icon = JobsIcon.ERROR;
@@ -147,12 +148,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public void setIcon(final JobsIcon icon) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setIcon(icon);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setIcon(icon));
 			return;
 		}
 
@@ -179,12 +175,10 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 			showBtn.setForeground(iconColor);
 			currentStatus = icon;
 		}
-		
 	}
 	
 	@Override
 	public JPanel createTaskStatusPanel() {
 		return this;
 	}
-	
 }

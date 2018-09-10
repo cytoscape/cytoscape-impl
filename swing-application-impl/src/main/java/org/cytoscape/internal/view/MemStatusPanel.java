@@ -2,9 +2,9 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
@@ -14,7 +14,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JToggleButton;
@@ -214,15 +213,5 @@ class MemStatusPanel extends JPanel {
 		memStatusBtn.setToolTipText(memState.getName());
 		
 		memAmountLabel.setText(String.format("%.1f%% used of %s", memUsed * 100.0f, memTotalFmt));
-	}
-	
-	private static void makeSmall(final JComponent component) {	
-		if (LookAndFeelUtil.isAquaLAF()) {
-			component.putClientProperty("JComponent.sizeVariant", "small");
-		} else {
-			final Font font = component.getFont();
-			final Font newFont = new Font(font.getFontName(), font.getStyle(), (int)LookAndFeelUtil.getSmallFontSize());
-			component.setFont(newFont);
-		}
 	}
 }

@@ -132,7 +132,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 			}
 		}
 		
-		this.setTitle(type, icon, title);
+		setTitle(type, icon, title);
 	}
 
 	public void setTitle(final Level level, final String title) {
@@ -156,7 +156,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 			}
 		}
 		
-		this.setTitle(type, icon, title);
+		setTitle(type, icon, title);
 	}
 	
 	public void setTitle(final String type, final TaskIcon icon, final String title) {
