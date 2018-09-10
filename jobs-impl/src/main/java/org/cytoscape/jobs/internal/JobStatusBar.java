@@ -114,7 +114,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		// 	ERROR/FAILED
 		// 	CANCELED/PURGED/TERMINATED/UNKNOWN
 		// 	QUEUED/SUBMITTTED/RUNNING
-		if (values != null || values.size() > 0) {
+		if (values != null && values.size() > 0) {
 			for (CyJobStatus status: values) {
 				CyJobStatus.Status jobStatus = status.getStatus();
 				if (jobStatus.equals(CyJobStatus.Status.FINISHED)) {
