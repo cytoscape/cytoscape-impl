@@ -364,8 +364,8 @@ public class CytoscapeToolBar extends JToolBar {
 		      public JToolTip createToolTip() {
 				return new CyToolTip(
 						this,
-						action.getName(),
 						(String) action.getValue(Action.SHORT_DESCRIPTION),
+						(String) action.getValue(Action.LONG_DESCRIPTION),
 						action.getToolTipImage() == null ? null : new ImageIcon(action.getToolTipImage())
 				);
 		      }
