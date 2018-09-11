@@ -31,6 +31,6 @@ public class HideSelectedEdgesTaskFactoryImpl extends AbstractHideFromSelectionT
 		HideSelectedEdgesTaskFactory {
 
 	public HideSelectedEdgesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
-		super("Hide selected edges", false, true, true, serviceRegistrar);
+		super("Hide Selected Edges", false, true, true, serviceRegistrar);
 	}
 }

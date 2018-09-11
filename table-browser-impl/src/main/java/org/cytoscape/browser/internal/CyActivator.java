@@ -84,13 +84,13 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Clear all errors");
+			props.setProperty(TITLE, "Clear All Errors");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 		{
 			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Format column...");
+			props.setProperty(TITLE, "Format Column...");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
 	}
