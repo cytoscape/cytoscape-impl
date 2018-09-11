@@ -2528,6 +2528,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.5");
 			props.setProperty(TOOLTIP, "Save Session");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Saves the session to a file.");
 			props.setProperty(COMMAND, "save");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session");
