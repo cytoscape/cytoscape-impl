@@ -170,6 +170,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		mAnnotation.addComponent(null);
 		mAnnotation.update();
+		cyAnnotator.addAnnotation(mAnnotation);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

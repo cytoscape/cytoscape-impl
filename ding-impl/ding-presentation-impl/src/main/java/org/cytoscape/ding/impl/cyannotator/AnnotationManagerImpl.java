@@ -60,14 +60,17 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 		DingAnnotation dAnnotation = (DingAnnotation) annotation;
 		CyNetworkView view = annotation.getNetworkView();
+		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
 
+		cyAnnotator.checkCycle(annotation);
+		
 		invokeOnEDTAndWait(() -> {
-			((DGraphView)view).getCyAnnotator().addAnnotation(annotation);
+			cyAnnotator.addAnnotation(annotation);
 			
 			if (dAnnotation.getCanvas() != null)
 				dAnnotation.getCanvas().add(dAnnotation.getComponent());
 			else
-				((DGraphView)view).getCyAnnotator().getForeGroundCanvas().add(dAnnotation.getComponent());
+				cyAnnotator.getForeGroundCanvas().add(dAnnotation.getComponent());
 		});
 		
 		// TODO
@@ -78,14 +81,17 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
 		Map<DGraphView, List<DingAnnotation>> annotationsByView = groupByView(annotations);
-		
 		if (annotationsByView.isEmpty())
 			return;
 		
+		for(Map.Entry<DGraphView, List<DingAnnotation>> entry : annotationsByView.entrySet()) {
+			// this throws an exception so we don't want to use forEach here
+			entry.getKey().getCyAnnotator().checkCycle(entry.getValue());
+		}
+		
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
-				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view,
-						viewAnnotations);
+				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
 				view.getCyAnnotator().addAnnotations(viewAnnotations);
 				annotationsByCanvas.forEach(ArbitraryGraphicsCanvas::addAnnotations);
 			});

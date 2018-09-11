@@ -242,7 +242,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		} else if (parent == null) {
 			this.parent = null;
 		}
-		cyAnnotator.addAnnotation(this);
+//		cyAnnotator.addAnnotation(this);
 	}
 
 	@Override
@@ -497,7 +497,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	// Protected methods
 	protected void updateAnnotationAttributes() {
 		if (!usedForPreviews) {
-			cyAnnotator.addAnnotation(this);
+//			cyAnnotator.addAnnotation(this);
 			contentChanged();
 		}
 	}

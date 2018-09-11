@@ -1,18 +1,21 @@
 package org.cytoscape.ding.impl.cyannotator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class AnnotatorStructureTest extends AnnotationTest {
+public class AnnotatorStructureTest extends AbstractAnnotationTest {
 
 	
 	@Test
@@ -34,8 +37,6 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		assertTrue(annotations.contains(shape1));
 		assertTrue(annotations.contains(shape2));
 		assertTrue(annotations.contains(group1));
-		
-		// MKTODO test the annotation tree
 	}
 	
 	
@@ -58,15 +59,11 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		assertTrue(annotations.contains(shape1));
 		assertTrue(annotations.contains(shape2));
 		assertTrue(annotations.contains(group1));
-		
-		// MKTODO test the annotation tree
 	}
 	
 	
 	@Test
 	public void testAddGroup3() {
-		// MKTODO should this work? Should we require that annotations be added to the root first?
-		
 		// Don't add the annotations to the cyAnnotator
 		ShapeAnnotation shape1 = createShapeAnnotation();
 		ShapeAnnotation shape2 = createShapeAnnotation();
@@ -75,7 +72,7 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		GroupAnnotation group1 = createGroupAnnotation();
 		group1.addMember(shape1);
 		group1.addMember(shape2);
-		annotationManager.addAnnotation(group1);
+		annotationManager.addAnnotations(Arrays.asList(shape1, shape2, group1));
 		
 		// it should all make sense
 		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
@@ -83,8 +80,6 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		assertTrue(annotations.contains(shape1));
 		assertTrue(annotations.contains(shape2));
 		assertTrue(annotations.contains(group1));
-		
-		// MKTODO test the annotation tree
 	}
 	
 	
@@ -110,15 +105,8 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		
 		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
 		assertEquals(5, annotations.size());
-		
-		// MKTODO test the annotation tree
 	}
 	
-	
-	// Illegal tests
-	// More than one group at the same time
-	// Create a cycle
-	// Create a self-cycle
 	
 	@Test
 	public void testIllegalGroup1() {
@@ -140,7 +128,7 @@ public class AnnotatorStructureTest extends AnnotationTest {
 	}
 	
 	
-	@Ignore
+	@Test
 	public void testIllegalGroup2() {
 		// Same idea as previous test but just a little more complicated
 		ShapeAnnotation shape1 = createShapeAnnotation();
@@ -190,8 +178,8 @@ public class AnnotatorStructureTest extends AnnotationTest {
 		group2.addMember(group3);
 		group3.addMember(shape1);
 		
-		// Everything should be fine now
-		// MKTODO test the annotation tree instead of just checking the size
+		// Everything should be fine at this point
+		annotationManager.addAnnotations(Arrays.asList(group1, group2, group3, shape1));
 		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
 		assertEquals(4, annotations.size());
 		
@@ -199,10 +187,25 @@ public class AnnotatorStructureTest extends AnnotationTest {
 			group3.addMember(group1);
 			fail();
 		} catch(IllegalAnnotationStructureException e) { }
+		
+		// make sure the state didn't change
+		assertEquals(1, group3.getMembers().size());
+		assertEquals(shape1, group3.getMembers().get(0));
+		assertNull(((DingAnnotation)group1).getGroupParent());
 	}
+	
 	
 	public void testSpanningCanvases() {
 		// MKTODO devise a test that involves annotations spanning canvases
 	}
 	
+	
+	public void testZOrderReset() {
+		
+	}
+	
+	
+	public void testGroupAutoAddChildren() {
+		// if you add a group with children it should auto add the children
+	}
 }

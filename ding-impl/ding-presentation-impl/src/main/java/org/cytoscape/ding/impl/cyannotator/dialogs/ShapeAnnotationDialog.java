@@ -158,6 +158,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		shapeAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
 		shapeAnnotation.addComponent(null);
 		shapeAnnotation.update();
+		cyAnnotator.addAnnotation(shapeAnnotation);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

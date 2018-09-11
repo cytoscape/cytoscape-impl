@@ -155,11 +155,11 @@ public class TextAnnotationDialog extends JDialog {
 		// Apply
 		mAnnotation.addComponent(null);
 		mAnnotation.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
-
 		// We need to have bounds or it won't render
 		mAnnotation.getComponent().setBounds(mAnnotation.getComponent().getBounds());
-
 		mAnnotation.update();
+		cyAnnotator.addAnnotation(mAnnotation);
+		
 		mAnnotation.contentChanged();
 
 		// Update the canvas

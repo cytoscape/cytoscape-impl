@@ -113,6 +113,20 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				throw new IllegalAnnotationStructureException("Annotation is already a member of another group.");
 			}
 			
+			if(!annotations.contains(dMember)) {
+				annotations.add(dMember);
+				dMember.setGroupParent(this);
+				try {
+					getCyAnnotator().checkCycle();
+				} catch(IllegalAnnotationStructureException e) {
+					annotations.remove(dMember);
+					dMember.setGroupParent(null);
+					throw e;
+				}
+			}
+			
+			
+			
 			// We muck with the ZOrder directly, so we need to make sure we're on the EDT
 			ViewUtil.invokeOnEDTAndWait(() -> {
 //				// First, we need to make sure that this annotation is already registered and added to the canvas
@@ -121,13 +135,13 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 //				} else {
 //					dMember.addComponent(cyAnnotator.getForeGroundCanvas());
 //				}
-//
+
 //				dMember.update();
 
-				if (!annotations.contains(dMember))
-					annotations.add(dMember);
+//				if (!annotations.contains(dMember))
+//					annotations.add(dMember);
 
-				dMember.setGroupParent(this);
+//				dMember.setGroupParent(this);
 
 				// Set the bounding box and our location
 				updateBounds();

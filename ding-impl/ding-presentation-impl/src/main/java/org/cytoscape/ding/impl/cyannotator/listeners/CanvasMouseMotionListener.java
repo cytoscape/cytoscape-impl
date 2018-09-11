@@ -73,20 +73,17 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		} else if (a != null && !annotationSelection.isMoving()) {
 			// cyAnnotator.moveAnnotation(a);
 			// annotationSelection.moveSelection(e.getX(), e.getY());
-			// If we're moving, we might have nodes or edges selected and will
-			// want to move them also
+			// If we're moving, we might have nodes or edges selected and will want to move them also
 			// if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
 		} else if (a != null) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
-			// If we're moving, we might have nodes or edges selected and will
-			// want to move them also
+			// If we're moving, we might have nodes or edges selected and will want to move them also
 			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
 		} else if (annotationSelection.isMoving()) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
-			// If we're moving, we might have nodes or edges selected and will
-			// want to move them also
+			// If we're moving, we might have nodes or edges selected and will want to move them also
 			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
 				networkCanvas.mouseDragged(e);
 			}

@@ -19,7 +19,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.junit.Before;
 
-public class AnnotationTest {
+public class AbstractAnnotationTest {
 
 	private NetworkViewTestSupport nvTest = new NetworkViewTestSupport();
 	protected DGraphView graphView;

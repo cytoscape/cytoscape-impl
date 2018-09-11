@@ -189,7 +189,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	 * Assumes x and y are component (mouse) coordinates
 	 */
 	public void moveSelection(int x, int y) {
-  	// Get our current transform
+		// Get our current transform
 		Point2D pt = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
 
 		for (DingAnnotation annotation: selectedAnnotations) {
@@ -308,6 +308,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		setLocation((int)(union.getX()-border*4), (int)(union.getY()-border*4));
 	}
 
+	
 	@Override
 	public void paint(Graphics g) {
 		updateBounds();

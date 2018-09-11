@@ -18,12 +18,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
@@ -346,39 +348,105 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public ArbitraryGraphicsCanvas getBackGroundCanvas() {
 		return backGroundCanvas;
 	}
+	
+	
+	private void resetZOrder() {
+		// Need to calculate z-order separately for each canvas
+		// Note that group annotations are usually on the foreground canvas even though their members can be on either canvas.
+		AnnotationTree tree = AnnotationTree.buildTree(annotationSet);
+		int[] zf = {0}; // foreground canvas z-order
+		int[] zb = {0}; // background canvas z-order
+		tree.depthFirstTraversal(node -> {
+			DingAnnotation da = (DingAnnotation) node.getAnnotation();
+			int z = (da.getCanvas() == foreGroundCanvas) ? zf[0]++ : zb[0]++;
+			da.getCanvas().setComponentZOrder(da.getComponent(), z);
+		});
+	}
 
+	
+	public void checkCycle() throws IllegalAnnotationStructureException {
+		if(AnnotationTree.containsCycle(annotationSet)) {
+			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
+		}
+	}
+	
+	public void checkCycle(Annotation annotation) throws IllegalAnnotationStructureException {
+		if(annotation instanceof GroupAnnotation) {
+			if(AnnotationTree.containsCycle(annotationSet, (DingAnnotation)annotation)) {
+				throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
+			}
+		}
+	}
+	
+	public void checkCycle(Collection<DingAnnotation> annotations) throws IllegalAnnotationStructureException {
+		if(annotations.isEmpty())
+			return;
+		if(AnnotationTree.containsCycle(annotationSet, annotations)) {
+			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
+		}
+	}
+	
+	
 	public void addAnnotation(Annotation annotation) {
 		if (annotationSet.contains(annotation))
 			return;
 		
 		if (!(annotation instanceof DingAnnotation))
 			return;
+//		
+//		if(annotation instanceof GroupAnnotation) {
+//			boolean createsCycle = AnnotationTree.containsCycle(annotationSet, (DingAnnotation)annotation);
+//			if(createsCycle) {
+//				throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
+//			}
+//		}
 		
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		annotationSet.add((DingAnnotation) annotation);
+		
+		resetZOrder();
 		
 		if (!loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
 	
+	
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
 		if (annotationSet.containsAll(annotations))
 			return;
 		
+//		Set<DingAnnotation> dingAnnotations = new HashSet<>();
+//		for(Annotation a : annotations) {
+//			if(a instanceof DingAnnotation) {
+//				dingAnnotations.add((DingAnnotation)a);
+//			}
+//		}
+//		if(dingAnnotations.isEmpty())
+//			return;
+//		
+//		boolean createsCycle = AnnotationTree.containsCycle(annotationSet, dingAnnotations);
+//		if(createsCycle) {
+//			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
+//		}
+		
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
-		for (Annotation annotation : annotations) {
-			if (annotation instanceof DingAnnotation)
-				annotationSet.add((DingAnnotation) annotation);
+		for(Annotation a : annotations) {
+			if(a instanceof DingAnnotation) {
+				annotationSet.add((DingAnnotation)a);
+			}
 		}
+		
+		resetZOrder();
 		
 		if (!loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
 
+	
 	public void removeAnnotation(Annotation annotation) {
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		

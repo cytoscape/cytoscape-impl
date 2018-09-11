@@ -189,6 +189,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		annotation.addComponent(null);
 		annotation.setSource(this.source);
 		annotation.update();
+		cyAnnotator.addAnnotation(annotation);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

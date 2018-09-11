@@ -1,7 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashSet;
@@ -14,7 +16,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
 import org.junit.Test;
 
-public class AnnotationTreeTest extends AnnotationTest {
+public class AnnotationTreeTest extends AbstractAnnotationTest {
 
 	
 	private static Set<DingAnnotation> asSet(Annotation...annotations) {
@@ -187,15 +189,15 @@ public class AnnotationTreeTest extends AnnotationTest {
 		assertNull(root.getAnnotation());
 		assertEquals(1, root.getChildCount());
 		
-		AnnotationTree ng2 = root.getChildren().get(0);
+		AnnotationTree ng2 = root.getChildAt(0);
 		assertEquals("group2", ng2.getAnnotation().getName());
 		assertEquals(2, ng2.getChildCount());
-		assertEquals("shape3", ng2.getChildren().get(1).getAnnotation().getName());
-		AnnotationTree ng1 = ng2.getChildren().get(0);
+		assertEquals("shape3", ng2.getChildAt(1).getAnnotation().getName());
+		AnnotationTree ng1 = ng2.getChildAt(0);
 		assertEquals("group1", ng1.getAnnotation().getName());
 		assertEquals(2, ng1.getChildCount());
-		assertEquals("shape1", ng1.getChildren().get(0).getAnnotation().getName());
-		assertEquals("shape2", ng1.getChildren().get(1).getAnnotation().getName());
+		assertEquals("shape1", ng1.getChildAt(0).getAnnotation().getName());
+		assertEquals("shape2", ng1.getChildAt(1).getAnnotation().getName());
 		
 		List<Annotation> depthFirst = root.depthFirstOrder();
 		assertEquals(5, depthFirst.size());
@@ -207,7 +209,7 @@ public class AnnotationTreeTest extends AnnotationTest {
 		
 		assertEquals(ng2, root.get(group2));
 		assertEquals(ng1, root.get(group1));
-		assertEquals(ng1.getChildren().get(0), ng1.get(shape1));
+		assertEquals(ng1.getChildAt(0), ng1.get(shape1));
 	}
 	
 	
@@ -226,11 +228,11 @@ public class AnnotationTreeTest extends AnnotationTest {
 	
 	@Test
 	public void testTreePath() {
-		ShapeAnnotation shape1 = createShapeAnnotation();
-		ShapeAnnotation shape2 = createShapeAnnotation();
-		ShapeAnnotation shape3 = createShapeAnnotation();
-		GroupAnnotation group1 = createGroupAnnotation();
-		GroupAnnotation group2 = createGroupAnnotation();
+		GroupAnnotation group2 = createGroupAnnotation("group2", 0);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 1);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
 		group2.addMember(group1);
@@ -240,6 +242,7 @@ public class AnnotationTreeTest extends AnnotationTest {
 		AnnotationTree root = AnnotationTree.buildTree(annotations);
 		
 		AnnotationTree shape1Node = root.get(shape1);
+		AnnotationTree shape2Node = root.get(shape2);
 		AnnotationTree group1Node = root.get(group1);
 		AnnotationTree group2Node = root.get(group2);
 		
@@ -249,6 +252,14 @@ public class AnnotationTreeTest extends AnnotationTest {
 		assertEquals(group2Node, path[1]);
 		assertEquals(group1Node, path[2]);
 		assertEquals(shape1Node, path[3]);
+		
+		assertFalse(root.isLeaf());
+		assertFalse(group2Node.isLeaf());
+		assertFalse(group1Node.isLeaf());
+		assertTrue(shape1Node.isLeaf());
+		
+		assertEquals(0, group1Node.getIndex(shape1Node));
+		assertEquals(1, group1Node.getIndex(shape2Node));
 	}
 
 }

@@ -59,7 +59,6 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.plaf.basic.BasicTreeUI;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -280,8 +279,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
 		
 		for (TreePath path : treePaths) {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-			Object obj = node.getUserObject();
+			AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+			Object obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
 				set.add((T) obj);
@@ -312,8 +311,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
 		
 		for (TreePath path : treePaths) {
-			DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
-			Object obj = node.getUserObject();
+			AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+			Object obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
 				count++;
@@ -1125,7 +1124,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				
 				for (int i = 0; i < selRows.length; i++) {
 					TreePath path = tree.getPathForRow(selRows[i]);
-					DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+					AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
 					parents.add(node.getParent());
 					
 					// Cannot reorder when nodes from different parents are selected
@@ -1134,7 +1133,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				}
 				
 				if (b) {
-					DefaultMutableTreeNode pn = (DefaultMutableTreeNode) parents.iterator().next();
+					AnnotationTree pn = (AnnotationTree) parents.iterator().next();
 					size = pn.getChildCount();
 					
 					if (selectionCount == size) {
@@ -1145,11 +1144,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						selIdxSet.addAll(Arrays.stream(selRows).boxed().collect(Collectors.toList()));
 						
 						TreePath path1 = tree.getPathForRow(selIdxSet.first());
-						DefaultMutableTreeNode n1 = (DefaultMutableTreeNode) path1.getLastPathComponent();
+						AnnotationTree n1 = (AnnotationTree) path1.getLastPathComponent();
 						firstIdx = pn.getIndex(n1);
 						
 						TreePath path2 = tree.getPathForRow(selIdxSet.last());
-						DefaultMutableTreeNode n2 = (DefaultMutableTreeNode) path2.getLastPathComponent();
+						AnnotationTree n2 = (AnnotationTree) path2.getLastPathComponent();
 						lastIdx = pn.getIndex(n2);
 					}
 				}
@@ -1212,11 +1211,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			
 			if (value instanceof AnnotationTree) {
 				Annotation annotation = ((AnnotationTree) value).getAnnotation();
-				DingAnnotation da = (DingAnnotation)annotation;
-				setText(annotation.getName() + " (z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
-				setToolTipText(annotation.getName());
-				setIconTextGap(8);
-				
+				if(annotation != null) {
+					DingAnnotation da = (DingAnnotation)annotation;
+					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
+					setToolTipText(annotation.getName());
+					setIconTextGap(8);
+				}
 				if (annotation instanceof GroupAnnotation) {
 					setOpenIcon(getOpenAnnotationIcon());
 					setClosedIcon(getClosedAnnotationIcon());
@@ -1225,8 +1225,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 					setLeafIcon(icon);
 					setIcon(icon);
 				}
-			} else if (value instanceof DefaultMutableTreeNode) {
-				setText(((DefaultMutableTreeNode) value).getUserObject() + " Layer");
 			}
 			
 			if (selected) {

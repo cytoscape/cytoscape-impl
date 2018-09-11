@@ -167,6 +167,7 @@ public class ImageAnnotationDialog extends JDialog {
 		annotation.setImage(preview.getImageURL());
 		annotation.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 		annotation.addComponent(null);
+		cyAnnotator.addAnnotation(annotation);
 
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();

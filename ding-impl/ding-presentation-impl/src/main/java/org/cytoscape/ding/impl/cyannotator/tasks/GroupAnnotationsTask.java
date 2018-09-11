@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -79,7 +80,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 				}
 			}
 			
-			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, null);
+			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, Collections.emptyMap());
 			group.addComponent(null); // Need to add this first so we can update things appropriately
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw

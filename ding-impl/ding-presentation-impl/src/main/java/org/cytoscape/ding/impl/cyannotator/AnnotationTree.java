@@ -30,6 +30,13 @@ public class AnnotationTree implements TreeNode {
 	
 	private Map<Annotation,AnnotationTree> quickLookup;
 	
+	
+	@FunctionalInterface
+	public static interface Visitor {
+		public void visit(AnnotationTree node);
+	}
+	
+	
 	private AnnotationTree(Annotation annotation) {
 		this.annotation = Objects.requireNonNull(annotation);
 	}
@@ -65,7 +72,7 @@ public class AnnotationTree implements TreeNode {
 
 	@Override
 	public boolean isLeaf() {
-		return !(annotation instanceof GroupAnnotation);
+		return children.isEmpty();
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -82,10 +89,6 @@ public class AnnotationTree implements TreeNode {
 	
 	public boolean hasChildren() {
 		return !children.isEmpty();
-	}
-	
-	public List<AnnotationTree> getChildren() {
-		return Collections.unmodifiableList(children);
 	}
 	
 	public Annotation getAnnotation() {
@@ -111,20 +114,22 @@ public class AnnotationTree implements TreeNode {
 	}
 	
 	
+	// NOTE: does not visit the root node
+	public void depthFirstTraversal(Visitor visitor) {
+		if(annotation != null)
+			visitor.visit(this);
+		
+		for(AnnotationTree child : children) {
+			child.depthFirstTraversal(visitor);
+		}
+	}
+	
 	public List<Annotation> depthFirstOrder() {
 		List<Annotation> annotations = new ArrayList<>();
-		depthFirstOrder(annotations);
+		depthFirstTraversal(n -> annotations.add(n.annotation));
 		return annotations;
 	}
 	
-	private void depthFirstOrder(List<Annotation> annotations) {
-		if(annotation != null)
-			annotations.add(annotation);
-		
-		for(AnnotationTree child : children) {
-			child.depthFirstOrder(annotations);
-		}
-	}
 	
 	
 	public AnnotationTree[] getPath() {
@@ -136,6 +141,7 @@ public class AnnotationTree implements TreeNode {
 		}
 		return list.toArray(new AnnotationTree[list.size()]);
 	}
+	
 	
 	/**
 	 * This method will not detect cycles in the given Set of annotations. The reason is that however unlikely
@@ -186,9 +192,15 @@ public class AnnotationTree implements TreeNode {
 	 * This method will detect cycles in the given set of annotations.
 	 * 2) GroupAnnotationImpl.addAnnotation() will enforce that an annotation cannot be in two groups at the same time.
 	 * These two assertions together enforce that the set of annotations forms a proper tree.
+	 * 
+	 * @param moreAnnotations We need to make a copy of the annotations parameter anyway, better not to force CyAnnotator
+	 * to also make a copy. Just pass in the annotations that are being added as a separate parameter.
 	 */
-	public static boolean containsCycle(Set<DingAnnotation> annotations) {
+	public static boolean containsCycle(Collection<DingAnnotation> annotations, Collection<DingAnnotation> moreAnnotations) {
 		Set<DingAnnotation> annotationsRemaining = new HashSet<>(annotations);
+		if(moreAnnotations != null)
+			annotationsRemaining.addAll(moreAnnotations);
+		
 		while(!annotationsRemaining.isEmpty()) {
 			DingAnnotation start = annotationsRemaining.iterator().next();
 			if(containsCycle(start, annotationsRemaining, new HashSet<>())) {
@@ -197,7 +209,16 @@ public class AnnotationTree implements TreeNode {
 		}
 		return false;
 	}
+	
+	public static boolean containsCycle(Collection<DingAnnotation> annotations, DingAnnotation extraAnnotation) {
+		return containsCycle(annotations, Collections.singleton(extraAnnotation));
+	}
+	
+	public static boolean containsCycle(Collection<DingAnnotation> annotations) {
+		return containsCycle(annotations, (Collection<DingAnnotation>)null);
+	}
 
+	
 	private static boolean containsCycle(DingAnnotation a, Collection<DingAnnotation> annotations, Set<Annotation> marked) {
 		if(!marked.add(a))
 			return true;
