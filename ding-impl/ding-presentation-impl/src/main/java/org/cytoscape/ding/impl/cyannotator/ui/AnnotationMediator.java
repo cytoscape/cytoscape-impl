@@ -41,7 +41,6 @@ import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator.ReorderType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
@@ -276,7 +275,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				invokeOnEDT(() -> mainPanel.update(view));
 			} else if ("annotationsReordered".equals(evt.getPropertyName())) {
 				if (view != null && view.equals(mainPanel.getDGraphView()))
-					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder((ReorderType) evt.getNewValue()));
+					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
 			}
 		} else if (source instanceof Annotation) {
 			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {

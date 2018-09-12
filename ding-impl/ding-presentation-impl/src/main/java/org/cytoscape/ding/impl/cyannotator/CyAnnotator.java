@@ -77,8 +77,6 @@ import org.slf4j.LoggerFactory;
 
 public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
-	public enum ReorderType { Z_INDEX, CANVAS }
-	
 	private static final String ANNOTATION_ATTRIBUTE = "__Annotations";
 	
 	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
@@ -185,9 +183,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		backGroundCanvas.dispose();
 	}
 
-	public AnnotationTree getAnnotationTree() {
-		return AnnotationTree.buildTree(annotationSet);
-	}
 	
 	public void loadAnnotations() {
 		CyNetwork network = view.getModel();
@@ -350,19 +345,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	
-	private void resetZOrder() {
-		// Need to calculate z-order separately for each canvas
-		// Note that group annotations are usually on the foreground canvas even though their members can be on either canvas.
-		AnnotationTree tree = AnnotationTree.buildTree(annotationSet);
-		int[] zf = {0}; // foreground canvas z-order
-		int[] zb = {0}; // background canvas z-order
-		tree.depthFirstTraversal(node -> {
-			DingAnnotation da = (DingAnnotation) node.getAnnotation();
-			int z = (da.getCanvas() == foreGroundCanvas) ? zf[0]++ : zb[0]++;
-			da.getCanvas().setComponentZOrder(da.getComponent(), z);
-		});
+	public AnnotationTree getAnnotationTree() {
+		return AnnotationTree.buildTree(annotationSet, this);
 	}
-
+	
+	
 	
 	public void checkCycle() throws IllegalAnnotationStructureException {
 		if(AnnotationTree.containsCycle(annotationSet)) {
@@ -393,19 +380,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		if (!(annotation instanceof DingAnnotation))
 			return;
-//		
-//		if(annotation instanceof GroupAnnotation) {
-//			boolean createsCycle = AnnotationTree.containsCycle(annotationSet, (DingAnnotation)annotation);
-//			if(createsCycle) {
-//				throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
-//			}
-//		}
 		
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		annotationSet.add((DingAnnotation) annotation);
 		
-		resetZOrder();
+		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
@@ -417,20 +397,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		if (annotationSet.containsAll(annotations))
 			return;
 		
-//		Set<DingAnnotation> dingAnnotations = new HashSet<>();
-//		for(Annotation a : annotations) {
-//			if(a instanceof DingAnnotation) {
-//				dingAnnotations.add((DingAnnotation)a);
-//			}
-//		}
-//		if(dingAnnotations.isEmpty())
-//			return;
-//		
-//		boolean createsCycle = AnnotationTree.containsCycle(annotationSet, dingAnnotations);
-//		if(createsCycle) {
-//			throw new IllegalAnnotationStructureException("Adding annotation would create a cycle. Group annotations must be a tree.");
-//		}
-		
 		Set<DingAnnotation> oldValue = new HashSet<>(annotationSet);
 		
 		for(Annotation a : annotations) {
@@ -439,7 +405,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			}
 		}
 		
-		resetZOrder();
+		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
@@ -621,8 +587,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return result;
 	}
 	
-	public void annotationsReordered(ReorderType type) {
-		propChangeSupport.firePropertyChange("annotationsReordered", null, type);
+	public void fireAnnotationsReordered() {
+		propChangeSupport.firePropertyChange("annotationsReordered", null, null);
 	}
 
 	private void loadRegularAnnotations(

@@ -20,19 +20,15 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EventObject;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -65,14 +61,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator.ReorderType;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -279,7 +274,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
 		
 		for (TreePath path : treePaths) {
-			AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+			AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
 			Object obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
@@ -311,7 +306,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		final TreePath[] treePaths = tree.getSelectionModel().getSelectionPaths();
 		
 		for (TreePath path : treePaths) {
-			AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+			AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
 			Object obj = node.getAnnotation();
 			
 			if (type.isAssignableFrom(obj.getClass()))
@@ -357,9 +352,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		setEnabled(view != null);
 		
 		// Update annotation trees
-		Map<String, Collection<Annotation>> map = separateByLayers(annotations, false);
-		getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
-		getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
+		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view.getCyAnnotator());
+		getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
+		getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		
 		// Enable/disable annotation add buttons
 		if (isEnabled()) {
@@ -432,22 +427,24 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				getSelectedAnnotationCount(getBackgroundTree(), DingAnnotation.class) > 0);
 	}
 	
-	void updateAnnotationsOrder(ReorderType type) {
+	void updateAnnotationsOrder() {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
 		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
-			Map<String, Collection<Annotation>> map = separateByLayers(annotations, false);
-			getBackgroundLayerPanel().update(map.get(Annotation.BACKGROUND));
-			getForegroundLayerPanel().update(map.get(Annotation.FOREGROUND));
+			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view.getCyAnnotator());
+			getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
+			getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		}
 		// Restore the row selection (the annotations that were selected before must be still selected)
 		getBackgroundTree().clearSelection();
 		getForegroundTree().clearSelection();
-		Map<String, Collection<Annotation>> map = separateByLayers(selectedAnnotations, true);
-		map.get(Annotation.BACKGROUND).forEach(a -> setSelected(a, true));
-		map.get(Annotation.FOREGROUND).forEach(a -> setSelected(a, true));
+		
+		for(Annotation a : selectedAnnotations) {
+			setSelected(a, true);
+		}
+		
 		getBackgroundLayerPanel().updateButtons();
 		getForegroundLayerPanel().updateButtons();
 	}
@@ -462,26 +459,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			tree.stopEditing();
 	}
 	
-	private static Map<String, Collection<Annotation>> separateByLayers(Collection<Annotation> list, boolean includeGroups) {
-		Map<String, Collection<Annotation>> map = new HashMap<>();
-		map.put(Annotation.BACKGROUND, new HashSet<>());
-		map.put(Annotation.FOREGROUND, new HashSet<>());
-		
-		if (list != null) {
-			for (Annotation a : list) {
-				if (includeGroups || a instanceof GroupAnnotation == false) {
-					// Don't add GroupAnnotations now, because their actual canvas doesn't matter,
-					// as a group can contain annotations from both layers
-					Collection<Annotation> set = map.get(a.getCanvasName());
-					
-					if (set != null) // Should never be null, unless a new canvas name is created!
-						set.add(a);
-				}
-			};
-		}
-		
-		return map;
-	}
 	
 	private void init() {
 		if (isAquaLAF())
@@ -895,7 +872,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (tree == null) {
 				final AnnotationTreeCellRenderer annotationCellRenderer = new AnnotationTreeCellRenderer();
 				
-				tree = new JTree(new AnnotationTreeModel(Collections.emptySet())) {
+				tree = new JTree(new AnnotationTreeModel(null, null)) {
 					@Override
 					public TreeCellRenderer getCellRenderer() {
 						return annotationCellRenderer;
@@ -1064,14 +1041,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			return titleLabel;
 		}
 		
-		private void update(Collection<Annotation> collection) {
+		private void update(AnnotationTree annotationTree, String canvas) {
 			// Save collapsed groups
 			JTree tree = getTree();
 			Set<GroupAnnotation> collapsedGroups = new HashSet<>();
 			
 			for (int i = 0; i < tree.getRowCount(); i++) {
 				TreePath path = tree.getPathForRow(i);
-				AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
 				Annotation a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation && tree.isCollapsed(path))
@@ -1079,13 +1056,13 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			}
 			
 			// Update Tree Model
-			tree.setModel(new AnnotationTreeModel(collection));
+			tree.setModel(new AnnotationTreeModel(annotationTree, canvas));
 			
 			// Collapse groups that were collapsed before the update and expand all other groups by default.
 			// IMPORTANT: getRowCount() increases after each expansion, so don't store it in a variable!
 			for (int i = 0; i < tree.getRowCount(); i++) {
 				TreePath path = tree.getPathForRow(i);
-				AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
+				AnnotationNode node = (AnnotationNode) path.getLastPathComponent();
 				Annotation a = node.getAnnotation();
 				
 				if (a instanceof GroupAnnotation) {
@@ -1101,61 +1078,21 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		private void updateButtons() {
-			final int selectionCount = getTree().getSelectionCount();
-			boolean b = isEnabled() && selectionCount > 0;
+			getForwardButton().setEnabled(false);
+			getBackwardButton().setEnabled(false);
 			
-			if (!b) {
-				getForwardButton().setEnabled(false);
-				getBackwardButton().setEnabled(false);
+			JTree tree = getTree();
+			AnnotationTree annotationTree = ((AnnotationTreeModel)tree.getModel()).tree;
+			
+			if(annotationTree != null) {
+				List<Annotation> selectedAnnotations = getSelectedAnnotations(tree);
 				
-				return;
+				boolean forward  = annotationTree.shiftAllowed(-1, selectedAnnotations);
+				boolean backward = annotationTree.shiftAllowed( 1, selectedAnnotations);
+				
+				getForwardButton().setEnabled(forward);
+				getBackwardButton().setEnabled(backward);
 			}
-			
-			final int[] selRows = getTree().getSelectionRows();
-			int size = getTree().getRowCount();
-			int firstIdx = -1;
-			int lastIdx = size;
-			
-			if (selRows == null || selRows.length == 0)
-				b = false;
-			
-			if (b) {
-				final Set<TreeNode> parents = new HashSet<>();
-				
-				for (int i = 0; i < selRows.length; i++) {
-					TreePath path = tree.getPathForRow(selRows[i]);
-					AnnotationTree node = (AnnotationTree) path.getLastPathComponent();
-					parents.add(node.getParent());
-					
-					// Cannot reorder when nodes from different parents are selected
-					if (parents.size() > 1)
-						break;
-				}
-				
-				if (b) {
-					AnnotationTree pn = (AnnotationTree) parents.iterator().next();
-					size = pn.getChildCount();
-					
-					if (selectionCount == size) {
-						// If, all nodes selected, it does not make sense to reorder all of them at once
-						b = false;
-					} else {
-						TreeSet<Integer> selIdxSet = new TreeSet<>(); // So we can sort the selected indexes
-						selIdxSet.addAll(Arrays.stream(selRows).boxed().collect(Collectors.toList()));
-						
-						TreePath path1 = tree.getPathForRow(selIdxSet.first());
-						AnnotationTree n1 = (AnnotationTree) path1.getLastPathComponent();
-						firstIdx = pn.getIndex(n1);
-						
-						TreePath path2 = tree.getPathForRow(selIdxSet.last());
-						AnnotationTree n2 = (AnnotationTree) path2.getLastPathComponent();
-						lastIdx = pn.getIndex(n2);
-					}
-				}
-			}
-			
-			getForwardButton().setEnabled(b && firstIdx > 0);
-			getBackwardButton().setEnabled(b && lastIdx < size - 1);
 		}
 	}
 	
@@ -1179,13 +1116,20 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	
 	class AnnotationTreeModel extends DefaultTreeModel {
 		
-		public AnnotationTreeModel(Collection<Annotation> data) {
-			super(AnnotationTree.buildTree(data));
+		private AnnotationTree tree;
+		
+		public AnnotationTreeModel(AnnotationTree tree, String canvas) {
+			super(null);
+			if(tree != null && canvas != null) {
+				AnnotationNode root = tree.getRoot(canvas);
+				setRoot(root);
+				this.tree = tree;
+			}
 		}
 		
 		@Override
-		public AnnotationTree getRoot() {
-			return (AnnotationTree) super.getRoot();
+		public AnnotationNode getRoot() {
+			return (AnnotationNode) super.getRoot();
 		}
 		
 		public List<Annotation> getData() {
@@ -1193,7 +1137,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		public TreePath pathTo(Annotation a) {
-			AnnotationTree node = getRoot().get(a);
+			AnnotationNode node = tree.get(a);
 			return node == null ? null : new TreePath(node.getPath());
 		}
 	}
@@ -1209,8 +1153,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			setBorder(BorderFactory.createEmptyBorder()); // Do not highlight the focused cell
 			setHorizontalAlignment(LEFT);
 			
-			if (value instanceof AnnotationTree) {
-				Annotation annotation = ((AnnotationTree) value).getAnnotation();
+			if (value instanceof AnnotationNode) {
+				Annotation annotation = ((AnnotationNode) value).getAnnotation();
 				if(annotation != null) {
 					DingAnnotation da = (DingAnnotation)annotation;
 					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
@@ -1248,8 +1192,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		@Override
 		public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded,
 				boolean leaf, int row) {
-			if (value instanceof AnnotationTree)
-				value = ((AnnotationTree) value).getAnnotation().getName();
+			if (value instanceof AnnotationNode)
+				value = ((AnnotationNode) value).getAnnotation().getName();
 			
 			return super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
 		}
@@ -1257,7 +1201,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		@Override
 		public boolean isCellEditable(EventObject e) {
 			return super.isCellEditable(e) && lastPath != null
-					&& lastPath.getLastPathComponent() instanceof AnnotationTree;
+					&& lastPath.getLastPathComponent() instanceof AnnotationNode;
 		}
 
 		@Override
@@ -1272,9 +1216,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	        			if (lastPath != null) {
 	        				Object obj = lastPath.getLastPathComponent();
 	        				
-	        				if (obj instanceof AnnotationTree) {
-	        					if (((AnnotationTree) obj).getAnnotation() instanceof GroupAnnotation == false)
-	        						editingIcon = getAnnotationIcon(((AnnotationTree) obj).getAnnotation());
+	        				if (obj instanceof AnnotationNode) {
+	        					if (((AnnotationNode) obj).getAnnotation() instanceof GroupAnnotation == false)
+	        						editingIcon = getAnnotationIcon(((AnnotationNode) obj).getAnnotation());
 	        				}
 	        			}
 					

@@ -47,23 +47,24 @@ public class AbstractAnnotationTest {
 		return shapeFactory.createAnnotation(ShapeAnnotation.class, graphView, emptyMap());
 	}
 	
-	protected ShapeAnnotation createShapeAnnotation(String name, int zorder) {
-		return shapeFactory.createAnnotation(ShapeAnnotation.class, graphView, toArgs(name, zorder));
+	protected ShapeAnnotation createShapeAnnotation(String name, int zorder, String canvas) {
+		return shapeFactory.createAnnotation(ShapeAnnotation.class, graphView, toArgs(name, zorder, canvas));
 	}
 	
 	protected GroupAnnotation createGroupAnnotation() {
 		return groupFactory.createAnnotation(GroupAnnotation.class, graphView, emptyMap());
 	}
 	
-	protected GroupAnnotation createGroupAnnotation(String name, int zorder) {
-		return groupFactory.createAnnotation(GroupAnnotation.class, graphView, toArgs(name, zorder));
+	protected GroupAnnotation createGroupAnnotation(String name, int zorder, String canvas) {
+		return groupFactory.createAnnotation(GroupAnnotation.class, graphView, toArgs(name, zorder, canvas));
 	}
 	
 	
-	private static Map<String, String> toArgs(String name, int zorder) {
+	private static Map<String, String> toArgs(String name, int zorder, String canvas) {
 		Map<String,String> args = new HashMap<>();
 		args.put(Annotation.NAME, name);
 		args.put(Annotation.Z, String.valueOf(zorder));
+		args.put(Annotation.CANVAS, canvas);
 		return args;
 	}
 }

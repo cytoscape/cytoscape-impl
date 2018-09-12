@@ -1,181 +1,163 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import static java.util.stream.Collectors.groupingBy;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import javax.swing.JComponent;
-import javax.swing.tree.TreeNode;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+/**
+ * This class is a wrapper for the annotation tree, the actual root of the tree is stored in the 'root' field.
+ * This class contains methods and fields that only make sense to be called on the root of the tree.
+ */
+public class AnnotationTree {
 
-public class AnnotationTree implements TreeNode {
-
-	// The root of the tree will be null, all other nodes must not be null
-	private Annotation annotation;
+	// This is the actual root node of each tree.
+	private AnnotationNode foregroundTree;
+	private AnnotationNode backgroundTree;
 	
-	private List<AnnotationTree> children = new ArrayList<>();
-	private AnnotationTree parent;
+	private Map<Annotation,AnnotationNode> foregroundLookup;
+	private Map<Annotation,AnnotationNode> backgroundLookup;
 	
-	private Map<Annotation,AnnotationTree> quickLookup;
+	private CyAnnotator cyAnnotator;
 	
-	
-	@FunctionalInterface
-	public static interface Visitor {
-		public void visit(AnnotationTree node);
-	}
-	
-	
-	private AnnotationTree(Annotation annotation) {
-		this.annotation = Objects.requireNonNull(annotation);
-	}
-	
-	private AnnotationTree() {
-	}
-	
-	
-	@Override
-	public AnnotationTree getChildAt(int childIndex) {
-		return children.get(childIndex);
+	/**
+	 * Create this object using the static factory method buildTree().
+	 */
+	private AnnotationTree(AnnotationNode foregroundTree, AnnotationNode backgroundTree) {
+		this.foregroundTree = foregroundTree;
+		this.backgroundTree = backgroundTree;
 	}
 
-	@Override
-	public int getChildCount() {
-		return children.size();
-	}
-
-	@Override
-	public AnnotationTree getParent() {
-		return parent;
-	}
-
-	@Override
-	public int getIndex(TreeNode node) {
-		return children.indexOf((AnnotationTree)node);
-	}
-
-	@Override
-	public boolean getAllowsChildren() {
-		return true;
-	}
-
-	@Override
-	public boolean isLeaf() {
-		return children.isEmpty();
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
-	public Enumeration children() {
-		return Collections.enumeration(children);
+	
+	public AnnotationNode getForegroundRoot() {
+		return foregroundTree;
 	}
 	
-	
-	private void add(AnnotationTree child) {
-		child.parent = this;
-		children.add(child);
+	public AnnotationNode getBackgroundRoot() {
+		return backgroundTree;
 	}
 	
-	public boolean hasChildren() {
-		return !children.isEmpty();
+	public AnnotationNode getRoot(String canvas) {
+		switch(canvas) {
+			case Annotation.FOREGROUND: return foregroundTree;
+			case Annotation.BACKGROUND: return backgroundTree;
+			default: return null;
+		}
 	}
 	
-	public Annotation getAnnotation() {
-		return annotation;
+	public AnnotationNode get(Annotation a) {
+		AnnotationNode node = foregroundLookup.get(a);
+		if(node != null)
+			return node;
+		return backgroundLookup.get(a);
+	} 
+	
+	
+	public void shift(int direction, Collection<? extends Annotation> annotations) {
+		groupByParent(annotations).forEach((parent, childrenToShift) -> parent.shift(direction, childrenToShift));
 	}
 	
-	
-	
-	public AnnotationTree get(Annotation a) {
-		if(annotation == null)
-			return quickLookup.get(a);
+	public boolean shiftAllowed(int direction, Collection<? extends Annotation> annotations) {
+		if(annotations.isEmpty())
+			return false;
 		
-		if(annotation.equals(a))
-			return this;
-		
-		for(AnnotationTree child : children) {
-			AnnotationTree result = child.get(a);
-			if(result != null) {
-				return result;
+		for(Map.Entry<AnnotationNode,List<AnnotationNode>> entry : groupByParent(annotations).entrySet()) {
+			if(!entry.getKey().shiftAllowed(direction, entry.getValue())) {
+				return false;
 			}
 		}
-		return null;
+		return true;
+	}
+	
+	private Map<AnnotationNode,List<AnnotationNode>> groupByParent(Collection<? extends Annotation> annotations) {
+		return annotations.stream()
+			.map(this::get)
+			.filter(a -> a != null)
+			.collect(groupingBy(AnnotationNode::getParent)); // doesn't matter which tree they are already separate
 	}
 	
 	
-	// NOTE: does not visit the root node
-	public void depthFirstTraversal(Visitor visitor) {
-		if(annotation != null)
-			visitor.visit(this);
+	/**
+	 * This method can only be called on the root.
+	 */
+	public void resetZOrder() {
+		if(cyAnnotator == null)
+			return;
+		// Need to calculate z-order separately for each canvas
+		// Note that group annotations are assumed to be on the foreground canvas 
+		// even though their members can be on either canvas.
 		
-		for(AnnotationTree child : children) {
-			child.depthFirstTraversal(visitor);
-		}
-	}
-	
-	public List<Annotation> depthFirstOrder() {
-		List<Annotation> annotations = new ArrayList<>();
-		depthFirstTraversal(n -> annotations.add(n.annotation));
-		return annotations;
-	}
-	
-	
-	
-	public AnnotationTree[] getPath() {
-		LinkedList<AnnotationTree> list = new LinkedList<>();
-		AnnotationTree n = this;
-		while(n != null) {
-			list.addFirst(n);
-			n = n.getParent();
-		}
-		return list.toArray(new AnnotationTree[list.size()]);
+		int[] zf = {0}; // foreground canvas z-order
+		foregroundTree.depthFirstTraversal(node -> {
+			DingAnnotation da = (DingAnnotation) node.getAnnotation();
+			da.getCanvas().setComponentZOrder(da.getComponent(), zf[0]++);
+		});
+		
+		int[] zb = {0};
+		backgroundTree.depthFirstTraversal(node -> {
+			DingAnnotation da = (DingAnnotation) node.getAnnotation();
+			if(!(da instanceof GroupAnnotation)) {
+				da.getCanvas().setComponentZOrder(da.getComponent(), zb[0]++);
+			}
+		});
 	}
 	
 	
 	/**
 	 * This method will not detect cycles in the given Set of annotations. The reason is that however unlikely
-	 * its possible the old session files might have annotations that contain cycles. So when loading we
+	 * its possible that old session files might have annotations that contain cycles. So when loading we
 	 * need to silently convert into a tree.
 	 */
-	public static AnnotationTree buildTree(Collection<? extends Annotation> annotations) {
-		// We sort the annotations so that if an app created a "wrong" z-order we can make a best
-		// attempt at ordering the annotations in a way that is similar to the original.
-		List<Annotation> sortedAnnotations = new ArrayList<>(annotations);
-		sortAnnotations(sortedAnnotations);
+	public static AnnotationTree buildTree(Collection<? extends Annotation> annotations, CyAnnotator cyAnnotator) {
+		Map<String, List<Annotation>> layers = separateByLayers(annotations, true);
 		
 		// Build the annotation tree bottom-up, cycles and duplicate membership is ignored.
-		AnnotationTree root = new AnnotationTree();
-		Map<Annotation,AnnotationTree> all = new HashMap<>();
-		for(Annotation a : sortedAnnotations) {
-			addNode(a, root, all);
+		AnnotationNode foregroundTree = new AnnotationNode(null);
+		AnnotationNode backgroundTree = new AnnotationNode(null);
+		
+		Map<Annotation,AnnotationNode> foregroundNodes = new HashMap<>();
+		Map<Annotation,AnnotationNode> backgroundNodes = new HashMap<>();
+		
+		for(Annotation a : layers.get(Annotation.FOREGROUND)) {
+			addNode(a, foregroundTree, foregroundNodes);
 		}
-		root.quickLookup = all;
-		return root;
-	}
-	
+		for(Annotation a : layers.get(Annotation.BACKGROUND)) {
+			addNode(a, backgroundTree, backgroundNodes);
+		}
+		
+		foregroundTree.removeEmptyGroups();
+		backgroundTree.removeEmptyGroups();
 
-	private static void addNode(Annotation a, AnnotationTree root, Map<Annotation,AnnotationTree> all) {
-		AnnotationTree n = all.computeIfAbsent(a, AnnotationTree::new);
+		AnnotationTree head = new AnnotationTree(foregroundTree, backgroundTree);
+		head.foregroundLookup = foregroundNodes;
+		head.backgroundLookup = backgroundNodes;
+		head.cyAnnotator = cyAnnotator;
+		return head;
+	}
+
+	private static void addNode(Annotation a, AnnotationNode root, Map<Annotation,AnnotationNode> all) {
+		AnnotationNode n = all.computeIfAbsent(a, AnnotationNode::new);
 		
 		if(a instanceof DingAnnotation && ((DingAnnotation)a).getGroupParent() != null) {
 			DingAnnotation ga = (DingAnnotation)((DingAnnotation)a).getGroupParent();
-			AnnotationTree pn = all.get(ga);
+			AnnotationNode pn = all.get(ga);
 			if(pn == null) {
 				// Now we can create the Nodes for each GroupAnnotation we find,
 				// because a group node can be added to both background and foreground trees,
 				// since it may contain child annotations from different canvases
-				all.put(ga, pn = new AnnotationTree(ga));
+				all.put(ga, pn = new AnnotationNode(ga));
 				addNode(ga, root, all);
 			}
 			
@@ -185,6 +167,32 @@ public class AnnotationTree implements TreeNode {
 		} else if (root.getIndex(n) < 0) {
 			root.add(n);
 		}
+	}
+	
+	private static Map<String, List<Annotation>> separateByLayers(Collection<? extends Annotation> list, boolean includeGroups) {
+		Map<String, List<Annotation>> map = new HashMap<>();
+		map.put(Annotation.FOREGROUND, new ArrayList<>());
+		map.put(Annotation.BACKGROUND, new ArrayList<>());
+		
+		if (list != null) {
+			for (Annotation a : list) {
+				if(a instanceof GroupAnnotation) {
+					// MKTODO groups that only contain annotations on one canvas should only show up on that canvas
+					map.get(Annotation.FOREGROUND).add(a);
+					map.get(Annotation.BACKGROUND).add(a);
+				} else {
+					List<Annotation> set = map.get(a.getCanvasName());
+					if (set != null) // Should never be null, unless a new canvas name is created!
+						set.add(a);
+				}
+			};
+		}
+		
+		// We sort the annotations so that if an app created a "wrong" z-order we can make a best
+		// attempt at ordering the annotations in a way that is similar to the original.
+		sortAnnotations(map.get(Annotation.FOREGROUND));
+		sortAnnotations(map.get(Annotation.BACKGROUND));
+		return map;
 	}
 	
 	
@@ -218,7 +226,6 @@ public class AnnotationTree implements TreeNode {
 		return containsCycle(annotations, (Collection<DingAnnotation>)null);
 	}
 
-	
 	private static boolean containsCycle(DingAnnotation a, Collection<DingAnnotation> annotations, Set<Annotation> marked) {
 		if(!marked.add(a))
 			return true;
@@ -236,21 +243,6 @@ public class AnnotationTree implements TreeNode {
 		return false;
 	}
 
-	
-	/**
-	 * Returns a subset of the given set that contains just the annotations that are at the top level
-	 * (i.e. not contained in any group).
-	 */
-	public static List<DingAnnotation> getRootSet(Set<DingAnnotation> allAnnotations) {
-		List<DingAnnotation> rootSet = new ArrayList<>();
-		for(DingAnnotation a : allAnnotations) {
-			if(a.getGroupParent() == null) {
-				rootSet.add(a);
-			}
-		}
-		return rootSet;
-	}
-	
 	
 	private static void sortAnnotations(List<Annotation> annotations) {
 		// Sort the annotations by existing z-order.
@@ -274,6 +266,5 @@ public class AnnotationTree implements TreeNode {
 		};
 		Collections.sort(annotations, comparator);
 	}
-
 	
 }

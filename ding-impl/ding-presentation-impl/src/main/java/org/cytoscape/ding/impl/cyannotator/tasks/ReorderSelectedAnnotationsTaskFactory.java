@@ -73,15 +73,18 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 		if (annotations == null || annotations.isEmpty())
 			return false;
 		
-		for (DingAnnotation a : annotations) {
-			if (canvasName != null) {
-				if (!a.getCanvasName().equals(canvasName))
-					return true;
-			} else if (ReorderAnnotationsTask.isOffsetValid(offset, a)) {
-				return true;
-			}
+		
+		if (offset != null) {
+			return cyAnnotator.getAnnotationTree().shiftAllowed(offset, annotations);
 		}
 		
+		if (canvasName != null) {
+			for (DingAnnotation a : annotations) {
+				if (!a.getCanvasName().equals(canvasName)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 }
