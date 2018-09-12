@@ -519,6 +519,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "5.0");
 			props.setProperty(TOOLTIP, "Apply Preferred Layout");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Applies the preferred layout to the selected views.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyPreferredLayoutTaskFactory.class, props);
 			
@@ -683,6 +684,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOLTIP, "Zoom In");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Zooms in the current view.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/zoom-in.gif").toString());
 			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom in");
@@ -701,6 +703,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Zoom Out");
 			props.setProperty(TOOLTIP, "Zoom Out");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Zooms out the current view.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/zoom-out.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.4");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			props.setProperty(ACCELERATOR, "cmd minus");
@@ -724,6 +727,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Fit Selected");
 			props.setProperty(TOOLTIP, "Fit Selected");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the displayed view area.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/fit-selected.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(ACCELERATOR, "cmd 9");
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -940,6 +944,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Undirected)");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Selects the first neighbors of the current network's selected nodes (undirected).");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/first-neighbors.gif").toString());
 			// props.setProperty(C	OMMAND, "select first neighbors undirected");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -1088,6 +1093,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Unhides the current view's hidden nodes and edges.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/show-hide.gif").toString());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, UnHideAllTaskFactory.class, props);
 		}
@@ -1107,6 +1114,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Hides the current view's selected nodes and edges.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/show-hide.gif").toString());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, HideSelectedTaskFactory.class, props);
 		}
