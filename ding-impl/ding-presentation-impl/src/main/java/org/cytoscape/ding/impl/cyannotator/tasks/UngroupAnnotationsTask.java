@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.DGraphView;
@@ -55,19 +56,29 @@ public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
 	}
 
 	@Override
-	public void run(TaskMonitor tm) throws Exception {
+	public void run(TaskMonitor tm) {
 		if (view instanceof DGraphView) {
 			
 			CyAnnotator annotator = ((DGraphView)view).getCyAnnotator();
 			annotator.markUndoEdit("Ungroup Annotations");
 			
 			for(GroupAnnotation ga : groups) {
-				for(Annotation a : ga.getMembers()) {
+				GroupAnnotation parent = ((DingAnnotation)ga).getGroupParent();
+				List<Annotation> members = ga.getMembers();
+				
+				for(Annotation a : members) {
 					ga.removeMember(a);
 					a.setSelected(true);
 				}
 				
-				ga.removeAnnotation();
+				// move the annotations into the parent
+				if(parent != null) {
+					for(Annotation a : members) {
+						parent.addMember(a);
+					}
+				}
+				
+				ga.removeAnnotation(); // this fires an event so it must go at the end
 			}
 			
 			annotator.postUndoEdit();

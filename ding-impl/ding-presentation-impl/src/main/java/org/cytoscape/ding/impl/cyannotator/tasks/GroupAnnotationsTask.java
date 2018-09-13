@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
@@ -59,6 +60,9 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		if(annotations.isEmpty() || !AnnotationTree.hasSameParent(annotations))
+			return;
+		
 		if (view instanceof DGraphView) {
 			DGraphView dView = (DGraphView) view;
 			
@@ -72,6 +76,8 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			
 			cyAnnotator.markUndoEdit("Group Annotations");
 
+			GroupAnnotation parent = annotations.iterator().next().getGroupParent(); // may be null
+			
 			// remove the annotations from any existing groups
 			for(DingAnnotation a : selectedAnnotations) {
 				GroupAnnotation group = a.getGroupParent();
@@ -80,21 +86,24 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 				}
 			}
 			
-			GroupAnnotationImpl group = new GroupAnnotationImpl(dView, Collections.emptyMap());
-			group.addComponent(null); // Need to add this first so we can update things appropriately
+			GroupAnnotationImpl newGroup = new GroupAnnotationImpl(dView, Collections.emptyMap());
+			newGroup.addComponent(null); // Need to add this first so we can update things appropriately
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw
 			// ConcurrentModifcationExceptions
 			for(DingAnnotation a : selectedAnnotations) {
-				group.addMember(a);
+				newGroup.addMember(a);
 				a.setSelected(false);
 			};
 			
-			cyAnnotator.addAnnotation(group);
+			if(parent != null)
+				parent.addMember(newGroup);
+			
+			cyAnnotator.addAnnotation(newGroup);
 
-			// Finally, set ourselves to be the selected component
-			group.setSelected(true);
-			group.update();
+			// Finally, set ourselves to be the selected components 
+			newGroup.setSelected(true);
+			newGroup.update();
 			
 			cyAnnotator.postUndoEdit();
 		}

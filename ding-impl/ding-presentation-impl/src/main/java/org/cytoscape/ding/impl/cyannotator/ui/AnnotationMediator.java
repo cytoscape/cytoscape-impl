@@ -139,10 +139,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeAnnotations());
 			mainPanel.getPushToBackgroundButton().addActionListener(e -> moveAnnotationsToCanvas(BACKGROUND));
 			mainPanel.getPullToForegroundButton().addActionListener(e -> moveAnnotationsToCanvas(FOREGROUND));
-			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getBackgroundTree(), -1));
-			mainPanel.getBackgroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getBackgroundTree(), +1));
-			mainPanel.getForegroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getForegroundTree(), -1));
-			mainPanel.getForegroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(mainPanel.getForegroundTree(), +1));
+			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), -1));
+			mainPanel.getBackgroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), +1));
+			mainPanel.getForegroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), -1));
+			mainPanel.getForegroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), +1));
 			mainPanel.getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 				if (!mainPanel.getBackgroundTree().isEditing()) {
 					mainPanel.updateSelectionButtons();
@@ -409,7 +409,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void reorderAnnotations(JTree tree, int offset) {
+	private void reorderAnnotations(String canvas, JTree tree, int offset) {
 		DGraphView view = getCurrentDGraphView();
 		
 		if (view != null) {

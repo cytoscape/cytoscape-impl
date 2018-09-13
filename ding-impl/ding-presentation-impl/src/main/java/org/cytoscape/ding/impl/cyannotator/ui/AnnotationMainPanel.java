@@ -352,7 +352,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		setEnabled(view != null);
 		
 		// Update annotation trees
-		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view.getCyAnnotator());
+		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view == null ? null : view.getCyAnnotator());
 		getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 		getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		
@@ -398,8 +398,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			getSelectionLabel().setText(null);
 		} else {
 			final int selected = getSelectedAnnotationCount();
-			getSelectionLabel().setText(
-					selected + " of " + total + " Annotation" + (total == 1 ? "" : "s") + " selected");
+			getSelectionLabel().setText(selected + " of " + total + " Annotation" + (total == 1 ? "" : "s") + " selected");
 		}
 	}
 	
@@ -408,14 +407,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	private void updateGroupUngroupButton() {
-		getGroupAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount() > 1);
+		Collection<Annotation> annotations = getSelectedAnnotations();
+		getGroupAnnotationsButton().setEnabled(isEnabled() && annotations.size() > 1 && AnnotationTree.hasSameParent(annotations));
 		getUngroupAnnotationsButton().setEnabled(isEnabled() && getSelectedAnnotationCount(GroupAnnotation.class) > 0);
 	}
 	
 	void updateSelectionButtons() {
 		final int total = getAnnotationCount();
 		final int selected = getSelectedAnnotationCount();
-		
 		getSelectAllButton().setEnabled(isEnabled() && selected < total);
 		getSelectNoneButton().setEnabled(isEnabled() && selected > 0);
 	}
@@ -1087,8 +1086,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if(annotationTree != null) {
 				List<Annotation> selectedAnnotations = getSelectedAnnotations(tree);
 				
-				boolean forward  = annotationTree.shiftAllowed(-1, selectedAnnotations);
-				boolean backward = annotationTree.shiftAllowed( 1, selectedAnnotations);
+				boolean forward  = annotationTree.shiftAllowed(-1, canvasName, selectedAnnotations);
+				boolean backward = annotationTree.shiftAllowed( 1, canvasName, selectedAnnotations);
 				
 				getForwardButton().setEnabled(forward);
 				getBackwardButton().setEnabled(backward);
@@ -1117,6 +1116,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	class AnnotationTreeModel extends DefaultTreeModel {
 		
 		private AnnotationTree tree;
+		private String canvas;
 		
 		public AnnotationTreeModel(AnnotationTree tree, String canvas) {
 			super(null);
@@ -1124,6 +1124,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 				AnnotationNode root = tree.getRoot(canvas);
 				setRoot(root);
 				this.tree = tree;
+				this.canvas = canvas;
 			}
 		}
 		
@@ -1137,7 +1138,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 		
 		public TreePath pathTo(Annotation a) {
-			AnnotationNode node = tree.get(a);
+			AnnotationNode node = tree.get(canvas, a);
 			return node == null ? null : new TreePath(node.getPath());
 		}
 	}

@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator;
 
+import static org.cytoscape.view.presentation.annotations.Annotation.BACKGROUND;
+import static org.cytoscape.view.presentation.annotations.Annotation.FOREGROUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -173,11 +175,11 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 	
 	@Test
 	public void testConvertToTree() {
-		GroupAnnotation group2 = createGroupAnnotation("group2", 0, Annotation.FOREGROUND);
-		GroupAnnotation group1 = createGroupAnnotation("group1", 1, Annotation.FOREGROUND);
-		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, Annotation.FOREGROUND);
-		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, Annotation.FOREGROUND);
-		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, Annotation.FOREGROUND);
+		GroupAnnotation group2 = createGroupAnnotation("group2", 0, FOREGROUND);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 1, FOREGROUND);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, FOREGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, FOREGROUND);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
 		group2.addMember(group1);
@@ -208,9 +210,9 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		assertEquals("shape2", depthFirst.get(3).getName());
 		assertEquals("shape3", depthFirst.get(4).getName());
 		
-		assertEquals(ng2, head.get(group2));
-		assertEquals(ng1, head.get(group1));
-		assertEquals(ng1.getChildAt(0), head.get(shape1));
+		assertEquals(ng2, head.get(FOREGROUND, group2));
+		assertEquals(ng1, head.get(FOREGROUND, group1));
+		assertEquals(ng1.getChildAt(0), head.get(FOREGROUND, shape1));
 	}
 	
 	
@@ -229,11 +231,11 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 	
 	@Test
 	public void testTreePath() {
-		GroupAnnotation group2 = createGroupAnnotation("group2", 0, Annotation.FOREGROUND);
-		GroupAnnotation group1 = createGroupAnnotation("group1", 1, Annotation.FOREGROUND);
-		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, Annotation.FOREGROUND);
-		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, Annotation.FOREGROUND);
-		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, Annotation.FOREGROUND);
+		GroupAnnotation group2 = createGroupAnnotation("group2", 0, FOREGROUND);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 1, FOREGROUND);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, FOREGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, FOREGROUND);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
 		group2.addMember(group1);
@@ -242,10 +244,10 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
 		AnnotationTree head = AnnotationTree.buildTree(annotations, null);
 		
-		AnnotationNode shape1Node = head.get(shape1);
-		AnnotationNode shape2Node = head.get(shape2);
-		AnnotationNode group1Node = head.get(group1);
-		AnnotationNode group2Node = head.get(group2);
+		AnnotationNode shape1Node = head.get(FOREGROUND, shape1);
+		AnnotationNode shape2Node = head.get(FOREGROUND, shape2);
+		AnnotationNode group1Node = head.get(FOREGROUND, group1);
+		AnnotationNode group2Node = head.get(FOREGROUND, group2);
 		
 		AnnotationNode[] path = shape1Node.getPath();
 		assertEquals(4, path.length);
@@ -266,11 +268,11 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 	
 	@Test
 	public void testForegroundAndBackgroundTrees() {
-		GroupAnnotation group2 = createGroupAnnotation("group2", 0, Annotation.FOREGROUND); // canvas shouldn't matter for groups
-		GroupAnnotation group1 = createGroupAnnotation("group1", 1, Annotation.BACKGROUND);
-		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, Annotation.FOREGROUND);
-		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, Annotation.BACKGROUND);
-		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, Annotation.FOREGROUND);
+		GroupAnnotation group2 = createGroupAnnotation("group2", 0, FOREGROUND); // canvas shouldn't matter for groups
+		GroupAnnotation group1 = createGroupAnnotation("group1", 1, BACKGROUND);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, BACKGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, FOREGROUND);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
 		group2.addMember(group1);
@@ -303,18 +305,18 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 	
 	@Test
 	public void testShift() {
-		GroupAnnotation group1 = createGroupAnnotation("group1", 0, Annotation.FOREGROUND);
-		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 1, Annotation.FOREGROUND);
-		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 2, Annotation.FOREGROUND);
-		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 3, Annotation.FOREGROUND);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 0, FOREGROUND);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 1, FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 2, FOREGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 3, FOREGROUND);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
 		group1.addMember(shape3);
 		
-		GroupAnnotation group2 = createGroupAnnotation("group2", 4, Annotation.FOREGROUND);
-		ShapeAnnotation shape4 = createShapeAnnotation("shape4", 5, Annotation.FOREGROUND);
-		ShapeAnnotation shape5 = createShapeAnnotation("shape5", 6, Annotation.FOREGROUND);
-		ShapeAnnotation shape6 = createShapeAnnotation("shape6", 7, Annotation.FOREGROUND);
+		GroupAnnotation group2 = createGroupAnnotation("group2", 4, FOREGROUND);
+		ShapeAnnotation shape4 = createShapeAnnotation("shape4", 5, FOREGROUND);
+		ShapeAnnotation shape5 = createShapeAnnotation("shape5", 6, FOREGROUND);
+		ShapeAnnotation shape6 = createShapeAnnotation("shape6", 7, FOREGROUND);
 		group2.addMember(shape4);
 		group2.addMember(shape5);
 		group2.addMember(shape6);
@@ -326,46 +328,46 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		AnnotationTree tree = AnnotationTree.buildTree(annotations, null);
 		
 		// test shiftAllowed
-		assertFalse(tree.shiftAllowed(-1, Arrays.asList(shape1)));
-		assertTrue(tree.shiftAllowed(-1, Arrays.asList(shape2)));
-		assertFalse(tree.shiftAllowed(-1, Arrays.asList(shape2, shape1)));
-		assertTrue(tree.shiftAllowed(-1, Arrays.asList(shape2, shape3)));
-		assertFalse(tree.shiftAllowed(1, Arrays.asList(shape3)));
-		assertTrue(tree.shiftAllowed(1, Arrays.asList(shape2)));
-		assertFalse(tree.shiftAllowed(1, Arrays.asList(shape2, shape3)));
-		assertTrue(tree.shiftAllowed(1, Arrays.asList(shape2, shape1)));
-		assertFalse(tree.shiftAllowed(-1, Arrays.asList(shape5, shape1)));
-		assertTrue(tree.shiftAllowed(1, Arrays.asList(shape2, shape4, shape5)));
+		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape1)));
+		assertTrue(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2)));
+		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2, shape1)));
+		assertTrue(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2, shape3)));
+		assertFalse(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape3)));
+		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2)));
+		assertFalse(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape3)));
+		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape1)));
+		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape5, shape1)));
+		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape4, shape5)));
 		
-		AnnotationNode group1node = tree.get(group1);
-		AnnotationNode group2node = tree.get(group2);
+		AnnotationNode group1node = tree.get(FOREGROUND, group1);
+		AnnotationNode group2node = tree.get(FOREGROUND, group2);
 		
 		// test shift
-		tree.shift(-1, Arrays.asList(shape2, shape3));
-		assertEquals(0, group1node.getIndex(tree.get(shape2)));
-		assertEquals(1, group1node.getIndex(tree.get(shape3)));
-		assertEquals(2, group1node.getIndex(tree.get(shape1)));
+		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape3));
+		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
+		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape3)));
+		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		
 		// attempting to shift up again should do nothing
-		tree.shift(-1, Arrays.asList(shape2, shape3));
-		assertEquals(0, group1node.getIndex(tree.get(shape2)));
-		assertEquals(1, group1node.getIndex(tree.get(shape3)));
-		assertEquals(2, group1node.getIndex(tree.get(shape1)));
+		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape3));
+		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
+		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape3)));
+		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		
 		// shift down
-		tree.shift(1, Arrays.asList(shape2, shape3));
-		assertEquals(0, group1node.getIndex(tree.get(shape1)));
-		assertEquals(1, group1node.getIndex(tree.get(shape2)));
-		assertEquals(2, group1node.getIndex(tree.get(shape3)));
+		tree.shift(1, FOREGROUND, Arrays.asList(shape2, shape3));
+		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape1)));
+		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape2)));
+		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape3)));
 		
 		// shift in both at the same time
-		tree.shift(-1, Arrays.asList(shape2, shape5));
-		assertEquals(0, group1node.getIndex(tree.get(shape2)));
-		assertEquals(1, group1node.getIndex(tree.get(shape1)));
-		assertEquals(2, group1node.getIndex(tree.get(shape3)));
-		assertEquals(0, group2node.getIndex(tree.get(shape5)));
-		assertEquals(1, group2node.getIndex(tree.get(shape4)));
-		assertEquals(2, group2node.getIndex(tree.get(shape6)));
+		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape5));
+		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
+		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape1)));
+		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape3)));
+		assertEquals(0, group2node.getIndex(tree.get(FOREGROUND, shape5)));
+		assertEquals(1, group2node.getIndex(tree.get(FOREGROUND, shape4)));
+		assertEquals(2, group2node.getIndex(tree.get(FOREGROUND, shape6)));
 		
 		// TODO test shifting a group
 	}

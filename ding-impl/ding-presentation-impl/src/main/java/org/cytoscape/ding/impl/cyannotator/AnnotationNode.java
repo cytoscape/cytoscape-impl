@@ -74,15 +74,15 @@ public class AnnotationNode implements TreeNode {
 	}
 	
 	void removeEmptyGroups() {
+		for(AnnotationNode n : children) {
+			n.removeEmptyGroups();
+		}
 		Iterator<AnnotationNode> iter = children.iterator();
 		while(iter.hasNext()) {
 			AnnotationNode n = iter.next();
 			if(n.getAnnotation() instanceof GroupAnnotation && n.getChildCount() == 0) {
 				iter.remove();
 			}
-		}
-		for(AnnotationNode n : children) {
-			n.removeEmptyGroups();
 		}
 	}
 	

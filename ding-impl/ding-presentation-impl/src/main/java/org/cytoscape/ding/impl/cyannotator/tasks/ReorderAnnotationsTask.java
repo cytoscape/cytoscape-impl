@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
@@ -11,6 +13,8 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
+import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -79,7 +83,11 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 
 	private void changeCanvas() {
 		for (int i = annotations.size() - 1; i >= 0; i--) {
-			annotations.get(i).changeCanvas(canvasName);
+			DingAnnotation da = annotations.get(i);
+			// group annotations must stay on the foreground canvas
+			if(!(da instanceof GroupAnnotation && Annotation.BACKGROUND.equals(canvasName))) {
+				da.changeCanvas(canvasName);
+			}
 		}
 		
 		// need to rebuild the tree AFTER changing the canvas
@@ -93,7 +101,17 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
 		AnnotationTree tree = cyAnnotator.getAnnotationTree();
 		
-		tree.shift(offset, annotations);
+		Map<String,List<DingAnnotation>> byCanvas = 
+				annotations.stream().collect(Collectors.groupingBy(DingAnnotation::getCanvasName));
+		
+		List<DingAnnotation> fga = byCanvas.get(Annotation.FOREGROUND);
+		if(fga != null && !fga.isEmpty())
+			tree.shift(offset, Annotation.FOREGROUND, fga);
+		
+		List<DingAnnotation> bga = byCanvas.get(Annotation.BACKGROUND);
+		if(bga != null && !bga.isEmpty())
+			tree.shift(offset, Annotation.BACKGROUND, bga);
+		
 		tree.resetZOrder();
 	}
 	

@@ -8,6 +8,7 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.work.TaskIterator;
 
 /*
@@ -75,7 +76,9 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 		
 		
 		if (offset != null) {
-			return cyAnnotator.getAnnotationTree().shiftAllowed(offset, annotations);
+			boolean fg = cyAnnotator.getAnnotationTree().shiftAllowed(offset, Annotation.FOREGROUND, annotations);
+			boolean bg = cyAnnotator.getAnnotationTree().shiftAllowed(offset, Annotation.BACKGROUND, annotations);
+			return fg || bg;
 		}
 		
 		if (canvasName != null) {

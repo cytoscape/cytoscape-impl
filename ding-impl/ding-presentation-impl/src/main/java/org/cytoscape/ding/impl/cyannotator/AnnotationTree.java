@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,33 +58,36 @@ public class AnnotationTree {
 		}
 	}
 	
-	public AnnotationNode get(Annotation a) {
-		AnnotationNode node = foregroundLookup.get(a);
-		if(node != null)
-			return node;
-		return backgroundLookup.get(a);
-	} 
-	
-	
-	public void shift(int direction, Collection<? extends Annotation> annotations) {
-		groupByParent(annotations).forEach((parent, childrenToShift) -> parent.shift(direction, childrenToShift));
+	public AnnotationNode get(String canvas, Annotation a) {
+		switch(canvas) {
+			case Annotation.FOREGROUND: return foregroundLookup.get(a);
+			case Annotation.BACKGROUND: return backgroundLookup.get(a);
+			default: return null;
+		}
 	}
 	
-	public boolean shiftAllowed(int direction, Collection<? extends Annotation> annotations) {
+	
+	public void shift(int direction, String canvas, Collection<? extends Annotation> annotations) {
+		groupByParent(canvas, annotations).forEach((parent, childrenToShift) -> parent.shift(direction, childrenToShift));
+	}
+	
+	public boolean shiftAllowed(int direction, String canvas, Collection<? extends Annotation> annotations) {
 		if(annotations.isEmpty())
 			return false;
 		
-		for(Map.Entry<AnnotationNode,List<AnnotationNode>> entry : groupByParent(annotations).entrySet()) {
-			if(!entry.getKey().shiftAllowed(direction, entry.getValue())) {
+		for(Map.Entry<AnnotationNode,List<AnnotationNode>> entry : groupByParent(canvas, annotations).entrySet()) {
+			AnnotationNode parent = entry.getKey();
+			List<AnnotationNode> childrenToShift = entry.getValue();
+			if(!parent.shiftAllowed(direction, childrenToShift)) {
 				return false;
 			}
 		}
 		return true;
 	}
 	
-	private Map<AnnotationNode,List<AnnotationNode>> groupByParent(Collection<? extends Annotation> annotations) {
+	private Map<AnnotationNode,List<AnnotationNode>> groupByParent(String canvas, Collection<? extends Annotation> annotations) {
 		return annotations.stream()
-			.map(this::get)
+			.map(a -> this.get(canvas, a))
 			.filter(a -> a != null)
 			.collect(groupingBy(AnnotationNode::getParent)); // doesn't matter which tree they are already separate
 	}
@@ -241,6 +245,27 @@ public class AnnotationTree {
 			}
 		}
 		return false;
+	}
+	
+	
+	public static boolean hasSameParent(Collection<? extends Annotation> annotations) {
+		if(annotations.isEmpty())
+			return false;
+		
+		Iterator<? extends Annotation> iter = annotations.iterator();
+		GroupAnnotation parent = null;
+		if(iter.hasNext()) {
+			DingAnnotation a = (DingAnnotation)iter.next();
+			parent = a.getGroupParent();
+		}
+		while(iter.hasNext()) {
+			DingAnnotation a = (DingAnnotation)iter.next();
+			if(parent != a.getGroupParent()) {
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	
