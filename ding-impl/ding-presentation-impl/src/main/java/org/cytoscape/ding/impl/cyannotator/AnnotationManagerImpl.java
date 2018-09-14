@@ -65,12 +65,12 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		cyAnnotator.checkCycle(annotation);
 		
 		invokeOnEDTAndWait(() -> {
-			cyAnnotator.addAnnotation(annotation);
-			
 			if (dAnnotation.getCanvas() != null)
 				dAnnotation.getCanvas().add(dAnnotation.getComponent());
 			else
 				cyAnnotator.getForeGroundCanvas().add(dAnnotation.getComponent());
+			
+			cyAnnotator.addAnnotation(annotation);
 		});
 		
 		// TODO
@@ -92,8 +92,8 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		invokeOnEDTAndWait(() -> {
 			annotationsByView.forEach((view, viewAnnotations) -> {
 				Map<ArbitraryGraphicsCanvas, List<DingAnnotation>> annotationsByCanvas = groupByCanvas(view, viewAnnotations);
-				view.getCyAnnotator().addAnnotations(viewAnnotations);
 				annotationsByCanvas.forEach(ArbitraryGraphicsCanvas::addAnnotations);
+				view.getCyAnnotator().addAnnotations(viewAnnotations);
 			});
 		});
 		
