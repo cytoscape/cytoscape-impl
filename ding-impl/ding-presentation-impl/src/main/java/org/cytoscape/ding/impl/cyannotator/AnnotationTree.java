@@ -267,6 +267,16 @@ public class AnnotationTree {
 		
 		return true;
 	}
+	
+	public static List<DingAnnotation> getAncestors(DingAnnotation a) {
+		List<DingAnnotation> ancestors = new ArrayList<>();
+		DingAnnotation ancestor = (DingAnnotation) a.getGroupParent();
+		while(ancestor != null) {
+			ancestors.add(ancestor);
+			ancestor = (DingAnnotation) ancestor.getGroupParent();
+		}
+		return ancestors;
+	}
 
 	
 	private static void sortAnnotations(List<Annotation> annotations) {

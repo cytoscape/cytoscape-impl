@@ -51,6 +51,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -191,8 +192,19 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	public void moveSelection(int x, int y) {
 		// Get our current transform
 		Point2D pt = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
+		
+		// Avoid moving the same annotation twice
+		Set<DingAnnotation> annotationsToMove = new HashSet<>(selectedAnnotations);
+		for(DingAnnotation annotation : selectedAnnotations) {
+			for(DingAnnotation ancestor : AnnotationTree.getAncestors(annotation)) {
+				if(selectedAnnotations.contains(ancestor)) {
+					annotationsToMove.remove(annotation);
+					break;
+				}
+			}
+		}
 
-		for (DingAnnotation annotation: selectedAnnotations) {
+		for (DingAnnotation annotation : annotationsToMove) {
 			// OK, now update
 			annotation.moveAnnotationRelative(pt);
 			annotation.update();

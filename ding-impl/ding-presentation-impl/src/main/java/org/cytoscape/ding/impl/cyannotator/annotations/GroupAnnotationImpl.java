@@ -235,7 +235,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 		// Get our current location in component coordinates
 		Point currentLocation = getLocation();
-		Point2D current = ViewUtils.getComponentCoordinates(view, currentLocation.getX(), currentLocation.getY());
 		double currentX = currentLocation.getX();
 		double currentY = currentLocation.getY();
 
@@ -247,8 +246,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			// Move each child to it's new location
 			Point childLocation = child.getLocation();
 
-			((AbstractAnnotation)child).setLocation((int)Math.round(childLocation.getX()-deltaX), 
-			                                        (int)Math.round(childLocation.getY()-deltaY));
+			Point2D moveTo = ViewUtils.getNodeCoordinates(view, Math.round(childLocation.getX()-deltaX), Math.round(childLocation.getY()-deltaY));
+			((AbstractAnnotation)child).moveAnnotation(moveTo);
 		}
 
 		// Set our new location
