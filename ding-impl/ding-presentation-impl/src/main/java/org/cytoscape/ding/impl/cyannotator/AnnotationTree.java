@@ -135,10 +135,10 @@ public class AnnotationTree {
 		Map<Annotation,AnnotationNode> backgroundNodes = new HashMap<>();
 		
 		for(Annotation a : layers.get(Annotation.FOREGROUND)) {
-			addNode(a, foregroundTree, foregroundNodes);
+			addNode(a, foregroundTree, foregroundNodes, cyAnnotator);
 		}
 		for(Annotation a : layers.get(Annotation.BACKGROUND)) {
-			addNode(a, backgroundTree, backgroundNodes);
+			addNode(a, backgroundTree, backgroundNodes, cyAnnotator);
 		}
 		
 		foregroundTree.removeEmptyGroups();
@@ -151,18 +151,22 @@ public class AnnotationTree {
 		return head;
 	}
 
-	private static void addNode(Annotation a, AnnotationNode root, Map<Annotation,AnnotationNode> all) {
+	private static void addNode(Annotation a, AnnotationNode root, Map<Annotation,AnnotationNode> all, CyAnnotator cyAnnotator) {
+		if(!(a instanceof DingAnnotation))
+			return;
+		
 		AnnotationNode n = all.computeIfAbsent(a, AnnotationNode::new);
 		
-		if(a instanceof DingAnnotation && ((DingAnnotation)a).getGroupParent() != null) {
-			DingAnnotation ga = (DingAnnotation)((DingAnnotation)a).getGroupParent();
-			AnnotationNode pn = all.get(ga);
+		DingAnnotation groupParent = (DingAnnotation)((DingAnnotation)a).getGroupParent();
+		
+		if(groupParent != null && cyAnnotator.contains(groupParent)) {
+			AnnotationNode pn = all.get(groupParent);
 			if(pn == null) {
 				// Now we can create the Nodes for each GroupAnnotation we find,
 				// because a group node can be added to both background and foreground trees,
 				// since it may contain child annotations from different canvases
-				all.put(ga, pn = new AnnotationNode(ga));
-				addNode(ga, root, all);
+				all.put(groupParent, pn = new AnnotationNode(groupParent));
+				addNode(groupParent, root, all, cyAnnotator);
 			}
 			
 			if(pn.getIndex(n) < 0)
@@ -181,7 +185,6 @@ public class AnnotationTree {
 		if (list != null) {
 			for (Annotation a : list) {
 				if(a instanceof GroupAnnotation) {
-					// MKTODO groups that only contain annotations on one canvas should only show up on that canvas
 					map.get(Annotation.FOREGROUND).add(a);
 					map.get(Annotation.BACKGROUND).add(a);
 				} else {

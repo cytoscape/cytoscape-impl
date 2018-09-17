@@ -30,6 +30,8 @@ import java.awt.Image;
 
 import javax.swing.JComponent;
 
+import org.cytoscape.ding.impl.DGraphView.Canvas;
+
 
 /**
  * This class is meant to be extended by a class which
@@ -57,7 +59,18 @@ public abstract class DingCanvas extends JComponent {
 	 * ref to opaque boolean
 	 */
 	protected boolean m_isOpaque;
+	
+	protected final Canvas canvasId;
 
+	
+	public DingCanvas(Canvas canvasId) {
+		this.canvasId = canvasId;
+	}
+	
+	public Canvas getCanvasId() {
+		return canvasId;
+	}
+	
 	/**
 	 * Sets opacity of component
 	 *

@@ -18,14 +18,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.events.SetSelectedNetworksEvent;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
@@ -443,6 +441,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public List<Annotation> getAnnotations() {
 		return annotationSet.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationSet);
+	}
+	
+	public boolean contains(Annotation a) {
+		if(a == null)
+			return false;
+		return annotationSet.contains(a);
 	}
 
 	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {

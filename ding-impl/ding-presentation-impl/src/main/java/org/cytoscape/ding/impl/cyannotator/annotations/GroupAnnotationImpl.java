@@ -80,7 +80,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap) {
-		super(view, argMap);
+		super(view, processArgs(argMap));
 
 		// Get the UUIDs of all of the annotations
 		if (argMap.containsKey(MEMBERS)) {
@@ -97,6 +97,16 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 					annotations.add(a);
 			}
 		}
+	}
+	
+	@Override
+	public void setCanvas(String cnvs) {
+		// do nothing, must be on the foreground canvas
+	}
+	
+	private static Map<String,String> processArgs(Map<String,String> argMap) {
+		argMap.remove(CANVAS);
+		return argMap;
 	}
 
 	@Override

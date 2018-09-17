@@ -41,6 +41,7 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
+import org.cytoscape.ding.impl.DGraphView.Canvas;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -154,6 +155,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private final CyServiceRegistrar serviceRegistrar;
 
 	InnerCanvas(Object lock, DGraphView view, CyServiceRegistrar serviceRegistrar) {
+		super(Canvas.NETWORK_CANVAS);
 		m_lock = lock;
 		m_view = view;
 		this.serviceRegistrar = serviceRegistrar;

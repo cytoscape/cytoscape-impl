@@ -429,9 +429,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
 		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
 		m_networkCanvas = new InnerCanvas(m_lock, this, registrar);
-		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, true);
+		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, m_networkCanvas, Color.white, true);
 		addViewportChangeListener(m_backgroundCanvas);
-		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, m_networkCanvas, Color.white, false);
+		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, m_networkCanvas, Color.white, false);
 		addViewportChangeListener(m_foregroundCanvas);
 		m_selectedNodes = new LongBTree();
 		m_selectedEdges = new LongBTree();

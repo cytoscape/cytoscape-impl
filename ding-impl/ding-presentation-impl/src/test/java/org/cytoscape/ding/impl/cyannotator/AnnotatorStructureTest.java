@@ -2,17 +2,20 @@ package org.cytoscape.ding.impl.cyannotator;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
 
+import org.cytoscape.ding.impl.DGraphView.Canvas;
+import org.cytoscape.ding.impl.DingCanvas;
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class AnnotatorStructureTest extends AbstractAnnotationTest {
@@ -195,17 +198,154 @@ public class AnnotatorStructureTest extends AbstractAnnotationTest {
 	}
 	
 	
-	public void testSpanningCanvases() {
-		// MKTODO devise a test that involves annotations spanning canvases
-	}
-	
-	
-	public void testZOrderReset() {
+	@Test
+	public void testIllegalCycle3() {
+		// Annotation can't be in more than one group at the same time (test both leaf and group annotation)
+		ShapeAnnotation shape1 = createShapeAnnotation();
+		GroupAnnotation group1 = createGroupAnnotation();
+		group1.addMember(shape1);
+		
+		// Everything should be fine at this point
+		annotationManager.addAnnotations(Arrays.asList(group1, shape1));
+		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
+		assertEquals(2, annotations.size());
+		
+		GroupAnnotation group2 = createGroupAnnotation();
+		GroupAnnotation group3 = createGroupAnnotation();
+		group1.addMember(group2);
+		group2.addMember(group3);
+		group3.addMember(group1);
+		
+		try {
+			annotationManager.addAnnotations(Arrays.asList(group2));
+			fail();
+		} catch(IllegalAnnotationStructureException e) { }
 		
 	}
 	
+	@Test
+	public void testIllegalCycle4() {
+		// Annotation can't be in more than one group at the same time (test both leaf and group annotation)
+		ShapeAnnotation shape1 = createShapeAnnotation();
+		GroupAnnotation group1 = createGroupAnnotation();
+		group1.addMember(shape1);
+		
+		// Everything should be fine at this point
+		annotationManager.addAnnotations(Arrays.asList(group1, shape1));
+		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
+		assertEquals(2, annotations.size());
+		
+		GroupAnnotation group2 = createGroupAnnotation();
+		GroupAnnotation group3 = createGroupAnnotation();
+		group2.addMember(group3);
+		
+		try {
+			group3.addMember(group3);
+			fail();
+		} catch(IllegalAnnotationStructureException e) { }
+		
+	}
 	
-	public void testGroupAutoAddChildren() {
-		// if you add a group with children it should auto add the children
+	@Test
+	public void testGroupAutoAddChildren1() {
+		ShapeAnnotation shape1 = createShapeAnnotation();
+		ShapeAnnotation shape2 = createShapeAnnotation();
+		GroupAnnotation group1 = createGroupAnnotation();
+		GroupAnnotation group2 = createGroupAnnotation();
+		GroupAnnotation group3 = createGroupAnnotation();
+		group1.addMember(group2);
+		group2.addMember(group3);
+		group3.addMember(shape1);
+		group3.addMember(shape2);
+		
+		annotationManager.addAnnotation(group1);
+		
+		List<Annotation> annotations = annotationManager.getAnnotations(graphView);
+		assertEquals(5, annotations.size());
+		
+		assertSame(graphView, shape1.getNetworkView());
+		assertSame(graphView, shape2.getNetworkView());
+		assertSame(graphView, group1.getNetworkView());
+		assertSame(graphView, group2.getNetworkView());
+		assertSame(graphView, group3.getNetworkView());
+		
+		DingCanvas foreground = graphView.getCanvas(Canvas.FOREGROUND_CANVAS);
+		assertSame(foreground, ((AbstractAnnotation)shape1).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)shape2).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)group1).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)group2).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)group3).getCanvas());
+		
+		annotationManager.removeAnnotation(group1);
+		
+		annotations = annotationManager.getAnnotations(graphView);
+		assertEquals(0, annotations.size());
+	}
+	
+	@Test
+	public void testGroupAutoAddChildren2() {
+		GroupAnnotation group1 = createGroupAnnotation("group1", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 0, Annotation.BACKGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape4 = createShapeAnnotation("shape4", 0, Annotation.BACKGROUND);
+		group1.addMember(shape1);
+		group1.addMember(shape2);
+		group1.addMember(shape3);
+		group1.addMember(shape4);
+		
+		annotationManager.addAnnotation(group1);
+		
+		assertEquals(5, annotationManager.getAnnotations(graphView).size());
+		
+		annotationManager.removeAnnotation(group1);
+		
+		assertEquals(0, annotationManager.getAnnotations(graphView).size());
+	}
+	
+	@Test
+	public void testGroupAutoAddChildren3() {
+		GroupAnnotation group1 = createGroupAnnotation("group1", 0, Annotation.BACKGROUND); // group on BACKGROUND
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 0, Annotation.BACKGROUND);
+		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape4 = createShapeAnnotation("shape4", 0, Annotation.BACKGROUND);
+		group1.addMember(shape1);
+		group1.addMember(shape2);
+		group1.addMember(shape3);
+		group1.addMember(shape4);
+		
+		annotationManager.addAnnotation(group1);
+		
+		assertEquals(5, annotationManager.getAnnotations(graphView).size());
+		
+		annotationManager.removeAnnotation(group1);
+		
+		assertEquals(0, annotationManager.getAnnotations(graphView).size());
+	}
+	
+	
+	@Test
+	public void testGroupCanvas() {
+		// group annotations MUST be on the foreground canvas
+		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 0, Annotation.FOREGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 1, Annotation.FOREGROUND);
+		GroupAnnotation group1 = createGroupAnnotation("group1", 2, Annotation.FOREGROUND);
+		GroupAnnotation group2 = createGroupAnnotation("group2", 3, Annotation.BACKGROUND); // uh-oh
+		group1.addMember(group2);
+		group2.addMember(shape1);
+		group2.addMember(shape2);
+		
+		annotationManager.addAnnotation(group1);
+		
+		assertEquals(4, annotationManager.getAnnotations(graphView).size());
+		
+		assertSame(graphView, group2.getNetworkView());
+		
+		DingCanvas foreground = graphView.getCanvas(Canvas.FOREGROUND_CANVAS);
+		assertSame(foreground, ((AbstractAnnotation)shape1).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)shape2).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)group1).getCanvas());
+		assertSame(foreground, ((AbstractAnnotation)group2).getCanvas());
 	}
 }

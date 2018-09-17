@@ -7,6 +7,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,10 +20,19 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.junit.Before;
 import org.junit.Test;
 
 public class AnnotationTreeTest extends AbstractAnnotationTest {
 
+	protected CyAnnotator cyAnnotator;
+	
+	@Before
+	public void setUpCyAnnotator() {
+		cyAnnotator = mock(CyAnnotator.class);
+		when(cyAnnotator.contains(any())).thenReturn(true);
+	}
+	
 	
 	private static Set<DingAnnotation> asSet(Annotation...annotations) {
 		Set<DingAnnotation> set = new HashSet<>();
@@ -57,6 +69,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		}
 	}
 	
+
 	
 	@Test
 	public void testDetectNoCycle() {
@@ -186,7 +199,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		group2.addMember(shape3);
 		
 		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
-		AnnotationTree head = AnnotationTree.buildTree(annotations, null);
+		AnnotationTree head = AnnotationTree.buildTree(annotations, cyAnnotator);
 		
 		// the root of the tree does not contain an annotation
 		assertNull(head.getForegroundRoot().getAnnotation());
@@ -242,7 +255,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		group2.addMember(shape3);
 		
 		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
-		AnnotationTree head = AnnotationTree.buildTree(annotations, null);
+		AnnotationTree head = AnnotationTree.buildTree(annotations, cyAnnotator);
 		
 		AnnotationNode shape1Node = head.get(FOREGROUND, shape1);
 		AnnotationNode shape2Node = head.get(FOREGROUND, shape2);
@@ -271,7 +284,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		GroupAnnotation group2 = createGroupAnnotation("group2", 0, FOREGROUND); // canvas shouldn't matter for groups
 		GroupAnnotation group1 = createGroupAnnotation("group1", 1, BACKGROUND);
 		ShapeAnnotation shape1 = createShapeAnnotation("shape1", 2, FOREGROUND);
-		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, BACKGROUND);
+		ShapeAnnotation shape2 = createShapeAnnotation("shape2", 3, BACKGROUND); // shape 2 on the background!!!
 		ShapeAnnotation shape3 = createShapeAnnotation("shape3", 4, FOREGROUND);
 		group1.addMember(shape1);
 		group1.addMember(shape2);
@@ -279,7 +292,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		group2.addMember(shape3);
 		
 		Set<DingAnnotation> annotations = asSet(shape1, shape2, shape3, group1, group2);
-		AnnotationTree tree = AnnotationTree.buildTree(annotations, null);
+		AnnotationTree tree = AnnotationTree.buildTree(annotations, cyAnnotator);
 		
 		{
 			AnnotationNode foreground = tree.getForegroundRoot();
@@ -288,7 +301,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 			assertEquals(2, foreground.getChildAt(0).getChildCount());
 			assertEquals("group1", foreground.getChildAt(0).getChildAt(0).getAnnotation().getName());
 			assertEquals("shape3", foreground.getChildAt(0).getChildAt(1).getAnnotation().getName());
-			assertEquals(1,foreground.getChildAt(0).getChildAt(0).getChildCount());
+			assertEquals(1, foreground.getChildAt(0).getChildAt(0).getChildCount());
 			assertEquals("shape1", foreground.getChildAt(0).getChildAt(0).getChildAt(0).getAnnotation().getName());
 		}
 		{
@@ -325,7 +338,7 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		annotations.addAll(asSet(group1, shape1, shape2, shape3));
 		annotations.addAll(asSet(group2, shape4, shape5, shape6));
 		
-		AnnotationTree tree = AnnotationTree.buildTree(annotations, null);
+		AnnotationTree tree = AnnotationTree.buildTree(annotations, cyAnnotator);
 		
 		// test shiftAllowed
 		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape1)));

@@ -44,6 +44,7 @@ import java.util.Map;
 
 import javax.swing.JComponent;
 
+import org.cytoscape.ding.impl.DGraphView.Canvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNode;
@@ -100,9 +101,11 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param isOpaque boolean
 	 */
 	public ArbitraryGraphicsCanvas(DGraphView dGraphView,
+								   Canvas canvasId,
 	                               InnerCanvas innerCanvas,
 	                               Color backgroundColor,
 	                               boolean isOpaque) {
+		super(canvasId);
 		m_dGraphView = dGraphView;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
