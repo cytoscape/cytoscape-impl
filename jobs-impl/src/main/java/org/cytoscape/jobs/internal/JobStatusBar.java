@@ -1,10 +1,8 @@
 package org.cytoscape.jobs.internal;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.util.Collection;
 
 import javax.swing.GroupLayout;
@@ -29,13 +27,12 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public static final String TASK_HISTORY_CLICK = "job-status-click";
 
-	private static final int CLEAR_DELAY_MS = 5000;
-
 	public static final String ICON_RUNNING = IconManager.ICON_HOURGLASS_1;
 	public static final String ICON_WARN = IconManager.ICON_EXCLAMATION_TRIANGLE;
 	public static final String ICON_ERROR = IconManager.ICON_MINUS_CIRCLE;
 	public static final String ICON_CANCELLED = IconManager.ICON_BAN;
 	public static final String ICON_FINISHED = IconManager.ICON_CLOUD_DOWNLOAD;
+	public static final String ICON_JOBS = IconManager.ICON_CLOUD;
 						  
 	public static enum JobsIcon {
 		RUNNING(ICON_RUNNING),
@@ -43,7 +40,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		ERROR(ICON_ERROR),
 		CANCELLED(ICON_CANCELLED),
 		FINISHED(ICON_FINISHED),
-		JOBS(IconManager.ICON_CLOUD);
+		JOBS(ICON_JOBS);
 
 		private final String text;
 
@@ -79,10 +76,8 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		showBtn.setFont(iconManager.getIconFont(14.0f));
 		showBtn.setText(JobsIcon.JOBS.getText());
 		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (LookAndFeelUtil.isAquaLAF())
 			showBtn.putClientProperty("JButton.buttonType", "gradient");
-			showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		}
 		
 		showBtn.addActionListener(evt -> {
 			showBtn.setText(JobsIcon.JOBS.getText());
@@ -93,9 +88,8 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		});
 		showBtn.setToolTipText("Show Job Status");
 		showBtn.setFocusPainted(false);
-		
-		if (!LookAndFeelUtil.isAquaLAF())
-			showBtn.setPreferredSize(new Dimension(45, showBtn.getPreferredSize().height));
+
+		final int w = Math.max(48, showBtn.getPreferredSize().width);
 		
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -103,13 +97,11 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		layout.setAutoCreateGaps(false);
 
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-						.addComponent(showBtn)
+				.addComponent(showBtn, w, w, w)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(showBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(showBtn, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
-
-		setPreferredSize(new Dimension(showBtn.getPreferredSize().width, getPreferredSize().height));
 	}
 
 	public void setDialog(JDialog dialog) { this.statusDialog = dialog; }
@@ -121,13 +113,15 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 		// 	ERROR/FAILED
 		// 	CANCELED/PURGED/TERMINATED/UNKNOWN
 		// 	QUEUED/SUBMITTTED/RUNNING
-		if (values != null || values.size() > 0) {
+		if (values != null && values.size() > 0) {
 			for (CyJobStatus status: values) {
 				CyJobStatus.Status jobStatus = status.getStatus();
+				
 				if (jobStatus.equals(CyJobStatus.Status.FINISHED)) {
 					icon = JobsIcon.FINISHED;
 					break;
 				}
+				
 				if (jobStatus.equals(CyJobStatus.Status.ERROR) ||
 				    jobStatus.equals(CyJobStatus.Status.FAILED)) {
 					icon = JobsIcon.ERROR;
@@ -154,12 +148,7 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	public void setIcon(final JobsIcon icon) {
 		if (!SwingUtilities.isEventDispatchThread()) {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					setIcon(icon);
-				}
-			});
+			SwingUtilities.invokeLater(() -> setIcon(icon));
 			return;
 		}
 
@@ -186,12 +175,10 @@ public class JobStatusBar extends JPanel implements StatusBarPanelFactory {
 			showBtn.setForeground(iconColor);
 			currentStatus = icon;
 		}
-		
 	}
 	
 	@Override
 	public JPanel createTaskStatusPanel() {
 		return this;
 	}
-	
 }

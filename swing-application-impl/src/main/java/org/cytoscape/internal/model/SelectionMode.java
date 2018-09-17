@@ -48,7 +48,7 @@ public enum SelectionMode {
 			"Toggle Annotation Selection",
 			SELECTION_MODE_ANNOTATIONS,
 			"Turn off this option if you don't want annotations to be selected when they are clicked or drag-selected.",
-			null,
+			"/images/tooltips/selection-mode-annotations.gif",
 			"NETWORK_ANNOTATION_SELECTION"
 	);
 	

@@ -65,7 +65,7 @@ public final class GUIDefaults {
 	public static final String ICON_FINISHED = IconManager.ICON_CHECK;
 	
 	public static enum TaskIcon {
-		INFO(ICON_WARN),
+		INFO(ICON_INFO),
 		WARN(ICON_WARN),
 		ERROR(ICON_ERROR),
 		CANCELLED(ICON_CANCELLED),

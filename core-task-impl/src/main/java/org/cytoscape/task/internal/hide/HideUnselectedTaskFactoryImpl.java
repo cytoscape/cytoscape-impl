@@ -33,6 +33,6 @@ public class HideUnselectedTaskFactoryImpl extends AbstractHideFromSelectionTask
 		HideUnselectedTaskFactory {
 	
 	public HideUnselectedTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
-		super("Hide unselected nodes and edges", true, true, false, serviceRegistrar);
+		super("Hide Unselected Nodes and Edges", true, true, false, serviceRegistrar);
 	}
 }

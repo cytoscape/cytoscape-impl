@@ -74,12 +74,8 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		showBtn = new JButton(GUIDefaults.TaskIcon.TASKS.getText());
 		showBtn.setFont(iconManager.getIconFont(14.0f));
 		
-		if (LookAndFeelUtil.isAquaLAF()) {
+		if (LookAndFeelUtil.isAquaLAF())
 			showBtn.putClientProperty("JButton.buttonType", "gradient");
-			showBtn.putClientProperty("JComponent.sizeVariant", "small");
-		} else {
-			showBtn.setPreferredSize(new Dimension(32, showBtn.getPreferredSize().height));
-		}
 		
 		showBtn.addActionListener(evt -> {
 			showBtn.setText(GUIDefaults.TaskIcon.TASKS.getText());
@@ -91,6 +87,8 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		
 		clearingTimer = new Timer(CLEAR_DELAY_MS, evt -> clearStatusBar());
 		clearingTimer.setRepeats(false);
+		
+		final int w = Math.max(48, showBtn.getPreferredSize().width);
 
 		final GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -98,15 +96,15 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		layout.setAutoCreateGaps(false);
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addComponent(showBtn)
+				.addComponent(showBtn, w, w, w)
 				.addPreferredGap(ComponentPlacement.UNRELATED)
 				.addComponent(titleIconLabel)
 				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(titleLabel)
 		);
-		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, false)
-				.addComponent(showBtn, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-				.addComponent(titleIconLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+		layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+				.addComponent(showBtn, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+				.addComponent(titleIconLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(titleLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 
@@ -134,7 +132,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 			}
 		}
 		
-		this.setTitle(type, icon, title);
+		setTitle(type, icon, title);
 	}
 
 	public void setTitle(final Level level, final String title) {
@@ -158,7 +156,7 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 			}
 		}
 		
-		this.setTitle(type, icon, title);
+		setTitle(type, icon, title);
 	}
 	
 	public void setTitle(final String type, final TaskIcon icon, final String title) {

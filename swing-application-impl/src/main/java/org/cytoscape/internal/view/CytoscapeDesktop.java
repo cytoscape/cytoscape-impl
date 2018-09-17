@@ -259,8 +259,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			StatusBarPanelFactory taskStatusPanelFactory) {
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
 		final JPanel jobStatusPanel = jobStatusPanelFactory.createTaskStatusPanel();
-		final JToolBar statusToolBar = new JToolBar();
 		final MemStatusPanel memStatusPanel = new MemStatusPanel();
+		
+		final JToolBar statusToolBar = new JToolBar();
+		statusToolBar.setFloatable(false);
+		statusToolBar.setBorder(BorderFactory.createEmptyBorder());
 		
 		if (LookAndFeelUtil.isNimbusLAF()) {
 			jobStatusPanel.setOpaque(false);
@@ -290,11 +293,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
-				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-						.addComponent(jobStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(taskStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
+						.addComponent(jobStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(taskStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(statusToolBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-						.addComponent(memStatusPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(memStatusPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
 				.addGap(LookAndFeelUtil.isWinLAF() ? 5 : 0)
 		);

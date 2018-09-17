@@ -51,6 +51,7 @@ import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
 import static org.cytoscape.work.ServiceProperties.TITLE;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP;
 import static org.cytoscape.work.ServiceProperties.TOOLTIP_IMAGE;
+import static org.cytoscape.work.ServiceProperties.TOOLTIP_LONG_DESCRIPTION;
 import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 
 import java.awt.Font;
@@ -517,6 +518,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "5.0");
 			props.setProperty(TOOLTIP, "Apply Preferred Layout");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Applies the preferred layout to the selected views.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/apply-preferred-layout.gif").toString());
 			registerService(bc, factory, NetworkViewCollectionTaskFactory.class, props);
 			registerService(bc, factory, ApplyPreferredLayoutTaskFactory.class, props);
 			
@@ -680,6 +683,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
 			props.setProperty(TOOLTIP, "Zoom In");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Zooms in the current view.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/zoom-in.gif").toString());
 			props.setProperty(TOOL_BAR_GRAVITY, "5.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			// props.setProperty(COMMAND, "zoom in");
@@ -697,6 +702,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Zoom Out");
 			props.setProperty(TOOLTIP, "Zoom Out");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Zooms out the current view.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/zoom-out.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.4");
 			props.setProperty(INSERT_SEPARATOR_AFTER, "true");
 			props.setProperty(ACCELERATOR, "cmd minus");
@@ -718,7 +725,9 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Selected");
-			props.setProperty(TOOLTIP, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the displayed view area.");
+			props.setProperty(TOOLTIP, "Fit Selected");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Changes the current view's zoom and viewport so the selected nodes and edges fit into the displayed view area.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/fit-selected.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.2");
 			props.setProperty(ACCELERATOR, "cmd 9");
 			props.setProperty(LARGE_ICON_ID, iconId);
@@ -746,7 +755,8 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "View");
 			props.setProperty(TITLE, "Fit Content");
-			props.setProperty(TOOLTIP, "Zooms out the current view in order to display all of its elements.");
+			props.setProperty(TOOLTIP, "Fit Content");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Zooms out the current view in order to display all of its elements.");
 			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/fit-content.gif").toString());
 			props.setProperty(MENU_GRAVITY, "6.1");
 			props.setProperty(ACCELERATOR, "cmd 0");
@@ -846,7 +856,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(ACCELERATOR, "cmd alt a");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(TITLE, "Select all nodes and edges");
+			props.setProperty(TITLE, "Select All Nodes and Edges");
 			props.setProperty(MENU_GRAVITY, "5.0");
 			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
 			props.setProperty(PREFERRED_ACTION, "NEW");
@@ -856,7 +866,7 @@ public class CyActivator extends AbstractCyActivator {
 			props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_SELECT_MENU);
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
-			props.setProperty(TITLE, "All nodes and edges");
+			props.setProperty(TITLE, "All Nodes and Edges");
 			props.setProperty(MENU_GRAVITY, "1.1");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(IN_MENU_BAR, "false");
@@ -869,7 +879,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(ACCELERATOR, "cmd alt a");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
-			props.setProperty(TITLE, "Select all edges");
+			props.setProperty(TITLE, "Select All Edges");
 			props.setProperty(MENU_GRAVITY, "4");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectAllEdgesTaskFactory.class, props);
@@ -882,7 +892,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "4");
 			props.setProperty(ACCELERATOR, "cmd a");
-			props.setProperty(TITLE, "Select all nodes");
+			props.setProperty(TITLE, "Select All Nodes");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, SelectAllNodesTaskFactory.class, props);
 		}
@@ -894,7 +904,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "6");
 			props.setProperty(ACCELERATOR, "alt e");
-			props.setProperty(TITLE, "Select adjacent edges");
+			props.setProperty(TITLE, "Select Adjacent Edges");
 			// props.setProperty(COMMAND, "select adjacent");
 			// props.setProperty(COMMAND_NAMESPACE, "edge");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -908,7 +918,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "7");
 			props.setProperty(ACCELERATOR, "cmd 7");
-			props.setProperty(TITLE, "Nodes connected by selected edges");
+			props.setProperty(TITLE, "Nodes Connected by Selected Edges");
 			// props.setProperty(COMMAND, "select by connected edges");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -933,6 +943,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, "First Neighbors of Selected Nodes (Undirected)");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Selects the first neighbors of the current network's selected nodes (undirected).");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/first-neighbors.gif").toString());
 			// props.setProperty(C	OMMAND, "select first neighbors undirected");
 			// props.setProperty(COMMAND_NAMESPACE, "node");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -979,7 +991,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(MENU_GRAVITY, "5.1");
 			props.setProperty(ACCELERATOR, "cmd shift alt a");
-			props.setProperty(TITLE, "Deselect all nodes and edges");
+			props.setProperty(TITLE, "Deselect All Nodes and Edges");
 			// props.setProperty(COMMAND, "deselect all");
 			// props.setProperty(COMMAND_NAMESPACE, "network");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -993,7 +1005,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "5");
 			props.setProperty(ACCELERATOR, "alt shift a");
-			props.setProperty(TITLE, "Deselect all edges");
+			props.setProperty(TITLE, "Deselect All Edges");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, DeselectAllEdgesTaskFactory.class, props);
 		}
@@ -1005,7 +1017,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "5");
 			props.setProperty(ACCELERATOR, "cmd shift a");
-			props.setProperty(TITLE, "Deselect all nodes");
+			props.setProperty(TITLE, "Deselect All Nodes");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, DeselectAllNodesTaskFactory.class, props);
 		}
@@ -1017,7 +1029,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(ACCELERATOR, "alt i");
-			props.setProperty(TITLE, "Invert edge selection");
+			props.setProperty(TITLE, "Invert Edge Selection");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, InvertSelectedEdgesTaskFactory.class, props);
 		}
@@ -1030,7 +1042,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOL_BAR_GRAVITY, "9.2");
 			props.setProperty(ACCELERATOR, "cmd i");
-			props.setProperty(TITLE, "Invert node selection");
+			props.setProperty(TITLE, "Invert Node Selection");
 			props.setProperty(IN_TOOL_BAR, "false");
 			props.setProperty(TOOLTIP, "Invert Node Selection");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -1044,7 +1056,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
 			props.setProperty(MENU_GRAVITY, "8");
 			props.setProperty(ACCELERATOR, "cmd alt i");			// this was same as Invert command
-			props.setProperty(TITLE, "From ID List file...");
+			props.setProperty(TITLE, "From ID List File...");
 			props.setProperty(COMMAND_NAMESPACE, "node");
 			props.setProperty(COMMAND, "select from file");
 			props.setProperty(COMMAND_DESCRIPTION, "Select nodes from a file");
@@ -1081,6 +1093,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Unhides the current view's hidden nodes and edges.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/show-hide.gif").toString());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, UnHideAllTaskFactory.class, props);
 		}
@@ -1100,6 +1114,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(TOOLTIP, factory.getDescription());
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Hides the current view's selected nodes and edges.");
+			props.setProperty(TOOLTIP_IMAGE, getClass().getResource("/images/tooltips/show-hide.gif").toString());
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 			registerService(bc, factory, HideSelectedTaskFactory.class, props);
 		}
@@ -1651,7 +1667,7 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_GROUP_MENU);
 			props.setProperty(TITLE, "Expand Group(s)");
-			props.setProperty(TOOLTIP, "Expand Group");
+			props.setProperty(TOOLTIP, "Expand Group(s)");
 			props.setProperty(PREFERRED_ACTION, "NEW");
 			props.setProperty(MENU_GRAVITY, "3.0");
 			registerService(bc, factory, NodeViewTaskFactory.class, props);
@@ -1731,7 +1747,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Table from File...");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Table from File...");
+			props.setProperty(TOOLTIP, "Import Table from File");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Reads a table from the file system and adds it to the current session.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
@@ -1744,7 +1761,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
 			props.setProperty(MENU_GRAVITY, "6.0");
 			props.setProperty(TITLE, "Table from URL...");
-			props.setProperty(TOOLTIP, "Import Table From URL...");
+			props.setProperty(TOOLTIP, "Import Table From URL");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
@@ -1898,7 +1915,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Delete column");
+			props.setProperty(TITLE, "Delete Column");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
@@ -1906,7 +1923,7 @@ public class CyActivator extends AbstractCyActivator {
 			RenameColumnTaskFactoryImpl factory 
 							= new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef, serviceRegistrar);
 			Properties props = new Properties();
-			props.setProperty(TITLE, "Rename column");
+			props.setProperty(TITLE, "Rename Column...");
 			props.setProperty(COMMAND, "rename column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
 			props.setProperty(COMMAND_DESCRIPTION, "Rename a column in a table");
@@ -2184,7 +2201,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOL_BAR_GRAVITY, "10.1");
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.0");
-			props.setProperty(TOOLTIP, "New Network From Selection (all edges)");
+			props.setProperty(TOOLTIP, "New Network from Selection (All Edges)");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION,
+					"Creates a new network (and view) that will contain the selected nodes and all of their edges.");
 			// props.setProperty(COMMAND, "create from selected nodes and all edges");
 			// props.setProperty(COMMAND_NAMESPACE, "network");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
@@ -2240,7 +2259,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOL_BAR_GRAVITY, "2.0");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Open a network from a file on the file system.");
+			props.setProperty(TOOLTIP, "Import Network from File System.");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION,
+					"Opens a network from a file and adds it to the current session.");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadNetworkFileTaskFactory.class, props);
 		}
@@ -2481,6 +2502,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "0.5");
 			props.setProperty(TOOLTIP, "Open Session");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Opens a session file (.cys) from the file system.");
 			registerService(bc, factory, OpenSessionTaskFactory.class, props);
 			registerService(bc, factory, TaskFactory.class, props);
 
@@ -2515,6 +2537,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(IN_TOOL_BAR, "true");
 			props.setProperty(MENU_GRAVITY, "1.5");
 			props.setProperty(TOOLTIP, "Save Session");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Saves the session to a file.");
 			props.setProperty(COMMAND, "save");
 			props.setProperty(COMMAND_NAMESPACE, "session");
 			props.setProperty(COMMAND_DESCRIPTION, "Save the session");
@@ -2630,7 +2653,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(ACCELERATOR, "cmd ?");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(TITLE, "Help");
-			props.setProperty(TOOLTIP, "Link to context sensitive help");
+			props.setProperty(TOOLTIP, "Help");
+			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Opens a web page that contains context sensitive help.");
 			props.setProperty(TOOL_BAR_GRAVITY, "" + Float.MAX_VALUE);
 			props.setProperty(IN_TOOL_BAR, "true");
 			registerService(bc, factory, TaskFactory.class, props);

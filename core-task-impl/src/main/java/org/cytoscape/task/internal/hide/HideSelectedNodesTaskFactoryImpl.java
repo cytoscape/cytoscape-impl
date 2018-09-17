@@ -31,6 +31,6 @@ public class HideSelectedNodesTaskFactoryImpl extends AbstractHideFromSelectionT
 		HideSelectedNodesTaskFactory {
 	
 	public HideSelectedNodesTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
-		super("Hide selected nodes", true, false, true, serviceRegistrar);
+		super("Hide Selected Nodes", true, false, true, serviceRegistrar);
 	}
 }
