@@ -8,13 +8,14 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
-public class AnnotationNode implements TreeNode {
+public class AnnotationNode implements MutableTreeNode {
 	
 	// The root of the tree will be null, all other nodes must not be null
 	private Annotation annotation;
@@ -68,11 +69,47 @@ public class AnnotationNode implements TreeNode {
 	public Enumeration children() {
 		return Collections.enumeration(children);
 	}
+
+	@Override
+	public void insert(MutableTreeNode child, int index) {
+		children.add(index, (AnnotationNode)child);
+	}
+
+	@Override
+	public void remove(int index) {
+		children.remove(index);
+	}
+
+	@Override
+	public void remove(MutableTreeNode node) {
+		children.remove(node);
+	}
+
+	@Override
+	public void setUserObject(Object object) {
+		if(object instanceof String) {
+			this.annotation.setName((String)object);
+		} else if(object instanceof Annotation) {
+			this.annotation = (Annotation) object;
+		}
+	}
+
+	@Override
+	public void removeFromParent() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void setParent(MutableTreeNode newParent) {
+		throw new UnsupportedOperationException();
+	}
+	
 	
 	@Override
 	public String toString() {
 		return "AnnotationNode[" + (annotation == null ? null : annotation.getName()) + "]";
 	}
+	
 	
 	void removeEmptyGroups() {
 		for(AnnotationNode n : children) {
