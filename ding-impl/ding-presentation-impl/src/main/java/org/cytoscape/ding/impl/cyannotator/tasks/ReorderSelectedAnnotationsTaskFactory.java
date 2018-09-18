@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -38,7 +39,7 @@ import org.cytoscape.work.TaskIterator;
 public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFactory {
 
 	private String canvasName;
-	private Integer offset;
+	private Shift shift;
 	
 	/**
 	 * Use this constructor to move annotations to another canvas.
@@ -50,8 +51,8 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 	/**
 	 * Use this constructor to reorder annotations on the same canvas.
 	 */
-	public ReorderSelectedAnnotationsTaskFactory(int offset) {
-		this.offset = offset;
+	public ReorderSelectedAnnotationsTaskFactory(Shift shift) {
+		this.shift = shift;
 	}
 	
 	@Override
@@ -60,7 +61,7 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 		final Set<DingAnnotation> annotations = cyAnnotator != null ?
 				cyAnnotator.getAnnotationSelection().getSelectedAnnotations() : Collections.emptySet();
 		
-		return new TaskIterator(new ReorderAnnotationsTask(view, annotations, canvasName, offset));
+		return new TaskIterator(new ReorderAnnotationsTask(view, annotations, canvasName, shift));
 	}
 	
 	@Override
@@ -75,9 +76,9 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 			return false;
 		
 		
-		if (offset != null) {
-			boolean fg = cyAnnotator.getAnnotationTree().shiftAllowed(offset, Annotation.FOREGROUND, annotations);
-			boolean bg = cyAnnotator.getAnnotationTree().shiftAllowed(offset, Annotation.BACKGROUND, annotations);
+		if (shift != null) {
+			boolean fg = cyAnnotator.getAnnotationTree().shiftAllowed(shift, Annotation.FOREGROUND, annotations);
+			boolean bg = cyAnnotator.getAnnotationTree().shiftAllowed(shift, Annotation.BACKGROUND, annotations);
 			return fg || bg;
 		}
 		

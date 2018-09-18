@@ -25,7 +25,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -40,6 +39,8 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -139,10 +140,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mainPanel.getRemoveAnnotationsButton().addActionListener(e -> removeAnnotations());
 			mainPanel.getPushToBackgroundButton().addActionListener(e -> moveAnnotationsToCanvas(BACKGROUND));
 			mainPanel.getPullToForegroundButton().addActionListener(e -> moveAnnotationsToCanvas(FOREGROUND));
-			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), -1));
-			mainPanel.getBackgroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), +1));
-			mainPanel.getForegroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), -1));
-			mainPanel.getForegroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), +1));
+			mainPanel.getBackgroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), Shift.UP_ONE));
+			mainPanel.getBackgroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(BACKGROUND, mainPanel.getBackgroundTree(), Shift.DOWN_ONE));
+			mainPanel.getForegroundLayerPanel().getForwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), Shift.UP_ONE));
+			mainPanel.getForegroundLayerPanel().getBackwardButton().addActionListener(e -> reorderAnnotations(FOREGROUND, mainPanel.getForegroundTree(), Shift.DOWN_ONE));
 			mainPanel.getBackgroundTree().getSelectionModel().addTreeSelectionListener(e -> {
 				if (!mainPanel.getBackgroundTree().isEditing()) {
 					mainPanel.updateSelectionButtons();
@@ -409,12 +410,12 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void reorderAnnotations(String canvas, JTree tree, int offset) {
+	private void reorderAnnotations(String canvas, JTree tree, Shift shift) {
 		DGraphView view = getCurrentDGraphView();
 		
 		if (view != null) {
 			List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
-			ReorderAnnotationsTask task = new ReorderAnnotationsTask(view, annotations, null, offset);
+			ReorderAnnotationsTask task = new ReorderAnnotationsTask(view, annotations, null, shift);
 			serviceRegistrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
 		}
 	}
@@ -474,11 +475,11 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			return;
 		
 		// If the item is not selected, select it first
-		DefaultMutableTreeNode node = getNodeAt(tree, e.getPoint());
+		AnnotationNode node = getNodeAt(tree, e.getPoint());
 		List<DingAnnotation> annotations = mainPanel.getSelectedAnnotations(tree, DingAnnotation.class);
 
-		if (node != null && !annotations.contains(node.getUserObject()))
-			mainPanel.setSelected((Annotation) node.getUserObject(), true);
+		if (node != null && !annotations.contains(node.getAnnotation()))
+			mainPanel.setSelected((Annotation) node.getAnnotation(), true);
 		
 		final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
 		final JPopupMenu popup = new JPopupMenu();
@@ -503,9 +504,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		popup.addSeparator();
 		// Reorder
 		{
-			ReorderSelectedAnnotationsTaskFactory factory =
-					new ReorderSelectedAnnotationsTaskFactory(Integer.MIN_VALUE);
-			
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_FRONT);
 			JMenuItem mi = new JMenuItem("Bring Annotations to Front");
 			mi.addActionListener(evt -> {
 				taskMgr.execute(factory.createTaskIterator(view));
@@ -514,9 +513,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			mi.setEnabled(factory.isReady(view));
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory =
-					new ReorderSelectedAnnotationsTaskFactory(Integer.MAX_VALUE);
-			
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_BACK);
 			JMenuItem mi = new JMenuItem("Send Annotations to Back");
 			mi.addActionListener(evt -> {
 				taskMgr.execute(factory.createTaskIterator(view));
@@ -540,10 +537,10 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		popup.show(e.getComponent(), e.getX(), e.getY());
 	}
 	
-	private DefaultMutableTreeNode getNodeAt(JTree tree, Point point) {
+	private AnnotationNode getNodeAt(JTree tree, Point point) {
 		TreePath path = tree.getPathForLocation(point.x, point.y);
         
-		return path == null ? null : (DefaultMutableTreeNode) path.getLastPathComponent();
+		return path == null ? null : (AnnotationNode) path.getLastPathComponent();
 	}
 	
 	private class ClickToAddAnnotationListener extends MouseAdapter {

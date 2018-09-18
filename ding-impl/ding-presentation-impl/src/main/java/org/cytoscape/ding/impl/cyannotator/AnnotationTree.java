@@ -33,6 +33,14 @@ public class AnnotationTree {
 	
 	private CyAnnotator cyAnnotator;
 	
+	
+	public static enum Shift {
+		UP_ONE, 
+		DOWN_ONE, 
+		TO_FRONT, 
+		TO_BACK
+	}
+	
 	/**
 	 * Create this object using the static factory method buildTree().
 	 */
@@ -67,18 +75,18 @@ public class AnnotationTree {
 	}
 	
 	
-	public void shift(int direction, String canvas, Collection<? extends Annotation> annotations) {
-		groupByParent(canvas, annotations).forEach((parent, childrenToShift) -> parent.shift(direction, childrenToShift));
+	public void shift(Shift shift, String canvas, Collection<? extends Annotation> annotations) {
+		groupByParent(canvas, annotations).forEach((parent, childrenToShift) -> parent.shift(shift, childrenToShift));
 	}
 	
-	public boolean shiftAllowed(int direction, String canvas, Collection<? extends Annotation> annotations) {
+	public boolean shiftAllowed(Shift shift, String canvas, Collection<? extends Annotation> annotations) {
 		if(annotations.isEmpty())
 			return false;
 		
 		for(Map.Entry<AnnotationNode,List<AnnotationNode>> entry : groupByParent(canvas, annotations).entrySet()) {
 			AnnotationNode parent = entry.getKey();
 			List<AnnotationNode> childrenToShift = entry.getValue();
-			if(!parent.shiftAllowed(direction, childrenToShift)) {
+			if(!parent.shiftAllowed(shift, childrenToShift)) {
 				return false;
 			}
 		}

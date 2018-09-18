@@ -59,6 +59,7 @@ import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 // Annotation creation
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationManagerImpl;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.create.ArrowAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.BoundedTextAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
@@ -351,7 +352,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Reorder Selected Annotations - Edit Menu
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MIN_VALUE);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_FRONT);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations to Front");
@@ -361,7 +362,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(-1);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.UP_ONE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations Forward");
@@ -370,7 +371,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(1);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.DOWN_ONE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations Backward");
@@ -379,7 +380,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Integer.MAX_VALUE);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_BACK);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations to Back");

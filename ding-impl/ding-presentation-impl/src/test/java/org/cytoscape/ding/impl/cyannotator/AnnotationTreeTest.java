@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -341,40 +342,40 @@ public class AnnotationTreeTest extends AbstractAnnotationTest {
 		AnnotationTree tree = AnnotationTree.buildTree(annotations, cyAnnotator);
 		
 		// test shiftAllowed
-		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape1)));
-		assertTrue(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2)));
-		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2, shape1)));
-		assertTrue(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape2, shape3)));
-		assertFalse(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape3)));
-		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2)));
-		assertFalse(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape3)));
-		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape1)));
-		assertFalse(tree.shiftAllowed(-1, FOREGROUND, Arrays.asList(shape5, shape1)));
-		assertTrue(tree.shiftAllowed(1, FOREGROUND, Arrays.asList(shape2, shape4, shape5)));
+		assertFalse(tree.shiftAllowed(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape1)));
+		assertTrue(tree.shiftAllowed(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2)));
+		assertFalse(tree.shiftAllowed(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2, shape1)));
+		assertTrue(tree.shiftAllowed(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2, shape3)));
+		assertFalse(tree.shiftAllowed(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape3)));
+		assertTrue(tree.shiftAllowed(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape2)));
+		assertFalse(tree.shiftAllowed(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape2, shape3)));
+		assertTrue(tree.shiftAllowed(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape2, shape1)));
+		assertFalse(tree.shiftAllowed(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape5, shape1)));
+		assertTrue(tree.shiftAllowed(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape2, shape4, shape5)));
 		
 		AnnotationNode group1node = tree.get(FOREGROUND, group1);
 		AnnotationNode group2node = tree.get(FOREGROUND, group2);
 		
 		// test shift
-		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape3));
+		tree.shift(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2, shape3));
 		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
 		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape3)));
 		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		
 		// attempting to shift up again should do nothing
-		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape3));
+		tree.shift(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2, shape3));
 		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
 		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape3)));
 		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		
 		// shift down
-		tree.shift(1, FOREGROUND, Arrays.asList(shape2, shape3));
+		tree.shift(Shift.DOWN_ONE, FOREGROUND, Arrays.asList(shape2, shape3));
 		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape2)));
 		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape3)));
 		
 		// shift in both at the same time
-		tree.shift(-1, FOREGROUND, Arrays.asList(shape2, shape5));
+		tree.shift(Shift.UP_ONE, FOREGROUND, Arrays.asList(shape2, shape5));
 		assertEquals(0, group1node.getIndex(tree.get(FOREGROUND, shape2)));
 		assertEquals(1, group1node.getIndex(tree.get(FOREGROUND, shape1)));
 		assertEquals(2, group1node.getIndex(tree.get(FOREGROUND, shape3)));

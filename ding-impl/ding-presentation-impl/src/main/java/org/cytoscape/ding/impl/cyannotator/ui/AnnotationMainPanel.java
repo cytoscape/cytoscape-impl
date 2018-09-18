@@ -68,6 +68,7 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -1086,8 +1087,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if(annotationTree != null) {
 				List<Annotation> selectedAnnotations = getSelectedAnnotations(tree);
 				
-				boolean forward  = annotationTree.shiftAllowed(-1, canvasName, selectedAnnotations);
-				boolean backward = annotationTree.shiftAllowed( 1, canvasName, selectedAnnotations);
+				boolean forward  = annotationTree.shiftAllowed(Shift.UP_ONE, canvasName, selectedAnnotations);
+				boolean backward = annotationTree.shiftAllowed(Shift.DOWN_ONE, canvasName, selectedAnnotations);
 				
 				getForwardButton().setEnabled(forward);
 				getBackwardButton().setEnabled(backward);

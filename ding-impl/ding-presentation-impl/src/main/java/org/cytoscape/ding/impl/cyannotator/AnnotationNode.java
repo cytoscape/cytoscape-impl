@@ -10,11 +10,12 @@ import java.util.List;
 
 import javax.swing.tree.TreeNode;
 
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public class AnnotationNode implements TreeNode {
-
+	
 	// The root of the tree will be null, all other nodes must not be null
 	private Annotation annotation;
 	
@@ -88,39 +89,60 @@ public class AnnotationNode implements TreeNode {
 	
 	
 	/**
-	 * @param direction  negative means bring forward (up), positive means send backward (down)
 	 * @param children   it is assumed that the given list is all children of this node
 	 */
-	void shift(int direction, List<AnnotationNode> nodes) {
+	void shift(Shift shift, List<AnnotationNode> nodes) {
+		nodes.retainAll(children);
 		if(nodes.isEmpty())
 			return;
-		
 		nodes.sort(Comparator.comparing(this::getIndex));
 		
-		if(direction < 0) { // move up
-			if(getIndex(nodes.get(0)) > 0) {
-				for(AnnotationNode n : nodes) {
-					int index = getIndex(n);
-					swap(index-1, index);
+		switch(shift) {
+			case UP_ONE:
+				if(getIndex(nodes.get(0)) > 0) {
+					for(AnnotationNode n : nodes) {
+						int index = getIndex(n);
+						swap(index-1, index);
+					}
 				}
-			}
-		} else { // move down
-			if(getIndex(nodes.get(nodes.size()-1)) < children.size()-1) {
-				for(int i = nodes.size()-1; i >= 0; i--) {
-					int index = getIndex(nodes.get(i));
-					swap(index, index+1);
+				break;
+			case DOWN_ONE:
+				if(getIndex(nodes.get(nodes.size()-1)) < children.size()-1) {
+					for(int i = nodes.size()-1; i >= 0; i--) {
+						int index = getIndex(nodes.get(i));
+						swap(index, index+1);
+					}
 				}
-			}
+				break;
+			case TO_FRONT: {
+					List<AnnotationNode> rest = new ArrayList<>(children);
+					rest.removeIf(nodes::contains);
+					children = new ArrayList<>(children.size());
+					nodes.forEach(children::add);
+					rest.forEach(children::add);
+				}
+				break;
+			case TO_BACK: {
+					List<AnnotationNode> rest = new ArrayList<>(children);
+					rest.removeIf(nodes::contains);
+					children = new ArrayList<>(children.size());
+					rest.forEach(children::add);
+					nodes.forEach(children::add);
+				}
+				break;
 		}
 	}
 	
-	boolean shiftAllowed(int direction, List<AnnotationNode> nodes) {
+	
+	boolean shiftAllowed(Shift shift, List<AnnotationNode> nodes) {
 		if(nodes.isEmpty())
 			return false;
+		if(shift == Shift.TO_FRONT || shift == Shift.TO_BACK)
+			return true;
 		
 		nodes.sort(Comparator.comparing(this::getIndex));
 		
-		if(direction < 0) // move up
+		if(shift == Shift.UP_ONE) // move up
 			return getIndex(nodes.get(0)) > 0;
 		else
 			return getIndex(nodes.get(nodes.size()-1)) < children.size()-1;

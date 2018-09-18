@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
+import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.AbstractNetworkViewTask;
@@ -47,19 +48,19 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 	private final String canvasName;
 	
 	// negative means bring forward (up), positive means send backward (down) we only move one step at a time.
-	private final Integer direction;
+	private final Shift shift;
 
 
 	public ReorderAnnotationsTask(
 			CyNetworkView view,
 			Collection<DingAnnotation> annotations,
 			String canvasName,
-			Integer direction
+			Shift shift
 	) {
 		super(view);
 		this.annotations = annotations != null ? new ArrayList<>(annotations) : Collections.emptyList();
 		this.canvasName = canvasName;
-		this.direction = direction;
+		this.shift = shift;
 	}
 
 	@Override
@@ -68,13 +69,13 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 			return;
 		if (annotations.isEmpty())
 			return;
-		if (canvasName == null && (direction == null || direction == 0))
+		if (canvasName == null && shift == null)
 			return;
 		
 		if (canvasName != null) {
 			changeCanvas();
-		} else if (direction != null && direction != 0) {
-			reorder(direction);
+		} else if (shift != null) {
+			reorder(shift);
 		}
 		
 		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
@@ -97,7 +98,7 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 	}
 	
 
-	private void reorder(Integer offset) {
+	private void reorder(Shift shift) {
 		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
 		AnnotationTree tree = cyAnnotator.getAnnotationTree();
 		
@@ -106,11 +107,11 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 		
 		List<DingAnnotation> fga = byCanvas.get(Annotation.FOREGROUND);
 		if(fga != null && !fga.isEmpty())
-			tree.shift(offset, Annotation.FOREGROUND, fga);
+			tree.shift(shift, Annotation.FOREGROUND, fga);
 		
 		List<DingAnnotation> bga = byCanvas.get(Annotation.BACKGROUND);
 		if(bga != null && !bga.isEmpty())
-			tree.shift(offset, Annotation.BACKGROUND, bga);
+			tree.shift(shift, Annotation.BACKGROUND, bga);
 		
 		tree.resetZOrder();
 	}
