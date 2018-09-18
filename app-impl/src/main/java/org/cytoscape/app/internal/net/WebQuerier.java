@@ -228,6 +228,9 @@ public class WebQuerier {
 	
 		HttpURLConnection connection = (HttpURLConnection) streamUtil.getURLConnection(parsedUrl);
 		connection.setRequestProperty(REQUEST_JSON_HEADER_KEY, REQUEST_JSON_HEADER_VALUE);
+		//Set the read timeout to 10 seconds.
+		//TODO: This is likely way too long and should be set to something more reasonable.
+		connection.setReadTimeout(10000);
 		connection.connect();
 		
 		InputStream inputStream = connection.getInputStream();
