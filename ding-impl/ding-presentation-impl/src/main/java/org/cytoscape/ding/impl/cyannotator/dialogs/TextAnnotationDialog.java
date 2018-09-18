@@ -162,6 +162,8 @@ public class TextAnnotationDialog extends JDialog {
 		
 		mAnnotation.contentChanged();
 
+		cyAnnotator.postUndoEdit();
+		
 		// Update the canvas
 		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 	}
