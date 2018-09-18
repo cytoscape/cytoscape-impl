@@ -60,23 +60,24 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		if(annotations.isEmpty() || !AnnotationTree.hasSameParent(annotations))
-			return;
-		
 		if (view instanceof DGraphView) {
 			DGraphView dView = (DGraphView) view;
 			
 			CyAnnotator cyAnnotator = dView.getCyAnnotator();
 			
 			Collection<DingAnnotation> selectedAnnotations;
-			if(annotations == null)
+			if(annotations == null) {
 				selectedAnnotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
-			else
+			} else {
 				selectedAnnotations = annotations;
+			}
+			
+			if(selectedAnnotations.isEmpty() || !AnnotationTree.hasSameParent(selectedAnnotations))
+				return;
 			
 			cyAnnotator.markUndoEdit("Group Annotations");
 
-			GroupAnnotation parent = annotations.iterator().next().getGroupParent(); // may be null
+			GroupAnnotation parent = selectedAnnotations.iterator().next().getGroupParent(); // may be null
 			
 			// remove the annotations from any existing groups
 			for(DingAnnotation a : selectedAnnotations) {
