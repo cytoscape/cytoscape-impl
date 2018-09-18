@@ -142,6 +142,8 @@ public class LoadImageDialog extends JDialog {
 			BufferedImage image = ImageIO.read(imageFile);
 			URL url = imageFile.toURI().toURL();
 			
+			cyAnnotator.markUndoEdit("Create Image Annotation");
+			
 			// The Attributes are x, y, Image, componentNumber, scaleFactor
 			ImageAnnotationImpl newOne = new ImageAnnotationImpl(
 					view,
@@ -153,7 +155,8 @@ public class LoadImageDialog extends JDialog {
 			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 			newOne.addComponent(null);
 			newOne.update();
-
+			cyAnnotator.addAnnotation(newOne);
+			
 			// Update the canvas
 			view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
 
