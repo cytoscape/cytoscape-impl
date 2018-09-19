@@ -13,7 +13,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -55,53 +54,9 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	List<DingAnnotation> annotations = new ArrayList<>();
 
-	public GroupAnnotationImpl(DGraphView view) {
-		super(view, false);
-	}
-
-	public GroupAnnotationImpl(GroupAnnotationImpl c) {
-		super(c, false);
-		name = c.getName() != null ? c.getName() : getDefaultName();
-	}
-
-	public GroupAnnotationImpl(
-			DGraphView view,
-			double x,
-			double y,
-			List<Annotation> annList,
-			double zoom
-	) {
-		super(view, false);
-		
-		for (Annotation a : annList) {
-			if (a instanceof DingAnnotation)
-				annotations.add((DingAnnotation) a);
-		}
-	}
 
 	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap) {
 		super(view, processArgs(argMap));
-
-		// Get the UUIDs of all of the annotations
-		if (argMap.containsKey(MEMBERS)) {
-			String[] members = argMap.get(MEMBERS).split(",");
-
-			for (String uuid : members) {
-				// Create the uuid
-				UUID u = UUID.fromString(uuid);
-
-				// See if this annotation already exists
-				DingAnnotation a = cyAnnotator.getAnnotation(u);
-
-				if (a != null) // Yup, add it in to our list
-					annotations.add(a);
-			}
-		}
-	}
-	
-	@Override
-	public void setCanvas(String cnvs) {
-		// do nothing, must be on the foreground canvas
 	}
 	
 	private static Map<String,String> processArgs(Map<String,String> argMap) {
@@ -114,6 +69,13 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		return GroupAnnotation.class;
 	}
 
+	
+	@Override
+	public void setCanvas(String cnvs) {
+		// do nothing, must be on the foreground canvas
+	}
+	
+	
 	@Override
 	public void addMember(Annotation member) {
 		if (member instanceof DingAnnotation) {
@@ -134,8 +96,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 					throw e;
 				}
 			}
-			
-			
 			
 			// We muck with the ZOrder directly, so we need to make sure we're on the EDT
 			ViewUtil.invokeOnEDTAndWait(() -> {
@@ -159,7 +119,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 				Rectangle2D bounds = getBounds();
 				setLocation((int)bounds.getX(), (int)bounds.getY());
 				setSize((int)bounds.getWidth(), (int)bounds.getHeight());
-				
 				
 //					dMember.getCanvas().setComponentZOrder(dMember.getComponent(), (int)((AbstractAnnotation)dMember).getZOrder());
 //					// Now, update our Z-order
