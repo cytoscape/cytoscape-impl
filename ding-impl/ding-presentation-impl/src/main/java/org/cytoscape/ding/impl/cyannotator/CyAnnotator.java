@@ -89,6 +89,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private final AnnotationSelection annotationSelection;
 	private MyViewportChangeListener myViewportChangeListener;
 	private AbstractAnnotation resizing;
+	private Rectangle2D resizeBounds;
 	private ArrowAnnotationImpl repositioning;
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
@@ -487,13 +488,22 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public void resizeShape(AbstractAnnotation shape) {
-		resizing = shape;
-		if (resizing != null)
+		if(shape == null) {
+			resizing = null;
+			resizeBounds = null;
+		} else {
+			resizing = shape;
+			resizeBounds = shape.getBounds();
 			requestFocusInWindow(resizing);
+		}
 	}
 
 	public AbstractAnnotation getResizeShape() {
 		return resizing;
+	}
+	
+	public Rectangle2D getResizeBounds() {
+		return resizeBounds;
 	}
 
 	public void positionArrow(ArrowAnnotationImpl arrow) {

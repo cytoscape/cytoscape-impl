@@ -1,11 +1,10 @@
 package org.cytoscape.ding.impl.cyannotator.listeners;
 
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -17,8 +16,8 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.presentation.property.values.Position;
 
 /*
  * #%L
@@ -108,42 +107,10 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		int mouseY = e.getY();
 
 		if (resizeAnnotation != null) {
-			Component resizeComponent = resizeAnnotation.getComponent();
-
-			int cornerX1 = resizeComponent.getX();
-			int cornerY1 = resizeComponent.getY();
-			// int cornerX2 = cornerX1 + resizeComponent.getWidth();
-			// int cornerY2 = cornerY1 + resizeComponent.getHeight();
-			int cornerX2 = mouseX;
-			int cornerY2 = mouseY;
-			double borderWidth = 0;
-			if (resizeAnnotation instanceof ShapeAnnotationImpl)
-				borderWidth = ((ShapeAnnotationImpl)resizeAnnotation).getBorderWidth();
-
-			// System.out.println("X1 = "+cornerX1+", X2 = "+cornerX2+" width = "+resizeComponent.getWidth());
-			double width = (double)cornerX2-(double)cornerX1-(borderWidth*2*resizeAnnotation.getZoom());
-			// System.out.println("width = "+width);
-
-			double height = (double)cornerY2-(double)cornerY1-(borderWidth*2*resizeAnnotation.getZoom());
-			// System.out.println("height = "+height);
-
-			if (width == 0.0) width = 2;
-			if (height == 0.0) height = 2;
-
-			if ((Math.abs(width - resizeComponent.getWidth()) < 5) &&
-			    (Math.abs(height - resizeComponent.getHeight()) < 5))
-				return;
-
-			Dimension d = new Dimension();
-			d.setSize(width, height);
-
-			// If shift is down, adjust to preserve the aspect ratio
-			if (e.isShiftDown()) {
-				d = resizeAnnotation.adjustAspectRatio(d);
-			}
-
-			// resizeComponent.setLocation(cornerX1, cornerY1);
-			resizeAnnotation.setSize(d);
+			Rectangle2D initialBounds = cyAnnotator.getResizeBounds();
+			Rectangle2D bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, mouseX, mouseY);
+			
+			resizeAnnotation.setBounds((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
 			resizeAnnotation.update();
 			resizeAnnotation.getCanvas().repaint();
 		} else if (repositionAnnotation != null) {

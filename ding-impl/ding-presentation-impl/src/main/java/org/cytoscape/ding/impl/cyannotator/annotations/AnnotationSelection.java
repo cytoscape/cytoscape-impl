@@ -249,7 +249,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	}
 
 	// NOTE: bounds, mouseX and mouseY should be in node coordinates
-	private Rectangle2D resize(Position anchor, Rectangle2D bounds, double mouseX, double mouseY) {
+	public static Rectangle2D resize(Position anchor, Rectangle2D bounds, double mouseX, double mouseY) {
 		if(anchor == NONE || anchor == CENTER)
 			return null;
 		
