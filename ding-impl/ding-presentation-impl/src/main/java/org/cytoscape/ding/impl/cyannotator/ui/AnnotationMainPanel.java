@@ -324,11 +324,14 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	void setSelected(Annotation a, boolean selected) {
 		if (view == null || getAnnotationCount() == 0)
 			return;
-		
-		final JTree tree = Annotation.FOREGROUND.equals(a.getCanvasName()) ?
-				getForegroundTree() : getBackgroundTree();
-		final AnnotationTreeModel model = (AnnotationTreeModel) tree.getModel();
-		
+
+		// group annotations can be on both canvases at the same time
+		setSelected(a, selected, getForegroundTree());
+		setSelected(a, selected, getBackgroundTree());
+	}
+	
+	private void setSelected(Annotation a, boolean selected, JTree tree) {
+		AnnotationTreeModel model = (AnnotationTreeModel) tree.getModel();
 		TreePath path = model.pathTo(a);
 		
 		if (path == null)
