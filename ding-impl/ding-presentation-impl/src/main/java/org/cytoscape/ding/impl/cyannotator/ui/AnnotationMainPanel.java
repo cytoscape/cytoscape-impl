@@ -1161,8 +1161,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 			if (value instanceof AnnotationNode) {
 				Annotation annotation = ((AnnotationNode) value).getAnnotation();
 				if(annotation != null) {
-					DingAnnotation da = (DingAnnotation)annotation;
-					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
+//					DingAnnotation da = (DingAnnotation)annotation;
+//					setText(annotation.getName() + " (" + da.getCanvasName() + " z:" + da.getCanvas().getComponentZOrder(da.getComponent()) + ")");
+					setText(annotation.getName());
 					setToolTipText(annotation.getName());
 					setIconTextGap(8);
 				}
