@@ -151,6 +151,7 @@ public class CanvasMouseListener implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
+		boolean resizing = annotationSelection.isResizing();
 		annotationSelection.setResizing(false);
 		annotationSelection.setMoving(false);
 
@@ -188,7 +189,7 @@ public class CanvasMouseListener implements MouseListener {
 			}
 		} else if (!annotationSelection.isEmpty()) {
 			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-			if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
+			if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()) && !resizing)
 				cyAnnotator.clearSelectedAnnotations();
 			
 			networkCanvas.processMouseEvent(e);
