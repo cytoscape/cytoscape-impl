@@ -39,7 +39,6 @@ import org.cytoscape.work.TaskMonitor;
 
 public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 
-	
 	private Collection<DingAnnotation> annotations;
 	
 	/**
@@ -57,9 +56,10 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 		this.annotations = annotations;
 	}
 	
-
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Group Annotations");
+		
 		if (view instanceof DGraphView) {
 			DGraphView dView = (DGraphView) view;
 			
@@ -95,7 +95,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 			for(DingAnnotation a : selectedAnnotations) {
 				newGroup.addMember(a);
 				a.setSelected(false);
-			};
+			}
 			
 			if(parent != null)
 				parent.addMember(newGroup);

@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.hide;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkViewTask;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -23,23 +38,6 @@ package org.cytoscape.task.internal.hide;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
-
 
 public class UnHideTask extends AbstractNetworkViewTask {
 
@@ -63,42 +61,42 @@ public class UnHideTask extends AbstractNetworkViewTask {
 	}
 
 	@Override
-	public void run(TaskMonitor e) {
-		e.setProgress(0.0);
+	public void run(TaskMonitor tm) {
+		tm.setTitle("Show Nodes and Edges");
+		tm.setProgress(0.0);
+		
 		final List<CyIdentifiable> elements = new ArrayList<>();
 		
-		if (nodes != null) {
+		if (nodes != null)
 			elements.addAll(nodes);
-		}
 
-		e.setProgress(0.1);
+		tm.setProgress(0.1);
 		
-		if (edges != null) {
+		if (edges != null)
 			elements.addAll(edges);
-		}
 
-		e.setProgress(0.2);
+		tm.setProgress(0.2);
 
 		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 
 		undoSupport.postEdit(new HideEdit(description, view, elements, true, eventHelper, vmMgr));
-		e.setProgress(0.3);
+		tm.setProgress(0.3);
 
 		if (nodes != null)
 			HideUtils.setVisibleNodes(nodes, true, view);
 
-		e.setProgress(0.5);
+		tm.setProgress(0.5);
 
 		if (edges != null)
 			HideUtils.setVisibleEdges(edges, true, view);
 
-		e.setProgress(0.7);
+		tm.setProgress(0.7);
 
 		vmMgr.getVisualStyle(view).apply(view);
 		view.updateView();
-		e.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 }

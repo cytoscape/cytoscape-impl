@@ -53,6 +53,8 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Add Annotation");
+		
 		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
 				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)

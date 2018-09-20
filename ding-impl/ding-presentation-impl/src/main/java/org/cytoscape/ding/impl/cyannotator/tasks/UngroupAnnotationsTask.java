@@ -57,8 +57,9 @@ public class UngroupAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Ungroup Annotations");
+		
 		if (view instanceof DGraphView) {
-			
 			CyAnnotator annotator = ((DGraphView)view).getCyAnnotator();
 			annotator.markUndoEdit("Ungroup Annotations");
 			

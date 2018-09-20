@@ -49,6 +49,8 @@ public class AddArrowTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Add Arrow Annotation");
+		
 		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			SwingUtilities.invokeLater(() -> {
 				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)

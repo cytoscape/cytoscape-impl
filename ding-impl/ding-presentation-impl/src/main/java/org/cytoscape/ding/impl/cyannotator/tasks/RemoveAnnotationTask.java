@@ -46,6 +46,8 @@ public class RemoveAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Remove Annotation");
+		
 		if (view instanceof DGraphView) {
 			CyAnnotator annotator = annotation.getCyAnnotator();
 			annotator.markUndoEdit("Delete Annotation");

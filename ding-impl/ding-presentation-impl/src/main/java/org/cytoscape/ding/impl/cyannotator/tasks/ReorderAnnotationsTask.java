@@ -65,6 +65,8 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Reorder Annotations");
+		
 		if (!(view instanceof DGraphView))
 			return;
 		if (annotations.isEmpty())

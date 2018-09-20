@@ -69,9 +69,9 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		taskMonitor.setProgress(0.0);
-
+	public void run(final TaskMonitor tm) {
+		tm.setTitle("Delete Selected Nodes and Edges");
+		tm.setProgress(0.0);
 
 		List<CyNode> nodeList = tunables.getNodeList(false);
 		List<CyEdge> edgeList = tunables.getEdgeList(false);
@@ -82,7 +82,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 		// Delete from the base network so that our changes can be undone:
 		if (nodeList == null && edgeList == null) {
 			selectedNodes = CyTableUtil.getNodesInState(network, "selected", true);
-			taskMonitor.setProgress(0.1);
+			tm.setProgress(0.1);
 			selectedEdges = new HashSet<CyEdge>(CyTableUtil.getEdgesInState(network, "selected", true));
 		} else {
 			if (nodeList != null && nodeList.size() > 0)
@@ -96,13 +96,13 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 				selectedEdges = new HashSet<CyEdge>();
 		}
 
-		taskMonitor.setProgress(0.2);
+		tm.setProgress(0.2);
 		
 		// Make sure we're not loosing any edges for a possible undo!
 		for (CyNode selectedNode : selectedNodes)
 			selectedEdges.addAll(network.getAdjacentEdgeList(selectedNode, CyEdge.Type.ANY));
 
-		taskMonitor.setProgress(0.3);
+		tm.setProgress(0.3);
 		
 		final UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
 		final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
@@ -114,9 +114,9 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 
 		// Delete the actual nodes and edges:
 		network.removeEdges(selectedEdges);
-		taskMonitor.setProgress(0.7);
+		tm.setProgress(0.7);
 		network.removeNodes(selectedNodes);
-		taskMonitor.setProgress(0.9);
+		tm.setProgress(0.9);
 		
 		// Update network views
 		final Collection<CyNetworkView> views = netViewMgr.getNetworkViews(network);
@@ -124,7 +124,7 @@ public class DeleteSelectedNodesAndEdgesTask extends AbstractTask implements Obs
 		for (final CyNetworkView netView : views)
 			netView.updateView();
 		
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 	public Object getResults(Class type) {

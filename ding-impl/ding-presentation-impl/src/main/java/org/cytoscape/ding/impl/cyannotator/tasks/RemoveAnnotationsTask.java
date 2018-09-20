@@ -54,6 +54,7 @@ public class RemoveAnnotationsTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Remove Annotations");
 		tm.setProgress(-1);
 
 		if (view instanceof DGraphView) {

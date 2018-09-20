@@ -38,7 +38,9 @@ public class HideFromSelectionTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(final TaskMonitor tm) {
+		tm.setTitle("Hide Selected Nodes and Edges");
 		tm.setProgress(0.0);
+		
 		final CyNetwork network = view.getModel();
 		List<CyNode> nodes = null;
 		List<CyEdge> edges = null;

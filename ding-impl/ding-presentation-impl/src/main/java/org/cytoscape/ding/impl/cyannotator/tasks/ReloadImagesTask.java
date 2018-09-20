@@ -31,7 +31,6 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskMonitor;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +47,8 @@ public class ReloadImagesTask implements Task {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Reload Images");
+		
 		Component[] annotations=cyAnnotator.getForeGroundCanvas().getComponents();
 		for(int i=0;i<annotations.length;i++){
 			if(annotations[i] instanceof ImageAnnotationImpl && !canceled) {

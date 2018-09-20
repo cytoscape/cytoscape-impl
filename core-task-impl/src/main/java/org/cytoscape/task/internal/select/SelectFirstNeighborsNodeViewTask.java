@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.select;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge.Type;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,18 +35,6 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge.Type;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
 
 public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 
@@ -54,8 +54,11 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		this.selectUtils = new SelectUtils(cyEventHelper);
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Select First Neighbors (Node View)");
 		tm.setProgress(0.0);
+		
 		if (nodeView == null)
 			throw new NullPointerException("node view is null");
 		if (netView == null)

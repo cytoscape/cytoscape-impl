@@ -52,6 +52,8 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Edit Annotation");
+		
 		if (view instanceof DGraphView) {
 			invokeOnEDT(() -> {
 				final JDialog dialog = annotation.getModifyDialog();
