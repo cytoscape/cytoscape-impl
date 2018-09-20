@@ -1,29 +1,5 @@
 package org.cytoscape.internal.view.help;
 
-/*
- * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -52,6 +28,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.UIManager;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,16 +36,38 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- *
+
+/*
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 public class CreditScreen {
 
 	private Timer timer;
 	private ImageIcon image;
 	private List<String> lines;
 	private JDialog dialog; 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static final String CREDIT_IMAGE = "/images/CytoscapeCredits.png";
 	private static final String CREDITS = "/credits.txt";
 	private final String version;
@@ -83,7 +82,7 @@ public class CreditScreen {
 			image = new ImageIcon(getClass().getResource(CREDIT_IMAGE)); 
 			BufferedReader br = new BufferedReader(
 				new InputStreamReader(getClass().getResource(CREDITS).openStream(), Charset.forName("UTF-8").newDecoder()));
-			lines = new ArrayList<String>();
+			lines = new ArrayList<>();
 			while ( br.ready() )
 				lines.add( br.readLine() );
 		} catch (IOException ioe) {
