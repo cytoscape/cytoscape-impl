@@ -109,8 +109,9 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		if (resizeAnnotation != null) {
 			Rectangle2D initialBounds = cyAnnotator.getResizeBounds();
 			Rectangle2D bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, mouseX, mouseY);
-			
-			resizeAnnotation.setBounds((int)bounds.getX(), (int)bounds.getY(), (int)bounds.getWidth(), (int)bounds.getHeight());
+			// must call setLocation and setSize instead of setBounds because those methods are overridden
+			resizeAnnotation.setLocation((int)bounds.getX(), (int)bounds.getY());
+			resizeAnnotation.resizeAnnotation(bounds.getWidth(), bounds.getHeight());
 			resizeAnnotation.update();
 			resizeAnnotation.getCanvas().repaint();
 		} else if (repositionAnnotation != null) {

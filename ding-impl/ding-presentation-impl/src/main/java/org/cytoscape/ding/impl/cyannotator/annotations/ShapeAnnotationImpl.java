@@ -64,6 +64,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeHeight = height;
 		shapeType = ShapeType.RECTANGLE;
 		borderWidth = 1.0;
+		
+		updateSize();
 	}
 
 	public ShapeAnnotationImpl(ShapeAnnotationImpl c, double width, double height, boolean usedForPreviews) {
@@ -77,6 +79,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		fillColor = c.getFillColor();
 		shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 		name = c.getName() != null ? c.getName() : getDefaultName();
+		
+		updateSize();
 	}
 
 	public ShapeAnnotationImpl(
@@ -100,7 +104,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		this.shapeHeight = height;
 		this.shape = GraphicsUtilities.getShape(shapeType.shapeName(), 0.0, 0.0, shapeWidth, shapeHeight);
 
-		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		updateSize();
 	}
 
 	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap) {
@@ -125,7 +129,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		else if (argMap.containsKey(CUSTOMSHAPE))
 			this.shape = GraphicsUtilities.deserializeShape(argMap.get(CUSTOMSHAPE));
 
-		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		updateSize();
 	}
 
 	@Override
@@ -174,7 +178,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth *= factor;
 		shapeHeight *= factor;
 
-		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		updateSize();
 		super.setZoom(zoom);
 	}
 
@@ -188,8 +192,12 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		shapeWidth *= factor;
 		shapeHeight *= factor;
 
-		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
+		updateSize();
 		super.setSpecificZoom(zoom);
+	}
+	
+	private void updateSize() {
+		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
 	}
 
 	@Override

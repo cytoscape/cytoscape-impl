@@ -49,6 +49,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 public class ShapeAnnotationDialog extends JDialog {
 
+	private static final int CREATE_WIDTH = 100;
+	private static final int CREATE_HEIGHT = 100;
+	
 	private static final int PREVIEW_WIDTH = 500;
 	private static final int PREVIEW_HEIGHT = 220;
 	
@@ -68,7 +71,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		this.view = view;
 		this.cyAnnotator = view.getCyAnnotator();
 		this.startingLocation = start != null ? start : view.getCenter();
-		this.shapeAnnotation = new ShapeAnnotationImpl(view, 400, 400, false);
+		this.shapeAnnotation = new ShapeAnnotationImpl(view, CREATE_WIDTH, CREATE_HEIGHT, false);
 		this.create = true;
 
 		initComponents();		        
@@ -171,7 +174,7 @@ public class ShapeAnnotationDialog extends JDialog {
 			// Warp the mouse to the starting location (if supported)
 			Point start = shapeAnnotation.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
-			robot.mouseMove((int)start.getX()+100, (int)start.getY()+100);
+			robot.mouseMove((int)start.getX()+CREATE_WIDTH, (int)start.getY()+CREATE_HEIGHT);
 		} catch (Exception e) {}
 	}
 }
