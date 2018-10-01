@@ -323,10 +323,10 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	@Override
 	public void resizeAnnotation(double width, double height) {
 		setSize((int)width, (int)height);
-		// shapeWidth = width - borderWidth*2*getZoom();
-		// shapeHeight = height - borderWidth*2*getZoom();
-		shapeWidth = width;
-		shapeHeight = height;
+		shapeWidth = width - borderWidth*2*getZoom();
+		shapeHeight = height - borderWidth*2*getZoom();
+//		shapeWidth = width;
+//		shapeHeight = height;
 		update();
 	}
 
