@@ -15,6 +15,7 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
@@ -89,10 +90,15 @@ public class CanvasMouseListener implements MouseListener {
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		
 		if (!annotationSelection.isEmpty() && annotationSelection.overAnchor(e.getX(), e.getY()) != null) {
-			Position anchor = annotationSelection.overAnchor(e.getX(), e.getY());
-			setResizeCursor(anchor);
+			AnchorLocation anchor = annotationSelection.overAnchor(e.getX(), e.getY());
+			
+			// save the distance between the anchor location and the mouse location
+			double offsetX = e.getX() - annotationSelection.getX() - anchor.getX();
+			double offsetY = e.getY() - annotationSelection.getY() - anchor.getY();
+			
+			setResizeCursor(anchor.getPosition());
 			annotationSelection.setResizing(true);
-			annotationSelection.initialPosition(e.getX(), e.getY(), anchor);
+			annotationSelection.saveAnchor(anchor.getPosition(), offsetX, offsetY);
 			annotationSelection.saveBounds();
 			
 			for (DingAnnotation a: cyAnnotator.getAnnotationSelection()) 

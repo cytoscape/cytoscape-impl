@@ -63,12 +63,15 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	Rectangle2D[] anchors = new Rectangle2D[8];
 	double zoom;
 	CyAnnotator cyAnnotator;
-	static float border = 2f;
+	static final float border = 2f;
 	static float[] dash = { 10.0f, 10.0f };
-	Point2D initialPos;
 	Rectangle2D initialBounds;
 	Rectangle2D initialUnion;
+	
 	Position anchor;
+	double anchorOffsetX;
+	double anchorOffsetY;
+	
 	boolean resizing;
 	boolean moving;
 
@@ -131,9 +134,10 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
-	public void initialPosition(int x, int y, Position anchor) {
-		initialPos = new Point2D.Double(x,y);
+	public void saveAnchor(Position anchor, double anchorOffsetX, double anchorOffsetY) {
 		this.anchor = anchor;
+		this.anchorOffsetX = anchorOffsetX;
+		this.anchorOffsetY = anchorOffsetY;
 	}
 
 	public void saveBounds() {
@@ -149,7 +153,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		return initialBounds;
 	}
 
-	public Position overAnchor(int x, int y) {
+	public AnchorLocation overAnchor(int x, int y) {
 		// Get our current transform
 		double[] nextLocn = new double[2];
 		nextLocn[0] = (double) x - getX();
@@ -158,12 +162,13 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		return overAnchor(nextLocn[0], nextLocn[1]);
 	}
 
-	public Position overAnchor(double x, double y) {
+	public AnchorLocation overAnchor(double x, double y) {
 		// OK, now given our current selection, we need to see if we're over an anchor
 		for (int pos = 0; pos < 8; pos++) {
 			Rectangle2D rect = anchors[pos];
 			if (rect != null && rect.contains(x, y)) {
-				return getPosition(pos);
+				Position p = getPosition(pos);
+				return new AnchorLocation(p, rect.getX(), rect.getY());
 			}
 		}
 		
@@ -215,26 +220,23 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
-	public void resizeAnnotationsRelative(int x, int y) {
-		// Get our current transform, and compensate for the border
-		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
-		
-		// compensate for the border
-		final float d = border * 2;
-		double mouseX = mouse.getX();
-		double mouseY = mouse.getY();
-		
+	public void resizeAnnotationsRelative(int mouseX, int mouseY) {
+		// compensate for the difference between the anchor location and the mouse location
 		if(isNorth(anchor))
-			mouseY += d;
+			mouseY += (border*4 - anchorOffsetY);
 		if(isSouth(anchor))
-			mouseY -= d;
+			mouseY -= anchorOffsetY;
 		if(isWest(anchor))
-			mouseX += d;
+			mouseX += (border*4 - anchorOffsetX);
 		if(isEast(anchor))
-			mouseX -= d;
+			mouseX -= anchorOffsetX;
+		
+		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), mouseX, mouseY);
+		double x = mouse.getX();
+		double y = mouse.getY();
 		
 		// OutlineBounds is in node coordinates!
-		Rectangle2D outlineBounds = resize(anchor, initialUnion, mouseX, mouseY);
+		Rectangle2D outlineBounds = resize(anchor, initialUnion, x, y);
 
 		for (DingAnnotation da : selectedAnnotations) {
 			((AbstractAnnotation)da).resizeAnnotationRelative(initialUnion, outlineBounds);
@@ -388,22 +390,14 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 	private Position getPosition(int pos) {
 		switch (pos) {
-			case 0:
-				return Position.NORTH_WEST;
-			case 1:
-				return Position.NORTH;
-			case 2:
-				return Position.NORTH_EAST;
-			case 3:
-				return Position.EAST;
-			case 4:
-				return Position.SOUTH_EAST;
-			case 5:
-				return Position.SOUTH;
-			case 6:
-				return Position.SOUTH_WEST;
-			case 7:
-				return Position.WEST;
+			case 0: return Position.NORTH_WEST;
+			case 1: return Position.NORTH;
+			case 2: return Position.NORTH_EAST;
+			case 3: return Position.EAST;
+			case 4: return Position.SOUTH_EAST;
+			case 5: return Position.SOUTH;
+			case 6: return Position.SOUTH_WEST;
+			case 7: return Position.WEST;
 		}
 		return null;
 	}
