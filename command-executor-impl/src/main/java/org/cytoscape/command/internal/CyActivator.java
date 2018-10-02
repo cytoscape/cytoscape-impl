@@ -202,7 +202,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Returns the value of the 'message' argument.");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the value of the **message** argument.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, new EchoCommandTaskFactory(), TaskFactory.class, props);
 		}
 		{

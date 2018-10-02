@@ -2003,7 +2003,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_DESCRIPTION, "Return a single value from a table");
 			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the value from a cell as specified by row and column ids");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":123, \"row\":\"123\", \"column\":\"degree\", \"value\":1");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"table\":123, \"row\":\"123\", \"column\":\"degree\", \"value\":1}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
