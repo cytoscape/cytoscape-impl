@@ -759,6 +759,9 @@ public class CyActivator extends AbstractCyActivator {
 			if (isNimbusLAF()) {
 				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
 				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
+			} else if (isAquaLAF()) {
+				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
+				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Tree.selectionBackground"));
 			} else {
 				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
 				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
