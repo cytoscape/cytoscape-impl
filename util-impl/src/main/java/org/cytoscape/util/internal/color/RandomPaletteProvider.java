@@ -93,8 +93,8 @@ public class RandomPaletteProvider implements PaletteProvider {
 		}
 
 		public Color[] getColors(int nColors) {
-			colors = new Color[size];
-			for (int i = 0; i < size; i++) {
+			colors = new Color[nColors];
+			for (int i = 0; i < nColors; i++) {
 				colors[i] = new Color((int)(rand.nextFloat() * MAX_COLOR));
 			}
 			return colors;
