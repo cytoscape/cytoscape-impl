@@ -48,7 +48,10 @@ public class CyColorChooser implements ValueEditor<Paint> {
 	@Override
 	public Paint showEditor(Component parent, Paint initialValue) {
 		color = initialValue;
-		chooser = new JColorChooser((Color)initialValue);
+		if (initialValue != null)
+			chooser = new JColorChooser((Color)initialValue);
+		else
+			chooser = new JColorChooser();
 		JDialog dialog = JColorChooser.createDialog(parent, "Colors", true, chooser, listener, null);
 		dialog.setVisible(true);
 
