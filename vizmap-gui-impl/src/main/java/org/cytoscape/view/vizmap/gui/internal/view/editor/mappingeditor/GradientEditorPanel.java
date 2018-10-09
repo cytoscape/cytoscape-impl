@@ -308,6 +308,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			//
 			if (currentPalette != null && currentPalette.getType() == BrewerType.SEQUENTIAL) {
 				// Add more thumbs
+				/*
 				int size = currentPalette.size();
 				Color[] colors = currentPalette.getColors();
 				float increment = 5f/(float)size;
@@ -320,7 +321,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 						brv);
 				}
 
-				/*
 				// For Sequential palettes, we want to go from light to dark.
 				getSlider().getModel().addThumb(0f, DEF_UPPER_COLOR);
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
