@@ -320,12 +320,12 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 						NumberConverter.convert(columnType, ((float)(maxValue-minValue)/100.0f)*i+minValue),
 						brv);
 				}
+				*/
 
 				// For Sequential palettes, we want to go from light to dark.
 				getSlider().getModel().addThumb(0f, DEF_UPPER_COLOR);
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
-				*/
 
 				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
 				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
