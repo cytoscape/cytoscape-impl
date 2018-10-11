@@ -154,7 +154,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		argMap.put(EDGEOPACITY, Double.toString(this.borderOpacity));
 		if (this.shapeType != null) {
 			argMap.put(SHAPETYPE, this.shapeType.name());
-			if (shapeType.equals(ShapeType.CUSTOM))
+			if (shapeType.equals(ShapeType.CUSTOM) && shape != null)
 				argMap.put(CUSTOMSHAPE, GraphicsUtilities.serializeShape(shape));
 		}
 		argMap.put(ShapeAnnotation.WIDTH, Double.toString(this.shapeWidth));
