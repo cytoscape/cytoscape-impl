@@ -9,6 +9,8 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -50,7 +52,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class StartupConfig {
+public class StartupConfig implements AppsFinishedStartingListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -62,7 +64,6 @@ public class StartupConfig {
 	private LoadNetworkFileTaskFactory networkFileLoader;
 	private LoadNetworkURLTaskFactory networkURLLoader;
 	private LoadVizmapFileTaskFactory visualStylesLoader;
-	private final TaskManager taskManager;
 	
 	private final CyServiceRegistrar registrar;
 	
@@ -70,6 +71,7 @@ public class StartupConfig {
 	private ArrayList<File> networkFiles;
 	private ArrayList<URL> networkURLs;
 	private ArrayList<File> vizmapFiles;
+	private ArrayList<TaskIterator> taskIteratorList;
 
 	public StartupConfig(
 			Properties globalProps,
@@ -78,7 +80,6 @@ public class StartupConfig {
 			LoadNetworkFileTaskFactory networkFileLoader,
 			LoadNetworkURLTaskFactory networkURLLoader,
 			LoadVizmapFileTaskFactory visualStylesLoader,
-			TaskManager taskManager,
 			CyServiceRegistrar registrar
 	) {
 		this.globalProps = globalProps;
@@ -87,14 +88,32 @@ public class StartupConfig {
 		this.networkFileLoader = networkFileLoader;
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
-		this.taskManager = taskManager;
-		
 		this.registrar = registrar;
 		networkFiles= new ArrayList<>();
 		networkURLs = new ArrayList<>();
 		vizmapFiles = new ArrayList<>();
+		taskIteratorList = new ArrayList<>();
 	}
 
+	@Override
+	public void handleEvent(AppsFinishedStartingEvent evt) {
+		// We should only load sessions after Cytoscape and apps have been initialized!
+		if (!taskIteratorList.isEmpty()) {
+			Task initTask = new DummyTask();
+			TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
+
+			for (int i = taskIteratorList.size() - 1; i >= 0; i--) {
+				TaskIterator ti = taskIteratorList.get(i);
+				taskIterator.insertTasksAfter(initTask, ti);
+			}
+			
+			taskIteratorList.clear();
+			
+			TaskManager <?,?> taskManager = registrar.getService(TaskManager.class);
+			taskManager.execute(taskIterator);
+		}
+	}
+	
 	public void setProperties(String[] potentialProps) {
 		Properties argProps = new Properties();
 
@@ -222,11 +241,8 @@ public class StartupConfig {
 			return;
 
 		// Since we've set command line args we presumably
-		// don't want to see the welcome screen, so we
-		// disable it here.
-		globalProps.setProperty("tempHideWelcomeScreen","true");
-
-		ArrayList<TaskIterator> taskIteratorList = new ArrayList<>();
+		// don't want to see the welcome screen, so we disable it here.
+		globalProps.setProperty("tempHideWelcomeScreen", "true");
 
 		if (sessionName != null) {
 			taskIteratorList.add(loadSession.createTaskIterator(sessionName));
@@ -239,16 +255,6 @@ public class StartupConfig {
 			for (File vizmap : vizmapFiles)
 				taskIteratorList.add(visualStylesLoader.createTaskIterator(vizmap));
 		}
-
-		Task initTask = new DummyTask();
-		TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
-		for (int i= taskIteratorList.size()-1; i>= 0 ; i--){
-			TaskIterator ti = taskIteratorList.get(i);
-			taskIterator.insertTasksAfter(initTask, ti);
-		}
-		
-		taskManager.execute(taskIterator);
-		
 	}
 	
 	private class DummyTask extends AbstractTask{

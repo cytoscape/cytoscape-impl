@@ -1,5 +1,7 @@
 package org.cytoscape.cmdline.gui.internal;
 
+
+import org.cytoscape.app.event.AppsFinishedStartingListener;
 /*
  * #%L
  * Cytoscape GUI Command Line Parser Impl (gui-cmdline-parser-impl)
@@ -54,13 +56,13 @@ public class CyActivator extends AbstractCyActivator {
 		LoadNetworkFileTaskFactory networkFileLoader = getService(bc, LoadNetworkFileTaskFactory.class);
 		LoadNetworkURLTaskFactory networkURLLoader = getService(bc, LoadNetworkURLTaskFactory.class);
 		LoadVizmapFileTaskFactory visualStylesLoader = getService(bc, LoadVizmapFileTaskFactory.class);
-		TaskManager <?,?> taskManager = getService(bc, TaskManager.class);
 		CyServiceRegistrar registrar = getService(bc, CyServiceRegistrar.class);
-		
-		CyProperty<Properties> props = (CyProperty<Properties>)getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
-		StartupConfig sc = new StartupConfig(props.getProperties(),streamUtil, loadSession, networkFileLoader, networkURLLoader, visualStylesLoader, taskManager, registrar);
+		CyProperty<Properties> props = (CyProperty<Properties>) getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 
+		StartupConfig sc = new StartupConfig(props.getProperties(), streamUtil, loadSession, networkFileLoader,
+				networkURLLoader, visualStylesLoader, registrar);
+		registerService(bc, sc, AppsFinishedStartingListener.class);
 
 		Parser p = new Parser(args.getArgs(), cyShutdown, cyVersion, sc,props.getProperties());
 		sc.start();
