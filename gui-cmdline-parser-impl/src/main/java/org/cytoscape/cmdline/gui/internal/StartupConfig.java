@@ -224,7 +224,7 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		taskStart = true;
 	}
 
-	public void start() {
+	protected void start() {
 		// set the properties
 		// no need to do this in a task since it's so fast
 		//globalProps.putAll(localProps);
@@ -232,12 +232,11 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps,
 				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
 		Properties cmdlnProps = new Properties();
-		cmdlnProps.setProperty("cyPropertyName","commandline.props");
+		cmdlnProps.setProperty("cyPropertyName", "commandline.props");
 		registrar.registerService(commandline, CyProperty.class, cmdlnProps);
 		
-		// Only proceed if we've specified tasks for execution
-		// on the command line.
-		if ( !taskStart )
+		// Only proceed if we've specified tasks for execution on the command line.
+		if (!taskStart)
 			return;
 
 		// Since we've set command line args we presumably
@@ -246,7 +245,6 @@ public class StartupConfig implements AppsFinishedStartingListener {
 
 		if (sessionName != null) {
 			taskIteratorList.add(loadSession.createTaskIterator(sessionName));
-
 		} else {
 			for (File network : networkFiles)
 				taskIteratorList.add(networkFileLoader.createTaskIterator(network));
@@ -263,6 +261,5 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			//DO nothing it is a dummy task just to initiate the iterator
 		}
-		
 	}
 }
