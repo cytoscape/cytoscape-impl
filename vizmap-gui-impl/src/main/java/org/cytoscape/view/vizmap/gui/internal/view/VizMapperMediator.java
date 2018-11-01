@@ -211,7 +211,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		mappingFactoryProxy = (MappingFunctionFactoryProxy) getFacade().retrieveProxy(MappingFunctionFactoryProxy.NAME);
 		propsProxy = (PropsProxy) getFacade().retrieveProxy(PropsProxy.NAME);
 		
-		initDefaultProps();
+		updateDefaultProps();
 		initView();
 		super.onRegister();
 	}
@@ -524,7 +524,8 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	
 	// ==[ PRIVATE METHODS ]============================================================================================
 
-	private void initDefaultProps() {
+	private void updateDefaultProps() {
+		defVisibleProps.clear();
 		defVisibleProps.put(CyNode.class, propsProxy.getDefaultVisualProperties(CyNode.class));
 		defVisibleProps.put(CyEdge.class, propsProxy.getDefaultVisualProperties(CyEdge.class));
 		defVisibleProps.put(CyNetwork.class, propsProxy.getDefaultVisualProperties(CyNetwork.class));
@@ -843,7 +844,27 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 				// Add event listeners to the new components
 				addViewListeners(vpSheet);
 				
-				// Add another menu item to the Properties menu
+				// Add more menu items to the Properties menu
+				if (vpSheetItems.size() > 1) {
+					vpSheet.getVpsMenu().add(new JSeparator());
+					
+					{
+						final JMenuItem mi = new JMenuItem("Show Default");
+						mi.addActionListener(evt -> showDefaultItems(vpSheet));
+						vpSheet.getVpsMenu().add(mi);
+					}
+					{
+						final JMenuItem mi = new JMenuItem("Show All");
+						mi.addActionListener(evt -> setVisibleItems(vpSheet, true));
+						vpSheet.getVpsMenu().add(mi);
+					}
+					{
+						final JMenuItem mi = new JMenuItem("Hide All");
+						mi.addActionListener(evt -> setVisibleItems(vpSheet, false));
+						vpSheet.getVpsMenu().add(mi);
+					}
+				}
+				
 				vpSheet.getVpsMenu().add(new JSeparator());
 				
 				final JMenuItem mi = new JMenuItem("Make Default");
@@ -1027,6 +1048,29 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 	}
 	
+	private void setVisibleItems(VisualPropertySheet vpSheet, boolean visible) {
+		userProps.clear();
+		
+		for (final VisualPropertySheetItem<?> item : vpSheet.getItems())
+			item.setVisible(visible);
+	}
+	
+	private void showDefaultItems(VisualPropertySheet vpSheet) {
+		userProps.clear();
+		
+		for (final VisualPropertySheetItem<?> item : vpSheet.getItems()) {
+			final Set<String> set = defVisibleProps.get(item.getModel().getTargetDataType());
+			final String vpId = item.getModel().getId();
+			
+			// Start with the default properties, of course
+			boolean b = set != null && set.contains(vpId);
+			// ...but still show properties that have a mapping
+			b = b || item.getModel().getVisualMappingFunction() != null;
+			
+			item.setVisible(b);
+		}
+	}
+	
 	private void saveDefaultVisibleItems(final VisualPropertySheet vpSheet) {
 		final Set<String> idSet = new HashSet<>();
 		
@@ -1036,6 +1080,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		}
 		
 		propsProxy.setDefaultVisualProperties(vpSheet.getModel().getTargetDataType(), idSet);
+		updateDefaultProps();
 	}
 	
 	private void updateMappings(final Class<? extends CyIdentifiable> targetDataType, final CyTable table) {

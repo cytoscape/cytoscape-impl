@@ -552,32 +552,7 @@ public class VisualPropertySheet extends JPanel{
 			}
 		}
 		
-		// Other Menu Items
-		// ------------------------------------------------
-		if (menuMap.size() > 1) {
-			rootMenu.add(new JSeparator());
-			
-			{
-				final JMenuItem mi = new JMenuItem("Show All");
-				mi.addActionListener(evt -> {
-					for (Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet())
-						setVisible(entry.getKey(), true);
-				});
-				rootMenu.add(mi);
-			}
-			{
-				final JMenuItem mi = new JMenuItem("Hide All");
-				mi.addActionListener(evt -> {
-					for (Entry<VisualPropertySheetItem<?>, JCheckBoxMenuItem> entry : menuItemMap.entrySet())
-						setVisible(entry.getKey(), false);
-				});
-				rootMenu.add(mi);
-			}
-			
-			getVpsBtn().setEnabled(true);
-		} else {
-			getVpsBtn().setEnabled(false);
-		}
+		getVpsBtn().setEnabled(menuMap.size() > 1);
 	}
 	
 	private void updateMenuItems() {
