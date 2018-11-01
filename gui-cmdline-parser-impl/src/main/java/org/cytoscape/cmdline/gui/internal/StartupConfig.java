@@ -9,8 +9,6 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.cytoscape.app.event.AppsFinishedStartingEvent;
-import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.property.CyProperty;
@@ -52,7 +50,7 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class StartupConfig implements AppsFinishedStartingListener {
+public class StartupConfig {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
@@ -64,6 +62,7 @@ public class StartupConfig implements AppsFinishedStartingListener {
 	private LoadNetworkFileTaskFactory networkFileLoader;
 	private LoadNetworkURLTaskFactory networkURLLoader;
 	private LoadVizmapFileTaskFactory visualStylesLoader;
+	private final TaskManager taskManager;
 	
 	private final CyServiceRegistrar registrar;
 	
@@ -71,7 +70,6 @@ public class StartupConfig implements AppsFinishedStartingListener {
 	private ArrayList<File> networkFiles;
 	private ArrayList<URL> networkURLs;
 	private ArrayList<File> vizmapFiles;
-	private ArrayList<TaskIterator> taskIteratorList;
 
 	public StartupConfig(
 			Properties globalProps,
@@ -80,6 +78,7 @@ public class StartupConfig implements AppsFinishedStartingListener {
 			LoadNetworkFileTaskFactory networkFileLoader,
 			LoadNetworkURLTaskFactory networkURLLoader,
 			LoadVizmapFileTaskFactory visualStylesLoader,
+			TaskManager taskManager,
 			CyServiceRegistrar registrar
 	) {
 		this.globalProps = globalProps;
@@ -88,32 +87,14 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		this.networkFileLoader = networkFileLoader;
 		this.networkURLLoader = networkURLLoader;
 		this.visualStylesLoader = visualStylesLoader;
+		this.taskManager = taskManager;
+		
 		this.registrar = registrar;
 		networkFiles= new ArrayList<>();
 		networkURLs = new ArrayList<>();
 		vizmapFiles = new ArrayList<>();
-		taskIteratorList = new ArrayList<>();
 	}
 
-	@Override
-	public void handleEvent(AppsFinishedStartingEvent evt) {
-		// We should only load sessions after Cytoscape and apps have been initialized!
-		if (!taskIteratorList.isEmpty()) {
-			Task initTask = new DummyTask();
-			TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
-
-			for (int i = taskIteratorList.size() - 1; i >= 0; i--) {
-				TaskIterator ti = taskIteratorList.get(i);
-				taskIterator.insertTasksAfter(initTask, ti);
-			}
-			
-			taskIteratorList.clear();
-			
-			TaskManager <?,?> taskManager = registrar.getService(TaskManager.class);
-			taskManager.execute(taskIterator);
-		}
-	}
-	
 	public void setProperties(String[] potentialProps) {
 		Properties argProps = new Properties();
 
@@ -224,7 +205,7 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		taskStart = true;
 	}
 
-	protected void start() {
+	public void start() {
 		// set the properties
 		// no need to do this in a task since it's so fast
 		//globalProps.putAll(localProps);
@@ -232,19 +213,24 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		CyProperty<Properties> commandline = new SimpleCyProperty<>("commandline", localProps,
 				Properties.class, CyProperty.SavePolicy.DO_NOT_SAVE);
 		Properties cmdlnProps = new Properties();
-		cmdlnProps.setProperty("cyPropertyName", "commandline.props");
+		cmdlnProps.setProperty("cyPropertyName","commandline.props");
 		registrar.registerService(commandline, CyProperty.class, cmdlnProps);
 		
-		// Only proceed if we've specified tasks for execution on the command line.
-		if (!taskStart)
+		// Only proceed if we've specified tasks for execution
+		// on the command line.
+		if ( !taskStart )
 			return;
 
 		// Since we've set command line args we presumably
-		// don't want to see the welcome screen, so we disable it here.
-		globalProps.setProperty("tempHideWelcomeScreen", "true");
+		// don't want to see the welcome screen, so we
+		// disable it here.
+		globalProps.setProperty("tempHideWelcomeScreen","true");
+
+		ArrayList<TaskIterator> taskIteratorList = new ArrayList<>();
 
 		if (sessionName != null) {
 			taskIteratorList.add(loadSession.createTaskIterator(sessionName));
+
 		} else {
 			for (File network : networkFiles)
 				taskIteratorList.add(networkFileLoader.createTaskIterator(network));
@@ -253,6 +239,16 @@ public class StartupConfig implements AppsFinishedStartingListener {
 			for (File vizmap : vizmapFiles)
 				taskIteratorList.add(visualStylesLoader.createTaskIterator(vizmap));
 		}
+
+		Task initTask = new DummyTask();
+		TaskIterator taskIterator = new TaskIterator(taskIteratorList.size(), initTask);
+		for (int i= taskIteratorList.size()-1; i>= 0 ; i--){
+			TaskIterator ti = taskIteratorList.get(i);
+			taskIterator.insertTasksAfter(initTask, ti);
+		}
+		
+		taskManager.execute(taskIterator);
+		
 	}
 	
 	private class DummyTask extends AbstractTask{
@@ -261,5 +257,6 @@ public class StartupConfig implements AppsFinishedStartingListener {
 		public void run(TaskMonitor taskMonitor) throws Exception {
 			//DO nothing it is a dummy task just to initiate the iterator
 		}
+		
 	}
 }

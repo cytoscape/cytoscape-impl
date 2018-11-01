@@ -104,10 +104,6 @@
 			<groupId>org.cytoscape</groupId>
 			<artifactId>core-task-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.cytoscape</groupId>
-			<artifactId>app-api</artifactId>
-		</dependency>
 	</dependencies>
 
 

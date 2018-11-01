@@ -196,10 +196,6 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	@Override
 	public void handleEvent(SessionLoadedEvent evt) {
 		loadingSession = false;
-		
-		if (mainPanel == null)
-			return;
-		
 		mainPanel.clearAnnotationButtonSelection();
 		
 		final Set<CyNetworkView> allViews = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViewSet();
