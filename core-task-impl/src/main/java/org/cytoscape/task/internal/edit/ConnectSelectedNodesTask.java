@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.edit;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,18 +26,41 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class ConnectSelectedNodesTask extends AbstractTask implements ObservableTask {
 
 	static final String DEFAULT_INTERACTION = "interacts with";
 
-	private final UndoSupport undoSupport;
 	private final CyEventHelper eventHelper;
 	private final VisualMappingManager vmm;
 	private final CyNetworkViewManager netViewMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private List<CyEdge> newEdges = null;
 
-	private CyNetwork network = null;
+	private CyNetwork network;
 	@Tunable(description="The network containing the nodes to connect",
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION,
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
@@ -83,11 +82,9 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 	         context="nogui", required=true)
 	public NodeList nodes = null;
 
-	public ConnectSelectedNodesTask(final UndoSupport undoSupport, final CyNetwork network,
+	public ConnectSelectedNodesTask(final CyNetwork network,
 			final CyEventHelper eventHelper, final VisualMappingManager vmm, 
 			final CyNetworkViewManager netViewMgr, final CyServiceRegistrar serviceRegistrar) {
-		this.undoSupport = undoSupport;
-
 		this.network = network;
 		this.eventHelper = eventHelper;
 		this.vmm = vmm;
@@ -97,29 +94,31 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setTitle("Connecting Selected Nodes");
-		taskMonitor.setStatusMessage("Connecting nodes.  Please wait...");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
+		tm.setTitle("Connecting Selected Nodes");
+		tm.setStatusMessage("Connecting nodes.  Please wait...");
+		
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
 		}
 		
-		List<CyNode> selectedNodes;
+		final List<CyNode> selectedNodes;
+		
 		if (nodes.getValue() == null || nodes.getValue().isEmpty())
 			selectedNodes = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		else
 			selectedNodes = nodes.getValue();
 
-		taskMonitor.setProgress(0.1);
+		tm.setProgress(0.1);
 
 		int selectedNodesCount = selectedNodes.size();
 		int i = 0;
 
-		newEdges = new ArrayList<CyEdge>();
-
+		newEdges = new ArrayList<>();
 		eventHelper.silenceEventSource(network);
+		
 		for (final CyNode source : selectedNodes) {
 			for (final CyNode target : selectedNodes) {
 				if (source != target) {
@@ -139,15 +138,17 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 			}
 
 			i++;
-			taskMonitor.setProgress(0.1 + i / (double) selectedNodesCount * 0.9);
+			tm.setProgress(0.1 + i / (double) selectedNodesCount * 0.9);
 		}
+		
 		eventHelper.unsilenceEventSource(network);
 
-		undoSupport.postEdit(new ConnectSelectedNodesEdit(network, newEdges));
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new ConnectSelectedNodesEdit(network, newEdges));
 
 		for (CyEdge edge: newEdges) {
 			eventHelper.addEventPayload(network, edge, AddedEdgesEvent.class); 
 		}
+		
 		eventHelper.flushPayloadEvents(); // To make sure the edge views are created before applying the style
 
 		// Apply visual style
@@ -157,7 +158,7 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 			view.updateView();
 		}
 
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 	@Override

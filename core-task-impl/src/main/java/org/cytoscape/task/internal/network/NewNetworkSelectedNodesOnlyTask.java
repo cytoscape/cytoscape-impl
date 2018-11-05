@@ -18,7 +18,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
 	
-	public NewNetworkSelectedNodesOnlyTask(final UndoSupport undoSupport, final CyNetwork net,
+	public NewNetworkSelectedNodesOnlyTask(final CyNetwork net,
 	                                       final CyRootNetworkManager cyroot,
 	                                       final CyNetworkViewFactory cnvf,
 	                                       final CyNetworkManager netmgr,
@@ -61,7 +60,7 @@ public class NewNetworkSelectedNodesOnlyTask extends AbstractNetworkFromSelectio
 	                                       final CyGroupManager groupMgr,
 	                                       final RenderingEngineManager renderingEngineMgr,
 	                                       final CyServiceRegistrar serviceRegistrar) {
-		super(undoSupport, net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
+		super(net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
 		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 	}
 

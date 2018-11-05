@@ -3,10 +3,10 @@ package org.cytoscape.task.internal.select;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.AbstractTask;
@@ -41,17 +41,19 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 	private View<CyNode> nodeView;
 	private CyNetworkView netView;
 	private final Type direction;
-	private final CyEventHelper cyEventHelper;
 
 	private final SelectUtils selectUtils;
 
-	public SelectFirstNeighborsNodeViewTask(View<CyNode> nodeView, CyNetworkView netView, final Type direction, 
-	                                        final CyEventHelper eventHelper) {
+	public SelectFirstNeighborsNodeViewTask(
+			View<CyNode> nodeView,
+			CyNetworkView netView,
+			Type direction, 
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.nodeView = nodeView;
 		this.netView = netView;
 		this.direction = direction;
-		this.cyEventHelper = eventHelper;
-		this.selectUtils = new SelectUtils(cyEventHelper);
+		this.selectUtils = new SelectUtils(serviceRegistrar);
 	}
 
 	@Override
@@ -64,7 +66,7 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		if (netView == null)
 			throw new NullPointerException("network view is null");
 
-		final Set<CyNode> selNodes = new HashSet<CyNode>();
+		final Set<CyNode> selNodes = new HashSet<>();
 		final CyNode node = nodeView.getModel();
 		final CyNetwork net = netView.getModel();
 		tm.setProgress(0.1d);
@@ -73,8 +75,10 @@ public class SelectFirstNeighborsNodeViewTask extends AbstractTask {
 		
 		selNodes.addAll(net.getNeighborList(node, direction));
 		tm.setProgress(0.6d);
+		
 		selectUtils.setSelectedNodes(net, selNodes, true);
 		tm.setProgress(0.8d);
+		
 		netView.updateView();
 		tm.setProgress(1.0d);
 	}

@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.ColumnValueTunable;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,51 +35,30 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.internal.utils.ColumnValueTunable;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public class SetNetworkAttributeTask extends AbstractTableDataTask {
-	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> networkData;
-
+	
 	@Tunable(description="Network", context="nogui",
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@ContainsTunables
 	public ColumnValueTunable columnTunable;
 
-	public SetNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
-		super(mgr);
-		this.appMgr = appMgr;
+	public SetNetworkAttributeTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		columnTunable = new ColumnValueTunable();
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) network = appMgr.getCurrentNetwork();
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		CyTable networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
+		int count = setCyIdentifierData(networkTable, network, columnTunable.getValueMap(networkTable));
 
-		int count = setCyIdentifierData(networkTable, 
-		                                network,
-		                                columnTunable.getValueMap(networkTable));
-
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Set "+count+" network table values for network "+DataUtils.getNetworkName(network));
+		tm.showMessage(TaskMonitor.Level.INFO,
+				"Set " + count + " network table values for network " + DataUtils.getNetworkName(network));
 	}
-
 }

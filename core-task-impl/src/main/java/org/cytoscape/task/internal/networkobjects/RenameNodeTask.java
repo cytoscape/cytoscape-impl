@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,56 +35,37 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-
 public class RenameNodeTask extends AbstractGetTask {
+	
 	@Tunable(description="Network node is in", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Node to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION, exampleStringValue="suid:123")
-	public String node = null;
+	public String node;
 
 	@Tunable(description="New node name", context="nogui", longDescription="New name of the node")
-	public String newName = null;
-
-	public RenameNodeTask() {
-	}
+	public String newName;
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
 		}
 
 		if (node == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");
 			return;
 		}
 
 		if (newName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
 			return;
 		}
 
 		CyNode renamedNode = getNode(network, node);
 		network.getRow(renamedNode).set(CyNetwork.NAME, newName);
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Node "+renamedNode+" renamed to "+newName);
+		tm.showMessage(TaskMonitor.Level.INFO, "Node "+renamedNode+" renamed to "+newName);
 	}
 
 	public Object getResults(Class type) {
@@ -89,5 +81,4 @@ public class RenameNodeTask extends AbstractGetTask {
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(JSONResult.class);
 	}
-
 }

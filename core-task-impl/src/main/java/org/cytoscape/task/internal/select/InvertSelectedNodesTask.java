@@ -1,12 +1,9 @@
 package org.cytoscape.task.internal.select;
 
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -16,7 +13,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,16 +33,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class InvertSelectedNodesTask extends AbstractSelectTask {
 
-	private final UndoSupport undoSupport;
-
-	public InvertSelectedNodesTask(
-			final UndoSupport undoSupport,
-			final CyNetwork net,
-			final CyNetworkViewManager networkViewManager,
-			final CyEventHelper eventHelper
-	) {
-		super(net, networkViewManager, eventHelper);
-		this.undoSupport = undoSupport;
+	public InvertSelectedNodesTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	@Override
@@ -53,14 +42,11 @@ public class InvertSelectedNodesTask extends AbstractSelectTask {
 		tm.setTitle("Invert Node Selection");
 		tm.setProgress(0.0);
 		
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		
-		if (views.size() != 0)
-			view = views.iterator().next();
+		CyNetworkView view = getNetworkView(network);
 
-		undoSupport.postEdit(new SelectionEdit(eventHelper, "Invert Selected Nodes", network, view,
-				SelectionEdit.SelectionFilter.NODES_ONLY));
+		serviceRegistrar.getService(UndoSupport.class).postEdit(
+				new SelectionEdit("Invert Selected Nodes", network, view, SelectionEdit.SelectionFilter.NODES_ONLY,
+						serviceRegistrar));
 		
 		tm.setStatusMessage("Inverting Node Selection...");
 		tm.setProgress(0.2);
@@ -74,9 +60,6 @@ public class InvertSelectedNodesTask extends AbstractSelectTask {
 		
 		tm.setStatusMessage("Updating View...");
 		tm.setProgress(0.8);
-		eventHelper.flushPayloadEvents();
-		
-		tm.setProgress(0.9);
 		updateView();
 		
 		tm.setProgress(1.0);

@@ -1,6 +1,18 @@
 package org.cytoscape.task.internal.group;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -8,7 +20,7 @@ import java.util.Arrays;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,20 +38,6 @@ import java.util.Arrays;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-
 public class RemoveFromGroupTask extends AbstractGroupTask {
 
 	@Tunable (description="Group", context="nogui",longDescription = StringToModel.GROUP_NAME_LONG_DESCRIPTION, exampleStringValue =StringToModel.GROUP_NAME_EXAMPLE_STRING)
@@ -48,8 +46,8 @@ public class RemoveFromGroupTask extends AbstractGroupTask {
 	@ContainsTunables
 	public NodeAndEdgeTunable nodesAndEdges;
 
-	public RemoveFromGroupTask(final CyServiceRegistrar serviceRegistrar) {
-		groupMgr = serviceRegistrar.getService(CyGroupManager.class);
+	public RemoveFromGroupTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		nodesAndEdges = new NodeAndEdgeTunable(serviceRegistrar);
 	}
 

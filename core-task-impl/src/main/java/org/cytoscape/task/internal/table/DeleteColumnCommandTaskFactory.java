@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +28,16 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class DeleteColumnCommandTaskFactory extends AbstractTaskFactory {
-	private final CyApplicationManager cyAppManager;
-	private final CyTableManager cyTableManager;
-	CyServiceRegistrar serviceRegistrar;
 	
-	public DeleteColumnCommandTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, CyServiceRegistrar reg) { 
-		cyAppManager = appMgr;
-		cyTableManager = mgr;
-		serviceRegistrar = reg;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public DeleteColumnCommandTaskFactory(CyServiceRegistrar serviceRegistrar) { 
+		this.serviceRegistrar = serviceRegistrar;
 	}
-	
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DeleteColumnCommandTask(cyAppManager, cyTableManager, serviceRegistrar));
+		return new TaskIterator(new DeleteColumnCommandTask(serviceRegistrar));
 	}
-
 }

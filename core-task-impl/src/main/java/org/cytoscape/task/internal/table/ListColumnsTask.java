@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,53 +39,30 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.TableTunable;
-import org.cytoscape.util.json.CyJSONUtil;
-
 public class ListColumnsTask extends AbstractTableDataTask implements ObservableTask {
-	final CyApplicationManager appMgr;
-	final CyNetworkTableManager networkTableMgr;
-	private final CyServiceRegistrar serviceRegistrar;
+	
 	List<CyColumn> columns;
 
 	@ContainsTunables
-	public TableTunable table = null;
+	public TableTunable table;
 
-	public ListColumnsTask(CyApplicationManager appMgr, CyTableManager tableMgr, 
-	                       CyNetworkTableManager networkTableMgr, CyServiceRegistrar reg) {
-		super(tableMgr);
-		this.appMgr = appMgr;
-		serviceRegistrar =reg;
-		this.networkTableMgr = networkTableMgr;
-		table = new TableTunable(tableMgr);
+	public ListColumnsTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		table = new TableTunable(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		CyTable requestedTable = table.getTable();
 		if (requestedTable == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+table.getTableString()+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+table.getTableString()+"'");
 			return;
 		}
 
 		columns = new ArrayList<CyColumn> (requestedTable.getColumns());
-		taskMonitor.showMessage(TaskMonitor.Level.INFO,   "Columns for table "+getTableDescription(requestedTable)+":");
+		tm.showMessage(TaskMonitor.Level.INFO,   "Columns for table "+getTableDescription(requestedTable)+":");
 		for (CyColumn column: columns)
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "         "+column.toString());
+			tm.showMessage(TaskMonitor.Level.INFO, "         "+column.toString());
 	}
 
 	@Override

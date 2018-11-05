@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.NodeTunable;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +39,6 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.task.internal.utils.NodeTunable;
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public class SetNodePropertiesTask extends AbstractPropertyTask {
 
 	@ContainsTunables
@@ -62,38 +53,36 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 	@Tunable(description="Whether or not to lock the property", context="nogui", 
 	         longDescription="Locking a visual property will override any mappings.  This is the same as the ```Bypass``` column in the user interface",
 	         exampleStringValue="true")
-	public boolean bypass = false;
+	public boolean bypass;
 
-	public SetNodePropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
-	                             RenderingEngineManager reManager) {
-		super(appMgr, viewManager, reManager);
-		nodeTunable = new NodeTunable(appMgr);
+	public SetNodePropertiesTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		nodeTunable = new NodeTunable(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-
+	public void run(final TaskMonitor tm) {
 		CyNetwork network = nodeTunable.getNetwork();
 
 		if (propertyList == null || propertyList.length() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
 			return;
 		}
 
 		if (valueList == null || valueList.length() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
 			return;
 		}
 
 		String[] props = propertyList.split(",");
 		String[] values = DataUtils.getCSV(valueList);
 		if (props.length != values.length) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
 			return;
 		}
 
 		for (CyNode node: nodeTunable.getNodeList()) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO,
+			tm.showMessage(TaskMonitor.Level.INFO,
 			                        "   Setting properties for node "+DataUtils.getNodeName(network.getDefaultNodeTable(), node));
 			int valueIndex = 0;
 			for (String property: props) {
@@ -102,9 +91,9 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 				try {
 					VisualProperty vp = getProperty(network, node, property.trim());
 					setPropertyValue(network, node, vp, value, bypass);
-					taskMonitor.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value.toString());
+					tm.showMessage(TaskMonitor.Level.INFO, "       "+vp.getDisplayName()+" set to "+value.toString());
 				} catch (Exception e) {
-					taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
+					tm.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
 					return;
 				}
 			}
@@ -125,5 +114,4 @@ public class SetNodePropertiesTask extends AbstractPropertyTask {
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(JSONResult.class);
 	}
-
 }

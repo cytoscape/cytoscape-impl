@@ -1,6 +1,9 @@
 package org.cytoscape.task.internal.table;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -90,6 +93,7 @@ public class MappingIntegrationTest {
 	private CyRootNetwork root;
 
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
+	private UndoSupport undoSupport = mock(UndoSupport.class);
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
 	private CyApplicationManager appMgr = mock(CyApplicationManager.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
@@ -111,6 +115,7 @@ public class MappingIntegrationTest {
 	@Before
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
         when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
@@ -147,8 +152,6 @@ public class MappingIntegrationTest {
 		String table2sRow1 = "col2 row2";
 		String table2sRow2 = "col2 row2";
 		
-		
-		
 		//creating first network with 2 nodes
 		net1 = support.getNetwork();
 		net1.getRow(net1).set(CyNetwork.NAME, "net1");
@@ -162,8 +165,7 @@ public class MappingIntegrationTest {
 		netMgr.addNetwork(net1);
 		((CySubNetworkImpl) net1).handleEvent(new NetworkAddedEvent(netMgr, net1));
 
-		
-		List<CyNetwork> firstnetlist = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> firstnetlist = new ArrayList<>(netMgr.getNetworkSet());
 		
 		//creating a table for mapping to all networks
 		table1 = new CyTableImpl("dummy table", "ID", String.class, true, true, 
@@ -185,7 +187,7 @@ public class MappingIntegrationTest {
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1,
+		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(net1,
 				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
 				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
 				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
@@ -195,12 +197,12 @@ public class MappingIntegrationTest {
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
 		newNetTask.run(mock(TaskMonitor.class));
 
-		List<CyNetwork> secondNetList = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		List<CyNetwork> secondNetList = new ArrayList<>(netMgr.getNetworkSet());
 		secondNetList.removeAll(firstnetlist);
 		assertEquals(1, secondNetList.size());
 
 		subnet1 = secondNetList.get(0);
-		secondNetList  = new ArrayList<CyNetwork>(netMgr.getNetworkSet());
+		secondNetList  = new ArrayList<>(netMgr.getNetworkSet());
 		
 		((CySubNetworkImpl) subnet1).handleEvent(new NetworkAddedEvent(netMgr, subnet1));
 		
@@ -233,7 +235,7 @@ public class MappingIntegrationTest {
 		//creating another subnetwork (subnet2) to check that bot virtual columns will be added
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(mock(UndoSupport.class), net1,
+		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(net1,
 				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
 				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
 				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,

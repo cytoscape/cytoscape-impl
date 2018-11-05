@@ -1,12 +1,18 @@
 package org.cytoscape.task.internal.select;
 
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,54 +30,35 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
-import java.util.Collection;
-
-import org.cytoscape.command.util.EdgeList;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class DeselectEdgesTask extends AbstractSelectTask {
-	@Tunable(description="Network to deselect edges in",gravity=1.0,context="nogui")
+	
+	@Tunable(description = "Network to deselect edges in", gravity = 1.0, context = "nogui")
 	public CyNetwork network;
 
 	public EdgeList edgeList = new EdgeList(null);
 
-	@Tunable(description="Edges to deselect",gravity=2.0,context="nogui")
+	@Tunable(description = "Edges to deselect", gravity = 2.0, context = "nogui")
 	public EdgeList getedgeList() {
 		super.network = network;
 		edgeList.setNetwork(network);
 		return edgeList;
 	}
 
-	public void setedgeList(EdgeList setValue) {}
-
-	public DeselectEdgesTask(final CyNetworkViewManager networkViewManager,
-	                       final CyEventHelper eventHelper)
-	{
-		super(null, networkViewManager, eventHelper);
+	public void setedgeList(EdgeList setValue) {
 	}
 
-	
+	public DeselectEdgesTask(CyServiceRegistrar serviceRegistrar) {
+		super(null, serviceRegistrar);
+	}
+
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		if(views.size() != 0)
-			view = views.iterator().next();
-		
-		tm.setProgress(0.2);
-		tm.showMessage(TaskMonitor.Level.INFO, "Deselecting "+edgeList.getValue().size()+" edges");
-		selectUtils.setSelectedEdges(network,edgeList.getValue(), true);
+		tm.showMessage(TaskMonitor.Level.INFO, "Deselecting " + edgeList.getValue().size() + " edges");
+
+		selectUtils.setSelectedEdges(network, edgeList.getValue(), true);
 		tm.setProgress(0.6);
+
 		updateView();
 		tm.setProgress(1.0);
 	}

@@ -1,17 +1,15 @@
 package org.cytoscape.task.internal.select;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -21,7 +19,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -41,16 +39,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class SelectConnectedNodesTask extends AbstractSelectTask {
 	
-	private final UndoSupport undoSupport;
-
-	public SelectConnectedNodesTask(
-			final UndoSupport undoSupport,
-			final CyNetwork net,
-			final CyNetworkViewManager networkViewManager,
-			final CyEventHelper eventHelper
-	) {
-		super(net, networkViewManager, eventHelper);
-		this.undoSupport = undoSupport;
+	public SelectConnectedNodesTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	@Override
@@ -58,14 +48,11 @@ public class SelectConnectedNodesTask extends AbstractSelectTask {
 		tm.setTitle("Select Connected Nodes");
 		tm.setProgress(0.0);
 
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		
-		if (views.size() != 0)
-			view = views.iterator().next();
+		CyNetworkView view = getNetworkView(network);
 
-		undoSupport.postEdit(new SelectionEdit(eventHelper, "Select Nodes Connected by Selected Edges", network, view,
-				SelectionEdit.SelectionFilter.NODES_ONLY));
+		serviceRegistrar.getService(UndoSupport.class).postEdit(
+				new SelectionEdit("Select Nodes Connected by Selected Edges", network, view,
+						SelectionEdit.SelectionFilter.NODES_ONLY, serviceRegistrar));
 		
 		tm.setStatusMessage("Selecting Nodes...");
 		tm.setProgress(0.1);

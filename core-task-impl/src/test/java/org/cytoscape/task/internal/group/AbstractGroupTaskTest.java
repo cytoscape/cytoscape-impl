@@ -5,6 +5,7 @@ import static org.mockito.Mockito.when;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
+import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.group.internal.CyGroupFactoryImpl;
 import org.cytoscape.group.internal.CyGroupManagerImpl;
 import org.cytoscape.group.internal.LockedVisualPropertiesManager;
@@ -29,7 +30,7 @@ import org.mockito.MockitoAnnotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -80,14 +81,15 @@ public class AbstractGroupTaskTest {
 		CyRootNetworkManager rootNetworkManager = new CyRootNetworkManagerImpl();
 		rootNetwork = rootNetworkManager.getRootNetwork(network);
 		
+		groupManager = new CyGroupManagerImpl(registrar);
+		
+		LockedVisualPropertiesManager lvpCache = new LockedVisualPropertiesManager(registrar);
+		groupFactory = new CyGroupFactoryImpl(groupManager, lvpCache);
+		
 		when(registrar.getService(VisualMappingManager.class)).thenReturn(vmMgr);
 		when(registrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
-		
-		final LockedVisualPropertiesManager lvpCache = new LockedVisualPropertiesManager(registrar);
-		
-		groupManager = new CyGroupManagerImpl(registrar);
-		groupFactory = new CyGroupFactoryImpl(groupManager, lvpCache);
+		when(registrar.getService(CyGroupManager.class)).thenReturn(groupManager);
 		
 		group1 = groupFactory.createGroup(network, true);
 		rootNetwork.getRow(group1.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, "group1");
@@ -95,13 +97,12 @@ public class AbstractGroupTaskTest {
 		group2 = groupFactory.createGroup(network, true);
 		rootNetwork.getRow(group2.getGroupNode(), CyRootNetwork.SHARED_ATTRS).set(CyRootNetwork.SHARED_NAME, "group2");
 		
-		task = new AbstractGroupTask() {
+		task = new AbstractGroupTask(registrar) {
 			@Override
-			public void run(TaskMonitor taskMonitor) throws Exception {
+			public void run(TaskMonitor tm) throws Exception {
 			}
 		};
 		task.net = network;
-		task.groupMgr = groupManager;
 	}
 	
 	@Test

@@ -5,13 +5,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.RowTunable;
@@ -21,58 +19,79 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class SetValuesTask extends AbstractTableDataTask implements ObservableTask {
-	final CyApplicationManager appMgr;
-	private final CyServiceRegistrar registrar;
-	private CyTable table = null;
-	private List<String> rowKeys = null;
+	
+	private CyTable table;
+	private List<String> rowKeys;
 
 	@ContainsTunables
-	public RowTunable rowTunable = null;
+	public RowTunable rowTunable;
 
 	@Tunable(description="Column to set", context="nogui", longDescription=StringToModel.COLUMN_LONG_DESCRIPTION, exampleStringValue = StringToModel.COLUMN_EXAMPLE)
-	public String columnName = null;
+	public String columnName;
 
 	@Tunable(description="Value to set", context="nogui", 
 	         longDescription="The value to set the columns in the selected rows to.  "+
 	                         "This should be a string value, which will be converted to the appropriate column type.", 
 	         exampleStringValue = StringToModel.VALUE_EXAMPLE)
-	public String value = null;
+	public String value;
 
-	public SetValuesTask(CyApplicationManager appMgr, CyTableManager tableMgr, CyServiceRegistrar reg) {
-		super(tableMgr);
-		this.appMgr = appMgr;
-		registrar = reg;
-		rowTunable = new RowTunable(tableMgr);
+	public SetValuesTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		rowTunable = new RowTunable(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		table = rowTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+rowTunable.getTableString()+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+rowTunable.getTableString()+"'");
 			return;
 		}
 
 		List<CyRow> rowList = rowTunable.getRowList();
 		if (rowList == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "No rows returned");
+			tm.showMessage(TaskMonitor.Level.ERROR, "No rows returned");
 			return;
 		}
 
 		if (columnName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "No column specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "No column specified");
 			return;
 		}
 
 		if (value == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "No values specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "No values specified");
 			return;
 		}
 		
 		CyColumn column = table.getColumn(columnName);
 		if (column == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column '"+columnName+"' doesn't exist in this table");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Column '"+columnName+"' doesn't exist in this table");
 			return;
 		}
 
@@ -86,9 +105,9 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 		String nameKey = null;
 		if (nameColumn != null) nameKey = nameColumn.getName();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Retreived "+rowList.size()+" rows:");
+		tm.showMessage(TaskMonitor.Level.INFO, "Retreived "+rowList.size()+" rows:");
 
-		rowKeys = new ArrayList<String>();
+		rowKeys = new ArrayList<>();
 		for (CyRow row: rowList) {
 			String key = row.getRaw(primaryKey).toString();
 			String message = "  Row (key:"+key;
@@ -100,7 +119,7 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 				try {
 					row.set(column.getName(), DataUtils.convertString(value, columnType));
 				} catch (NumberFormatException nfe) {
-					taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
+					tm.showMessage(TaskMonitor.Level.ERROR, 
 					                        "Unable to convert "+value+" to a "+DataUtils.getType(columnType));
 					return;
 				}
@@ -109,7 +128,7 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 				try {
 					row.set(column.getName(), DataUtils.convertStringList(value, listType));
 				} catch (NumberFormatException nfe) {
-					taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
+					tm.showMessage(TaskMonitor.Level.ERROR, 
 					                        "Unable to convert "+value+" to a list of "+
 					                        DataUtils.getType(listType)+"s");
 					return;
@@ -119,7 +138,7 @@ public class SetValuesTask extends AbstractTableDataTask implements ObservableTa
 
 			// If we got here, we successfully set the value
 			rowKeys.add(key);
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, message);
+			tm.showMessage(TaskMonitor.Level.INFO, message);
 		}
 	}
 

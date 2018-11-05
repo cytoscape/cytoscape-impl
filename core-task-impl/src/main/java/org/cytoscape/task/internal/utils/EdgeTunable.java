@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.utils;
 
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.util.EdgeList;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +34,43 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.command.util.EdgeList;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.work.Tunable;
-
 public class EdgeTunable {
-	CyApplicationManager appMgr;
 	
-	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	private final CyServiceRegistrar serviceRegistrar;
+
+	@Tunable(description = "Network", context = "nogui", longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public EdgeList edgeList = new EdgeList(null);
-	
-	@Tunable(description="List of edges", context="nogui", longDescription=StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_EDGE_LIST_EXAMPLE_STRING)
+
+	@Tunable(description = "List of edges", context = "nogui", longDescription = StringToModel.CY_EDGE_LIST_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_EDGE_LIST_EXAMPLE_STRING)
 	public EdgeList getedgeList() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
 		edgeList.setNetwork(network);
+		
 		return edgeList;
 	}
-  public void setedgeList(EdgeList setValue) {}
 
-	public EdgeTunable(CyApplicationManager appMgr) {
-		this.appMgr = appMgr;
+	public void setedgeList(EdgeList setValue) {
 	}
 
-	public CyNetwork getNetwork() { 
+	public EdgeTunable(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
+	public CyNetwork getNetwork() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
-		return network; 
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+
+		return network;
 	}
 
 	public List<CyEdge> getEdgeList() {
-		if (edgeList == null || edgeList.getValue() == null) 
+		if (edgeList == null || edgeList.getValue() == null)
 			return getNetwork().getEdgeList();
+
 		return edgeList.getValue();
 	}
 }

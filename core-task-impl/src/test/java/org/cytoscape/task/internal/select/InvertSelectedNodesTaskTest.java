@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.select;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import org.cytoscape.model.CyTable;
+import org.cytoscape.work.Task;
+import org.junit.Before;
+import org.junit.Test;
+
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +35,8 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Before;
-import org.junit.Test;
-
-
 public class InvertSelectedNodesTaskTest extends AbstractSelectTaskTester {
+
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -49,16 +46,13 @@ public class InvertSelectedNodesTaskTest extends AbstractSelectTaskTester {
 	public void testRun() throws Exception {
 		final CyTable nodeTable = mock(CyTable.class);
 		when(net.getDefaultNodeTable()).thenReturn(nodeTable);
-		UndoSupport undoSupport = mock(UndoSupport.class);
 
 		// more setup
-		when(r3.get("selected", Boolean.class)).thenReturn(false);	
-		when(r4.get("selected", Boolean.class)).thenReturn(true);	
-
-		final CyEventHelper eventHelper = mock(CyEventHelper.class);
+		when(r3.get("selected", Boolean.class)).thenReturn(false);
+		when(r4.get("selected", Boolean.class)).thenReturn(true);
 
 		// run the task
-		Task t = new InvertSelectedNodesTask(undoSupport, net, networkViewManager, eventHelper);
+		Task t = new InvertSelectedNodesTask(net, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set

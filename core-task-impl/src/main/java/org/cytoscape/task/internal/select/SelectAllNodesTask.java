@@ -1,11 +1,8 @@
 package org.cytoscape.task.internal.select;
 
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -15,7 +12,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,41 +31,30 @@ import org.cytoscape.work.undo.UndoSupport;
  */
 
 public class SelectAllNodesTask extends AbstractSelectTask {
-	
-	private final UndoSupport undoSupport;
 
-	public SelectAllNodesTask(
-			final UndoSupport undoSupport,
-			final CyNetwork net,
-			final CyNetworkViewManager networkViewManager,
-			final CyEventHelper eventHelper
-	) {
-		super(net, networkViewManager, eventHelper);
-		this.undoSupport = undoSupport;
+	public SelectAllNodesTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Select All Nodes");
 		tm.setProgress(0.0);
-		
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		
-		if (views.size() != 0)
-			view = views.iterator().next();
-		
-		undoSupport.postEdit(
-			new SelectionEdit(eventHelper, "Select All Nodes", network, view, SelectionEdit.SelectionFilter.NODES_ONLY));
-		
+
+		CyNetworkView view = getNetworkView(network);
+
+		serviceRegistrar.getService(UndoSupport.class).postEdit(
+				new SelectionEdit("Select All Nodes", network, view, SelectionEdit.SelectionFilter.NODES_ONLY,
+						serviceRegistrar));
+
 		tm.setStatusMessage("Selecting Nodes...");
 		tm.setProgress(0.3);
-		selectUtils.setSelectedNodes(network,network.getNodeList(), true);
-		
+		selectUtils.setSelectedNodes(network, network.getNodeList(), true);
+
 		tm.setStatusMessage("Updating View...");
 		tm.setProgress(0.8);
 		updateView();
-		
+
 		tm.setProgress(1.0);
 	}
 }

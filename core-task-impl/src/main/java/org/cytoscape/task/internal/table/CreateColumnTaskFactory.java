@@ -1,6 +1,5 @@
 package org.cytoscape.task.internal.table;
 
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -11,7 +10,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,12 +32,12 @@ public class CreateColumnTaskFactory extends AbstractTaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public CreateColumnTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	public CreateColumnTaskFactory(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CreateColumnTask(serviceRegistrar.getService(CyTableManager.class)));
+		return new TaskIterator(new CreateColumnTask(serviceRegistrar));
 	}
 }

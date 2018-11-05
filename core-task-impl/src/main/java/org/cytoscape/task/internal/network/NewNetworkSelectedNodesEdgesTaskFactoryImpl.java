@@ -15,7 +15,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -23,7 +22,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,7 +42,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetworkTaskFactory 
                                                          implements NewNetworkSelectedNodesAndEdgesTaskFactory {
-	private final UndoSupport undoSupport;
+	
 	private final CyNetworkManager netmgr;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyRootNetworkManager crnf;
@@ -56,8 +55,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NewNetworkSelectedNodesEdgesTaskFactoryImpl(final UndoSupport undoSupport,
-	                                               final CyRootNetworkManager crnf,
+	public NewNetworkSelectedNodesEdgesTaskFactoryImpl(final CyRootNetworkManager crnf,
 	                                               final CyNetworkViewFactory cnvf,
 	                                               final CyNetworkManager netmgr,
 	                                               final CyNetworkViewManager networkViewManager,
@@ -69,7 +67,6 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	                                               final RenderingEngineManager renderingEngineMgr,
 	                                               final CyServiceRegistrar serviceRegistrar)
 	{
-		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
 		this.networkViewManager = networkViewManager;
 		this.crnf               = crnf;
@@ -86,7 +83,7 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryImpl extends AbstractNetwork
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3,
-				new NewNetworkSelectedNodesEdgesTask(undoSupport, network, crnf, cnvf, netmgr, networkViewManager,
+				new NewNetworkSelectedNodesEdgesTask(network, crnf, cnvf, netmgr, networkViewManager,
 						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar));
 	}
 }

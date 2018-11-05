@@ -1,12 +1,32 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,64 +44,41 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.util.json.CyJSONUtil;
-
 public class ListEdgeAttributesTask extends AbstractTableDataTask implements ObservableTask {
-	final CyApplicationManager appMgr;
-	private final CyServiceRegistrar serviceRegistrar;
 	
-	Collection<CyColumn> columnList = null;
+	Collection<CyColumn> columnList;
 
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable (description="Namespace for table", context="nogui", longDescription=CoreImplDocumentationConstants.COLUMN_NAMESPACE_LONG_DESCRIPTION, exampleStringValue=CoreImplDocumentationConstants.COLUMN_NAMESPACE_EXAMPLE_STRING)
 	public String namespace = "default";
 
-	public ListEdgeAttributesTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		super(mgr);
-		this.appMgr = appMgr;
-		this.serviceRegistrar = serviceRegistrar;
+	public ListEdgeAttributesTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) network = appMgr.getCurrentNetwork();
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		CyTable networkTable = getNetworkTable(network, CyEdge.class, namespace);
 
 		columnList = networkTable.getColumns();
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Edge columns for network "+DataUtils.getNetworkName(network)+":");
+		tm.showMessage(TaskMonitor.Level.INFO, "   Edge columns for network "+DataUtils.getNetworkName(network)+":");
 		for (CyColumn column: columnList) {
 			if (column.getType().equals(List.class))
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
+				tm.showMessage(TaskMonitor.Level.INFO, 
 				            "        "+column.getName()+": "+DataUtils.getType(column.getListElementType())+" list");
 			else
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, 
+				tm.showMessage(TaskMonitor.Level.INFO, 
 				            "        "+column.getName()+": "+DataUtils.getType(column.getType()));
 		}
 	}
 
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
 			String returnString = "[";
@@ -100,6 +97,7 @@ public class ListEdgeAttributesTask extends AbstractTableDataTask implements Obs
 		return new ArrayList<CyColumn>(columnList);
 	}
 	
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}

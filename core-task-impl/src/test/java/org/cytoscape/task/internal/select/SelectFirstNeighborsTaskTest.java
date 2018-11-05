@@ -1,12 +1,28 @@
 package org.cytoscape.task.internal.select;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.work.Task;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,23 +39,9 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Before;
-import org.junit.Test;
-
 
 public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -47,8 +49,6 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		UndoSupport undoSupport = mock(UndoSupport.class);
-
 		// more setup
 		when(r3.get("selected", Boolean.class)).thenReturn(true);
 		when(r4.get("selected", Boolean.class)).thenReturn(false);
@@ -57,12 +57,12 @@ public class SelectFirstNeighborsTaskTest extends AbstractSelectTaskTester {
 		selectedNodes.add(r3.get(CyNetwork.SUID, Long.class));
 		when(nodeTable.getMatchingKeys(CyNetwork.SELECTED, true, Long.class)).thenReturn(selectedNodes);
 		
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(e4);
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 
 		// run the task
-		Task t = new SelectFirstNeighborsTask(undoSupport, net, networkViewManager, eventHelper, CyEdge.Type.ANY);
+		Task t = new SelectFirstNeighborsTask(net, CyEdge.Type.ANY, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set

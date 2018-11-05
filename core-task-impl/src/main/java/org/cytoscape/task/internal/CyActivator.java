@@ -75,7 +75,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -126,7 +125,6 @@ import org.cytoscape.task.hide.UnHideAllTaskFactory;
 import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.task.internal.edit.ConnectSelectedNodesTaskFactoryImpl;
 import org.cytoscape.task.internal.export.graphics.ExportNetworkImageTaskFactoryImpl;
-// import org.cytoscape.task.internal.export.graphics.ExportNetworkImageCommandTaskFactory;
 import org.cytoscape.task.internal.export.network.ExportNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportNetworkViewTaskFactoryImpl;
 import org.cytoscape.task.internal.export.network.ExportSelectedNetworkTaskFactoryImpl;
@@ -298,7 +296,6 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
-import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 
 /*
@@ -335,7 +332,6 @@ public class CyActivator extends AbstractCyActivator {
 	private CyServiceRegistrar serviceRegistrar;
 	private CyEventHelper cyEventHelperRef;
 	private CyNetworkNaming cyNetworkNamingServiceRef;
-	private UndoSupport undoSupportServiceRef;
 	private CyNetworkViewFactory cyNetworkViewFactoryServiceRef;
 	private CyNetworkFactory cyNetworkFactoryServiceRef;
 	private CyRootNetworkManager cyRootNetworkFactoryServiceRef;
@@ -345,7 +341,6 @@ public class CyActivator extends AbstractCyActivator {
 	private CyNetworkViewManager cyNetworkViewManagerServiceRef;
 	private CyApplicationManager cyApplicationManagerServiceRef;
 	private CySessionManager cySessionManagerServiceRef;
-	private CyTableFactory cyTableFactoryServiceRef;
 	private CyTableManager cyTableManagerServiceRef;
 	private CyLayoutAlgorithmManager cyLayoutsServiceRef;
 	private CyTableWriterManager cyTableWriterManagerRef;
@@ -362,7 +357,6 @@ public class CyActivator extends AbstractCyActivator {
 		serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		cyEventHelperRef = getService(bc, CyEventHelper.class);
 		cyNetworkNamingServiceRef = getService(bc, CyNetworkNaming.class);
-		undoSupportServiceRef = getService(bc, UndoSupport.class);
 		cyNetworkViewFactoryServiceRef = getService(bc, CyNetworkViewFactory.class);
 		cyNetworkFactoryServiceRef = getService(bc, CyNetworkFactory.class);
 		cyRootNetworkFactoryServiceRef = getService(bc, CyRootNetworkManager.class);
@@ -372,7 +366,6 @@ public class CyActivator extends AbstractCyActivator {
 		cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
 		cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
 		cySessionManagerServiceRef = getService(bc, CySessionManager.class);
-		cyTableFactoryServiceRef = getService(bc, CyTableFactory.class);
 		cyTableManagerServiceRef = getService(bc, CyTableManager.class);
 		cyLayoutsServiceRef = getService(bc, CyLayoutAlgorithmManager.class);
 		cyTableWriterManagerRef = getService(bc, CyTableWriterManager.class);
@@ -576,7 +569,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, ExportNetworkViewTaskFactory.class, props);
 		}
 		{
-			CreateNetworkViewTaskFactoryImpl factory = new CreateNetworkViewTaskFactoryImpl(undoSupportServiceRef,
+			CreateNetworkViewTaskFactoryImpl factory = new CreateNetworkViewTaskFactoryImpl(
 					cyNetworkViewManagerServiceRef, cyNetworkManagerServiceRef, cyLayoutsServiceRef, cyEventHelperRef,
 					visualMappingManagerServiceRef, renderingEngineManagerServiceRef, cyApplicationManagerServiceRef,
 					serviceRegistrar);
@@ -850,8 +843,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeleteSelectedNodesAndEdgesTaskFactory.class, props);
 		}
 		{
-			SelectAllTaskFactoryImpl factory = new SelectAllTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			SelectAllTaskFactoryImpl factory = new SelectAllTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Select");
 			props.setProperty(ACCELERATOR, "cmd alt a");
@@ -873,8 +865,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			SelectAllEdgesTaskFactoryImpl factory = new SelectAllEdgesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			SelectAllEdgesTaskFactoryImpl factory = new SelectAllEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
 			props.setProperty(ACCELERATOR, "cmd alt a");
@@ -885,8 +876,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, SelectAllEdgesTaskFactory.class, props);
 		}
 		{
-			SelectAllNodesTaskFactoryImpl factory = new SelectAllNodesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			SelectAllNodesTaskFactoryImpl factory = new SelectAllNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
@@ -897,8 +887,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, SelectAllNodesTaskFactory.class, props);
 		}
 		{
-			SelectAdjacentEdgesTaskFactoryImpl factory = new SelectAdjacentEdgesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			SelectAdjacentEdgesTaskFactoryImpl factory = new SelectAdjacentEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
@@ -911,8 +900,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc,factory,SelectAdjacentEdgesTaskFactory.class, props);
 		}
 		{
-			SelectConnectedNodesTaskFactoryImpl factory = new SelectConnectedNodesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			SelectConnectedNodesTaskFactoryImpl factory = new SelectConnectedNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
@@ -925,8 +913,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, SelectConnectedNodesTaskFactory.class, props);
 		}
 		{
-			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.ANY);
+			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.ANY,
+					serviceRegistrar);
 			
 			TextIcon icon = new TextIcon(FIRST_NEIGHBORS, iconFont, C1, LARGE_ICON_SIZE, LARGE_ICON_SIZE);
 			String iconId = "cy::FIRST_NEIGHBORS";
@@ -952,8 +940,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// IN Edge
-			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.INCOMING);
+			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.INCOMING,
+					serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
@@ -969,8 +957,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// OUT Edge
-			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef, CyEdge.Type.OUTGOING);
+			SelectFirstNeighborsTaskFactoryImpl factory = new SelectFirstNeighborsTaskFactoryImpl(CyEdge.Type.OUTGOING,
+					serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes.First Neighbors of Selected Nodes");
@@ -984,8 +972,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, SelectFirstNeighborsTaskFactory.class, props);
 		}
 		{
-			DeselectAllTaskFactoryImpl factory = new DeselectAllTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			DeselectAllTaskFactoryImpl factory = new DeselectAllTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select");
@@ -998,8 +985,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeselectAllTaskFactory.class, props);
 		}
 		{
-			DeselectAllEdgesTaskFactoryImpl factory = new DeselectAllEdgesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			DeselectAllEdgesTaskFactoryImpl factory = new DeselectAllEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
@@ -1010,8 +996,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeselectAllEdgesTaskFactory.class, props);
 		}
 		{
-			DeselectAllNodesTaskFactoryImpl factory = new DeselectAllNodesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			DeselectAllNodesTaskFactoryImpl factory = new DeselectAllNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
@@ -1022,8 +1007,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeselectAllNodesTaskFactory.class, props);
 		}
 		{
-			InvertSelectedEdgesTaskFactoryImpl factory = new InvertSelectedEdgesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			InvertSelectedEdgesTaskFactoryImpl factory = new InvertSelectedEdgesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Edges[3]");
@@ -1034,8 +1018,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, InvertSelectedEdgesTaskFactory.class, props);
 		}
 		{
-			InvertSelectedNodesTaskFactoryImpl factory = new InvertSelectedNodesTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef);
+			InvertSelectedNodesTaskFactoryImpl factory = new InvertSelectedNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
@@ -1049,8 +1032,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, InvertSelectedNodesTaskFactory.class, props);
 		}
 		{
-			SelectFromFileListTaskFactoryImpl factory = new SelectFromFileListTaskFactoryImpl(undoSupportServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef, tunableSetterServiceRef);
+			SelectFromFileListTaskFactoryImpl factory = new SelectFromFileListTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "Select.Nodes[2]");
@@ -1068,7 +1050,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			SelectFirstNeighborsNodeViewTaskFactoryImpl factory = new SelectFirstNeighborsNodeViewTaskFactoryImpl(
-					CyEdge.Type.ANY, cyEventHelperRef);
+					CyEdge.Type.ANY, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_SELECT_MENU);
 			props.setProperty(MENU_GRAVITY, "1.0");
@@ -1242,8 +1224,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SelectTaskFactory factory = new SelectTaskFactory(cyApplicationManagerServiceRef,
-					cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
+			SelectTaskFactory factory = new SelectTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "select");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -1256,8 +1237,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DeselectTaskFactory factory = 
-							new DeselectTaskFactory(cyNetworkViewManagerServiceRef, cyEventHelperRef, serviceRegistrar);
+			DeselectTaskFactory factory = new DeselectTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "deselect");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -1301,8 +1281,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		// NAMESPACE: node
 		{
-			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
+			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1314,7 +1293,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetNodeTaskFactory factory = new GetNodeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
+			GetNodeTaskFactory factory = new GetNodeTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1326,8 +1305,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNode.class, serviceRegistrar);
+			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1339,8 +1317,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNode.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1352,7 +1329,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNodesTaskFactory factory = new ListNodesTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
+			ListNodesTaskFactory factory = new ListNodesTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1363,8 +1340,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyNode.class);
+			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1375,8 +1351,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNode.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1398,8 +1373,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNode.class);
+			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1410,8 +1384,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNode.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(CyNode.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "node");
@@ -1423,8 +1396,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		// NAMESPACE: edge
 		{
-			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
+			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1436,7 +1408,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetEdgeTaskFactory factory = new GetEdgeTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
+			GetEdgeTaskFactory factory = new GetEdgeTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1448,8 +1420,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyEdge.class, serviceRegistrar);
+			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1462,8 +1433,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyEdge.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1476,7 +1446,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListEdgesTaskFactory factory = new ListEdgesTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
+			ListEdgesTaskFactory factory = new ListEdgesTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1488,8 +1458,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyEdge.class);
+			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1501,8 +1470,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyEdge.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1524,8 +1492,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyEdge.class);
+			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1536,8 +1503,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyEdge.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(CyEdge.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
@@ -1551,8 +1517,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void createGroupTaskFactories(BundleContext bc, CyGroupManager cyGroupManager, CyGroupFactory cyGroupFactory) {
 		{
-			GroupNodesTaskFactoryImpl factory = new GroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef,
-					cyGroupManager, cyGroupFactory, undoSupportServiceRef, serviceRegistrar);
+			GroupNodesTaskFactoryImpl factory = new GroupNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 			props.setProperty(TITLE, "Group Selected Nodes");
@@ -1600,8 +1565,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// UNGROUP
-			UnGroupNodesTaskFactoryImpl factory = new UnGroupNodesTaskFactoryImpl(cyApplicationManagerServiceRef,
-					cyGroupManager, cyGroupFactory, undoSupportServiceRef);
+			UnGroupNodesTaskFactoryImpl factory = new UnGroupNodesTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_GROUP_MENU);
 			props.setProperty(TITLE, "Ungroup Selected Nodes");
@@ -1641,7 +1605,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			// COLLAPSE
 			GroupNodeContextTaskFactoryImpl factory = new GroupNodeContextTaskFactoryImpl(
-					cyApplicationManagerServiceRef, cyGroupManager, true);
+					cyApplicationManagerServiceRef, cyGroupManager, true, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_GROUP_MENU);
 			props.setProperty(TITLE, "Collapse Group(s)");
@@ -1663,7 +1627,7 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			// EXPAND
 			GroupNodeContextTaskFactoryImpl factory = new GroupNodeContextTaskFactoryImpl(
-					cyApplicationManagerServiceRef, cyGroupManager, false);
+					cyApplicationManagerServiceRef, cyGroupManager, false, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_GROUP_MENU);
 			props.setProperty(TITLE, "Expand Group(s)");
@@ -1838,24 +1802,24 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, DeleteTableTaskFactory.class);
 		}
 		{
-			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef,
-					false, "Apply to entire column");
+			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(false,
+					"Apply to entire column", serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, factory.getTaskFactoryName());
 			props.setProperty("tableTypes", "node,edge,network,unassigned");
 			registerService(bc, factory, TableCellTaskFactory.class, props);
 		}
 		{
-			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true,
-					"Apply to selected nodes");
+			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(true,
+					"Apply to selected nodes", serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, factory.getTaskFactoryName());
 			props.setProperty("tableTypes", "node");
 			registerService(bc, factory, TableCellTaskFactory.class, props);
 		}
 		{
-			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(undoSupportServiceRef, true,
-					"Apply to selected edges");
+			CopyValueToColumnTaskFactoryImpl factory = new CopyValueToColumnTaskFactoryImpl(true,
+					"Apply to selected edges", serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, factory.getTaskFactoryName());
 			props.setProperty("tableTypes", "edge");
@@ -1865,8 +1829,8 @@ public class CyActivator extends AbstractCyActivator {
 		// NAMESPACE: table
 		{
 			ExportNoGuiSelectedTableTaskFactoryImpl factory = new ExportNoGuiSelectedTableTaskFactoryImpl(
-					cyTableWriterManagerRef, cyTableManagerServiceRef, cyNetworkManagerServiceRef,
-					cyApplicationManagerServiceRef);
+					cyTableWriterManagerRef, cyTableManagerServiceRef, cyApplicationManagerServiceRef,
+					serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1877,8 +1841,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			CreateTableTaskFactory factory = new CreateTableTaskFactory(cyApplicationManagerServiceRef,
-					cyTableFactoryServiceRef, cyTableManagerServiceRef);
+			CreateTableTaskFactory factory = new CreateTableTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create table");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1889,8 +1852,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DestroyTableTaskFactory factory = new DestroyTableTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef);
+			DestroyTableTaskFactory factory = new DestroyTableTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "destroy");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1901,8 +1863,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DeleteColumnCommandTaskFactory factory = new DeleteColumnCommandTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			DeleteColumnCommandTaskFactory factory = new DeleteColumnCommandTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "delete column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1913,15 +1874,14 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(undoSupportServiceRef, serviceRegistrar);
+			DeleteColumnTaskFactoryImpl factory = new DeleteColumnTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Delete Column");
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 			registerService(bc, factory, DeleteColumnTaskFactory.class, props);
 		}
 		{
-			RenameColumnTaskFactoryImpl factory 
-							= new RenameColumnTaskFactoryImpl(undoSupportServiceRef, tunableSetterServiceRef, serviceRegistrar);
+			RenameColumnTaskFactoryImpl factory = new RenameColumnTaskFactoryImpl(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(TITLE, "Rename Column...");
 			props.setProperty(COMMAND, "rename column");
@@ -1935,7 +1895,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			AddRowTaskFactory factory = new AddRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar);
+			AddRowTaskFactory factory = new AddRowTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "add row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1957,8 +1917,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			DeleteRowTaskFactory factory = new DeleteRowTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			DeleteRowTaskFactory factory = new DeleteRowTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "delete row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1971,8 +1930,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetColumnTaskFactory factory = new GetColumnTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			GetColumnTaskFactory factory = new GetColumnTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get column");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1984,7 +1942,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetRowTaskFactory factory = new GetRowTaskFactory(cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar);
+			GetRowTaskFactory factory = new GetRowTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get row");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1995,8 +1953,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetValueTaskFactory factory = new GetValueTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			GetValueTaskFactory factory = new GetValueTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get value");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2007,8 +1964,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListColumnsTaskFactory factory = new ListColumnsTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef, serviceRegistrar);
+			ListColumnsTaskFactory factory = new ListColumnsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list columns");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2019,8 +1975,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListRowsTaskFactory factory = new ListRowsTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			ListRowsTaskFactory factory = new ListRowsTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list rows");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2031,8 +1986,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListTablesTaskFactory factory = new ListTablesTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, cyNetworkTableManagerServiceRef, serviceRegistrar);
+			ListTablesTaskFactory factory = new ListTablesTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2043,8 +1997,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetTableTitleTaskFactory factory = new SetTableTitleTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			SetTableTitleTaskFactory factory = new SetTableTitleTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set title");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2055,8 +2008,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetValuesTaskFactory factory = new SetValuesTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, serviceRegistrar);
+			SetValuesTaskFactory factory = new SetValuesTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set values");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -2068,8 +2020,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		// NAMESPACE: network
 		{
-			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
+			CreateNetworkAttributeTaskFactory factory = new CreateNetworkAttributeTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2080,8 +2031,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNetwork.class, serviceRegistrar);
+			GetNetworkAttributeTaskFactory factory = new GetNetworkAttributeTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2092,8 +2042,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(
-					cyApplicationManagerServiceRef, cyTableManagerServiceRef, serviceRegistrar, CyNetwork.class);
+			ListNetworkAttributesTaskFactory factory = new ListNetworkAttributesTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list attributes");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2104,8 +2053,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(cyApplicationManagerServiceRef,
-					cyTableManagerServiceRef, CyNetwork.class);
+			SetNetworkAttributeTaskFactory factory = new SetNetworkAttributeTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set attribute");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2166,7 +2114,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			NewNetworkSelectedNodesEdgesTaskFactoryImpl factory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(
-					undoSupportServiceRef, cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef,
+					cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef,
 					cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyNetworkNamingServiceRef,
 					visualMappingManagerServiceRef, cyApplicationManagerServiceRef, cyEventHelperRef, cyGroupManager,
 					renderingEngineManagerServiceRef, serviceRegistrar);
@@ -2183,7 +2131,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(
-					undoSupportServiceRef, cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef,
+					cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef,
 					cyNetworkManagerServiceRef, cyNetworkViewManagerServiceRef, cyNetworkNamingServiceRef,
 					visualMappingManagerServiceRef, cyApplicationManagerServiceRef, cyEventHelperRef, cyGroupManager,
 					renderingEngineManagerServiceRef, serviceRegistrar);
@@ -2349,8 +2297,8 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Register as 3 types of service.
-			ConnectSelectedNodesTaskFactoryImpl factory = new ConnectSelectedNodesTaskFactoryImpl(undoSupportServiceRef,
-					cyEventHelperRef, visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef, serviceRegistrar);
+			ConnectSelectedNodesTaskFactoryImpl factory = new ConnectSelectedNodesTaskFactoryImpl(cyEventHelperRef,
+					visualMappingManagerServiceRef, cyNetworkViewManagerServiceRef, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(IN_TOOL_BAR, "false");
@@ -2372,7 +2320,7 @@ public class CyActivator extends AbstractCyActivator {
 		// ---------- COMMANDS ----------
 		// NAMESPACE: network
 		{
-			NewNetworkCommandTaskFactory factory = new NewNetworkCommandTaskFactory(undoSupportServiceRef,
+			NewNetworkCommandTaskFactory factory = new NewNetworkCommandTaskFactory(
 					cyRootNetworkFactoryServiceRef, cyNetworkViewFactoryServiceRef, cyNetworkManagerServiceRef,
 					cyNetworkViewManagerServiceRef, cyNetworkNamingServiceRef, visualMappingManagerServiceRef,
 					cyApplicationManagerServiceRef, cyEventHelperRef, cyGroupManager, renderingEngineManagerServiceRef,
@@ -2389,8 +2337,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 		}
 		{
-			GetNetworkTaskFactory factory = 
-							new GetNetworkTaskFactory(cyApplicationManagerServiceRef, serviceRegistrar);
+			GetNetworkTaskFactory factory = new GetNetworkTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2406,8 +2353,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListNetworksTaskFactory factory =
-						 	new ListNetworksTaskFactory(cyNetworkManagerServiceRef, serviceRegistrar);
+			ListNetworksTaskFactory factory = new ListNetworksTaskFactory(serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2429,8 +2375,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNetwork.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			ListPropertiesTaskFactory factory = new ListPropertiesTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "list properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2441,8 +2386,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNetwork.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			GetPropertiesTaskFactory factory = new GetPropertiesTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "get properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2454,8 +2398,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(cyApplicationManagerServiceRef,
-					CyNetwork.class, cyNetworkViewManagerServiceRef, renderingEngineManagerServiceRef);
+			SetPropertiesTaskFactory factory = new SetPropertiesTaskFactory(CyNetwork.class, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND, "set properties");
 			props.setProperty(COMMAND_NAMESPACE, "network");

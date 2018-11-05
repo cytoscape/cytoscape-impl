@@ -1,12 +1,18 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableColumnTaskFactory;
+import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,29 +30,20 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractTableColumnTaskFactory;
-import org.cytoscape.task.destroy.DeleteColumnTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public final class DeleteColumnTaskFactoryImpl extends AbstractTableColumnTaskFactory implements DeleteColumnTaskFactory{
-	private final UndoSupport undoSupport;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public DeleteColumnTaskFactoryImpl(final UndoSupport undoSupport, CyServiceRegistrar reg) {
-		this.undoSupport = undoSupport;
-		serviceRegistrar = reg;
+	public DeleteColumnTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column) {
 		if (column == null)
 			throw new IllegalStateException("you forgot to set the CyColumn on this task factory.");
-		return new TaskIterator(new DeleteColumnTask(undoSupport, column, serviceRegistrar));
+		
+		return new TaskIterator(new DeleteColumnTask(column, serviceRegistrar));
 	}
 
 	@Override

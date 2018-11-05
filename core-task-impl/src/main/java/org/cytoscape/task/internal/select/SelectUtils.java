@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.select;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
+import org.cytoscape.service.util.CyServiceRegistrar;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +39,12 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsSetEvent;
-
 public final class SelectUtils {
-	final CyEventHelper eventHelper;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public SelectUtils(CyEventHelper helper) {
-		this.eventHelper = helper;
+	public SelectUtils(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public void setSelectedNodes(final CyNetwork network, final Collection<CyNode> nodes, final boolean select) {
@@ -55,24 +57,26 @@ public final class SelectUtils {
 
 	private void setSelected(final CyNetwork network, final Collection<? extends CyIdentifiable> objects, 
 	                         final boolean select, final CyTable table) {
-
 		// Don't autobox
-		Boolean value;
+		final Boolean value;
+		
 		if (select)
 			value = Boolean.TRUE;
 		else
 			value = Boolean.FALSE;
 
 		// Disable all events from our table
+		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.silenceEventSource(table);
 
 		// Create the RowSetRecord collection
-		List<RowSetRecord> rowsChanged = new ArrayList<RowSetRecord>();
+		List<RowSetRecord> rowsChanged = new ArrayList<>();
 
 		// The list of objects will be all nodes or all edges
 		for (final CyIdentifiable nodeOrEdge : objects) {
 			CyRow row = table.getRow(nodeOrEdge.getSUID());
-			if(row != null) {
+
+			if (row != null) {
 				row.set(CyNetwork.SELECTED, value);
 				rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, value, value));
 			}

@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,54 +36,32 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.TableTunable;
-
 public class DestroyTableTask extends AbstractTableDataTask implements ObservableTask {
-	final CyApplicationManager appMgr;
+	
 	private long tableSUID = -1L;
-
+	private String title;
+	
 	@ContainsTunables
-	public TableTunable tableTunable = null;
+	public TableTunable tableTunable;
 
-	public DestroyTableTask(CyApplicationManager appMgr, CyTableManager tableMgr) {
-		super(tableMgr);
-		this.appMgr = appMgr;
-		tableTunable = new TableTunable(tableMgr);
+	public DestroyTableTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		tableTunable = new TableTunable(serviceRegistrar);
 	}
-	String title;
+	
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		CyTable table = tableTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
 		tableSUID = table.getSUID();
 		title = table.getTitle();
 		String withId = title +" (suid:"+table.getSUID()+")";
-		cyTableManager.deleteTable(table.getSUID());
-		taskMonitor.showMessage(TaskMonitor.Level.INFO,  "Deleted table '" + withId + "'");
-
+		serviceRegistrar.getService(CyTableManager.class).deleteTable(table.getSUID());
+		tm.showMessage(TaskMonitor.Level.INFO,  "Deleted table '" + withId + "'");
 	}
 
 	@Override
@@ -90,7 +80,7 @@ public class DestroyTableTask extends AbstractTableDataTask implements Observabl
 				return "{\"table\":"+tableSUID+"}";
 			};
 			return res;
-			}
+		}
 		return null;
 	}
 }

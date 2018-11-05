@@ -30,9 +30,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -60,7 +58,6 @@ import org.cytoscape.work.undo.UndoSupport;
 
 abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	
-	private final UndoSupport undoSupport;
 	protected final CyRootNetworkManager rootNetMgr;
 	protected final CyNetworkViewFactory viewFactory;
 	protected final VisualMappingManager vmMgr;
@@ -72,8 +69,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	protected final CyServiceRegistrar serviceRegistrar;
 	protected CySubNetwork newNet;
 
-	public AbstractNetworkFromSelectionTask(final UndoSupport undoSupport,
-	                                        final CyNetwork parentNetwork,
+	public AbstractNetworkFromSelectionTask(final CyNetwork parentNetwork,
 	                                        final CyRootNetworkManager rootNetMgr,
 	                                        final CyNetworkViewFactory viewFactory,
 	                                        final CyNetworkManager netMgr,
@@ -87,7 +83,6 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	                                        final CyServiceRegistrar serviceRegistrar) {
 		super(parentNetwork, netMgr, netViewMgr);
 
-		this.undoSupport = undoSupport;
 		this.rootNetMgr = rootNetMgr;
 		this.viewFactory = viewFactory;
 		this.networkNaming = networkNaming;
@@ -171,7 +166,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		tm.setProgress(0.6);
 
 		// create the view in a separate task
-		final Set<CyNetwork> networks = new HashSet<CyNetwork>();
+		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(newNet);
 		
 		// Pick a CyNetworkViewFactory that is appropriate for the sourceView
@@ -185,7 +180,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		}
 		
 		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(undoSupport, networks, sourceViewFactory, networkViewManager, networkManager,
+			new CreateNetworkViewTask(networks, sourceViewFactory, networkViewManager, networkManager,
 				                        null, eventHelper, vmMgr, renderingEngineMgr, appMgr, sourceView,
 				                        serviceRegistrar);
 		insertTasksAfterCurrentTask(createViewTask);

@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +39,28 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-
 public class GetNodeTask extends AbstractGetTask implements ObservableTask {
-	CyApplicationManager appMgr;
-	CyServiceRegistrar serviceRegistrar;
 	
 	@Tunable(description="Network to get node from", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Node to get", context="nogui", longDescription=CoreImplDocumentationConstants.NODE_LONG_DESCRIPTION, exampleStringValue="Node 1")
-	public String node = null;
+	public String node;
 
-	private CyNode returnedNode = null;
-
-	public GetNodeTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		this.appMgr = appMgr;
+	private CyNode returnedNode;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	protected GetNodeTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) {
-			network = appMgr.getCurrentNetwork();
-		}
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (node == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Node name or suid must be specified");
 			return;
 		}
 

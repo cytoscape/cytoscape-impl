@@ -1,12 +1,19 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Collection;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.work.undo.AbstractCyEdit;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +31,25 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-
-import java.util.Collection;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.work.undo.AbstractCyEdit;
-
-
 /** An undoable edit that will undo and redo the copying of a value to an entire column. */
 final class CopyValueToColumnEdit extends AbstractCyEdit {
+	
 	private final CyTable table;
 	private final String columnName;
-	private final Class<?> columnType;
 	private final Object value;
 	private SaveColumn savedColumn;
+	
 	CopyValueToColumnEdit(final CyColumn column, final Object value, String taskFactoryName) {
 		super(taskFactoryName);
 
 		this.table       = column.getTable();
 		this.columnName  = column.getName();
-		this.columnType  = column.getType();
 		this.value       = value;
 		this.savedColumn = new SaveColumn(table, columnName);
 		
 	}
 
+	@Override
 	public void redo() {
 		;
 
@@ -61,6 +60,7 @@ final class CopyValueToColumnEdit extends AbstractCyEdit {
 			row.set(columnName, value);
 	}
 
+	@Override
 	public void undo() {
 		;
 

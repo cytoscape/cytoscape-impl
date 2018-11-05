@@ -1,12 +1,32 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.ColumnListTunable;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,72 +44,41 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Arrays;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.ColumnListTunable;
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public class GetNetworkAttributeTask extends AbstractTableDataTask implements ObservableTask {
-	final CyApplicationManager appMgr;
-	Map<String, Object> networkData;
-
+	
 	@Tunable(description="Network", 
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
 	         context="nogui")
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@ContainsTunables
 	public ColumnListTunable columnTunable;
 
-	public CyServiceRegistrar serviceRegistrar;
-
+	private Map<String, Object> networkData;
 	private CyTable networkTable;
 
-	public GetNetworkAttributeTask(CyTableManager mgr, CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		super(mgr);
-		this.appMgr = appMgr;
-		this.serviceRegistrar = serviceRegistrar;
+	public GetNetworkAttributeTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		columnTunable = new ColumnListTunable();
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) network = appMgr.getCurrentNetwork();
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		networkTable = getNetworkTable(network, CyNetwork.class, columnTunable.getNamespace());
+		networkData = getCyIdentifierData(networkTable, network, columnTunable.getColumnNames(networkTable));
 
-
-		networkData = getCyIdentifierData(networkTable, 
-		                                  network,
-		                                  columnTunable.getColumnNames(networkTable));
-
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+DataUtils.getNetworkName(network)+":");
+		tm.showMessage(TaskMonitor.Level.INFO, "   Attribute values for network "+DataUtils.getNetworkName(network)+":");
 		for (String column: networkData.keySet()) {
 			if (networkData.get(column) != null)
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(networkData.get(column)));
+				tm.showMessage(TaskMonitor.Level.INFO, "        "+column+"="+DataUtils.convertData(networkData.get(column)));
 		}
 	}
 
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
 			return DataUtils.convertMapToString(networkData);
@@ -115,6 +104,7 @@ public class GetNetworkAttributeTask extends AbstractTableDataTask implements Ob
 		return networkData;
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(Map.class, String.class, JSONResult.class);
 	}

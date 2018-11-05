@@ -1,5 +1,10 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
@@ -24,33 +29,18 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ListPropertiesTaskFactory extends AbstractTaskFactory {
-	Class <? extends CyIdentifiable> type;
-	CyApplicationManager appMgr;
-	CyNetworkViewManager viewManager;
-	RenderingEngineManager reManager;
 
-	public ListPropertiesTaskFactory(CyApplicationManager appMgr, 
-	                                 Class <? extends CyIdentifiable> type,
- 	                                 CyNetworkViewManager viewManager,
-	                                 RenderingEngineManager reManager) {
+	private final Class<? extends CyIdentifiable> type;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public ListPropertiesTaskFactory(Class<? extends CyIdentifiable> type, CyServiceRegistrar serviceRegistrar) {
 		this.type = type;
-		this.appMgr = appMgr;
-		this.viewManager = viewManager;
-		this.reManager = reManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(
-			new ListPropertiesTask(appMgr, type, viewManager, reManager));
+		return new TaskIterator(new ListPropertiesTask(type, serviceRegistrar));
 	}
 }

@@ -1,12 +1,33 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.RenderingEngineManager;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,55 +45,37 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.task.internal.utils.DataUtils;
 public abstract class AbstractPropertyTask extends AbstractTask {
-	protected CyApplicationManager appManager;
-	protected CyNetworkViewManager viewManager;
-	protected RenderingEngineManager reManager;
 	
-	protected AbstractPropertyTask(CyApplicationManager appManager,
-	                               CyNetworkViewManager viewManager,
-	                               RenderingEngineManager reManager) {
-		this.appManager = appManager;
-		this.viewManager = viewManager;
-		this.reManager = reManager;
+	protected final CyServiceRegistrar serviceRegistrar;
+	
+	protected AbstractPropertyTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	public VisualProperty<?> getProperty(CyNetwork network, CyIdentifiable target, String propertyName) {
 		Class<? extends CyIdentifiable> type = DataUtils.getIdentifiableClass(target);
-		if (!propertyName.startsWith(DataUtils.getIdentifiableType(type))) {
+		
+		if (!propertyName.startsWith(DataUtils.getIdentifiableType(type)))
 			propertyName = DataUtils.getIdentifiableType(type)+" "+propertyName;
-		}
+		
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		RenderingEngineManager reManager = serviceRegistrar.getService(RenderingEngineManager.class);
+		
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
+		
 		for (CyNetworkView view: views) {
 			for (RenderingEngine<?> rEngine: reManager.getRenderingEngines(view)) {
 				VisualLexicon lex = rEngine.getVisualLexicon();
 				Set<VisualProperty<?>> vProps = lex.getAllVisualProperties();
+				
 				for (VisualProperty<?> prop: vProps) {
 					if (propertyName.equalsIgnoreCase(prop.getDisplayName()))
 						return prop;
 				}
 			}
 		}
+		
 		throw new RuntimeException("Property "+propertyName+" doesn't exist");
 	}
 
@@ -90,8 +93,8 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 		StringBuilder output = new StringBuilder("{\n");
 		output.append("   \"visualProperty\":\"" + vp.getIdString() + "\",\n");
 		output.append("   \"value\":");
-	final Class<?> type = vp.getRange().getType();
-		
+		final Class<?> type = vp.getRange().getType();
+
 		if (type == String.class) {
 			output.append("\"" + object.toString() + "\"");
 		} else if (type == Boolean.class
@@ -211,12 +214,17 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 	}
 
 	public List<String> listProperties(Class <? extends CyIdentifiable> type, CyNetwork network) {
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		RenderingEngineManager reManager = serviceRegistrar.getService(RenderingEngineManager.class);
+		
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
-		List<String> propertyList = new ArrayList<String>();
+		List<String> propertyList = new ArrayList<>();
+		
 		for (CyNetworkView view: views) {
 			for (RenderingEngine<?> rEngine: reManager.getRenderingEngines(view)) {
 				VisualLexicon lex = rEngine.getVisualLexicon();
-				for (VisualProperty vp: lex.getAllVisualProperties()) {
+				
+				for (VisualProperty<?> vp: lex.getAllVisualProperties()) {
 					if (vp.getTargetDataType().equals(type)) {
 						// Get rid of the redundant leading string
 						String s = vp.getDisplayName();
@@ -224,17 +232,22 @@ public abstract class AbstractPropertyTask extends AbstractTask {
 						propertyList.add(s.substring(x+1));
 					}
 				}
+				
 				return propertyList;
 			}
 		}
+		
 		return null;
 	}
 
 	private CyNetworkView getViewForNetwork(CyNetwork network) {
+		CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
-		if (views == null || views.size() == 0) return null;
+		
+		if (views == null || views.size() == 0)
+			return null;
 
-		for (CyNetworkView view: views)
+		for (CyNetworkView view : views)
 			return view;
 
 		return null;

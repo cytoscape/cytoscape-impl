@@ -58,10 +58,11 @@ public class NewNetworkSelectedNodesEdgesTaskFactoryTest {
 		when(layoutMgr.getDefaultLayout()).thenReturn(defLayout);
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		
 		NewNetworkSelectedNodesEdgesTaskFactoryImpl factory = 
-				new NewNetworkSelectedNodesEdgesTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager, 
+				new NewNetworkSelectedNodesEdgesTaskFactoryImpl(crnf, cnvf, netmgr, networkViewManager, 
 						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 		
 		CyNetwork network = networkFactory.createNetwork();

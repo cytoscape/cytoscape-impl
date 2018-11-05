@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.select;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +28,16 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class DeselectEdgesTaskFactoryImpl extends AbstractTaskFactory {
-	private CyNetworkViewManager networkViewManager;
-	private final CyEventHelper eventHelper;
 
-	public DeselectEdgesTaskFactoryImpl(final CyNetworkViewManager networkViewManager,
-	                                  final CyEventHelper eventHelper)
-	{
-		this.networkViewManager = networkViewManager;
-		this.eventHelper        = eventHelper;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public DeselectEdgesTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new DeselectEdgesTask(networkViewManager, eventHelper));
+		return new TaskIterator(new DeselectEdgesTask(serviceRegistrar));
 	}
 }

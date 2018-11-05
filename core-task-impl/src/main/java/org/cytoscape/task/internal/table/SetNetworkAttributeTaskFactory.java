@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +32,28 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class SetNetworkAttributeTaskFactory extends AbstractTaskFactory {
 	
 	//Set statements don't have to return anything, much like a RESTful PUT.
 	public static final String COMMAND_EXAMPLE_JSON = "{}";
 	
-	private final CyApplicationManager cyAppManager;
-	private final CyTableManager cyTableManager;
-	private final Class type;
+	private final CyServiceRegistrar serviceRegistrar;
+	private final Class<? extends CyIdentifiable> type;
 	
-	public SetNetworkAttributeTaskFactory(CyApplicationManager appMgr, CyTableManager mgr, Class <? extends CyIdentifiable> type) {
-		cyAppManager = appMgr;
-		cyTableManager = mgr;
+	public SetNetworkAttributeTaskFactory(Class<? extends CyIdentifiable> type, CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		this.type = type;
 	}
-	
-	
+
 	@Override
 	public TaskIterator createTaskIterator() {
 		if (type.equals(CyNetwork.class))
-			return new TaskIterator(new SetNetworkAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new SetNetworkAttributeTask(serviceRegistrar));
 		else if (type.equals(CyEdge.class))
-			return new TaskIterator(new SetEdgeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new SetEdgeAttributeTask(serviceRegistrar));
 		else if (type.equals(CyNode.class))
-			return new TaskIterator(new SetNodeAttributeTask(cyTableManager, cyAppManager));
+			return new TaskIterator(new SetNodeAttributeTask(serviceRegistrar));
+		
 		return null;
 	}
-
 }

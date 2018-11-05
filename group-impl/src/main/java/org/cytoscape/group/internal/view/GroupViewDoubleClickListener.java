@@ -10,7 +10,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.task.AbstractNodeViewTask;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -25,7 +24,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,15 +45,11 @@ import org.cytoscape.work.TaskMonitor;
 /**
  * Handle selection
  */
-public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory
-{
+public class GroupViewDoubleClickListener extends AbstractNodeViewTaskFactory {
+	
 	final CyGroupManagerImpl cyGroupManager;
 	final CyGroupSettingsImpl cyGroupSettings;
 
-	/**
-	 * 
-	 * 
-	 */
 	public GroupViewDoubleClickListener(final CyGroupManagerImpl groupManager, 
 	                                    final CyGroupSettingsImpl groupSettings) {
 		this.cyGroupManager = groupManager;

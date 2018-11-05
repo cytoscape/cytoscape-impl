@@ -1,12 +1,26 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +38,8 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.Arrays;
-import java.util.List;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public class ListPropertiesTask extends AbstractPropertyTask implements ObservableTask {
+	
 	Class <? extends CyIdentifiable> type;
 	List<String> resultList;
 
@@ -46,34 +47,33 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 	         context="nogui", 
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
-	public ListPropertiesTask(CyApplicationManager appMgr, Class<? extends CyIdentifiable> type,
- 	                          CyNetworkViewManager viewManager,
-	                          RenderingEngineManager reManager) {
-		super(appMgr, viewManager, reManager);
+	public ListPropertiesTask(Class<? extends CyIdentifiable> type, CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		this.type = type;
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		if (network == null) {
-			network = appManager.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			
 			if (network == null) {
-				taskMonitor.showMessage(TaskMonitor.Level.ERROR, 
-				                        "No network");
+				tm.showMessage(TaskMonitor.Level.ERROR, "No network");
 				return;
 			}
 		}
 	
 		resultList = listProperties(type, network);
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Properties for "+DataUtils.getIdentifiableType(type)+"s:");
-		for (String prop: resultList) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "     "+prop);
-		}
+		tm.showMessage(TaskMonitor.Level.INFO, "Properties for " + DataUtils.getIdentifiableType(type) + "s:");
+		
+		for (String prop : resultList)
+			tm.showMessage(TaskMonitor.Level.INFO, "     " + prop);
 	}
 
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
@@ -101,6 +101,7 @@ public class ListPropertiesTask extends AbstractPropertyTask implements Observab
 		return resultList;
 	}
 	
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}

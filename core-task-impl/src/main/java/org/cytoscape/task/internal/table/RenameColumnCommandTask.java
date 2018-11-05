@@ -4,22 +4,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.TableTunable;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 
 /*
  * #%L
@@ -27,7 +21,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,9 +40,8 @@ import org.cytoscape.work.util.ListSingleSelection;
  */
 
 public final class RenameColumnCommandTask extends AbstractTask implements ObservableTask {
-	private final CyTableManager tableManager;
-	private final CyJSONUtil cyJSONUtil;
-	private CyTable table = null;
+	
+	private CyTable table;
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -62,44 +55,42 @@ public final class RenameColumnCommandTask extends AbstractTask implements Obser
 	public String newColumnName;
 
 	@ContainsTunables
-	public TableTunable tableTunable = null;
+	public TableTunable tableTunable;
 
 	@Tunable(description="Column name",
 	         longDescription="The name of the column that will be renamed.",
 					 exampleStringValue="ColumnName",
 	         context="nogui",
 	         required=true)
-	public String columnName = null;
+	public String columnName;
 
-	CyColumn column = null;
+	CyColumn column;
 
-	RenameColumnCommandTask(CyServiceRegistrar registrar) {
-		tableManager = registrar.getService(CyTableManager.class);
-		cyJSONUtil = registrar.getService(CyJSONUtil.class);
-		tableTunable = new TableTunable(tableManager);
+	RenameColumnCommandTask(CyServiceRegistrar serviceRegistrar) {
+		tableTunable = new TableTunable(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
+	public void run(final TaskMonitor tm) throws Exception {
 		table = tableTunable.getTable();
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
 		if (columnName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Column name must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Column name must be specified");
 			return;
 		}
 
 		if (newColumnName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "New column name must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "New column name must be specified");
 			return;
 		}
 
 		column = table.getColumn(columnName);
 		if (column == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+columnName+" in table "+table.toString());
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Can't find column "+columnName+" in table "+table.toString());
 			return;
 		}
 		column.setName(newColumnName);

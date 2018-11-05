@@ -1,6 +1,21 @@
 package org.cytoscape.task.internal.group;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.NodeTunable;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -8,7 +23,7 @@ import java.util.Arrays;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,82 +41,67 @@ import java.util.Arrays;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupFactory;
-import org.cytoscape.group.CyGroupManager;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.undo.UndoSupport;
-
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.task.internal.utils.NodeTunable;
-
 public class UnGroupNodesTask extends AbstractGroupTask implements ObservableTask {
-	private CyApplicationManager appMgr = null;
-	private CyGroupFactory factory = null;
-	private	Set<CyGroup>groupSet = null;
-	private UndoSupport undoSupport = null;
-	private CyNetworkView netView = null;
-
+	
 	@ContainsTunables
-	public NodeTunable nodeTunable = null;
+	public NodeTunable nodeTunable;
+	
+	private Set<CyGroup> groupSet;
+	private CyNetworkView netView;
 
-	public UnGroupNodesTask(UndoSupport undoSupport, CyNetwork net, CyGroupFactory factory,
-	                        Set<CyGroup>groups, CyGroupManager mgr, CyNetworkView netView) {
+	public UnGroupNodesTask(
+			CyNetwork net,
+			Set<CyGroup> groups,
+			CyNetworkView netView,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		super(serviceRegistrar);
+		
 		if (net == null)
 			throw new NullPointerException("network is null");
+
 		this.net = net;
 		this.netView = netView;
-		this.groupMgr = mgr;
-		this.factory = factory;
 		this.groupSet = groups;
-		this.undoSupport = undoSupport;
 	}
 
-	public UnGroupNodesTask(CyApplicationManager appMgr, CyGroupManager mgr) {
-		nodeTunable = new NodeTunable(appMgr);
-		this.groupMgr = mgr;
+	public UnGroupNodesTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		nodeTunable = new NodeTunable(serviceRegistrar);
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
+		
 		// Are we operating in a command-mode?
 		if (nodeTunable != null) {
 			net = nodeTunable.getNetwork();
 			groupSet = getGroups(net, nodeTunable.getNodeList());
 		}
 
-		GroupEdit edit = null;
-		if (undoSupport != null)
-			edit = new GroupEdit(net, groupMgr, factory, groupSet);
+		UndoSupport undoSupport = serviceRegistrar.getService(UndoSupport.class);
+		GroupEdit edit = new GroupEdit(groupSet, serviceRegistrar);
+		CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 
-		for (CyGroup group: groupSet) {
+		for (CyGroup group : groupSet) {
 			groupMgr.destroyGroup(group);
-			tm.setProgress(1.0d/(double)groupSet.size());
+			tm.setProgress(1.0d / (double) groupSet.size());
 		}
-		if (undoSupport != null)
-			undoSupport.postEdit(edit);
+		
+		undoSupport.postEdit(edit);
 
 		if (netView != null)
 			netView.updateView();
 
-		tm.showMessage(TaskMonitor.Level.INFO, "Ungrouped "+groupSet.size()+" groups");
+		tm.showMessage(TaskMonitor.Level.INFO, "Ungrouped " + groupSet.size() + " groups");
 		tm.setProgress(1.0d);
 	}
+	
+	@Override
 	public List<Class<?>> getResultClasses() {	return Arrays.asList(String.class, JSONResult.class);	}
+	
+	@Override
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class))			return "Ungrouped: "+DataUtils.convertData(groupSet);
 		if (requestedType.equals(JSONResult.class))   {
@@ -110,5 +110,4 @@ public class UnGroupNodesTask extends AbstractGroupTask implements ObservableTas
 		}
 		return null;
 	}
-	
 }

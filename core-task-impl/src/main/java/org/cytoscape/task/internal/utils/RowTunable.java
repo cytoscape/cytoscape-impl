@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.utils;
 
+import java.util.List;
+
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.util.RowList;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +34,12 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.command.util.RowList;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.Tunable;
-
 public class RowTunable {
+	
 	@ContainsTunables
-	public TableTunable tableTunable = null;
+	public TableTunable tableTunable;
 
-	public RowList rowList = null;
+	public RowList rowList;
 
 	@Tunable(description="List of rows", context="nogui" , 
 	         longDescription=StringToModel.CY_ROW_LIST_LONG_DESCRIPTION,
@@ -47,23 +48,25 @@ public class RowTunable {
 		rowList.setTable(tableTunable.getTable());
 		return rowList;
 	}
-  public void setrowList(RowList setValue) {}
 
-	public RowTunable(CyTableManager tableMgr) {
-		this.tableTunable = new TableTunable(tableMgr);
+	public void setrowList(RowList setValue) {
+	}
+
+	public RowTunable(CyServiceRegistrar serviceRegistrar) {
+		this.tableTunable = new TableTunable(serviceRegistrar);
 		this.rowList = new RowList(null);
 	}
 
-	public CyTable getTable() { 
-		return tableTunable.getTable(); 
+	public CyTable getTable() {
+		return tableTunable.getTable();
 	}
 
 	public String getTableString() {
-		return tableTunable.getTableString(); 
+		return tableTunable.getTableString();
 	}
 
 	public List<CyRow> getRowList() {
-		if (rowList == null || rowList.getValue() == null) 
+		if (rowList == null || rowList.getValue() == null)
 			return getTable().getAllRows();
 		return rowList.getValue();
 	}

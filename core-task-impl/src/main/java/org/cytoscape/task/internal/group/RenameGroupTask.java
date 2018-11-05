@@ -1,6 +1,20 @@
 package org.cytoscape.task.internal.group;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -8,7 +22,7 @@ import java.util.Arrays;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,24 +40,7 @@ import java.util.Arrays;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-
 public class RenameGroupTask extends AbstractGroupTask {
-
-	private CyServiceRegistrar serviceRegistrar;
 
 	@Tunable (description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network;
@@ -54,12 +51,12 @@ public class RenameGroupTask extends AbstractGroupTask {
 	@Tunable (description="New name", context="nogui", longDescription="Specifies the NEW name used to identify the group. ", exampleStringValue=StringToModel.GROUP_NAME_EXAMPLE_STRING2)
 	public String newName;
 
-	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar reg) {
+	public RenameGroupTask(CyApplicationManager appMgr, CyGroupManager manager, CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 		this.net = appMgr.getCurrentNetwork();
-		this.groupMgr = manager;
-		serviceRegistrar = reg;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		if (network != null)
 			net = network;

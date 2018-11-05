@@ -1,11 +1,8 @@
 package org.cytoscape.task.internal.select;
 
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -15,7 +12,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -35,16 +32,8 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class DeselectAllEdgesTask extends AbstractSelectTask {
 	
-	private final UndoSupport undoSupport;
-
-	public DeselectAllEdgesTask(
-			final UndoSupport undoSupport,
-			final CyNetwork net,
-			final CyNetworkViewManager networkViewManager,
-			final CyEventHelper eventHelper
-	) {
-		super(net, networkViewManager, eventHelper);
-		this.undoSupport = undoSupport;
+	public DeselectAllEdgesTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	@Override
@@ -52,14 +41,11 @@ public class DeselectAllEdgesTask extends AbstractSelectTask {
 		tm.setTitle("Deselect All Edges");
 		tm.setProgress(0.0);
 
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
+		CyNetworkView view = getNetworkView(network);
 
-		if (views.size() != 0)
-			view = views.iterator().next();
-
-		undoSupport.postEdit(new SelectionEdit(eventHelper, "Deselect All Edges", network, view,
-				SelectionEdit.SelectionFilter.EDGES_ONLY));
+		serviceRegistrar.getService(UndoSupport.class).postEdit(
+				new SelectionEdit("Deselect All Edges", network, view, SelectionEdit.SelectionFilter.EDGES_ONLY,
+						serviceRegistrar));
 
 		tm.setStatusMessage("Deselecting Edges...");
 		tm.setProgress(0.2);

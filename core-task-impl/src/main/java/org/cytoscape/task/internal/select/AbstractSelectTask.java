@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.select;
 
+import java.util.Collection;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,36 +33,40 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
- 
-
-
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTask;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-
 
 public abstract class AbstractSelectTask extends AbstractTask {
-	protected final CyNetworkViewManager networkViewManager;
-	protected final SelectUtils selectUtils;
-	protected final CyEventHelper eventHelper;
+	
 	protected CyNetwork network;
+	
+	protected final SelectUtils selectUtils;
+	protected final CyServiceRegistrar serviceRegistrar;
 
-	public AbstractSelectTask(final CyNetwork net, final CyNetworkViewManager networkViewManager, final CyEventHelper eventHelper) {
-		// super(net);
+	public AbstractSelectTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
 		this.network = net;
-		this.networkViewManager = networkViewManager;
-		this.selectUtils = new SelectUtils(eventHelper);
-		this.eventHelper = eventHelper;
+		this.selectUtils = new SelectUtils(serviceRegistrar);
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	protected CyNetworkView getNetworkView(CyNetwork network) {
+		CyNetworkView view = null;
+		CyNetworkView currentView = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();		
+		
+		if (currentView != null && currentView.getModel().equals(network)) {
+			view = currentView;
+		} else {
+			Collection<CyNetworkView> views = serviceRegistrar.getService(CyNetworkViewManager.class)
+					.getNetworkViews(network);
+			
+			if (!views.isEmpty())
+				view = views.iterator().next();
+		}
+		
+		return view;
+	}
+	
 	protected final void updateView() {
-		// This is necessary, otherwise, this does not update presentation!
-		eventHelper.flushPayloadEvents();
+		// This is necessary, otherwise this does not update presentation!
+		serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
 		
 		/*
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);

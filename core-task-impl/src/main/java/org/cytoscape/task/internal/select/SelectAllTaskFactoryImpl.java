@@ -1,12 +1,20 @@
 package org.cytoscape.task.internal.select;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.task.NetworkViewTaskFactory;
+import org.cytoscape.task.select.SelectAllTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +32,27 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
+public class SelectAllTaskFactoryImpl extends AbstractNetworkTaskFactory
+		implements SelectAllTaskFactory, NetworkViewTaskFactory {
 
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.NetworkViewTaskFactory;
-import org.cytoscape.task.select.SelectAllTaskFactory;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
+	private final CyServiceRegistrar serviceRegistrar;
 
-
-public class SelectAllTaskFactoryImpl extends AbstractNetworkTaskFactory implements SelectAllTaskFactory, NetworkViewTaskFactory {
-	private final UndoSupport undoSupport;
-	private final CyNetworkViewManager networkViewManager;
-	private final CyEventHelper eventHelper;
-
-	public SelectAllTaskFactoryImpl(final UndoSupport undoSupport,
-	                            final CyNetworkViewManager networkViewManager,
-	                            final CyEventHelper eventHelper)
-	{
-		this.undoSupport        = undoSupport;
-		this.networkViewManager = networkViewManager;
-		this.eventHelper        = eventHelper;
+	public SelectAllTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(new SelectAllTask(undoSupport, network,
-		                                          networkViewManager, eventHelper));
+		return new TaskIterator(new SelectAllTask(network, serviceRegistrar));
 	}
 
+	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
 		return createTaskIterator(view.getModel());
 	}
 
-	public boolean isReady(CyNetworkView view) { return isReady(view.getModel()); }
+	@Override
+	public boolean isReady(CyNetworkView view) {
+		return isReady(view.getModel());
+	}
 }

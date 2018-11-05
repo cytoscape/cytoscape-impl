@@ -1,7 +1,6 @@
 package org.cytoscape.task.internal.view;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,8 +19,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.task.internal.network.RegisterNetworkTask;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -30,17 +28,13 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.undo.UndoSupport;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import org.cytoscape.task.internal.network.RegisterNetworkTask;
 
 /*
  * #%L
@@ -48,7 +42,7 @@ import org.cytoscape.task.internal.network.RegisterNetworkTask;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -66,12 +60,10 @@ import org.cytoscape.task.internal.network.RegisterNetworkTask;
  * #L%
  */
 
-public class CreateNetworkViewTask extends AbstractNetworkCollectionTask 
-                                   /* implements ObservableTask */ {
+public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	private final UndoSupport undoSupport;
 	private final CyNetworkViewManager netViewMgr;
 	private final CyNetworkManager netMgr;
 	private CyNetworkViewFactory viewFactory;
@@ -101,8 +93,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 	)
 	public boolean layout = true;
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport,
-								 final Collection<CyNetwork> networks,
+	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
 								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
 								 final CyLayoutAlgorithmManager layoutMgr,
@@ -112,7 +103,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final CyApplicationManager appMgr,
 								 final Set<NetworkViewRenderer> viewRenderers,
 								 final CyServiceRegistrar serviceRegistrar) {
-		this(undoSupport, networks, null, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
+		this(networks, null, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
 				serviceRegistrar);
 		
 		if (viewRenderers != null) {
@@ -123,8 +114,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		}
 	}
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport,
-								 final Collection<CyNetwork> networks,
+	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
 								 final CyNetworkViewFactory viewFactory,
 								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
@@ -137,7 +127,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final CyServiceRegistrar serviceRegistrar) {
 		super(networks);
 
-		this.undoSupport = undoSupport;
 		this.viewFactory = viewFactory;
 		this.netViewMgr = netViewMgr;
 		this.netMgr = netMgr;
@@ -157,8 +146,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		});
 	}
 
-	public CreateNetworkViewTask(final UndoSupport undoSupport,
-								 final Collection<CyNetwork> networks,
+	public CreateNetworkViewTask(final Collection<CyNetwork> networks,
 								 final CyNetworkViewFactory viewFactory,
 								 final CyNetworkViewManager netViewMgr,
 								 final CyNetworkManager netMgr,
@@ -168,7 +156,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 								 final RenderingEngineManager renderingEngineMgr,
 								 final CyApplicationManager appMgr,
 								 final CyServiceRegistrar serviceRegistrar) {
-		this(undoSupport, networks, viewFactory, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
+		this(networks, viewFactory, netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr,
 				null, serviceRegistrar);
 	}
 
@@ -210,10 +198,6 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 				i++;
 				tm.setProgress((i / (double) viewCount));
 			}
-			
-			final List<CyNetwork> selectedNetworks = appMgr.getSelectedNetworks();
-			final List<CyNetworkView> selectedViews = new ArrayList<>(appMgr.getSelectedNetworkViews());
-			boolean setSelectedViews = false;
 			
 			if (layoutMgr == null) {
 				// Create network from selection?
@@ -266,8 +250,8 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 			throw new Exception("Could not create network view for network: "
 					+ (network != null ? network.getRow(network).get(CyNetwork.NAME, String.class) : "null"), e);
 		} finally {
-			if (undoSupport != null)
-				undoSupport.postEdit(new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
+			serviceRegistrar.getService(UndoSupport.class).postEdit(
+					new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
 	
 			logger.info("Network view creation finished in " + (System.currentTimeMillis() - start) + " msec.");
 		}
@@ -358,10 +342,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask
 		}
 		
 		@Override
-		public void run(final TaskMonitor taskMonitor) throws Exception {
+		public void run(final TaskMonitor tm) throws Exception {
 			// Try again, now with the selected view factory
 			final CyNetworkViewFactory factory = renderers.getSelectedValue().getNetworkViewFactory();
-			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(undoSupport, networks, factory, 
+			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(networks, factory, 
 					netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr, serviceRegistrar);
 			
 			if (!cancelled)

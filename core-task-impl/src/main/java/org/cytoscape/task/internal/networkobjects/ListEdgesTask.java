@@ -1,6 +1,18 @@
 package org.cytoscape.task.internal.networkobjects;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.EdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -8,7 +20,7 @@ import java.util.Arrays;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,48 +38,34 @@ import java.util.Arrays;
  * #L%
  */
 
-import java.util.List;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.task.internal.utils.EdgeTunable;
-import org.cytoscape.util.json.CyJSONUtil;
-
 public class ListEdgesTask extends AbstractTask implements ObservableTask {
 
-	private final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
-	List<CyEdge> edges = null;
-	CyNetwork network = null;
+	List<CyEdge> edges;
+	CyNetwork network;
 
 	@ContainsTunables
 	public EdgeTunable edgeTunable;
 
-	public ListEdgesTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		this.appMgr = appMgr;
-		edgeTunable = new EdgeTunable(appMgr);
+	public ListEdgesTask(CyServiceRegistrar serviceRegistrar) {
+		edgeTunable = new EdgeTunable(serviceRegistrar);
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		network = edgeTunable.getNetwork();
 		edges = edgeTunable.getEdgeList();
 
 		if (edges == null || edges.size() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No edges found");
+			tm.showMessage(TaskMonitor.Level.WARN, "No edges found");
 			return;
 		}
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Found "+edges.size()+" edges");
+		tm.showMessage(TaskMonitor.Level.INFO, "Found "+edges.size()+" edges");
 	}
 
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(List.class)) {
 			return edges;
@@ -87,6 +85,7 @@ public class ListEdgesTask extends AbstractTask implements ObservableTask {
 		return edges;
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(List.class, String.class, JSONResult.class);
 	}

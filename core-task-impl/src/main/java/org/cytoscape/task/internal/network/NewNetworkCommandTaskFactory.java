@@ -15,7 +15,6 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -43,7 +42,7 @@ import org.cytoscape.work.undo.UndoSupport;
 
 public class NewNetworkCommandTaskFactory extends AbstractNetworkTaskFactory 
                                           implements NewNetworkSelectedNodesAndEdgesTaskFactory {
-	private final UndoSupport undoSupport;
+	
 	private final CyNetworkManager netmgr;
 	private final CyNetworkViewManager networkViewManager;
 	private final CyRootNetworkManager crnf;
@@ -56,8 +55,7 @@ public class NewNetworkCommandTaskFactory extends AbstractNetworkTaskFactory
 	private final RenderingEngineManager renderingEngineMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NewNetworkCommandTaskFactory(final UndoSupport undoSupport,
-	                                    final CyRootNetworkManager crnf,
+	public NewNetworkCommandTaskFactory(final CyRootNetworkManager crnf,
 	                                    final CyNetworkViewFactory cnvf,
 	                                    final CyNetworkManager netmgr,
 	                                    final CyNetworkViewManager networkViewManager,
@@ -68,7 +66,6 @@ public class NewNetworkCommandTaskFactory extends AbstractNetworkTaskFactory
 	                                    final CyGroupManager groupMgr,
 	                                    final RenderingEngineManager renderingEngineMgr,
 	                                    final CyServiceRegistrar serviceRegistrar) {
-		this.undoSupport        = undoSupport;
 		this.netmgr             = netmgr;
 		this.networkViewManager = networkViewManager;
 		this.crnf               = crnf;
@@ -84,7 +81,7 @@ public class NewNetworkCommandTaskFactory extends AbstractNetworkTaskFactory
 
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(3,
-			new NewNetworkCommandTask(undoSupport, crnf, cnvf,
+			new NewNetworkCommandTask(crnf, cnvf,
 			                          netmgr, networkViewManager, naming, vmm,
 			                          appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar));
 	}
@@ -92,7 +89,7 @@ public class NewNetworkCommandTaskFactory extends AbstractNetworkTaskFactory
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork net) {
 		return new TaskIterator(3,
-			new NewNetworkCommandTask(undoSupport, crnf, cnvf,
+			new NewNetworkCommandTask(crnf, cnvf,
 			                          netmgr, networkViewManager, naming, vmm,
 			                          appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar));
 	}

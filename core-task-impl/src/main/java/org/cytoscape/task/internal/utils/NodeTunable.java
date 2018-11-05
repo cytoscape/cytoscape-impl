@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.utils;
 
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.command.util.NodeList;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,44 +34,43 @@ package org.cytoscape.task.internal.utils;
  * #L%
  */
 
-import java.util.List;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.command.util.NodeList;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.work.Tunable;
-
 public class NodeTunable {
-	CyApplicationManager appMgr;
-	
-	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+
+	private final CyServiceRegistrar serviceRegistrar;
+
+	@Tunable(description = "Network", context = "nogui", longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING)
 	public CyNetwork network = null;
 
 	public NodeList nodeList = new NodeList(null);
-	@Tunable(description="List of nodes", context="nogui", longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
+
+	@Tunable(description = "List of nodes", context = "nogui", longDescription = StringToModel.CY_NODE_LIST_LONG_DESCRIPTION, exampleStringValue = StringToModel.CY_NODE_LIST_EXAMPLE_STRING)
 	public NodeList getnodeList() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
 		nodeList.setNetwork(network);
+		
 		return nodeList;
 	}
-  public void setnodeList(NodeList setValue) {}
 
-	public NodeTunable(CyApplicationManager appMgr) {
-		this.appMgr = appMgr;
+	public void setnodeList(NodeList setValue) {
 	}
 
-	public CyNetwork getNetwork() { 
+	public NodeTunable(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
+
+	public CyNetwork getNetwork() {
 		if (network == null)
-			network = appMgr.getCurrentNetwork();
-		return network; 
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+		
+		return network;
 	}
 
 	public List<CyNode> getNodeList() {
-		if (nodeList == null || nodeList.getValue() == null) 
+		if (nodeList == null || nodeList.getValue() == null)
 			return getNetwork().getNodeList();
+		
 		return nodeList.getValue();
 	}
 }

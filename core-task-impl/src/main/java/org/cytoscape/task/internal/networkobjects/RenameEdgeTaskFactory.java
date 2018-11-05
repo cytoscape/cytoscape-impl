@@ -1,12 +1,15 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,15 +27,12 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class RenameEdgeTaskFactory extends AbstractTaskFactory {
+	
 	public RenameEdgeTaskFactory() {
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
 		return new TaskIterator(new RenameEdgeTask());
 	}

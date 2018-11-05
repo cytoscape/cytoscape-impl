@@ -1,12 +1,30 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +42,20 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.work.AbstractTask;
-
 public abstract class AbstractTableDataTask extends AbstractTask {
 	
-	
-	
-	CyTableManager cyTableManager;
+	protected boolean success;
+	protected final CyServiceRegistrar serviceRegistrar;
 
-	AbstractTableDataTask(CyTableManager cyTableManager) {
-		this.cyTableManager = cyTableManager;
+	AbstractTableDataTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public Map<String, Object> getCyIdentifierData(CyTable table,
-	                                               CyIdentifiable id, 
-	                                               List<String> columnList) {
+	public Map<String, Object> getCyIdentifierData(CyTable table, CyIdentifiable id, List<String> columnList) {
 		if (id == null) return null;
 	
 		if (columnList == null)
-			columnList = new ArrayList<String>(CyTableUtil.getColumnNames(table));
+			columnList = new ArrayList<>(CyTableUtil.getColumnNames(table));
 		
 		return getDataFromTable(table, id.getSUID(), columnList);
 	}
@@ -67,21 +65,24 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 		return network.getTable(type, getNamespace(namespace));
 	}
 
-
 	public int setCyIdentifierData(CyTable table, CyIdentifiable id, Map<CyColumn, Object> valueMap) {
-		if (id == null || valueMap.size() == 0) return 0;
+		if (id == null || valueMap.size() == 0)
+			return 0;
 
 		int count = 0;
 		CyRow row = table.getRow(id.getSUID());
-		for (CyColumn column: valueMap.keySet()) {
+		
+		for (CyColumn column : valueMap.keySet()) {
 			Class<?> type = column.getType();
-				String name = column.getName();
+			String name = column.getName();
 			Object value = valueMap.get(column);
+			
 			if (value != null) {
 				row.set(name, type.cast(value));
 				count++;
 			}
 		}
+		
 		return count;
 	}
 
@@ -109,22 +110,26 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 	}
 
 	public CyTable getUnattachedTable(String tableName) {
-		Set<CyTable> tables = cyTableManager.getAllTables(false);
+		Set<CyTable> tables = serviceRegistrar.getService(CyTableManager.class).getAllTables(false);
+		
 		for (CyTable table: tables) {
 			if (tableName.equalsIgnoreCase(table.getTitle()))
 				return table;
 		}
+		
 		return null;
 	}
 
 	public Map<String, Object> getDataFromTable(CyTable table, Object key, List<String> columnList) {
 		Map<String, Object> result = new HashMap<>();
+		
 		if (table.rowExists(key)) {
 			CyRow row = table.getRow(key);
-			for (String column: columnList) {
+			
+			for (String column: columnList)
 				result.put(column, row.getRaw(column));
-			}
 		}
+		
 		return result;
 	}
 
@@ -139,5 +144,4 @@ public abstract class AbstractTableDataTask extends AbstractTask {
 			return CyRootNetwork.SHARED_ATTRS;
 		return namespace;
 	}
-
 }

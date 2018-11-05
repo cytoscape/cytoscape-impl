@@ -39,7 +39,7 @@ import org.mockito.MockitoAnnotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -79,13 +79,18 @@ public class CreateNetworkViewTaskTest {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineManager);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmm);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appManager);
 	}
 	
 	@Test
 	public void testCreateNetworkViewTask() throws Exception {
 		final Set<CyNetwork> networks = new HashSet<>();
 		networks.add(support.getNetwork());
-		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
+		final CreateNetworkViewTask task = new CreateNetworkViewTask(networks, viewFactory,
 				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
 
 		task.setTaskIterator(new TaskIterator(task));
@@ -101,8 +106,8 @@ public class CreateNetworkViewTaskTest {
 		networks.add(view.getModel());
 		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
-		final CreateNetworkViewTask task = new CreateNetworkViewTask(undoSupport, networks, viewFactory,
-				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, null);
+		final CreateNetworkViewTask task = new CreateNetworkViewTask(networks, viewFactory,
+				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
 		
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);

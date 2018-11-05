@@ -1,12 +1,24 @@
 package org.cytoscape.task.internal.select;
 
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.work.Task;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,20 +35,9 @@ package org.cytoscape.task.internal.select;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-import static org.mockito.Mockito.*;
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.undo.UndoSupport;
-import org.junit.Before;
-import org.junit.Test;
-
 
 public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
+	
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -44,8 +45,6 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 
 	@Test
 	public void testRun() throws Exception {
-		UndoSupport undoSupport = mock(UndoSupport.class);
-
 		// more setup
 		when(r1.get("selected", Boolean.class)).thenReturn(true);
 		when(r2.get("selected", Boolean.class)).thenReturn(false);
@@ -58,7 +57,7 @@ public class SelectConnectedNodesTaskTest extends AbstractSelectTaskTester {
 		when(e1.getTarget()).thenReturn(e4);
 
 		// run the task
-		Task t = new SelectConnectedNodesTask(undoSupport, net, networkViewManager, eventHelper);
+		Task t = new SelectConnectedNodesTask(net, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set

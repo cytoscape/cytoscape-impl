@@ -42,7 +42,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -68,7 +68,8 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	private CyNetwork net = support.getNetwork();
 	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
-	CyEventHelper eventHelper = new DummyCyEventHelper();
+	private CyEventHelper eventHelper = new DummyCyEventHelper();
+	private UndoSupport undoSupport = mock(UndoSupport.class);
     private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManager netmgr = new CyNetworkManagerImpl(serviceRegistrar);
@@ -82,6 +83,7 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	
 	@Before
 	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
@@ -91,8 +93,6 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 
 	@Test
 	public void testNewNetworkSelectedNodesEdgesTask() throws Exception {
-		final UndoSupport undoSupport = mock(UndoSupport.class);
-		
 		netmgr.addNetwork(net);
 		final CyNode node1 = net.addNode();
 		final CyNode node2 = net.addNode();
@@ -106,9 +106,9 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		net.getRow(edge1).set(CyNetwork.SELECTED, true);
 		
 		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
-		List<CyNetwork> netListbeforeTask = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		List<CyNetwork> netListbeforeTask = new ArrayList<>(netmgr.getNetworkSet());
 		
-		final NewNetworkSelectedNodesEdgesTask task = new NewNetworkSelectedNodesEdgesTask(undoSupport, net, cyroot,
+		final NewNetworkSelectedNodesEdgesTask task = new NewNetworkSelectedNodesEdgesTask(net, cyroot,
 				cnvf, netmgr, networkViewManager, cyNetworkNaming, vmm, appManager, eventHelper, groupMgr,
 				renderingEngineManager, serviceRegistrar);
 
@@ -125,5 +125,4 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		assertEquals(2, networkList.get(0).getNodeList().size());
 		assertEquals(1, networkList.get(0).getEdgeList().size());
 	}
-
 }

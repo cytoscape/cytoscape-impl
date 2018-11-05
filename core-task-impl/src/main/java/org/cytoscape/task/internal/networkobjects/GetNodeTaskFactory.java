@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +28,16 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class GetNodeTaskFactory extends AbstractTaskFactory {
 	
-	CyApplicationManager appMgr;
-	CyServiceRegistrar serviceRegistrar;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public GetNodeTaskFactory(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		this.appMgr = appMgr;
+	public GetNodeTaskFactory(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new GetNodeTask(appMgr, serviceRegistrar));
+		return new TaskIterator(new GetNodeTask(serviceRegistrar));
 	}
 }

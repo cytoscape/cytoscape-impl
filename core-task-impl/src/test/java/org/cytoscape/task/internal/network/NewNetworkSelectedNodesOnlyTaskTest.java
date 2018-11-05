@@ -42,7 +42,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -68,7 +68,8 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	private CyNetwork net = support.getNetwork();
 	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
 	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
-	CyEventHelper eventHelper = new DummyCyEventHelper();
+	private UndoSupport undoSupport = mock(UndoSupport.class);
+	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManager netmgr = new CyNetworkManagerImpl(serviceRegistrar);
@@ -83,6 +84,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	@Before
 	public void setUp() throws Exception {
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		
@@ -91,8 +93,6 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 	
 	@Test
 	public void testNewNetworkSelectedNodesOnlyTask() throws Exception {
-		final UndoSupport undoSupport = mock(UndoSupport.class);
-		
 		netmgr.addNetwork(net);
 		final CyNode node1 = net.addNode();
 		final CyNode node2 = net.addNode();
@@ -108,7 +108,7 @@ public class NewNetworkSelectedNodesOnlyTaskTest {
 		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
 		List<CyNetwork> netListbeforeTask = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
 
-		final NewNetworkSelectedNodesOnlyTask task = new NewNetworkSelectedNodesOnlyTask(undoSupport, net, cyroot, cnvf,
+		final NewNetworkSelectedNodesOnlyTask task = new NewNetworkSelectedNodesOnlyTask(net, cyroot, cnvf,
 				netmgr, networkViewManager, cyNetworkNaming, vmm, appManager, eventHelper, groupMgr,
 				renderingEngineManager, serviceRegistrar);
 

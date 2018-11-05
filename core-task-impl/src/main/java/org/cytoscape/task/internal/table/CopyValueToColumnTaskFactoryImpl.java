@@ -1,12 +1,17 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableCellTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,32 +29,28 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.task.AbstractTableCellTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public final class CopyValueToColumnTaskFactoryImpl extends AbstractTableCellTaskFactory {
-	private final UndoSupport undoSupport;
+	
 	private final boolean selectedOnly;
 	private final String taskFactoryName;
-	
-	public CopyValueToColumnTaskFactoryImpl(final UndoSupport undoSupport, boolean selectedOnly, String taskFactoryName ) {
-		this.undoSupport = undoSupport;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public CopyValueToColumnTaskFactoryImpl(boolean selectedOnly, String taskFactoryName,
+			CyServiceRegistrar serviceRegistrar) {
 		this.selectedOnly = selectedOnly;
 		this.taskFactoryName = taskFactoryName;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(CyColumn column, Object primaryKeyValue) {
 		if (column == null)
-			throw new IllegalStateException("\"column\" was not set.");
+			throw new IllegalStateException("'column' was not set.");
 		if (primaryKeyValue == null)
-			throw new IllegalStateException("\"primaryKeyValue\" was not set.");
-		return new TaskIterator(new CopyValueToColumnTask(undoSupport, column,
-									primaryKeyValue, selectedOnly, taskFactoryName));
+			throw new IllegalStateException("'primaryKeyValue' was not set.");
+		
+		return new TaskIterator(
+				new CopyValueToColumnTask(column, primaryKeyValue, selectedOnly, taskFactoryName, serviceRegistrar));
 	}
 	
 	public String getTaskFactoryName(){

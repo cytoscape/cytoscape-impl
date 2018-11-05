@@ -1,10 +1,13 @@
 package org.cytoscape.task.internal.table;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import javax.swing.SwingUtilities;
+
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableValidator;
+import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -12,7 +15,7 @@ import javax.swing.SwingUtilities;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,37 +33,24 @@ import javax.swing.SwingUtilities;
  * #L%
  */
 
-
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractTableColumnTask;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableValidator;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public final class DeleteColumnTask extends AbstractTableColumnTask implements TunableValidator {
-	private final UndoSupport undoSupport;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	DeleteColumnTask(final UndoSupport undoSupport, final CyColumn column, CyServiceRegistrar reg) {
+	DeleteColumnTask(CyColumn column, CyServiceRegistrar serviceRegistrar) {
 		super(column);
-		serviceRegistrar = reg;
-		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-		undoSupport.postEdit( new DeleteColumnEdit(column));
-		taskMonitor.setProgress(0.3);
-		SwingUtilities.invokeLater(new Runnable() {
-            public void run() {    	column.getTable().deleteColumn(column.getName());  }    
-         });
-		taskMonitor.setProgress(1.0);
+	public void run(final TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
+		
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new DeleteColumnEdit(column));
+		tm.setProgress(0.3);
+		
+		SwingUtilities.invokeLater(() -> column.getTable().deleteColumn(column.getName()));
+		tm.setProgress(1.0);
 	}
 
 	@Override
@@ -68,23 +58,11 @@ public final class DeleteColumnTask extends AbstractTableColumnTask implements T
 		if (column.isImmutable()) {
 			try {
 				errMsg.append("Cannot delete an immutable column.");
-			} catch (Exception e) {	}
+			} catch (Exception e) {
+			}
+			
 			return ValidationState.INVALID;
 		}
 		return ValidationState.OK;
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyColumn.class, String.class, JSONResult.class);	}
-	public Object getResults(Class requestedType) {
-		if (requestedType.equals(String.class)) 		return (column == null) ? "" : column.getName();
-		if (requestedType.equals(JSONResult.class)) {
-			JSONResult res = () -> {  
-			
-				if (column == null) return "{}";
-			return   "{ \"column\": \"" + column.getName() + "\" }";
-		};
-			return res;
-			}
-		return null;
-	}
-	
 }

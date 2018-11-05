@@ -1,12 +1,30 @@
 package org.cytoscape.task.internal.select;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,30 +42,8 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.json.JSONResult;
-
 public class SelectFromFileListTask extends AbstractSelectTask {
 	
-	private final UndoSupport undoSupport;
-
 	@ProvidesTitle
 	public String getTitle() {
 		return "Select Nodes using ID File";
@@ -56,55 +52,53 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 	@Tunable(description="Node selection file:", params="input=true", longDescription="Path to file containing list of nodes to select")
 	public File file;
 
-	public SelectFromFileListTask(final UndoSupport undoSupport, final CyNetwork net,
-	                              final CyNetworkViewManager networkViewManager,
-	                              final CyEventHelper eventHelper)
-	{
-		super(net, networkViewManager, eventHelper);
-		this.undoSupport = undoSupport;
+	public SelectFromFileListTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	@Override
 	public void run(final TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
+		
 		if (file == null)
 			throw new NullPointerException("You must specify a non-null file to load.");
 
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		if(views.size() != 0)
-			view = views.iterator().next();
-		
-		final SelectionEdit edit =
-			new SelectionEdit(eventHelper, "Select Nodes From File", network, view,
-			                  SelectionEdit.SelectionFilter.NODES_ONLY);
+		CyNetworkView view = getNetworkView(network);
+
+		SelectionEdit edit = new SelectionEdit("Select Nodes From File", network, view,
+				SelectionEdit.SelectionFilter.NODES_ONLY, serviceRegistrar);
 		tm.setProgress(0.1);
+		
 		try {
 			FileReader fin = new FileReader(file);
 			BufferedReader bin = new BufferedReader(fin);
-			Set<String> fileNodes = new HashSet<String>();
+			Set<String> fileNodes = new HashSet<>();
 			String s;
 			tm.setProgress(0.2);
+			
 			while ((s = bin.readLine()) != null) {
 				final String trimName = s.trim();
 				if (trimName.length() > 0)
 					fileNodes.add(trimName);
 			}
+			
 			fin.close();
 			tm.setProgress(0.6);
 			// Loop through all the node of the graph selecting those in the file:
 			List<CyNode> nodeList = network.getNodeList();
+			
 			for (final CyNode node : nodeList) {
 				if (fileNodes.contains(network.getRow(node).get(CyNetwork.NAME, String.class)))
 					network.getRow(node).set(CyNetwork.SELECTED, true);
 			}
+			
 			tm.setProgress(0.8);
 			updateView();
 		} catch (Exception e) {
 			throw new Exception("Error reading file: " + file.getAbsolutePath(), e);
 		}
 
-		undoSupport.postEdit(edit);
+		serviceRegistrar.getService(UndoSupport.class).postEdit(edit);
 		tm.setProgress(1.0);
 	}
 
@@ -121,5 +115,4 @@ public class SelectFromFileListTask extends AbstractSelectTask {
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(JSONResult.class);
 	}
-
 }

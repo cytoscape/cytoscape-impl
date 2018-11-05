@@ -1,6 +1,21 @@
 package org.cytoscape.task.internal.networkobjects;
 
 import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.ListSingleSelection;
 
 /*
  * #%L
@@ -8,7 +23,7 @@ import java.util.Arrays;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,57 +41,38 @@ import java.util.Arrays;
  * #L%
  */
 
-import java.util.List;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.util.ListSingleSelection;
-
 public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 	
-	CyApplicationManager appMgr;
-	CyServiceRegistrar serviceRegistrar;
-	
 	@Tunable(description="Network to get edge from", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Edge to match", context="nogui", longDescription=CoreImplDocumentationConstants.EDGE_LONG_DESCRIPTION + " If this parameter is set, all other edge matching parameters are ignored.", exampleStringValue="Node 1 (interacts with) Node 2")
 		
-	public String edge = null;
+	public String edge;
 
 	@Tunable(description="Name of source node to match", context="nogui", longDescription="Selects a node by name, or, if the parameter has the prefix ```suid:```, selects a node by SUID. Specifies that the edge matched must have this node as its source. This parameter must be used with the ```targetNode``` parameter to produce results.", exampleStringValue="Node 1")
-	public String sourceNode = null;
+	public String sourceNode;
 
 	@Tunable(description="Name of target node to match", context="nogui", longDescription="Selects a node by name, or, if the parameter has the prefix ```suid:```, selects a node by SUID. Specifies that the edge matched must have this node as its target. This parameter must be used with the ```sourceNode``` parameter to produce results.", exampleStringValue="Node 2")
-	public String targetNode = null;
+	public String targetNode;
 
 	@Tunable(description="Edge type to match", context="nogui", longDescription="Specifies that the edge matched must be of the specified type. This parameter must be used with the ```sourceNode``` and ```targetNode``` parameters to produce results.", exampleStringValue="any")
 	public ListSingleSelection type = new ListSingleSelection("any", "directed", "undirected");
 
-	private CyEdge returnedEdge = null;
+	private CyEdge returnedEdge;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public GetEdgeTask(CyApplicationManager appMgr, CyServiceRegistrar serviceRegistrar) {
-		this.appMgr = appMgr;
+	protected GetEdgeTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
-
+	
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) {
-			network = appMgr.getCurrentNetwork();
-		}
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (edge == null && (sourceNode == null || targetNode == null)) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Edge name, suid or source/target must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Edge name, suid or source/target must be specified");
 			return;
 		}
 
@@ -88,12 +84,12 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		// Using source/destination nodes
 		CyNode source = getNode(network, sourceNode);
 		if (source == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+sourceNode+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+sourceNode+"'");
 			return;
 		}
 		CyNode target = getNode(network, targetNode);
 		if (target == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+targetNode+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Cannot find node '"+targetNode+"'");
 			return;
 		}
 		CyEdge.Type edgeType = CyEdge.Type.ANY;
@@ -107,14 +103,15 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		// If we got multiple, choose the first one and warn the user
 		if (edges.size() > 1) {
 			returnedEdge = edges.get(0);
-			taskMonitor.showMessage(TaskMonitor.Level.WARN, "Specification yields multiple edges -- only one returned");
+			tm.showMessage(TaskMonitor.Level.WARN, "Specification yields multiple edges -- only one returned");
 		} else if (edges.size() == 1) {
 			returnedEdge = edges.get(0);
 		} else
-			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No edge matching specification found");
+			tm.showMessage(TaskMonitor.Level.WARN, "No edge matching specification found");
 		return;
 	}
 	
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(CyEdge.class)) {
 			return returnedEdge;
@@ -134,6 +131,7 @@ public class GetEdgeTask extends AbstractGetTask implements ObservableTask {
 		return returnedEdge;
 	}
 	
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(CyEdge.class, String.class, JSONResult.class);
 	}

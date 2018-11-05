@@ -5,12 +5,10 @@ import java.util.List;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.ColumnTypeTunable;
 import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.task.internal.utils.TableTunable;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -23,7 +21,7 @@ import org.cytoscape.work.json.JSONResult;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,44 +50,44 @@ public class CreateColumnTask extends AbstractTableDataTask implements Observabl
 	@ContainsTunables
 	public ColumnTypeTunable columnType;
 
-	CyTable table = null;
+	private CyTable table;
 
-	public CreateColumnTask(final CyTableManager tableMgr) {
-		super(tableMgr);
-		tableTunable = new TableTunable(tableMgr);
+	public CreateColumnTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		tableTunable = new TableTunable(serviceRegistrar);
 		columnType = new ColumnTypeTunable();
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		table = tableTunable.getTable();
 		
 		if (table == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
+			tm.showMessage(TaskMonitor.Level.ERROR,  "Unable to find table '"+tableTunable.getTableString()+"'");
 			return;
 		}
 
 		if (columnName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column name must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Column name must be specified");
 			return;
 		}
 		
 		columnName = columnName.trim();
 		
 		if (columnName.isEmpty()) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column name must not be blank");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Column name must not be blank");
 			return;
 		}
 
 		CyColumn c = table.getColumn(columnName);
 		if (c != null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column '"+columnName+"' already exists in table: "+table.toString());
+			tm.showMessage(TaskMonitor.Level.ERROR, "Column '"+columnName+"' already exists in table: "+table.toString());
 			return;
 		}
 
 		String baseTypeName = columnType.getColumnType();
 		if (baseTypeName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Column type must be specified.");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Column type must be specified.");
 			return;
 		}
 
@@ -98,16 +96,16 @@ public class CreateColumnTask extends AbstractTableDataTask implements Observabl
 			String listTypeName = columnType.getListElementType();
 			
 			if (listTypeName == null) {
-				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "List element type must be specified for list columns.");
+				tm.showMessage(TaskMonitor.Level.ERROR, "List element type must be specified for list columns.");
 				return;
 			}
 			
 			Class<?> listType = DataUtils.getType(listTypeName);
 			table.createListColumn(columnName, listType, false);
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created list column: "+columnName);
+			tm.showMessage(TaskMonitor.Level.INFO, "Created list column: "+columnName);
 		} else {
 			table.createColumn(columnName, baseType, false);
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "Created column: "+columnName);
+			tm.showMessage(TaskMonitor.Level.INFO, "Created column: "+columnName);
 		}
 	}
 
@@ -132,5 +130,4 @@ public class CreateColumnTask extends AbstractTableDataTask implements Observabl
 		}
 		return null;
 	}
-
 }

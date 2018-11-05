@@ -1,12 +1,22 @@
 package org.cytoscape.task.internal.table;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.ColumnValueTunable;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.task.internal.utils.NodeTunable;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,52 +34,30 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.Map;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.internal.utils.NodeTunable;
-import org.cytoscape.task.internal.utils.ColumnValueTunable;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public class SetNodeAttributeTask extends AbstractTableDataTask {
-	final CyApplicationManager appMgr;
-	Map<CyIdentifiable, Map<String, Object>> nodeData;
-
+	
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
 	@ContainsTunables
 	public ColumnValueTunable columnTunable;
 
-	public SetNodeAttributeTask(CyTableManager mgr, CyApplicationManager appMgr) {
-		super(mgr);
-		this.appMgr = appMgr;
-		nodeTunable = new NodeTunable(appMgr);
+	public SetNodeAttributeTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
+		nodeTunable = new NodeTunable(serviceRegistrar);
 		columnTunable = new ColumnValueTunable();
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		CyNetwork network = nodeTunable.getNetwork();
-
 		CyTable nodeTable = getNetworkTable(network, CyNode.class, columnTunable.getNamespace());
 
-		for (CyNode node: nodeTunable.getNodeList()) {
-			int count = setCyIdentifierData(nodeTable, 
-		 	                                node,
-		 	                                columnTunable.getValueMap(nodeTable));
+		for (CyNode node : nodeTunable.getNodeList()) {
+			int count = setCyIdentifierData(nodeTable, node, columnTunable.getValueMap(nodeTable));
 
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "   Set "+count+" node table values for node "+DataUtils.getNodeName(nodeTable, node));
+			tm.showMessage(TaskMonitor.Level.INFO,
+					"   Set " + count + " node table values for node " + DataUtils.getNodeName(nodeTable, node));
 		}
 	}
-
 }

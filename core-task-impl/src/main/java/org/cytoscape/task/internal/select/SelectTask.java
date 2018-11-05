@@ -1,12 +1,33 @@
 package org.cytoscape.task.internal.select;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.ListSingleSelection;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,40 +45,8 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-
-import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.util.EdgeList;
-import org.cytoscape.command.util.NodeList;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
-
-import org.cytoscape.task.internal.utils.NodeAndEdgeTunable;
-
 public class SelectTask extends AbstractSelectTask implements ObservableTask {
-	private final CyApplicationManager appMgr;
-	private final CyServiceRegistrar registrar;
+	
 	private List<CyNode> selectedNodes;
 	private List<CyEdge> selectedEdges;
 
@@ -98,28 +87,18 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 					 context="nogui")
 	public boolean adjacentEdges = false;
 
-	public SelectTask(final CyApplicationManager appMgr, final CyNetworkViewManager networkViewManager,
-	                  final CyEventHelper eventHelper, final CyServiceRegistrar registrar)
-	{
-		super(null, networkViewManager, eventHelper);
-		this.appMgr = appMgr;
-		this.registrar = registrar;
-		nodesAndEdges = new NodeAndEdgeTunable(registrar);
+	public SelectTask(CyServiceRegistrar serviceRegistrar) {
+		super(null, serviceRegistrar);
+		nodesAndEdges = new NodeAndEdgeTunable(serviceRegistrar);
 	}
-
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setProgress(0.0);
-
 		network = nodesAndEdges.getNetwork();
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
-		CyNetworkView view = null;
-		if(views.size() != 0)
-			view = views.iterator().next();
-
-		Set<CyNode> nodes = new HashSet<CyNode>();
-		Set<CyEdge> edges = new HashSet<CyEdge>();
+		
+		Set<CyNode> nodes = new HashSet<>();
+		Set<CyEdge> edges = new HashSet<>();
 
 		List<CyNode> nodeList = nodesAndEdges.getNodeList(false);
 		List<CyEdge> edgeList = nodesAndEdges.getEdgeList(false);
@@ -159,7 +138,7 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 			}
 
 			// OK, now add them in
-			for (CyNode node: new ArrayList<CyNode>(nodes))
+			for (CyNode node: new ArrayList<>(nodes))
 				nodes.addAll(network.getNeighborList(node, type));
 
 			// Now, nodes has all of the nodes we specified and the appropriate first neighbors
@@ -189,35 +168,39 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 
 		// Finally, handle inversion
 		if (invert.getSelectedValue().equals("nodes") || invert.getSelectedValue().equals("both")) {
-			Set<CyNode> newNodes = new HashSet<CyNode>();
+			Set<CyNode> newNodes = new HashSet<>();
+			
 			for (CyNode node: network.getNodeList()) {
 				if (!nodes.contains(node))
 					newNodes.add(node);
 			}
+			
 			selectUtils.setSelectedNodes(network, newNodes, true);
 			selectUtils.setSelectedNodes(network, nodes, false);
 			tm.showMessage(TaskMonitor.Level.INFO, "Inverting node selection");
 			nodeCount = newNodes.size();
-			selectedNodes = new ArrayList<CyNode>(newNodes);
+			selectedNodes = new ArrayList<>(newNodes);
 		} else {
 			selectUtils.setSelectedNodes(network, nodes, true);
-			selectedNodes = new ArrayList<CyNode>(nodes);
+			selectedNodes = new ArrayList<>(nodes);
 		}
 
 		if (invert.getSelectedValue().equals("edges") || invert.getSelectedValue().equals("both")) {
-			Set<CyEdge> newEdges = new HashSet<CyEdge>();
+			Set<CyEdge> newEdges = new HashSet<>();
+			
 			for (CyEdge edge: network.getEdgeList()) {
 				if (!edges.contains(edge))
 					newEdges.add(edge);
 			}
+			
 			selectUtils.setSelectedEdges(network, newEdges, true);
 			selectUtils.setSelectedEdges(network, edges, false);
 			tm.showMessage(TaskMonitor.Level.INFO, "Inverting edge selection");
 			edgeCount = newEdges.size();
-			selectedEdges = new ArrayList<CyEdge>(newEdges);
+			selectedEdges = new ArrayList<>(newEdges);
 		} else {
 			selectUtils.setSelectedEdges(network, edges, true);
-			selectedEdges = new ArrayList<CyEdge>(edges);
+			selectedEdges = new ArrayList<>(edges);
 		}
 
 		tm.setProgress(0.6);
@@ -227,7 +210,7 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 	}
 
 	public Object getResults(Class type) {
-		List<CyIdentifiable> identifiables = new ArrayList();
+		List<CyIdentifiable> identifiables = new ArrayList<>();
 		if (selectedNodes != null)
 			identifiables.addAll(selectedNodes);
 		if (selectedEdges != null)
@@ -252,28 +235,36 @@ public class SelectTask extends AbstractSelectTask implements ObservableTask {
 			}
 			return ret;
 		}  else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (identifiables == null || identifiables.size() == 0) 
-				return "{}";
-			else {
-				CyJSONUtil cyJSONUtil = registrar.getService(CyJSONUtil.class);
-				String result = "{\"nodes\":";
-				if (selectedNodes == null || selectedNodes.size() == 0)
-					result += "[]";
-				else
-					result += cyJSONUtil.cyIdentifiablesToJson(selectedNodes);
+			JSONResult res = () -> {
+				if (identifiables == null || identifiables.size() == 0) {
+					return "{}";
+				} else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					String result = "{\"nodes\":";
+					
+					if (selectedNodes == null || selectedNodes.size() == 0)
+						result += "[]";
+					else
+						result += cyJSONUtil.cyIdentifiablesToJson(selectedNodes);
 
-				result += ", \"edges\":";
-				if (selectedEdges == null || selectedEdges.size() == 0)
-					result += "[]";
-				else
-					result += cyJSONUtil.cyIdentifiablesToJson(selectedEdges);
-				return result+"}";
-			}};
+					result += ", \"edges\":";
+					
+					if (selectedEdges == null || selectedEdges.size() == 0)
+						result += "[]";
+					else
+						result += cyJSONUtil.cyIdentifiablesToJson(selectedEdges);
+					
+					return result + "}";
+				}
+			};
+			
 			return res;
 		}
+		
 		return identifiables;
 	}
 	
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(String.class, List.class, JSONResult.class);
 	}

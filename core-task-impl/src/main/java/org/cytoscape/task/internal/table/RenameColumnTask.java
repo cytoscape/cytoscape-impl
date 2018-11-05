@@ -1,15 +1,14 @@
 package org.cytoscape.task.internal.table;
 
 import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractTableColumnTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.undo.UndoSupport;
-import org.cytoscape.work.util.ListSingleSelection;
 
 /*
  * #%L
@@ -17,7 +16,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,31 +36,33 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public final class RenameColumnTask extends AbstractTableColumnTask implements TunableValidator {
 	
-	private final UndoSupport undoSupport;
-
 	@ProvidesTitle
 	public String getTitle() {
 		return "Rename Column";
 	}
 	
-	@Tunable(description="New Column Name",
-	         required=true)
+	@Tunable(description = "New Column Name", required = true)
 	public String newColumnName;
 
-	RenameColumnTask(final UndoSupport undoSupport, final CyColumn column) {
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	RenameColumnTask(CyColumn column, CyServiceRegistrar serviceRegistrar) {
 		super(column);
-		this.undoSupport = undoSupport;
+		this.serviceRegistrar = serviceRegistrar;
+		
 		// Set the original column name
 		newColumnName = column.getName();
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-		undoSupport.postEdit(new RenameColumnEdit(column));
-		taskMonitor.setProgress(0.4);
+	public void run(final TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
+		
+		serviceRegistrar.getService(UndoSupport.class).postEdit(new RenameColumnEdit(column));
+		tm.setProgress(0.4);
+		
 		column.setName(newColumnName);
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 
 	@Override
@@ -71,6 +72,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 				errMsg.append("You must provide a new column name.");
 			} catch (Exception e) {
 			}
+			
 			return ValidationState.INVALID;
 		}
 		
@@ -81,6 +83,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 				errMsg.append("Column name must not be blank.");
 			} catch (Exception e) {
 			}
+			
 			return ValidationState.INVALID;
 		}
 		
@@ -92,6 +95,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 				errMsg.append("Column name is a duplicate.");
 			} catch (Exception e) {
 			}
+			
 			return ValidationState.INVALID;
 		}
 
@@ -100,6 +104,7 @@ public final class RenameColumnTask extends AbstractTableColumnTask implements T
 				errMsg.append("Cannot rename an immutable column.");
 			} catch (Exception e) {
 			}
+			
 			return ValidationState.INVALID;
 		}
 

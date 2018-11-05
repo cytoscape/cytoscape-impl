@@ -1,12 +1,32 @@
 package org.cytoscape.task.internal.group;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,43 +44,30 @@ package org.cytoscape.task.internal.group;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.StringJoiner;
-
-import org.cytoscape.group.CyGroup;
-import org.cytoscape.group.CyGroupManager;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CySubNetwork;
-
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-
-import org.cytoscape.task.internal.utils.DataUtils;
-
 public abstract class AbstractGroupTask extends AbstractTask {
-	CyNetwork net;
-	CyGroupManager groupMgr;
+	
+	protected CyNetwork net;
+	protected final CyServiceRegistrar serviceRegistrar;
+	
+	public AbstractGroupTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
+	}
 
 	protected List<CyGroup> getGroupList(TaskMonitor tm, String groupList) {
+		CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
+		
 		if (groupList.equalsIgnoreCase("all")) {
-			return new ArrayList<CyGroup>(allGroups);
+			return new ArrayList<>(allGroups);
 		} else if (groupList.equalsIgnoreCase("selected")) {
 			return getSelectedGroups();
 		} else if (groupList.equalsIgnoreCase("unselected")) {
 			return getUnselectedGroups();
 		}
+		
 		String[] groups = DataUtils.getCSV(groupList);
-		List<CyGroup> returnGroups = new ArrayList<CyGroup>();
+		List<CyGroup> returnGroups = new ArrayList<>();
+		
 		for (String groupName: groups) {
 			CyGroup group = getGroup(groupName);
 			if (group != null) {
@@ -70,12 +77,14 @@ public abstract class AbstractGroupTask extends AbstractTask {
 				return null;
 			}
 		}
+		
 		return returnGroups;
 	}
 
 	protected CyGroup getGroup(String groupName) {
 		CyRootNetwork rootNet = ((CySubNetwork)net).getRootNetwork();
-		Set<CyGroup> allGroups = groupMgr.getGroupSet(net);
+		Set<CyGroup> allGroups = serviceRegistrar.getService(CyGroupManager.class).getGroupSet(net);
+		
 		for (CyGroup group: allGroups) {
 			CyRow groupRow = rootNet.getRow(group.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
 			if (groupName.length() > 5 && groupName.substring(0, 5).equalsIgnoreCase("suid:")) {
@@ -100,6 +109,8 @@ public abstract class AbstractGroupTask extends AbstractTask {
 
 	protected List<CyGroup> getGroupsFromNodes(List<CyNode> nodes) {
 		List<CyGroup> groups = new ArrayList<>();
+		CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
+		
 		for (CyNode node: nodes) {
 			CyGroup group = groupMgr.getGroup(node, net);
 			if (group != null)
@@ -125,8 +136,8 @@ public abstract class AbstractGroupTask extends AbstractTask {
 	}
 
 	protected Set<CyGroup>getGroups(CyNetwork net, List<CyNode>nodeList) {
-
-		Set<CyGroup> groupList = new HashSet<CyGroup>();
+		Set<CyGroup> groupList = new HashSet<>();
+		CyGroupManager groupMgr = serviceRegistrar.getService(CyGroupManager.class);
 
 		// For each node that is in a group, or is a group, add it to our list
 		for (CyNode node: nodeList) {
@@ -135,16 +146,15 @@ public abstract class AbstractGroupTask extends AbstractTask {
 			else if (groupMgr.getGroupsForNode(node, net) != null)
 				groupList.addAll(groupMgr.getGroupsForNode(node, net));
 		}
+		
 		return groupList;
 	}
 	
-	protected String getGroupSetString(Collection<CyGroup> groups)
-	{
+	protected String getGroupSetString(Collection<CyGroup> groups) {
 		StringBuilder buffer = new StringBuilder();
 		StringJoiner joiner = new StringJoiner(",");
 		for (CyGroup group : groups)
 			joiner.add(group.getGroupNode().getSUID().toString());
 		return joiner.toString();
 	}
-
 }

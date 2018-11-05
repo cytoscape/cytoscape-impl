@@ -33,6 +33,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNodeViewTaskFactory;
 import org.cytoscape.task.edit.CollapseGroupTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
@@ -45,21 +46,28 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
                                              implements CollapseGroupTaskFactory, ExpandGroupTaskFactory,
                                                         TaskFactory {
 	
-	private CyApplicationManager appMgr;
-	private CyGroupManager mgr;
+	private final CyApplicationManager appMgr;
+	private final CyGroupManager mgr;
+	private final CyServiceRegistrar serviceRegistrar;
 	private boolean collapse;
 
-	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyGroupManager mgr, boolean collapse) {
+	public GroupNodeContextTaskFactoryImpl(CyApplicationManager appMgr, CyGroupManager mgr, boolean collapse,
+			CyServiceRegistrar serviceRegistrar) {
 		super();
 		this.mgr = mgr;
 		this.appMgr = appMgr;
 		this.collapse = collapse;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
-	public boolean isReady() {return true;}
+	@Override
+	public boolean isReady() {
+		return true;
+	}
 
+	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new CollapseGroupTask(appMgr, mgr, collapse));
+		return new TaskIterator(new CollapseGroupTask(appMgr, mgr, collapse, serviceRegistrar));
 	}
 
 	@Override
@@ -79,7 +87,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView netView) {
-		List<CyGroup> groups = new ArrayList<CyGroup>();
+		List<CyGroup> groups = new ArrayList<>();
 		final List<CyNode> selNodes = CyTableUtil.getNodesInState(netView.getModel(), CyNetwork.SELECTED, true);
 
 		if (collapse) {
@@ -97,7 +105,7 @@ public class GroupNodeContextTaskFactoryImpl extends AbstractNodeViewTaskFactory
 			}
 		}
 
-		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, mgr, collapse));
+		return new TaskIterator(new CollapseGroupTask(netView.getModel(), groups, collapse, serviceRegistrar));
 	}
 
 	private CyGroup getExpandedGroupForNode(CyNode node, CyNetworkView netView) {

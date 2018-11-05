@@ -4,6 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -11,7 +18,7 @@ import org.cytoscape.command.StringToModel;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,49 +36,40 @@ import org.cytoscape.command.StringToModel;
  * #L%
  */
 
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.internal.utils.CoreImplDocumentationConstants;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-
 public class RenameEdgeTask extends AbstractGetTask implements ObservableTask {
+	
 	@Tunable(description="Network edge is in", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Edge to be renamed", context="nogui", longDescription=CoreImplDocumentationConstants.EDGE_LONG_DESCRIPTION, exampleStringValue="SUID:101")
-	public String edge = null;
+	public String edge;
 
 	@Tunable(description="New edge name", context="nogui", longDescription="New name of the edge", exampleStringValue="New Name")
-	public String newName = null;
-
-	public RenameEdgeTask() {
-	}
+	public String newName;
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		if (network == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified");
 			return;
 		}
 
 		if (edge == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Edge name or suid must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Edge name or suid must be specified");
 			return;
 		}
 
 		if (newName == null) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "New name must be specified");
 			return;
 		}
 
 		CyEdge renamedEdge = getEdge(network, edge);
 		network.getRow(renamedEdge).set(CyNetwork.NAME, newName);
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Edge "+renamedEdge+" renamed to "+newName);
+		tm.showMessage(TaskMonitor.Level.INFO, "Edge "+renamedEdge+" renamed to "+newName);
 	}
 	
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> {
@@ -82,6 +80,7 @@ public class RenameEdgeTask extends AbstractGetTask implements ObservableTask {
 		return null;
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(JSONResult.class);
 	}

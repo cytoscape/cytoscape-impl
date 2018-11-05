@@ -1,6 +1,5 @@
 package org.cytoscape.task.internal.network;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -19,15 +18,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
-import org.cytoscape.work.undo.UndoSupport;
 
 /*
  * #%L
@@ -35,7 +30,7 @@ import org.cytoscape.work.undo.UndoSupport;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -57,10 +52,9 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
-	private CyNetwork newNetwprk = null;
-
+	
 	@Tunable(description = "Name of new network", gravity = 1.0, context = "nogui")
-	public String networkName = null;
+	public String networkName;
 
 	@Tunable(description = "Source network", 
 	         longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
@@ -106,10 +100,9 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	         longDescription = "Unless this is set to true, edges that connect nodes in the nodeList "+
 					                   "are implicitly included",
 	         gravity = 5.0, context = "nogui", exampleStringValue="false")
-	public boolean excludeEdges = false;
+	public boolean excludeEdges;
 	
-	public NewNetworkCommandTask(final UndoSupport undoSupport, 
-	                             final CyRootNetworkManager cyroot,
+	public NewNetworkCommandTask(final CyRootNetworkManager cyroot,
 	                             final CyNetworkViewFactory cnvf,
 	                             final CyNetworkManager netmgr,
 	                             final CyNetworkViewManager networkViewManager,
@@ -120,7 +113,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	                             final CyGroupManager groupMgr,
 	                             final RenderingEngineManager renderingEngineMgr,
 	                             final CyServiceRegistrar serviceRegistrar) {
-		super(undoSupport, null, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
+		super(null, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
 		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 	}
 
@@ -130,7 +123,7 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 	@Override
 	Set<CyNode> getNodes(final CyNetwork net) {
 		if (nodes == null) {
-			nodes = new HashSet<CyNode>(nodeList.getValue());
+			nodes = new HashSet<>(nodeList.getValue());
 
 			if (edgeList != null && edgeList.getValue() != null) {
 				final Collection<CyEdge> selectedEdges = edgeList.getValue();
@@ -179,5 +172,4 @@ public class NewNetworkCommandTask extends AbstractNetworkFromSelectionTask {
 		
 		return super.getNetworkName();
 	}
-
 }

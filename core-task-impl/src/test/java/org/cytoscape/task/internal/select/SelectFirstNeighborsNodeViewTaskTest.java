@@ -1,12 +1,28 @@
 package org.cytoscape.task.internal.select;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.Task;
+import org.junit.Before;
+import org.junit.Test;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +40,6 @@ package org.cytoscape.task.internal.select;
  * #L%
  */
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.Task;
-import org.junit.Before;
-import org.junit.Test;
-
 public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTester {
 
 	@Before
@@ -50,7 +50,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 	@Test
 	public void testRun() throws Exception {
 		// more setup
-		List<CyNode> nl = new ArrayList<CyNode>();
+		List<CyNode> nl = new ArrayList<>();
 		nl.add(e4);
 		when(net.getNeighborList(e3, CyEdge.Type.ANY)).thenReturn(nl);
 
@@ -60,7 +60,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		when(netView.getModel()).thenReturn(net);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(nv, netView, CyEdge.Type.ANY, eventHelper);
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, netView, CyEdge.Type.ANY, serviceRegistrar);
 		t.run(tm);
 
 		// check that the expected rows were set
@@ -72,7 +72,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		View<CyNode> nv = (View<CyNode>) mock(View.class);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(nv, null, CyEdge.Type.ANY, eventHelper);
+		Task t = new SelectFirstNeighborsNodeViewTask(nv, null, CyEdge.Type.ANY, serviceRegistrar);
 		t.run(tm);
 	}
 
@@ -81,7 +81,7 @@ public class SelectFirstNeighborsNodeViewTaskTest extends AbstractSelectTaskTest
 		CyNetworkView netView = mock(CyNetworkView.class);
 
 		// run the task
-		Task t = new SelectFirstNeighborsNodeViewTask(null, netView, CyEdge.Type.ANY, eventHelper);
+		Task t = new SelectFirstNeighborsNodeViewTask(null, netView, CyEdge.Type.ANY, serviceRegistrar);
 		t.run(tm);
 	}
 }

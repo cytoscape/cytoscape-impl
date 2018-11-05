@@ -1,12 +1,28 @@
 package org.cytoscape.task.internal.export.table;
 
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.TableTunable;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,55 +40,31 @@ package org.cytoscape.task.internal.export.table;
  * #L%
  */
 
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.internal.utils.TableTunable;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.util.ListSingleSelection;
-
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.Collections;
-
-
 public class NoGuiSelectExportTableTask extends AbstractTask {
 
 	@ContainsTunables
-	public TableTunable selectTable = null;
+	public TableTunable selectTable;
 
 	@ContainsTunables
 	public CyTableWriter tableWriter;
 	
 	private final CyTableWriterManager writerManager;
 	private final CyTableManager cyTableManagerServiceRef;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
 	private final CyApplicationManager cyApplicationManagerServiceRef;
-	private CyTable tbl = null;
-
-	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<CyTable, CyNetwork>();
-	public NoGuiSelectExportTableTask (CyTableWriterManager writerManager,CyTableManager cyTableManagerServiceRef, 
-			CyNetworkManager cyNetworkManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef){
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	private CyTable tbl;
+	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
+	
+	public NoGuiSelectExportTableTask(CyTableWriterManager writerManager, CyTableManager cyTableManagerServiceRef,
+			CyApplicationManager cyApplicationManagerServiceRef, CyServiceRegistrar serviceRegistrar) {
 		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
 		this.writerManager = writerManager;
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
 		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
+		this.serviceRegistrar = serviceRegistrar;
 
 		populateNetworkTableMap();
-		selectTable = new TableTunable(cyTableManagerServiceRef);
+		selectTable = new TableTunable(serviceRegistrar);
 
 		// Grab an arbitrary table
 		CyTable tab = getFirstTable();
@@ -84,7 +76,9 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 	}
 
 	private void populateNetworkTableMap() {
-		for (CyNetwork net: cyNetworkManagerServiceRef.getNetworkSet()) {
+		CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		
+		for (CyNetwork net: netManager.getNetworkSet()) {
 			this.tableNetworkMap.put(net.getDefaultNetworkTable(), net);
 			this.tableNetworkMap.put(net.getDefaultNodeTable(), net);
 			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);
@@ -97,10 +91,8 @@ public class NoGuiSelectExportTableTask extends AbstractTask {
 		return null;
 	}
 	
-
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
-
 		//Get the selected table
 		tbl = this.selectTable.getTable();
 		tableWriter = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);

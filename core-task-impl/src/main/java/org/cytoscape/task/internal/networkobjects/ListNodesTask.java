@@ -1,12 +1,26 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.NodeTunable;
+import org.cytoscape.util.json.CyJSONUtil;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,54 +38,34 @@ package org.cytoscape.task.internal.networkobjects;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.work.json.JSONResult;
-
-import org.cytoscape.task.internal.utils.NodeTunable;
-
 public class ListNodesTask extends AbstractTask implements ObservableTask {
-	private final CyApplicationManager appMgr;
+	
 	private final CyServiceRegistrar serviceRegistrar;
-	List<CyNode> nodes = null;
-	CyNetwork network = null;
+	List<CyNode> nodes;
+	CyNetwork network;
 
 	@ContainsTunables
 	public NodeTunable nodeTunable;
 
-	public ListNodesTask(CyApplicationManager appMgr, final  CyServiceRegistrar serviceRegistrar) {
-		this.appMgr = appMgr;
+	public ListNodesTask(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		nodeTunable = new NodeTunable(appMgr);
+		nodeTunable = new NodeTunable(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(final TaskMonitor tm) {
 		network = nodeTunable.getNetwork();
-
 		nodes = nodeTunable.getNodeList();
 
 		if (nodes == null || nodes.size() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.WARN, "No nodes found");
+			tm.showMessage(TaskMonitor.Level.WARN, "No nodes found");
 			return;
 		}
 
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Found "+nodes.size()+" nodes");
+		tm.showMessage(TaskMonitor.Level.INFO, "Found " + nodes.size() + " nodes");
 	}
 
+	@Override
 	public Object getResults(Class type) {
 		if (type.equals(List.class)) {
 			return nodes;
@@ -91,6 +85,7 @@ public class ListNodesTask extends AbstractTask implements ObservableTask {
 		return nodes;
 	}
 
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(CyNode.class, String.class, JSONResult.class);
 	}

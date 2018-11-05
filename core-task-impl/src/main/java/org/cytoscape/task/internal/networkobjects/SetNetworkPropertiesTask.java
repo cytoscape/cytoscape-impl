@@ -1,12 +1,21 @@
 package org.cytoscape.task.internal.networkobjects;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,25 +32,6 @@ package org.cytoscape.task.internal.networkobjects;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.task.internal.utils.DataUtils;
 
 public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 
@@ -69,31 +59,29 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 					 exampleStringValue="white,My network title")
 	public String valueList = null;
 
-	public SetNetworkPropertiesTask(CyApplicationManager appMgr, CyNetworkViewManager viewManager,
-	                                RenderingEngineManager reManager) {
-		super(appMgr, viewManager, reManager);
+	public SetNetworkPropertiesTask(CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
-		if (network == null) {
-			network = appManager.getCurrentNetwork();
-		}
+	public void run(final TaskMonitor tm) {
+		if (network == null)
+			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 
 		if (propertyList == null || propertyList.length() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Property list must be specified");
 			return;
 		}
 
 		if (valueList == null || valueList.length() == 0) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Value list must be specified");
 			return;
 		}
 
 		String[] props = propertyList.split(",");
 		String[] values = DataUtils.getCSV(valueList);
 		if (props.length != values.length) {
-			taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
+			tm.showMessage(TaskMonitor.Level.ERROR, "Property list and value list are not the same length");
 			return;
 		}
 
@@ -103,12 +91,11 @@ public class SetNetworkPropertiesTask extends AbstractPropertyTask {
 			try {
 				VisualProperty vp = getProperty(network, network, property.trim());
 				setPropertyValue(network, network, vp, value, bypass);
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkName(network)+" "+vp.getDisplayName()+" set to "+value.toString());
+				tm.showMessage(TaskMonitor.Level.INFO, DataUtils.getNetworkName(network)+" "+vp.getDisplayName()+" set to "+value.toString());
 			} catch (Exception e) {
-				taskMonitor.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
+				tm.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
 				return;
 			}
 		}
-	
 	}
 }

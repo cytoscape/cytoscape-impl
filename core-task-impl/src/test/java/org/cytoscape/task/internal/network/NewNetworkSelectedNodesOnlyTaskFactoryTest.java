@@ -39,7 +39,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -82,10 +82,12 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 		when(layoutMgr.getDefaultLayout()).thenReturn(defLayout);
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
+		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		
 		NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = 
-				new NewNetworkSelectedNodesOnlyTaskFactoryImpl(undoSupport, crnf, cnvf, netmgr, networkViewManager,
+				new NewNetworkSelectedNodesOnlyTaskFactoryImpl(crnf, cnvf, netmgr, networkViewManager,
 						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
 		
 		CyNetwork network = networkFactory.createNetwork();
