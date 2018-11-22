@@ -1,21 +1,19 @@
 package org.cytoscape.internal;
 
-import java.util.Properties;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyShutdown;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
-import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
+import org.cytoscape.internal.view.help.AboutDialog;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
 import org.osgi.framework.BundleContext;
 
-import com.apple.eawt.AppEvent.AboutEvent;
-import com.apple.eawt.AppEvent.QuitEvent;
 import com.apple.eawt.Application;
-import com.apple.eawt.QuitResponse;
 
 /*
  * #%L
@@ -23,7 +21,7 @@ import com.apple.eawt.QuitResponse;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,28 +41,42 @@ import com.apple.eawt.QuitResponse;
 
 public class MacCyActivator extends AbstractCyActivator {
 	
+	private AboutDialog aboutDialog;
+	
 	@Override
 	public void start(BundleContext context) throws Exception {
 		final CyServiceRegistrar serviceRegistrar = getService(context, CyServiceRegistrar.class);
 		final CyShutdown shutdown = getService(context, CyShutdown.class);
-		final TaskFactory aboutTaskFactory = new HelpAboutTaskFactory(serviceRegistrar);
-		final DialogTaskManager taskManager = getService(context,DialogTaskManager.class);
 		
 		final CyShutdownEvent[] lastShutdownEvent = new CyShutdownEvent[1];
-		CyShutdownListener listener = (CyShutdownEvent e) -> {
-			lastShutdownEvent[0] = e;
+		CyShutdownListener listener = evt -> {
+			lastShutdownEvent[0] = evt;
 		};
-		registerService(context, listener, CyShutdownListener.class, new Properties());
+		registerService(context, listener, CyShutdownListener.class);
 		
 		Application application = Application.getApplication();
-		application.setQuitHandler((QuitEvent event, QuitResponse response) -> {
+		application.setQuitHandler((evt, response) -> {
 			shutdown.exit(0);
-			if (lastShutdownEvent[0] != null && !lastShutdownEvent[0].actuallyShutdown()) {
+			
+			if (lastShutdownEvent[0] != null && !lastShutdownEvent[0].actuallyShutdown())
 				response.cancelQuit();
-			}
 		});
-		application.setAboutHandler((AboutEvent event) -> {
-			taskManager.execute(aboutTaskFactory.createTaskIterator());
+		application.setAboutHandler(evt -> {
+			SwingUtilities.invokeLater(() -> {
+				if (aboutDialog == null) { // Prevents more than one about dialog
+					aboutDialog = new AboutDialog(serviceRegistrar);
+					aboutDialog.addWindowListener(new WindowAdapter() {
+						@Override
+						public void windowClosed(WindowEvent e) {
+							aboutDialog = null;
+						}
+					});
+				}
+				
+				aboutDialog.pack();
+				aboutDialog.setLocationRelativeTo(aboutDialog.getOwner());
+				aboutDialog.setVisible(true);
+			});
 		});
 	}
 }

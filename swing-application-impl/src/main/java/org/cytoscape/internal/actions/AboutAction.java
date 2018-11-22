@@ -1,8 +1,10 @@
-package org.cytoscape.internal.view.help;
+package org.cytoscape.internal.actions;
 
+import java.awt.event.ActionEvent;
+
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.internal.view.help.AboutDialog;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -10,7 +12,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,16 +30,29 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class HelpAboutTaskFactory extends AbstractTaskFactory {
+@SuppressWarnings("serial")
+public class AboutAction extends AbstractCyAction {
 
 	private final CyServiceRegistrar serviceRegistrar;
-
-	public HelpAboutTaskFactory(final CyServiceRegistrar serviceRegistrar) {
+	
+	public AboutAction(String menu, CyServiceRegistrar serviceRegistrar) {
+		super("About");
+		setPreferredMenu(menu);
+		setMenuGravity(Short.MAX_VALUE);
+		
 		this.serviceRegistrar = serviceRegistrar;
 	}
-
+	
 	@Override
-	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpAboutTask(serviceRegistrar));
+	public void actionPerformed(ActionEvent evt) {
+		AboutDialog dialog = new AboutDialog(serviceRegistrar);
+		dialog.pack();
+		dialog.setLocationRelativeTo(dialog.getOwner());
+		dialog.setVisible(true);
+	}
+	
+	@Override
+	public boolean isEnabled() {
+		return true;
 	}
 }
