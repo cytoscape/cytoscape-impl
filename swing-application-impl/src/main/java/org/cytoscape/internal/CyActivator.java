@@ -48,6 +48,7 @@ import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
+import org.cytoscape.internal.actions.AboutAction;
 import org.cytoscape.internal.actions.BookmarkAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CreateNetworkViewsAction;
@@ -105,7 +106,6 @@ import org.cytoscape.internal.view.NetworkViewMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
 import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
-import org.cytoscape.internal.view.help.HelpAboutTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
@@ -188,7 +188,6 @@ public class CyActivator extends AbstractCyActivator {
 	private HelpUserManualTaskFactory helpUserManualTaskFactory;
 	private HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory;
 	private HelpReportABugTaskFactory helpReportABugTaskFactory;
-	private HelpAboutTaskFactory helpAboutTaskFactory;
 	
 	private CyDesktopManager cyDesktopManager;
 	
@@ -434,11 +433,8 @@ public class CyActivator extends AbstractCyActivator {
 				logger.error("Cannot start MacCyActivator", e);
 			}
 		} else {
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, HELP_MENU);
-			props.setProperty(TITLE, "About");
-			props.setProperty(MENU_GRAVITY,"10.0");
-			registerService(bc, helpAboutTaskFactory, TaskFactory.class, props);
+			AboutAction aboutAction = new AboutAction(HELP_MENU, serviceRegistrar);
+			registerService(bc, aboutAction, CyAction.class);
 			
 			registerService(bc, exitAction, CyAction.class);
 		}
@@ -490,7 +486,6 @@ public class CyActivator extends AbstractCyActivator {
 		helpUserManualTaskFactory = new HelpUserManualTaskFactory(serviceRegistrar);
 		helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(serviceRegistrar);
 		helpReportABugTaskFactory = new HelpReportABugTaskFactory(serviceRegistrar);
-		helpAboutTaskFactory = new HelpAboutTaskFactory(serviceRegistrar);
 		
 		cyDesktopManager = new CyDesktopManager(netViewMediator);
 		
