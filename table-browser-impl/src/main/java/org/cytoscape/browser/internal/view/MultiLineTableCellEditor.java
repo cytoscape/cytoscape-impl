@@ -1,12 +1,38 @@
 package org.cytoscape.browser.internal.view;
 
+import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
+
+import javax.swing.AbstractCellEditor;
+import javax.swing.BorderFactory;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.UIManager;
+import javax.swing.event.CellEditorListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellEditor;
+
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,45 +50,23 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-
-import javax.swing.AbstractCellEditor;
-import javax.swing.BorderFactory;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableCellEditor;
-
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.util.EventObject;
-
-import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
-
 @SuppressWarnings("serial")
 public class MultiLineTableCellEditor extends AbstractCellEditor implements TableCellEditor, ActionListener {
 	
-	private final static int CLICK_COUNT_TO_START = 2;
-	private ResizableTextArea textArea;
+	public static final String UPDATE_BOUNDS = "UpdateBounds";
+	
 	public static Object lastValueUserEntered;
+	
+	private ResizableTextArea textArea;
+	private int lastRow = -1;
 
 	public MultiLineTableCellEditor() {
-		textArea = new ResizableTextArea(this);
+		textArea = new ResizableTextArea();
 		textArea.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground")));
 		textArea.setLineWrap(true);
 		textArea.setWrapStyleWord(true);
-		Font f = textArea.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()); 		//   #4145
-		textArea.setFont(f);
+		
+		makeSmall(textArea);
 	}
 
 	@Override
@@ -72,8 +76,7 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 
 	@Override
 	public boolean isCellEditable(EventObject e) {
-		return !(e instanceof MouseEvent)
-		       || (((MouseEvent) e).getClickCount() >= CLICK_COUNT_TO_START);
+		return !(e instanceof MouseEvent) || (((MouseEvent) e).getClickCount() >= 2);
 	}
 
 	@Override
@@ -82,24 +85,50 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 	}
 
 	@Override
-	public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected,
-			final int row, final int column) {
-		final String text = (value != null) ? ((ValidatedObjectAndEditString)value).getEditString() : "";
+	public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+		lastRow = row;
+		
+		String text = value != null ? ((ValidatedObjectAndEditString) value).getEditString() : "";
 		textArea.setTable(table);
 		textArea.setText(text);
 
 		return textArea;
 	}
 
-	public static final String UPDATE_BOUNDS = "UpdateBounds";
-
 	class ResizableTextArea extends JTextArea implements KeyListener {
+		
 		private JTable table;
-		private MultiLineTableCellEditor parent;
 
-		ResizableTextArea(final MultiLineTableCellEditor parent) {
-			this.parent = parent;
+		private DocumentListener listener = new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateBounds();
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateBounds();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateBounds();
+			}
+		};
+		
+		ResizableTextArea() {
 			addKeyListener(this);
+			
+			addCellEditorListener(new CellEditorListener() {
+				@Override
+				public void editingStopped(ChangeEvent e) {
+					resetSize();
+					lastRow = -1;
+				}
+				@Override
+				public void editingCanceled(ChangeEvent e) {
+					resetSize();
+					lastRow = -1;
+				}
+			});
 		}
 
 		public void setTable(JTable t) {
@@ -130,37 +159,30 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 			super.removeNotify();
 		}
 
-		DocumentListener listener = new DocumentListener() {
-			@Override
-			public void insertUpdate(DocumentEvent e) {
-				updateBounds();
-			}
-			@Override
-			public void removeUpdate(DocumentEvent e) {
-				updateBounds();
-			}
-			@Override
-			public void changedUpdate(DocumentEvent e) {
-				updateBounds();
-			}
-		};
-
 		private void updateBounds() {
-			if (table == null) {
-				System.err.println("table is null");
+			if (table == null || !table.isEditing())
 				return;
-			}
 
-			if (table.isEditing()) {
-				Rectangle cellRect = table.getCellRect(table.getEditingRow(),
-				                                       table.getEditingColumn(), false);
-				Dimension prefSize = getPreferredSize();
-				putClientProperty(UPDATE_BOUNDS, Boolean.TRUE);
-				setBounds(getX(), getY(), Math.min(cellRect.width, prefSize.width),
-				          Math.max(cellRect.height + prefSize.height, prefSize.height));
-				putClientProperty(UPDATE_BOUNDS, Boolean.FALSE);
-				validate();
-			}
+			validate();
+			
+			Rectangle cellRect = table.getCellRect(table.getEditingRow(), table.getEditingColumn(), false);
+			Dimension prefSize = getPreferredSize();
+			putClientProperty(UPDATE_BOUNDS, Boolean.TRUE);
+			setBounds(getX(), getY(), Math.min(cellRect.width, prefSize.width),
+					Math.max(cellRect.height, prefSize.height));
+			putClientProperty(UPDATE_BOUNDS, Boolean.FALSE);
+			
+			validate();
+
+			table.setRowHeight(table.getEditingRow(), getSize().height);
+		}
+		
+		private void resetSize() {
+			if (lastRow < 0 || lastRow > table.getRowCount())
+				return;
+		
+			table.setRowHeight(lastRow, table.getRowHeight());
+			super.setBounds(getX(), getY(), getSize().width, table.getRowHeight());
 		}
 
 		//

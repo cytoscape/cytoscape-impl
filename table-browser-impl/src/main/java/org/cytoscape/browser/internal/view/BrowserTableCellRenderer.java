@@ -1,12 +1,31 @@
 package org.cytoscape.browser.internal.view;
 
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.util.Properties;
+
+import javax.swing.BorderFactory;
+import javax.swing.Icon;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
+import javax.swing.table.TableCellRenderer;
+
+import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +43,6 @@ package org.cytoscape.browser.internal.view;
  * #L%
  */
 
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.util.Properties;
-
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.UIManager;
-import javax.swing.border.Border;
-import javax.swing.table.TableCellRenderer;
-
-import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-
 /** Cell renderer for attribute browser table. */
 class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 
@@ -55,9 +56,10 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 	private final IconManager iconManager;
 	private final CyProperty<Properties> propManager;
 
-	public BrowserTableCellRenderer(final IconManager iconManager, final CyProperty<Properties> propManager) {
-		this.iconManager = iconManager;
-		this.propManager = propManager;
+	@SuppressWarnings("unchecked")
+	public BrowserTableCellRenderer(CyServiceRegistrar serviceRegistrar) {
+		this.iconManager = serviceRegistrar.getService(IconManager.class);
+		this.propManager = serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
 		defaultFont = getFont().deriveFont(LookAndFeelUtil.getSmallFontSize());
 		setOpaque(true);
 
@@ -108,7 +110,6 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 			else if (validatedObj instanceof Boolean)
 				displayText = validatedObj == Boolean.TRUE ? IconManager.ICON_CHECK_SQUARE : IconManager.ICON_SQUARE_O;
 			else if (validatedObj instanceof Double) {
-
 				final BrowserTableColumnModel model = (BrowserTableColumnModel) table.getColumnModel();
 				final String colName = table.getColumnName(column);
 				String formatStr = model.getColumnFormat(colName);
@@ -120,16 +121,14 @@ class BrowserTableCellRenderer extends JLabel implements TableCellRenderer {
 					displayText = validatedObj.toString();
 				else
 					displayText = String.format(formatStr, validatedObj);
-			} else
+			} else {
 				displayText = validatedObj.toString();
+			}
 
 			setText(displayText);
 			String tooltipText = validatedObj instanceof Boolean ? validatedObj.toString() : displayText;
 
-			if (tooltipText.length() > 100)
-				setToolTipText(tooltipText.substring(0, 100) + "...");
-			else
-				setToolTipText(tooltipText);
+			setToolTipText(tooltipText);
 		}
 
 		// If selected, return

@@ -40,6 +40,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
+import javax.swing.JToolTip;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -75,9 +76,7 @@ import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.slf4j.Logger;
@@ -89,7 +88,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -127,8 +126,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	// For right-click menu
 	private JPopupMenu rightClickPopupMenu;
 	private JPopupMenu rightClickHeaderPopupMenu;
-	private JMenuItem openFormulaBuilderMenuItem = null;
+	private JMenuItem openFormulaBuilderMenuItem;
 
+	private MultiLineTableCellEditor multiLineCellEditor;
+	
 	private final EquationCompiler compiler;
 	private final PopupMenuHelper popupMenuHelper;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -138,20 +139,21 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 
 	// ==[ CONSTRUCTORS ]===============================================================================================
 	
-	public BrowserTable(final EquationCompiler compiler, final PopupMenuHelper popupMenuHelper,
-			final CyServiceRegistrar serviceRegistrar) {
+	public BrowserTable(EquationCompiler compiler, PopupMenuHelper popupMenuHelper,
+			CyServiceRegistrar serviceRegistrar) {
 		this.compiler = compiler;
 		this.popupMenuHelper = popupMenuHelper;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar.getService(IconManager.class), serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)"));
+		cellRenderer = new BrowserTableCellRenderer(serviceRegistrar);
+		multiLineCellEditor = new MultiLineTableCellEditor();
 		
 		init();
 		setAutoCreateColumnsFromModel(false);
 		setAutoCreateRowSorter(true);
 		setCellSelectionEnabled(true);
 		setShowGrid(false);
-		setDefaultEditor(Object.class, new MultiLineTableCellEditor());
+		setDefaultEditor(Object.class, multiLineCellEditor);
 		getPopupMenu();
 		getHeaderPopupMenu();
 		setKeyStroke();
@@ -323,6 +325,15 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			row = selectionModel.getMinSelectionIndex();
 		
 		return row;
+	}
+	
+	@Override
+	public JToolTip createToolTip() {
+		MultiLineToolTip tip = new MultiLineToolTip();
+		tip.setMaximumSize(new Dimension(480, 320));
+		tip.setComponent(this);
+		
+		return tip;
 	}
 	
 	public void showListContents(int modelRow, int modelColumn, MouseEvent e) {
