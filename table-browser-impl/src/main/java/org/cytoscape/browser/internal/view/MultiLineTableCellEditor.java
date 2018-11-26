@@ -176,29 +176,34 @@ public class MultiLineTableCellEditor extends AbstractCellEditor implements Tabl
 		}
 
 		@Override
-		public void keyPressed(final KeyEvent event) {
-			if (event.getKeyCode() != KeyEvent.VK_ENTER)
+		public void keyPressed(final KeyEvent evt) {
+			if (evt.getKeyCode() == KeyEvent.VK_ESCAPE) {
+				cancelCellEditing();
+				this.transferFocus();
+				return;
+			}
+			
+			if (evt.getKeyCode() != KeyEvent.VK_ENTER)
 				return;
 
-			final int modifiers = event.getModifiers();
+			final int modifiers = evt.getModifiers();
 
 			// We want to move to the next cell if Enter and no modifiers have been pressed:
 			if (modifiers == 0) {
-				parent.stopCellEditing();
+				stopCellEditing();
 				this.transferFocus();
 				return;
 			}
 
 			// We want to move to the previous cell if Shift+Enter have been pressed:
 			if (modifiers == KeyEvent.VK_SHIFT) {
-				parent.stopCellEditing();
+				stopCellEditing();
 				this.transferFocusBackward();
 				return;
 			}
 
-			// We want to insert a newline if Enter+Alt or Enter+Alt+Meta have been pressed:
-			final int OPTION_AND_COMMAND = 12; // On Mac to emulate Excel.
-			if (modifiers == KeyEvent.VK_ALT || modifiers == OPTION_AND_COMMAND) {
+			// We want to insert a newline if Enter+Alt or Enter+Option (macOS) have been pressed:
+			if (modifiers == KeyEvent.VK_ALT || (isMac() && evt.isAltDown())) {
 				final int caretPosition = this.getCaretPosition();
 				final StringBuilder text = new StringBuilder(this.getText());
 				this.setText(text.insert(caretPosition, '\n').toString());
