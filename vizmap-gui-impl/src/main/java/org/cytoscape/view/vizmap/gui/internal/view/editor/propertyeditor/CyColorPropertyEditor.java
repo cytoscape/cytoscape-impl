@@ -30,7 +30,7 @@ import com.l2fprod.common.swing.PercentLayout;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -70,7 +70,7 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 			
 			((JPanel) editor).add(editBtn = ComponentFactory.Helper.getFactory().createMiniButton());
 			editBtn.setText(IconManager.ICON_ELLIPSIS_H);
-			editBtn.setToolTipText("Edit color");
+			editBtn.setToolTipText("Edit Color...");
 			editBtn.setFont(iconManager.getIconFont(14.0f));
 			editBtn.addActionListener((ActionEvent e) -> {
 				selectColor();
@@ -78,7 +78,7 @@ public class CyColorPropertyEditor extends AbstractPropertyEditor {
 			
 			((JPanel) editor).add(removeBtn = ComponentFactory.Helper.getFactory().createMiniButton());
 			removeBtn.setText(IconManager.ICON_TRASH_O);
-			removeBtn.setToolTipText("Remove color");
+			removeBtn.setToolTipText("Remove Color");
 			removeBtn.setFont(iconManager.getIconFont(14.0f));
 			removeBtn.addActionListener((ActionEvent e) -> {
 				selectNull();
