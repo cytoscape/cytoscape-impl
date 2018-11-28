@@ -1,12 +1,17 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor;
 
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyStringPropertyEditor;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,15 +29,12 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor;
  * #L%
  */
 
-import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
-import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingCellRendererFactory;
-import org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor.CyStringPropertyEditor;
-
 public class StringVisualPropertyEditor extends BasicVisualPropertyEditor<String> {
 
-	public StringVisualPropertyEditor(ContinuousMappingCellRendererFactory cellRendererFactory) {
-		super(String.class, new CyStringPropertyEditor(), ContinuousEditorType.DISCRETE, cellRendererFactory);
+	public StringVisualPropertyEditor(ContinuousMappingCellRendererFactory cellRendererFactory,
+			ServicesUtil servicesUtil) {
+		super(String.class, new CyStringPropertyEditor(servicesUtil), ContinuousEditorType.DISCRETE,
+				cellRendererFactory);
 		discreteTableCellRenderer = REG.getRenderer(String.class);
 	}
-
 }

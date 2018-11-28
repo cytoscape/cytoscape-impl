@@ -1,22 +1,13 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.valueeditor;
 
-import static javax.swing.GroupLayout.DEFAULT_SIZE;
-import static javax.swing.GroupLayout.PREFERRED_SIZE;
-
 import java.awt.Component;
 
-import javax.swing.GroupLayout;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
-import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.util.ViewUtil;
 
 /*
  * #%L
@@ -44,8 +35,6 @@ import org.cytoscape.view.vizmap.gui.editor.VisualPropertyValueEditor;
 
 public class StringValueEditor implements VisualPropertyValueEditor<String> {
 
-	private static final String MESSAGE = "Enter a new text value:";
-
 	@Override
 	@SuppressWarnings("unchecked")
 	public <S extends String> String showEditor(Component parent, S initialValue, VisualProperty<S> vp) {
@@ -53,7 +42,7 @@ public class StringValueEditor implements VisualPropertyValueEditor<String> {
 			return showSimpleTextDialog(parent, (String) initialValue, (VisualProperty<String>) vp);
 		
 		// Labels and Tooltips can have multiple lines
-		return showMultiLineDialog(parent, (String) initialValue, (VisualProperty<String>) vp);
+		return ViewUtil.showMultiLineTextEditor(parent, (String) initialValue, (VisualProperty<String>) vp);
 	}
 
 	@Override
@@ -62,42 +51,7 @@ public class StringValueEditor implements VisualPropertyValueEditor<String> {
 	}
 
 	private String showSimpleTextDialog(Component parent, String initialValue, VisualProperty<String> vp) {
-		return (String) JOptionPane.showInputDialog(parent, MESSAGE, vp.getDisplayName(), JOptionPane.PLAIN_MESSAGE,
-				null, null, initialValue);
-	}
-	
-	private String showMultiLineDialog(Component parent, String initialValue, VisualProperty<String> vp) {
-		JLabel label = new JLabel(MESSAGE);
-		JTextArea ta = new JTextArea(initialValue, 5, 30);
-		JScrollPane scrollPane = new JScrollPane(ta);
-		JPanel panel = new JPanel();
-		
-		if (LookAndFeelUtil.isAquaLAF())
-			panel.setOpaque(false);
-		
-		GroupLayout layout = new GroupLayout(panel);
-		panel.setLayout(layout);
-		layout.setAutoCreateContainerGaps(false);
-		layout.setAutoCreateGaps(true);
-        
-        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-                .addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-                .addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(layout.createSequentialGroup()
-	            .addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-	            .addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-		
-		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(
-				parent,
-				panel,
-				vp.getDisplayName(),
-				JOptionPane.OK_CANCEL_OPTION,
-				JOptionPane.PLAIN_MESSAGE,
-				null))
-			return ta.getText();
-		
-		return initialValue;
+		return (String) JOptionPane.showInputDialog(parent, ViewUtil.TEXT_EDITOR_LABEL, vp.getDisplayName(),
+				JOptionPane.PLAIN_MESSAGE, null, null, initialValue);
 	}
 }

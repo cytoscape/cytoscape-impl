@@ -141,7 +141,7 @@ public class CyActivator extends AbstractCyActivator {
 		final NumberVisualPropertyEditor<Float> floatPropertyEditor = new NumberVisualPropertyEditor<>(Float.class, cmCellRendererFactory);
 		
 		final FontVisualPropertyEditor fontVisualPropertyEditor = new FontVisualPropertyEditor(Font.class, cyFontPropertyEditor, cmCellRendererFactory);
-		final StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(cmCellRendererFactory);
+		final StringVisualPropertyEditor stringPropertyEditor = new StringVisualPropertyEditor(cmCellRendererFactory, servicesUtil);
 		final CyComboBoxPropertyEditor booleanEditor = new CyComboBoxPropertyEditor();
 		booleanEditor.setAvailableValues(new Boolean[] {true, false});
 		final BooleanVisualPropertyEditor booleanVisualPropertyEditor = new BooleanVisualPropertyEditor(booleanEditor, cmCellRendererFactory);

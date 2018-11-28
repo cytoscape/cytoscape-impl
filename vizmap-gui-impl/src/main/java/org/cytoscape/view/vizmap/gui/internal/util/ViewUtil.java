@@ -1,7 +1,21 @@
 package org.cytoscape.view.vizmap.gui.internal.util;
 
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+
+import java.awt.Component;
+
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.VisualProperty;
 import org.slf4j.Logger;
 
 /*
@@ -10,7 +24,7 @@ import org.slf4j.Logger;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,6 +43,8 @@ import org.slf4j.Logger;
  */
 
 public final class ViewUtil {
+
+	public static final String TEXT_EDITOR_LABEL = "Enter a new text value:";
 
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
@@ -58,6 +74,45 @@ public final class ViewUtil {
 					e.printStackTrace();
 			}
 		}
+	}
+	
+	public static String showMultiLineTextEditor(Component parent, String initialValue) {
+		return showMultiLineTextEditor(parent, initialValue, null);
+	}
+	
+	public static String showMultiLineTextEditor(Component parent, String initialValue, VisualProperty<String> vp) {
+		JLabel label = new JLabel(TEXT_EDITOR_LABEL);
+		JTextArea ta = new JTextArea(initialValue, 5, 30);
+		JScrollPane scrollPane = new JScrollPane(ta);
+		JPanel panel = new JPanel();
+		
+		if (LookAndFeelUtil.isAquaLAF())
+			panel.setOpaque(false);
+		
+		GroupLayout layout = new GroupLayout(panel);
+		panel.setLayout(layout);
+		layout.setAutoCreateContainerGaps(false);
+		layout.setAutoCreateGaps(true);
+        
+        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+                .addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+                .addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        layout.setVerticalGroup(layout.createSequentialGroup()
+	            .addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+	            .addComponent(scrollPane, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+		
+		if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(
+				parent,
+				panel,
+				vp != null ? vp.getDisplayName() : "Text Editor",
+				JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE,
+				null))
+			return ta.getText();
+		
+		return initialValue;
 	}
 	
 	private ViewUtil() {
