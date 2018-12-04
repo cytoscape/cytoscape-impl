@@ -2,8 +2,8 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.propertyeditor;
 
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Objects;
 
 import javax.swing.JButton;
@@ -61,6 +61,21 @@ public class CyStringPropertyEditor extends AbstractPropertyEditor {
 		
 		editor = new JPanel(new PercentLayout(PercentLayout.HORIZONTAL, 0)) {
 			@Override
+			public void addNotify() {
+				super.addNotify();
+				
+				// Multiple lines already?
+				if (isMultiLine(currentValue)) {
+					// Don't let the user type in the text field, in order to preserve the line breaks
+					textFld.setEnabled(false);
+					editBtn.requestFocusInWindow();
+				} else {
+					// The text can be edited in the text field
+					textFld.setEnabled(true);
+					textFld.selectAll();
+				}
+			}
+			@Override
 			public void removeNotify() {
 				checkChange();
 				super.removeNotify();
@@ -75,21 +90,22 @@ public class CyStringPropertyEditor extends AbstractPropertyEditor {
 		textFld.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void removeUpdate(DocumentEvent evt) {
-				onEvent(evt);
+				onTextFieldUpdated(evt);
 			}
 			@Override
 			public void insertUpdate(DocumentEvent evt) {
-				onEvent(evt);
+				onTextFieldUpdated(evt);
 			}
 			@Override
 			public void changedUpdate(DocumentEvent evt) {
-				onEvent(evt);
+				onTextFieldUpdated(evt);
 			}
 		});
-		textFld.addFocusListener(new FocusAdapter() {
+		textFld.addMouseListener(new MouseAdapter() {
 			@Override
-			public void focusGained(FocusEvent evt) {
-				textFld.selectAll();
+			public void mouseClicked(MouseEvent evt) {
+				if (evt.getClickCount() >= 2 && isMultiLine(currentValue))
+					showPopupEditor();
 			}
 		});
 		
@@ -114,23 +130,29 @@ public class CyStringPropertyEditor extends AbstractPropertyEditor {
 		ignoreDocumentEvents = false;
 	}
 	
-	private void onEvent(DocumentEvent evt) {
+	private void onTextFieldUpdated(DocumentEvent evt) {
 		if (!ignoreDocumentEvents)
 			newValue = textFld.getText();
 	}
 	
 	private void checkChange() {
-		if (!Objects.equals(currentValue, newValue))
-			firePropertyChange(currentValue, newValue);
+		if (!Objects.equals(currentValue, newValue)) {
+			String oldValue = currentValue;
+			currentValue = newValue;
+			firePropertyChange(oldValue, newValue);
+		}
 	}
 
 	private void showPopupEditor() {
 		newValue = ViewUtil.showMultiLineTextEditor(textFld, newValue);
+		checkChange();
 		
 		ignoreDocumentEvents = true;
 		textFld.setText(newValue);
 		ignoreDocumentEvents = false;
-		
-		checkChange();
+	}
+	
+	private boolean isMultiLine(String value) {
+		return value != null && value.contains("\n");
 	}
 }
