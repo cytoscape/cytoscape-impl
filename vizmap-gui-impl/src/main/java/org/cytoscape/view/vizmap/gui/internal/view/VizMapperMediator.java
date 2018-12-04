@@ -190,7 +190,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 		this.vizMapPropertyBuilder = vizMapPropertyBuilder;
 		
 		final Collator collator = Collator.getInstance(Locale.getDefault());
-		mappingGenerators = new TreeMap<>((final String s1, final String s2) -> {
+		mappingGenerators = new TreeMap<>((s1, s2) -> {
 			return collator.compare(s1, s2);
 		});
 		

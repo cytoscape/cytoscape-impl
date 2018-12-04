@@ -27,6 +27,7 @@ package org.cytoscape.view.vizmap.gui.internal.event;
 import java.beans.PropertyChangeEvent;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.TreeSet;
 
 import javax.swing.JOptionPane;
@@ -105,12 +106,8 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 		final Object newVal = e.getNewValue();
 		final Object oldVal = e.getOldValue();
 
-		// Check update is necessary or not.
-		if (newVal == null && oldVal == null)
-			return;
-
 		// Same value. No change required.
-		if (newVal != null && newVal.equals(oldVal))
+		if (Objects.equals(newVal, oldVal))
 			return;
 
 		final VisualPropertySheetItem<?> vpSheetItem = vizMapperMediator.getCurrentVisualPropertySheetItem();
@@ -315,7 +312,7 @@ public final class CellEditorEventHandler implements VizMapEventHandler {
 			mapping.putMapValue(key, newVal);
 			
 			// Undo support
-			if ((oldVal != null && newVal == null) || (newVal != null && !newVal.equals(oldVal))) {
+			if (!Objects.equals(oldVal, newVal)) {
 				final UndoSupport undo = servicesUtil.get(UndoSupport.class);
 				undo.postEdit(new AbstractCyEdit("Set Discrete Mapping Value") {
 					@Override
