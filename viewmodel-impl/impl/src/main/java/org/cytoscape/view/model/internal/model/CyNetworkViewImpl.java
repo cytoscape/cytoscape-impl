@@ -1,5 +1,6 @@
 package org.cytoscape.view.model.internal.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -12,57 +13,70 @@ import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.pcollections.HashTreePSet;
 
-import cyclops.collections.immutable.PersistentMapX;
-import cyclops.collections.scala.ScalaHashMapX;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 
 public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkView {
 
 	private final String rendererId;
 	
-	private Runnable disposeListener;
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	
 	// Key is SUID of underlying model object.
-	private PersistentMapX<Long,CyNodeViewImpl> nodeViewMap = ScalaHashMapX.empty();
-	private PersistentMapX<Long,CyEdgeViewImpl> edgeViewMap = ScalaHashMapX.empty();
+	private Map<Long,CyNodeViewImpl> nodeViewMap = HashMap.empty();
+	private Map<Long,CyEdgeViewImpl> edgeViewMap = HashMap.empty();
 
-	private PersistentMapX<VisualProperty<?>,Object> defaultValues = ScalaHashMapX.empty();
-	private PersistentMapX<CyIdentifiable,PersistentMapX<VisualProperty<?>,Object>> vpValues = ScalaHashMapX.empty();
-	private PersistentMapX<CyIdentifiable,PersistentMapX<VisualProperty<?>,Object>> lockedValues = ScalaHashMapX.empty();
+	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
+	private Map<CyIdentifiable,Map<VisualProperty<?>,Object>> vpValues = HashMap.empty();
+	private Map<CyIdentifiable,Map<VisualProperty<?>,Object>> lockedValues = HashMap.empty();
 	
 	
+	/**
+	 * Normal constructor to be called by factory.
+	 */
 	public CyNetworkViewImpl(CyNetwork network, VisualLexicon visualLexicon, String rendererId) {
 		super(network);
 		this.rendererId = rendererId;
 		
-		for(VisualProperty<?> vp : visualLexicon.getAllVisualProperties()) {
-			defaultValues = defaultValues.plus(vp, vp.getDefault());
+		if(visualLexicon != null) {
+			for(VisualProperty<?> vp : visualLexicon.getAllVisualProperties()) {
+				defaultValues = defaultValues.put(vp, vp.getDefault());
+			}
 		}
 		
-		for(CyNode node : network.getNodeList()) {
-			addNode(node);
-		}
-		for(CyEdge edge : network.getEdgeList()) {
-			addEdge(edge);
+		if(network != null) {
+			network.getNodeList().forEach(this::addNode);
+			network.getEdgeList().forEach(this::addEdge);
 		}
 	}
+	
+	/** 
+	 * Copy constructor for snapshot.
+	 */
+	private CyNetworkViewImpl(CyNetworkViewImpl other) {
+		super(other.getModel());
+		this.rendererId = other.rendererId;
+		this.nodeViewMap = other.nodeViewMap;
+		this.edgeViewMap = other.edgeViewMap;
+		this.defaultValues = other.defaultValues;
+		this.vpValues = other.vpValues;
+		this.lockedValues = other.lockedValues;
+		// don't copy listeners, snapshot is not a "live" view
+	}
+	
+	
+	@Override
+	public CyNetworkViewImpl createSnapshot() {
+		return new CyNetworkViewImpl(this);
+	}
+	
 	
 	@Override
 	public CyNetworkViewImpl getNetworkView() {
 		return this;
 	}
 	
-	void onDispose(Runnable listener) {
-		this.disposeListener = listener;
-	}
-	
-	@Override
-	public void dispose() {
-		if(disposeListener != null)
-			disposeListener.run();
-	}
 
 	@Override
 	public void addNetworkViewListener(CyNetworkViewListener listener) {
@@ -77,7 +91,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	public View<CyNode> addNode(CyNode model) {
 		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
 		synchronized (this) {
-			nodeViewMap = nodeViewMap.plus(model.getSUID(), view);
+			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
 		}
 		return view;
 	}
@@ -85,7 +99,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	public View<CyEdge> addEdge(CyEdge model) {
 		CyEdgeViewImpl view = new CyEdgeViewImpl(this, model);
 		synchronized (this) {
-			edgeViewMap = edgeViewMap.plus(model.getSUID(), view);
+			edgeViewMap = edgeViewMap.put(model.getSUID(), view);
 		}
 		return view;
 	}
@@ -93,8 +107,8 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	public View<CyNode> removeNode(CyNode model) {
 		View<CyNode> view;
 		synchronized (this) {
-			view = get(nodeViewMap, model.getSUID());
-			nodeViewMap = nodeViewMap.minus(model.getSUID());
+			view = nodeViewMap.getOrElse(model.getSUID(), null);
+			nodeViewMap = nodeViewMap.remove(model.getSUID());
 			clearVisualProperties(view);
 		}
 		return view;
@@ -103,8 +117,8 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	public View<CyEdge> removeEdge(CyEdge model) {
 		View<CyEdge> view;
 		synchronized (this) {
-			view = get(edgeViewMap, model.getSUID());
-			edgeViewMap = edgeViewMap.minus(model.getSUID());
+			view = edgeViewMap.getOrElse(model.getSUID(), null); // MKTODO should I be using null???
+			edgeViewMap = edgeViewMap.remove(model.getSUID());
 			clearVisualProperties(view);
 		}
 		return view;
@@ -112,72 +126,72 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	
 	@Override
 	public View<CyNode> getNodeView(CyNode node) {
-		return get(nodeViewMap, node.getSUID());
+		return nodeViewMap.getOrElse(node.getSUID(), null);
 	}
 	
 	@Override
 	public View<CyEdge> getEdgeView(CyEdge edge) {
-		return get(edgeViewMap, edge.getSUID());
+		return edgeViewMap.getOrElse(edge.getSUID(), null);
 	}
 	
 	@Override
 	public Collection<View<CyNode>> getNodeViews() {
-		// This is safe because 'nodes' is immutable, there's no way for calling code to add a node of the wrong type.
-		return (Collection<View<CyNode>>) (Collection<?>) nodeViewMap.values();
+		return (Collection<View<CyNode>>) (Collection<?>) nodeViewMap.values().asJava();
 	}
 
 	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
-		return (Collection<View<CyEdge>>) (Collection<?>) edgeViewMap.values();
+		return (Collection<View<CyEdge>>) (Collection<?>) edgeViewMap.values().asJava();
 	}
 
 	@Override
 	public Collection<View<? extends CyIdentifiable>> getAllViews() {
-		return HashTreePSet.<View<? extends CyIdentifiable>>from(getNodeViews()).plusAll(getEdgeViews()).plus(this);
+		ArrayList<View<? extends CyIdentifiable>> list = new ArrayList<>();
+		list.addAll(getNodeViews());
+		list.addAll(getEdgeViews());
+		list.add(this);
+		return list;
 	}
 	
-	
-	private static PersistentMapX<VisualProperty<?>,Object> getValues(PersistentMapX<CyIdentifiable,PersistentMapX<VisualProperty<?>,Object>> valueMap, CyIdentifiable view) {
-		// Need this because the getOrDefault() method doesn't work on a scala map
-		return valueMap.containsKey(view) ? valueMap.get(view) : ScalaHashMapX.empty();
-	}
-	
-	private static <K,V> V get(PersistentMapX<K, V> map, K key) {
-		return map.containsKey(key) ? map.get(key) : null;
-	}
-	
+
 	public <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
-		PersistentMapX<VisualProperty<?>, Object> values = getValues(vpValues, view);
-		values = values.plus(vp, value);
-		vpValues = vpValues.plus(view, values);
+		synchronized (this) {
+			Map<VisualProperty<?>, Object> values = vpValues.getOrElse(view, HashMap.empty());
+			values = values.put(vp, value);
+			vpValues = vpValues.put(view, values);
+		}
 	}
 
 	public <T> T getVisualProperty(CyIdentifiable view, VisualProperty<T> vp) {
-		PersistentMapX<VisualProperty<?>, Object> values = getValues(vpValues, view);
-		Object value = get(values, vp);
+		Map<VisualProperty<?>, Object> values = vpValues.getOrElse(view, HashMap.empty());
+		Object value = values.getOrElse(vp, null);
 		if(value == null)
-			return (T) get(defaultValues, vp);
+			return (T) defaultValues.getOrElse(vp, null);
 		return (T) value;
 	}
 
 	public boolean isSet(CyIdentifiable view, VisualProperty<?> vp) {
-		return getValues(vpValues, view).containsKey(vp);
+		return vpValues.getOrElse(view, HashMap.empty()).containsKey(vp);
 	}
 
 	public <T, V extends T> void setLockedValue(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
-		PersistentMapX<VisualProperty<?>, Object> values = getValues(lockedValues, view);
-		values = values.plus(vp, value);
-		lockedValues = lockedValues.plus(view, values);
+		synchronized (this) {
+			Map<VisualProperty<?>, Object> values = lockedValues.getOrElse(view, HashMap.empty());
+			values = values.put(vp, value);
+			lockedValues = lockedValues.put(view, values);
+		}
 	}
 
 	public boolean isValueLocked(CyIdentifiable view, VisualProperty<?> vp) {
-		return getValues(lockedValues, view).containsKey(vp);
+		return lockedValues.getOrElse(view, HashMap.empty()).containsKey(vp);
 	}
 
 	public void clearValueLock(CyIdentifiable view, VisualProperty<?> vp) {
-		PersistentMapX<VisualProperty<?>, Object> values = getValues(lockedValues, view);
-		values = values.minus(vp);
-		lockedValues = lockedValues.plus(view, values);
+		synchronized (this) {
+			Map<VisualProperty<?>, Object> values = lockedValues.getOrElse(view, HashMap.empty());
+			values = values.remove(vp);
+			lockedValues = lockedValues.put(view, values);
+		}
 	}
 
 	public boolean isDirectlyLocked(CyIdentifiable view, VisualProperty<?> vp) {
@@ -187,8 +201,8 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 
 	public void clearVisualProperties(CyIdentifiable view) {
 		synchronized (this) {
-			vpValues = vpValues.minus(view);
-			lockedValues = lockedValues.minus(view);
+			vpValues = vpValues.remove(view);
+			lockedValues = lockedValues.remove(view);
 		}
 	}
 
@@ -223,5 +237,11 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 			listener.handleUpdateView();
 		}
 	}
-
+	
+	@Override
+	public void dispose() {
+		for(CyNetworkViewListener listener : listeners) {
+			listener.handleDispose();
+		}
+	}
 }
