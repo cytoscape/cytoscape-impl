@@ -29,6 +29,8 @@ import java.util.Properties;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryFactoryImpl;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -40,9 +42,15 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManagerImpl cyNetworkViewManager = new CyNetworkViewManagerImpl(serviceRegistrar);
 		registerAllServices(bc, cyNetworkViewManager, new Properties());
 
-		NullCyNetworkViewFactory nullCyNetworkViewFactory = new NullCyNetworkViewFactory();
-		Properties nullViewFactoryProperties = new Properties();
-		nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
-		registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
+		{
+			NullCyNetworkViewFactory nullCyNetworkViewFactory = new NullCyNetworkViewFactory();
+			Properties nullViewFactoryProperties = new Properties();
+			nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
+			registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
+		}
+		{
+			CyNetworkViewFactoryFactory factoryFactory = new CyNetworkViewFactoryFactoryImpl(serviceRegistrar);
+			registerService(bc, factoryFactory, CyNetworkViewFactoryFactory.class, new Properties());
+		}
 	}
 }

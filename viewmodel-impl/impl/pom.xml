@@ -45,6 +45,9 @@
 						<Export-Package>!${bundle.namespace}.*</Export-Package>
 						<Private-Package>${bundle.namespace}.*</Private-Package>
 						<Bundle-Activator>${bundle.namespace}.CyActivator</Bundle-Activator>
+						<Embed-Dependency>cyclops-scala,scala-library,cyclops-react,pcollections,Agrona,jool,reactive-streams</Embed-Dependency>
+						<Embed-Transitive>true</Embed-Transitive>
+						<Import-Package>*;resolution:=optional</Import-Package>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -57,5 +60,42 @@
 			<artifactId>application-api</artifactId>
 		 	<version>3.7.1-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+		    <groupId>com.aol.cyclops</groupId>
+		    <artifactId>cyclops-scala</artifactId>
+		    <version>9.0.0-FINAL</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.scala-lang</groupId>
+		    <artifactId>scala-library</artifactId>
+		    <version>2.12.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.aol.simplereact</groupId>
+			<artifactId>cyclops-react</artifactId>
+			<version>2.1.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.pcollections</groupId>
+			<artifactId>pcollections</artifactId>
+			<version>2.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.agrona</groupId>
+			<artifactId>Agrona</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.jooq</groupId>
+			<artifactId>jool</artifactId>
+			<version>0.9.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.reactivestreams</groupId>
+			<artifactId>reactive-streams</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		
 	</dependencies>
 </project>
