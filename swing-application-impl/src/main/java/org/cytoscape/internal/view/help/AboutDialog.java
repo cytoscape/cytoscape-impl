@@ -97,8 +97,8 @@ public class AboutDialog extends JDialog {
 	
 	private class AboutPanel extends JPanel {
 
+		private static final String CYTOSCAPE_DEVELOPERS_URL = "https://cytoscape.org/development_team.html";
 		private static final String CYTOSCAPE_URL = "https://cytoscape.org/";
-		private static final String NRNB_URL = "https://nrnb.org/";
 		private static final String UCSD_URL = "https://www.ucsd.edu/";
 		private static final String UCSF_URL = "https://www.ucsf.edu/";
 		private static final String UOFT_URL = "https://www.utoronto.ca/";
@@ -158,12 +158,12 @@ public class AboutDialog extends JDialog {
 		private JTextPane getAboutPane() {
 			if (aboutPane == null) {
 				aboutPane = createTextPane(String.format(
-						"Cytoscape is an open source software platform for visualizing complex networks<br>"
+						"Cytoscape is an open source software platform for visualizing complex networks "
 						+ "and integrating these with any type of attribute data.<br><br>"
-						+ "Cytoscape is supported by the <a href='%s'>National Resource for Network Biology</a> (NRNB).<br>"
-						+ "For more information, please visit <a href='%s'>cytoscape.org</a>.",
-						NRNB_URL,
-						CYTOSCAPE_URL
+						+ "For more information about Cytoscape please visit <a href='%s'>cytoscape.org</a>.<br><br> "
+						+ "Information on our supporters and development team is available <a href='%s'>here</a>",
+						CYTOSCAPE_URL,
+						CYTOSCAPE_DEVELOPERS_URL
 				), LEFT);
 				aboutPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 			}
