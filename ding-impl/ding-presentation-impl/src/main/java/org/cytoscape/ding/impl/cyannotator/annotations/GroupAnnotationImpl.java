@@ -346,11 +346,12 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		updateBounds();
+		if (!canvas.isPrinting())
+			updateBounds();
 		
 		Graphics2D g2 = (Graphics2D) g;
 		
-		if (isSelected()) {
+		if (isSelected() && !canvas.isPrinting()) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, getWidth(), getHeight());

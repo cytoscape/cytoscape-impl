@@ -283,7 +283,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (source != null)
 			source.addArrow(this);
 
-		updateBounds();
+		// updateBounds();
 		update();
 	}
 	
@@ -292,14 +292,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void setTarget(Annotation target) { 
 		this.target = target; 
-		updateBounds();
+		// updateBounds();
 		update();
 	}
 
 	@Override
 	public void setTarget(CyNode target) { 
 		this.target = target; 
-		updateBounds();
+		// updateBounds();
 		update();
 	}
 
@@ -307,7 +307,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
 		this.target = ViewUtils.getNodeCoordinates(view, target.getX(), target.getY()); 
-		updateBounds();
+		// updateBounds();
 		update();
 	}
 
@@ -504,7 +504,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if ((source == null || target == null) && !usedForPreviews)
 			return;
 
-		if (!usedForPreviews)
+		if (!usedForPreviews && !isPrinting)
 			updateBounds();
 		else
 			arrowLine = getArrowLine(target, source);
@@ -596,6 +596,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	private void updateBounds() {
+
 		xOffset = 0.0; yOffset = 0.0;
 
 		// We need to take into account our arrows
