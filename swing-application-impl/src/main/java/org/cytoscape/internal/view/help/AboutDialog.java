@@ -127,7 +127,7 @@ public class AboutDialog extends JDialog {
 	        layout.setVerticalGroup(layout.createSequentialGroup()
 		            .addComponent(getAboutLabel())
 		            .addGap(20)
-		            .addComponent(scrollPane1)
+		            .addComponent(scrollPane1, 90, 90, 90)
 		            .addGap(20)
 		            .addComponent(scrollPane2, 60, 60, 60) // needs an explicit height--test with long values that span multiple lines
 		            .addGap(5)
