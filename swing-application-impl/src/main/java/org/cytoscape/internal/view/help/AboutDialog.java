@@ -99,13 +99,6 @@ public class AboutDialog extends JDialog {
 
 		private static final String CYTOSCAPE_DEVELOPERS_URL = "https://cytoscape.org/development_team.html";
 		private static final String CYTOSCAPE_URL = "https://cytoscape.org/";
-		private static final String UCSD_URL = "https://www.ucsd.edu/";
-		private static final String UCSF_URL = "https://www.ucsf.edu/";
-		private static final String UOFT_URL = "https://www.utoronto.ca/";
-		private static final String GLADSTONE_URL = "https://gladstone.org/";
-		private static final String AGILENT_URL = "https://www.agilent.com/";
-		private static final String PASTEUR_URL = "https://www.pasteur.fr/";
-		private static final String ISB_URL = "https://systemsbiology.org/";
 		
 		private static final String LEFT = "left";
 		private static final String CENTER = "center";
@@ -113,7 +106,6 @@ public class AboutDialog extends JDialog {
 		private JLabel aboutLabel;
 		private JTextPane aboutPane;
 		private JTextPane infoPane;
-		private JTextPane creditsPane;
 
 	    public AboutPanel() {
 	    	JScrollPane scrollPane1 = new JScrollPane(getAboutPane());
@@ -131,7 +123,6 @@ public class AboutDialog extends JDialog {
 	                .addComponent(getAboutLabel())
 	                .addComponent(scrollPane1, w, w, w)
 	                .addComponent(scrollPane2, w, w, w)
-	                .addComponent(getCreditsPane(), w, w, w)
 	        );
 	        layout.setVerticalGroup(layout.createSequentialGroup()
 		            .addComponent(getAboutLabel())
@@ -139,8 +130,6 @@ public class AboutDialog extends JDialog {
 		            .addComponent(scrollPane1)
 		            .addGap(20)
 		            .addComponent(scrollPane2, 60, 60, 60) // needs an explicit height--test with long values that span multiple lines
-		            .addGap(20)
-		            .addComponent(getCreditsPane())
 		            .addGap(5)
 	        );
 	    }
@@ -189,32 +178,6 @@ public class AboutDialog extends JDialog {
 			}
 
 			return infoPane;
-		}
-		
-		private JTextPane getCreditsPane() {
-			if (creditsPane == null) {
-				creditsPane = createTextPane(String.format(
-						"<table style='border: none;' cellspacing='0' cellpadding='0' width='%s'><tr>"
-						+ "<td style='text-align: center;'><a href='%s'>USCD</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>UCSF</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>UofT</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Gladstone Institutes</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Agilent</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Institut Pasteur</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>ISB</a></td>"
-						+ "</tr></table>",
-						"100%",
-						UCSD_URL,
-						UCSF_URL,
-						UOFT_URL,
-						GLADSTONE_URL,
-						AGILENT_URL,
-						PASTEUR_URL,
-						ISB_URL
-				), CENTER);
-			}
-			
-			return creditsPane;
 		}
 
 		private JTextPane createTextPane(String text, String textAlign) {
