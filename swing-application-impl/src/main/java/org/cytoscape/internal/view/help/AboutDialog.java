@@ -97,15 +97,8 @@ public class AboutDialog extends JDialog {
 	
 	private class AboutPanel extends JPanel {
 
+		private static final String CYTOSCAPE_DEVELOPERS_URL = "https://cytoscape.org/development_team.html";
 		private static final String CYTOSCAPE_URL = "https://cytoscape.org/";
-		private static final String NRNB_URL = "https://nrnb.org/";
-		private static final String UCSD_URL = "https://www.ucsd.edu/";
-		private static final String UCSF_URL = "https://www.ucsf.edu/";
-		private static final String UOFT_URL = "https://www.utoronto.ca/";
-		private static final String GLADSTONE_URL = "https://gladstone.org/";
-		private static final String AGILENT_URL = "https://www.agilent.com/";
-		private static final String PASTEUR_URL = "https://www.pasteur.fr/";
-		private static final String ISB_URL = "https://systemsbiology.org/";
 		
 		private static final String LEFT = "left";
 		private static final String CENTER = "center";
@@ -113,7 +106,6 @@ public class AboutDialog extends JDialog {
 		private JLabel aboutLabel;
 		private JTextPane aboutPane;
 		private JTextPane infoPane;
-		private JTextPane creditsPane;
 
 	    public AboutPanel() {
 	    	JScrollPane scrollPane1 = new JScrollPane(getAboutPane());
@@ -131,16 +123,13 @@ public class AboutDialog extends JDialog {
 	                .addComponent(getAboutLabel())
 	                .addComponent(scrollPane1, w, w, w)
 	                .addComponent(scrollPane2, w, w, w)
-	                .addComponent(getCreditsPane(), w, w, w)
 	        );
 	        layout.setVerticalGroup(layout.createSequentialGroup()
 		            .addComponent(getAboutLabel())
 		            .addGap(20)
-		            .addComponent(scrollPane1)
+		            .addComponent(scrollPane1, 90, 90, 90)
 		            .addGap(20)
 		            .addComponent(scrollPane2, 60, 60, 60) // needs an explicit height--test with long values that span multiple lines
-		            .addGap(20)
-		            .addComponent(getCreditsPane())
 		            .addGap(5)
 	        );
 	    }
@@ -158,12 +147,12 @@ public class AboutDialog extends JDialog {
 		private JTextPane getAboutPane() {
 			if (aboutPane == null) {
 				aboutPane = createTextPane(String.format(
-						"Cytoscape is an open source software platform for visualizing complex networks<br>"
+						"Cytoscape is an open source software platform for visualizing complex networks "
 						+ "and integrating these with any type of attribute data.<br><br>"
-						+ "Cytoscape is supported by the <a href='%s'>National Resource for Network Biology</a> (NRNB).<br>"
-						+ "For more information, please visit <a href='%s'>cytoscape.org</a>.",
-						NRNB_URL,
-						CYTOSCAPE_URL
+						+ "For more information about Cytoscape please visit <a href='%s'>cytoscape.org</a>.<br><br> "
+						+ "Information on our supporters and development team is available <a href='%s'>here</a>",
+						CYTOSCAPE_URL,
+						CYTOSCAPE_DEVELOPERS_URL
 				), LEFT);
 				aboutPane.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
 			}
@@ -189,32 +178,6 @@ public class AboutDialog extends JDialog {
 			}
 
 			return infoPane;
-		}
-		
-		private JTextPane getCreditsPane() {
-			if (creditsPane == null) {
-				creditsPane = createTextPane(String.format(
-						"<table style='border: none;' cellspacing='0' cellpadding='0' width='%s'><tr>"
-						+ "<td style='text-align: center;'><a href='%s'>USCD</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>UCSF</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>UofT</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Gladstone Institutes</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Agilent</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>Institut Pasteur</a></td>"
-						+ "<td style='text-align: center;'><a href='%s'>ISB</a></td>"
-						+ "</tr></table>",
-						"100%",
-						UCSD_URL,
-						UCSF_URL,
-						UOFT_URL,
-						GLADSTONE_URL,
-						AGILENT_URL,
-						PASTEUR_URL,
-						ISB_URL
-				), CENTER);
-			}
-			
-			return creditsPane;
 		}
 
 		private JTextPane createTextPane(String text, String textAlign) {

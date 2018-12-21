@@ -4,7 +4,7 @@
 	<parent>
 		<artifactId>viewmodel-impl-parent</artifactId>
 		<groupId>org.cytoscape</groupId>
-		<version>3.7.1-SNAPSHOT</version>
+		<version>3.8.0-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -58,7 +58,7 @@
 		<dependency>
 			<groupId>org.cytoscape</groupId>
 			<artifactId>application-api</artifactId>
-		 	<version>3.7.1-SNAPSHOT</version>
+		 	<version>3.8.0-SNAPSHOT</version>
 		</dependency>
 		
 		<dependency>
