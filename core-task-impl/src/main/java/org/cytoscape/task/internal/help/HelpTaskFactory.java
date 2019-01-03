@@ -39,6 +39,6 @@ public class HelpTaskFactory extends AbstractTaskFactory {
 	}
 
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new HelpTask(registrar,"http://manual.cytoscape.org/en/3.7.0/Quick_Tour_of_Cytoscape.html"));
+		return new TaskIterator(new HelpTask(registrar,"http://manual.cytoscape.org/en/3.7.1/Quick_Tour_of_Cytoscape.html"));
 	} 
 }
