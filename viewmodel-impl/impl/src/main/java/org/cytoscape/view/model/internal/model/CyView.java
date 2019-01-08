@@ -1,5 +1,7 @@
 package org.cytoscape.view.model.internal.model;
 
+import java.util.Objects;
+
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -11,7 +13,7 @@ public abstract class CyView<M> implements View<M> {
 	private final M model;
 
 	public CyView(M model) {
-		this.model = model;
+		this.model = Objects.requireNonNull(model);
 	}
 	
 	public abstract CyNetworkViewImpl getNetworkView();
