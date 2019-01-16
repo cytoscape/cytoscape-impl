@@ -1,12 +1,32 @@
 package org.cytoscape.tableimport.internal.reader;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.charset.MalformedInputException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,28 +43,6 @@ package org.cytoscape.tableimport.internal.reader;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-//import cytoscape.data.readers.AbstractGraphReader;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.Charset;
-import java.nio.charset.MalformedInputException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * Network text table reader. This implements GraphReader just like other network file readers.
@@ -63,7 +61,7 @@ public class NetworkTableReader extends AbstractGraphReader implements TextTable
 
 	protected CyNetwork network;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public NetworkTableReader(final String networkName,
 							  final InputStream is,
