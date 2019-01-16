@@ -16,62 +16,51 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
 
 
-public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkView {
+public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetworkView {
 
 	private final String rendererId;
 	private final VisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
+	private boolean isDirty = false;
 	
 	// Key is SUID of underlying model object.
 	private Map<Long,CyViewImpl<CyNode>> nodeViewMap = HashMap.empty();
 	private Map<Long,CyViewImpl<CyEdge>> edgeViewMap = HashMap.empty();
 
+	// Key is SUID of View object.
+	private Map<Long,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
+	private Map<Long,Map<VisualProperty<?>,Object>> allLocks = HashMap.empty();
+	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
-	private Map<CyIdentifiable,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
-	private Map<CyIdentifiable,Map<VisualProperty<?>,Object>> allLocks = HashMap.empty();
-	private Map<CyIdentifiable,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	
-	
-	/**
-	 * Normal constructor to be called by factory.
-	 */
+
 	public CyNetworkViewImpl(CyNetwork network, VisualLexicon visualLexicon, String rendererId) {
 		super(network);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
-		network.getNodeList().forEach(this::addNode);
-		network.getEdgeList().forEach(this::addEdge);
-	}
-	
-	/** 
-	 * Copy constructor for snapshot.
-	 */
-	private CyNetworkViewImpl(CyNetworkViewImpl other) {
-		super(other.getModel());
-		synchronized (other) {
-			this.rendererId = other.rendererId;
-			this.visualLexicon = other.visualLexicon;
-			this.nodeViewMap = other.nodeViewMap;
-			this.edgeViewMap = other.edgeViewMap;
-			this.defaultValues = other.defaultValues;
-			this.visualProperties = other.visualProperties;
-			this.allLocks = other.allLocks;
-			this.directLocks = other.directLocks;
-			// don't copy listeners, snapshot is not a "live" view
+		for(CyNode node : network.getNodeList()) {
+			nodeViewMap = nodeViewMap.put(node.getSUID(), new CyViewImpl<>(this, node));
+		}
+		for(CyEdge edge : network.getEdgeList()) {
+			edgeViewMap = edgeViewMap.put(edge.getSUID(), new CyViewImpl<>(this, edge));
 		}
 	}
 	
 	
 	@Override
-	public CyNetworkViewImpl createSnapshot() {
-		return new CyNetworkViewImpl(this);
+	public CyNetworkView createSnapshot() {
+		CyNetworkView snapshot = new CyNetworkViewSnapshotImpl(getSUID(), getModel(),
+				rendererId, nodeViewMap, edgeViewMap, defaultValues, visualProperties, allLocks, directLocks);
+		isDirty = false;
+		return snapshot;
 	}
 	
 	@Override
@@ -79,10 +68,16 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 		return this;
 	}
 	
+	@Override
+	public boolean isDirty() {
+		return isDirty;
+	}
+	
 	public View<CyNode> addNode(CyNode model) {
 		CyViewImpl<CyNode> view = new CyViewImpl<>(this, model);
 		synchronized (this) {
 			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
+			isDirty = true;
 		}
 		return view;
 	}
@@ -91,6 +86,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 		CyViewImpl<CyEdge> view = new CyViewImpl<CyEdge>(this, model);
 		synchronized (this) {
 			edgeViewMap = edgeViewMap.put(model.getSUID(), view);
+			isDirty = true;
 		}
 		return view;
 	}
@@ -107,6 +103,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 			if(view != null) {
 				nodeViewMap = nodeViewMap.remove(model.getSUID());
 				clearVisualProperties(view);
+				isDirty = true;
 			}
 		}
 		return view;
@@ -119,6 +116,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 			if(view != null) {
 				edgeViewMap = edgeViewMap.remove(model.getSUID());
 				clearVisualProperties(view);
+				isDirty = true;
 			}
 		}
 		return view;
@@ -126,9 +124,11 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	
 	public void clearVisualProperties(CyIdentifiable view) {
 		synchronized (this) {
-			visualProperties = visualProperties.remove(view);
-			allLocks = allLocks.remove(view);
-			directLocks = directLocks.remove(view);
+			Long suid = view.getSUID();
+			visualProperties = visualProperties.remove(suid);
+			allLocks = allLocks.remove(suid);
+			directLocks = directLocks.remove(suid);
+			isDirty = true;
 		}
 	}
 	
@@ -162,22 +162,25 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	}
 	
 	public <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
+		Long suid = view.getSUID();
 		synchronized (this) {
-			visualProperties = put(visualProperties, view, vp, value);
+			visualProperties = put(visualProperties, suid, vp, value);
+			isDirty = true;
 		}
 	}
 	
 	
 	private <T> T getVisualPropertyStoredValue(CyIdentifiable view, VisualProperty<T> vp) {
-		Object value = get(directLocks, view, vp);
+		Long suid = view.getSUID();
+		Object value = get(directLocks, suid, vp);
 		if(value != null)
 			return (T) value;
 		
-		value = get(allLocks, view, vp);
+		value = get(allLocks, suid, vp);
 		if(value != null)
 			return (T) value;
 		
-		return (T) get(visualProperties, view, vp);
+		return (T) get(visualProperties, suid, vp);
 	}
 
 	public <T> T getVisualProperty(CyIdentifiable view, VisualProperty<T> vp) {
@@ -198,16 +201,18 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	}
 
 	public <T, V extends T> void setLockedValue(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
+		Long suid = view.getSUID();
 		synchronized (this) {
-			directLocks = put(directLocks, view, vp, value);
-			allLocks = put(allLocks, view, vp, value);
+			directLocks = put(directLocks, suid, vp, value);
+			allLocks = put(allLocks, suid, vp, value);
 			
 			VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
-			propagateLockedVisualProperty(view, vp, node.getChildren(), value);
+			propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
+			isDirty = true;
 		}
 	}
 	
-	private synchronized void propagateLockedVisualProperty(CyIdentifiable view, VisualProperty parent, Collection<VisualLexiconNode> roots, Object value) {
+	private synchronized void propagateLockedVisualProperty(Long suid, VisualProperty parent, Collection<VisualLexiconNode> roots, Object value) {
 		LinkedList<VisualLexiconNode> nodes = new LinkedList<>(roots);
 		
 		while (!nodes.isEmpty()) {
@@ -216,7 +221,7 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 			
 			if (!isDirectlyLocked(vp)) {
 				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
-					allLocks = put(allLocks, view, vp, value);
+					allLocks = put(allLocks, suid, vp, value);
 				}
 				
 				nodes.addAll(node.getChildren());
@@ -225,11 +230,11 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	}
 
 	public boolean isValueLocked(CyIdentifiable view, VisualProperty<?> vp) {
-		return get(allLocks, view, vp) != null;
+		return get(allLocks, view.getSUID(), vp) != null;
 	}
 
 	public boolean isDirectlyLocked(CyIdentifiable view, VisualProperty<?> vp) {
-		return get(directLocks, view, vp) != null;
+		return get(directLocks, view.getSUID(), vp) != null;
 	}
 	
 	public void clearValueLock(CyIdentifiable view, VisualProperty<?> vp) {
@@ -240,18 +245,19 @@ public class CyNetworkViewImpl extends CyView<CyNetwork> implements CyNetworkVie
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		synchronized (this) {
 			defaultValues = defaultValues.put(vp, defaultValue);
+			isDirty = true;
 		}
 	}
 	
 	
-	public static <T> T get(Map<CyIdentifiable,Map<VisualProperty<?>,Object>> map, CyIdentifiable view, VisualProperty<? extends T> vp) {
-		return (T) map.getOrElse(view, HashMap.empty()).getOrElse(vp,null);
+	public static <T> T get(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<? extends T> vp) {
+		return (T) map.getOrElse(suid, HashMap.empty()).getOrElse(vp, null);
 	}
 	
-	public static <T, V extends T> Map<CyIdentifiable,Map<VisualProperty<?>,Object>> put(Map<CyIdentifiable,Map<VisualProperty<?>,Object>> map, CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
-		Map<VisualProperty<?>, Object> values = map.getOrElse(view, HashMap.empty());
+	public static <T, V extends T> Map<Long,Map<VisualProperty<?>,Object>> put(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<? extends T> vp, V value) {
+		Map<VisualProperty<?>, Object> values = map.getOrElse(suid, HashMap.empty());
 		values = (value == null) ? values.remove(vp) : values.put(vp, value);
-		return map.put(view, values);
+		return map.put(suid, values);
 	}
 	
 

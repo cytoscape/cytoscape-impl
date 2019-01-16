@@ -1720,7 +1720,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		SpacialIndex2D sub_spacial = spacialFactory.createSpacialIndex2D();
 
 		// And our private subnetwork
-		CySubNetwork net = new MinimalNetwork(SUIDFactory.getNextSUID());
+//		CySubNetwork net = new MinimalNetwork(SUIDFactory.getNextSUID());
 
 		for (CyEdge edge: edges) {
 			nodes.add(edge.getTarget());
@@ -1731,15 +1731,14 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			long idx = node.getSUID();
 			if (m_spacial.exists(idx, m_extentsBuff, 0)) {
 				if (!sub_spacial.exists(idx, new float[4], 0))
-					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], m_extentsBuff[2], m_extentsBuff[3],
-							0.0);
-				net.addNode(node);
+					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], m_extentsBuff[2], m_extentsBuff[3], 0.0);
+//				net.addNode(node);
 			}
 		}
 		
-		for (CyEdge edge: edges) {
-			net.addEdge(edge);
-		}
+//		for (CyEdge edge: edges) {
+//			net.addEdge(edge);
+//		}
 
 		int lastRenderDetail = 0;
 		

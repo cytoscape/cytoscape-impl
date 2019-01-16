@@ -63,9 +63,12 @@ public class NetworkViewImplTest {
 		for(CyEdge e : network.getEdgeList())
 			assertNotNull(networkView.getEdgeView(e));
 		
-		CyNetworkViewImpl snapshot = networkView.createSnapshot();
+		for(View<CyNode> node : networkView.getNodeViews())
+			node.setVisualProperty(NODE_PAINT, Color.RED);
 		
-		// Add some nodes and edges to the real network (and view)
+		CyNetworkView snapshot = networkView.createSnapshot();
+		
+		//Modify the real network (and view)
 		CyNode n5 = network.addNode();
 		CyNode n6 = network.addNode();
 		CyEdge e5 = network.addEdge(n5, n6, false);
@@ -73,15 +76,22 @@ public class NetworkViewImplTest {
 		networkView.addNode(n6);
 		networkView.addEdge(e5);
 		
+		for(View<CyNode> node : networkView.getNodeViews())
+			node.setVisualProperty(NODE_PAINT, Color.BLUE);
+		
 		// real network view gets updated as expected
 		assertEquals(6, networkView.getNodeViews().size());
 		assertEquals(5, networkView.getEdgeViews().size());
 		assertNotNull(networkView.getNodeView(n5));
+		for(View<CyNode> node : networkView.getNodeViews())
+			assertEquals(Color.BLUE, node.getVisualProperty(NODE_PAINT));
 		
 		// snapshot should not be affected
 		assertEquals(4, snapshot.getNodeViews().size());
 		assertEquals(4, snapshot.getEdgeViews().size());
 		assertNull(snapshot.getNodeView(n5));
+		for(View<CyNode> node : snapshot.getNodeViews())
+			assertEquals(Color.RED, node.getVisualProperty(NODE_PAINT));
 	}
 	
 	

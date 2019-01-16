@@ -6,13 +6,13 @@ import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 
-public abstract class CyView<M> implements View<M> {
+public abstract class CyViewBase<M> implements View<M> {
 	
 	private final Long suid = SUIDFactory.getNextSUID();
 	
 	private final M model;
 
-	public CyView(M model) {
+	public CyViewBase(M model) {
 		this.model = Objects.requireNonNull(model);
 	}
 	

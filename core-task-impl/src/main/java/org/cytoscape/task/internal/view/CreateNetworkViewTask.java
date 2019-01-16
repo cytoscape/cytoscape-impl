@@ -216,7 +216,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 		try {
 			// By calling this task, actual view will be created even if it's a large network.
+			
+			final long startnv = System.currentTimeMillis();
 			final CyNetworkView view = viewFactory.createNetworkView(network);
+			System.out.println("Network factory creation finished in " + (System.currentTimeMillis() - startnv) + " msec.");
 			
 			// Create a default title
 			final Collection<CyNetworkView> netViews = netViewMgr.getNetworkViews(network);
