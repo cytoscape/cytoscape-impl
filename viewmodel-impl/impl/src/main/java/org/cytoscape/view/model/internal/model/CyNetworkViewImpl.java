@@ -125,12 +125,30 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public void clearVisualProperties(CyIdentifiable view) {
 		synchronized (this) {
 			Long suid = view.getSUID();
-			visualProperties = visualProperties.remove(suid);
-			allLocks = allLocks.remove(suid);
-			directLocks = directLocks.remove(suid);
+			visualProperties = clear(visualProperties, suid);
+//			allLocks = clear(allLocks, suid);
+//			directLocks = clear(directLocks, suid);
 			isDirty = true;
 		}
 	}
+	
+	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
+		Collection<VisualProperty<?>> nonClearable = visualLexicon.getNonClearableVisualProperties();
+		if(nonClearable == null || nonClearable.isEmpty()) {
+			return map.remove(suid);
+		}
+		
+		java.util.HashMap<VisualProperty<?>,Object> values = new java.util.HashMap<>();
+		for(VisualProperty<?> vp : nonClearable) {
+			values.put(vp, get(map, suid, vp));
+		}
+		map = map.remove(suid);
+		for(VisualProperty<?> vp : nonClearable) {
+			map = put(map, suid, vp, values.get(vp));
+		}
+		return map;
+	}
+	
 	
 	@Override
 	public View<CyNode> getNodeView(CyNode node) {
@@ -257,7 +275,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public static <T, V extends T> Map<Long,Map<VisualProperty<?>,Object>> put(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<? extends T> vp, V value) {
 		Map<VisualProperty<?>, Object> values = map.getOrElse(suid, HashMap.empty());
 		values = (value == null) ? values.remove(vp) : values.put(vp, value);
-		return map.put(suid, values);
+		if(values.isEmpty())
+			return map.remove(suid);
+		else
+			return map.put(suid, values);
 	}
 	
 
