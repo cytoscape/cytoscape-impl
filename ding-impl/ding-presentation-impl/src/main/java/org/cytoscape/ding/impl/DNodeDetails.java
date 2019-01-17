@@ -44,10 +44,6 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_S
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
 
-import org.cytoscape.view.presentation.property.values.Justification;
-import org.cytoscape.view.presentation.property.values.ObjectPosition;
-import org.cytoscape.view.presentation.property.values.Position;
-
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -61,20 +57,22 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DNodeShape;
-import org.cytoscape.ding.Label;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.LineType;
 import org.cytoscape.view.presentation.property.values.NodeShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
 
 /*
  * Access to the methods of this class should be synchronized externally if
  * there is a threat of multiple threads.
  */
-public class DNodeDetails extends NodeDetails {
+public class DNodeDetails implements NodeDetails {
 
 	// Parent Network View
 	protected final DGraphView dGraphView;
@@ -233,7 +231,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_colorLowDetailDefault == null)
-				return super.getColorLowDetail(node);
+				return NodeDetails.super.getColorLowDetail(node);
 			else
 				return m_colorLowDetailDefault;
 
@@ -301,7 +299,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (originaShape == null) {
 			if (m_shapeDefault == null)
-				return super.getShape(node);
+				return NodeDetails.super.getShape(node);
 			else
 				return DNodeShape.getDShape(m_shapeDefault).getNativeShape();
 		} else {
@@ -516,7 +514,7 @@ public class DNodeDetails extends NodeDetails {
 			paint = m_borderPaints.get(node);
 
 			if (paint == null)
-				paint = m_borderPaintDefault != null ? m_borderPaintDefault : super.getBorderPaint(node);
+				paint = m_borderPaintDefault != null ? m_borderPaintDefault : NodeDetails.super.getBorderPaint(node);
 		}
 
 		if (trans != null) // New transparency? Recreate the paint object
@@ -537,7 +535,7 @@ public class DNodeDetails extends NodeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideBorderPaint(final CyNode node, final Paint paint) {
-		if ((paint == null) || paint.equals(super.getBorderPaint(node)))
+		if ((paint == null) || paint.equals(NodeDetails.super.getBorderPaint(node)))
 			m_borderPaints.remove(node);
 		else {
 			m_borderPaints.put(node, paint);
@@ -558,7 +556,7 @@ public class DNodeDetails extends NodeDetails {
 		if (count == null) {
 			try {
 				String defLabel = (String) defaultValues.get(NODE_LABEL);
-				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(node) : 1;
+				count = (defLabel == null || defLabel.isEmpty()) ? NodeDetails.super.getLabelCount(node) : 1;
 			} catch (ClassCastException e) {
 				count = 0;
 			}
@@ -571,7 +569,7 @@ public class DNodeDetails extends NodeDetails {
 	 * A negative labelCount has the special meaning to remove overridden count.
 	 */
 	void overrideLabelCount(final CyNode node, final int labelCount) {
-		if ((labelCount < 0) || (labelCount == super.getLabelCount(node)))
+		if ((labelCount < 0) || (labelCount == NodeDetails.super.getLabelCount(node)))
 			m_labelCounts.remove(node);
 		else {
 			m_labelCounts.put(node, labelCount);
@@ -591,7 +589,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_labelTextDefault == null)
-				return super.getLabelText(node, labelInx);
+				return NodeDetails.super.getLabelText(node, labelInx);
 			else
 				return m_labelTextDefault;
 
@@ -609,7 +607,7 @@ public class DNodeDetails extends NodeDetails {
 	void overrideLabelText(final CyNode node, final int labelInx, final String text) {
 		// final long key = (((long) node) << 32) | ((long) labelInx);
 
-		if ((text == null) || text.equals(super.getLabelText(node, labelInx)))
+		if ((text == null) || text.equals(NodeDetails.super.getLabelText(node, labelInx)))
 			m_labelTexts.remove(node);
 		else {
 			m_labelTexts.put(node, text);
@@ -764,7 +762,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (p == null)
 			if (m_labelTextAnchorDefault == null)
-				return super.getLabelTextAnchor(node, labelInx);
+				return NodeDetails.super.getLabelTextAnchor(node, labelInx);
 			else
 				return m_labelTextAnchorDefault;
 
@@ -781,7 +779,7 @@ public class DNodeDetails extends NodeDetails {
 		//  2) We have a default and the anchor is the same as the default
 		//  3) The anchor is different altogether
 		if (m_labelTextAnchorDefault == null &&
-				anchor == super.getLabelTextAnchor(node, inx))
+				anchor == NodeDetails.super.getLabelTextAnchor(node, inx))
 			m_labelTextAnchors.remove(node);
 		else if (m_labelTextAnchorDefault != null &&
 		         anchor == m_labelTextAnchorDefault)
@@ -807,7 +805,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_labelNodeAnchorDefault == null)
-				return super.getLabelNodeAnchor(node, labelInx);
+				return NodeDetails.super.getLabelNodeAnchor(node, labelInx);
 			else
 				return m_labelNodeAnchorDefault;
 
@@ -824,7 +822,7 @@ public class DNodeDetails extends NodeDetails {
 		//  2) We have a default and the anchor is the same as the default
 		//  3) The anchor is different altogether
 		if (m_labelNodeAnchorDefault == null &&
-				anchor == super.getLabelNodeAnchor(node, inx))
+				anchor == NodeDetails.super.getLabelNodeAnchor(node, inx))
 			m_labelNodeAnchors.remove(node);
 		else if (m_labelNodeAnchorDefault != null &&
 		         anchor == m_labelNodeAnchorDefault)
@@ -848,7 +846,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_labelOffsetVectorXDefault == null)
-				return super.getLabelOffsetVectorX(node, labelInx);
+				return NodeDetails.super.getLabelOffsetVectorX(node, labelInx);
 			else
 				return m_labelOffsetVectorXDefault.floatValue();
 
@@ -865,7 +863,7 @@ public class DNodeDetails extends NodeDetails {
 		//  2) We have a default and the offset is the same as the default
 		//  3) The offset is different altogether
 		if (m_labelOffsetVectorXDefault == null &&
-		    ((float) x) == super.getLabelOffsetVectorX(node, inx))
+		    ((float) x) == NodeDetails.super.getLabelOffsetVectorX(node, inx))
 			m_labelOffsetXs.remove(node);
 		else if (m_labelOffsetVectorXDefault != null &&
 		         ((float) x) == m_labelOffsetVectorXDefault.floatValue())
@@ -889,7 +887,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_labelOffsetVectorYDefault == null)
-				return super.getLabelOffsetVectorY(node, labelInx);
+				return NodeDetails.super.getLabelOffsetVectorY(node, labelInx);
 			else
 				return m_labelOffsetVectorYDefault.floatValue();
 
@@ -906,7 +904,7 @@ public class DNodeDetails extends NodeDetails {
 		//  2) We have a default and the offset is the same as the default
 		//  3) The offset is different altogether
 		if (m_labelOffsetVectorYDefault == null &&
-		    ((float) y) == super.getLabelOffsetVectorY(node, inx))
+		    ((float) y) == NodeDetails.super.getLabelOffsetVectorY(node, inx))
 			m_labelOffsetXs.remove(node);
 		else if (m_labelOffsetVectorYDefault != null &&
 		         ((float) y) == m_labelOffsetVectorYDefault.floatValue())
@@ -931,7 +929,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null)
 			if (m_labelJustifyDefault == null)
-				return super.getLabelJustify(node, labelInx);
+				return NodeDetails.super.getLabelJustify(node, labelInx);
 			else
 				return m_labelJustifyDefault;
 
@@ -948,7 +946,7 @@ public class DNodeDetails extends NodeDetails {
 		//  2) We have a default and the offset is the same as the default
 		//  3) The offset is different altogether
 		if (m_labelJustifyDefault == null &&
-		    justify == super.getLabelJustify(node, inx))
+		    justify == NodeDetails.super.getLabelJustify(node, inx))
 			m_labelJustifys.remove(node);
 		else if (m_labelJustifyDefault != null &&
 		    justify == m_labelJustifyDefault)
@@ -971,7 +969,7 @@ public class DNodeDetails extends NodeDetails {
 
 		if (o == null) {
 			if (m_labelWidthDefault == null)
-				return super.getLabelWidth(node);
+				return NodeDetails.super.getLabelWidth(node);
 			else
 				return m_labelWidthDefault.doubleValue();
 		}
@@ -988,7 +986,7 @@ public class DNodeDetails extends NodeDetails {
 	 * A negative width value has the special meaning to remove overridden width.
 	 */
 	void overrideLabelWidth(final CyNode node, final double width) {
-		if ((width < 0.0) || (width == super.getLabelWidth(node)))
+		if ((width < 0.0) || (width == NodeDetails.super.getLabelWidth(node)))
 			m_labelWidths.remove(node);
 		else {
 			m_labelWidths.put(node, width);

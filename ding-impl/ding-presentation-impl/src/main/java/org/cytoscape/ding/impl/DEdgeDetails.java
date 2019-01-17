@@ -81,7 +81,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
  * Values stored in this object will be used renderer. Be careful to keep these
  * values consistent!
  */
-final class DEdgeDetails extends EdgeDetails {
+final class DEdgeDetails implements EdgeDetails {
 
 	private final DGraphView dGraphView;
 	private final Map<VisualProperty<?>, Object> defaultValues; 
@@ -229,7 +229,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 		if (o == null)
 			if (m_colorLowDetailDefault == null)
-				return super.getColorLowDetail(edge);
+				return EdgeDetails.super.getColorLowDetail(edge);
 			else
 				return (Color) m_colorLowDetailDefault;
 
@@ -246,7 +246,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 		if (o == null)
 			if (m_selectedColorLowDetailDefault == null)
-				return super.getColorLowDetail(edge);
+				return EdgeDetails.super.getColorLowDetail(edge);
 			else
 				return (Color) m_selectedColorLowDetailDefault;
 
@@ -280,7 +280,7 @@ final class DEdgeDetails extends EdgeDetails {
 		final ArrowShape arrow = m_sourceArrows.get(edge);
 		
 		if (arrow == null)
-			return m_sourceArrowDefault == null ? super.getSourceArrowShape(edge) : m_sourceArrowDefault;
+			return m_sourceArrowDefault == null ? EdgeDetails.super.getSourceArrowShape(edge) : m_sourceArrowDefault;
 
 		return arrow;
 	}
@@ -331,7 +331,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideSourceArrowPaint(final CyEdge edge, final Paint paint) {
-		if ((paint == null) || paint.equals(super.getSourceArrowPaint(edge))) {
+		if ((paint == null) || paint.equals(EdgeDetails.super.getSourceArrowPaint(edge))) {
 			m_sourceArrowPaints.remove(edge);
 		} else {
 			m_sourceArrowPaints.put(edge, paint);
@@ -340,7 +340,7 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 
 	void overrideSourceArrowSelectedPaint(final CyEdge edge, final Paint paint) {
-		if ((paint == null) || paint.equals(super.getSourceArrowPaint(edge))) {
+		if ((paint == null) || paint.equals(EdgeDetails.super.getSourceArrowPaint(edge))) {
 			this.m_sourceArrowSelectedPaints.remove(edge);
 		} else {
 			m_sourceArrowSelectedPaints.put(edge, paint);
@@ -363,7 +363,7 @@ final class DEdgeDetails extends EdgeDetails {
 		final ArrowShape arrow = m_targetArrows.get(edge);
 		
 		if (arrow == null)
-			return m_targetArrowDefault == null ? super.getTargetArrowShape(edge) : m_targetArrowDefault;
+			return m_targetArrowDefault == null ? EdgeDetails.super.getTargetArrowShape(edge) : m_targetArrowDefault;
 
 		return arrow;
 	}
@@ -429,7 +429,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideTargetArrowSelectedPaint(final CyEdge edge, final Paint paint) {
-		if ((paint == null) || paint.equals(super.getTargetArrowPaint(edge))) {
+		if ((paint == null) || paint.equals(EdgeDetails.super.getTargetArrowPaint(edge))) {
 			this.m_targetArrowSelectedPaints.remove(edge);
 		} else {
 			m_targetArrowSelectedPaints.put(edge, paint);
@@ -449,7 +449,7 @@ final class DEdgeDetails extends EdgeDetails {
 			w = m_widths.get(edge);
 			if (w == null) {
 				if (m_widthDefault == null)
-					w = super.getWidth(edge);
+					w = EdgeDetails.super.getWidth(edge);
 				else
 					w = m_widthDefault.floatValue();
 			}
@@ -467,7 +467,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A negative thickness value has the special meaning to remove overridden thickness.
 	 */
 	void overrideWidth(final CyEdge edge, final float width) {
-		if ((width < 0.0f) || (width == super.getWidth(edge))) {
+		if ((width < 0.0f) || (width == EdgeDetails.super.getWidth(edge))) {
 			m_widths.remove(edge);
 		} else {
 			m_widths.put(edge, width);
@@ -499,7 +499,7 @@ final class DEdgeDetails extends EdgeDetails {
 
 			if (stroke == null) {
 				if (m_strokeDefault == null)
-					stroke = super.getStroke(edge);
+					stroke = EdgeDetails.super.getStroke(edge);
 				else
 					stroke = m_strokeDefault;
 			}
@@ -522,7 +522,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideStroke(final CyEdge edge, final Stroke stroke) {
-		if ((stroke == null) || stroke.equals(super.getStroke(edge))) {
+		if ((stroke == null) || stroke.equals(EdgeDetails.super.getStroke(edge))) {
 			m_strokes.remove(edge);
 		} else {
 			m_strokes.put(edge, stroke);
@@ -643,7 +643,7 @@ final class DEdgeDetails extends EdgeDetails {
 		if (count == null) {
 			try {
 				String defLabel = (String) defaultValues.get(EDGE_LABEL);
-				count = (defLabel == null || defLabel.isEmpty()) ? super.getLabelCount(edge) : 1;
+				count = (defLabel == null || defLabel.isEmpty()) ? EdgeDetails.super.getLabelCount(edge) : 1;
 			} catch (ClassCastException e) {
 				count = 0;
 			}
@@ -656,7 +656,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A negative labelCount has the special meaning to remove overridden count.
 	 */
 	void overrideLabelCount(final CyEdge edge, final int labelCount) {
-		if ((labelCount < 0) || (labelCount == super.getLabelCount(edge))) {
+		if ((labelCount < 0) || (labelCount == EdgeDetails.super.getLabelCount(edge))) {
 			m_labelCounts.remove(edge);
 		} else {
 			m_labelCounts.put(edge, labelCount);
@@ -675,7 +675,7 @@ final class DEdgeDetails extends EdgeDetails {
 		final String text = m_labelTexts.get(edge);
 		
 		if (text == null)
-			return m_labelTextDefault == null ? super.getLabelText(edge, labelInx) : m_labelTextDefault;
+			return m_labelTextDefault == null ? EdgeDetails.super.getLabelText(edge, labelInx) : m_labelTextDefault;
 
 		return text;
 	}
@@ -689,7 +689,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null text has the special meaning to remove overridden text.
 	 */
 	void overrideLabelText(final CyEdge edge, final int labelInx, final String text) {
-		if ((text == null) || text.equals(super.getLabelText(edge, labelInx))) {
+		if ((text == null) || text.equals(EdgeDetails.super.getLabelText(edge, labelInx))) {
 			m_labelTexts.remove(edge);
 		} else {
 			m_labelTexts.put(edge, text);
@@ -800,7 +800,7 @@ final class DEdgeDetails extends EdgeDetails {
 			font = m_labelFonts.get(edge);
 	
 			if (font == null)
-				font = m_labelFontDefault != null ? m_labelFontDefault : super.getLabelFont(edge, labelInx);
+				font = m_labelFontDefault != null ? m_labelFontDefault : EdgeDetails.super.getLabelFont(edge, labelInx);
 		}
 		
 		if (size != null && font != null)
@@ -823,7 +823,7 @@ final class DEdgeDetails extends EdgeDetails {
 	void overrideLabelFont(final CyEdge edge, final int labelInx, final Font font) {
 		// final long key = (((long) edge) << 32) | ((long) labelInx);
 
-		if ((font == null) || font.equals(super.getLabelFont(edge, labelInx))) {
+		if ((font == null) || font.equals(EdgeDetails.super.getLabelFont(edge, labelInx))) {
 			m_labelFonts.remove(edge);
 		} else {
 			m_labelFonts.put(edge, font);
@@ -848,7 +848,7 @@ final class DEdgeDetails extends EdgeDetails {
 			paint = m_labelPaints.get(edge);
 
 			if (paint == null)
-				paint = m_labelPaintDefault != null ? m_labelPaintDefault : super.getLabelPaint(edge, labelInx);
+				paint = m_labelPaintDefault != null ? m_labelPaintDefault : EdgeDetails.super.getLabelPaint(edge, labelInx);
 		}
 		
 		if (trans != null)
@@ -866,7 +866,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A null paint has the special meaning to remove overridden paint.
 	 */
 	void overrideLabelPaint(final CyEdge edge, final int labelInx, final Paint paint) {
-		if ((paint == null) || paint.equals(super.getLabelPaint(edge, labelInx))) {
+		if ((paint == null) || paint.equals(EdgeDetails.super.getLabelPaint(edge, labelInx))) {
 			m_labelPaints.remove(edge);
 		} else {
 			m_labelPaints.put(edge, paint);
@@ -886,7 +886,7 @@ final class DEdgeDetails extends EdgeDetails {
 		
 		if (width == null) {
 			if (m_labelWidthDefault == null)
-				return super.getLabelWidth(edge);
+				return EdgeDetails.super.getLabelWidth(edge);
 			else
 				return m_labelWidthDefault.doubleValue();
 		}
@@ -903,7 +903,7 @@ final class DEdgeDetails extends EdgeDetails {
 	 * A negative width value has the special meaning to remove overridden width.
 	 */
 	void overrideLabelWidth(final CyEdge edge, final double width) {
-		if ((width < 0.0) || (width == super.getLabelWidth(edge))) {
+		if ((width < 0.0) || (width == EdgeDetails.super.getLabelWidth(edge))) {
 			m_labelWidths.remove(edge);
 		} else {
 			m_labelWidths.put(edge, width);
@@ -923,7 +923,7 @@ final class DEdgeDetails extends EdgeDetails {
 			size = m_sourceArrowSizes.get(edge);
 			
 			if (size == null)
-				size = m_sourceArrowSizeDefault != null ? m_sourceArrowSizeDefault : super.getSourceArrowSize(edge);
+				size = m_sourceArrowSizeDefault != null ? m_sourceArrowSizeDefault : EdgeDetails.super.getSourceArrowSize(edge);
 		}
 		
 		return adjustArrowSize(edge, getSourceArrowShape(edge), size);
@@ -935,7 +935,7 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 	
 	void overrideSourceArrowSize(final CyEdge edge, final double size) {
-		if (size < 0.0 || size == super.getSourceArrowSize(edge)) {
+		if (size < 0.0 || size == EdgeDetails.super.getSourceArrowSize(edge)) {
 			m_sourceArrowSizes.remove(edge);
 		} else {
 			m_sourceArrowSizes.put(edge, size);
@@ -955,7 +955,7 @@ final class DEdgeDetails extends EdgeDetails {
 			size = m_targetArrowSizes.get(edge);
 			
 			if (size == null)
-				size = m_targetArrowSizeDefault != null ? m_targetArrowSizeDefault : super.getTargetArrowSize(edge);
+				size = m_targetArrowSizeDefault != null ? m_targetArrowSizeDefault : EdgeDetails.super.getTargetArrowSize(edge);
 		}
 		
 		return adjustArrowSize(edge, getTargetArrowShape(edge), size);
@@ -967,7 +967,7 @@ final class DEdgeDetails extends EdgeDetails {
 	}
 	
 	void overrideTargetArrowSize(final CyEdge edge, final double size) {
-		if (size < 0.0 || size == super.getTargetArrowSize(edge)) {
+		if (size < 0.0 || size == EdgeDetails.super.getTargetArrowSize(edge)) {
 			m_targetArrowSizes.remove(edge);
 		} else {
 			m_targetArrowSizes.put(edge, size);

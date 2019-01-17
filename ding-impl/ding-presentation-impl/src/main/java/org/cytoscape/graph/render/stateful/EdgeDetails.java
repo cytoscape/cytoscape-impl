@@ -45,7 +45,7 @@ import org.cytoscape.view.presentation.property.values.Position;
  * To understand the significance of each method's return value, it makes
  * sense to become familiar with the API cytoscape.render.immed.GraphGraphics.
  */
-public abstract class EdgeDetails {
+public interface EdgeDetails {
 	/**
 	 * ******* This is not used anymore *************
 	 * Specifies that an anchor point lies at the midpoint of an edge.
@@ -76,7 +76,7 @@ public abstract class EdgeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	public Color getColorLowDetail(final CyEdge edge) {
+	default public Color getColorLowDetail(final CyEdge edge) {
 		return Color.blue;
 	}
 
@@ -87,7 +87,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public ArrowShape getSourceArrowShape(final CyEdge edge) {
+	default public ArrowShape getSourceArrowShape(final CyEdge edge) {
 		return ArrowShapeVisualProperty.NONE;
 	}
 
@@ -98,7 +98,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float getSourceArrowSize(final CyEdge edge) {
+	default public float getSourceArrowSize(final CyEdge edge) {
 		return 0.0f;
 	}
 
@@ -108,7 +108,7 @@ public abstract class EdgeDetails {
 	 * sourceArrow(edge) returns GraphGraphics.ARROW_NONE 
 	 *  it is an error to return null.
 	 */
-	public Paint getSourceArrowPaint(final CyEdge edge) {
+	default public Paint getSourceArrowPaint(final CyEdge edge) {
 		return null;
 	}
 
@@ -119,7 +119,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public ArrowShape getTargetArrowShape(final CyEdge edge) {
+	default public ArrowShape getTargetArrowShape(final CyEdge edge) {
 		return ArrowShapeVisualProperty.NONE;
 	}
 
@@ -129,7 +129,7 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified
 	 * in GraphGraphics.drawEdgeFull().
 	 */
-	public float getTargetArrowSize(final CyEdge edge) {
+	default public float getTargetArrowSize(final CyEdge edge) {
 		return 0.0f;
 	}
 
@@ -139,7 +139,7 @@ public abstract class EdgeDetails {
 	 * targetArrow(edge) returns GraphGraphics.ARROW_NONE,
 	 * it is an error to return null.
 	 */
-	public Paint getTargetArrowPaint(final CyEdge edge) {
+	default public Paint getTargetArrowPaint(final CyEdge edge) {
 		return null;
 	}
 
@@ -156,7 +156,7 @@ public abstract class EdgeDetails {
 	 * the source node shape or if the last anchor lies inside the target
 	 * node shape, the edge is not rendered.
 	 */
-	public EdgeAnchors getAnchors(final CyEdge edge) {
+	default public EdgeAnchors getAnchors(final CyEdge edge) {
 		return null;
 	}
 
@@ -165,7 +165,7 @@ public abstract class EdgeDetails {
 	 * an anchor, return a positive value in this method.  If zero is returned
 	 * no edge anchor is rendered.  By default this method returns zero.
 	 */
-	public float getAnchorSize(final CyEdge edge, final int anchorInx) {
+	default public float getAnchorSize(final CyEdge edge, final int anchorInx) {
 		return 0.0f;
 	}
 
@@ -175,7 +175,7 @@ public abstract class EdgeDetails {
 	 * otherwise, a non-null value must be returned.  By default this method
 	 * returns null.
 	 */
-	public Paint getAnchorPaint(final CyEdge edge, final int anchorInx) {
+	default public Paint getAnchorPaint(final CyEdge edge, final int anchorInx) {
 		return null;
 	}
 
@@ -185,13 +185,13 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float getWidth(final CyEdge edge) {
+	default public float getWidth(final CyEdge edge) {
 		return 1.0f;
 	}
 
-	private static final Stroke default_stroke = new BasicStroke();
+	static final Stroke default_stroke = new BasicStroke();
 	
-	public Stroke getStroke(final CyEdge edge) {
+	default public Stroke getStroke(final CyEdge edge) {
 		return default_stroke;
 	}
 
@@ -200,7 +200,7 @@ public abstract class EdgeDetails {
 	 * By default this method returns Color.blue.  It is an error to
 	 * return null in this method.
 	 */
-	public Paint getPaint(final CyEdge edge) {
+	default public Paint getPaint(final CyEdge edge) {
 		return Color.blue;
 	}
 
@@ -208,7 +208,7 @@ public abstract class EdgeDetails {
 	 * Returns the number of labels that this edge has.  By default this method
 	 * returns zero.
 	 */
-	public int getLabelCount(final CyEdge edge) {
+	default public int getLabelCount(final CyEdge edge) {
 		return 0;
 	}
 
@@ -222,7 +222,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public String getLabelText(final CyEdge edge, final int labelInx) {
+	default public String getLabelText(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -234,7 +234,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public Font getLabelFont(final CyEdge edge, final int labelInx) {
+	default public Font getLabelFont(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -248,7 +248,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public double getLabelScaleFactor(final CyEdge edge, final int labelInx) {
+	default public double getLabelScaleFactor(final CyEdge edge, final int labelInx) {
 		return 1.0d;
 	}
 
@@ -260,7 +260,7 @@ public abstract class EdgeDetails {
 	 * @param labelInx a value in the range [0, labelCount(edge)-1] indicating
 	 *   which edge label in question.
 	 */
-	public Paint getLabelPaint(final CyEdge edge, final int labelInx) {
+	default public Paint getLabelPaint(final CyEdge edge, final int labelInx) {
 		return null;
 	}
 
@@ -282,7 +282,7 @@ public abstract class EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public Position getLabelTextAnchor(final CyEdge edge, final int labelInx) {
+	default public Position getLabelTextAnchor(final CyEdge edge, final int labelInx) {
 		return Position.CENTER;
 	}
 
@@ -303,7 +303,7 @@ public abstract class EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	public Position getLabelEdgeAnchor(final CyEdge edge, final int labelInx) {
+	default public Position getLabelEdgeAnchor(final CyEdge edge, final int labelInx) {
 		return Position.CENTER;
 	}
 
@@ -323,7 +323,7 @@ public abstract class EdgeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	public float getLabelOffsetVectorX(final CyEdge edge, final int labelInx) {
+	default public float getLabelOffsetVectorX(final CyEdge edge, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -343,7 +343,7 @@ public abstract class EdgeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	public float getLabelOffsetVectorY(final CyEdge edge, final int labelInx) {
+	default public float getLabelOffsetVectorY(final CyEdge edge, final int labelInx) {
 		return 0.0f;
 	}
 
@@ -359,7 +359,7 @@ public abstract class EdgeDetails {
 	 * multiple lines.
 	 * @see NodeDetails#LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	public Justification getLabelJustify(final CyEdge edge, final int labelInx) {
+	default public Justification getLabelJustify(final CyEdge edge, final int labelInx) {
 		return Justification.JUSTIFY_CENTER;
 	}
 
@@ -369,10 +369,10 @@ public abstract class EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public double getLabelWidth(final CyEdge edge) {
+	default public double getLabelWidth(final CyEdge edge) {
 		return 100.0;
 	}
 
-	public boolean isVisible(final CyEdge edge) {return true;}
+	default public boolean isVisible(final CyEdge edge) {return true;}
 
 }
