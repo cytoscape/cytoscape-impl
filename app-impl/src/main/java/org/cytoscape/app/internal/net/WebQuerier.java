@@ -769,6 +769,11 @@ public class WebQuerier {
 				if (part1 == null && part2 != null) {
 					return Integer.parseInt(part2) == 0 ? 0 : 1;
 				}
+				int result = Integer.compare(Integer.parseInt(part1), Integer.parseInt(part2));
+				
+				if (result != 0) {
+					return -result;
+				}
 			} else {
 				// qualifier
 				if (part1 != null && part2 == null) {
@@ -777,11 +782,13 @@ public class WebQuerier {
 				if (part1 == null && part2 != null) {
 					return 1;
 				}
+				int result = part1.compareTo(part2);
+				
+				if (result != 0) {
+					return -result;
+				}
 			}
-			int result = part1.compareTo(part2);
-			if (result != 0) {
-				return -result;
-			}
+			
 		}
 		return 0;
 	}
