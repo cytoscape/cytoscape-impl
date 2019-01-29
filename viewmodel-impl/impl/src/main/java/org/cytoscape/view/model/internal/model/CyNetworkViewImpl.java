@@ -17,15 +17,36 @@ import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+
+import com.github.davidmoten.rtree.RTree;
+import com.github.davidmoten.rtree.geometry.Rectangle;
+import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 
 import io.vavr.collection.HashMap;
+import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
+import io.vavr.collection.Set;
 
 
 public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetworkView {
 
+	private static final float DEFAULT_X = 0;
+	private static final float DEFAULT_Y = 0;
+	private static final float DEFAULT_WIDTH = 30;
+	private static final float DEFAULT_HEIGHT = 30;
+	
+	private static final Rectangle DEFAULT_GEOMETRY = 
+			RectangleFloat.create(DEFAULT_X, DEFAULT_Y, DEFAULT_X + DEFAULT_WIDTH, DEFAULT_Y + DEFAULT_HEIGHT);
+	
+	public static final Set<VisualProperty<?>> NODE_GEOMETRIC_PROPERTIES = 
+			HashSet.of(BasicVisualLexicon.NODE_X_LOCATION, BasicVisualLexicon.NODE_Y_LOCATION,
+					   BasicVisualLexicon.NODE_HEIGHT, BasicVisualLexicon.NODE_WIDTH);
+	
+	
+	
 	private final String rendererId;
-	private final VisualLexicon visualLexicon;
+	private final BasicVisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	private boolean isDirty = false;
@@ -40,27 +61,45 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
 	
+	// RTree
+	// Need to store the bounds of each node so that they can be looked up in this RTree
+	private Map<Long,Rectangle> geometries = HashMap.empty();
+	private RTree<Long,Rectangle> rtree = RTree.create();
+	
 
-	public CyNetworkViewImpl(CyNetwork network, VisualLexicon visualLexicon, String rendererId) {
+	public CyNetworkViewImpl(CyNetwork network, BasicVisualLexicon visualLexicon, String rendererId) {
 		super(network);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
+		// faster than calling addNode() and addEdge()
 		for(CyNode node : network.getNodeList()) {
-			nodeViewMap = nodeViewMap.put(node.getSUID(), new CyViewImpl<>(this, node));
+			nodeViewMap = nodeViewMap.put(node.getSUID(), new CyNodeViewImpl(this, node));
 		}
 		for(CyEdge edge : network.getEdgeList()) {
-			edgeViewMap = edgeViewMap.put(edge.getSUID(), new CyViewImpl<>(this, edge));
+			edgeViewMap = edgeViewMap.put(edge.getSUID(), new CyEdgeViewImpl(this, edge));
 		}
 	}
 	
 	
 	@Override
 	public CyNetworkView createSnapshot() {
-		CyNetworkView snapshot = new CyNetworkViewSnapshotImpl(getSUID(), getModel(),
-				rendererId, nodeViewMap, edgeViewMap, defaultValues, visualProperties, allLocks, directLocks);
-		isDirty = false;
-		return snapshot;
+		synchronized (this) {
+			isDirty = false;
+			return new CyNetworkViewSnapshotImpl(
+					getSUID(), 
+					getModel(), 
+					rendererId, 
+					nodeViewMap, 
+					edgeViewMap, 
+					defaultValues, 
+					visualProperties, 
+					allLocks, 
+					directLocks, 
+					rtree,
+					geometries
+			);
+		}
 	}
 	
 	@Override
@@ -73,17 +112,72 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return isDirty;
 	}
 	
+	private Rectangle getGeometry(View<CyNode> view) {
+		return geometries.getOrElse(view.getSUID(), DEFAULT_GEOMETRY);
+	}
+	
+	
 	public View<CyNode> addNode(CyNode model) {
-		CyViewImpl<CyNode> view = new CyViewImpl<>(this, model);
+		if(nodeViewMap.containsKey(getSUID()))
+			return null;
+		
+		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
 		synchronized (this) {
 			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
+			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
 			isDirty = true;
 		}
 		return view;
 	}
 	
+	
+	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp, V value) {
+		Long suid = node.getSUID();
+		Rectangle r = getGeometry(node);
+		Rectangle newGeom = null;
+		
+		if(vp == BasicVisualLexicon.NODE_X_LOCATION) {
+			float x = ((Number)value).floatValue();
+			float wDiv2 = (float) (r.x2() - r.x1()) / 2.0f;
+			float xMin = x - wDiv2;
+			float xMax = x + wDiv2;
+			newGeom = RectangleFloat.create(xMin, (float)r.y1(), xMax, (float)r.y2());
+		} 
+		else if(vp == BasicVisualLexicon.NODE_Y_LOCATION) {
+			float y = ((Number)value).floatValue();
+			float hDiv2 = (float) (r.y2() - r.y1()) / 2.0f;
+			float yMin = y - hDiv2;
+			float yMax = y + hDiv2;
+			newGeom = RectangleFloat.create((float)r.x1(), yMin, (float)r.x2(), yMax);
+		}
+		else if(vp == BasicVisualLexicon.NODE_WIDTH) {
+			float w = ((Number)value).floatValue();
+			float xMid = (float) (r.x1() + r.x2()) / 2.0f;
+			float wDiv2 = w / 2.0f;
+			float xMin = xMid - wDiv2;
+			float xMax = xMid + wDiv2;
+			newGeom = RectangleFloat.create(xMin, (float)r.y1(), xMax, (float)r.y2());
+		}
+		else if(vp == BasicVisualLexicon.NODE_HEIGHT) {
+			float h = ((Number)value).floatValue();
+			float yMid = (float) (r.y1() + r.y2()) / 2.0f;
+			float hDiv2 = h / 2.0f;
+			float yMin = yMid - hDiv2;
+			float yMax = yMid + hDiv2;
+			newGeom = RectangleFloat.create((float)r.x1(), yMin, (float)r.x2(), yMax);
+		}
+		
+		if(newGeom != null) {
+			System.out.println(suid + ": " + newGeom);
+			rtree = rtree.delete(suid, r).add(suid, newGeom);
+			geometries = geometries.put(suid, newGeom);
+		}
+		System.out.println();
+	}
+	
+	
 	public View<CyEdge> addEdge(CyEdge model) {
-		CyViewImpl<CyEdge> view = new CyViewImpl<CyEdge>(this, model);
+		CyEdgeViewImpl view = new CyEdgeViewImpl(this, model);
 		synchronized (this) {
 			edgeViewMap = edgeViewMap.put(model.getSUID(), view);
 			isDirty = true;
@@ -103,11 +197,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			if(view != null) {
 				nodeViewMap = nodeViewMap.remove(model.getSUID());
 				clearVisualProperties(view);
+				rtree = rtree.delete(view.getSUID(), getGeometry(view));
 				isDirty = true;
 			}
 		}
 		return view;
 	}
+  	
 	
 	public View<CyEdge> removeEdge(CyEdge model) {
 		View<CyEdge> view;
@@ -133,17 +229,12 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
-		Collection<VisualProperty<?>> nonClearable = visualLexicon.getNonClearableVisualProperties();
-		if(nonClearable == null || nonClearable.isEmpty()) {
-			return map.remove(suid);
-		}
-		
 		java.util.HashMap<VisualProperty<?>,Object> values = new java.util.HashMap<>();
-		for(VisualProperty<?> vp : nonClearable) {
+		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPERTIES) {
 			values.put(vp, get(map, suid, vp));
 		}
 		map = map.remove(suid);
-		for(VisualProperty<?> vp : nonClearable) {
+		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPERTIES) {
 			map = put(map, suid, vp, values.get(vp));
 		}
 		return map;

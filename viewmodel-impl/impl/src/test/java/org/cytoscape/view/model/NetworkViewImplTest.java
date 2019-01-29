@@ -45,7 +45,7 @@ public class NetworkViewImplTest {
 	
 	private static CyNetworkViewImpl createNetworkView(CyNetwork network) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
-		VisualLexicon lexicon = new BasicVisualLexicon(rootVp);
+		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		CyNetworkViewImpl networkView = new CyNetworkViewImpl(network, lexicon, "test");
 		return networkView;
 	}

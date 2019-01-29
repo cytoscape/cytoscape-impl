@@ -2,8 +2,8 @@ package org.cytoscape.view.model.internal.model;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
-import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFactory {
 
@@ -14,7 +14,7 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 	}
 	
 	@Override
-	public CyNetworkViewFactory createNetworkViewFactory(VisualLexicon lexicon, String rendererId) {
+	public CyNetworkViewFactory createNetworkViewFactory(BasicVisualLexicon lexicon, String rendererId) {
 		return new CyNetworkViewFactoryImpl(registrar, lexicon, rendererId);
 	}
 

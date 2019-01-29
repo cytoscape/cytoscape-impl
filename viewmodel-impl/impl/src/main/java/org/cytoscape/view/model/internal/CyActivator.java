@@ -29,8 +29,8 @@ import java.util.Properties;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryFactoryImpl;
+import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {

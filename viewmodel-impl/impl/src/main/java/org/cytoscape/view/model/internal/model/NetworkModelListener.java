@@ -45,7 +45,9 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		Collection<CyNode> nodes = e.getPayloadCollection();
 		for(CyNode node : nodes) {
 			View<CyNode> view = networkView.addNode(node);
-			getEventHelper().addEventPayload(networkView, view, AddedNodeViewsEvent.class);
+			if(view != null) {
+				getEventHelper().addEventPayload(networkView, view, AddedNodeViewsEvent.class);
+			}
 		}
 	}
 	
@@ -57,7 +59,9 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		Collection<CyEdge> edges = e.getPayloadCollection();
 		for(CyEdge edge : edges) {
 			View<CyEdge> view = networkView.addEdge(edge);
-			getEventHelper().addEventPayload(networkView, view, AddedEdgeViewsEvent.class);
+			if(view != null) {
+				getEventHelper().addEventPayload(networkView, view, AddedEdgeViewsEvent.class);
+			}
 		}
 
 	}

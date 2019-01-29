@@ -1,6 +1,6 @@
 package org.cytoscape.view.model.internal.model;
 
-public class CyViewImpl<M> extends CyViewBase<M> {
+public abstract class CyViewImpl<M> extends CyViewBase<M> {
 
 	private final CyNetworkViewImpl parent;
 	

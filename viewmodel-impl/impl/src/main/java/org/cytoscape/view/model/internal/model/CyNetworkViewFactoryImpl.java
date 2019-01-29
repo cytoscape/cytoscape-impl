@@ -7,17 +7,17 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewListener;
-import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
 
 public class CyNetworkViewFactoryImpl implements CyNetworkViewFactory {
 
 	private final CyServiceRegistrar registrar;
-	private final VisualLexicon visualLexicon;
+	private final BasicVisualLexicon visualLexicon;
 	private final String rendererId;
 	
-	public CyNetworkViewFactoryImpl(CyServiceRegistrar registrar, VisualLexicon visualLexicon, String rendererId) {
+	public CyNetworkViewFactoryImpl(CyServiceRegistrar registrar, BasicVisualLexicon visualLexicon, String rendererId) {
 		this.registrar = registrar;
 		this.visualLexicon = visualLexicon;
 		this.rendererId = rendererId;

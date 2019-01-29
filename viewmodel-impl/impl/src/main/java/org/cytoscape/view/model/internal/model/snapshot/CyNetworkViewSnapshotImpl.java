@@ -12,6 +12,10 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyViewImpl;
+import org.cytoscape.view.model.spacial.SpacialIndex2D;
+
+import com.github.davidmoten.rtree.RTree;
+import com.github.davidmoten.rtree.geometry.Rectangle;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.Map;
@@ -30,6 +34,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final Map<Long,Map<VisualProperty<?>,Object>> directLocks;
 	private final Map<VisualProperty<?>,Object> defaultValues;
 	
+	private final SpacialIndex2D spacialIndex;
+	
+	
 	public CyNetworkViewSnapshotImpl(
 			Long suid,
 			CyNetwork network,
@@ -39,8 +46,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			Map<VisualProperty<?>, Object> defaultValues,
 			Map<Long, Map<VisualProperty<?>, Object>> visualProperties,
 			Map<Long, Map<VisualProperty<?>, Object>> allLocks,
-			Map<Long, Map<VisualProperty<?>, Object>> directLocks) 
-	{
+			Map<Long, Map<VisualProperty<?>, Object>> directLocks,
+			RTree<Long,Rectangle> rtree,
+			Map<Long,Rectangle> geometries
+	) {
 		super(network, suid);
 		this.rendererId = rendererId;
 		this.nodeViewMap = nodeViewMap;
@@ -49,15 +58,21 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.visualProperties = visualProperties;
 		this.allLocks = allLocks;
 		this.directLocks = directLocks;
+		this.spacialIndex = new SpacialIndex2DImpl(rtree, geometries);
 	}
 
+	
 	
 	@Override
 	public CyNetworkViewSnapshotImpl getNetworkSnapshot() {
 		return this;
 	}
 	
-
+	@Override
+	public SpacialIndex2D getSpacialIndex2D() {
+		return spacialIndex;
+	}
+	
 	public Map<VisualProperty<?>, Object> getVisualProperties(Long suid) {
 		return visualProperties.getOrElse(suid, HashMap.empty());
 	}
