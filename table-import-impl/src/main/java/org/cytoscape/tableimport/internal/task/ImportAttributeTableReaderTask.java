@@ -1,30 +1,6 @@
 package org.cytoscape.tableimport.internal.task;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
+import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_LONG;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -55,6 +31,29 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ImportAttributeTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
 	
@@ -72,17 +71,20 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 	
 	TextTableReader reader;
 	
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public ImportAttributeTableReaderTask(
 			final InputStream is,
 			final String fileType,
 			final String inputName,
+			final TableImportContext tableImportContext,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.fileType = fileType;
 		this.inputName = inputName;
 		this.is = is;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		try {
@@ -113,7 +115,7 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		tm.setTitle("Loading table data");
+		tm.setTitle("Load Table");
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
@@ -170,8 +172,12 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		
 		final TextTableReader reader = this.reader;
 		final AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
-		final String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
-		final AttributeDataType dataType = readerAMP.getDataTypes()[readerAMP.getKeyIndex()];
+		
+		int keyIndex = readerAMP.getKeyIndex();
+		
+		final String primaryKey = keyIndex >= 0 ? readerAMP.getAttributeNames()[keyIndex] : CyTable.SUID;
+		final AttributeDataType dataType = keyIndex >= 0 ? readerAMP.getDataTypes()[keyIndex] : TYPE_LONG;
+		
 		final Class<?> keyType;
 		
 		switch (dataType) {
@@ -198,7 +204,6 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 		try {
 			this.reader.readTable(table);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -207,33 +212,40 @@ public class ImportAttributeTableReaderTask extends AbstractTask implements CyTa
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if (amp.getKeyIndex() == -1) {
-			try {
-				errMsg.append("The primary key column needs to be selected.");
-			} catch (IOException e) {
-				e.printStackTrace();
+		if (tableImportContext.isKeyRequired()) {
+			if (amp.getKeyIndex() == -1) {
+				try {
+					errMsg.append("The primary key column needs to be selected.");
+				} catch (IOException e) {
+					e.printStackTrace();
+					return ValidationState.INVALID;
+				}
+				
 				return ValidationState.INVALID;
 			}
+		
+			final AttributeDataType keyDataType = amp.getDataTypes()[amp.getKeyIndex()];
 			
-			return ValidationState.INVALID;
-		}
-		
-		final AttributeDataType keyDataType = amp.getDataTypes()[amp.getKeyIndex()];
-		
-		if (!TypeUtil.isValid(SourceColumnSemantic.KEY, keyDataType)) {
-			try {
-				errMsg.append("The primary key column must be an Integer, Long or String.");
-			} catch (IOException e) {
-				e.printStackTrace();
+			if (!TypeUtil.isValid(SourceColumnSemantic.KEY, keyDataType)) {
+				try {
+					errMsg.append("The primary key column must be an Integer, Long or String.");
+				} catch (IOException e) {
+					e.printStackTrace();
+					return ValidationState.INVALID;
+				}
+				
 				return ValidationState.INVALID;
 			}
-			
-			return ValidationState.INVALID;
 		}
 		
-		if (amp.getSelectedColumnCount() < 2){
+		final int minColCount = tableImportContext.isKeyRequired() ? 2 : 1;
+		
+		if (amp.getSelectedColumnCount() < minColCount) {
 			try {
-				errMsg.append("Table should have more than one column. Please check the selected delimeters and columns.");
+				errMsg.append(
+						"Table must have " + (minColCount > 1 ? "more than" : "at least") + " one column."
+						+ " Please check the selected delimeters and columns."
+				);
 			} catch (IOException e) {
 				e.printStackTrace();
 				return ValidationState.INVALID;

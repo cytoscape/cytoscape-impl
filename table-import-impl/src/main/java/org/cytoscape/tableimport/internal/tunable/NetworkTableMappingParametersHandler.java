@@ -1,12 +1,29 @@
 package org.cytoscape.tableimport.internal.tunable;
 
+import java.awt.BorderLayout;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
+import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +41,9 @@ package org.cytoscape.tableimport.internal.tunable;
  * #L%
  */
 
-import java.awt.BorderLayout;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
-import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
-import org.cytoscape.tableimport.internal.util.ImportType;
-import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-
 public class NetworkTableMappingParametersHandler extends AbstractGUITunableHandler {
 
+	private final TableImportContext tableImportContext;
 	private final ImportType dialogType;
     private final CyServiceRegistrar serviceRegistrar;
     
@@ -49,28 +51,32 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 	private NetworkTableMappingParameters ntmp;
     
 	protected NetworkTableMappingParametersHandler(
-			final Field field,
-			final Object instance,
-			final Tunable tunable, 
-			final ImportType dialogType,
-			final CyServiceRegistrar serviceRegistrar
+			Field field,
+			Object instance,
+			Tunable tunable, 
+			ImportType dialogType,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(field, instance, tunable);
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 	
 	protected NetworkTableMappingParametersHandler(
-			final Method getter,
-			final Method setter,
-			final Object instance,
-			final Tunable tunable,
-			final ImportType dialogType,
-			final CyServiceRegistrar serviceRegistrar
+			Method getter,
+			Method setter,
+			Object instance,
+			Tunable tunable,
+			ImportType dialogType,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		super(getter, setter, instance, tunable);
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
@@ -89,7 +95,8 @@ public class NetworkTableMappingParametersHandler extends AbstractGUITunableHand
 		panel = new JPanel(new BorderLayout());
 		
 		try {
-			importTablePanel = new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, serviceRegistrar); 
+			importTablePanel = new ImportTablePanel(dialogType, ntmp.is, ntmp.fileType, null, tableImportContext,
+					serviceRegistrar);
 		} catch (Exception e) {
 			final JLabel errorLabel = new JLabel(
 					"<html><h3>Error: Could not Initialize Preview.</h3>" +

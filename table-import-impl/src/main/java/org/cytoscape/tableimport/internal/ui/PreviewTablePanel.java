@@ -1,29 +1,5 @@
 package org.cytoscape.tableimport.internal.ui;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
@@ -64,7 +40,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -111,6 +89,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextDelimiter;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.FileType;
 import org.cytoscape.tableimport.internal.util.ImportType;
@@ -124,6 +103,30 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
+
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * General purpose preview table panel.
@@ -158,6 +161,7 @@ public class PreviewTablePanel extends JPanel {
 	private PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	private ImportType importType;
 	
+	private final TableImportContext tableImportContext;
 	private final IconManager iconManager;
 	
 	private EditDialog editDialog;
@@ -172,15 +176,13 @@ public class PreviewTablePanel extends JPanel {
 	/**
 	 * Creates a new PreviewTablePanel object.
 	 */
-	public PreviewTablePanel(final IconManager iconManager) {
-		this(TABLE_IMPORT, iconManager);
-	}
-
-	/**
-	 * Creates a new PreviewTablePanel object.
-	 */
-	public PreviewTablePanel(final ImportType importType, final IconManager iconManager) {
+	public PreviewTablePanel(
+			final ImportType importType,
+			final TableImportContext tableImportContext,
+			final IconManager iconManager
+	) {
 		this.importType = importType;
+		this.tableImportContext = tableImportContext;
 		this.iconManager = iconManager;
 
 		initComponents();
@@ -247,7 +249,7 @@ public class PreviewTablePanel extends JPanel {
 		);
 		
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
-		updatePreviewTable();
+		update();
 	}
 	
 	public JTable getPreviewTable() {
@@ -429,7 +431,7 @@ public class PreviewTablePanel extends JPanel {
 	/**
 	 * Load file and show preview.
 	 */
-	public void updatePreviewTable(
+	public void update(
 			final Workbook workbook,
 			final String fileType,
 			final String fileFullName,
@@ -484,7 +486,7 @@ public class PreviewTablePanel extends JPanel {
 				 */
 				if (getSheetComboBox().getItemCount() > 0) {
 					final Sheet sheet = workbook.getSheetAt(0);
-					updatePreviewTable(sheet);
+					update(sheet);
 				} else {
 					throw new RuntimeException("No data found in the Excel sheets.");
 				}
@@ -500,11 +502,11 @@ public class PreviewTablePanel extends JPanel {
 					sourceName = "Source Table";
 				
 				dataTypes = TypeUtil.guessDataTypes(newModel);
-				types = TypeUtil.guessTypes(importType, newModel, dataTypes, null);
+				types = TypeUtil.guessTypes(importType, newModel, dataTypes, getIgnoredTypes());
 				listDelimiters = new String[newModel.getColumnCount()];
 				namespaces = TypeUtil.getPreferredNamespaces(types);
 				
-				updatePreviewTable(newModel, sourceName);
+				update(newModel, sourceName);
 			}
 		} finally {
 			updating = false;
@@ -515,8 +517,8 @@ public class PreviewTablePanel extends JPanel {
 		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 		model.setFirstRowNames(true);
 
-		types = TypeUtil.guessTypes(importType, model, dataTypes, null);
-		updatePreviewTable();
+		types = TypeUtil.guessTypes(importType, model, dataTypes, getIgnoredTypes());
+		update();
 		
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
 	}
@@ -615,7 +617,7 @@ public class PreviewTablePanel extends JPanel {
 	protected void setAliasColumn(final int index, final boolean flag) {
 		if (types != null && types.length > index) {
 			types[index] = flag ? ALIAS : ATTR;
-			updatePreviewTable();
+			update();
 		}
 	}
 	
@@ -823,8 +825,13 @@ public class PreviewTablePanel extends JPanel {
 		
 		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
 		final String attrName = model.getColumnName(colIdx);
-		final List<SourceColumnSemantic> availableTypes = TypeUtil.getAvailableTypes(importType);
 		final List<String> availableNamespaces = TypeUtil.getAvailableNamespaces(importType);
+		List<SourceColumnSemantic> availableTypes = TypeUtil.getAvailableTypes(importType);
+		
+		if (!tableImportContext.isKeyRequired() && availableTypes.contains(KEY)) {
+			availableTypes = new ArrayList<>(availableTypes); // The original list cannot be modified!
+			availableTypes.remove(KEY);
+		}
 		
 		final AttributeEditorPanel attrEditorPanel = new AttributeEditorPanel(
 				parent,
@@ -873,16 +880,16 @@ public class PreviewTablePanel extends JPanel {
 			if (name != null && !name.trim().isEmpty()) {
 				((PreviewTableModel) getPreviewTable().getModel()).setColumnName(colIdx, name);
 				getPreviewTable().getColumnModel().getColumn(colIdx).setHeaderValue(name);
-				updatePreviewTable();
+				update();
 			}
 		});
 		attrEditorPanel.addPropertyChangeListener("namespace", evt -> {
 			setNamespace(colIdx, (String) evt.getNewValue());
-			updatePreviewTable();
+			update();
 		});
 		attrEditorPanel.addPropertyChangeListener("attributeType", evt -> {
 			setType(colIdx, (SourceColumnSemantic) evt.getNewValue());
-			updatePreviewTable();
+			update();
 		});
 		attrEditorPanel.addPropertyChangeListener("attributeDataType", evt -> {
 			final AttributeDataType newDataType = (AttributeDataType) evt.getNewValue();
@@ -891,11 +898,11 @@ public class PreviewTablePanel extends JPanel {
 				setListDelimiter(colIdx, attrEditorPanel.getListDelimiter());
 
 			setDataType(colIdx, newDataType);
-			updatePreviewTable();
+			update();
 		});
 		attrEditorPanel.addPropertyChangeListener("listDelimiter", evt -> {
 			setListDelimiter(colIdx, (String) evt.getNewValue());
-			updatePreviewTable();
+			update();
 		});
 		
 		positionEditDialog();
@@ -965,33 +972,33 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 
-	private void updatePreviewTable(final Sheet sheet) throws IOException {
+	private void update(final Sheet sheet) throws IOException {
 		final PreviewTableModel newModel = parseExcel(sheet, startLine);
 		
 		if (newModel.getRowCount() > 0) {
 			final String sheetName = sheet.getSheetName();
 			
 			dataTypes = TypeUtil.guessDataTypes(newModel);
-			types = TypeUtil.guessTypes(importType, newModel, dataTypes, null);
+			types = TypeUtil.guessTypes(importType, newModel, dataTypes, getIgnoredTypes());
 			listDelimiters = new String[newModel.getColumnCount()];
 			namespaces = TypeUtil.getPreferredNamespaces(types);
 			
-			updatePreviewTable(newModel, sheetName);
+			update(newModel, sheetName);
 		}
 		
 		if (getPreviewTable() == null)
 			throw new IllegalStateException("No data found in the Excel sheets.");
 	}
 	
-	private void updatePreviewTable(final PreviewTableModel newModel, final String name) {
+	private void update(final PreviewTableModel newModel, final String name) {
 		getPreviewTable().setName(name);
 		getPreviewTable().setModel(newModel);
 		
 		ColumnResizer.adjustColumnPreferredWidths(getPreviewTable());
-		updatePreviewTable();
+		update();
 	}
 	
-	protected void updatePreviewTable() {
+	protected void update() {
 		getPreviewTable().revalidate();
 		getPreviewTable().repaint();
 		getPreviewTable().getTableHeader().resizeAndRepaint();
@@ -1011,6 +1018,48 @@ public class PreviewTablePanel extends JPanel {
 		}
 	}
 	
+	/**
+	 * Updates the current sheet's semantic types. It keeps previously set types unchanged, unless a type
+	 * has been removed.
+	 */
+	protected void updateKeyType() {
+		final String name = getPreviewTable().getName();
+		final PreviewTableModel model = (PreviewTableModel) getPreviewTable().getModel();
+		
+		if (name != null) {
+			List<SourceColumnSemantic> currentTypes = types != null ? Arrays.asList(types) : Collections.emptyList();
+			Set<SourceColumnSemantic> ignoredTypes = getIgnoredTypes();
+			SourceColumnSemantic[] newTypes = TypeUtil.guessTypes(importType, model, dataTypes, ignoredTypes);
+			
+			if (tableImportContext.isKeyRequired() && !currentTypes.contains(KEY)) {
+				for (int i = 0; i < newTypes.length; i++) {
+					if (newTypes[i] == KEY) {
+						setType(i, KEY);
+						update();
+						break;
+					}
+				}
+			} else if (!tableImportContext.isKeyRequired() && currentTypes.contains(KEY)) {
+				for (int i = 0; i < types.length; i++) {
+					if (types[i] == KEY) {
+						setType(i, newTypes.length > i ? newTypes[i] : NONE);
+						update();
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	private Set<SourceColumnSemantic> getIgnoredTypes() {
+		Set<SourceColumnSemantic> set = new HashSet<>();
+		
+		if (tableImportContext != null && !tableImportContext.isKeyRequired())
+			set.add(KEY);
+		
+		return set;
+	}
+
 	private JComboBox<Sheet> getSheetComboBox() {
 		if (sheetComboBox == null) {
 			sheetComboBox = new JComboBox<>();
@@ -1032,7 +1081,7 @@ public class PreviewTablePanel extends JPanel {
 					
 					try {
 						if (sheet != null)
-							updatePreviewTable(sheet);
+							update(sheet);
 					} catch (IOException e) {
 						logger.error("Cannot preview Excel sheet '" + sheet.getSheetName() + "'.", e);
 					}
@@ -1051,7 +1100,9 @@ public class PreviewTablePanel extends JPanel {
 				
 				// Replace types "NONE" with new guessed types.
 				// NOTE: This must not change the current data types!
-				final Set<SourceColumnSemantic> ignoredTypes = new HashSet<>(Arrays.asList(types));
+				final Set<SourceColumnSemantic> ignoredTypes = getIgnoredTypes();
+				ignoredTypes.addAll(Arrays.asList(types));
+				
 				final SourceColumnSemantic[] newTypes =
 						TypeUtil.guessTypes(importType, getPreviewTable().getModel(), dataTypes, ignoredTypes);
 				
@@ -1060,7 +1111,7 @@ public class PreviewTablePanel extends JPanel {
 						setType(i, newTypes[i]);
 				}
 				
-				updatePreviewTable();
+				update();
 			});
 			
 			if (isAquaLAF()) {
@@ -1080,7 +1131,7 @@ public class PreviewTablePanel extends JPanel {
 			selectNoneButton.addActionListener(evt -> {
 				disposeEditDialog();
 				fillTypes(NONE);
-				updatePreviewTable();
+				update();
 			});
 			
 			if (isAquaLAF()) {

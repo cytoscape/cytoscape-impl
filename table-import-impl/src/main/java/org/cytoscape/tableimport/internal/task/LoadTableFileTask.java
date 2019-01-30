@@ -1,12 +1,18 @@
-package org.cytoscape.task.internal.loaddatatable;
+package org.cytoscape.tableimport.internal.task;
+
+import java.io.File;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +30,17 @@ package org.cytoscape.task.internal.loaddatatable;
  * #L%
  */
 
-
-import java.io.File;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-
 public class LoadTableFileTask extends AbstractLoadTableTask {
 	
 	@Tunable(description = "Data Table file:", params = "fileCategory=table;input=true")
 	public File file;
 
-	public LoadTableFileTask(final CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar);
+	public LoadTableFileTask(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
+		super(tableImportContext, serviceRegistrar);
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
-		loadTable(file.getName(), file.toURI(), true, taskMonitor);
+	public void run(final TaskMonitor tm) throws Exception {
+		loadTable(file.getName(), file.toURI(), true, tm);
 	}
 }

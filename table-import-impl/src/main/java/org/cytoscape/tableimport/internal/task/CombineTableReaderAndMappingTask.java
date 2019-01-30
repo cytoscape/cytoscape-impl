@@ -1,4 +1,14 @@
-package org.cytoscape.task.internal.loaddatatable;
+package org.cytoscape.tableimport.internal.task;
+
+import static org.cytoscape.work.TunableValidator.ValidationState.OK;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableValidator;
 
 /*
  * #%L
@@ -6,7 +16,7 @@ package org.cytoscape.task.internal.loaddatatable;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +34,12 @@ package org.cytoscape.task.internal.loaddatatable;
  * #L%
  */
 
-import static org.cytoscape.work.TunableValidator.ValidationState.OK;
-
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.table.ImportTableDataTask;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableValidator;
-
-public class CombineReaderAndMappingTask extends AbstractTask implements TunableValidator {
+public class CombineTableReaderAndMappingTask extends AbstractTask implements TunableValidator {
 
 	@ProvidesTitle
-	public String getTitle() {		return "Import Columns From Table";	}
+	public String getTitle() {
+		return "Import Columns From Table";
+	}
 
 	@ContainsTunables
 	public ImportTableDataTask importTableDataTask;
@@ -46,29 +47,37 @@ public class CombineReaderAndMappingTask extends AbstractTask implements Tunable
 	@ContainsTunables
 	public CyTableReader tableReader;
 
-	
-	public CombineReaderAndMappingTask(final CyTableReader tableReader, final CyServiceRegistrar serviceRegistrar) {
+	public CombineTableReaderAndMappingTask(
+			final CyTableReader tableReader,
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.tableReader = tableReader;
-		this.importTableDataTask = new ImportTableDataTask(tableReader, serviceRegistrar);
+		this.importTableDataTask = new ImportTableDataTask(tableReader, tableImportContext, serviceRegistrar);
 	}
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
 		if (tableReader instanceof TunableValidator) {
 			ValidationState readVS = ((TunableValidator) tableReader).getValidationState(errMsg);
-			if (readVS != OK)		return readVS;
+			
+			if (readVS != OK)
+				return readVS;
 		}
 
 		if (importTableDataTask instanceof TunableValidator) {
 			ValidationState readVS = ((TunableValidator) importTableDataTask).getValidationState(errMsg);
-			if (readVS != OK)		return readVS;
+			
+			if (readVS != OK)
+				return readVS;
 		}
+		
 		return OK;
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		tableReader.run(taskMonitor);
-		importTableDataTask.run(taskMonitor);
+	public void run(TaskMonitor tm) throws Exception {
+		tableReader.run(tm);
+		importTableDataTask.run(tm);
 	}
 }

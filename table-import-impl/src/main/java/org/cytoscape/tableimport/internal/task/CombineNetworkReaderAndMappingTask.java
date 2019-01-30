@@ -49,7 +49,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * #L%
  */
 
-public class CombineReaderAndMappingTask extends AbstractCyNetworkReader implements TunableValidator {
+public class CombineNetworkReaderAndMappingTask extends AbstractCyNetworkReader implements TunableValidator {
 
 	@ProvidesTitle
 	public String getTitle() {
@@ -64,7 +64,7 @@ public class CombineReaderAndMappingTask extends AbstractCyNetworkReader impleme
 	private TaskMonitor taskMonitor;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public CombineReaderAndMappingTask(final InputStream is, final String fileType, final String inputName,
+	public CombineNetworkReaderAndMappingTask(final InputStream is, final String fileType, final String inputName,
 			final CyServiceRegistrar serviceRegistrar) {
 		super(
 				is,

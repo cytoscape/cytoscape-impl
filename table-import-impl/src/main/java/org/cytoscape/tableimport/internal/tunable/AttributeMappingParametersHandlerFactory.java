@@ -1,12 +1,23 @@
 package org.cytoscape.tableimport.internal.tunable;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +35,19 @@ package org.cytoscape.tableimport.internal.tunable;
  * #L%
  */
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
-import org.cytoscape.tableimport.internal.util.ImportType;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.GUITunableHandler;
-import org.cytoscape.work.swing.GUITunableHandlerFactory;
-
 public class AttributeMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 	
 	private final ImportType dialogType;
-    private final CyServiceRegistrar serviceRegistrar;
+	private final TableImportContext tableImportContext;
+	private final CyServiceRegistrar serviceRegistrar;
     
-	public AttributeMappingParametersHandlerFactory(final ImportType dialogType,
-			final CyServiceRegistrar serviceRegistrar) {
+	public AttributeMappingParametersHandlerFactory(
+			ImportType dialogType,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -50,7 +56,7 @@ public class AttributeMappingParametersHandlerFactory implements GUITunableHandl
 		if (!AttributeMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(field, instance, t, dialogType, serviceRegistrar);
+		return new AttributeMappingParametersHandler(field, instance, t, dialogType, tableImportContext, serviceRegistrar);
 	}
 
 	@Override
@@ -58,6 +64,6 @@ public class AttributeMappingParametersHandlerFactory implements GUITunableHandl
 		if (!AttributeMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 
-		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, serviceRegistrar);
+		return new AttributeMappingParametersHandler(getter, setter, instance, tunable, dialogType, tableImportContext, serviceRegistrar);
 	}
 }

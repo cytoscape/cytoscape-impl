@@ -84,12 +84,14 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	private String inputName;
 	private GraphReader reader;
 	private CyNetworkReader netReader;
-	private CyServiceRegistrar serviceRegistrar;
 	private PreviewTablePanel previewPanel;
 	private String networkName;
 	private URI uri;
 	private File tempFile;
 	private TaskMonitor taskMonitor;
+	
+	private final TableImportContext tableImportContext;
+	private final CyServiceRegistrar serviceRegistrar;
 	private boolean nogui;
 	
 	@ContainsTunables
@@ -163,11 +165,16 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 	
 	private NetworkTableMappingParameters ntmp;
 
-	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar) {
-		this(serviceRegistrar, false);
+	public LoadNetworkReaderTask(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
+		this(tableImportContext, serviceRegistrar, false);
 	}
 
-	public LoadNetworkReaderTask(final CyServiceRegistrar serviceRegistrar, boolean nogui) {
+	public LoadNetworkReaderTask(
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar,
+			final boolean nogui
+	) {
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	    
 		List<String> tempList = new ArrayList<>();
@@ -186,7 +193,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		this.inputName = inputName;
 		this.uri = uriName;
 		
-		previewPanel = new PreviewTablePanel(ImportType.NETWORK_IMPORT, iconManager);
+		previewPanel = new PreviewTablePanel(ImportType.NETWORK_IMPORT, tableImportContext, iconManager);
 
 		try{
 			tempFile = File.createTempFile("temp", this.fileType);
@@ -227,7 +234,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 		if (netReader == null)				
 			netReader = networkReaderManager.getReader(uri, inputName);
 		
-		if (netReader instanceof CombineReaderAndMappingTask) {
+		if (netReader instanceof CombineNetworkReaderAndMappingTask) {
 			Workbook workbook = null;
 
 			// Load Spreadsheet data for preview.
@@ -251,7 +258,7 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			
 			final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 			
-			previewPanel.updatePreviewTable(
+			previewPanel.update(
 					workbook,
 					fileType,
 					tempFile.getAbsolutePath(),

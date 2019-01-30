@@ -1,12 +1,21 @@
 package org.cytoscape.tableimport.internal.reader;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.tableimport.internal.util.AttributeDataType;
+import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
+import org.cytoscape.tableimport.internal.util.TypeUtil;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,15 +32,6 @@ package org.cytoscape.tableimport.internal.reader;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-
-import org.cytoscape.tableimport.internal.util.AttributeDataType;
-import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
-import org.cytoscape.tableimport.internal.util.TypeUtil;
 
 /**
  * Parameter object for text table <---> CyAttributes mapping.

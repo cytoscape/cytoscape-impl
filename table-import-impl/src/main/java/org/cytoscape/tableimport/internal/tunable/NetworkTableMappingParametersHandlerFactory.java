@@ -1,12 +1,24 @@
 package org.cytoscape.tableimport.internal.tunable;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
+import org.cytoscape.tableimport.internal.util.ImportType;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.TunableHandler;
+import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.work.swing.GUITunableHandlerFactory;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +36,19 @@ package org.cytoscape.tableimport.internal.tunable;
  * #L%
  */
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
-import org.cytoscape.tableimport.internal.util.ImportType;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.TunableHandler;
-import org.cytoscape.work.swing.GUITunableHandler;
-import org.cytoscape.work.swing.GUITunableHandlerFactory;
-
 public class NetworkTableMappingParametersHandlerFactory implements GUITunableHandlerFactory {
 
 	private final ImportType dialogType;
+	private final TableImportContext tableImportContext;
     private final CyServiceRegistrar serviceRegistrar;
     
-    public NetworkTableMappingParametersHandlerFactory(final ImportType dialogType,
-    		final CyServiceRegistrar serviceRegistrar) {
+    public NetworkTableMappingParametersHandlerFactory(
+    		ImportType dialogType,
+    		TableImportContext tableImportContext,
+    		CyServiceRegistrar serviceRegistrar
+    ) {
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	}
     
@@ -51,7 +57,8 @@ public class NetworkTableMappingParametersHandlerFactory implements GUITunableHa
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, serviceRegistrar);
+		return new NetworkTableMappingParametersHandler(field, instance, tunable, dialogType, tableImportContext,
+				serviceRegistrar);
 	}
 
 	@Override
@@ -60,6 +67,7 @@ public class NetworkTableMappingParametersHandlerFactory implements GUITunableHa
 		if (!NetworkTableMappingParameters.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 		
-		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType, serviceRegistrar);
+		return new NetworkTableMappingParametersHandler(getter, setter, instance, tunable, dialogType,
+				tableImportContext, serviceRegistrar);
 	}
 }

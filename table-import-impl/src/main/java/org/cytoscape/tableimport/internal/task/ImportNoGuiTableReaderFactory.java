@@ -1,12 +1,17 @@
 package org.cytoscape.tableimport.internal.task;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.edit.ImportDataTableTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +29,28 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.edit.ImportDataTableTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ImportNoGuiTableReaderFactory extends AbstractTaskFactory {
 	
 	private final boolean fromURL;
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportNoGuiTableReaderFactory(boolean fromURL, final CyServiceRegistrar serviceRegistrar) {
+	public ImportNoGuiTableReaderFactory(
+			final boolean fromURL, 
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.fromURL = fromURL;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final LoadTableReaderTask readerTask = new LoadTableReaderTask(serviceRegistrar);
+		final LoadTableReaderTask readerTask = new LoadTableReaderTask(tableImportContext, serviceRegistrar);
 		final ImportDataTableTaskFactory importFactory = serviceRegistrar.getService(ImportDataTableTaskFactory.class);
 		final TaskIterator importTaskIterator = importFactory.createTaskIterator(readerTask);
 		

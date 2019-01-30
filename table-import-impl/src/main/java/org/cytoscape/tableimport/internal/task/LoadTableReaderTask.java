@@ -1,29 +1,5 @@
 package org.cytoscape.tableimport.internal.task;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -61,6 +37,30 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.util.ListSingleSelection;
+
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class LoadTableReaderTask extends AbstractTask implements CyTableReader, TunableValidator {
 	
@@ -112,9 +112,11 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         context="nongui")
 	public String dataTypeList;
 	
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadTableReaderTask(final CyServiceRegistrar serviceRegistrar) {
+	public LoadTableReaderTask(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		
 		List<String> tempList = new ArrayList<>();
@@ -125,9 +127,14 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		delimitersForDataList = new ListSingleSelection<String>(tempList);
 	}
 	
-	public LoadTableReaderTask(final InputStream is, final String fileType,final String inputName,
-			final CyServiceRegistrar serviceRegistrar) {
-		this(serviceRegistrar);
+	public LoadTableReaderTask(
+			final InputStream is,
+			final String fileType,
+			final String inputName,
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		this(tableImportContext, serviceRegistrar);
 		setInputFile(is, fileType, inputName);
 	}
 	
@@ -136,7 +143,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		this.inputName = inputName;
 		this.isStart = is;
 
-		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, serviceRegistrar.getService(IconManager.class));
+		previewPanel = new PreviewTablePanel(ImportType.TABLE_IMPORT, tableImportContext, serviceRegistrar.getService(IconManager.class));
 				
 		try {
 			File tempFile = File.createTempFile("temp", this.fileType);
@@ -210,7 +217,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		final int startLoadRowTemp = firstRowAsColumnNames ? 0 : startLoadRow;
 		
-		previewPanel.updatePreviewTable(
+		previewPanel.update(
 				workbook,
 				fileType,
 				inputName,
@@ -336,13 +343,17 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		
 		TextTableReader reader = this.reader;
 		AttributeMappingParameters readerAMP = (AttributeMappingParameters) reader.getMappingParameter();
-		String primaryKey = readerAMP.getAttributeNames()[readerAMP.getKeyIndex()];
+		
+		final int keyIndex = readerAMP.getKeyIndex();
+		final String pk = keyIndex >= 0 ? readerAMP.getAttributeNames()[keyIndex] : CyTable.SUID;
+		final Class<?> pkType = keyIndex >= 0 ? String.class : Long.class;
+		
 		tm.setProgress(0.1);
 
 		final CyTableFactory tableFactory = serviceRegistrar.getService(CyTableFactory.class);
 		final CyTable table = tableFactory.createTable(
 				"AttrTable " + inputName.substring(inputName.lastIndexOf('/') + 1) + " " + Integer.toString(numImports++),
-			    primaryKey, String.class, true, true);
+			    pk, pkType, true, true);
 		
 		cyTables = new CyTable[] { table };
 		tm.setProgress(0.3);
@@ -358,7 +369,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if (keyColumnIndex <= 0) {
+		if (tableImportContext.isKeyRequired() && keyColumnIndex <= 0) {
 			try {
 				errMsg.append("The primary key column needs to be selected. Please select values from 1 to the number of columns");
 			} catch (IOException e) {

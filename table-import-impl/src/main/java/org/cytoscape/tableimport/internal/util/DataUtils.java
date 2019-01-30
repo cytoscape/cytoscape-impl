@@ -1,4 +1,4 @@
-package org.cytoscape.task.internal.utils;
+package org.cytoscape.tableimport.internal.util;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%

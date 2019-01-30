@@ -34,6 +34,7 @@ import javax.swing.JPanel;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.tableimport.internal.ui.ImportTablePanel;
 import org.cytoscape.tableimport.internal.util.ImportType;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -45,23 +46,39 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 	private ImportType dialogType;
 	private ImportTablePanel importTablePanel;
 	private AttributeMappingParameters amp;
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
 
-	protected AttributeMappingParametersHandler(final Field field, final Object obj, final Tunable tunable,
-			final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
+	protected AttributeMappingParametersHandler(
+			Field field,
+			Object obj,
+			Tunable tunable,
+			ImportType dialogType,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(field, obj, tunable);
 		
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
-	protected AttributeMappingParametersHandler(final Method getter, final Method setter, final Object instance,
-			final Tunable tunable, final ImportType dialogType, final CyServiceRegistrar serviceRegistrar) {
+	protected AttributeMappingParametersHandler(
+			Method getter,
+			Method setter,
+			Object instance,
+			Tunable tunable,
+			ImportType dialogType,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(getter, setter, instance, tunable);
 		
 		this.dialogType = dialogType;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
@@ -78,7 +95,8 @@ public class AttributeMappingParametersHandler extends AbstractGUITunableHandler
 		panel = new JPanel(new BorderLayout());
 
 		try {
-			importTablePanel = new ImportTablePanel(dialogType, amp.is, amp.fileType, null, serviceRegistrar);
+			importTablePanel =
+					new ImportTablePanel(dialogType, amp.is, amp.fileType, null, tableImportContext, serviceRegistrar);
 		} catch (Exception e) {
 			final JLabel errorLabel = new JLabel(
 					"<html><h3>Error: Could not Initialize Preview.</h3>" +

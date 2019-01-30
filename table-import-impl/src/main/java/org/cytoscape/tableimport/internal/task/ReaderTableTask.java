@@ -1,10 +1,22 @@
+package org.cytoscape.tableimport.internal.task;
+
+import static org.cytoscape.work.TunableValidator.ValidationState.OK;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ContainsTunables;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.TunableValidator;
+
 /*
  * #%L
- * Cyni Implementation (cyni-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -21,17 +33,6 @@
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-package org.cytoscape.task.internal.loaddatatable;
-
-import static org.cytoscape.work.TunableValidator.ValidationState.OK;
-
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ContainsTunables;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TunableValidator;
 
 public class ReaderTableTask extends AbstractTask implements TunableValidator {
 
@@ -60,7 +61,7 @@ public class ReaderTableTask extends AbstractTask implements TunableValidator {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		tableReader.run(taskMonitor);
+	public void run(TaskMonitor tm) throws Exception {
+		tableReader.run(tm);
 	}
 }

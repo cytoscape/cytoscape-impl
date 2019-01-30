@@ -1,12 +1,24 @@
-package org.cytoscape.task.internal.loaddatatable;
+package org.cytoscape.tableimport.internal.task;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.List;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.io.read.CyTableReaderManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,26 +36,13 @@ package org.cytoscape.task.internal.loaddatatable;
  * #L%
  */
 
-
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.json.JSONResult;
-
-
 abstract class AbstractLoadTableTask extends AbstractTask {
 
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public AbstractLoadTableTask(final CyServiceRegistrar serviceRegistrar) {
+	public AbstractLoadTableTask(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -58,7 +57,8 @@ abstract class AbstractLoadTableTask extends AbstractTask {
 		
 		if (combine) {
 			taskMonitor.setStatusMessage("Importing Data Table...");
-			insertTasksAfterCurrentTask(new CombineReaderAndMappingTask(reader, serviceRegistrar));
+			insertTasksAfterCurrentTask(
+					new CombineTableReaderAndMappingTask(reader, tableImportContext, serviceRegistrar));
 		} else {
 			taskMonitor.setStatusMessage("Loading Data Table...");
 			insertTasksAfterCurrentTask(
@@ -67,7 +67,11 @@ abstract class AbstractLoadTableTask extends AbstractTask {
 			);
 		}
 	}
-	public List<Class<?>> getResultClasses() {	return Arrays.asList(CyTable.class, String.class, JSONResult.class);	}
+	
+	public List<Class<?>> getResultClasses() {
+		return Arrays.asList(CyTable.class, String.class, JSONResult.class);
+	}
+
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(CyTable.class)) 		return "";
 		if (requestedType.equals(String.class)) 		return "";
@@ -75,6 +79,5 @@ abstract class AbstractLoadTableTask extends AbstractTask {
 			JSONResult res = () -> {		return "{}";	};	}
 		return null;
 	}
-
 }
 

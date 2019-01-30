@@ -15,7 +15,6 @@ import static org.cytoscape.task.internal.utils.IconUtil.FIRST_NEIGHBORS;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HELP;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HIDE_SELECTED;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_NET;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_TABLE;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_NEW_FROM_SELECTED;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_OPEN_FILE;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SAVE;
@@ -105,7 +104,6 @@ import org.cytoscape.task.edit.ConnectSelectedNodesTaskFactory;
 import org.cytoscape.task.edit.EditNetworkTitleTaskFactory;
 import org.cytoscape.task.edit.ExpandGroupTaskFactory;
 import org.cytoscape.task.edit.GroupNodesTaskFactory;
-import org.cytoscape.task.edit.ImportDataTableTaskFactory;
 import org.cytoscape.task.edit.MapGlobalToLocalTableTaskFactory;
 import org.cytoscape.task.edit.MapTableToNetworkTablesTaskFactory;
 import org.cytoscape.task.edit.MergeTablesTaskFactory;
@@ -169,8 +167,6 @@ import org.cytoscape.task.internal.hide.UnHideTaskFactoryImpl;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTaskFactoryImpl;
 import org.cytoscape.task.internal.layout.GetPreferredLayoutTaskFactory;
 import org.cytoscape.task.internal.layout.SetPreferredLayoutTaskFactory;
-import org.cytoscape.task.internal.loaddatatable.LoadTableFileTaskFactoryImpl;
-import org.cytoscape.task.internal.loaddatatable.LoadTableURLTaskFactoryImpl;
 import org.cytoscape.task.internal.network.CloneNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.network.DestroyNetworkTaskFactoryImpl;
 import org.cytoscape.task.internal.network.NewEmptyNetworkTaskFactoryImpl;
@@ -228,7 +224,6 @@ import org.cytoscape.task.internal.table.GetColumnTaskFactory;
 import org.cytoscape.task.internal.table.GetNetworkAttributeTaskFactory;
 import org.cytoscape.task.internal.table.GetRowTaskFactory;
 import org.cytoscape.task.internal.table.GetValueTaskFactory;
-import org.cytoscape.task.internal.table.ImportTableDataTaskFactoryImpl;
 import org.cytoscape.task.internal.table.ListColumnsTaskFactory;
 import org.cytoscape.task.internal.table.ListNetworkAttributesTaskFactory;
 import org.cytoscape.task.internal.table.ListRowsTaskFactory;
@@ -259,8 +254,6 @@ import org.cytoscape.task.internal.zoom.ZoomOutTaskFactory;
 import org.cytoscape.task.read.LoadMultipleNetworkFilesTaskFactory;
 import org.cytoscape.task.read.LoadNetworkFileTaskFactory;
 import org.cytoscape.task.read.LoadNetworkURLTaskFactory;
-import org.cytoscape.task.read.LoadTableFileTaskFactory;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
 import org.cytoscape.task.read.LoadVizmapFileTaskFactory;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.task.select.DeselectAllEdgesTaskFactory;
@@ -304,7 +297,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -1697,42 +1690,6 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void createTableTaskFactories(BundleContext bc) {
 		{
-			LoadTableFileTaskFactoryImpl factory = new LoadTableFileTaskFactoryImpl(serviceRegistrar);
-			
-			TextIcon icon = new TextIcon(LAYERED_IMPORT_TABLE, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
-			String iconId = "cy::IMPORT_TABLE";
-			iconManager.addIcon(iconId, icon);
-			
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");		//.Import.Table[23.0]
-			props.setProperty(INSERT_SEPARATOR_BEFORE, "true");
-			props.setProperty(MENU_GRAVITY, "5.1");
-			props.setProperty(TOOL_BAR_GRAVITY, "2.1");
-			props.setProperty(TITLE, "Table from File...");
-			props.setProperty(LARGE_ICON_ID, iconId);
-			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Import Table from File");
-			props.setProperty(TOOLTIP_LONG_DESCRIPTION, "Reads a table from the file system and adds it to the current session.");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the file system.  Requires a string containing the absolute path of the file. Returns the SUID of the table created.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
-			registerService(bc, factory, TaskFactory.class, props);
-			registerService(bc, factory, LoadTableFileTaskFactory.class, props);
-		}
-		{
-			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(serviceRegistrar);
-			Properties props = new Properties();
-			props.setProperty(PREFERRED_MENU, "File.Import[23.0]");			//.Table[23.0]
-			props.setProperty(MENU_GRAVITY, "6.0");
-			props.setProperty(TITLE, "Table from URL...");
-			props.setProperty(TOOLTIP, "Import Table From URL");
-			props.setProperty(COMMAND_LONG_DESCRIPTION, "Reads a table from the Internet.  Requires a valid URL pointing to the file. Returns the SUID of the table created.");
-			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
-			registerService(bc, factory, TaskFactory.class, props);
-			registerService(bc, factory, LoadTableURLTaskFactory.class, props);
-		}
-		{
 			ExportSelectedTableTaskFactoryImpl factory = new ExportSelectedTableTaskFactoryImpl(cyTableWriterManagerRef,
 					cyTableManagerServiceRef, cyNetworkManagerServiceRef, cyApplicationManagerServiceRef);
 			Properties props = new Properties();
@@ -1745,10 +1702,6 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOLTIP, "Save a table to the file system");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, ExportSelectedTableTaskFactory.class, props);
-		}
-		{
-			ImportTableDataTaskFactoryImpl factory = new ImportTableDataTaskFactoryImpl(serviceRegistrar);
-			registerService(bc, factory, ImportDataTableTaskFactory.class);
 		}
 		{
 			ExportTableTaskFactoryImpl factory = new ExportTableTaskFactoryImpl(cyTableWriterManagerRef,
