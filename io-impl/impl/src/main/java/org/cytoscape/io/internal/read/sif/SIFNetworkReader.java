@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -82,6 +85,8 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 
 	@Override
 	public void run(TaskMonitor tm) throws IOException {
+		tm.setTitle("Read SIF File");
+		
 		try {
 			readInput(tm);
 		} finally {
@@ -97,13 +102,24 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 	}
 
 	private void readInput(TaskMonitor tm) throws IOException {
-		this.parentTaskMonitor = tm;
 		tm.setProgress(0.0);
+		tm.setStatusMessage("Preparing to read...");
+		
+		this.parentTaskMonitor = tm;
 
-		String line;
-		final BufferedReader br =
-			new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8").newDecoder()), 128*1024);
-
+		/*
+		 * Whitespace (space or tab) is used to delimit the names in the simple interaction file format.
+		 * However, in some cases spaces are desired in a node name or edge type.
+		 * The standard is that, if the file contains any tab characters, then tabs are used to delimit
+		 * the fields and spaces are considered part of the name.
+		 * If the file contains no tabs, then any spaces are delimiters that separate names
+		 * (and names cannot contain spaces).
+		 */
+		
+		final CharsetDecoder charset = Charset.forName("UTF-8").newDecoder();
+		final BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, charset), 128 * 1024);
+		String line = null;
+		
 		CyRootNetwork root = getRootNetwork();
 		final CySubNetwork newNetwork;
 		
@@ -112,39 +128,53 @@ public class SIFNetworkReader extends AbstractCyNetworkReader {
 		else // Need to create new network with new root.
 			newNetwork = (CySubNetwork) cyNetworkFactory.createNetwork();
 
-		Map<Object, CyNode> nMap = getNodeMap();
-		
+		// First Pass: try to read the file until we find a TAB character
+		// (NOTE: We're assuming that BufferedReader always supports the mark() operation!)
 		tm.setProgress(0.1);
+		tm.setStatusMessage("Analyzing SIF file...");
 		
-		final String firstLine = br.readLine();
-		if (firstLine.contains(TAB))
-			delimiter = TAB;
-		createEdge(new Interaction(firstLine.trim(), delimiter), newNetwork, nMap);
-
-		tm.setProgress(0.15);
-		tm.setStatusMessage("Processing the interactions...");
-		int numInteractionsRead = 0;
+		List<String> allLines = new ArrayList<>();
 		
 		while ((line = br.readLine()) != null) {
+			if (cancelled) {
+				br.close();
+				return;
+			}
+			
+			if (!TAB.equals(delimiter) && line.contains(TAB))
+				delimiter = TAB;
+			
+			if (!line.trim().isEmpty())
+				allLines.add(line);
+		}
+		
+		// Second Pass: create nodes and interactions
+		tm.setProgress(0.2);
+		tm.setStatusMessage("Processing the interactions...");
+		int numInteractionsRead = 0;
+		Map<Object, CyNode> nMap = getNodeMap();
+		int total = allLines.size();
+		
+		for (int i = 0; i < total; i++) {
 			if (cancelled) {
 				// Cancel called. Clean up the garbage.
 				nMap.clear();
 				br.close();
 				return;
 			}
-
-			if (line.trim().length() <= 0)
-				continue;
+			
+			line = allLines.set(i, null); // Making sure this list entry is ready to be garbage collected!
 
 			try {
 				final Interaction itr = new Interaction(line, delimiter);
 				createEdge(itr, newNetwork, nMap);
 			} catch (Exception e) {
 				// Simply ignore invalid lines.
+				logger.warn("Invalid SIF line: " + line, e);
 				continue;
 			}
 
-			if ( (++numInteractionsRead % 1000) == 0 )
+			if ((++numInteractionsRead % 1000) == 0)
 				tm.setStatusMessage("Processed " + numInteractionsRead + " interactions so far.");
 		}
 
