@@ -92,6 +92,10 @@ public final class Util {
 		return views;
 	}
 	
+	public static boolean isDisposed(final CyNetworkView view) {
+		return view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null;
+	}
+	
 	public static double squarenessRatio(final double w, final double h) {
 		return Math.abs(1.0 - (w > h ? w / h : h / w));
 	}

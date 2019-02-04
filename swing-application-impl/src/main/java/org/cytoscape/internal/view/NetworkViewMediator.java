@@ -286,7 +286,7 @@ public class NetworkViewMediator
 		final CyNetworkView netView = e.getSource();
 		
 		invokeOnEDT(() -> {
-			getNetworkViewMainPanel().update(netView);
+			getNetworkViewMainPanel().update(netView, false, false);
 		});
 	}
 	
@@ -294,29 +294,27 @@ public class NetworkViewMediator
 	@Override
 	public void handleEvent(final ViewChangedEvent<?> e) {
 		final CyNetworkView netView = e.getSource();
-		
-		// Ask the Views Panel to update the thumbnail for the affected network view
-		invokeOnEDT(() -> {
-			if (!getNetworkViewMainPanel().isGridVisible()) {
-				getNetworkViewMainPanel().update(netView);
-			}
-		});
+		boolean visiblePropChanged = false;
 		
 		// Look for MappableVisualPropertyValue objects, so they can be saved for future reference
 		for (final ViewChangeRecord<?> record : e.getPayloadCollection()) {
 			if (!record.isLockedValue())
 				continue;
 			
+			final VisualProperty<?> vp = record.getVisualProperty();
+			
+			if (vp == BasicVisualLexicon.NODE_VISIBLE || vp == BasicVisualLexicon.EDGE_VISIBLE)
+				visiblePropChanged = true;
+			
 			final View<?> view = record.getView();
 			final Object value = record.getValue();
+			
 			
 			if (value instanceof MappableVisualPropertyValue) {
 				final Set<CyColumnIdentifier> columnIds = ((MappableVisualPropertyValue)value).getMappedColumns();
 				
 				if (columnIds == null)
 					continue;
-				
-				final VisualProperty<?> vp = record.getVisualProperty();
 				
 				for (final CyColumnIdentifier colId : columnIds) {
 					Map<MappedVisualPropertyValueInfo, Set<View<?>>> mvpInfoMap = mappedValuesMap.get(colId);
@@ -329,12 +327,20 @@ public class NetworkViewMediator
 					Set<View<?>> viewSet = mvpInfoMap.get(mvpInfo);
 					
 					if (viewSet == null)
-						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<View<?>>());
+						mvpInfoMap.put(mvpInfo, viewSet = new HashSet<>());
 					
 					viewSet.add(view);
 				}
 			}
 		}
+		
+		final boolean updateHiddenInfo = visiblePropChanged;
+		
+		// Ask the Views Panel to update the thumbnail for the affected network view
+		invokeOnEDT(() -> {
+			if (!getNetworkViewMainPanel().isGridVisible())
+				getNetworkViewMainPanel().update(netView, false, updateHiddenInfo);
+		});
 	}
 
 	@Override
@@ -637,7 +643,7 @@ public class NetworkViewMediator
 							// if this visual property is locked
 							if (!view.isValueLocked(BasicVisualLexicon.NETWORK_TITLE)) {
 								invokeOnEDT(() -> {
-									getNetworkViewMainPanel().update(view);
+									getNetworkViewMainPanel().update(view, false, false);
 								});
 							}
 						}

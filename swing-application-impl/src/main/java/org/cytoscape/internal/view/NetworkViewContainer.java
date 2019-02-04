@@ -78,7 +78,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -214,15 +214,15 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 	}
 	
-	public void update() {
+	public void update(boolean updateSelectionInfo, boolean updateHiddenInfo) {
 		getVisualizationContainer().repaint();
-		updateTollBar();
+		updateTollBar(updateSelectionInfo, updateHiddenInfo);
 		
 		if (isVisible() && getBirdsEyeViewPanel().isVisible())
 			updateBirdsEyeViewPanel();
 	}
 	
-	protected void updateTollBar() {
+	protected void updateTollBar(boolean updateSelectionInfo, boolean updateHiddenInfo) {
 		gridViewTogglePanel.setVisible(!isDetached() && !isComparing());
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
@@ -238,7 +238,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (getSelectionModePanel().isVisible())
 			updateSelectionModePanel();
 		
-		updateInfoPanel();
+		if (updateSelectionInfo)
+			updateSelectionInfo();
+		if (updateHiddenInfo)
+			updateHiddenInfo();
 		
 		if (isComparing())
 			updateCurrentLabel();
@@ -257,14 +260,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		});
 	}
 	
-	protected void updateInfoPanel() {
-		if (getInfoPanel().isVisible()) {
-			final CyNetworkView view = getNetworkView();
-			
-			if (view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null)
-				return; // The view has probably been disposed
-			
-			// Selected nodes/edges info
+	protected void updateSelectionInfo() {
+		final CyNetworkView view = getNetworkView();
+		
+		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			final int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			final int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			getNodeSelectionLabel().setText("" + sn);
@@ -273,8 +272,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final String sTooltip = createInfoToolTipText(sn, se, "selected");
 			getSelectionIconLabel().setToolTipText(sTooltip);
 			getNodeSelectionLabel().setToolTipText(sTooltip);
-			
-			// Hidden nodes/edges info
+		}
+	}
+
+	protected void updateHiddenInfo() {
+		final CyNetworkView view = getNetworkView();
+		
+		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			final int hn = ViewUtil.getHiddenNodeCount(view);
 			final int he = ViewUtil.getHiddenEdgeCount(view);
 			getNodeHiddenLabel().setText("" + hn);
@@ -349,7 +353,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setKeyBindings(this);
 		setKeyBindings(getRootPane());
 		
-		updateTollBar();
+		updateTollBar(true, true);
 		updateBirdsEyeViewPanel();
 		
 		glassPane.add(getBirdsEyeViewPanel());

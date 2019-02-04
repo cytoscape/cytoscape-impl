@@ -86,7 +86,7 @@ public class NetworkViewFrame extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowOpened(WindowEvent e) {
-				networkViewContainer.update();
+				networkViewContainer.update(true, true);
 				networkViewContainer.updateViewSize();
 			}
 		});
@@ -124,7 +124,7 @@ public class NetworkViewFrame extends JFrame {
 	}
 	
 	public void update() {
-		getNetworkViewContainer().update();
+		getNetworkViewContainer().update(true, true);
 	}
 	
 	@Override

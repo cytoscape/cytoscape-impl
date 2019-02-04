@@ -68,7 +68,7 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -505,7 +505,7 @@ public class NetworkViewMainPanel extends JPanel {
 		}
 	}
 	
-	public void update(final CyNetworkView view) {
+	public void update(final CyNetworkView view, final boolean updateSelectionInfo, final boolean updateHiddenInfo) {
 		final NetworkViewFrame frame = getNetworkViewFrame(view);
 		
 		if (frame != null) {
@@ -533,7 +533,7 @@ public class NetworkViewMainPanel extends JPanel {
 			final NetworkViewContainer vc = getNetworkViewCard(view);
 			
 			if (vc != null && vc.equals(getCurrentViewContainer()))
-				vc.update();
+				vc.update(updateSelectionInfo, updateHiddenInfo);
 			
 			final NetworkViewComparisonPanel cp = getComparisonPanel(view);
 			
@@ -548,7 +548,7 @@ public class NetworkViewMainPanel extends JPanel {
 		final NetworkViewContainer vc = getNetworkViewContainer(view);
 		
 		if (vc != null)
-			vc.updateInfoPanel();
+			vc.updateSelectionInfo();
 	}
 	
 	public boolean isEmpty() {
@@ -592,7 +592,7 @@ public class NetworkViewMainPanel extends JPanel {
 			
 			if (viewContainer != null) {
 				cardLayout.show(getContentPane(), key);
-				viewContainer.update();
+				viewContainer.update(true, true);
 			} else {
 				NetworkViewComparisonPanel foundCompPanel = null;
 				
