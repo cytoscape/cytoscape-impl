@@ -30,7 +30,7 @@ import java.awt.Image;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.ding.impl.DGraphView.Canvas;
+import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 
 
 /**

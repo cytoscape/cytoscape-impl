@@ -60,7 +60,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.ding.DArrowShape;
-import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.strokes.WidthStroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -70,6 +69,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.MinLongHeap;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
@@ -83,7 +83,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
  */
 final class DEdgeDetails implements EdgeDetails {
 
-	private final DGraphView dGraphView;
+	private final CyNetworkView dGraphView;
 	private final Map<VisualProperty<?>, Object> defaultValues; 
 
 	// Mapped Values

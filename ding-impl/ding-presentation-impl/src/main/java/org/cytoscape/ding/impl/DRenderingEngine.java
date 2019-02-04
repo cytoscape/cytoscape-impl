@@ -87,7 +87,6 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.spacial.SpacialEntry2DEnumerator;
-import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.spacial.SpacialIndex2DFactory;
 import org.cytoscape.spacial.internal.dummy.DummySpacialFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
@@ -111,6 +110,7 @@ import org.cytoscape.view.model.events.FitContentListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
 import org.cytoscape.view.model.events.FitSelectedListener;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -155,11 +155,11 @@ import org.slf4j.LoggerFactory;
  * m_drawPersp and m_structPersp that is beyond our control.
  *
  */
-public class DGraphView implements RenderingEngine<CyNetwork>,
+public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		Printable, AddedEdgesListener, AddedNodesListener, AboutToRemoveEdgesListener,
 		AboutToRemoveNodesListener, FitContentListener, FitSelectedListener, RowsSetListener, ActionListener {
 
-	private static final Logger logger = LoggerFactory.getLogger(DGraphView.class);
+	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	
 	// Size of square for moving handle
 	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
@@ -182,12 +182,12 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 
 	private String title;
 	
-	/**
-	 * Common object used for synchronization.
-	 *
-	 * Change this to a readwrite lock!
-	 */
-	final Object m_lock = new Object();
+//	/**
+//	 * Common object used for synchronization.
+//	 *
+//	 * Change this to a readwrite lock!
+//	 */
+//	final Object m_lock = new Object();
 
 	/**
 	 * A common buffer object used to pass information about. X-Y coords of the
@@ -207,19 +207,19 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 	 */
 	final CySubNetwork m_drawPersp;
 
-	// FIXME
-	DummySpacialFactory dummySpacialFactory;
+//	// FIXME
+//	DummySpacialFactory dummySpacialFactory;
 
-	/**
-	 * RTree used for querying node positions.
-	 */
-	SpacialIndex2D m_spacial;
-
-	/**
-	 * RTree used for querying Edge Handle positions. Used by DNodeView,
-	 * DEdgeView, and InnerCanvas.
-	 */
-	SpacialIndex2D m_spacialA;
+//	/**
+//	 * RTree used for querying node positions.
+//	 */
+//	SpacialIndex2D m_spacial;
+//
+//	/**
+//	 * RTree used for querying Edge Handle positions. Used by DNodeView,
+//	 * DEdgeView, and InnerCanvas.
+//	 */
+//	SpacialIndex2D m_spacialA;
 	
 	final DNodeDetails m_nodeDetails;
 	final DEdgeDetails m_edgeDetails;
@@ -231,15 +231,15 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 	 */
 	PrintLOD m_printLOD;
 
-	private final Map<CyNode, NodeView> nodeViewMap;
-	private final Map<CyEdge, EdgeView> edgeViewMap;
-
-	Long m_identifier;
-
-	final float m_defaultNodeXMin;
-	final float m_defaultNodeYMin;
-	final float m_defaultNodeXMax;
-	final float m_defaultNodeYMax;
+//	private final Map<CyNode, NodeView> nodeViewMap;
+//	private final Map<CyEdge, EdgeView> edgeViewMap;
+//
+//	Long m_identifier;
+//
+//	final float m_defaultNodeXMin;
+//	final float m_defaultNodeYMin;
+//	final float m_defaultNodeXMax;
+//	final float m_defaultNodeYMax;
 
 	/**
 	 * Ref to network canvas object.
@@ -370,9 +370,9 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 
 	// Animated edges
 	Timer animationTimer;
-	Set<DEdgeView> animatedEdges;
+	Set<View<CyEdge>> animatedEdges;
 
-	public DGraphView(
+	public DRenderingEngine(
 			final CyNetworkView view,
 			final VisualLexicon dingLexicon,
 			final ViewTaskFactoryListener vtfl,
@@ -384,7 +384,7 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 		this(view.getModel(), dingLexicon, vtfl, annMgr, dingGraphLOD, handleFactory, registrar);
 	}
 	
-	public DGraphView(
+	public DRenderingEngine(
 			final CyNetwork model,
 			final VisualLexicon dingLexicon,
 			final ViewTaskFactoryListener vtfl,
@@ -393,7 +393,6 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 			final HandleFactory handleFactory,
 			final CyServiceRegistrar registrar
 	) {
-		super(model, dingLexicon, registrar);
 		this.props = new Properties();
 		this.handleFactory = handleFactory;
 		
@@ -411,11 +410,11 @@ public class DGraphView implements RenderingEngine<CyNetwork>,
 		// New simple implementation of the graph to keep track of visible nodes/edges.
 		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
 
-		final SpacialIndex2DFactory spacialFactory = serviceRegistrar.getService(SpacialIndex2DFactory.class);
-		vmm = serviceRegistrar.getService(VisualMappingManager.class);
+//		final SpacialIndex2DFactory spacialFactory = registrar.getService(SpacialIndex2DFactory.class);
+		vmm = registrar.getService(VisualMappingManager.class);
 		
-		m_spacial = spacialFactory.createSpacialIndex2D();
-		m_spacialA = spacialFactory.createSpacialIndex2D();
+//		m_spacial = spacialFactory.createSpacialIndex2D();
+//		m_spacialA = spacialFactory.createSpacialIndex2D();
 		m_nodeDetails = new DNodeDetails(this);
 		m_edgeDetails = new DEdgeDetails(this);
 		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);

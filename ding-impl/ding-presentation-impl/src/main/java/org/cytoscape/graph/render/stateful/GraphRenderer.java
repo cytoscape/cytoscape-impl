@@ -36,6 +36,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,12 +46,12 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.spacial.SpacialEntry2DEnumerator;
-import org.cytoscape.spacial.SpacialIndex2D;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.spacial.SpacialIndex2D;
+import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -147,7 +148,6 @@ public final class GraphRenderer {
 	 *   return value is a bitwise-or'ed value of the LOD_* constants.
 	 */
 	public final static int renderGraph(final CyNetworkView netView,
-										final SpacialIndex2D nodePositions,
 	                                    final GraphLOD lod,
 	                                    final NodeDetails nodeDetails,
 	                                    final EdgeDetails edgeDetails,
@@ -220,10 +220,9 @@ public final class GraphRenderer {
 		long start = System.currentTimeMillis();
 
 		{
-			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
-			                                                                     yMax, null, 0,
-			                                                                     false);
-			final int visibleNodeCount = nodeHits.numRemaining();
+			SpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			
+			final int visibleNodeCount = nodeHits.size();
 			final int totalNodeCount = graph.getNodeCount();
 			final int totalEdgeCount = graph.getEdgeCount();
 			renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
@@ -232,7 +231,7 @@ public final class GraphRenderer {
 				int runningNodeCount = 0;
 
 				for (int i = 0; i < visibleNodeCount; i++) {
-					nodeHits.nextExtents(floatBuff1, 0);
+					nodeHits.nextExtents(floatBuff1);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
@@ -244,7 +243,7 @@ public final class GraphRenderer {
 				int runningNodeCount = 0;
 
 				for (int i = 0; i < visibleNodeCount; i++) {
-					nodeHits.nextExtents(floatBuff1, 0);
+					nodeHits.nextExtents(floatBuff1);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
@@ -257,7 +256,7 @@ public final class GraphRenderer {
 				int runningEdgeCount = 0;
 
 				for (int i = 0; i < visibleNodeCount; i++) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
@@ -332,7 +331,7 @@ public final class GraphRenderer {
 		// labels.  A label is not necessarily on top of every edge; it is only
 		// on top of the edge it belongs to.
 		if (renderEdges >= 0) {
-			final SpacialEntry2DEnumerator nodeHits;
+			final SpacialIndex2DEnumerator nodeHits;
 
 			// System.out.println("Rendering edges: high detail = "+(lodBits & LOD_HIGH_DETAIL));
 			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
@@ -341,19 +340,16 @@ public final class GraphRenderer {
 				// We want to render edges in the same order (back to front) that
 				// we would use to render just edges on visible nodes; this is assuming
 				// that our spacial index has the subquery order-preserving property.
-				nodeHits = nodePositions.queryOverlap(Float.NEGATIVE_INFINITY,
-				                                      Float.NEGATIVE_INFINITY,
-				                                      Float.POSITIVE_INFINITY,
-				                                      Float.POSITIVE_INFINITY, null, 0, false);
+				nodeHits = netView.getSpacialIndex2D().queryAll();
 			else
-				nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax, yMax, null, 0, false);
+				nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 		
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
-				final int nodeHitCount = nodeHits.numRemaining();
+				final int nodeHitCount = nodeHits.size();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final long node = nodeHits.nextExtents(floatBuff1, 0);
+					final long node = nodeHits.nextExtents(floatBuff1);
 
 					// Casting to double and then back we could achieve better accuracy
 					// at the expense of performance.
@@ -368,7 +364,7 @@ public final class GraphRenderer {
 						final long otherNode = node ^ edge.getSource().getSUID() ^ edge.getTarget().getSUID();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
-							nodePositions.exists(otherNode, floatBuff2, 0);
+							netView.getSpacialIndex2D().get(otherNode, floatBuff2);
 							grafx.drawEdgeLow(nodeX, nodeY, 
 							                  // Again, casting issue - tradeoff between
 							                  // accuracy and performance.
@@ -381,8 +377,8 @@ public final class GraphRenderer {
 					nodeBuff.put(node);
 				}
 			} else { // High detail.
-				while (nodeHits.numRemaining() > 0) {
-					final long node =nodeHits.nextExtents(floatBuff1, 0);
+				while (nodeHits.size() > 0) {
+					final long node =nodeHits.nextExtents(floatBuff1);
 					final CyNode cyNode = graph.getNode(node);
 					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
@@ -395,7 +391,7 @@ public final class GraphRenderer {
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
-							if (!nodePositions.exists(otherNode, floatBuff2, 0))
+							if (!netView.getSpacialIndex2D().get(otherNode, floatBuff2))
 								continue;
 								// throw new IllegalStateException("nodePositions not recognizing node that exists in graph: "+otherCyNode.toString());
 
@@ -657,30 +653,28 @@ public final class GraphRenderer {
 		// Render nodes and labels.  A label is not necessarily on top of every
 		// node; it is only on top of the node it belongs to.
 		{
-			final SpacialEntry2DEnumerator nodeHits = nodePositions.queryOverlap(xMin, yMin, xMax,
-			                                                                     yMax, null, 0,
-			                                                                     false);
+			SpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 			// System.out.println("Rendering nodes: high detail = "+(lodBits & LOD_HIGH_DETAIL));
 			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
-				final int nodeHitCount = nodeHits.numRemaining();
+				final int nodeHitCount = nodeHits.size();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final CyNode node = graph.getNode( nodeHits.nextExtents(floatBuff1, 0) );
+					final CyNode node = graph.getNode( nodeHits.nextExtents(floatBuff1) );
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
 						                  floatBuff1[3], nodeDetails.getColorLowDetail(node));
 				}
 			} else { // High detail.
-				SpacialEntry2DEnumerator zHits = nodeHits;
+				SpacialIndex2DEnumerator zHits = nodeHits;
 				if (haveZOrder) {
-					zHits = new SpacialEntry2DEnumeratorZSort(nodePositions, nodeHits);
+					zHits = new SpacialEntry2DEnumeratorZSort(netView.getSpacialIndex2D(), nodeHits);
 				}
-				while (zHits.numRemaining() > 0) {
-					final long node = zHits.nextExtents(floatBuff1, 0);
+				while (zHits.hasNext()) {
+					final long node = zHits.nextExtents(floatBuff1);
 					final CyNode cyNode = graph.getNode(node);
 
 					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
@@ -1172,35 +1166,47 @@ public final class GraphRenderer {
 		return xform.createTransformedShape(nodeShape);
 	}
 
-	private static class SpacialEntry2DEnumeratorZSort implements SpacialEntry2DEnumerator {
-		List<ZSpacialEntry> entryList;
-		int nextEntry = 0;
+	private static class SpacialEntry2DEnumeratorZSort implements SpacialIndex2DEnumerator {
+		private final Iterator<ZSpacialEntry> entries;
+		private final int size;
 
-		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialEntry2DEnumerator nodeHits) {
+		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialIndex2DEnumerator nodeHits) {
 			// Get arrays of SUIDs, extents, Z
-			this.entryList = new ArrayList<ZSpacialEntry>();
-			while (nodeHits.numRemaining() > 0) {
+			List<ZSpacialEntry> entryList = new ArrayList<>();
+			while (nodeHits.hasNext()) {
 				float[] extents = new float[4];
-				long suid = nodeHits.nextExtents(extents, 0);
+				long suid = nodeHits.nextExtents(extents);
 				// Create an index
 				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodePositions.getZOrder(suid));
 				entryList.add(entry);
 			}
-			// System.out.println("Sorting list: "+entryList);
 			Collections.sort(entryList);
-			// System.out.println("Sorted list: "+entryList);
+			this.size = entryList.size();
+			this.entries = entryList.iterator();
+		}
+		
+		private static long copyExtents(float[] extents, ZSpacialEntry entry) {
+			float[] entryExtents = entry.getExtents();
+			extents[0] = entryExtents[0];
+			extents[1] = entryExtents[1];
+			extents[2] = entryExtents[2];
+			extents[3] = entryExtents[3];
+			return entry.getSUID();
 		}
 
-		public long nextLong() { return entryList.get(nextEntry++).getSUID(); }
-		public int numRemaining() { return (entryList.size()-nextEntry); }
-		public long nextExtents(final float[] extentsArr, final int offset) {
-			ZSpacialEntry entry = entryList.get(nextEntry++);
-			float[] extents = entry.getExtents();
-			extentsArr[offset] = extents[0];
-			extentsArr[offset+1] = extents[1];
-			extentsArr[offset+2] = extents[2];
-			extentsArr[offset+3] = extents[3];
-			return entry.getSUID();
+		@Override
+		public int size() {
+			return size;
+		}
+
+		@Override
+		public boolean hasNext() {
+			return entries.hasNext();
+		}
+
+		@Override
+		public long nextExtents(float[] extents) {
+			return copyExtents(extents, entries.next());
 		}
 	}
 

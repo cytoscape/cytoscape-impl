@@ -44,8 +44,7 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 	private final Point2D location;
 	private final AnnotationFactory<?> annotationFactory; 
 
-	public AddAnnotationTask(final CyNetworkView view, final Point2D location,
-			final AnnotationFactory<?> annotationFactory) {
+	public AddAnnotationTask(CyNetworkView view, Point2D location, AnnotationFactory<?> annotationFactory) {
 		super(view);
 		this.location = location;
 		this.annotationFactory = annotationFactory;

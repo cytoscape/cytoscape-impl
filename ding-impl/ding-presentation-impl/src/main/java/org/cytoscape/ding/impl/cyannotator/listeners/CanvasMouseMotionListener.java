@@ -8,8 +8,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DNodeView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
@@ -17,6 +16,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.Position;
 
 /*
@@ -47,12 +47,12 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 	
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
-	private final DGraphView view;
+	private final DRenderingEngine re;
 
-	public CanvasMouseMotionListener(CyAnnotator c, DGraphView view) {
+	public CanvasMouseMotionListener(CyAnnotator c, DRenderingEngine re) {
 		this.cyAnnotator = c;
-		this.view = view;
-		this.networkCanvas = view.getCanvas();
+		this.re = re;
+		this.networkCanvas = re.getCanvas();
 	}
 
 	@Override
@@ -142,13 +142,13 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 	}
 
 	private boolean overNode(Point2D mousePoint) {
-		if (view.getPickedNodeView(mousePoint) != null)
+		if (re.getPickedNodeView(mousePoint) != null)
 			return true;
 		return false;
 	}
 
 	private CyNode getNodeAtLocation(Point2D mousePoint) {
-		DNodeView nv = (DNodeView)view.getPickedNodeView(mousePoint);
+		View<CyNode> nv = re.getPickedNodeView(mousePoint);
 		return nv.getModel();
 	}
 }

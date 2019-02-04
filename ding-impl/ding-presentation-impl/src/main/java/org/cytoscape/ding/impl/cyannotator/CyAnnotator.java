@@ -25,7 +25,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
@@ -80,7 +80,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
 	private static final int MAX_NAME_LENGH = 200;
 
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private final ArbitraryGraphicsCanvas foreGroundCanvas;
 	private final ArbitraryGraphicsCanvas backGroundCanvas;
 	private final InnerCanvas networkCanvas;
@@ -106,12 +106,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
-		this.view = view;
+	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
+		this.re = re;
 		this.registrar = registrar;
-		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.backGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
-		this.networkCanvas = view.getCanvas();
+		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+		this.backGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+		this.networkCanvas = re.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		annotationSelection = new AnnotationSelection(this);
 		
@@ -150,10 +150,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void initListeners() {
-		mouseListener = new CanvasMouseListener(this, view, registrar);
-		mouseMotionListener = new CanvasMouseMotionListener(this, view);
-		keyListener = new CanvasKeyListener(this, view);
-		mouseWheelListener = new CanvasMouseWheelListener(this, view);
+		mouseListener = new CanvasMouseListener(this, re, registrar);
+		mouseMotionListener = new CanvasMouseMotionListener(this, re);
+		keyListener = new CanvasKeyListener(this, re);
+		mouseWheelListener = new CanvasMouseWheelListener(this, re);
 		
 		foreGroundCanvas.addMouseListener(mouseListener);
 		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
@@ -165,7 +165,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
-		view.addViewportChangeListener(myViewportChangeListener);
+		re.addViewportChangeListener(myViewportChangeListener);
 	}
 	
 	public void dispose() {
@@ -176,7 +176,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		foreGroundCanvas.removeKeyListener(keyListener);
 		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
 		
-		view.removeViewportChangeListener(myViewportChangeListener);
+		re.removeViewportChangeListener(myViewportChangeListener);
 		
 		foreGroundCanvas.dispose();
 		backGroundCanvas.dispose();
@@ -233,12 +233,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public void update() {
-		view.updateView();
+		re.updateView();
 	}
 
-	public DGraphView getView() {
-		return view;
-	}
+//	public DGraphView getView() {
+//		return view;
+//	}
 
 	public CyServiceRegistrar getRegistrar() {
 		return registrar;

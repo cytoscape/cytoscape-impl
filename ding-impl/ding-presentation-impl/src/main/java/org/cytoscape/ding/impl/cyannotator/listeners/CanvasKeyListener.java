@@ -6,7 +6,7 @@ import java.awt.event.KeyListener;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
@@ -41,12 +41,12 @@ public class CanvasKeyListener implements KeyListener {
 	
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
-	private final DGraphView view;
+	private final DRenderingEngine re;
 
-	public CanvasKeyListener(CyAnnotator c, DGraphView view) {
+	public CanvasKeyListener(CyAnnotator c, DRenderingEngine re) {
 		this.cyAnnotator = c;
-		this.view = view;
-		this.networkCanvas = view.getCanvas();
+		this.re = re;
+		this.networkCanvas = re.getCanvas();
 	}
 
 	@Override

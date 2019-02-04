@@ -58,7 +58,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.visualProperties = visualProperties;
 		this.allLocks = allLocks;
 		this.directLocks = directLocks;
-		this.spacialIndex = new SpacialIndex2DImpl(rtree, geometries);
+		this.spacialIndex = new SpacialIndex2DImpl(this, rtree, geometries);
 	}
 
 	

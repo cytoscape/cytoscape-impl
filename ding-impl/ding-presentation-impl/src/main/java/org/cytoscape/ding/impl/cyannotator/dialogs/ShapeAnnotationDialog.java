@@ -18,6 +18,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -164,7 +165,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		cyAnnotator.addAnnotation(shapeAnnotation);
 
 		// Update the canvas
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+		view.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(shapeAnnotation);

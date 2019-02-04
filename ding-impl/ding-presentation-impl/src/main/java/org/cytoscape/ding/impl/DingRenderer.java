@@ -1,46 +1,62 @@
 package org.cytoscape.ding.impl;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingRenderer implements NetworkViewRenderer {
 	
 	public static final String ID = "org.cytoscape.ding";
 	public static final String DISPLAY_NAME = "Cytoscape 2D";
 	
-	private static DingRenderer instance = new DingRenderer();
+	private final DingNetworkViewFactoryMediator viewFactory;
 	
-	public static DingRenderer getInstance() {
-		return instance;
-	}
+	private final DingRenderingEngineFactory defaultEngineFactory;
+	private final DingNavigationRenderingEngineFactory navigationEngineFactory;
+	private final DingRenderingEngineFactory visualStyleRenderingFactory;
+	private final DingThumbnailRenderingEngineFactory thumbnailEngineFactory;
 	
-	private CyNetworkViewFactory viewFactory;
-	private Map<String, RenderingEngineFactory<CyNetwork>> renderingEngineFactories;
-
-	private DingRenderer() {
-		renderingEngineFactories = new ConcurrentHashMap<String, RenderingEngineFactory<CyNetwork>>(16, 0.75f, 2);
-	}
-
-	public void registerNetworkViewFactory(CyNetworkViewFactory viewFactory) {
+	
+	public DingRenderer(
+			DingNetworkViewFactoryMediator viewFactory, 
+			DVisualLexicon dVisualLexicon, 
+			ViewTaskFactoryListener vtfListener, 
+			AnnotationFactoryManager annotationFactoryManager, 
+			DingGraphLOD dingGraphLOD, 
+			HandleFactory handleFactory,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.viewFactory = viewFactory;
+		
+		defaultEngineFactory =
+				new DingRenderingEngineFactory(viewFactory, dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		navigationEngineFactory =
+				new DingNavigationRenderingEngineFactory(viewFactory, serviceRegistrar, dVisualLexicon);
+		visualStyleRenderingFactory =
+				new DingVisualStyleRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		thumbnailEngineFactory =
+				new DingThumbnailRenderingEngineFactory(dVisualLexicon, serviceRegistrar);
 	}
-	
-	public void registerRenderingEngineFactory(String contextId, RenderingEngineFactory<CyNetwork> engineFactory) {
-		renderingEngineFactories.put(contextId, engineFactory);
+
+	public DRenderingEngine getRenderingEngine(CyNetworkView view) {
+		return viewFactory.getRenderingEngine(view);
 	}
 	
 	@Override
 	public RenderingEngineFactory<CyNetwork> getRenderingEngineFactory(String contextId) {
-		RenderingEngineFactory<CyNetwork> factory = renderingEngineFactories.get(contextId);
-		if (factory != null) {
-			return factory;
+		switch(contextId) {
+			case DEFAULT_CONTEXT:              return defaultEngineFactory;
+			case BIRDS_EYE_CONTEXT:            return navigationEngineFactory;
+			case VISUAL_STYLE_PREVIEW_CONTEXT: return visualStyleRenderingFactory;
+			case THUMBNAIL_CONTEXT:            return thumbnailEngineFactory;
+			default: return null;
 		}
-		return renderingEngineFactories.get(DEFAULT_CONTEXT);
 	}
 
 	@Override
@@ -57,4 +73,5 @@ public class DingRenderer implements NetworkViewRenderer {
 	public String toString() {
 		return DISPLAY_NAME;
 	}
+
 }

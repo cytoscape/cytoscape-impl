@@ -12,7 +12,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
@@ -53,7 +53,7 @@ public class CanvasMouseListener implements MouseListener {
 	
 	private final CyAnnotator cyAnnotator;
 	private final InnerCanvas networkCanvas;
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private Point2D mouseDown;
 
 	private AnnotationEdit resizeUndoEdit;
@@ -61,10 +61,10 @@ public class CanvasMouseListener implements MouseListener {
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public CanvasMouseListener(CyAnnotator c, DGraphView view, CyServiceRegistrar serviceRegistrar) {
+	public CanvasMouseListener(CyAnnotator c, DRenderingEngine re, CyServiceRegistrar serviceRegistrar) {
 		this.cyAnnotator = c;
-		this.view = view;
-		this.networkCanvas = view.getCanvas();
+		this.re = re;
+		this.networkCanvas = re.getCanvas();
 		this.serviceRegistrar = serviceRegistrar;
 	}
 

@@ -34,7 +34,8 @@ import org.cytoscape.ding.customgraphics.IDGenerator;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.MissingImageCustomGraphics;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CySession;
@@ -342,8 +343,12 @@ public final class CustomGraphicsManagerImpl
 							new RestoreImageTaskFactory(new HashSet<>(), parent, this, serviceRegistrar);
 					final TaskIterator loadImagesIterator = taskFactory.createTaskIterator();
 					
+					DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 					for (CyNetworkView networkView: sess.getNetworkViews()) {
-						loadImagesIterator.append(((DGraphView)networkView).getCyAnnotator().getReloadImagesTask());
+						DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+						if(re != null) {
+							loadImagesIterator.append(re.getCyAnnotator().getReloadImagesTask());
+						}
 					}
 					
 					loadImagesIterator.append(new ReloadMissingImagesTask(sess.getNetworkViews()));

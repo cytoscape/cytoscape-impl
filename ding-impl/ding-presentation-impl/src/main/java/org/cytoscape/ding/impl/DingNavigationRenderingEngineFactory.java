@@ -46,12 +46,14 @@ import org.slf4j.LoggerFactory;
 public class DingNavigationRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(DingNavigationRenderingEngineFactory.class);
-	
+
+	private final DingNetworkViewFactoryMediator viewFactoryMediator;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
 	
-	public DingNavigationRenderingEngineFactory(final CyServiceRegistrar registrar, final VisualLexicon dingLexicon) {
+	public DingNavigationRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactoryMediator, CyServiceRegistrar registrar, VisualLexicon dingLexicon) {
+		this.viewFactoryMediator = viewFactoryMediator;
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;
 	}
@@ -70,17 +72,12 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 			throw new IllegalArgumentException("Visualization Container object is not of type Component, "
 					+ "which is invalid for this implementation of PresentationFactory");
 		
-		if (!(view instanceof DGraphView))
-			throw new IllegalArgumentException("This rendering engine needs DING view model as its view model.");
-
-		// Shared instance of the view.
-		final DGraphView dgv = (DGraphView) view;
-		
 		logger.debug("Start adding BEV.");
 		final JComponent container = (JComponent) visualizationContainer;
 		
 		// Create instance of an engine.
-		final BirdsEyeView bev = new BirdsEyeView(dgv, registrar);
+		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
+		final BirdsEyeView bev = new BirdsEyeView(re, registrar);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);

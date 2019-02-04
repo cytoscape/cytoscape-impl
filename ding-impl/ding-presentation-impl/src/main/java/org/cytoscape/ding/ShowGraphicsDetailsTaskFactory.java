@@ -1,8 +1,9 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -33,21 +34,28 @@ import org.cytoscape.work.TaskIterator;
 
 public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 
+	private final DingRenderer dingRenderer;
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
 	
-	public ShowGraphicsDetailsTaskFactory(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll) {
+	public ShowGraphicsDetailsTaskFactory(DingRenderer dingRenderer, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
+		this.dingRenderer = dingRenderer;
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new ShowGraphicsDetailsTask(view, dingGraphLOD, dingGraphLODAll));
+		DRenderingEngine renderer = dingRenderer.getRenderingEngine(view);
+		if(renderer != null) {
+			return new TaskIterator(new ShowGraphicsDetailsTask(renderer, dingGraphLOD, dingGraphLODAll));
+		}
+		return null;
 	}
+	
 	
 	@Override
 	public boolean isReady(CyNetworkView view) {
-		return view instanceof DGraphView;
+		return DingRenderer.ID.equals(view.getRendererId());
 	}
 }

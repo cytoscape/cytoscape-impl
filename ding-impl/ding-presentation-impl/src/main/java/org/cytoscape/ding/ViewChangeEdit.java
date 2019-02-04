@@ -2,6 +2,7 @@ package org.cytoscape.ding;
 
 import org.cytoscape.ding.impl.ViewState;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
@@ -36,18 +37,18 @@ public class ViewChangeEdit extends AbstractCyEdit {
 
 	private ViewState origState;
 	private ViewState newState;
-	private final GraphView graphView;
+	private final CyNetworkView graphView;
 	private final SavedObjs savedObjs;
 
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public static enum SavedObjs { ALL, SELECTED, NODES, EDGES, SELECTED_NODES, SELECTED_EDGES }
 
-	public ViewChangeEdit(GraphView view, String label, CyServiceRegistrar serviceRegistrar) {
+	public ViewChangeEdit(CyNetworkView view, String label, CyServiceRegistrar serviceRegistrar) {
 		this(view, SavedObjs.ALL, label, serviceRegistrar);
 	}
 
-	public ViewChangeEdit(GraphView graphView, SavedObjs saveObjs, String label, CyServiceRegistrar serviceRegistrar) {
+	public ViewChangeEdit(CyNetworkView graphView, SavedObjs saveObjs, String label, CyServiceRegistrar serviceRegistrar) {
 		super(label);
 		this.graphView = graphView;
 		this.savedObjs = saveObjs;

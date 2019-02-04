@@ -47,12 +47,8 @@ import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
 import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingNetworkViewFactoryMediator;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.DingRenderingEngineFactory;
-import org.cytoscape.ding.impl.DingThumbnailRenderingEngineFactory;
-import org.cytoscape.ding.impl.DingViewModelFactory;
-import org.cytoscape.ding.impl.DingVisualStyleRenderingEngineFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
@@ -77,8 +73,6 @@ import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
-import org.cytoscape.ding.impl.editor.EdgeBendEditor;
-import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
@@ -99,6 +93,8 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -174,18 +170,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		HandleFactory handleFactory = new HandleFactoryImpl();
 		registerService(bc, handleFactory, HandleFactory.class);
-		
-		DingRenderingEngineFactory dingRenderingEngineFactory =
-				new DingRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD,
-						handleFactory, serviceRegistrar);
-		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory =
-				new DingNavigationRenderingEngineFactory(serviceRegistrar, dVisualLexicon);
-		DingRenderingEngineFactory dingVisualStyleRenderingEngineFactory =
-				new DingVisualStyleRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager,
-						dingGraphLOD, handleFactory, serviceRegistrar);
-		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory =
-				new DingThumbnailRenderingEngineFactory(dVisualLexicon, serviceRegistrar);
-		
+
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(serviceRegistrar);
 
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
@@ -195,31 +180,30 @@ public class CyActivator extends AbstractCyActivator {
 		ObjectPositionEditor objectPositionEditor =
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(dVisualLexicon, vtfListener,
-				annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
-
-		DingRenderer renderer = DingRenderer.getInstance();
-		renderer.registerNetworkViewFactory(dingNetworkViewFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT, dingRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT, dingNavigationRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.VISUAL_STYLE_PREVIEW_CONTEXT, dingVisualStyleRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT, dingThumbnailRenderingEngineFactory);
+		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
+		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID);
+		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory);
+		registerService(bc, netViewFactoryMediator, NetworkViewAboutToBeDestroyedListener.class);
+		
+		DingRenderer renderer = new DingRenderer(netViewFactoryMediator, dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, renderer, NetworkViewRenderer.class);
+		registerService(bc, renderer, DingRenderer.class);
 		
 		// Edge Bend editor
-		EdgeBendValueEditor edgeBendValueEditor =
-				new EdgeBendValueEditor(dingNetworkViewFactory, dingRenderingEngineFactory, serviceRegistrar);
-		EdgeBendEditor edgeBendEditor =
-				new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		// MKTODO
+//		EdgeBendValueEditor edgeBendValueEditor =
+//				new EdgeBendValueEditor(netViewFactory, dingRenderingEngineFactory, serviceRegistrar);
+//		EdgeBendEditor edgeBendEditor =
+//				new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
 		
-		Properties dingRenderingEngineFactoryProps = new Properties();
-		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
-		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
-
-		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
-		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
-		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
+//		Properties dingRenderingEngineFactoryProps = new Properties();
+//		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
+//		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
+//
+//		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
+//		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
+//		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
@@ -240,11 +224,8 @@ public class CyActivator extends AbstractCyActivator {
 		objectPositionEditorProp.setProperty(ID, "objectPositionEditor");
 		registerService(bc, objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 
-		registerAllServices(bc, edgeBendValueEditor);
-		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
-
-		Properties dingNetworkViewFactoryServiceProps = new Properties();
-		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
+//		registerAllServices(bc, edgeBendValueEditor);
+//		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
 
 		// Annotation Manager
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
@@ -481,7 +462,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		{
 			// Toggle Graphics Details
-			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory(dingGraphLOD, dingGraphLODAll);
+			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory(renderer, dingGraphLOD, dingGraphLODAll);
 			Properties props = new Properties();
 			props.setProperty(ID, "showGraphicsDetailsTaskFactory");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props); // Used at least by cyREST

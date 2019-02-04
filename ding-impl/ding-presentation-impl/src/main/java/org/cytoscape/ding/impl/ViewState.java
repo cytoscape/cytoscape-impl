@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkView;
 
 
 /**
@@ -49,13 +49,13 @@ public class ViewState {
 	protected Map<CyNode, Point2D.Double> points;
 	protected Map<CyEdge, List> anchors;
 	protected Map<CyEdge, Integer> linetype;
-	protected GraphView view;
+	protected CyNetworkView view;
 	protected ViewChangeEdit.SavedObjs savedObjs;
 
 	/**
 	 * @param v The view whose state we're recording.
 	 */
-	public ViewState(GraphView v, ViewChangeEdit.SavedObjs whatToSave) {
+	public ViewState(CyNetworkView v, ViewChangeEdit.SavedObjs whatToSave) {
 		view = v;
 		points = null;
 		anchors = null;

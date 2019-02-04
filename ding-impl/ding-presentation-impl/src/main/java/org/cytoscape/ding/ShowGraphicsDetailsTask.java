@@ -1,10 +1,9 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -34,27 +33,25 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ShowGraphicsDetailsTask extends AbstractTask {
 
-	private final CyNetworkView view;
+	private final DRenderingEngine renderer;
 	private final DingGraphLOD dingGraphLOD;
 	private final DingGraphLODAll dingGraphLODAll;
 
-	public ShowGraphicsDetailsTask(CyNetworkView view, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
-		this.view = view;
+	public ShowGraphicsDetailsTask(DRenderingEngine renderer, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
+		this.renderer = renderer;
 		this.dingGraphLOD = dingGraphLOD;
 		this.dingGraphLODAll = dingGraphLODAll;
 	}
 	
 	@Override
 	public void run(TaskMonitor taskMonitor) {
-		if (view instanceof DGraphView) {
-			final GraphLOD lod = ((DGraphView) view).getGraphLOD();
-	
-			if (lod instanceof DingGraphLODAll)
-				((DGraphView) view).setGraphLOD(dingGraphLOD);
-			else
-				((DGraphView) view).setGraphLOD(dingGraphLODAll);
-			
-			view.updateView();
-		}
+		final GraphLOD lod = renderer.getGraphLOD();
+
+		if (lod instanceof DingGraphLODAll)
+			renderer.setGraphLOD(dingGraphLOD);
+		else
+			renderer.setGraphLOD(dingGraphLODAll);
+		
+		renderer.updateView();
 	}
 }

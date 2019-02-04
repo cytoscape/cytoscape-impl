@@ -41,6 +41,7 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
+	private final DingNetworkViewFactoryMediator viewFactory;
 	private final VisualLexicon dingLexicon;
 	private final AnnotationFactoryManager annMgr;
 	private final CyServiceRegistrar registrar;
@@ -52,6 +53,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	private final HandleFactory handleFactory; 
 
 	public DingRenderingEngineFactory(
+			DingNetworkViewFactoryMediator viewFactory,
 			final VisualLexicon dingLexicon,
 			final ViewTaskFactoryListener vtfListener,
 			final AnnotationFactoryManager annMgr,
@@ -59,6 +61,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			final HandleFactory handleFactory,
 			final CyServiceRegistrar registrar
 	) {
+		this.viewFactory = viewFactory;
 		this.dingLexicon = dingLexicon;
 		this.annMgr = annMgr;
 		this.handleFactory = handleFactory;
@@ -71,45 +74,35 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	 * Render given view model by Ding rendering engine.
 	 */
 	@Override
-	public RenderingEngine<CyNetwork> createRenderingEngine(final Object presentationContainer,
-			final View<CyNetwork> view) {
-		// Validate arguments
+	public RenderingEngine<CyNetwork> createRenderingEngine(final Object presentationContainer, final View<CyNetwork> view) {
 		if (presentationContainer == null)
 			throw new IllegalArgumentException("Container is null.");
-
 		if (view == null)
 			throw new IllegalArgumentException("Cannot create presentation for null view model.");
-
 		if (view instanceof CyNetworkView == false)
 			throw new IllegalArgumentException("Ding accepts CyNetworkView only.");
 
 		final CyNetworkView targetView = (CyNetworkView) view;
-		DGraphView dgv = null;
+		DRenderingEngine re = null;
 		
 		if (presentationContainer instanceof JComponent || presentationContainer instanceof RootPaneContainer) {
-			if (view instanceof DGraphView) {
-				dgv = (DGraphView) view;				
-			} else {
-				dgv = new DGraphView(targetView, dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory,
-						registrar);
-				dgv.registerServices();
-			}
+			re = viewFactory.getRenderingEngine(targetView);
 			
 			if (presentationContainer instanceof RootPaneContainer) {
 				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
-				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), dgv);
+				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), re);
 				container.setContentPane(ifComp);
 			} else {
 				final JComponent component = (JComponent) presentationContainer;
 				component.setLayout(new BorderLayout());
-				component.add(dgv.getComponent(), BorderLayout.CENTER);
+				component.add(re.getComponent(), BorderLayout.CENTER);
 			}
 		} else {
 			throw new IllegalArgumentException(
 					"frame object is not of type JComponent or RootPaneContainer, which is invalid for this implementation of PresentationFactory");
 		}
 
-		return dgv;
+		return re;
 	}
 
 //	/**

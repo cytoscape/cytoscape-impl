@@ -279,8 +279,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	
-	private <T> T getVisualPropertyStoredValue(CyIdentifiable view, VisualProperty<T> vp) {
-		Long suid = view.getSUID();
+	private <T> T getVisualPropertyStoredValue(Long suid, VisualProperty<T> vp) {
 		Object value = get(directLocks, suid, vp);
 		if(value != null)
 			return (T) value;
@@ -292,8 +291,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return (T) get(visualProperties, suid, vp);
 	}
 
-	public <T> T getVisualProperty(CyIdentifiable view, VisualProperty<T> vp) {
-		Object value = getVisualPropertyStoredValue(view, vp);
+	public <T> T getVisualProperty(Long suid, VisualProperty<T> vp) {
+		Object value = getVisualPropertyStoredValue(suid, vp);
 		if(value != null)
 			return (T) value;
 		
@@ -306,7 +305,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 
 	public boolean isSet(CyIdentifiable view, VisualProperty<?> vp) {
-		return getVisualPropertyStoredValue(view, vp) != null;
+		return getVisualPropertyStoredValue(view.getSUID(), vp) != null;
 	}
 
 	public <T, V extends T> void setLockedValue(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {

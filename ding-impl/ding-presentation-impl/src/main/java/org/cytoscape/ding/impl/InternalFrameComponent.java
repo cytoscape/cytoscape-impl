@@ -94,7 +94,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	/**
 	 * ref to the graph view
 	 */
-	private DGraphView dGraphView;
+	private DRenderingEngine re;
 
 	/**
 	 * Constructor.
@@ -102,13 +102,13 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	 * @param layeredPane JLayedPane
 	 * @param dGraphView dGraphView
 	 */
-	public InternalFrameComponent(JLayeredPane layeredPane, DGraphView dGraphView) {
+	public InternalFrameComponent(JLayeredPane layeredPane, DRenderingEngine re) {
 		// init members
 		this.layeredPane = layeredPane;
-		this.backgroundCanvas = dGraphView.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
-		this.networkCanvas = dGraphView.getCanvas(DGraphView.Canvas.NETWORK_CANVAS);
-		this.foregroundCanvas = dGraphView.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
-		this.dGraphView = dGraphView;
+		this.backgroundCanvas = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+		this.networkCanvas = re.getCanvas(DRenderingEngine.Canvas.NETWORK_CANVAS);
+		this.foregroundCanvas = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+		this.re = re;
 
 		// set default ordering
 		initLayeredPane();
@@ -125,7 +125,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	 */
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-		dGraphView.setBounds(x, y, width, height);
+		re.setBounds(x, y, width, height);
 	}
 
 	/**

@@ -54,20 +54,20 @@ class AddEdgeStateMonitor {
 	private double saveY2;
 
 	private final InnerCanvas canvas;
-	private final DGraphView m_view;
+	private final DRenderingEngine m_view;
 	private final Stroke eraseStroke;
 
-	private static Map<CyNetworkView,CyNode> sourceNodes = new WeakHashMap<CyNetworkView,CyNode>();
-	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<CyNetworkView,Point2D>();
+	private static Map<CyNetworkView,CyNode>  sourceNodes =  new WeakHashMap<>();
+	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<>();
 
-	AddEdgeStateMonitor(InnerCanvas canvas, DGraphView m_view) {
+	AddEdgeStateMonitor(InnerCanvas canvas, DRenderingEngine m_view) {
 		this.canvas = canvas;
 		this.m_view = m_view;
 		eraseStroke = new BasicStroke(2.0f);
 	}
 
 	boolean addingEdge() {
-		return sourceNodes.containsKey(m_view);
+		return sourceNodes.containsKey(m_view.getViewModel());
 	}
 
 	static CyNode getSourceNode(CyNetworkView view) {
@@ -98,7 +98,7 @@ class AddEdgeStateMonitor {
 	void drawRubberBand(MouseEvent e) {
 		nextPoint = e.getPoint();
 
-		Point2D startPoint = getSourcePoint(m_view);
+		Point2D startPoint = getSourcePoint(m_view.getViewModel());
 		if ( startPoint == null )
 			return;
 
@@ -124,7 +124,7 @@ class AddEdgeStateMonitor {
         Color saveColor = g.getColor();
 
         if (saveX1 != Double.MIN_VALUE) {
-            DingCanvas backgroundCanvas = m_view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
+            DingCanvas backgroundCanvas = m_view.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
             Stroke oldStroke = g.getStroke();
             g.setStroke(eraseStroke);
             g.setColor(backgroundCanvas.getBackground());

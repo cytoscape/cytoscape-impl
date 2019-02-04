@@ -49,7 +49,6 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.ding.EdgeView;
 import org.cytoscape.ding.NodeView;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -103,7 +102,7 @@ class PopupMenuHelper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PopupMenuHelper.class);
 
-	private DGraphView graphView;
+	private DRenderingEngine re;
 
 	/** the component we should create the popup menu on */
 	private Component invoker;
@@ -112,8 +111,8 @@ class PopupMenuHelper {
 
 	private final CyServiceRegistrar serviceRegistrar;
 
-	PopupMenuHelper(DGraphView v, Component inv, CyServiceRegistrar serviceRegistrar) {
-		graphView = v;
+	PopupMenuHelper(DRenderingEngine re, Component inv, CyServiceRegistrar serviceRegistrar) {
+		this.re = re;
 		invoker = inv;
 		this.serviceRegistrar = serviceRegistrar;
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
@@ -124,16 +123,15 @@ class PopupMenuHelper {
 	 *
 	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
-	void createEdgeViewMenu(EdgeView edgeView, int x, int y, String action) {
+	void createEdgeViewMenu(View<CyEdge> edgeView, int x, int y, String action) {
 		if (edgeView != null ) {
-			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(graphView.edgeViewTFs,action);
-			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(graphView.cyEdgeViewContextMenuFactory, action);
-			View<CyEdge> ev = (DEdgeView)edgeView;
+			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(re.edgeViewTFs,action);
+			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(re.cyEdgeViewContextMenuFactory, action);
 			// remove TaskFactories that can't be executed from double-click menu
 			if (action.equalsIgnoreCase("OPEN")) {
 				Iterator<EdgeViewTaskFactory> i = usableTFs.iterator();
 				while(i.hasNext()) {
-					if(!i.next().isReady(ev,graphView))
+					if(!i.next().isReady(edgeView, re.getViewModel()))
 						i.remove();
 				}
 			}
@@ -143,9 +141,9 @@ class PopupMenuHelper {
 
 			if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1) {
 				EdgeViewTaskFactory tf = usableTFs.iterator().next();
-				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(ev, graphView));
+				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(edgeView, re.getViewModel()));
 			} else {
-				String edgeLabel = graphView.getModel().getRow(ev.getModel()).get(CyEdge.INTERACTION, String.class);
+				String edgeLabel = re.getViewModel().getModel().getRow(edgeView.getModel()).get(CyEdge.INTERACTION, String.class);
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -157,15 +155,15 @@ class PopupMenuHelper {
 
 				for (EdgeViewTaskFactory evtf : usableTFs) {
 					Object context = null;
-					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, graphView);
-					addMenuItem(ev, menu, provisioner, context, tracker, graphView.edgeViewTFs.get(evtf));
+					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, edgeView, re.getViewModel());
+					addMenuItem(ev, menu, provisioner, context, tracker, re.edgeViewTFs.get(evtf));
 				}
 
 				for (CyEdgeViewContextMenuFactory edgeCMF : usableCMFs) {
 					// menu.add(edgeCMF.createMenuItem(m_view, ev).getMenuItem());
 					try {
-						CyMenuItem menuItem = edgeCMF.createMenuItem(graphView, ev);
-						addCyMenuItem(ev, menu, menuItem, tracker, graphView.cyEdgeViewContextMenuFactory.get(edgeCMF));
+						CyMenuItem menuItem = edgeCMF.createMenuItem(re.getViewModel(), edgeView);
+						addCyMenuItem(edgeView, menu, menuItem, tracker, re.cyEdgeViewContextMenuFactory.get(edgeCMF));
 					} catch (Throwable t) {
 						logger.error("Could not display context menu.", t);
 					}

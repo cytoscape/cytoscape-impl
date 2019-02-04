@@ -22,6 +22,7 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -61,7 +62,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
-	private DGraphView.Canvas canvasName;
+	private DRenderingEngine.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
 	private Set<ArrowAnnotation> arrowList = new HashSet<>();

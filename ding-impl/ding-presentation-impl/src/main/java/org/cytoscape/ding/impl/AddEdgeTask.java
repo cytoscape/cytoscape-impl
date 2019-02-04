@@ -67,7 +67,8 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			double[] coords = new double[2];
 			coords[0] = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 			coords[1] = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
-			((DGraphView) netView).xformNodeToComponentCoords(coords);
+			DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(netView);
+			re.xformNodeToComponentCoords(coords);
 			
 			Point sourceP = new Point();
 			sourceP.setLocation(coords[0], coords[1]);

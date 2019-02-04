@@ -12,8 +12,9 @@ import javax.swing.event.MenuEvent;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingGraphLODAll;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -102,7 +103,6 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	@Override
 	public void updateEnableState() {
 		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-		
 		if (isDetailShown(view))
 			putValue(Action.NAME, HIDE + " " + GraphicsDetails);
 		else
@@ -113,9 +113,9 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	}
 
 	private boolean isDetailShown(CyNetworkView view) {
-		if (view instanceof DGraphView)
-			return ((DGraphView) view).getGraphLOD() instanceof DingGraphLODAll;
-		
+		DRenderingEngine renderingEngine = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if (renderingEngine != null)
+			return renderingEngine.getGraphLOD() instanceof DingGraphLODAll;
 		return false;
 	}
 }

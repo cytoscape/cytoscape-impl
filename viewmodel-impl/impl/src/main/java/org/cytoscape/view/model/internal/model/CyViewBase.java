@@ -35,7 +35,7 @@ public abstract class CyViewBase<M> implements View<M> {
 	
 	@Override
 	public <T> T getVisualProperty(VisualProperty<T> vp) {
-		return getNetworkView().getVisualProperty(this, vp);
+		return getNetworkView().getVisualProperty(suid, vp);
 	}
 
 	@Override
