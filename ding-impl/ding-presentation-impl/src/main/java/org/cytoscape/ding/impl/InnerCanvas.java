@@ -113,7 +113,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	final GeneralPath m_path2 = new GeneralPath();
 	final LongStack m_stack = new LongStack();
 	final LongStack m_stack2 = new LongStack();
-	final Object m_lock;
+//	final Object m_lock;
 	private DRenderingEngine m_view;
 	final GraphLOD[] m_lod = new GraphLOD[1];
 	double m_xCenter;
@@ -155,7 +155,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 	InnerCanvas(Object lock, DRenderingEngine view, CyServiceRegistrar serviceRegistrar) {
 		super(DRenderingEngine.Canvas.NETWORK_CANVAS);
-		m_lock = lock;
+//		m_lock = lock;
 		m_view = view;
 		this.serviceRegistrar = serviceRegistrar;
 		m_lod[0] = new GraphLOD(); // Default LOD.

@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.Justification;
@@ -133,11 +134,11 @@ public interface NodeDetails {
 	
 	static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
-	default public double getWidth(final CyNode node) {
+	default double getWidth(View<CyNode> node) {
 		return 0.0;
 	}
 
-	default public double getHeight(final CyNode node) {
+	default double getHeight(View<CyNode> node) {
 		return 0.0;
 	}
 	
@@ -151,7 +152,7 @@ public interface NodeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	default public Color getColorLowDetail(final CyNode node) {
+	default Color getColorLowDetail(View<CyNode> node) {
 		return Color.RED;
 	}
 
@@ -162,7 +163,7 @@ public interface NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull() that pertain to rounded rectangles.
 	 */
-	default public byte getShape(final CyNode node) {
+	default byte getShape(View<CyNode> node) {
 		return GraphGraphics.SHAPE_RECTANGLE;
 	}
 
@@ -170,7 +171,7 @@ public interface NodeDetails {
 	 * Returns the paint of the interior of the node shape. By default this
 	 * method returns Color.red. It is an error to return null in this method.
 	 */
-	default public Paint getFillPaint(final CyNode node) {
+	default Paint getFillPaint(View<CyNode> node) {
 		return Color.RED;
 	}
 
@@ -179,11 +180,11 @@ public interface NodeDetails {
 	 * returns zero. Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	default public float getBorderWidth(final CyNode node) {
+	default float getBorderWidth(View<CyNode> node) {
 		return 0.0f;
 	}
 	
-	default public Stroke getBorderStroke(final CyNode node) {
+	default Stroke getBorderStroke(View<CyNode> node) {
 		return DEF_BORDER_STROKE;
 	}
 
@@ -193,7 +194,7 @@ public interface NodeDetails {
 	 * zero; it is an error to return null if borderWidth(node) returns a value
 	 * greater than zero.
 	 */
-	default public Paint getBorderPaint(final CyNode node) {
+	default Paint getBorderPaint(View<CyNode> node) {
 		return Color.DARK_GRAY;
 	}
 
@@ -201,7 +202,7 @@ public interface NodeDetails {
 	 * Returns the number of labels that this node has. By default this method
 	 * returns zero.
 	 */
-	default public int getLabelCount(final CyNode node) {
+	default int getLabelCount(View<CyNode> node) {
 		return 0;
 	}
 
@@ -218,7 +219,7 @@ public interface NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	default public String getLabelText(final CyNode node, final int labelInx) {
+	default String getLabelText(View<CyNode> node, int labelInx) {
 		return null;
 	}
 
@@ -232,7 +233,7 @@ public interface NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	default public Font getLabelFont(final CyNode node, final int labelInx) {
+	default Font getLabelFont(View<CyNode> node, int labelInx) {
 		return null;
 	}
 
@@ -248,7 +249,7 @@ public interface NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	default public double labelScaleFactor(final CyNode node, final int labelInx) {
+	default double labelScaleFactor(View<CyNode> node, int labelInx) {
 		return 1.0d;
 	}
 
@@ -262,7 +263,7 @@ public interface NodeDetails {
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	default public Paint getLabelPaint(final CyNode node, final int labelInx) {
+	default Paint getLabelPaint(View<CyNode> node, int labelInx) {
 		return Color.DARK_GRAY;
 	}
 
@@ -286,7 +287,7 @@ public interface NodeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default public Position getLabelTextAnchor(final CyNode node, final int labelInx) {
+	default Position getLabelTextAnchor(View<CyNode> node, int labelInx) {
 		return Position.CENTER;
 	}
 
@@ -310,7 +311,7 @@ public interface NodeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default public Position getLabelNodeAnchor(final CyNode node, final int labelInx) {
+	default Position getLabelNodeAnchor(View<CyNode> node, int labelInx) {
 		return Position.CENTER;
 	}
 
@@ -333,7 +334,7 @@ public interface NodeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	default public float getLabelOffsetVectorX(final CyNode node, final int labelInx) {
+	default float getLabelOffsetVectorX(View<CyNode> node, int labelInx) {
 		return 0.0f;
 	}
 
@@ -356,7 +357,7 @@ public interface NodeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	default public float getLabelOffsetVectorY(final CyNode node, final int labelInx) {
+	default float getLabelOffsetVectorY(View<CyNode> node, int labelInx) {
 		return 0.0f;
 	}
 
@@ -372,12 +373,12 @@ public interface NodeDetails {
 	 * 
 	 * @see #LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	default public Justification getLabelJustify(final CyNode node, final int labelInx) {
+	default Justification getLabelJustify(View<CyNode> node, int labelInx) {
 		return Justification.JUSTIFY_CENTER;
 	}
 
 	@SuppressWarnings("unchecked")
-	default public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
+	default Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> node) {
 		return Collections.EMPTY_MAP;
 	}
 	
@@ -394,7 +395,7 @@ public interface NodeDetails {
 	 * @see #graphicOffsetVectorY(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	default public float graphicOffsetVectorX(final CyNode node, final int graphicInx) {
+	default float graphicOffsetVectorX(View<CyNode> node, int graphicInx) {
 		return 0.0f;
 	}
 
@@ -411,7 +412,7 @@ public interface NodeDetails {
 	 * @see #graphicOffsetVectorX(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	default public float graphicOffsetVectorY(final CyNode node, final int graphicInx) {
+	default float graphicOffsetVectorY(View<CyNode> node, int graphicInx) {
 		return 0.0f;
 	}
 
@@ -438,7 +439,7 @@ public interface NodeDetails {
 	 * 
 	 * @since Cytoscape 2.6
 	 */
-	default public Object customGraphicsLock(final CyNode node) {
+	default Object customGraphicsLock(View<CyNode> node) {
 		return this;
 	}
 
@@ -447,7 +448,7 @@ public interface NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	default public double getLabelWidth(final CyNode node) {
+	default double getLabelWidth(View<CyNode> node) {
 		return 100.0;
 	}
 
@@ -458,7 +459,7 @@ public interface NodeDetails {
 	 * @param node
 	 * @return
 	 */
-	default public TexturePaint getNestedNetworkTexturePaint(final CyNode node) {
+	default TexturePaint getNestedNetworkTexturePaint(View<CyNode> node) {
 		return null;
 	}
 }

@@ -44,7 +44,6 @@ import java.util.Set;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkView;
@@ -164,7 +163,7 @@ public final class GraphRenderer {
 		if (grafx == null || grafx.image == null)
 			return 0;
 		
-		final CyNetwork graph = netView.getModel();
+//		final CyNetwork graph = netView.getModel();
 		
 		// Define the visible window in node coordinate space.
 		final float xMin;
@@ -223,8 +222,8 @@ public final class GraphRenderer {
 			SpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 			
 			final int visibleNodeCount = nodeHits.size();
-			final int totalNodeCount = graph.getNodeCount();
-			final int totalEdgeCount = graph.getEdgeCount();
+			final int totalNodeCount = netView.getNodeCount();
+			final int totalEdgeCount = netView.getEdgeCount();
 			renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 
 			if (renderEdges > 0) {
@@ -379,7 +378,7 @@ public final class GraphRenderer {
 			} else { // High detail.
 				while (nodeHits.size() > 0) {
 					final long node =nodeHits.nextExtents(floatBuff1);
-					final CyNode cyNode = graph.getNode(node);
+					final CyNode cyNode = netView.getNode(node);
 					final byte nodeShape = nodeDetails.getShape(cyNode);
 					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
 					for (final CyEdge edge : touchingEdges ) {

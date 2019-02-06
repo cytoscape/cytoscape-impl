@@ -257,8 +257,18 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 
 	@Override
+	public int getNodeCount() {
+		return nodeViewMap.size();
+	}
+	
+	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
 		return (Collection<View<CyEdge>>) (Collection<?>) edgeViewMap.values().asJava();
+	}
+	
+	@Override
+	public int getEdgeCount() {
+		return edgeViewMap.size();
 	}
 
 	@Override

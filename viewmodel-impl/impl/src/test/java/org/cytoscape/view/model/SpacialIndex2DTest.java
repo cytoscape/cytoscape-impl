@@ -41,7 +41,7 @@ public class SpacialIndex2DTest {
 		HashMap<Long,float[]> map = new HashMap<>();
 		while(overlap.hasNext()) {
 			float[] extents = new float[4];
-			long suid = overlap.getNextExtents(extents);
+			long suid = overlap.nextExtents(extents);
 			map.put(suid, extents);
 		}
 		return map;
