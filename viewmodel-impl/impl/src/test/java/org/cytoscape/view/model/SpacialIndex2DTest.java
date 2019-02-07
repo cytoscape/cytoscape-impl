@@ -62,7 +62,7 @@ public class SpacialIndex2DTest {
 		View<CyNode> nv3 = networkView.getNodeView(n3);
 		setGeometry(nv3, 9, 9, 4, 2);
 		
-		CyNetworkView snapshot = networkView.createSnapshot();
+		CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
 		SpacialIndex2D spacialIndex = snapshot.getSpacialIndex2D();
 		
 		// exists()

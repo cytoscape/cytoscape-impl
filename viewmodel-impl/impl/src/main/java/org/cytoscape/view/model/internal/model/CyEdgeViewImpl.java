@@ -4,8 +4,27 @@ import org.cytoscape.model.CyEdge;
 
 public class CyEdgeViewImpl extends CyViewImpl<CyEdge> {
 
-	public CyEdgeViewImpl(CyNetworkViewImpl parent, CyEdge model) {
+	private final long sourceSuid;
+	private final long targetSuid;
+	private final boolean isDirected;
+	
+	public CyEdgeViewImpl(CyNetworkViewImpl parent, CyEdge model, long sourceSuid, long targetSuid) {
 		super(parent, model);
+		this.sourceSuid = sourceSuid;
+		this.targetSuid = targetSuid;
+		this.isDirected = model.isDirected();
+	}
+
+	public long getSourceSuid() {
+		return sourceSuid;
+	}
+
+	public long getTargetSuid() {
+		return targetSuid;
+	}
+	
+	public boolean isDirected() {
+		return isDirected;
 	}
 	
 }

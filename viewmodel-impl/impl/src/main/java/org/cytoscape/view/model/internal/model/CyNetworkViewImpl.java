@@ -6,12 +6,12 @@ import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyEdge.Type;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewListener;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -52,8 +52,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private boolean isDirty = false;
 	
 	// Key is SUID of underlying model object.
-	private Map<Long,CyViewImpl<CyNode>> nodeViewMap = HashMap.empty();
-	private Map<Long,CyViewImpl<CyEdge>> edgeViewMap = HashMap.empty();
+	private Map<Long,CyNodeViewImpl> nodeViewMap = HashMap.empty();
+	private Map<Long,CyEdgeViewImpl> edgeViewMap = HashMap.empty();
+	
+	// Key is SUID of View object
+	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
 
 	// Key is SUID of View object.
 	private Map<Long,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
@@ -77,21 +80,27 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			nodeViewMap = nodeViewMap.put(node.getSUID(), new CyNodeViewImpl(this, node));
 		}
 		for(CyEdge edge : network.getEdgeList()) {
-			edgeViewMap = edgeViewMap.put(edge.getSUID(), new CyEdgeViewImpl(this, edge));
+			CyNodeViewImpl sourceView = nodeViewMap.getOrElse(edge.getSource().getSUID(), null);
+			CyNodeViewImpl targetView = nodeViewMap.getOrElse(edge.getTarget().getSUID(), null);
+			
+			CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
+			edgeViewMap = edgeViewMap.put(edge.getSUID(), edgeView);
+			
+			updateAdjacentEdgeMap(edgeView, true);
 		}
 	}
 	
 	
 	@Override
-	public CyNetworkView createSnapshot() {
+	public CyNetworkViewSnapshot createSnapshot() {
 		synchronized (this) {
 			isDirty = false;
 			return new CyNetworkViewSnapshotImpl(
-					getSUID(), 
-					getModel(), 
+					this, 
 					rendererId, 
 					nodeViewMap, 
 					edgeViewMap, 
+					adjacentEdgeMap,
 					defaultValues, 
 					visualProperties, 
 					allLocks, 
@@ -115,21 +124,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private Rectangle getGeometry(View<CyNode> view) {
 		return geometries.getOrElse(view.getSUID(), DEFAULT_GEOMETRY);
 	}
-	
-	
-	public View<CyNode> addNode(CyNode model) {
-		if(nodeViewMap.containsKey(getSUID()))
-			return null;
-		
-		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
-		synchronized (this) {
-			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
-			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
-			isDirty = true;
-		}
-		return view;
-	}
-	
 	
 	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp, V value) {
 		Long suid = node.getSUID();
@@ -175,47 +169,83 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		System.out.println();
 	}
 	
-	
-	public View<CyEdge> addEdge(CyEdge model) {
-		CyEdgeViewImpl view = new CyEdgeViewImpl(this, model);
+	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
+		Set<CyEdgeViewImpl> edges;
 		synchronized (this) {
-			edgeViewMap = edgeViewMap.put(model.getSUID(), view);
+			edges = adjacentEdgeMap.getOrElse(edgeView.getSourceSuid(), HashSet.empty());
+			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
+			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getSourceSuid(), edges);
+			
+			edges = adjacentEdgeMap.getOrElse(edgeView.getTargetSuid(), HashSet.empty());
+			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
+			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getTargetSuid(), edges);
+		}
+	}
+	
+	
+	public View<CyNode> addNode(CyNode model) {
+		if(nodeViewMap.containsKey(getSUID()))
+			return null;
+		
+		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
+		synchronized (this) {
+			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
+			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
 			isDirty = true;
 		}
 		return view;
 	}
 	
-	public View<CyNode> removeNode(CyNode model) {
-		View<CyNode> view;
+	public View<CyEdge> addEdge(CyEdge edge) {
+		CyNodeViewImpl sourceView = nodeViewMap.getOrElse(edge.getSource().getSUID(), null);
+		CyNodeViewImpl targetView = nodeViewMap.getOrElse(edge.getTarget().getSUID(), null);
+		
+		CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
 		synchronized (this) {
-			CyNetwork network = getModel();
-			Iterable<CyEdge> edges = network.getAdjacentEdgeIterable(model, Type.ANY);
-			for(CyEdge edge : edges) {
-				removeEdge(edge);
-			}
-			view = nodeViewMap.getOrElse(model.getSUID(), null);
-			if(view != null) {
+			edgeViewMap = edgeViewMap.put(edge.getSUID(), edgeView);
+			updateAdjacentEdgeMap(edgeView, true);
+			isDirty = true;
+		}
+		return edgeView;
+	}
+	
+	public View<CyNode> removeNode(CyNode model) {
+		View<CyNode> nodeView;
+		synchronized (this) {
+//			CyNetwork network = getModel();
+//			Iterable<CyEdge> edges = network.getAdjacentEdgeIterable(model, Type.ANY);
+//			for(CyEdge edge : edges) {
+//				removeEdge(edge);
+//			}
+			nodeView = nodeViewMap.getOrElse(model.getSUID(), null);
+			if(nodeView != null) {
 				nodeViewMap = nodeViewMap.remove(model.getSUID());
-				clearVisualProperties(view);
-				rtree = rtree.delete(view.getSUID(), getGeometry(view));
+				Set<CyEdgeViewImpl> adjacentEdges = adjacentEdgeMap.getOrElse(nodeView.getSUID(), HashSet.empty());
+				for(CyEdgeViewImpl adjacentEdge : adjacentEdges) {
+					removeEdge(adjacentEdge.getModel());
+				}
+				adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
+				clearVisualProperties(nodeView);
+				rtree = rtree.delete(nodeView.getSUID(), getGeometry(nodeView));
 				isDirty = true;
 			}
 		}
-		return view;
+		return nodeView;
 	}
   	
 	
 	public View<CyEdge> removeEdge(CyEdge model) {
-		View<CyEdge> view;
+		CyEdgeViewImpl edgeView;
 		synchronized (this) {
-			view = edgeViewMap.getOrElse(model.getSUID(), null);
-			if(view != null) {
+			edgeView = edgeViewMap.getOrElse(model.getSUID(), null);
+			if(edgeView != null) {
 				edgeViewMap = edgeViewMap.remove(model.getSUID());
-				clearVisualProperties(view);
+				updateAdjacentEdgeMap(edgeView, false);
+				clearVisualProperties(edgeView);
 				isDirty = true;
 			}
 		}
-		return view;
+		return edgeView;
 	}
 	
 	public void clearVisualProperties(CyIdentifiable view) {
@@ -257,20 +287,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 
 	@Override
-	public int getNodeCount() {
-		return nodeViewMap.size();
-	}
-	
-	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
 		return (Collection<View<CyEdge>>) (Collection<?>) edgeViewMap.values().asJava();
 	}
 	
-	@Override
-	public int getEdgeCount() {
-		return edgeViewMap.size();
-	}
-
 	@Override
 	public Collection<View<? extends CyIdentifiable>> getAllViews() {
 		ArrayList<View<? extends CyIdentifiable>> list = new ArrayList<>();

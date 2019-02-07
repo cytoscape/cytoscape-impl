@@ -2,22 +2,20 @@ package org.cytoscape.view.model.internal.model.snapshot;
 
 import java.util.Objects;
 
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.VisualProperty;
 
 import io.vavr.collection.Map;
 
-public abstract class CyViewSnapshotBase<M> implements View<M> {
+public abstract class CyViewSnapshotBase<M> implements ReadableView<M> {
 
-	private final M model; // MKTODO this is temporary, the immutable snapshot should not refer to the the mutable model
 	private final Long suid;
 	
 	private Map<VisualProperty<?>,Object> visualProperties;
 	private Map<VisualProperty<?>,Object> allLocks;
 	private Map<VisualProperty<?>,Object> directLocks;
 	
-	public CyViewSnapshotBase(M model, Long suid) {
-		this.model = model;
+	public CyViewSnapshotBase(Long suid) {
 		this.suid = suid;
 	}
 	
@@ -93,31 +91,6 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	}
 	
 	
-	@Override
-	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void clearValueLock(VisualProperty<?> vp) {
-		throw new UnsupportedOperationException();
-	}
-	
-	@Override
-	public M getModel() {
-		// MKTODO I would like this to be UnsupportedOperationException because the underlying model is mutable
-		return model;
-	}
-
-	@Override
-	public void clearVisualProperties() {
-		throw new UnsupportedOperationException();
-	}
 
 	@Override
 	public int hashCode() {
