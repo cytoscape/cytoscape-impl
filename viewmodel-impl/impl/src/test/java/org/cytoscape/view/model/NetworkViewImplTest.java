@@ -53,7 +53,7 @@ public class NetworkViewImplTest {
 		return networkView;
 	}
 	
-	private static Set<Long> iterableToSuidSet(Iterable<? extends CyIdentifiable> iterable) {
+	private static Set<Long> asSuidSet(Iterable<? extends CyIdentifiable> iterable) {
 		HashSet<Long> set = new HashSet<>();
 		iterable.forEach(item -> set.add(item.getSUID()));
 		return set;
@@ -260,7 +260,6 @@ public class NetworkViewImplTest {
 		
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			
 			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
 			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
 			ReadableView<CyNode> nv3 = snapshot.getNodeView(n3);
@@ -287,32 +286,29 @@ public class NetworkViewImplTest {
 			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceSUID());
 			assertEquals(nv3.getSUID().longValue(), edgeInfo.getTargetSUID());
 			
-			Set<Long> adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
+			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(3, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
 			assertTrue(adjacentEdges.contains(ev5.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
 			assertTrue(adjacentEdges.contains(ev2.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv3));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv3));
 			assertEquals(3, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev2.getSUID()));
 			assertTrue(adjacentEdges.contains(ev3.getSUID()));
 			assertTrue(adjacentEdges.contains(ev5.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev3.getSUID()));
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
 		}
 		
-		// remove an edge
-		netView.removeEdge(e5);
-		
+		netView.removeEdge(e5); // remove an edge
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			
 			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
 			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
 			ReadableView<CyNode> nv3 = snapshot.getNodeView(n3);
@@ -322,49 +318,76 @@ public class NetworkViewImplTest {
 			ReadableView<CyEdge> ev3 = snapshot.getEdgeView(e3);
 			ReadableView<CyEdge> ev4 = snapshot.getEdgeView(e4);
 			
-			Set<Long> adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
+			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
 			assertTrue(adjacentEdges.contains(ev2.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv3));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv3));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev2.getSUID()));
 			assertTrue(adjacentEdges.contains(ev3.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev3.getSUID()));
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
 		}
 	
-		// remove a node
-		netView.removeNode(n3);
-		
+		netView.removeNode(n3); // remove a node
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			
 			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
 			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
 			ReadableView<CyNode> nv4 = snapshot.getNodeView(n4);
 			ReadableView<CyEdge> ev1 = snapshot.getEdgeView(e1);
 			ReadableView<CyEdge> ev4 = snapshot.getEdgeView(e4);
 			
-			Set<Long> adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
+			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(2, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv2));
 			assertEquals(1, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev1.getSUID()));
-			adjacentEdges = iterableToSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
+			adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv4));
 			assertEquals(1, adjacentEdges.size());
 			assertTrue(adjacentEdges.contains(ev4.getSUID()));
 		}
 	}
 	
+	
+	@Test
+	public void testSelectedNodes() {
+		CyNetworkViewImpl netView = createSquareTestNetworkView();
+		CyNetwork network = netView.getModel();
+		
+		List<CyNode> nodes = network.getNodeList();
+		View<CyNode> n0 = netView.getNodeView(nodes.get(0));
+		View<CyNode> n1 = netView.getNodeView(nodes.get(1));
+		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
+		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
+		
+		assertTrue(netView.createSnapshot().getSelectedNodes().isEmpty());
+		
+		n0.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
+		n1.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
+		
+		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
+		
+		assertEquals(2, selectedNodes.size());
+		assertTrue(selectedNodes.contains(n0.getSUID()));
+		assertTrue(selectedNodes.contains(n1.getSUID()));
+		
+		n1.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, false);
+		
+		selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
+		
+		assertEquals(1, selectedNodes.size());
+		assertTrue(selectedNodes.contains(n0.getSUID()));
+	}
 	
 }
 

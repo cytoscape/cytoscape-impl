@@ -49,7 +49,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private final BasicVisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
-	private boolean isDirty = false;
+	private CyNetworkViewSnapshot snapshot = null;
 	
 	// Key is SUID of underlying model object.
 	private Map<Long,CyNodeViewImpl> nodeViewMap = HashMap.empty();
@@ -57,6 +57,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
+	private Set<Long> selectedNodes = HashSet.empty();
 
 	// Key is SUID of View object.
 	private Map<Long,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
@@ -94,20 +95,23 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {
 		synchronized (this) {
-			isDirty = false;
-			return new CyNetworkViewSnapshotImpl(
+			if(snapshot == null) {
+				snapshot = new CyNetworkViewSnapshotImpl(
 					this, 
 					rendererId, 
 					nodeViewMap, 
 					edgeViewMap, 
 					adjacentEdgeMap,
+					selectedNodes,
 					defaultValues, 
 					visualProperties, 
 					allLocks, 
 					directLocks, 
-					rtree,
+					rtree, 
 					geometries
-			);
+				);
+			}
+			return snapshot;
 		}
 	}
 	
@@ -118,7 +122,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public boolean isDirty() {
-		return isDirty;
+		return snapshot == null;
+	}
+	
+	private void setDirty() {
+		snapshot = null;
 	}
 	
 	private Rectangle getGeometry(View<CyNode> view) {
@@ -162,11 +170,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		}
 		
 		if(newGeom != null) {
-			System.out.println(suid + ": " + newGeom);
 			rtree = rtree.delete(suid, r).add(suid, newGeom);
 			geometries = geometries.put(suid, newGeom);
 		}
-		System.out.println();
 	}
 	
 	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
@@ -191,7 +197,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (this) {
 			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
 			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
-			isDirty = true;
+			setDirty();
 		}
 		return view;
 	}
@@ -204,7 +210,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (this) {
 			edgeViewMap = edgeViewMap.put(edge.getSUID(), edgeView);
 			updateAdjacentEdgeMap(edgeView, true);
-			isDirty = true;
+			setDirty();
 		}
 		return edgeView;
 	}
@@ -212,11 +218,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public View<CyNode> removeNode(CyNode model) {
 		View<CyNode> nodeView;
 		synchronized (this) {
-//			CyNetwork network = getModel();
-//			Iterable<CyEdge> edges = network.getAdjacentEdgeIterable(model, Type.ANY);
-//			for(CyEdge edge : edges) {
-//				removeEdge(edge);
-//			}
 			nodeView = nodeViewMap.getOrElse(model.getSUID(), null);
 			if(nodeView != null) {
 				nodeViewMap = nodeViewMap.remove(model.getSUID());
@@ -227,12 +228,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 				clearVisualProperties(nodeView);
 				rtree = rtree.delete(nodeView.getSUID(), getGeometry(nodeView));
-				isDirty = true;
+				setDirty();
 			}
 		}
 		return nodeView;
 	}
-  	
 	
 	public View<CyEdge> removeEdge(CyEdge model) {
 		CyEdgeViewImpl edgeView;
@@ -242,7 +242,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				edgeViewMap = edgeViewMap.remove(model.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
 				clearVisualProperties(edgeView);
-				isDirty = true;
+				setDirty();
 			}
 		}
 		return edgeView;
@@ -254,11 +254,12 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			visualProperties = clear(visualProperties, suid);
 //			allLocks = clear(allLocks, suid);
 //			directLocks = clear(directLocks, suid);
-			isDirty = true;
+			setDirty();
 		}
 	}
 	
 	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
+		// we actually can't clear certain VPs, the renderer expects node size and location to remain
 		java.util.HashMap<VisualProperty<?>,Object> values = new java.util.HashMap<>();
 		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPERTIES) {
 			values.put(vp, get(map, suid, vp));
@@ -300,11 +301,15 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return list;
 	}
 	
-	public <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
+	protected <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
 		Long suid = view.getSUID();
 		synchronized (this) {
 			visualProperties = put(visualProperties, suid, vp, value);
-			isDirty = true;
+			if(vp == BasicVisualLexicon.NODE_SELECTED) {
+				// ignoring locked vp for now
+				selectedNodes = Boolean.TRUE.equals(value) ? selectedNodes.add(suid) : selectedNodes.remove(suid);
+			}
+			setDirty();
 		}
 	}
 	
@@ -346,7 +351,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			
 			VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
 			propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
-			isDirty = true;
+			setDirty();
 		}
 	}
 	
@@ -383,7 +388,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		synchronized (this) {
 			defaultValues = defaultValues.put(vp, defaultValue);
-			isDirty = true;
+			setDirty();
 		}
 	}
 	
