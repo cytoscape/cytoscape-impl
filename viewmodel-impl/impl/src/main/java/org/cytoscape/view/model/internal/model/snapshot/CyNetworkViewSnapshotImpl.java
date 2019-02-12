@@ -50,6 +50,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final SpacialIndex2D spacialIndex;
 	
 	// Store of immutable node/edge objects
+	// MKTODO these objects probably won't change much between snapshots, they don't actually store the VPs,
+	// come up with a strategy to reuse them between snapshots.
 	private final java.util.Map<Long,CyViewSnapshotImpl<CyNode>> snapshotNodeViews = new java.util.HashMap<>();
 	private final java.util.Map<Long,CyEdgeViewSnapshotImpl>     snapshotEdgeViews = new java.util.HashMap<>();
 	
@@ -84,14 +86,14 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	
-	private CyViewSnapshotImpl<CyNode> getSnapshotNodeView(long viewSuid) {
+	protected CyViewSnapshotImpl<CyNode> getSnapshotNodeView(long viewSuid) {
 		if(MEMOIZE_VIEW_OBJECTS)
 			return snapshotNodeViews.computeIfAbsent(viewSuid, k -> new CyViewSnapshotImpl<CyNode>(this, viewSuid));
 		else
 			return new CyViewSnapshotImpl<CyNode>(this, viewSuid);
 	}
 	
-	private CyEdgeViewSnapshotImpl getSnapshotEdgeView(CyEdgeViewImpl mutableEdgeView) {
+	protected CyEdgeViewSnapshotImpl getSnapshotEdgeView(CyEdgeViewImpl mutableEdgeView) {
 		if(MEMOIZE_VIEW_OBJECTS)
 			return snapshotEdgeViews.computeIfAbsent(mutableEdgeView.getSUID(), k -> new CyEdgeViewSnapshotImpl(this, mutableEdgeView));
 		else
