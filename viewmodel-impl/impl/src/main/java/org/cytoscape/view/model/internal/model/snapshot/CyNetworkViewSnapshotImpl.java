@@ -33,9 +33,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final String rendererId;
 	private final CyNetworkView networkView;
 
-	// Key is SUID of underlying model object.
-	private final Map<Long,CyNodeViewImpl> nodeViewMap;
-	private final Map<Long,CyEdgeViewImpl> edgeViewMap;
+	// View object is stored twice, using both the view suid and model suid as keys.
+	private final Map<Long,CyNodeViewImpl> dataSuidToNode;
+	private final Map<Long,CyNodeViewImpl> viewSuidToNode;
+	private final Map<Long,CyEdgeViewImpl> dataSuidToEdge;
+	private final Map<Long,CyEdgeViewImpl> viewSuidToEdge;
 	
 	// Key is SUID of View object
 	private final Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap;
@@ -59,9 +61,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	public CyNetworkViewSnapshotImpl(
 			CyNetworkView networkView,
-			String rendererId, 
-			Map<Long,CyNodeViewImpl> nodeViewMap,
-			Map<Long,CyEdgeViewImpl> edgeViewMap,
+			String rendererId,
+			Map<Long,CyNodeViewImpl> dataSuidToNode,
+			Map<Long,CyNodeViewImpl> viewSuidToNode,
+			Map<Long,CyEdgeViewImpl> dataSuidToEdge,
+			Map<Long,CyEdgeViewImpl> viewSuidToEdge,
 			Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap,
 			Set<Long> selectedNodes,
 			Map<VisualProperty<?>, Object> defaultValues,
@@ -74,8 +78,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		super(networkView.getSUID());
 		this.networkView = networkView;
 		this.rendererId = rendererId;
-		this.nodeViewMap = nodeViewMap;
-		this.edgeViewMap = edgeViewMap;
+		this.viewSuidToNode = viewSuidToNode;
+		this.dataSuidToNode = dataSuidToNode;
+		this.viewSuidToEdge = viewSuidToEdge;
+		this.dataSuidToEdge = dataSuidToEdge;
 		this.adjacentEdgeMap = adjacentEdgeMap;
 		this.selectedNodes = selectedNodes;
 		this.defaultValues = defaultValues;
@@ -138,38 +144,46 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	@Override
 	public ReadableView<CyNode> getNodeView(CyNode node) {
-		CyViewImpl<CyNode> view = nodeViewMap.getOrElse(node.getSUID(), null);
-		if(view == null)
-			return null;
-		return getSnapshotNodeView(view.getSUID());
-	}
-
-	@Override
-	public Collection<ReadableView<CyNode>> getNodeViews() {
-		List<ReadableView<CyNode>> nodeViews = new ArrayList<>(nodeViewMap.size());
-		for(CyViewImpl<CyNode> view : nodeViewMap.values()) {
-			nodeViews.add(getSnapshotNodeView(view.getSUID()));
-		}
-		return nodeViews;
+		CyViewImpl<CyNode> view = dataSuidToNode.getOrElse(node.getSUID(), null);
+		return view == null ? null : getSnapshotNodeView(view.getSUID());
 	}
 
 	@Override
 	public ReadableView<CyEdge> getEdgeView(CyEdge edge) {
-		CyEdgeViewImpl view = edgeViewMap.getOrElse(edge.getSUID(), null);
-		if(view == null)
-			return null;
-		return getSnapshotEdgeView(view);
+		CyEdgeViewImpl view = dataSuidToEdge.getOrElse(edge.getSUID(), null);
+		return view == null ? null : getSnapshotEdgeView(view);
+	}
+	
+	@Override
+	public ReadableView<CyNode> getNodeView(long suid) {
+		CyViewImpl<CyNode> view = viewSuidToNode.getOrElse(suid, null);
+		return view == null ? null : getSnapshotNodeView(view.getSUID());
+	}
+	
+	@Override
+	public ReadableView<CyEdge> getEdgeView(long suid) {
+		CyEdgeViewImpl view = viewSuidToEdge.getOrElse(suid, null);
+		return view == null ? null : getSnapshotEdgeView(view);
 	}
 
 	@Override
+	public Collection<ReadableView<CyNode>> getNodeViews() {
+		List<ReadableView<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
+		for(CyViewImpl<CyNode> view : viewSuidToNode.values()) {
+			nodeViews.add(getSnapshotNodeView(view.getSUID()));
+		}
+		return nodeViews;
+	}
+	
+	@Override
 	public Collection<ReadableView<CyEdge>> getEdgeViews() {
-		List<ReadableView<CyEdge>> edgeViews = new ArrayList<>(edgeViewMap.size());
-		for(CyEdgeViewImpl view : edgeViewMap.values()) {
+		List<ReadableView<CyEdge>> edgeViews = new ArrayList<>(viewSuidToEdge.size());
+		for(CyEdgeViewImpl view : viewSuidToEdge.values()) {
 			edgeViews.add(getSnapshotEdgeView(view));
 		}
 		return edgeViews;
 	}
-
+	
 	@Override
 	public Collection<ReadableView<? extends CyIdentifiable>> getAllViews() {
 		ArrayList<ReadableView<? extends CyIdentifiable>> list = new ArrayList<>();
@@ -187,12 +201,12 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 
 	@Override
 	public int getNodeCount() {
-		return nodeViewMap.size();
+		return viewSuidToNode.size();
 	}
 
 	@Override
 	public int getEdgeCount() {
-		return edgeViewMap.size();
+		return viewSuidToEdge.size();
 	}
 
 	@Override

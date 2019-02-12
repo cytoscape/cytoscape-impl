@@ -51,9 +51,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	private CyNetworkViewSnapshot snapshot = null;
 	
-	// Key is SUID of underlying model object.
-	private Map<Long,CyNodeViewImpl> nodeViewMap = HashMap.empty();
-	private Map<Long,CyEdgeViewImpl> edgeViewMap = HashMap.empty();
+	// View object is stored twice, using both the view suid and model suid as keys.
+	private Map<Long,CyNodeViewImpl> dataSuidToNode = HashMap.empty();
+	private Map<Long,CyNodeViewImpl> viewSuidToNode = HashMap.empty();
+	private Map<Long,CyEdgeViewImpl> dataSuidToEdge = HashMap.empty();
+	private Map<Long,CyEdgeViewImpl> viewSuidToEdge = HashMap.empty();
 	
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
@@ -78,14 +80,17 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		
 		// faster than calling addNode() and addEdge()
 		for(CyNode node : network.getNodeList()) {
-			nodeViewMap = nodeViewMap.put(node.getSUID(), new CyNodeViewImpl(this, node));
+			CyNodeViewImpl nodeView = new CyNodeViewImpl(this, node);
+			dataSuidToNode = dataSuidToNode.put(node.getSUID(), nodeView);
+			viewSuidToNode = viewSuidToNode.put(nodeView.getSUID(), nodeView);
 		}
 		for(CyEdge edge : network.getEdgeList()) {
-			CyNodeViewImpl sourceView = nodeViewMap.getOrElse(edge.getSource().getSUID(), null);
-			CyNodeViewImpl targetView = nodeViewMap.getOrElse(edge.getTarget().getSUID(), null);
+			CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
+			CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
 			
 			CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
-			edgeViewMap = edgeViewMap.put(edge.getSUID(), edgeView);
+			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), edgeView);
+			viewSuidToEdge = viewSuidToEdge.put(edgeView.getSUID(), edgeView);
 			
 			updateAdjacentEdgeMap(edgeView, true);
 		}
@@ -99,8 +104,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				snapshot = new CyNetworkViewSnapshotImpl(
 					this, 
 					rendererId, 
-					nodeViewMap, 
-					edgeViewMap, 
+					dataSuidToNode,
+					viewSuidToNode,
+					dataSuidToEdge,
+					viewSuidToEdge,
 					adjacentEdgeMap,
 					selectedNodes,
 					defaultValues, 
@@ -190,12 +197,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	
 	public View<CyNode> addNode(CyNode model) {
-		if(nodeViewMap.containsKey(getSUID()))
+		if(dataSuidToNode.containsKey(getSUID()))
 			return null;
 		
 		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
 		synchronized (this) {
-			nodeViewMap = nodeViewMap.put(model.getSUID(), view);
+			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
+			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
 			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
 			setDirty();
 		}
@@ -203,12 +211,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	public View<CyEdge> addEdge(CyEdge edge) {
-		CyNodeViewImpl sourceView = nodeViewMap.getOrElse(edge.getSource().getSUID(), null);
-		CyNodeViewImpl targetView = nodeViewMap.getOrElse(edge.getTarget().getSUID(), null);
+		CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
+		CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
 		
 		CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
 		synchronized (this) {
-			edgeViewMap = edgeViewMap.put(edge.getSUID(), edgeView);
+			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), edgeView);
+			viewSuidToEdge = viewSuidToEdge.put(edgeView.getSUID(), edgeView);
 			updateAdjacentEdgeMap(edgeView, true);
 			setDirty();
 		}
@@ -218,9 +227,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public View<CyNode> removeNode(CyNode model) {
 		View<CyNode> nodeView;
 		synchronized (this) {
-			nodeView = nodeViewMap.getOrElse(model.getSUID(), null);
+			nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
 			if(nodeView != null) {
-				nodeViewMap = nodeViewMap.remove(model.getSUID());
+				dataSuidToNode = dataSuidToNode.remove(model.getSUID());
+				viewSuidToNode = viewSuidToNode.remove(nodeView.getSUID());
 				Set<CyEdgeViewImpl> adjacentEdges = adjacentEdgeMap.getOrElse(nodeView.getSUID(), HashSet.empty());
 				for(CyEdgeViewImpl adjacentEdge : adjacentEdges) {
 					removeEdge(adjacentEdge.getModel());
@@ -237,9 +247,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public View<CyEdge> removeEdge(CyEdge model) {
 		CyEdgeViewImpl edgeView;
 		synchronized (this) {
-			edgeView = edgeViewMap.getOrElse(model.getSUID(), null);
+			edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
 			if(edgeView != null) {
-				edgeViewMap = edgeViewMap.remove(model.getSUID());
+				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
+				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
 				clearVisualProperties(edgeView);
 				setDirty();
@@ -274,22 +285,22 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public View<CyNode> getNodeView(CyNode node) {
-		return nodeViewMap.getOrElse(node.getSUID(), null);
+		return dataSuidToNode.getOrElse(node.getSUID(), null);
 	}
 	
 	@Override
 	public View<CyEdge> getEdgeView(CyEdge edge) {
-		return edgeViewMap.getOrElse(edge.getSUID(), null);
+		return dataSuidToEdge.getOrElse(edge.getSUID(), null);
 	}
 	
 	@Override
 	public Collection<View<CyNode>> getNodeViews() {
-		return (Collection<View<CyNode>>) (Collection<?>) nodeViewMap.values().asJava();
+		return (Collection<View<CyNode>>) (Collection<?>) dataSuidToNode.values().asJava();
 	}
 
 	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
-		return (Collection<View<CyEdge>>) (Collection<?>) edgeViewMap.values().asJava();
+		return (Collection<View<CyEdge>>) (Collection<?>) dataSuidToEdge.values().asJava();
 	}
 	
 	@Override
