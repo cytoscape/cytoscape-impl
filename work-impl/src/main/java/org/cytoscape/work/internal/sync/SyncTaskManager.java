@@ -1,5 +1,17 @@
 package org.cytoscape.work.internal.sync;
 
+import java.util.Map;
+
+import org.cytoscape.work.AbstractTaskManager;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskObserver;
+import org.cytoscape.work.TunableRecorder;
+
 /*
  * #%L
  * org.cytoscape.work-impl
@@ -24,22 +36,6 @@ package org.cytoscape.work.internal.sync;
  * #L%
  */
 
-
-import java.util.Map;
-
-import org.cytoscape.work.AbstractTaskManager;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.SynchronousTaskManager;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TaskObserver;
-import org.cytoscape.work.FinishStatus;
-import org.cytoscape.work.TunableRecorder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * Uses Swing components to create a user interface for the <code>Task</code>.
  *
@@ -47,9 +43,6 @@ import org.slf4j.LoggerFactory;
  */
 public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Object>> implements
 		SynchronousTaskManager<Object> {
-
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
 
 	private final SyncTunableMutator<?> syncTunableMutator;
 
@@ -61,12 +54,10 @@ public class SyncTaskManager extends AbstractTaskManager<Object, Map<String, Obj
 		this.syncTunableMutator = tunableMutator;
 	}
 
-
 	@Override 
 	public void setExecutionContext(final Map<String,Object> o) {
 		syncTunableMutator.setConfigurationContext(o);
 	}
-
 
 	@Override 
 	public Object getConfiguration(TaskFactory factory, Object context) {

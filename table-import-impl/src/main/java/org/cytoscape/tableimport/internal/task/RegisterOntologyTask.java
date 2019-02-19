@@ -1,5 +1,6 @@
 package org.cytoscape.tableimport.internal.task;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.read.CyNetworkReader;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
@@ -15,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
 
 public class RegisterOntologyTask extends AbstractTask {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final CyNetworkReader reader;
 	private final CyServiceRegistrar serviceRegistrar;

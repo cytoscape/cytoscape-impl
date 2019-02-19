@@ -1,12 +1,29 @@
 package org.cytoscape.model.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.equations.Equation;
+import org.cytoscape.equations.IdentDescriptor;
+import org.cytoscape.equations.Interpreter;
+import org.cytoscape.model.internal.tsort.TopoGraphNode;
+import org.cytoscape.model.internal.tsort.TopologicalSort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2010 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2010 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +41,9 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import org.cytoscape.equations.Equation;
-import org.cytoscape.equations.IdentDescriptor;
-import org.cytoscape.equations.Interpreter;
-import org.cytoscape.model.internal.tsort.TopoGraphNode;
-import org.cytoscape.model.internal.tsort.TopologicalSort;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 class EqnSupport {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private EqnSupport() { } // Don't ever create an instance of this class!
 
@@ -119,7 +118,7 @@ class EqnSupport {
 		final Collection<String> attribReferences = equation.getVariableReferences();
 		final Map<String, Object> defaultValues = equation.getDefaultVariableValues();
 
-		final Map<String, IdentDescriptor> nameToDescriptorMap = new TreeMap<String, IdentDescriptor>();
+		final Map<String, IdentDescriptor> nameToDescriptorMap = new TreeMap<>();
 		for (final String attribRef : attribReferences) {
 			if (attribRef.equals("ID")) {
 				nameToDescriptorMap.put("ID", new IdentDescriptor(key));
@@ -181,23 +180,23 @@ class EqnSupport {
 	{
 		final Object equationCandidate = tableImpl.getValueOrEquation(key, columnName);
 		if (!(equationCandidate instanceof Equation))
-			return new ArrayList<String>();
+			return new ArrayList<>();
 
 		final Equation equation = (Equation)equationCandidate;
 		final Set<String> attribReferences = equation.getVariableReferences();
 		if (attribReferences.size() == 0)
-			return new ArrayList<String>();
+			return new ArrayList<>();
 
-		final Set<String> alreadyProcessed = new TreeSet<String>();
+		final Set<String> alreadyProcessed = new TreeSet<>();
 		alreadyProcessed.add(columnName);
-		final List<TopoGraphNode> dependencies = new ArrayList<TopoGraphNode>();
+		final List<TopoGraphNode> dependencies = new ArrayList<>();
 		for (final String attribReference : attribReferences)
                         followReferences(key, attribReference, alreadyProcessed, dependencies,
 					 tableImpl);
 
 
 		final List<TopoGraphNode> topoOrder = TopologicalSort.sort(dependencies);
-		final List<String> retVal = new ArrayList<String>();
+		final List<String> retVal = new ArrayList<>();
 		for (final TopoGraphNode node : topoOrder) {
 			final AttribTopoGraphNode attribTopoGraphNode = (AttribTopoGraphNode)node;
 			final String nodeName = attribTopoGraphNode.getNodeName();

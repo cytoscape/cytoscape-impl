@@ -1,12 +1,37 @@
 package org.cytoscape.log.internal;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+import org.cytoscape.application.swing.CySwingApplication;
+
 /*
  * #%L
  * Cytoscape Log Swing Impl (log-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +49,15 @@ package org.cytoscape.log.internal;
  * #L%
  */
 
-import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
-import javax.swing.*;
-import java.util.Map;
-import java.util.HashMap;
-
-import org.cytoscape.application.swing.CySwingApplication;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Logger;
-
 /**
  * Handles the status bar at the bottom of the Cytoscape desktop
  */
+@SuppressWarnings("serial")
 class CyStatusBar extends JPanel {
-    static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+    
 	static final int MEM_UPDATE_DELAY_MS = 2000;
 	static final int MEM_STATE_ICON_DIM_PX = 14;
+	
 	static enum MemState {
 		MEM_OK       (0.00f, 0.75f, new Color(0x32C734), "OK"),
 		MEM_LOW      (0.75f, 0.85f, new Color(0xE7F20A), "Low"),
@@ -59,7 +75,6 @@ class CyStatusBar extends JPanel {
 
 			final BufferedImage image = new BufferedImage(MEM_STATE_ICON_DIM_PX, MEM_STATE_ICON_DIM_PX, BufferedImage.TYPE_INT_ARGB);
 			final Graphics2D g2d = (Graphics2D) image.getGraphics();
-			final RenderingHints hints = g2d.getRenderingHints();
 			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 			g2d.setColor(color);
 			g2d.fillOval(1, 1, MEM_STATE_ICON_DIM_PX - 2, MEM_STATE_ICON_DIM_PX - 2);
@@ -142,8 +157,8 @@ class CyStatusBar extends JPanel {
 			final CySwingApplication app,
 			final String consoleIconPath,
 			final UserMessagesDialog userMessagesDialog,
-			final Map<String,String> levelToIconPathMap)
-	{
+			final Map<String,String> levelToIconPathMap
+	) {
 		super();
 
 		levelToIconMap = new HashMap<String,Icon>();
@@ -161,12 +176,7 @@ class CyStatusBar extends JPanel {
 		showConsoleBtn.setContentAreaFilled(false);
 		showConsoleBtn.setOpaque(false);
 		showConsoleBtn.setToolTipText("Open User Messages");
-		
-		showConsoleBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				userMessagesDialog.open();
-			}
-		});
+		showConsoleBtn.addActionListener(evt -> userMessagesDialog.open());
 
 		messageLabel = new JLabel();
 
@@ -175,19 +185,15 @@ class CyStatusBar extends JPanel {
 		memAmountLabel.setVisible(false);
 
 		final JButton gcBtn = new JButton("Free Unused Memory");
-		gcBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				gcBtn.setEnabled(false);
-				gcBtn.setText("Freeing Memory...");
-				SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-						performGC();
-						updateMemStatus();
-						gcBtn.setText("Free Unusued Memory");
-						gcBtn.setEnabled(true);
-					}
-				});
-			}
+		gcBtn.addActionListener(evt -> {
+			gcBtn.setEnabled(false);
+			gcBtn.setText("Freeing Memory...");
+			SwingUtilities.invokeLater(() -> {
+				performGC();
+				updateMemStatus();
+				gcBtn.setText("Free Unusued Memory");
+				gcBtn.setEnabled(true);
+			});
 		});
 		gcBtn.setVisible(false);
 		gcBtn.setToolTipText("<html>Try to free unused memory.<br><br><i>Warning:</i> freeing memory may freeze Cytoscape for several seconds.</html>");
@@ -195,11 +201,9 @@ class CyStatusBar extends JPanel {
 
 		memStatusBtn = new JToggleButton();
 		setFontSize(memStatusBtn, 9);
-		memStatusBtn.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				memAmountLabel.setVisible(memStatusBtn.isSelected());
-				gcBtn.setVisible(memStatusBtn.isSelected());
-			}
+		memStatusBtn.addActionListener(evt -> {
+			memAmountLabel.setVisible(memStatusBtn.isSelected());
+			gcBtn.setVisible(memStatusBtn.isSelected());
 		});
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
 
@@ -233,11 +237,7 @@ class CyStatusBar extends JPanel {
 
 		app.getStatusToolBar().add(statusBarPanel);
 
-		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				updateMemStatus();
-			}
-		});
+		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, evt -> updateMemStatus());
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 	}
@@ -253,8 +253,7 @@ class CyStatusBar extends JPanel {
 		memAmountLabel.setText(String.format("%.1f%% used of %s", memUsed * 100.0f, memTotalFmt));
 	}
 
-	public void setMessage(final String level, final String message)
-	{
+	public void setMessage(final String level, final String message) {
 		Icon icon = defaultIcon;
 		if (level != null && levelToIconMap.containsKey(level))
 			icon = levelToIconMap.get(level);

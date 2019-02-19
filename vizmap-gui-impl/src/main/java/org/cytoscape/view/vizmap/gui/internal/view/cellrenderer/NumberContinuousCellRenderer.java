@@ -1,12 +1,25 @@
 package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
 
+import java.awt.Component;
+
+import javax.swing.ImageIcon;
+import javax.swing.JTable;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,46 +37,30 @@ package org.cytoscape.view.vizmap.gui.internal.view.cellrenderer;
  * #L%
  */
 
-import java.awt.Component;
-
-import javax.swing.ImageIcon;
-import javax.swing.JTable;
-
-import org.cytoscape.view.vizmap.gui.editor.ContinuousMappingEditor;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.l2fprod.common.swing.renderer.DefaultCellRenderer;
-
 public class NumberContinuousCellRenderer extends DefaultCellRenderer {
 
 	private static final long serialVersionUID = -6734053848878359286L;
-	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final ContinuousMappingEditor<?, ?> editor;
 
-
 	public NumberContinuousCellRenderer(final ContinuousMappingEditor<?, ?> editor) {
-		if(editor == null)
+		if (editor == null)
 			throw new NullPointerException("Editor object is null.");
-		
+
 		this.editor = editor;
 	}
-	
-	
-	@Override public Component getTableCellRendererComponent(JTable table, Object value,
-			boolean isSelected, boolean hasFocus, int row, int column) {
-		
-		if(value == null || value instanceof ContinuousMapping == false) {
+
+	@Override
+	public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
+			int row, int column) {
+		if (value == null || value instanceof ContinuousMapping == false) {
 			this.setText("Unkonown Mapping");
 			return this;
 		}
-		
+
 		logger.debug("Number cell renderer called: " + value.toString());
-		
+
 		if (isSelected) {
 			setBackground(table.getSelectionBackground());
 			setForeground(table.getSelectionForeground());
@@ -71,10 +68,10 @@ public class NumberContinuousCellRenderer extends DefaultCellRenderer {
 			setBackground(table.getBackground());
 			setForeground(table.getForeground());
 		}
-		
+
 		final int height = table.getRowHeight(row);
 		final int width = table.getColumnModel().getColumn(column).getWidth();
-		final ImageIcon icon = editor.drawIcon(width, height-2, false);
+		final ImageIcon icon = editor.drawIcon(width, height - 2, false);
 		this.setIcon(icon);
 
 		return this;

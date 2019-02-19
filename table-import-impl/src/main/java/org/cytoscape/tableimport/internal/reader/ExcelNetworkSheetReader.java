@@ -1,12 +1,28 @@
 package org.cytoscape.tableimport.internal.reader;
 
+import java.io.IOException;
+import java.util.Map;
+
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +40,6 @@ package org.cytoscape.tableimport.internal.reader;
  * #L%
  */
 
-import java.io.IOException;
-import java.util.Map;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Reader for Network file in Excel (.xls) format.<br>
  *
@@ -55,7 +56,7 @@ public class ExcelNetworkSheetReader extends NetworkTableReader {
 	private final Sheet sheet;
 	private final DataFormatter formatter;
 	private final FormulaEvaluator evaluator;
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/*
 	 * Reader will read entries from this line.

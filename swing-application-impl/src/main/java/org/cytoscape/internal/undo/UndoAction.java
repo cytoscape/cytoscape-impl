@@ -9,6 +9,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 import javax.swing.undo.CannotUndoException;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.swing.undo.SwingUndoSupport;
@@ -21,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public class UndoAction extends AbstractCyAction {
 
-	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final CyServiceRegistrar serviceRegistrar;
 

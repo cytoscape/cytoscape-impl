@@ -1,30 +1,5 @@
 package org.cytoscape.model.internal;
 
-/*
- * #%L
- * Cytoscape Model Impl (model-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -36,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.equations.Equation;
 import org.cytoscape.equations.Interpreter;
 import org.cytoscape.event.CyEventHelper;
@@ -61,10 +37,33 @@ import org.cytoscape.model.internal.column.ColumnDataFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Model Impl (model-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public final class CyTableImpl implements CyTable, TableAddedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private Set<String> currentlyActiveAttributes;
 	private Map<String, ColumnData> attributes; // Maps column names to (key,value) pairs, where "key" is the primary key.
@@ -109,16 +108,18 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 	/**
 	 * Creates a new CyTableImpl object.
 	 */
-	public CyTableImpl(	final String title,
-						final String primaryKey,
-						Class<?> primaryKeyType,
-						final boolean pub,
-						final boolean isMutable,
-						SavePolicy savePolicy,
-						final CyEventHelper eventHelper,
-						ColumnDataFactory columnFactory,
-						final Interpreter interpreter,
-						final int defaultInitSize) {
+	public CyTableImpl(
+			final String title,
+			final String primaryKey,
+			Class<?> primaryKeyType,
+			final boolean pub,
+			final boolean isMutable,
+			SavePolicy savePolicy,
+			final CyEventHelper eventHelper,
+			ColumnDataFactory columnFactory,
+			final Interpreter interpreter,
+			final int defaultInitSize
+	) {
 		this.title = title;
 		this.primaryKey = primaryKey;
 		this.primaryKeyType = primaryKeyType;
@@ -162,7 +163,6 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		virtualColumnMap = new HashMap<>();
 	}
-
 
 	void clearDuplicateStringCache() {
 		
@@ -403,7 +403,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 		String normalizedName = normalizeColumnName(columnName);
 		Set<CyColumn> set = dependents.get(normalizedName);
 		if (set == null) {
-			set = new HashSet<CyColumn>();
+			set = new HashSet<>();
 			dependents.put(normalizedName, set);
 		}
 		set.add(joinedColumn);
@@ -1214,7 +1214,7 @@ public final class CyTableImpl implements CyTable, TableAddedListener {
 
 		@Override
 		public Map<String, Object> getAllValues() {
-			final Map<String, Object> nameToValueMap = new HashMap<String, Object>(types.size());
+			final Map<String, Object> nameToValueMap = new HashMap<>(types.size());
 			for (final CyColumn column : types.values()) {
 				final String columnName = column.getName();
 				final Class<?> type = column.getType();

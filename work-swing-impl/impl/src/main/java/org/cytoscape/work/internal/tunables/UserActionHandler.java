@@ -1,12 +1,27 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.JButton;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.swing.util.UserAction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +39,12 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
-
-import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import javax.swing.JButton;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.util.UserAction;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-
-
 /**
  * Handler for the type <i>Boolean</i> of <code>Tunable</code>
- * @author pasteur
  */
 public class UserActionHandler extends AbstractGUITunableHandler {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private JButton button;
 	
 	/**
@@ -119,5 +109,4 @@ public class UserActionHandler extends AbstractGUITunableHandler {
 	public String getState() {
 		return "";
 	}
-
 }

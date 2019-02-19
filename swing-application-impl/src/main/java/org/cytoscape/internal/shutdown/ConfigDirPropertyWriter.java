@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.property.CyProperty;
@@ -23,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -46,7 +47,7 @@ public class ConfigDirPropertyWriter implements CyShutdownListener {
 	private final Map<CyProperty<?>, Map<?, ?>> configDirProperties;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	public ConfigDirPropertyWriter(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;

@@ -37,6 +37,7 @@
 //import javax.swing.JDialog;
 //import javax.swing.JPanel;
 //
+//import org.cytoscape.application.CyUserLog;
 //import org.cytoscape.application.swing.AbstractCyAction;
 //import org.cytoscape.application.swing.CySwingApplication;
 //import org.cytoscape.io.read.InputStreamTaskFactory;
@@ -51,7 +52,7 @@
 //	
 //	private static final long serialVersionUID = 3000065764000826333L;
 //
-//	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+//	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 //
 //	private ImportTablePanel ontologyPanel;
 //

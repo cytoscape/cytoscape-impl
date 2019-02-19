@@ -1,12 +1,28 @@
 package org.cytoscape.model.internal;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SUIDFactory;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.model.VirtualColumnInfo;
+import org.cytoscape.model.events.RowsDeletedEvent;
+
+import com.google.common.collect.MapMaker;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,38 +40,16 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.model.VirtualColumnInfo;
-import org.cytoscape.model.events.RowsDeletedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.MapMaker;
-
-
 /**
  * An abstract table facade class. 
  */
 public abstract class AbstractTableFacade implements CyTable {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-	
 	private final CyTable actual;
 	private final CyEventHelper cyEventHelper;
 	private final Long suid;
-	private final Map<CyRow,CyRow> facadeRows;
-	private final Map<CyColumn,CyColumn> facadeColumns;
+	private final Map<CyRow, CyRow> facadeRows;
+	private final Map<CyColumn, CyColumn> facadeColumns;
 	private boolean isPublic = true;
 	
 	private final Object lock = new Object();
@@ -111,7 +105,8 @@ public abstract class AbstractTableFacade implements CyTable {
 	@Override
 	public CyColumn getColumn(final String columnName) {
 		final CyColumn actualColumn = actual.getColumn(columnName);
-		if ( actualColumn == null )
+		
+		if (actualColumn == null)
 			return null;
 		
 		return getFacadeColumn(actualColumn);

@@ -1,12 +1,23 @@
 package org.cytoscape.model.internal;
 
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.SavePolicy;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +35,9 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.SavePolicy;
-import org.cytoscape.service.util.CyServiceRegistrar;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class CyNetworkFactoryImpl implements CyNetworkFactory {
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final CyEventHelper help;
 	private final CyTableManagerImpl mgr;
@@ -51,11 +50,13 @@ public class CyNetworkFactoryImpl implements CyNetworkFactory {
 	 *
 	 * @param help An instance of CyEventHelper. 
 	 */
-	public CyNetworkFactoryImpl(final CyEventHelper help,
-								final CyTableManagerImpl mgr,
-								final CyNetworkTableManager networkTableMgr,
-								final CyTableFactory tableFactory,
-								final CyServiceRegistrar serviceRegistrar) {
+	public CyNetworkFactoryImpl(
+			final CyEventHelper help,
+			final CyTableManagerImpl mgr,
+			final CyNetworkTableManager networkTableMgr,
+			final CyTableFactory tableFactory,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		if (help == null)
 			throw new NullPointerException("CyEventHelper is null.");
 
