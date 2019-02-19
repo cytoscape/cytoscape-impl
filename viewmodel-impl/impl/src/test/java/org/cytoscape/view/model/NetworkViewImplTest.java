@@ -100,7 +100,7 @@ public class NetworkViewImplTest {
 		assertEquals(4, snapshot.getNodeViews().size());
 		assertEquals(4, snapshot.getEdgeViews().size());
 		assertNull(snapshot.getNodeView(n5));
-		for(ReadableView<CyNode> node : snapshot.getNodeViews())
+		for(View<CyNode> node : snapshot.getNodeViews())
 			assertEquals(Color.RED, node.getVisualProperty(NODE_PAINT));
 	}
 	
@@ -260,15 +260,15 @@ public class NetworkViewImplTest {
 		
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
-			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
-			ReadableView<CyNode> nv3 = snapshot.getNodeView(n3);
-			ReadableView<CyNode> nv4 = snapshot.getNodeView(n4);
-			ReadableView<CyEdge> ev1 = snapshot.getEdgeView(e1);
-			ReadableView<CyEdge> ev2 = snapshot.getEdgeView(e2);
-			ReadableView<CyEdge> ev3 = snapshot.getEdgeView(e3);
-			ReadableView<CyEdge> ev4 = snapshot.getEdgeView(e4);
-			ReadableView<CyEdge> ev5 = snapshot.getEdgeView(e5);
+			View<CyNode> nv1 = snapshot.getNodeView(n1);
+			View<CyNode> nv2 = snapshot.getNodeView(n2);
+			View<CyNode> nv3 = snapshot.getNodeView(n3);
+			View<CyNode> nv4 = snapshot.getNodeView(n4);
+			View<CyEdge> ev1 = snapshot.getEdgeView(e1);
+			View<CyEdge> ev2 = snapshot.getEdgeView(e2);
+			View<CyEdge> ev3 = snapshot.getEdgeView(e3);
+			View<CyEdge> ev4 = snapshot.getEdgeView(e4);
+			View<CyEdge> ev5 = snapshot.getEdgeView(e5);
 			
 			SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(ev1);
 			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceViewSUID());
@@ -309,14 +309,14 @@ public class NetworkViewImplTest {
 		netView.removeEdge(e5); // remove an edge
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
-			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
-			ReadableView<CyNode> nv3 = snapshot.getNodeView(n3);
-			ReadableView<CyNode> nv4 = snapshot.getNodeView(n4);
-			ReadableView<CyEdge> ev1 = snapshot.getEdgeView(e1);
-			ReadableView<CyEdge> ev2 = snapshot.getEdgeView(e2);
-			ReadableView<CyEdge> ev3 = snapshot.getEdgeView(e3);
-			ReadableView<CyEdge> ev4 = snapshot.getEdgeView(e4);
+			View<CyNode> nv1 = snapshot.getNodeView(n1);
+			View<CyNode> nv2 = snapshot.getNodeView(n2);
+			View<CyNode> nv3 = snapshot.getNodeView(n3);
+			View<CyNode> nv4 = snapshot.getNodeView(n4);
+			View<CyEdge> ev1 = snapshot.getEdgeView(e1);
+			View<CyEdge> ev2 = snapshot.getEdgeView(e2);
+			View<CyEdge> ev3 = snapshot.getEdgeView(e3);
+			View<CyEdge> ev4 = snapshot.getEdgeView(e4);
 			
 			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(2, adjacentEdges.size());
@@ -339,11 +339,11 @@ public class NetworkViewImplTest {
 		netView.removeNode(n3); // remove a node
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
-			ReadableView<CyNode> nv1 = snapshot.getNodeView(n1);
-			ReadableView<CyNode> nv2 = snapshot.getNodeView(n2);
-			ReadableView<CyNode> nv4 = snapshot.getNodeView(n4);
-			ReadableView<CyEdge> ev1 = snapshot.getEdgeView(e1);
-			ReadableView<CyEdge> ev4 = snapshot.getEdgeView(e4);
+			View<CyNode> nv1 = snapshot.getNodeView(n1);
+			View<CyNode> nv2 = snapshot.getNodeView(n2);
+			View<CyNode> nv4 = snapshot.getNodeView(n4);
+			View<CyEdge> ev1 = snapshot.getEdgeView(e1);
+			View<CyEdge> ev4 = snapshot.getEdgeView(e4);
 			
 			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(2, adjacentEdges.size());

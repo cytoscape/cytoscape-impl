@@ -8,7 +8,7 @@ import java.awt.Stroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.ReadableView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.Position;
@@ -76,7 +76,7 @@ public interface EdgeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	public Color getColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyEdge> edgeView) ;
+	public Color getColorLowDetail(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) ;
 
 	/**
 	 * Returns a GraphGraphics.ARROW_* constant; this defines the arrow
@@ -84,7 +84,7 @@ public interface EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public ArrowShape getSourceArrowShape(ReadableView<CyEdge> edgeView);
+	public ArrowShape getSourceArrowShape(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the size of the arrow at edge endpoint touching source node.
@@ -93,7 +93,7 @@ public interface EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float getSourceArrowSize(ReadableView<CyEdge> edgeView);
+	public float getSourceArrowSize(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the paint of the arrow at edge endpoint touching source node.
@@ -101,7 +101,7 @@ public interface EdgeDetails {
 	 * sourceArrow(edge) returns GraphGraphics.ARROW_NONE 
 	 * it is an error to return null.
 	 */
-	public Paint getSourceArrowPaint(ReadableView<CyEdge> edgeView);
+	public Paint getSourceArrowPaint(View<CyEdge> edgeView);
 
 	/**
 	 * Returns a GraphGraphics.ARROW_* constant; this defines the arrow
@@ -109,14 +109,14 @@ public interface EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public ArrowShape getTargetArrowShape(ReadableView<CyEdge> edgeView);
+	public ArrowShape getTargetArrowShape(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the size of the arrow at edge endpoint touching target node.
 	 * Take note of certain constraints specified
 	 * in GraphGraphics.drawEdgeFull().
 	 */
-	public float getTargetArrowSize(ReadableView<CyEdge> edgeView);
+	public float getTargetArrowSize(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the paint of the arrow at edge endpoint touching target node.
@@ -124,7 +124,7 @@ public interface EdgeDetails {
 	 * targetArrow(edge) returns GraphGraphics.ARROW_NONE,
 	 * it is an error to return null.
 	 */
-	public Paint getTargetArrowPaint(ReadableView<CyEdge> edgeView);
+	public Paint getTargetArrowPaint(View<CyEdge> edgeView);
 
 	/**
 	 * Returns edge anchors to use when rendering this edge.
@@ -139,14 +139,14 @@ public interface EdgeDetails {
 	 * the source node shape or if the last anchor lies inside the target
 	 * node shape, the edge is not rendered.
 	 */
-	public EdgeAnchors getAnchors(ReadableView<CyEdge> edgeView);
+	public EdgeAnchors getAnchors(View<CyEdge> edgeView);
 
 	/**
 	 * For edges with anchors, the anchors can be rendered as squares.  To render
 	 * an anchor, return a positive value in this method.  If zero is returned
 	 * no edge anchor is rendered.  By default this method returns zero.
 	 */
-	default public float getAnchorSize(ReadableView<CyEdge> edgeView, int anchorInx) {
+	default public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
 		return 0.0f;
 	}
 
@@ -156,7 +156,7 @@ public interface EdgeDetails {
 	 * otherwise, a non-null value must be returned.  By default this method
 	 * returns null.
 	 */
-	default public Paint getAnchorPaint(ReadableView<CyEdge> edgeView, int anchorInx) {
+	default public Paint getAnchorPaint(View<CyEdge> edgeView, int anchorInx) {
 		return null;
 	}
 
@@ -166,21 +166,21 @@ public interface EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	public float getWidth(ReadableView<CyEdge> edgeView);
+	public float getWidth(View<CyEdge> edgeView);
 
 	
-	public Stroke getStroke(ReadableView<CyEdge> edgeView);
+	public Stroke getStroke(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the paint of the edge segment.
 	 * It is an error to return null in this method.
 	 */
-	public Paint getPaint(ReadableView<CyEdge> edgeView);
+	public Paint getPaint(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the number of labels that this edge has.
 	 */
-	public int getLabelCount(ReadableView<CyEdge> edgeView);
+	public int getLabelCount(View<CyEdge> edgeView);
 
 	/**
 	 * Returns a label's text.
@@ -190,7 +190,7 @@ public interface EdgeDetails {
 	 * To specify multiple lines of text in an edge label, simply insert the
 	 * '\n' character between lines of text.
 	 */
-	public String getLabelText(ReadableView<CyEdge> edgeView);
+	public String getLabelText(View<CyEdge> edgeView);
 
 	/**
 	 * Returns the font to use when rendering this label.  
@@ -198,7 +198,7 @@ public interface EdgeDetails {
 	 * engine if labelCount(edge) returns a value greater than zero.  It is an
 	 * error to return null if this method is called by the rendering engine.
 	 */
-	public Font getLabelFont(ReadableView<CyEdge> edgeView);
+	public Font getLabelFont(View<CyEdge> edgeView);
 
 	/**
 	 * Returns an additional scaling factor that is to be applied to the font
@@ -208,7 +208,7 @@ public interface EdgeDetails {
 	 * method always returns 1.0.  This method is only called by the rendering
 	 * engine if labelCount(edge) returns a value greater than zero.
 	 */
-	default public double getLabelScaleFactor(ReadableView<CyEdge> edgeView) {
+	default public double getLabelScaleFactor(View<CyEdge> edgeView) {
 		return 1.0d;
 	}
 
@@ -218,7 +218,7 @@ public interface EdgeDetails {
 	 * labelCount(edge) returns a value greater than zero.  It is an error to
 	 * return null if this method is called by the rendering engine.
 	 */
-	public Paint getLabelPaint(ReadableView<CyEdge> edgeView);
+	public Paint getLabelPaint(View<CyEdge> edgeView);
 
 	/**
 	 * By returning one of the NodeDetails.ANCHOR_* constants, specifies where
@@ -235,7 +235,7 @@ public interface EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default public Position getLabelTextAnchor(ReadableView<CyEdge> edgeView) {
+	default public Position getLabelTextAnchor(View<CyEdge> edgeView) {
 		return Position.CENTER;
 	}
 
@@ -253,7 +253,7 @@ public interface EdgeDetails {
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default public Position getLabelEdgeAnchor(ReadableView<CyEdge> edgeView) {
+	default public Position getLabelEdgeAnchor(View<CyEdge> edgeView) {
 		return Position.CENTER;
 	}
 
@@ -271,7 +271,7 @@ public interface EdgeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	default public float getLabelOffsetVectorX(ReadableView<CyEdge> edgeView) {
+	default public float getLabelOffsetVectorX(View<CyEdge> edgeView) {
 		return 0.0f;
 	}
 
@@ -289,7 +289,7 @@ public interface EdgeDetails {
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelEdgeAnchor(int, int)
 	 */
-	default public float getLabelOffsetVectorY(ReadableView<CyEdge> edgeView) {
+	default public float getLabelOffsetVectorY(View<CyEdge> edgeView) {
 		return 0.0f;
 	}
 
@@ -305,7 +305,7 @@ public interface EdgeDetails {
 	 * multiple lines.
 	 * @see NodeDetails#LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	default public Justification getLabelJustify(ReadableView<CyEdge> edgeView) {
+	default public Justification getLabelJustify(View<CyEdge> edgeView) {
 		return Justification.JUSTIFY_CENTER;
 	}
 
@@ -315,11 +315,11 @@ public interface EdgeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawEdgeFull().
 	 */
-	default public double getLabelWidth(ReadableView<CyEdge> edgeView) {
+	default public double getLabelWidth(View<CyEdge> edgeView) {
 		return 100.0;
 	}
 
-	default public boolean isVisible(ReadableView<CyEdge> edgeView) {
+	default public boolean isVisible(View<CyEdge> edgeView) {
 		return true;
 	}
 

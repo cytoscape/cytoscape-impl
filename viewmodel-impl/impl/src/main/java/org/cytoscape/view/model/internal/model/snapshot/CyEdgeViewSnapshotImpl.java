@@ -2,8 +2,8 @@ package org.cytoscape.view.model.internal.model.snapshot;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 
 public class CyEdgeViewSnapshotImpl extends CyViewSnapshotImpl<CyEdge> implements SnapshotEdgeInfo {
@@ -37,12 +37,12 @@ public class CyEdgeViewSnapshotImpl extends CyViewSnapshotImpl<CyEdge> implement
 	}
 
 	@Override
-	public ReadableView<CyNode> getSourceNodeView() {
+	public View<CyNode> getSourceNodeView() {
 		return getNetworkSnapshot().getNodeView(getSourceViewSUID());
 	}
 
 	@Override
-	public ReadableView<CyNode> getTargetNodeView() {
+	public View<CyNode> getTargetNodeView() {
 		return getNetworkSnapshot().getNodeView(getTargetViewSUID());
 	}
 	

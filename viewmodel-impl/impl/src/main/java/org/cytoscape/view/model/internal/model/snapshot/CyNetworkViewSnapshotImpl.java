@@ -10,9 +10,9 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.SnapshotNodeInfo;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
@@ -147,32 +147,32 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	// We cannot return the mutable version of the node and edge views, so we must create snapshot versions. 
 	
 	@Override
-	public ReadableView<CyNode> getNodeView(CyNode node) {
+	public View<CyNode> getNodeView(CyNode node) {
 		CyNodeViewImpl view = dataSuidToNode.getOrElse(node.getSUID(), null);
 		return view == null ? null : getSnapshotNodeView(view);
 	}
 
 	@Override
-	public ReadableView<CyEdge> getEdgeView(CyEdge edge) {
+	public View<CyEdge> getEdgeView(CyEdge edge) {
 		CyEdgeViewImpl view = dataSuidToEdge.getOrElse(edge.getSUID(), null);
 		return view == null ? null : getSnapshotEdgeView(view);
 	}
 	
 	@Override
-	public ReadableView<CyNode> getNodeView(long suid) {
+	public View<CyNode> getNodeView(long suid) {
 		CyNodeViewImpl view = viewSuidToNode.getOrElse(suid, null);
 		return view == null ? null : getSnapshotNodeView(view);
 	}
 	
 	@Override
-	public ReadableView<CyEdge> getEdgeView(long suid) {
+	public View<CyEdge> getEdgeView(long suid) {
 		CyEdgeViewImpl view = viewSuidToEdge.getOrElse(suid, null);
 		return view == null ? null : getSnapshotEdgeView(view);
 	}
 
 	@Override
-	public Collection<ReadableView<CyNode>> getNodeViews() {
-		List<ReadableView<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
+	public Collection<View<CyNode>> getNodeViews() {
+		List<View<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
 		for(CyNodeViewImpl view : viewSuidToNode.values()) {
 			nodeViews.add(getSnapshotNodeView(view));
 		}
@@ -180,8 +180,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public Collection<ReadableView<CyEdge>> getEdgeViews() {
-		List<ReadableView<CyEdge>> edgeViews = new ArrayList<>(viewSuidToEdge.size());
+	public Collection<View<CyEdge>> getEdgeViews() {
+		List<View<CyEdge>> edgeViews = new ArrayList<>(viewSuidToEdge.size());
 		for(CyEdgeViewImpl view : viewSuidToEdge.values()) {
 			edgeViews.add(getSnapshotEdgeView(view));
 		}
@@ -189,8 +189,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public Collection<ReadableView<? extends CyIdentifiable>> getAllViews() {
-		ArrayList<ReadableView<? extends CyIdentifiable>> list = new ArrayList<>();
+	public Collection<View<? extends CyIdentifiable>> getAllViews() {
+		ArrayList<View<? extends CyIdentifiable>> list = new ArrayList<>();
 		list.addAll(getNodeViews());
 		list.addAll(getEdgeViews());
 		list.add(this);
@@ -214,32 +214,42 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 
 	@Override
-	public Iterable<ReadableView<CyEdge>> getAdjacentEdgeIterable(ReadableView<CyNode> nodeView) {
+	public Iterable<View<CyEdge>> getAdjacentEdgeIterable(View<CyNode> nodeView) {
 		return getAdjacentEdgeIterable(nodeView.getSUID());
 	}
 	
 	@Override
-	public Iterable<ReadableView<CyEdge>> getAdjacentEdgeIterable(long nodeSuid) {
+	public Iterable<View<CyEdge>> getAdjacentEdgeIterable(long nodeSuid) {
 		return adjacentEdgeMap.getOrElse(nodeSuid,HashSet.empty()).map(this::getSnapshotEdgeView);
 	}
 	
 	@Override
-	public SnapshotEdgeInfo getEdgeInfo(ReadableView<CyEdge> edge) {
+	public SnapshotEdgeInfo getEdgeInfo(View<CyEdge> edge) {
 		return (SnapshotEdgeInfo) edge;
 	}
 	
 	@Override
-	public SnapshotNodeInfo getNodeInfo(ReadableView<CyNode> node) {
+	public SnapshotNodeInfo getNodeInfo(View<CyNode> node) {
 		return (SnapshotNodeInfo) node;
 	}
 	
 	@Override
-	public Collection<ReadableView<CyNode>> getSelectedNodes() {
-		java.util.HashSet<ReadableView<CyNode>> nodes = new java.util.HashSet<>();
+	public Collection<View<CyNode>> getSelectedNodes() {
+		java.util.HashSet<View<CyNode>> nodes = new java.util.HashSet<>();
 		for(Long suid : selectedNodes) {
 			nodes.add(getNodeView(suid));
 		}
 		return nodes;
+	}
+
+	
+	@Override
+	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
+
+	@Override
+	public void dispose() {
 	}
 
 }

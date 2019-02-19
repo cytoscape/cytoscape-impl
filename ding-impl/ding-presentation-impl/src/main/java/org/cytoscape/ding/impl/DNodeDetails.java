@@ -46,7 +46,7 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.ReadableView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -86,7 +86,7 @@ public class DNodeDetails implements NodeDetails {
 	}
 	
 	
-	private static boolean isSelected(ReadableView<CyNode> nodeView) {
+	private static boolean isSelected(View<CyNode> nodeView) {
 		return Boolean.TRUE.equals(nodeView.getVisualProperty(BasicVisualLexicon.NODE_SELECTED));
 	}
 	
@@ -103,14 +103,14 @@ public class DNodeDetails implements NodeDetails {
 	}
 	
 	@Override
-	public Color getColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+	public Color getColorLowDetail(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
 		if (isSelected(nodeView))
 			return getSelectedColorLowDetail(netView, nodeView);
 		else
 			return getUnselectedColorLowDetail(netView, nodeView);
 	}
 	
-	private Color getUnselectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+	private Color getUnselectedColorLowDetail(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
 		Paint paint = nodeView.getVisualProperty(NODE_FILL_COLOR);
 		if(paint instanceof Color)
 			return (Color) paint;
@@ -122,7 +122,7 @@ public class DNodeDetails implements NodeDetails {
 		return (Color) NODE_FILL_COLOR.getDefault();
 	}
 
-	private Color getSelectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+	private Color getSelectedColorLowDetail(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
 		Paint paint = nodeView.getVisualProperty(NODE_SELECTED_PAINT);
 		if(paint instanceof Color)
 			return (Color) paint;
@@ -135,74 +135,74 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	public Paint getFillPaint(ReadableView<CyNode> nodeView) {
+	public Paint getFillPaint(View<CyNode> nodeView) {
 		if (isSelected(nodeView))
 			return getSelectedPaint(nodeView);
 		else
 			return getUnselectedPaint(nodeView);
 	}
 
-	private Paint getSelectedPaint(ReadableView<CyNode> nodeView) {
+	private Paint getSelectedPaint(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_SELECTED_PAINT);
 	}
 
-	public Paint getUnselectedPaint(ReadableView<CyNode> nodeView) {
+	public Paint getUnselectedPaint(View<CyNode> nodeView) {
 		Paint paint = nodeView.getVisualProperty(NODE_FILL_COLOR);
 		Integer trans = nodeView.getVisualProperty(NODE_TRANSPARENCY);
 		return getTransparentColor(paint, trans);
 	}
 
 	@Override
-	public byte getShape(ReadableView<CyNode> nodeView) {
+	public byte getShape(View<CyNode> nodeView) {
 		return DNodeShape.getDShape(nodeView.getVisualProperty(NODE_SHAPE)).getNativeShape();
 	}
 
 	@Override
-	public double getWidth(ReadableView<CyNode> nodeView) {
+	public double getWidth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_WIDTH);
 	}
 	
 	@Override
-	public double getHeight(ReadableView<CyNode> nodeView) {
+	public double getHeight(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_HEIGHT);
 	}
 	
 	@Override
-	public float getBorderWidth(ReadableView<CyNode> nodeView) {
+	public float getBorderWidth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_BORDER_WIDTH).floatValue();
 	}
 
 	@Override
-	public Stroke getBorderStroke(ReadableView<CyNode> nodeView) {
+	public Stroke getBorderStroke(View<CyNode> nodeView) {
 		float borderWidth = getBorderWidth(nodeView);
 		LineType lineType = nodeView.getVisualProperty(NODE_BORDER_LINE_TYPE);
 		return DLineType.getDLineType(lineType).getStroke(borderWidth);
 	}
 	
 	@Override
-	public Paint getBorderPaint(ReadableView<CyNode> nodeView) {
+	public Paint getBorderPaint(View<CyNode> nodeView) {
 		Paint paint = nodeView.getVisualProperty(NODE_BORDER_PAINT);
 		Integer trans = nodeView.getVisualProperty(NODE_BORDER_TRANSPARENCY);
 		return getTransparentColor(paint, trans);
 	}
 
 	@Override
-	public int getLabelCount(ReadableView<CyNode> nodeView) {
+	public int getLabelCount(View<CyNode> nodeView) {
 		String label = getLabelText(nodeView);
 		return (label == null || label.isEmpty()) ? 0 : 1;
 	}
 
 	@Override
-	public String getLabelText(ReadableView<CyNode> nodeView) {
+	public String getLabelText(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_LABEL);
 	}
 
-	public String getTooltipText(ReadableView<CyNode> nodeView) {
+	public String getTooltipText(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_TOOLTIP);
 	}
 
 	@Override
-	public Font getLabelFont(ReadableView<CyNode> nodeView) {
+	public Font getLabelFont(View<CyNode> nodeView) {
 		Number size = nodeView.getVisualProperty(NODE_LABEL_FONT_SIZE);
 		Font   font = nodeView.getVisualProperty(NODE_LABEL_FONT_FACE);
 		if (size != null && font != null)
@@ -211,14 +211,14 @@ public class DNodeDetails implements NodeDetails {
 	}
 
 	@Override
-	public Paint getLabelPaint(ReadableView<CyNode> nodeView) {
+	public Paint getLabelPaint(View<CyNode> nodeView) {
 		Paint paint = nodeView.getVisualProperty(NODE_LABEL_COLOR);
 		Integer trans = nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 		return getTransparentColor(paint, trans);
 	}
 
 
-	private CustomGraphicsInfo getCustomGraphicsInfo(VisualProperty<CyCustomGraphics> cgVP, ReadableView<CyNode> node) {
+	private CustomGraphicsInfo getCustomGraphicsInfo(VisualProperty<CyCustomGraphics> cgVP, View<CyNode> node) {
 		CyCustomGraphics<CustomGraphicLayer> cg = (CyCustomGraphics<CustomGraphicLayer>) node.getVisualProperty(cgVP);
 		if(cg == null)
 			return null;
@@ -238,7 +238,7 @@ public class DNodeDetails implements NodeDetails {
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(ReadableView<CyNode> nodeView) {
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> nodeView) {
 		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
 		
 		for (VisualProperty<CyCustomGraphics> cgVP : lexicon.getCustomGraphicsVisualProperties()) {
@@ -250,65 +250,65 @@ public class DNodeDetails implements NodeDetails {
 	}
 	
 	@Override
-	public Position getLabelTextAnchor(ReadableView<CyNode> nodeView) {
+	public Position getLabelTextAnchor(View<CyNode> nodeView) {
 		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
 		return pos == null ? null : pos.getAnchor();
 	}
 
 	@Override
-	public Position getLabelNodeAnchor(ReadableView<CyNode> nodeView) {
+	public Position getLabelNodeAnchor(View<CyNode> nodeView) {
 		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
 		return pos == null ? null : pos.getTargetAnchor();
 	}
 
 	@Override
-	public float getLabelOffsetVectorX(ReadableView<CyNode> nodeView) {
+	public float getLabelOffsetVectorX(View<CyNode> nodeView) {
 		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
 		return pos == null ? 0.0f : (float) pos.getOffsetX();
 	}
 
 	@Override
-	public float getLabelOffsetVectorY(ReadableView<CyNode> nodeView) {
+	public float getLabelOffsetVectorY(View<CyNode> nodeView) {
 		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
 		return pos == null ? 0.0f : (float) pos.getOffsetY();
 	}
 
 	@Override
-	public Justification getLabelJustify(ReadableView<CyNode> nodeView) {
+	public Justification getLabelJustify(View<CyNode> nodeView) {
 		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
 		return pos == null ? null : pos.getJustify();
 	}
 	
 	@Override
-	public double getLabelWidth(ReadableView<CyNode> nodeView) {
+	public double getLabelWidth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_LABEL_WIDTH);
 	}
 	
 	////// Transparencies /////////////
 	
-	public Integer getTransparency(ReadableView<CyNode> nodeView) {
+	public Integer getTransparency(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_TRANSPARENCY);
 	}
 
-	public Integer getLabelTransparency(ReadableView<CyNode> nodeView) {
+	public Integer getLabelTransparency(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 	}
 
-	public Integer getBorderTransparency(ReadableView<CyNode> nodeView) {
+	public Integer getBorderTransparency(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_BORDER_TRANSPARENCY);
 	}
 
-	public Boolean getNestedNetworkImgVisible(ReadableView<CyNode> nodeView) {
+	public Boolean getNestedNetworkImgVisible(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
 	}
 
-	public Double getNodeDepth(ReadableView<CyNode> nodeView) {
+	public Double getNodeDepth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_DEPTH);
 	}
 	
 	
 	
-//	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+//	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
 //		++nestedNetworkPaintingDepth;
 //		try {
 //			boolean nestedNetworkVisible = getNestedNetworkImgVisible(nodeView);
@@ -353,7 +353,7 @@ public class DNodeDetails implements NodeDetails {
 //		}
 //	}
 //
-//	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+//	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
 //		SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
 //		CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
 //		

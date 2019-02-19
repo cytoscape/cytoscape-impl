@@ -47,8 +47,8 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
@@ -261,9 +261,9 @@ public final class GraphRenderer {
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
 
-					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
+					Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
 
-					for ( ReadableView<CyEdge> e : touchingEdges ) {
+					for ( View<CyEdge> e : touchingEdges ) {
 						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
 						if (!edgeDetails.isVisible(e))
 							continue;
@@ -357,9 +357,9 @@ public final class GraphRenderer {
 					final float nodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
 					final float nodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
 
-					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
+					Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
 
-					for ( ReadableView<CyEdge> edge : touchingEdges ) {
+					for ( View<CyEdge> edge : touchingEdges ) {
 						if (!edgeDetails.isVisible(edge))
 							continue;
 						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
@@ -381,15 +381,15 @@ public final class GraphRenderer {
 			} else { // High detail.
 				while (nodeHits.size() > 0) {
 					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
-					final ReadableView<CyNode> node = netView.getNodeView(nodeSuid);
+					final View<CyNode> node = netView.getNodeView(nodeSuid);
 					final byte nodeShape = nodeDetails.getShape(node);
-					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
-					for (ReadableView<CyEdge> edge : touchingEdges) {
+					Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
+					for (View<CyEdge> edge : touchingEdges) {
 						if (!edgeDetails.isVisible(edge))
 							continue;
 						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
 						final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-						final ReadableView<CyNode> otherCyNode = netView.getNodeView(otherNode);
+						final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
@@ -656,7 +656,7 @@ public final class GraphRenderer {
 				final int nodeHitCount = nodeHits.size();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final ReadableView<CyNode> node = netView.getNodeView( nodeHits.nextExtents(floatBuff1) );
+					final View<CyNode> node = netView.getNodeView( nodeHits.nextExtents(floatBuff1) );
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
@@ -669,7 +669,7 @@ public final class GraphRenderer {
 				}
 				while (zHits.hasNext()) {
 					final long node = zHits.nextExtents(floatBuff1);
-					final ReadableView<CyNode> cyNode = netView.getNodeView(node);
+					final View<CyNode> cyNode = netView.getNodeView(node);
 
 					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
 							nodeDetails, lodBits, dependencies);
@@ -1057,7 +1057,7 @@ public final class GraphRenderer {
 	@SuppressWarnings("rawtypes")
 	private static final void renderNodeHigh(final CyNetworkViewSnapshot netView,
 											 final GraphGraphics grafx,
-											 final ReadableView<CyNode> cyNode,
+											 final View<CyNode> cyNode,
 											 final float[] floatBuff1,
 											 final double[] doubleBuff1,
 											 final double[] doubleBuff2,

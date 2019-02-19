@@ -2,12 +2,12 @@ package org.cytoscape.view.model.internal.model.snapshot;
 
 import java.util.Objects;
 
-import org.cytoscape.view.model.ReadableView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 
 import io.vavr.collection.Map;
 
-public abstract class CyViewSnapshotBase<M> implements ReadableView<M> {
+public abstract class CyViewSnapshotBase<M> implements View<M> {
 
 	private final Long suid;
 	
@@ -91,7 +91,34 @@ public abstract class CyViewSnapshotBase<M> implements ReadableView<M> {
 	}
 	
 	
+	
+	@Override
+	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
 
+	@Override
+	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
+
+	@Override
+	public void clearValueLock(VisualProperty<?> vp) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
+
+	@Override
+	public M getModel() {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
+
+	@Override
+	public void clearVisualProperties() {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
+
+	
+	
 	@Override
 	public int hashCode() {
 		return Objects.hash(suid);

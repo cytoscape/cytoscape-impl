@@ -36,7 +36,7 @@ import java.awt.Stroke;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.ReadableView;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
@@ -50,24 +50,24 @@ public final class DEdgeDetails implements EdgeDetails {
 	public static final int STRAIGHT_LINES = 2;
 	
 	
-	private static boolean isSelected(ReadableView<CyEdge> edgeView) {
+	private static boolean isSelected(View<CyEdge> edgeView) {
 		return Boolean.TRUE.equals(edgeView.getVisualProperty(BasicVisualLexicon.EDGE_SELECTED));
 	}
 
 	@Override
-	public boolean isVisible(ReadableView<CyEdge> edgeView) {
+	public boolean isVisible(View<CyEdge> edgeView) {
 		return Boolean.TRUE.equals(edgeView.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
 	}
 	
 	@Override
-	public Color getColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyEdge> edgeView) {
+	public Color getColorLowDetail(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
 		if (isSelected(edgeView))
 			return getSelectedColorLowDetail(netView, edgeView);
 		else
 			return getUnselectedColorLowDetail(netView, edgeView);
 	}
 
-	private Color getUnselectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyEdge> edgeView) {
+	private Color getUnselectedColorLowDetail(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT);
 		if(paint instanceof Color)
 			return (Color) paint;
@@ -79,7 +79,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		return (Color) EDGE_STROKE_UNSELECTED_PAINT.getDefault();
 	}
 
-	private Color getSelectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyEdge> edgeView) {
+	private Color getSelectedColorLowDetail(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_SELECTED_PAINT);
 		if(paint instanceof Color)
 			return (Color) paint;
@@ -92,46 +92,46 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 	
 	@Override
-	public ArrowShape getSourceArrowShape(ReadableView<CyEdge> edgeView) {
+	public ArrowShape getSourceArrowShape(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_SOURCE_ARROW_SHAPE);
 	}
 
 	@Override
-	public Paint getSourceArrowPaint(ReadableView<CyEdge> edgeView) {
+	public Paint getSourceArrowPaint(View<CyEdge> edgeView) {
 		if (isSelected(edgeView))
 			return getSelectedPaint(edgeView);
 		else
 			return getSourceArrowUnselectedPaint(edgeView);
 	}
 
-	private final Paint getSourceArrowUnselectedPaint(ReadableView<CyEdge> edgeView) {
+	private final Paint getSourceArrowUnselectedPaint(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_SOURCE_ARROW_UNSELECTED_PAINT);
 	}
 
 	@Override
-	public ArrowShape getTargetArrowShape(ReadableView<CyEdge> edgeView) {
+	public ArrowShape getTargetArrowShape(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_TARGET_ARROW_SHAPE);
 	}
 
 	@Override
-	public Paint getTargetArrowPaint(ReadableView<CyEdge> edgeView) {
+	public Paint getTargetArrowPaint(View<CyEdge> edgeView) {
 		if (isSelected(edgeView))
 			return getSelectedPaint(edgeView);
 		else
 			return getTargetArrowUnselectedPaint(edgeView);
 	}
 
-	private final Paint getTargetArrowUnselectedPaint(ReadableView<CyEdge> edgeView) {
+	private final Paint getTargetArrowUnselectedPaint(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT);
 	}
 	
 	@Override
-	public float getWidth(ReadableView<CyEdge> edgeView) {
+	public float getWidth(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_WIDTH).floatValue();
 	}
 
 	@Override
-	public Stroke getStroke(ReadableView<CyEdge> edgeView) {
+	public Stroke getStroke(View<CyEdge> edgeView) {
 		LineType lineType = edgeView.getVisualProperty(EDGE_LINE_TYPE);
 		float width = (float) getWidth(edgeView);
 		Stroke stroke = DLineType.getDLineType(lineType).getStroke(width);
@@ -142,7 +142,7 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 	
 	@Override
-	public Paint getPaint(ReadableView<CyEdge> edgeView) {
+	public Paint getPaint(View<CyEdge> edgeView) {
 		if (isSelected(edgeView))
 			return getSelectedPaint(edgeView);
 		else
@@ -150,7 +150,7 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 
-	private Paint getUnselectedPaint(ReadableView<CyEdge> edgeView) {
+	private Paint getUnselectedPaint(View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT);
 		if(paint == null)
 			paint = edgeView.getVisualProperty(EDGE_UNSELECTED_PAINT);
@@ -158,7 +158,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		return DNodeDetails.getTransparentColor(paint, trans);
 	}
 
-	private Paint getSelectedPaint(ReadableView<CyEdge> edgeView) {
+	private Paint getSelectedPaint(View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_SELECTED_PAINT);
 		if(paint == null)
 			paint = edgeView.getVisualProperty(EDGE_SELECTED_PAINT);
@@ -167,30 +167,30 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
-	public int getLabelCount(ReadableView<CyEdge> edgeView) {
+	public int getLabelCount(View<CyEdge> edgeView) {
 		String label = getLabelText(edgeView);
 		return (label == null || label.isEmpty()) ? 0 : 1;
 	}
 
 	@Override
-	public String getLabelText(ReadableView<CyEdge> edgeView) {
+	public String getLabelText(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL);
 	}
 
-	public String getTooltipText(ReadableView<CyEdge> edgeView) {
+	public String getTooltipText(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_TOOLTIP);
 	}
 
-	public Integer getTransparency(ReadableView<CyEdge> edgeView) {
+	public Integer getTransparency(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_TRANSPARENCY);
 	}
 
-	public Integer getLabelTransparency(ReadableView<CyEdge> edgeView) {
+	public Integer getLabelTransparency(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL_TRANSPARENCY);
 	}
 
 	@Override
-	public Font getLabelFont(ReadableView<CyEdge> edgeView) {
+	public Font getLabelFont(View<CyEdge> edgeView) {
 		Number size = edgeView.getVisualProperty(EDGE_LABEL_FONT_SIZE);
 		Font font = edgeView.getVisualProperty(EDGE_LABEL_FONT_FACE);
 		if (size != null && font != null)
@@ -199,30 +199,30 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	@Override
-	public Paint getLabelPaint(ReadableView<CyEdge> edgeView) {
+	public Paint getLabelPaint(View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_LABEL_COLOR);
 		Integer trans = edgeView.getVisualProperty(EDGE_LABEL_TRANSPARENCY);
 		return DNodeDetails.getTransparentColor(paint, trans);
 	}
 
 	@Override
-	public double getLabelWidth(ReadableView<CyEdge> edgeView) {
+	public double getLabelWidth(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_LABEL_WIDTH);
 	}
 
 	@Override
-	public float getSourceArrowSize(ReadableView<CyEdge> edgeView) {
+	public float getSourceArrowSize(View<CyEdge> edgeView) {
 		Double size = edgeView.getVisualProperty(EDGE_SOURCE_ARROW_SIZE);
 		return adjustArrowSize(edgeView, getSourceArrowShape(edgeView), size);
 	}
 	
 	@Override
-	public float getTargetArrowSize(ReadableView<CyEdge> edgeView) {
+	public float getTargetArrowSize(View<CyEdge> edgeView) {
 		Double size = edgeView.getVisualProperty(EDGE_TARGET_ARROW_SIZE);
 		return adjustArrowSize(edgeView, getSourceArrowShape(edgeView), size);
 	}
 	
-	private float adjustArrowSize(ReadableView<CyEdge> edgeView, ArrowShape arrowType, Number size) {
+	private float adjustArrowSize(View<CyEdge> edgeView, ArrowShape arrowType, Number size) {
 		// For the half arrows, we need to scale multiplicatively so that the arrow matches the line.
 		if (arrowType == ArrowShapeVisualProperty.HALF_TOP || arrowType == ArrowShapeVisualProperty.HALF_BOTTOM)
 			return (float) getWidth(edgeView) * size.floatValue();
@@ -230,17 +230,17 @@ public final class DEdgeDetails implements EdgeDetails {
 			return (float) getWidth(edgeView) + size.floatValue();
 	}
 
-	public Integer getLineCurved(ReadableView<CyEdge> edgeView) {
+	public Integer getLineCurved(View<CyEdge> edgeView) {
 		Boolean curved = edgeView.getVisualProperty(EDGE_CURVED);
 		return Boolean.TRUE.equals(curved) ? CURVED_LINES : STRAIGHT_LINES;
 	}
 
 
-	public Bend getBend(ReadableView<CyEdge> edgeView) {
+	public Bend getBend(View<CyEdge> edgeView) {
 		return getBend(edgeView, false);
 	}
 
-	public Bend getBend(ReadableView<CyEdge> edgeView, boolean forceCreate) {
+	public Bend getBend(View<CyEdge> edgeView, boolean forceCreate) {
 		Bend bend = edgeView.getVisualProperty(EDGE_BEND);
 		if (bend == null && forceCreate) {
 			bend = new BendImpl();
@@ -277,7 +277,7 @@ public final class DEdgeDetails implements EdgeDetails {
 //	private final float[] m_extentsBuff = new float[4];
 //
 //
-//	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, ReadableView<CyEdge> edgeView) {
+//	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
 //		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
 //		
 //		if (edgeView == null)
