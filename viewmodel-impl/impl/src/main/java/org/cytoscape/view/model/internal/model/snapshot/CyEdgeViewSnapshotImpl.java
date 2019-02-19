@@ -15,14 +15,19 @@ public class CyEdgeViewSnapshotImpl extends CyViewSnapshotImpl<CyEdge> implement
 		super(parent, view.getSUID());
 		this.view = view;
 	}
+	
+	@Override
+	public Long getModelSUID() {
+		return view.getModel().getSUID();
+	}
 
 	@Override
-	public long getSourceSUID() {
+	public long getSourceViewSUID() {
 		return view.getSourceSuid();
 	}
 
 	@Override
-	public long getTargetSUID() {
+	public long getTargetViewSUID() {
 		return view.getTargetSuid();
 	}
 
@@ -33,12 +38,12 @@ public class CyEdgeViewSnapshotImpl extends CyViewSnapshotImpl<CyEdge> implement
 
 	@Override
 	public ReadableView<CyNode> getSourceNodeView() {
-		return getNetworkSnapshot().getSnapshotNodeView(getSourceSUID());
+		return getNetworkSnapshot().getNodeView(getSourceViewSUID());
 	}
 
 	@Override
 	public ReadableView<CyNode> getTargetNodeView() {
-		return getNetworkSnapshot().getSnapshotNodeView(getTargetSUID());
+		return getNetworkSnapshot().getNodeView(getTargetViewSUID());
 	}
 	
 }

@@ -85,8 +85,6 @@ import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -147,7 +145,6 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		startSpacial(bc, serviceRegistrar); 
 		startCustomGraphicsMgr(bc, serviceRegistrar);
 		startCharts(bc, serviceRegistrar);
 		startGradients(bc, serviceRegistrar);
@@ -613,8 +610,4 @@ public class CyActivator extends AbstractCyActivator {
 		return defaultImageUrls;
 	}
 
-	private void startSpacial(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
-		RTreeFactory rtreeFactory = new RTreeFactory();
-		registerService(bc, rtreeFactory, SpacialIndex2DFactory.class);
-	}
 }

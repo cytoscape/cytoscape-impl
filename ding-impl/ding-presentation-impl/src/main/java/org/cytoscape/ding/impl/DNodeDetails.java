@@ -25,1102 +25,348 @@ package org.cytoscape.ding.impl;
  */
 
 import static org.cytoscape.ding.DVisualLexicon.NODE_LABEL_POSITION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_LINE_TYPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_DEPTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_FACE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_TRANSPARENCY;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_NESTED_NETWORK_IMAGE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TOOLTIP;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_TRANSPARENCY;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
-import java.awt.TexturePaint;
-import java.util.Collections;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.TreeMap;
+
+import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.DNodeShape;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.LineType;
-import org.cytoscape.view.presentation.property.values.NodeShape;
 import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 
-/*
- * Access to the methods of this class should be synchronized externally if
- * there is a threat of multiple threads.
- */
+
 public class DNodeDetails implements NodeDetails {
 
-	// Parent Network View
-	protected final DRenderingEngine re;
+	private final CyServiceRegistrar serviceRegistrar;
+	private final DVisualLexicon lexicon;
 	
-//	private final Map<VisualProperty<?>, Object> defaultValues;
-//
-//	// Mapped Values
-//	Map<CyNode, Object> m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Object> m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, NodeShape> m_shapes = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Paint> m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Paint> m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Float> m_borderWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Stroke> m_borderStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Paint> m_borderPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Integer> m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, String> m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, String> m_tooltipTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Font> m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Paint> m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Double> m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Position> m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Position> m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Justification> m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Double> m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Double> m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Integer> m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Integer> m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Integer> m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Double> m_nodeZ = new ConcurrentHashMap<>(16, 0.75f, 2);
-//	Map<CyNode, Boolean> m_nestedNetworkImgVisible = new ConcurrentHashMap<>(16, 0.75f, 2);
-//
-//	private final Set<CyNode> selected = new HashSet<>();
-//	
-//	private final Object lock = new Object();
-//
-//	// Default values
-//	Color m_colorLowDetailDefault = (Color) NODE_FILL_COLOR.getDefault();
-//	Color m_selectedColorLowDetailDefault = (Color) NODE_SELECTED_PAINT.getDefault();
-//	Paint m_unselectedPaintDefault = NODE_FILL_COLOR.getDefault();
-//	Paint m_selectedPaintDefault = NODE_SELECTED_PAINT.getDefault();
-//	NodeShape m_shapeDefault = NODE_SHAPE.getDefault();
-//	Double m_borderWidthDefault = NODE_BORDER_WIDTH.getDefault();
-//	LineType m_borderStrokeDefault = NODE_BORDER_LINE_TYPE.getDefault();
-//	Paint m_borderPaintDefault = NODE_BORDER_PAINT.getDefault();
-//	String m_labelTextDefault = NODE_LABEL.getDefault();;
-//	String m_tooltipTextDefault = NODE_TOOLTIP.getDefault();
-//	Font m_labelFontDefault = NODE_LABEL_FONT_FACE.getDefault();
-//	Paint m_labelPaintDefault = NODE_LABEL_COLOR.getDefault();
-//	Position m_labelTextAnchorDefault;
-//	Position m_labelNodeAnchorDefault;
-//	Double m_labelOffsetVectorXDefault;
-//	Double m_labelOffsetVectorYDefault;
-//	Justification m_labelJustifyDefault;
-//	Double m_labelWidthDefault = NODE_LABEL_WIDTH.getDefault();
-//	Integer transparencyDefault = NODE_TRANSPARENCY.getDefault();
-//	Integer transparencyBorderDefault = NODE_BORDER_TRANSPARENCY.getDefault();
-//	Integer transparencyLabelDefault = NODE_LABEL_TRANSPARENCY.getDefault();
-//
-//	private boolean isCleared;
-
-	DNodeDetails(DRenderingEngine re) {
-		this.re = re;
-//		defaultValues = new HashMap<>();
+	// These images will be used when a view is not available for a nested network.
+	private static BufferedImage DEFAULT_NESTED_NETWORK_IMAGE;
+	private static BufferedImage RECURSIVE_NESTED_NETWORK_IMAGE;
+	// Used to detect recursive rendering of nested networks.
+	private static int nestedNetworkPaintingDepth = 0;
+	
+	static {
+		// Initialize image icons for nested networks
+		try {
+			DEFAULT_NESTED_NETWORK_IMAGE = ImageIO.read(DNodeDetails.class.getClassLoader().getResource("images/default_network.png"));
+			RECURSIVE_NESTED_NETWORK_IMAGE = ImageIO.read(DNodeDetails.class.getClassLoader().getResource("images/recursive_network.png"));
+		} catch (IOException e) {
+			e.printStackTrace();
+			DEFAULT_NESTED_NETWORK_IMAGE = null;
+			RECURSIVE_NESTED_NETWORK_IMAGE = null;
+		}
 	}
-
-//	void clear() {
-//		if (isCleared)
-//			return;
-//
-//		m_colorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_selectedColorsLowDetail = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_shapes = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_unselectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_borderWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_borderStrokes = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_borderPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelCounts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_tooltipTexts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelFonts = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelWidths = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelTextAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelNodeAnchors = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelJustifys = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelOffsetXs = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_labelOffsetYs = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_selectedPaints = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_nodeTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_nodeBorderTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_nodeLabelTansparencies = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_nodeZ = new ConcurrentHashMap<>(16, 0.75f, 2);
-//		m_nestedNetworkImgVisible = new ConcurrentHashMap<>(16, 0.75f, 2);
-//
-//		isCleared = true;
-//	}
-//
-//	void unregisterNode(final CyNode nodeIdx) {
-//		// To avoid a memory leak its important to permanently remove the node from all the maps.
-//		m_colorsLowDetail.remove(nodeIdx);
-//		m_selectedColorsLowDetail.remove(nodeIdx);
-//		m_shapes.remove(nodeIdx);
-//		m_unselectedPaints.remove(nodeIdx);
-//		m_borderWidths.remove(nodeIdx);
-//		m_borderStrokes.remove(nodeIdx);
-//		m_borderPaints.remove(nodeIdx);
-//		m_labelWidths.remove(nodeIdx);
-//		m_labelTextAnchors.remove(nodeIdx);
-//		m_labelNodeAnchors.remove(nodeIdx);
-//		m_labelJustifys.remove(nodeIdx);
-//		m_labelOffsetXs.remove(nodeIdx);
-//		m_labelOffsetYs.remove(nodeIdx);
-//		m_selectedPaints.remove(nodeIdx);
-//		m_tooltipTexts.remove(nodeIdx);
-//		
-//		synchronized (lock) {
-//			selected.remove(nodeIdx);
-//		}
-//		
-//		m_labelCounts.remove(nodeIdx);
-//		m_labelTexts.remove(nodeIdx);
-//		m_labelFonts.remove(nodeIdx);
-//		m_labelPaints.remove(nodeIdx);
-//		m_nodeTansparencies.remove(nodeIdx);
-//		m_nodeBorderTansparencies.remove(nodeIdx);
-//		m_nodeLabelTansparencies.remove(nodeIdx);
-//		m_nodeZ.remove(nodeIdx);
-//		m_nestedNetworkImgVisible.remove(nodeIdx);
-//	}
-//
-//	public <V> void setDefaultValue(final VisualProperty<V> vp, V value) {
-//		defaultValues.put(vp, value);
-//	}
+	
+	public DNodeDetails(CyServiceRegistrar serviceRegistrar, DVisualLexicon lexicon) {
+		this.serviceRegistrar = serviceRegistrar;
+		this.lexicon = lexicon;
+	}
+	
+	
+	private static boolean isSelected(ReadableView<CyNode> nodeView) {
+		return Boolean.TRUE.equals(nodeView.getVisualProperty(BasicVisualLexicon.NODE_SELECTED));
+	}
+	
+	static Paint getTransparentColor(Paint p, Integer trans) {
+		if(trans == null)
+			return p;
+		int alpha = trans;
+		if (p instanceof Color && ((Color)p).getAlpha() != alpha) {
+			final Color c = (Color) p;
+			return new Color(c.getRed(), c.getGreen(), c.getBlue(), alpha);
+		} else {
+			return p;
+		}
+	}
 	
 	@Override
-	public Color getColorLowDetail(final CyNode node) {
-		boolean isSelected;
-		synchronized (lock) {
-			isSelected = selected.contains(node);
-		}
-
-		if (isSelected)
-			return getSelectedColorLowDetail(node);
+	public Color getColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+		if (isSelected(nodeView))
+			return getSelectedColorLowDetail(netView, nodeView);
 		else
-			return getUnselectedColorLowDetail(node);
+			return getUnselectedColorLowDetail(netView, nodeView);
+	}
+	
+	private Color getUnselectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_FILL_COLOR);
+		if(paint instanceof Color)
+			return (Color) paint;
+		
+		paint = netView.getViewDefault(NODE_FILL_COLOR);
+		if(paint instanceof Color)
+			return (Color) paint;
+		
+		return (Color) NODE_FILL_COLOR.getDefault();
 	}
 
-	private Color getUnselectedColorLowDetail(CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_FILL_COLOR))
-			return (Color) dnv.getVisualProperty(NODE_FILL_COLOR);
-
-		final Object o = m_colorsLowDetail.get(node);
-
-		if (o == null)
-			if (m_colorLowDetailDefault == null)
-				return NodeDetails.super.getColorLowDetail(node);
-			else
-				return m_colorLowDetailDefault;
-
-		return (Color) o;
-	}
-
-	void setColorLowDetailDefault(Color c) {
-		m_colorLowDetailDefault = c;
-		defaultValues.put(NODE_FILL_COLOR, m_colorLowDetailDefault);
-		defaultValues.put(NODE_PAINT, m_colorLowDetailDefault);
-	}
-
-	private Color getSelectedColorLowDetail(CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_SELECTED_PAINT))
-			return (Color) dnv.getVisualProperty(NODE_SELECTED_PAINT);
-
-		final Object o = m_selectedColorsLowDetail.get(node);
-
-		if (o == null)
-			if (m_selectedColorLowDetailDefault == null)
-				return (Color) DNodeView.DEFAULT_NODE_SELECTED_PAINT;
-			else
-				return m_selectedColorLowDetailDefault;
-
-		return (Color) o;
-	}
-
-	void setSelectedColorLowDetailDefault(Color c) {
-		m_selectedColorLowDetailDefault = c;
-		defaultValues.put(NODE_SELECTED_PAINT, m_selectedColorLowDetailDefault);
-	}
-
-	Paint getSelectedPaint(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_SELECTED_PAINT))
-			return dnv.getVisualProperty(NODE_SELECTED_PAINT);
-
-		final Paint o = m_selectedPaints.get(node);
-
-		if (o == null)
-			if (m_selectedPaintDefault == null)
-				return DNodeView.DEFAULT_NODE_SELECTED_PAINT;
-			else
-				return m_selectedPaintDefault;
-
-		return o;
-	}
-
-	void setSelectedPaintDefault(Paint c) {
-		m_selectedPaintDefault = c;
-		defaultValues.put(NODE_SELECTED_PAINT, m_selectedPaintDefault);
+	private Color getSelectedColorLowDetail(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_SELECTED_PAINT);
+		if(paint instanceof Color)
+			return (Color) paint;
+		
+		paint = netView.getViewDefault(NODE_SELECTED_PAINT);
+		if(paint instanceof Color)
+			return (Color) paint;
+		
+		return (Color) NODE_SELECTED_PAINT.getDefault();
 	}
 
 	@Override
-	public byte getShape(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_SHAPE))
-			return DNodeShape.getDShape(dnv.getVisualProperty(NODE_SHAPE)).getNativeShape();
-
-		final NodeShape originaShape = m_shapes.get(node);
-
-		if (originaShape == null) {
-			if (m_shapeDefault == null)
-				return NodeDetails.super.getShape(node);
-			else
-				return DNodeShape.getDShape(m_shapeDefault).getNativeShape();
-		} else {
-			return DNodeShape.getDShape(originaShape).getNativeShape();
-		}
-	}
-
-	void setShapeDefault(NodeShape shape) {
-		m_shapeDefault = shape;
-		defaultValues.put(NODE_SHAPE, m_shapeDefault);
-	}
-
-	/*
-	 * The shape argument must be pre-checked for correctness. A negative shape
-	 * value has the special meaning to remove overridden shape.
-	 */
-	void overrideShape(CyNode node, NodeShape shape) {
-		if (shape == null)
-			m_shapes.remove(node);
-		else {
-			m_shapes.put(node, shape);
-			isCleared = false;
-		}
-	}
-
-	/**
-	 * Note: this will be used for BOTH unselected and selected.
-	 */
-	public Paint getUnselectedPaint(final CyNode node) {
-		Paint paint = null;
-		Integer trans = null;
-		final DNodeView dev = dGraphView.getDNodeView(node);
-		
-		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dev.isValueLocked(NODE_TRANSPARENCY))
-			trans = getTransparency(node);
-		
-		if (dev.isValueLocked(NODE_FILL_COLOR)) {
-			paint = dev.getVisualProperty(NODE_FILL_COLOR);
-		} else {
-			paint = m_unselectedPaints.get(node);
-
-			if (paint == null) {
-				// Mapped Value does not exist; use default
-				if (m_unselectedPaintDefault == null)
-					paint = NODE_FILL_COLOR.getDefault();
-				else
-					paint = m_unselectedPaintDefault;
-			}
-		}
-		
-		if (trans != null)
-			paint = dGraphView.getTransparentColor(paint, trans);
-		
-		return paint;
-	}
-
-	void setUnselectedPaintDefault(Paint p) {
-		m_unselectedPaintDefault = p;
-		defaultValues.put(NODE_FILL_COLOR, m_unselectedPaintDefault);
-		defaultValues.put(NODE_PAINT, m_unselectedPaintDefault);
-	}
-
-	void setUnselectedPaint(final CyNode node, final Paint paint) {
-		m_unselectedPaints.put(node, paint);
-		if (paint instanceof Color)
-			m_colorsLowDetail.put(node, paint);
-		isCleared = false;
-	}
-
-	void setSelectedPaint(final CyNode node, final Paint paint) {
-		m_selectedPaints.put(node, paint);
-		if (paint instanceof Color)
-			m_selectedColorsLowDetail.put(node, paint);
-
-		isCleared = false;
-	}
-
-	/**
-	 * This returns actual Color object to the low-level renderer.
-	 */
-	@Override
-	public Paint getFillPaint(final CyNode node) {
-		boolean isSelected;
-		synchronized (lock) {
-			isSelected = selected.contains(node);
-		}
-		
-		if (isSelected)
-			return getSelectedPaint(node);
+	public Paint getFillPaint(ReadableView<CyNode> nodeView) {
+		if (isSelected(nodeView))
+			return getSelectedPaint(nodeView);
 		else
-			return getUnselectedPaint(node);
+			return getUnselectedPaint(nodeView);
 	}
 
-	void select(final CyNode node) {
-		synchronized (lock) {
-			selected.add(node);
-		}
+	private Paint getSelectedPaint(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_SELECTED_PAINT);
 	}
 
-	void unselect(final CyNode node) {
-		synchronized (lock) {
-			selected.remove(node);
-		}
+	public Paint getUnselectedPaint(ReadableView<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_FILL_COLOR);
+		Integer trans = nodeView.getVisualProperty(NODE_TRANSPARENCY);
+		return getTransparentColor(paint, trans);
 	}
 
 	@Override
-	public double getWidth(final CyNode node) {
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		return dnv.getWidth();
+	public byte getShape(ReadableView<CyNode> nodeView) {
+		return DNodeShape.getDShape(nodeView.getVisualProperty(NODE_SHAPE)).getNativeShape();
+	}
+
+	@Override
+	public double getWidth(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_WIDTH);
 	}
 	
 	@Override
-	public double getHeight(final CyNode node) {
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		return dnv.getHeight();
+	public double getHeight(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_HEIGHT);
 	}
 	
 	@Override
-	public float getBorderWidth(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_BORDER_WIDTH))
-			return dnv.getVisualProperty(NODE_BORDER_WIDTH).floatValue();
-
-		final Float o = m_borderWidths.get(node);
-		
-		if (o == null)
-			if (m_borderWidthDefault == null)
-				return NODE_BORDER_WIDTH.getDefault().floatValue();
-			else
-				return m_borderWidthDefault.floatValue();
-
-		return o;
+	public float getBorderWidth(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_BORDER_WIDTH).floatValue();
 	}
 
-	void setBorderWidthDefault(float width) {
-		m_borderWidthDefault = Double.valueOf(width);
-		defaultValues.put(NODE_BORDER_WIDTH, m_borderWidthDefault);
-	}
-
-	/**
-	 * A null or negative width value has the special meaning to remove overridden width.
-	 */
-	void overrideBorderWidth(final CyNode node, final Float width) {
-		if (width == null || width < 0.0f) {
-			m_borderWidths.remove(node);
-		} else {
-			m_borderWidths.put(node, width);
-			isCleared = false;
-		}
+	@Override
+	public Stroke getBorderStroke(ReadableView<CyNode> nodeView) {
+		float borderWidth = getBorderWidth(nodeView);
+		LineType lineType = nodeView.getVisualProperty(NODE_BORDER_LINE_TYPE);
+		return DLineType.getDLineType(lineType).getStroke(borderWidth);
 	}
 	
 	@Override
-	public Stroke getBorderStroke(final CyNode node) {
-		final float borderWidth = getBorderWidth(node);
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_BORDER_LINE_TYPE)) {
-			final LineType lockedLineType = dnv.getVisualProperty(NODE_BORDER_LINE_TYPE);
-			return DLineType.getDLineType(lockedLineType).getStroke(borderWidth);
-		}
-
-		final Stroke stroke = m_borderStrokes.get(node);
-		
-		if (stroke == null) {
-			if (m_borderStrokeDefault == null) {
-				final LineType vpDefaultLineType = dnv.getVisualProperty(NODE_BORDER_LINE_TYPE);
-				return DLineType.getDLineType(vpDefaultLineType).getStroke(borderWidth);
-			} else {
-				
-				return DLineType.getDLineType(m_borderStrokeDefault).getStroke(borderWidth);
-			}
-		} else {
-			return stroke;
-		}
-	}
-
-	void setBorderLineTypeDefault(final LineType lineType) {
-		m_borderStrokeDefault = lineType;
-		defaultValues.put(NODE_BORDER_LINE_TYPE, m_borderStrokeDefault);
-	}
-	
-	void overrideBorderStroke(final CyNode node, final Stroke stroke) {
-		if (stroke == null)
-			m_borderStrokes.remove(node);
-		else {
-			m_borderStrokes.put(node, stroke);
-			isCleared = false;
-		}
-	}
-	
-	@Override
-	public Paint getBorderPaint(final CyNode node) {
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		if (dnv == null)
-			return NODE_BORDER_PAINT.getDefault();
-		
-		Paint paint = null;
-		Integer trans = null;
-		
-		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dnv.isValueLocked(NODE_BORDER_TRANSPARENCY))
-			trans = getBorderTransparency(node);
-		
-		if (dnv.isValueLocked(NODE_BORDER_PAINT)) {
-			paint = dnv.getVisualProperty(NODE_BORDER_PAINT);
-		} else {
-			paint = m_borderPaints.get(node);
-
-			if (paint == null)
-				paint = m_borderPaintDefault != null ? m_borderPaintDefault : NodeDetails.super.getBorderPaint(node);
-		}
-
-		if (trans != null) // New transparency? Recreate the paint object
-			paint = dGraphView.getTransparentColor(paint, trans);
-		
-		if (paint != null)
-			return paint;
-
-		return NODE_BORDER_PAINT.getDefault();
-	}
-
-	void setBorderPaintDefault(Paint p) {
-		m_borderPaintDefault = p;
-		defaultValues.put(NODE_BORDER_PAINT, p);
-	}
-
-	/**
-	 * A null paint has the special meaning to remove overridden paint.
-	 */
-	void overrideBorderPaint(final CyNode node, final Paint paint) {
-		if ((paint == null) || paint.equals(NodeDetails.super.getBorderPaint(node)))
-			m_borderPaints.remove(node);
-		else {
-			m_borderPaints.put(node, paint);
-			isCleared = false;
-		}
+	public Paint getBorderPaint(ReadableView<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_BORDER_PAINT);
+		Integer trans = nodeView.getVisualProperty(NODE_BORDER_TRANSPARENCY);
+		return getTransparentColor(paint, trans);
 	}
 
 	@Override
-	public int getLabelCount(final CyNode node) {
-		// Check related bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		if (dnv.isValueLocked(NODE_LABEL) && !dnv.getVisualProperty(NODE_LABEL).isEmpty())
-			return 1;
-		
-		Integer count = m_labelCounts.get(node);
-		
-		if (count == null) {
-			try {
-				String defLabel = (String) defaultValues.get(NODE_LABEL);
-				count = (defLabel == null || defLabel.isEmpty()) ? NodeDetails.super.getLabelCount(node) : 1;
-			} catch (ClassCastException e) {
-				count = 0;
-			}
-		}
-
-		return count;
-	}
-
-	/**
-	 * A negative labelCount has the special meaning to remove overridden count.
-	 */
-	void overrideLabelCount(final CyNode node, final int labelCount) {
-		if ((labelCount < 0) || (labelCount == NodeDetails.super.getLabelCount(node)))
-			m_labelCounts.remove(node);
-		else {
-			m_labelCounts.put(node, labelCount);
-			isCleared = false;
-		}
+	public int getLabelCount(ReadableView<CyNode> nodeView) {
+		String label = getLabelText(nodeView);
+		return (label == null || label.isEmpty()) ? 0 : 1;
 	}
 
 	@Override
-	public String getLabelText(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL))
-			return dnv.getVisualProperty(NODE_LABEL);
-
-		// final long key = (((long) node) << 32) | ((long) labelInx);
-		final String o = m_labelTexts.get(node);
-
-		if (o == null)
-			if (m_labelTextDefault == null)
-				return NodeDetails.super.getLabelText(node, labelInx);
-			else
-				return m_labelTextDefault;
-
-		return o;
+	public String getLabelText(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_LABEL);
 	}
 
-	void setLabelTextDefault(String text) {
-		m_labelTextDefault = text;
-		defaultValues.put(NODE_LABEL, m_labelTextDefault);
-	}
-
-	/**
-	 * A null text has the special meaning to remove overridden text.
-	 */
-	void overrideLabelText(final CyNode node, final int labelInx, final String text) {
-		// final long key = (((long) node) << 32) | ((long) labelInx);
-
-		if ((text == null) || text.equals(NodeDetails.super.getLabelText(node, labelInx)))
-			m_labelTexts.remove(node);
-		else {
-			m_labelTexts.put(node, text);
-			isCleared = false;
-		}
-	}
-
-	public String getTooltipText(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_TOOLTIP))
-			return dnv.getVisualProperty(NODE_TOOLTIP);
-
-		final String o = m_tooltipTexts.get(node);
-
-		if (o == null)
-			if (m_tooltipTextDefault == null)
-				return "";
-			else
-				return m_tooltipTextDefault;
-
-		return o;
-	}
-
-	void setTooltipTextDefault(String tooltip) {
-		m_tooltipTextDefault = tooltip;
-		defaultValues.put(NODE_TOOLTIP, m_tooltipTextDefault);
-	}
-
-	/**
-	 * A null text has the special meaning to remove overridden text.
-	 */
-	void overrideTooltipText(final CyNode node, final String text) {
-
-		if ((text == null) || text.equals(""))
-			m_tooltipTexts.remove(node);
-		else {
-			m_tooltipTexts.put(node, text);
-			isCleared = false;
-		}
+	public String getTooltipText(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_TOOLTIP);
 	}
 
 	@Override
-	public Font getLabelFont(CyNode node, int labelInx) {
-		Number size = null;
-		Font font = null;
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		// Check bypass
-		if (dnv.isValueLocked(NODE_LABEL_FONT_SIZE))
-			size = dnv.getVisualProperty(NODE_LABEL_FONT_SIZE);
-		
-		if (dnv.isValueLocked(NODE_LABEL_FONT_FACE)) {
-			font = dnv.getVisualProperty(NODE_LABEL_FONT_FACE);
-		} else {
-			font = m_labelFonts.get(node);
-	
-			if (font == null) {
-				font = m_labelFontDefault != null ? 
-						m_labelFontDefault : NODE_LABEL_FONT_FACE.getDefault();
-			}
-		}
-		
+	public Font getLabelFont(ReadableView<CyNode> nodeView) {
+		Number size = nodeView.getVisualProperty(NODE_LABEL_FONT_SIZE);
+		Font   font = nodeView.getVisualProperty(NODE_LABEL_FONT_FACE);
 		if (size != null && font != null)
 			font = font.deriveFont(size.floatValue());
-		
 		return font;
 	}
 
-	void setLabelFontDefault(Font f) {
-		m_labelFontDefault = f;
-		defaultValues.put(NODE_LABEL_FONT_FACE, m_labelFontDefault);
-		
-		if (f != null)
-			defaultValues.put(NODE_LABEL_FONT_SIZE, f.getSize());
-	}
-
-	/*
-	 * A null font has the special meaning to remove overridden font.
-	 */
-	void overrideLabelFont(final CyNode node, final Font font) {
-		if (font == null) {
-			m_labelFonts.remove(node);
-		} else {
-			m_labelFonts.put(node, font);
-			isCleared = false;
-		}
-	}
-
 	@Override
-	public Paint getLabelPaint(final CyNode node, final int labelInx) {
-		Paint paint = null;
-		Integer trans = null;
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		// First check if transparency is locked, because the stored colors may not contain the correct alpha value
-		if (dnv.isValueLocked(NODE_LABEL_TRANSPARENCY))
-			trans = getLabelTransparency(node);
-		
-		if (dnv.isValueLocked(NODE_LABEL_COLOR)) {
-			// Check bypass
-			paint = dnv.getVisualProperty(NODE_LABEL_COLOR);
-		} else {
-			paint = m_labelPaints.get(node);
-
-			if (paint == null)
-				paint = m_labelPaintDefault != null ? m_labelPaintDefault : NODE_LABEL_COLOR.getDefault();
-		}
-		
-		if (trans != null)
-			paint = dGraphView.getTransparentColor(paint, trans);
-
-		return paint;
+	public Paint getLabelPaint(ReadableView<CyNode> nodeView) {
+		Paint paint = nodeView.getVisualProperty(NODE_LABEL_COLOR);
+		Integer trans = nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
+		return getTransparentColor(paint, trans);
 	}
 
-	void setLabelPaintDefault(Paint p) {
-		m_labelPaintDefault = p;
-		defaultValues.put(NODE_LABEL_COLOR, m_labelPaintDefault);
-	}
 
-	/**
-	 * A null paint has the special meaning to remove overridden paint.
-	 */
-	void overrideLabelPaint(CyNode node, int labelInx, Paint paint) {
-		if (paint == null)
-			m_labelPaints.remove(node);
-		else {
-			m_labelPaints.put(node, paint);
-			isCleared = false;
-		}
+	private CustomGraphicsInfo getCustomGraphicsInfo(VisualProperty<CyCustomGraphics> cgVP, ReadableView<CyNode> node) {
+		CyCustomGraphics<CustomGraphicLayer> cg = (CyCustomGraphics<CustomGraphicLayer>) node.getVisualProperty(cgVP);
+		if(cg == null)
+			return null;
+		
+		VisualProperty<Double> sizeVP = lexicon.getAssociatedCustomGraphicsSizeVP(cgVP);
+		Double size = node.getVisualProperty(sizeVP);
+		
+		VisualProperty<ObjectPosition> positionVP = lexicon.getAssociatedCustomGraphicsPositionVP(cgVP);
+		ObjectPosition position = node.getVisualProperty(positionVP);
+		
+		CustomGraphicsInfo info = new CustomGraphicsInfo(cgVP);
+		info.setCustomGraphics(cg);
+		info.setSize(size);
+		info.setPosition(position);
+		return info;
 	}
 
 	@Override
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(final CyNode node) {
-		final DNodeView dnv = dGraphView.getDNodeView(node);
+	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(ReadableView<CyNode> nodeView) {
+		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
 		
-		return dnv != null ? dnv.getCustomGraphics() : Collections.EMPTY_MAP;
+		for (VisualProperty<CyCustomGraphics> cgVP : lexicon.getCustomGraphicsVisualProperties()) {
+			CustomGraphicsInfo info = getCustomGraphicsInfo(cgVP, nodeView);
+			if(info != null)
+				cgInfoMap.put(cgVP, info);
+		}
+		return cgInfoMap;
 	}
 	
 	@Override
-	public Position getLabelTextAnchor(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
-			final Position anchor = lp.getAnchor();
-			return anchor;
-		}
-
-		final Position p = m_labelTextAnchors.get(node);
-
-		if (p == null)
-			if (m_labelTextAnchorDefault == null)
-				return NodeDetails.super.getLabelTextAnchor(node, labelInx);
-			else
-				return m_labelTextAnchorDefault;
-
-		return p;
-	}
-
-	void setLabelTextAnchorDefault(Position anchor) {
-		m_labelTextAnchorDefault = anchor;
-	}
-
-	void overrideLabelTextAnchor(final CyNode node, final int inx, final Position anchor) {
-		// Three possibilities:
-		//  1) We have no default and the anchor is the same as in NodeDetails
-		//  2) We have a default and the anchor is the same as the default
-		//  3) The anchor is different altogether
-		if (m_labelTextAnchorDefault == null &&
-				anchor == NodeDetails.super.getLabelTextAnchor(node, inx))
-			m_labelTextAnchors.remove(node);
-		else if (m_labelTextAnchorDefault != null &&
-		         anchor == m_labelTextAnchorDefault)
-			m_labelTextAnchors.remove(node);
-		else {
-			m_labelTextAnchors.put(node, anchor);
-			isCleared = false;
-		}
+	public Position getLabelTextAnchor(ReadableView<CyNode> nodeView) {
+		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
+		return pos == null ? null : pos.getAnchor();
 	}
 
 	@Override
-	public Position getLabelNodeAnchor(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
-			final Position anchor = lp.getTargetAnchor();
-			//return convertG2ND(anchor.getConversionConstant());
-			return anchor;
-		}
-
-		final Position o = m_labelNodeAnchors.get(node);
-
-		if (o == null)
-			if (m_labelNodeAnchorDefault == null)
-				return NodeDetails.super.getLabelNodeAnchor(node, labelInx);
-			else
-				return m_labelNodeAnchorDefault;
-
-		return o;
-	}
-
-	void setLabelNodeAnchorDefault(Position anchor) {
-		m_labelNodeAnchorDefault = anchor;
-	}
-
-	void overrideLabelNodeAnchor(final CyNode node, final int inx, final Position anchor) {
-		// Three possibilities:
-		//  1) We have no default and the anchor is the same as in NodeDetails
-		//  2) We have a default and the anchor is the same as the default
-		//  3) The anchor is different altogether
-		if (m_labelNodeAnchorDefault == null &&
-				anchor == NodeDetails.super.getLabelNodeAnchor(node, inx))
-			m_labelNodeAnchors.remove(node);
-		else if (m_labelNodeAnchorDefault != null &&
-		         anchor == m_labelNodeAnchorDefault)
-			m_labelNodeAnchors.remove(node);
-		else {
-			m_labelNodeAnchors.put(node, anchor);
-			isCleared = false;
-		}
+	public Position getLabelNodeAnchor(ReadableView<CyNode> nodeView) {
+		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
+		return pos == null ? null : pos.getTargetAnchor();
 	}
 
 	@Override
-	public float getLabelOffsetVectorX(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
-			return (float) lp.getOffsetX();
-		}
-
-		final Object o = m_labelOffsetXs.get(node);
-
-		if (o == null)
-			if (m_labelOffsetVectorXDefault == null)
-				return NodeDetails.super.getLabelOffsetVectorX(node, labelInx);
-			else
-				return m_labelOffsetVectorXDefault.floatValue();
-
-		return ((Double) o).floatValue();
-	}
-
-	void setLabelOffsetVectorXDefault(double x) {
-		m_labelOffsetVectorXDefault = Double.valueOf(x);
-	}
-
-	void overrideLabelOffsetVectorX(final CyNode node, final int inx, final double x) {
-		// Three possibilities:
-		//  1) We have no default and the offset is the same as in NodeDetails
-		//  2) We have a default and the offset is the same as the default
-		//  3) The offset is different altogether
-		if (m_labelOffsetVectorXDefault == null &&
-		    ((float) x) == NodeDetails.super.getLabelOffsetVectorX(node, inx))
-			m_labelOffsetXs.remove(node);
-		else if (m_labelOffsetVectorXDefault != null &&
-		         ((float) x) == m_labelOffsetVectorXDefault.floatValue())
-			m_labelOffsetXs.remove(node);
-		else {
-			m_labelOffsetXs.put(node, new Double(x));
-			isCleared = false;
-		}
+	public float getLabelOffsetVectorX(ReadableView<CyNode> nodeView) {
+		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
+		return pos == null ? 0.0f : (float) pos.getOffsetX();
 	}
 
 	@Override
-	public float getLabelOffsetVectorY(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
-			return (float) lp.getOffsetY();
-		}
-
-		final Object o = m_labelOffsetYs.get(node);
-
-		if (o == null)
-			if (m_labelOffsetVectorYDefault == null)
-				return NodeDetails.super.getLabelOffsetVectorY(node, labelInx);
-			else
-				return m_labelOffsetVectorYDefault.floatValue();
-
-		return ((Double) o).floatValue();
-	}
-
-	void setLabelOffsetVectorYDefault(double y) {
-		m_labelOffsetVectorYDefault = Double.valueOf(y);
-	}
-
-	void overrideLabelOffsetVectorY(final CyNode node, final int inx, final double y) {
-		// Three possibilities:
-		//  1) We have no default and the offset is the same as in NodeDetails
-		//  2) We have a default and the offset is the same as the default
-		//  3) The offset is different altogether
-		if (m_labelOffsetVectorYDefault == null &&
-		    ((float) y) == NodeDetails.super.getLabelOffsetVectorY(node, inx))
-			m_labelOffsetXs.remove(node);
-		else if (m_labelOffsetVectorYDefault != null &&
-		         ((float) y) == m_labelOffsetVectorYDefault.floatValue())
-			m_labelOffsetYs.remove(node);
-		else {
-			m_labelOffsetYs.put(node, new Double(y));
-			isCleared = false;
-		}
+	public float getLabelOffsetVectorY(ReadableView<CyNode> nodeView) {
+		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
+		return pos == null ? 0.0f : (float) pos.getOffsetY();
 	}
 
 	@Override
-	public Justification getLabelJustify(final CyNode node, final int labelInx) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_POSITION)) {
-			final ObjectPosition lp = dnv.getVisualProperty(NODE_LABEL_POSITION);
-			final Justification justify = lp.getJustify();
-			return justify;
-		}
-
-		Justification o = m_labelJustifys.get(node);
-
-		if (o == null)
-			if (m_labelJustifyDefault == null)
-				return NodeDetails.super.getLabelJustify(node, labelInx);
-			else
-				return m_labelJustifyDefault;
-
-		return o;
+	public Justification getLabelJustify(ReadableView<CyNode> nodeView) {
+		ObjectPosition pos = nodeView.getVisualProperty(NODE_LABEL_POSITION);
+		return pos == null ? null : pos.getJustify();
 	}
-
-	void setLabelJustifyDefault(Justification justify) {
-		m_labelJustifyDefault = justify;
-	}
-
-	void overrideLabelJustify(final CyNode node, final int inx, final Justification justify) {
-		// Three possibilities:
-		//  1) We have no default and the offset is the same as in NodeDetails
-		//  2) We have a default and the offset is the same as the default
-		//  3) The offset is different altogether
-		if (m_labelJustifyDefault == null &&
-		    justify == NodeDetails.super.getLabelJustify(node, inx))
-			m_labelJustifys.remove(node);
-		else if (m_labelJustifyDefault != null &&
-		    justify == m_labelJustifyDefault)
-			m_labelJustifys.remove(node);
-		else {
-			m_labelJustifys.put(node, justify);
-			isCleared = false;
-		}
-	}
-
+	
 	@Override
-	public double getLabelWidth(CyNode node) {
-		// Check bypass first
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		
-		if (dnv.isValueLocked(NODE_LABEL_WIDTH))
-			return dnv.getVisualProperty(NODE_LABEL_WIDTH);
-		
-		final Double o = m_labelWidths.get(node);
-
-		if (o == null) {
-			if (m_labelWidthDefault == null)
-				return NodeDetails.super.getLabelWidth(node);
-			else
-				return m_labelWidthDefault.doubleValue();
-		}
-
-		return o;
-	}
-
-	void setLabelWidthDefault(double width) {
-		m_labelWidthDefault = width;
-		defaultValues.put(NODE_LABEL_WIDTH, m_labelWidthDefault);
-	}
-
-	/**
-	 * A negative width value has the special meaning to remove overridden width.
-	 */
-	void overrideLabelWidth(final CyNode node, final double width) {
-		if ((width < 0.0) || (width == NodeDetails.super.getLabelWidth(node)))
-			m_labelWidths.remove(node);
-		else {
-			m_labelWidths.put(node, width);
-			isCleared = false;
-		}
+	public double getLabelWidth(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_LABEL_WIDTH);
 	}
 	
 	////// Transparencies /////////////
 	
-	public Integer getTransparency(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_TRANSPARENCY))
-			return dnv.getVisualProperty(NODE_TRANSPARENCY);
-
-		Integer trans = m_nodeTansparencies.get(node);
-		if (trans == null) {
-			trans = transparencyDefault != null ? transparencyDefault : NODE_TRANSPARENCY.getDefault();
-		}
-		
-		return trans;
+	public Integer getTransparency(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_TRANSPARENCY);
 	}
 
-	void setTransparencyDefault(Integer transparency) {
-		transparencyDefault = transparency;
-		defaultValues.put(NODE_TRANSPARENCY, transparencyDefault);
+	public Integer getLabelTransparency(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 	}
 
-	void overrideTransparency(final CyNode node, final Integer transparency) {
-		if (transparency == null)
-			m_nodeTansparencies.remove(node);
-		else {
-			m_nodeTansparencies.put(node, transparency);
-			isCleared = false;
-		}
+	public Integer getBorderTransparency(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_BORDER_TRANSPARENCY);
+	}
+
+	public Boolean getNestedNetworkImgVisible(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
+	}
+
+	public Double getNodeDepth(ReadableView<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_DEPTH);
 	}
 	
-	public Integer getLabelTransparency(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_LABEL_TRANSPARENCY))
-			return dnv.getVisualProperty(NODE_LABEL_TRANSPARENCY);
-
-		Integer trans = m_nodeLabelTansparencies.get(node);
-		if (trans == null) {
-			trans = transparencyLabelDefault != null ? 
-					transparencyLabelDefault : NODE_LABEL_TRANSPARENCY.getDefault();
-		}
-		
-		return trans;
-	}
-
-	void setLabelTransparencyDefault(Integer transparency) {
-		transparencyLabelDefault = transparency;
-		defaultValues.put(NODE_LABEL_TRANSPARENCY, transparencyLabelDefault);
-	}
-
-	void overrideLabelTransparency(final CyNode node, final Integer transparency) {
-		if (transparency == null)
-			m_nodeLabelTansparencies.remove(node);
-		else {
-			m_nodeLabelTansparencies.put(node, transparency);
-			isCleared = false;
-		}
-	}
 	
-	public Integer getBorderTransparency(final CyNode node) {
-		// Check bypass
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_BORDER_TRANSPARENCY))
-			return dnv.getVisualProperty(NODE_BORDER_TRANSPARENCY);
-
-		Integer trans = m_nodeBorderTansparencies.get(node);
-		if (trans == null) {
-			trans = transparencyBorderDefault != null ? 
-					transparencyBorderDefault : NODE_BORDER_TRANSPARENCY.getDefault();
-		}
-		
-		return trans;
-	}
-
-	void setBorderTransparencyDefault(Integer transparency) {
-		transparencyBorderDefault = transparency;
-		defaultValues.put(NODE_BORDER_TRANSPARENCY, transparencyBorderDefault);
-	}
-
-	void overrideBorderTransparency(final CyNode node, final Integer transparency) {
-		if (transparency == null)
-			m_nodeBorderTansparencies.remove(node);
-		else {
-			m_nodeBorderTansparencies.put(node, transparency);
-			isCleared = false;
-		}
-	}
 	
-	void setNestedNetworkImgVisibleDefault(boolean visible) {
-		defaultValues.put(NODE_NESTED_NETWORK_IMAGE_VISIBLE, visible);
-	}
-	
-	void overrideNestedNetworkImgVisible(final CyNode node, final boolean visible) {
-		m_nestedNetworkImgVisible.put(node, visible);
-		isCleared = false;
-	}
-	
-	Boolean getNestedNetworkImgVisible(final CyNode node) {
-		final DNodeView dnv = (DNodeView) dGraphView.getDNodeView(node);
-		
-		if (dnv.isValueLocked(NODE_NESTED_NETWORK_IMAGE_VISIBLE))
-			return dnv.getVisualProperty(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
-		
-		Boolean visible = m_nestedNetworkImgVisible.get(node);
-		
-		if (visible != null)
-			return visible;
-		
-		return getDefaultValue(NODE_NESTED_NETWORK_IMAGE_VISIBLE);
-	}
-
-	public Double getNodeDepth(final CyNode node) {
-		final DNodeView dnv = dGraphView.getDNodeView(node);
-		if (dnv.isValueLocked(NODE_DEPTH))
-			return dnv.getVisualProperty(NODE_DEPTH);
-
-		Double depth = m_nodeZ.get(node);
-		if (depth == null)
-			return 0.0;
-		return depth;
-	}
-
-
-	@Override
-	public TexturePaint getNestedNetworkTexturePaint(final CyNode node) {
-		final DNodeView dNodeView = (DNodeView) dGraphView.getDNodeView(node);
-		return dNodeView.getNestedNetworkTexturePaint();
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T, V extends T> V getDefaultValue(VisualProperty<T> vp) {
-		return (V) defaultValues.get(vp);
-	}
+//	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+//		++nestedNetworkPaintingDepth;
+//		try {
+//			boolean nestedNetworkVisible = getNestedNetworkImgVisible(nodeView);
+//			if (!Boolean.TRUE.equals(nestedNetworkVisible)) {
+//				return null;
+//			}
+//			
+//			SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
+//			CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
+//			
+//			if (modelNode == null || nestedNetworkPaintingDepth > 1 ||  modelNode.getNetworkPointer() == null)
+//				return null;
+//
+//
+//			final double IMAGE_WIDTH  = getWidth(nodeView)  * NESTED_IMAGE_SCALE_FACTOR;
+//			final double IMAGE_HEIGHT = getHeight(nodeView) * NESTED_IMAGE_SCALE_FACTOR;
+//
+//			CyNetworkView nestedNetworkView = getNestedNetworkView(netView, nodeView);
+//
+//			// Do we have a node w/ a self-reference?
+//			if (netView.getMutableNetworkView() == nestedNetworkView) {
+//				if (RECURSIVE_NESTED_NETWORK_IMAGE == null)
+//					return null;
+//
+//				final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
+//				return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
+//			}
+//			
+//			if (nestedNetworkView != null) {
+//				DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(netView.getMutableNetworkView());
+//				final double scaleFactor = re.getGraphLOD().getNestedNetworkImageScaleFactor();
+//				return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
+//			} else {
+//				if (DEFAULT_NESTED_NETWORK_IMAGE == null || !isVisible || getWidth() == -1 || getHeight() == -1)
+//					return null;
+//
+//				final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
+//				return new TexturePaint(DEFAULT_NESTED_NETWORK_IMAGE, rect);
+//			}
+//		} finally {
+//			--nestedNetworkPaintingDepth;
+//		}
+//	}
+//
+//	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, ReadableView<CyNode> nodeView) {
+//		SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
+//		CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
+//		
+//		if (modelNode.getNetworkPointer() == null) {
+//			return null;
+//		} else {
+//			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+//			final Iterator<CyNetworkView> viewIterator = netViewMgr.getNetworkViews(modelNode.getNetworkPointer()).iterator();
+//			
+//			if (viewIterator.hasNext())
+//				return viewIterator.next();
+//			else
+//				return null;
+//		}
+//	}
 }

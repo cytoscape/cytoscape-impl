@@ -46,8 +46,9 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongHash;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.ReadableView;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
@@ -146,7 +147,7 @@ public final class GraphRenderer {
 	 * @return bits representing the level of detail that was rendered; the
 	 *   return value is a bitwise-or'ed value of the LOD_* constants.
 	 */
-	public final static int renderGraph(final CyNetworkView netView,
+	public final static int renderGraph(final CyNetworkViewSnapshot netView,
 	                                    final GraphLOD lod,
 	                                    final NodeDetails nodeDetails,
 	                                    final EdgeDetails edgeDetails,
@@ -255,24 +256,25 @@ public final class GraphRenderer {
 				int runningEdgeCount = 0;
 
 				for (int i = 0; i < visibleNodeCount; i++) {
-					final long node = nodeHits.nextExtents(floatBuff1);
+					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
 
-					final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
+					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
 
-					for ( CyEdge e : touchingEdges ) {
+					for ( ReadableView<CyEdge> e : touchingEdges ) {
+						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
 						if (!edgeDetails.isVisible(e))
 							continue;
 						final long edge = e.getSUID(); 
-						final long otherNode = node ^ e.getSource().getSUID() ^ e.getTarget().getSUID();
+						final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 
 						if (nodeBuff.get(otherNode) < 0)
 							runningEdgeCount++;
 					}
 
-					nodeBuff.put(node);
+					nodeBuff.put(nodeSuid);
 				}
 
 				renderNodeCount = runningNodeCount;
@@ -348,19 +350,20 @@ public final class GraphRenderer {
 				final int nodeHitCount = nodeHits.size();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final long node = nodeHits.nextExtents(floatBuff1);
+					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
 					// Casting to double and then back we could achieve better accuracy
 					// at the expense of performance.
 					final float nodeX = (floatBuff1[0] + floatBuff1[2]) / 2;
 					final float nodeY = (floatBuff1[1] + floatBuff1[3]) / 2;
 
-					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(graph.getNode(node),CyEdge.Type.ANY);
+					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
 
-					for ( CyEdge edge : touchingEdges ) {
+					for ( ReadableView<CyEdge> edge : touchingEdges ) {
 						if (!edgeDetails.isVisible(edge))
 							continue;
-						final long otherNode = node ^ edge.getSource().getSUID() ^ edge.getTarget().getSUID();
+						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+						final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 							netView.getSpacialIndex2D().get(otherNode, floatBuff2);
@@ -369,24 +372,24 @@ public final class GraphRenderer {
 							                  // accuracy and performance.
 							                  (floatBuff2[0] + floatBuff2[2]) / 2,
 							                  (floatBuff2[1] + floatBuff2[3]) / 2,
-							                  edgeDetails.getColorLowDetail(edge));
+							                  edgeDetails.getColorLowDetail(netView, edge));
 						}
 					}
 
-					nodeBuff.put(node);
+					nodeBuff.put(nodeSuid);
 				}
 			} else { // High detail.
 				while (nodeHits.size() > 0) {
-					final long node =nodeHits.nextExtents(floatBuff1);
-					final CyNode cyNode = netView.getNode(node);
-					final byte nodeShape = nodeDetails.getShape(cyNode);
-					Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(cyNode,CyEdge.Type.ANY);
-					for (final CyEdge edge : touchingEdges ) {
+					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
+					final ReadableView<CyNode> node = netView.getNodeView(nodeSuid);
+					final byte nodeShape = nodeDetails.getShape(node);
+					Iterable<ReadableView<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
+					for (ReadableView<CyEdge> edge : touchingEdges) {
 						if (!edgeDetails.isVisible(edge))
 							continue;
-						final long otherNode = node ^ edge.getSource().getSUID()
-							^ edge.getTarget().getSUID();
-						final CyNode otherCyNode = graph.getNode(otherNode);
+						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+						final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+						final ReadableView<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
 						if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
 
@@ -403,7 +406,7 @@ public final class GraphRenderer {
 							final byte trgShape;
 							final float[] srcExtents;
 							final float[] trgExtents;
-							if (node == edge.getSource().getSUID()) {
+							if (nodeSuid == edgeInfo.getSourceViewSUID()) {
 								srcShape = nodeShape;
 								trgShape = otherNodeShape;
 								srcExtents = floatBuff1;
@@ -416,7 +419,7 @@ public final class GraphRenderer {
 							}
 
 							// Compute visual attributes that do not depend on LOD.
-							final float thickness = edgeDetails.getWidth(edge);
+							final float thickness = (float) edgeDetails.getWidth(edge);
 							final Stroke edgeStroke = edgeDetails.getStroke(edge);
 							final Paint segPaint = edgeDetails.getPaint(edge);
 
@@ -435,22 +438,14 @@ public final class GraphRenderer {
 							} else { // Rendering edge arrows.
 								srcArrow = edgeDetails.getSourceArrowShape(edge);
 								trgArrow = edgeDetails.getTargetArrowShape(edge);
-								srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) 
-								                 ? 0.0f
-								                 : edgeDetails.getSourceArrowSize(edge));
-								trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE)
-								                 ? 0.0f
-								                 : edgeDetails.getTargetArrowSize(edge));
-								srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE)
-								                 ? null : edgeDetails.getSourceArrowPaint(edge));
-								trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE)
-								                 ? null : edgeDetails.getTargetArrowPaint(edge));
+								srcArrowSize  = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getSourceArrowSize(edge));
+								trgArrowSize  = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
+								srcArrowPaint = ((srcArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getSourceArrowPaint(edge));
+								trgArrowPaint = ((trgArrow == ArrowShapeVisualProperty.NONE) ? null : edgeDetails.getTargetArrowPaint(edge));
 							}
 
 							// Compute the anchors to use when rendering edge.
-							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null
-							                                                                 : edgeDetails
-							                                                                   .getAnchors(edge));
+							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null : edgeDetails.getAnchors(edge));
 
 							if (!computeEdgeEndpoints(grafx, srcExtents, srcShape, srcArrow,
 							                          srcArrowSize, anchors, trgExtents, trgShape,
@@ -488,18 +483,18 @@ public final class GraphRenderer {
 								
 								final int labelCount = edgeDetails.getLabelCount(edge);
 								for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-									final String text = edgeDetails.getLabelText(edge, labelInx);
-									final Font font = edgeDetails.getLabelFont(edge, labelInx);
-									final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge, labelInx);
-									final Paint paint = edgeDetails.getLabelPaint(edge, labelInx);
-									final Position textAnchor = edgeDetails.getLabelTextAnchor(edge, labelInx);
-									final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge, labelInx);
-									final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge, labelInx);
-									final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge, labelInx);
+									final String text = edgeDetails.getLabelText(edge);
+									final Font font = edgeDetails.getLabelFont(edge);
+									final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge);
+									final Paint paint = edgeDetails.getLabelPaint(edge);
+									final Position textAnchor = edgeDetails.getLabelTextAnchor(edge);
+									final Position edgeAnchor = edgeDetails.getLabelEdgeAnchor(edge);
+									final float offsetVectorX = edgeDetails.getLabelOffsetVectorX(edge);
+									final float offsetVectorY = edgeDetails.getLabelOffsetVectorY(edge);
 									final Justification justify;
 
 									if (text.indexOf('\n') >= 0)
-										justify = edgeDetails.getLabelJustify(edge, labelInx);
+										justify = edgeDetails.getLabelJustify(edge);
 									else
 										justify = Justification.JUSTIFY_CENTER;
 
@@ -645,7 +640,7 @@ public final class GraphRenderer {
 						}
 					}
 
-					nodeBuff.put(node);
+					nodeBuff.put(nodeSuid);
 				}
 			}
 		}
@@ -661,11 +656,11 @@ public final class GraphRenderer {
 				final int nodeHitCount = nodeHits.size();
 
 				for (int i = 0; i < nodeHitCount; i++) {
-					final CyNode node = graph.getNode( nodeHits.nextExtents(floatBuff1) );
+					final ReadableView<CyNode> node = netView.getNodeView( nodeHits.nextExtents(floatBuff1) );
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
-						                  floatBuff1[3], nodeDetails.getColorLowDetail(node));
+						                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
 				}
 			} else { // High detail.
 				SpacialIndex2DEnumerator zHits = nodeHits;
@@ -674,7 +669,7 @@ public final class GraphRenderer {
 				}
 				while (zHits.hasNext()) {
 					final long node = zHits.nextExtents(floatBuff1);
-					final CyNode cyNode = graph.getNode(node);
+					final ReadableView<CyNode> cyNode = netView.getNodeView(node);
 
 					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
 							nodeDetails, lodBits, dependencies);
@@ -685,21 +680,18 @@ public final class GraphRenderer {
 						final int labelCount = nodeDetails.getLabelCount(cyNode);
 
 						for (int labelInx = 0; labelInx < labelCount; labelInx++) {
-							final String text = nodeDetails.getLabelText(cyNode, labelInx);
-							final Font font = nodeDetails.getLabelFont(cyNode, labelInx);
-							final double fontScaleFactor = nodeDetails.labelScaleFactor(cyNode,
-							                                                            labelInx);
-							final Paint paint = nodeDetails.getLabelPaint(cyNode, labelInx);
-							final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode, labelInx);
-							final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode, labelInx);
-							final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode,
-							                                                           labelInx);
-							final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode,
-							                                                           labelInx);
+							final String text = nodeDetails.getLabelText(cyNode);
+							final Font font = nodeDetails.getLabelFont(cyNode);
+							final double fontScaleFactor = nodeDetails.getLabelScaleFactor(cyNode);
+							final Paint paint = nodeDetails.getLabelPaint(cyNode);
+							final Position textAnchor = nodeDetails.getLabelTextAnchor(cyNode);
+							final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(cyNode);
+							final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(cyNode);
+							final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(cyNode);
 							final Justification justify;
 
 							if (text.indexOf('\n') >= 0)
-								justify = nodeDetails.getLabelJustify(cyNode, labelInx);
+								justify = nodeDetails.getLabelJustify(cyNode);
 							else
 								justify = Justification.JUSTIFY_CENTER;
 
@@ -1063,9 +1055,9 @@ public final class GraphRenderer {
 	 * Render node view with details, including custom graphics.
 	 */
 	@SuppressWarnings("rawtypes")
-	private static final void renderNodeHigh(final CyNetworkView netView,
+	private static final void renderNodeHigh(final CyNetworkViewSnapshot netView,
 											 final GraphGraphics grafx,
-											 final CyNode cyNode,
+											 final ReadableView<CyNode> cyNode,
 											 final float[] floatBuff1,
 											 final double[] doubleBuff1,
 											 final double[] doubleBuff2,
@@ -1106,7 +1098,7 @@ public final class GraphRenderer {
 		if ((lodBits & LOD_CUSTOM_GRAPHICS) != 0) {
 
 			// draw any nested networks first
-			final TexturePaint nestedNetworkPaint = nodeDetails.getNestedNetworkTexturePaint(cyNode);
+			final TexturePaint nestedNetworkPaint = nodeDetails.getNestedNetworkTexturePaint(netView, cyNode);
 			if (nestedNetworkPaint != null) {
 				doubleBuff1[0] = floatBuff1[0];
 				doubleBuff1[1] = floatBuff1[1];
@@ -1118,23 +1110,23 @@ public final class GraphRenderer {
 
 			// draw custom graphics on top of nested networks 
 			// don't allow our custom graphics to mutate while we iterate over them:
-			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
-				final View<CyNode> nodeView = netView.getNodeView(cyNode);
+//			synchronized (nodeDetails.customGraphicsLock(cyNode)) {
+			synchronized (nodeDetails) {
 				
 				// This method should return CustomGraphics in rendering order:
 				final Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgMap = nodeDetails.getCustomGraphics(cyNode);
 				final List<CustomGraphicsInfo> infoList = new ArrayList<>(cgMap.values());
 				
 				for (final CustomGraphicsInfo cgInfo : infoList) {
-					final List<CustomGraphicLayer> layers = cgInfo.createLayers(netView, nodeView, nodeDetails, dependencies);
+					final List<CustomGraphicLayer> layers = cgInfo.createLayers(netView, cyNode, nodeDetails, dependencies);
 					
 					// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
 					// index of the CustomGraphicLayer returned by the iterator:
 					int graphicInx = 0;
 					
 					for (final CustomGraphicLayer layer : layers) {
-						final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode, graphicInx);
-						final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode, graphicInx);
+						final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode);
+						final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode);
 						doubleBuff1[0] = floatBuff1[0];
 						doubleBuff1[1] = floatBuff1[1];
 						doubleBuff1[2] = floatBuff1[2];

@@ -78,8 +78,8 @@ import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
@@ -2120,7 +2120,7 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkView netView, final CyNode node,
+	public final void drawCustomGraphicFull(final CyNetworkViewSnapshot netView, final ReadableView<CyNode> node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
@@ -2146,8 +2146,7 @@ public final class GraphGraphics {
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
-			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
-			layer.draw(m_g2d, nodeShape, netView, view);
+			layer.draw(m_g2d, nodeShape, netView, node);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();

@@ -58,8 +58,7 @@ public class CustomGraphicsInfo {
 		this.size = size;
 	}
 	
-	public List<CustomGraphicLayer> createLayers(final CyNetworkView netView, final View<CyNode> nodeView,
-			final NodeDetails details, final Set<VisualPropertyDependency<?>> dependencies) {
+	public List<CustomGraphicLayer> createLayers(final CyNetworkView netView, final View<CyNode> nodeView, final NodeDetails details, final Set<VisualPropertyDependency<?>> dependencies) {
 		final List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
 		
 		if (customGraphics == null)

@@ -1,30 +1,5 @@
 package org.cytoscape.graph.render.stateful;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
@@ -33,9 +8,9 @@ import java.awt.TexturePaint;
 import java.util.Collections;
 import java.util.Map;
 
-import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.ReadableView;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
 import org.cytoscape.view.presentation.property.values.Justification;
@@ -132,19 +107,14 @@ public interface NodeDetails {
 	public static final byte LABEL_WRAP_JUSTIFY_RIGHT = 66;
 	*/
 	
-	static final Stroke DEF_BORDER_STROKE = new BasicStroke(2.0f);
 
-	default double getWidth(View<CyNode> node) {
-		return 0.0;
-	}
+	double getWidth(ReadableView<CyNode> node);
 
-	default double getHeight(View<CyNode> node) {
-		return 0.0;
-	}
+	double getHeight(ReadableView<CyNode> node);
+	
 	
 	/**
-	 * Returns the color of node in low detail rendering mode. By default this
-	 * method returns Color.red. It is an error to return null in this method.
+	 * Returns the color of node in low detail rendering mode.
 	 * <p>
 	 * In low detail rendering mode, this is the only method from this class
 	 * that is looked at. The rest of the methods in this class define visual
@@ -152,120 +122,86 @@ public interface NodeDetails {
 	 * rendering mode translucent colors are not supported whereas in full
 	 * detail rendering mode they are.
 	 */
-	default Color getColorLowDetail(View<CyNode> node) {
-		return Color.RED;
-	}
+	Color getColorLowDetail(CyNetworkViewSnapshot snapshot, ReadableView<CyNode> node) ;
 
 	/**
 	 * Returns a GraphGraphics.SHAPE_* constant (or a custom node shape that an
 	 * instance of GraphGraphics understands); this defines the shape that this
-	 * node takes. By default this method returns GraphGraphics.SHAPE_RECTANGLE.
+	 * node takes.
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull() that pertain to rounded rectangles.
 	 */
-	default byte getShape(View<CyNode> node) {
-		return GraphGraphics.SHAPE_RECTANGLE;
-	}
+	byte getShape(ReadableView<CyNode> node);
 
 	/**
-	 * Returns the paint of the interior of the node shape. By default this
-	 * method returns Color.red. It is an error to return null in this method.
+	 * Returns the paint of the interior of the node shape. It is an error to return null in this method.
 	 */
-	default Paint getFillPaint(View<CyNode> node) {
-		return Color.RED;
-	}
+	Paint getFillPaint(ReadableView<CyNode> node);
 
 	/**
-	 * Returns the border width of the node shape. By default this method
-	 * returns zero. Take note of certain constraints specified in
+	 * Returns the border width of the node shape. 
+	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	default float getBorderWidth(View<CyNode> node) {
-		return 0.0f;
-	}
+	float getBorderWidth(ReadableView<CyNode> node);
 	
-	default Stroke getBorderStroke(View<CyNode> node) {
-		return DEF_BORDER_STROKE;
-	}
+	Stroke getBorderStroke(ReadableView<CyNode> node);
 
 	/**
-	 * Returns the paint of the border of the node shape. By default this method
-	 * returns null. This return value is ignored if borderWidth(node) returns
+	 * Returns the paint of the border of the node shape. 
+	 * This return value is ignored if borderWidth(node) returns
 	 * zero; it is an error to return null if borderWidth(node) returns a value
 	 * greater than zero.
 	 */
-	default Paint getBorderPaint(View<CyNode> node) {
-		return Color.DARK_GRAY;
-	}
+	Paint getBorderPaint(ReadableView<CyNode> node);
 
 	/**
-	 * Returns the number of labels that this node has. By default this method
-	 * returns zero.
+	 * Returns the number of labels that this node has.
 	 */
-	default int getLabelCount(View<CyNode> node) {
-		return 0;
-	}
+	int getLabelCount(ReadableView<CyNode> node);
 
 	/**
-	 * Returns a label's text. By default this method always returns null. This
+	 * Returns a label's text. This
 	 * method is only called by the rendering engine if labelCount(node) returns
 	 * a value greater than zero. It is an error to return null if this method
 	 * is called by the rendering engine.
 	 * <p>
 	 * To specify multiple lines of text in a node label, simply insert the '\n'
 	 * character between lines of text.
-	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 */
-	default String getLabelText(View<CyNode> node, int labelInx) {
-		return null;
-	}
+	String getLabelText(ReadableView<CyNode> node);
 
 	/**
-	 * Returns the font to use when rendering this label. By default this method
-	 * always returns null. This method is only called by the rendering engine
+	 * Returns the font to use when rendering this label. 
+	 * This method is only called by the rendering engine
 	 * if labelCount(node) returns a value greater than zero. It is an error to
 	 * return null if this method is called by the rendering engine.
-	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 */
-	default Font getLabelFont(View<CyNode> node, int labelInx) {
-		return null;
-	}
+	Font getLabelFont(ReadableView<CyNode> node);
 
 	/**
 	 * Returns an additional scaling factor that is to be applied to the font
 	 * used to render this label; this scaling factor, applied to the point size
 	 * of the font returned by labelFont(node, labelInx), yields a new virtual
-	 * font that is used to render the text label. By default this method always
-	 * returns 1.0. This method is only called by the rendering engine if
+	 * font that is used to render the text label. 
+	 * This method is only called by the rendering engine if
 	 * labelCount(node) returns a value greater than zero.
 	 * 
 	 * @param labelInx
 	 *            a value in the range [0, labelCount(node)-1] indicating which
 	 *            node label in question.
 	 */
-	default double labelScaleFactor(View<CyNode> node, int labelInx) {
+	default double getLabelScaleFactor(ReadableView<CyNode> node) {
 		return 1.0d;
 	}
 
 	/**
-	 * Returns the paint of a text label. By default this method always returns
-	 * null. This method is only called by the rendering engine if
+	 * Returns the paint of a text label. 
+	 * This method is only called by the rendering engine if
 	 * labelCount(node) returns a value greater than zero. It is an error to
 	 * return null if this method is called by the rendering engine.
-	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 */
-	default Paint getLabelPaint(View<CyNode> node, int labelInx) {
-		return Color.DARK_GRAY;
-	}
+	Paint getLabelPaint(ReadableView<CyNode> node);
 
 	/**
 	 * By returning one of the ANCHOR_* constants, specifies where on a text
@@ -275,21 +211,16 @@ public interface NodeDetails {
 	 * to be placed. The text's logical bounds box is placed such that the label
 	 * offset vector plus the node anchor point equals the text anchor point.
 	 * <p>
-	 * By default this method always returns ANCHOR_CENTER. This method is only
+	 * This method is only
 	 * called by the rendering engine if labelCount(node) returns a value
 	 * greater than zero.
 	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 * @see #ANCHOR_CENTER
 	 * @see #getLabelNodeAnchor(int, int)
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default Position getLabelTextAnchor(View<CyNode> node, int labelInx) {
-		return Position.CENTER;
-	}
+	Position getLabelTextAnchor(ReadableView<CyNode> node);
 
 	/**
 	 * By returning one of the ANCHOR_* constants, specifies where on the node's
@@ -299,21 +230,16 @@ public interface NodeDetails {
 	 * placed. The text's logical bounds box is placed such that the label
 	 * offset vector plus the node anchor point equals the text anchor point.
 	 * <p>
-	 * By default this method always returns ANCHOR_CENTER. This method is only
+	 * This method is only
 	 * called by the rendering engine if labelCount(node) returns a value
 	 * greater than zero.
 	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 * @see #ANCHOR_CENTER
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelOffsetVectorY(int, int)
 	 */
-	default Position getLabelNodeAnchor(View<CyNode> node, int labelInx) {
-		return Position.CENTER;
-	}
+	Position getLabelNodeAnchor(ReadableView<CyNode> node);
 
 	/**
 	 * Specifies the X component of the vector that separates a text anchor
@@ -327,14 +253,11 @@ public interface NodeDetails {
 	 * the rendering engine if labelCount(node) returns a value greater than
 	 * zero.
 	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 * @see #getLabelOffsetVectorY(int, int)
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	default float getLabelOffsetVectorX(View<CyNode> node, int labelInx) {
+	default float getLabelOffsetVectorX(ReadableView<CyNode> node) {
 		return 0.0f;
 	}
 
@@ -350,14 +273,11 @@ public interface NodeDetails {
 	 * the rendering engine if labelCount(node) returns a value greater than
 	 * zero.
 	 * 
-	 * @param labelInx
-	 *            a value in the range [0, labelCount(node)-1] indicating which
-	 *            node label in question.
 	 * @see #getLabelOffsetVectorX(int, int)
 	 * @see #getLabelTextAnchor(int, int)
 	 * @see #getLabelNodeAnchor(int, int)
 	 */
-	default float getLabelOffsetVectorY(View<CyNode> node, int labelInx) {
+	default float getLabelOffsetVectorY(ReadableView<CyNode> node) {
 		return 0.0f;
 	}
 
@@ -373,12 +293,12 @@ public interface NodeDetails {
 	 * 
 	 * @see #LABEL_WRAP_JUSTIFY_CENTER
 	 */
-	default Justification getLabelJustify(View<CyNode> node, int labelInx) {
+	default Justification getLabelJustify(ReadableView<CyNode> node) {
 		return Justification.JUSTIFY_CENTER;
 	}
 
 	@SuppressWarnings("unchecked")
-	default Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> node) {
+	default Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(ReadableView<CyNode> node) {
 		return Collections.EMPTY_MAP;
 	}
 	
@@ -389,13 +309,10 @@ public interface NodeDetails {
 	 * the rendering engine if graphicCount(node) returns a value greater than
 	 * zero.
 	 * 
-	 * @param graphicInx
-	 *            a value in the range [0, graphicCount(node)-1] indicating
-	 *            which node graphic in question.
 	 * @see #graphicOffsetVectorY(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	default float graphicOffsetVectorX(View<CyNode> node, int graphicInx) {
+	default float graphicOffsetVectorX(ReadableView<CyNode> node) {
 		return 0.0f;
 	}
 
@@ -406,13 +323,10 @@ public interface NodeDetails {
 	 * the rendering engine if graphicCount(node) returns a value greater than
 	 * zero.
 	 * 
-	 * @param graphicInx
-	 *            a value in the range [0, graphicCount(node)-1] indicating
-	 *            which node graphic in question.
 	 * @see #graphicOffsetVectorX(int, int)
 	 * @see #graphicNodeAnchor(int, int)
 	 */
-	default float graphicOffsetVectorY(View<CyNode> node, int graphicInx) {
+	default float graphicOffsetVectorY(ReadableView<CyNode> node) {
 		return 0.0f;
 	}
 
@@ -439,7 +353,7 @@ public interface NodeDetails {
 	 * 
 	 * @since Cytoscape 2.6
 	 */
-	default Object customGraphicsLock(View<CyNode> node) {
+	default Object customGraphicsLock(ReadableView<CyNode> node) {
 		return this;
 	}
 
@@ -448,7 +362,7 @@ public interface NodeDetails {
 	 * Take note of certain constraints specified in
 	 * GraphGraphics.drawNodeFull().
 	 */
-	default double getLabelWidth(View<CyNode> node) {
+	default double getLabelWidth(ReadableView<CyNode> node) {
 		return 100.0;
 	}
 
@@ -459,7 +373,7 @@ public interface NodeDetails {
 	 * @param node
 	 * @return
 	 */
-	default TexturePaint getNestedNetworkTexturePaint(View<CyNode> node) {
+	default TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, ReadableView<CyNode> node) {
 		return null;
 	}
 }

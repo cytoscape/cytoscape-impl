@@ -271,20 +271,20 @@ public class NetworkViewImplTest {
 			ReadableView<CyEdge> ev5 = snapshot.getEdgeView(e5);
 			
 			SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(ev1);
-			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceSUID());
-			assertEquals(nv2.getSUID().longValue(), edgeInfo.getTargetSUID());
+			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceViewSUID());
+			assertEquals(nv2.getSUID().longValue(), edgeInfo.getTargetViewSUID());
 			edgeInfo = snapshot.getEdgeInfo(ev2);
-			assertEquals(nv2.getSUID().longValue(), edgeInfo.getSourceSUID());
-			assertEquals(nv3.getSUID().longValue(), edgeInfo.getTargetSUID());
+			assertEquals(nv2.getSUID().longValue(), edgeInfo.getSourceViewSUID());
+			assertEquals(nv3.getSUID().longValue(), edgeInfo.getTargetViewSUID());
 			edgeInfo = snapshot.getEdgeInfo(ev3);
-			assertEquals(nv3.getSUID().longValue(), edgeInfo.getSourceSUID());
-			assertEquals(nv4.getSUID().longValue(), edgeInfo.getTargetSUID());
+			assertEquals(nv3.getSUID().longValue(), edgeInfo.getSourceViewSUID());
+			assertEquals(nv4.getSUID().longValue(), edgeInfo.getTargetViewSUID());
 			edgeInfo = snapshot.getEdgeInfo(ev4);
-			assertEquals(nv4.getSUID().longValue(), edgeInfo.getSourceSUID());
-			assertEquals(nv1.getSUID().longValue(), edgeInfo.getTargetSUID());
+			assertEquals(nv4.getSUID().longValue(), edgeInfo.getSourceViewSUID());
+			assertEquals(nv1.getSUID().longValue(), edgeInfo.getTargetViewSUID());
 			edgeInfo = snapshot.getEdgeInfo(ev5);
-			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceSUID());
-			assertEquals(nv3.getSUID().longValue(), edgeInfo.getTargetSUID());
+			assertEquals(nv1.getSUID().longValue(), edgeInfo.getSourceViewSUID());
+			assertEquals(nv3.getSUID().longValue(), edgeInfo.getTargetViewSUID());
 			
 			Set<Long> adjacentEdges = asSuidSet(snapshot.getAdjacentEdgeIterable(nv1));
 			assertEquals(3, adjacentEdges.size());
