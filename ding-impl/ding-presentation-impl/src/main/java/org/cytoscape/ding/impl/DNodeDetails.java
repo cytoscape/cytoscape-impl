@@ -71,7 +71,7 @@ public class DNodeDetails implements NodeDetails {
 	static {
 		// Initialize image icons for nested networks
 		try {
-			DEFAULT_NESTED_NETWORK_IMAGE = ImageIO.read(DNodeDetails.class.getClassLoader().getResource("images/default_network.png"));
+			DEFAULT_NESTED_NETWORK_IMAGE   = ImageIO.read(DNodeDetails.class.getClassLoader().getResource("images/default_network.png"));
 			RECURSIVE_NESTED_NETWORK_IMAGE = ImageIO.read(DNodeDetails.class.getClassLoader().getResource("images/recursive_network.png"));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -304,6 +304,16 @@ public class DNodeDetails implements NodeDetails {
 
 	public Double getNodeDepth(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_DEPTH);
+	}
+
+	@Override
+	public double getXPosition(View<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_X_LOCATION);
+	}
+
+	@Override
+	public double getYPosition(View<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_Y_LOCATION);
 	}
 	
 	

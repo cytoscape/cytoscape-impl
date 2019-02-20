@@ -60,10 +60,10 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		CyNode sourceNode = AddEdgeStateMonitor.getSourceNode(netView);
+		View<CyNode> sourceNode = AddEdgeStateMonitor.getSourceNode(netView);
 		
 		if (sourceNode == null) {
-			AddEdgeStateMonitor.setSourceNode(netView, nodeView.getModel());
+			AddEdgeStateMonitor.setSourceNode(netView, nodeView);
 			double[] coords = new double[2];
 			coords[0] = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 			coords[1] = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
@@ -78,7 +78,8 @@ public class AddEdgeTask extends AbstractNodeViewTask {
 			CyNetwork net = netView.getModel();
 			CyNode targetNode = nodeView.getModel();
 
-			final CyEdge newEdge = net.addEdge(sourceNode, targetNode, true);
+			// MKTODO check for exception?
+			final CyEdge newEdge = net.addEdge(sourceNode.getModel(), targetNode, true);
 			final String interaction = "interacts with";
 			String edgeName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
 			edgeName += " (" + interaction + ") ";

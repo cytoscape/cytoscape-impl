@@ -24,6 +24,7 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 		CyNetworkView networkView = delegateFactory.createNetworkView(network);
 		
 		DRenderingEngine re = createRenderingEngine(networkView);
+		networkView.addNetworkViewListener(re);
 		mainRenderingEngines.put(networkView, re);
 		
 		return networkView;

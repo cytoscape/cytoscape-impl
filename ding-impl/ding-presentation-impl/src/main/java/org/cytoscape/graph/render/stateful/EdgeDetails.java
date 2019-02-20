@@ -139,16 +139,16 @@ public interface EdgeDetails {
 	 * the source node shape or if the last anchor lies inside the target
 	 * node shape, the edge is not rendered.
 	 */
-	public EdgeAnchors getAnchors(View<CyEdge> edgeView);
+	default public EdgeAnchors getAnchors(View<CyEdge> edgeView) {
+		return null;
+	}
 
 	/**
 	 * For edges with anchors, the anchors can be rendered as squares.  To render
 	 * an anchor, return a positive value in this method.  If zero is returned
 	 * no edge anchor is rendered.  By default this method returns zero.
 	 */
-	default public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
-		return 0.0f;
-	}
+	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx);
 
 	/**
 	 * Returns the paint to use when rendering an edge anchor.  The output of
@@ -156,9 +156,7 @@ public interface EdgeDetails {
 	 * otherwise, a non-null value must be returned.  By default this method
 	 * returns null.
 	 */
-	default public Paint getAnchorPaint(View<CyEdge> edgeView, int anchorInx) {
-		return null;
-	}
+	public Paint getAnchorPaint(View<CyEdge> edgeView, int anchorInx);
 
 	/**
 	 * Returns the thickness of the edge segment.
@@ -322,5 +320,7 @@ public interface EdgeDetails {
 	default public boolean isVisible(View<CyEdge> edgeView) {
 		return true;
 	}
+
+	Integer getLineCurved(View<CyEdge> edgeView);
 
 }

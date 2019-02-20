@@ -418,11 +418,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double deltaX = 0;
 				double deltaY = 0;
 				
-				if (!re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
 					deltaX = (currX - m_lastXMousePos) / m_myScaleFactor;
 					m_lastXMousePos = currX;
 				}
-				if (!re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
 					deltaY = (currY - m_lastYMousePos) / m_myScaleFactor;
 					m_lastYMousePos = currY;
 				}

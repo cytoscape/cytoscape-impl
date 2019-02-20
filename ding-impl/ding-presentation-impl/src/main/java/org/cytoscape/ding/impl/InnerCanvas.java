@@ -38,8 +38,6 @@ import javax.swing.Timer;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.graph.render.export.ImageImposter;
@@ -113,8 +111,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	final GeneralPath m_path2 = new GeneralPath();
 	final LongStack m_stack = new LongStack();
 	final LongStack m_stack2 = new LongStack();
-//	final Object m_lock;
-	private DRenderingEngine m_view;
+	final DingLock m_lock;
+	private DRenderingEngine m_re;
 	final GraphLOD[] m_lod = new GraphLOD[1];
 	double m_xCenter;
 	double m_yCenter;
@@ -153,10 +151,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	InnerCanvas(Object lock, DRenderingEngine view, CyServiceRegistrar serviceRegistrar) {
+	InnerCanvas(DingLock lock, DRenderingEngine re, CyServiceRegistrar serviceRegistrar) {
 		super(DRenderingEngine.Canvas.NETWORK_CANVAS);
-//		m_lock = lock;
-		m_view = view;
+		m_lock = lock;
+		m_re = re;
 		this.serviceRegistrar = serviceRegistrar;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;

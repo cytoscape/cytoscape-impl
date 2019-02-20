@@ -41,7 +41,7 @@ public class DingRenderer implements NetworkViewRenderer {
 		visualStyleRenderingFactory =
 				new DingVisualStyleRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		thumbnailEngineFactory =
-				new DingThumbnailRenderingEngineFactory(dVisualLexicon, serviceRegistrar);
+				new DingThumbnailRenderingEngineFactory(viewFactory, dVisualLexicon, serviceRegistrar);
 	}
 
 	public DRenderingEngine getRenderingEngine(CyNetworkView view) {

@@ -1,5 +1,11 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.ALL;
+import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.EDGES;
+import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.NODES;
+import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.SELECTED;
+import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.SELECTED_NODES;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -25,101 +31,104 @@ package org.cytoscape.ding.impl;
  */
 
 import java.awt.geom.Point2D;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.NodeView;
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ViewChangeEdit;
+import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
-
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.View;
 
 /**
  * Records the state of a view.  Used for undo by ViewChangeEdit. If it would help
  * to make this public, then please do so.
+ * 
+ * MKTODO Now that we have the snapshot feature this could be rewritten to be much simpler.
+ * Don't need all the maps, just store a reference to the snapshot itself.
  */
 public class ViewState {
 
+	
+	// MKTODO now that we have the snapshot feature 
 	protected double scaleFactor;
 	protected Point2D center;
-	protected Map<CyNode, Point2D.Double> points;
-	protected Map<CyEdge, List> anchors;
-	protected Map<CyEdge, Integer> linetype;
-	protected CyNetworkView view;
+	protected Map<View<CyNode>, Point2D.Double> points;
+	protected Map<View<CyEdge>, List> anchors;
+	protected Map<View<CyEdge>, Integer> linetype;
+	protected CyNetworkViewSnapshot view;
+	protected DRenderingEngine re;
 	protected ViewChangeEdit.SavedObjs savedObjs;
 
 	/**
 	 * @param v The view whose state we're recording.
 	 */
-	public ViewState(CyNetworkView v, ViewChangeEdit.SavedObjs whatToSave) {
-		view = v;
+	public ViewState(DRenderingEngine re, ViewChangeEdit.SavedObjs whatToSave) {
+		view = re.getViewModelSnapshot();
+		this.re = re;
 		points = null;
 		anchors = null;
 		linetype = null;
 		savedObjs = whatToSave;
 
 		// record the state of the view
-		center = view.getCenter();
-		scaleFactor = view.getZoom();
+		center = re.getCenter();
+		scaleFactor = re.getZoom();
+		NodeDetails nodeDetails = re.getNodeDetails();
 
 		// Use nodes as keys because they are less volatile than
 		// node views, which can disappear between when this edit
 		// is created and when it is used.
-		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.NODES) {
-			points = new WeakHashMap<CyNode, Point2D.Double>();
-			for (CyNode n: view.getNetwork().getNodeList()) {
-				NodeView nv = view.getDNodeView(n);
-				
-				if (nv != null)
-					points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
+		if (whatToSave == ALL || whatToSave == NODES) {
+			points = new WeakHashMap<>();
+			for (View<CyNode> n: view.getNodeViews()) {
+				double x = nodeDetails.getXPosition(n);
+				double y = nodeDetails.getYPosition(n);
+				points.put(n, new Point2D.Double(x, y));
 			}
 		}
 
-		if (whatToSave == ViewChangeEdit.SavedObjs.ALL || whatToSave == ViewChangeEdit.SavedObjs.EDGES) {
-			anchors = new WeakHashMap<CyEdge, List>();
-			linetype = new WeakHashMap<CyEdge, Integer>();
-			for (CyEdge e: view.getNetwork().getEdgeList()) {
-				final DEdgeView ev = view.getDEdgeView(e);
-				DGraphView gView = (DGraphView) ev.getGraphView();
+		if (whatToSave == ALL || whatToSave == EDGES) {
+			anchors = new WeakHashMap<>();
+			linetype = new WeakHashMap<>();
+			for (View<CyEdge> e: view.getEdgeViews()) {
 				// FIXME!
 				//anchors.put(e, ev.getBend().getHandles());
-				linetype.put(e, gView.m_edgeDetails.getLineCurved(e));
+				linetype.put(e, re.getEdgeDetails().getLineCurved(e));
 			}
 		}
 
-		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
-		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_NODES ) {
-			points = new WeakHashMap<CyNode, Point2D.Double>();
-
-			Iterator<CyNode> nodeIter = view.getSelectedNodes().iterator();
-			while (nodeIter.hasNext()) {
-				CyNode n = nodeIter.next();
-				NodeView nv = view.getDNodeView(n);
-				if (nv == null) continue;
-				points.put(n, new Point2D.Double(nv.getXPosition(), nv.getYPosition()));
+		if (whatToSave == SELECTED || whatToSave == SELECTED_NODES ) {
+			points = new WeakHashMap<>();
+			for (View<CyNode> n : view.getSelectedNodes()) {
+				double x = nodeDetails.getXPosition(n);
+				double y = nodeDetails.getYPosition(n);
+				points.put(n, new Point2D.Double(x, y));
 			}
 		}
 
-		if (whatToSave == ViewChangeEdit.SavedObjs.SELECTED ||
-		    whatToSave == ViewChangeEdit.SavedObjs.SELECTED_EDGES ) {
-			anchors = new WeakHashMap<CyEdge, List>();
-			linetype = new WeakHashMap<CyEdge, Integer>();
-
-			Iterator<CyEdge> edgeIter = view.getSelectedEdges().iterator();
-			while (edgeIter.hasNext()) {
-				CyEdge e = edgeIter.next();
-				final DEdgeView ev = view.getDEdgeView(e);
-				if (ev == null) continue;
-				DGraphView gView = (DGraphView) ev.getGraphView();
-				// FIXME!
-				//anchors.put(e, ev.getBend().getHandles());
-				linetype.put(e, gView.m_edgeDetails.getLineCurved(e));
-			}
-		}
+		
+		// MKTODO add selected edges to the view model????
+		
+//		if (whatToSave == SELECTED || whatToSave == SELECTED_EDGES ) {
+//			anchors = new WeakHashMap<>();
+//			linetype = new WeakHashMap<>();
+//
+//			Iterator<CyEdge> edgeIter = view.getSelectedEdges().iterator();
+//			while (edgeIter.hasNext()) {
+//				CyEdge e = edgeIter.next();
+//				final DEdgeView ev = view.getDEdgeView(e);
+//				if (ev == null) continue;
+//				DGraphView gView = (DGraphView) ev.getGraphView();
+//				// FIXME!
+//				//anchors.put(e, ev.getBend().getHandles());
+//				linetype.put(e, gView.m_edgeDetails.getLineCurved(e));
+//			}
+//		}
 	}
 
 	/**
@@ -155,7 +164,7 @@ public class ViewState {
 			if (vs.points == null || points.size() != vs.points.size()) {
 				return false;
 			}
-			for (CyNode n: points.keySet()) {
+			for (View<CyNode> n: points.keySet()) {
 				if ( !points.get(n).equals( vs.points.get(n) ) ) {
 					return false;
 				}
@@ -166,7 +175,7 @@ public class ViewState {
 			if (vs.anchors == null || anchors.size() != vs.anchors.size())
 				return false;
 			
-			for(final CyEdge e: anchors.keySet()) {
+			for(View<CyEdge> e: anchors.keySet()) {
 				if ( !anchors.get(e).equals(vs.anchors.get(e))) {
 					return false;
 				}
@@ -186,28 +195,35 @@ public class ViewState {
 	 * this object.
 	 */
 	public void apply() {
+		CyNetworkView mutableNetworkView = view.getMutableNetworkView();
 
 		if (points != null) {
 			// Use nodes as keys because they are less volatile than views...
-			for (CyNode n: points.keySet()) {
-				NodeView nv = view.getDNodeView(n);
+			for (View<CyNode> n: points.keySet()) {
 				Point2D.Double p = points.get(n);
-				nv.setXPosition(p.getX());
-				nv.setYPosition(p.getY());
+				
+				View<CyNode> mutableNode = mutableNetworkView.getNodeView(n.getModel());
+				if(mutableNode != null) {
+					mutableNode.setVisualProperty(DVisualLexicon.NODE_X_LOCATION, p.getX());
+					mutableNode.setVisualProperty(DVisualLexicon.NODE_Y_LOCATION, p.getX());
+				}
 			}
 		}
 
-		view.setZoom(scaleFactor);
-		view.setCenter(center.getX(), center.getY());
-		view.updateView();
+		re.setZoom(scaleFactor);
+		re.setCenter(center.getX(), center.getY());
+		re.updateView();
 
 		if (anchors != null) {
-			for(final CyEdge e: anchors.keySet()) {
-				final EdgeView ev = view.getDEdgeView(e);
+			for(View<CyEdge> e: anchors.keySet()) {
 				// FIXME!
 				//ev.getBend().setHandles( anchors.get(e) );
-				ev.setLineCurved( linetype.get(e).intValue() );
+				View<CyEdge> mutableEdge = mutableNetworkView.getEdgeView(e.getModel());
+				if(mutableEdge != null) {
+					mutableEdge.setVisualProperty(DVisualLexicon.EDGE_CURVED, linetype.get(e).intValue());
+				}
 			}
 		}
 	}
+	
 }

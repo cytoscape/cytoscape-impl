@@ -36,6 +36,7 @@ import java.util.WeakHashMap;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
 
 /**
  * This class is designed to keep track of the state of AddEdgeTasks throughout ding.
@@ -54,27 +55,27 @@ class AddEdgeStateMonitor {
 	private double saveY2;
 
 	private final InnerCanvas canvas;
-	private final DRenderingEngine m_view;
+	private final DRenderingEngine re;
 	private final Stroke eraseStroke;
 
-	private static Map<CyNetworkView,CyNode>  sourceNodes =  new WeakHashMap<>();
+	private static Map<CyNetworkView,View<CyNode>> sourceNodes =  new WeakHashMap<>();
 	private static Map<CyNetworkView,Point2D> sourcePoints = new WeakHashMap<>();
 
-	AddEdgeStateMonitor(InnerCanvas canvas, DRenderingEngine m_view) {
+	AddEdgeStateMonitor(InnerCanvas canvas, DRenderingEngine re) {
 		this.canvas = canvas;
-		this.m_view = m_view;
+		this.re = re;
 		eraseStroke = new BasicStroke(2.0f);
 	}
 
 	boolean addingEdge() {
-		return sourceNodes.containsKey(m_view.getViewModel());
+		return sourceNodes.containsKey(re.getViewModel());
 	}
 
-	static CyNode getSourceNode(CyNetworkView view) {
+	static View<CyNode> getSourceNode(CyNetworkView view) {
 		return sourceNodes.get(view);
 	}
 
-	static void setSourceNode(CyNetworkView view, CyNode n) {
+	static void setSourceNode(CyNetworkView view, View<CyNode> n) {
 		if ( n == null )
 			sourceNodes.remove(view);
 		else
@@ -98,7 +99,7 @@ class AddEdgeStateMonitor {
 	void drawRubberBand(MouseEvent e) {
 		nextPoint = e.getPoint();
 
-		Point2D startPoint = getSourcePoint(m_view.getViewModel());
+		Point2D startPoint = getSourcePoint(re.getViewModel());
 		if ( startPoint == null )
 			return;
 
@@ -124,7 +125,7 @@ class AddEdgeStateMonitor {
         Color saveColor = g.getColor();
 
         if (saveX1 != Double.MIN_VALUE) {
-            DingCanvas backgroundCanvas = m_view.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+            DingCanvas backgroundCanvas = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
             Stroke oldStroke = g.getStroke();
             g.setStroke(eraseStroke);
             g.setColor(backgroundCanvas.getBackground());

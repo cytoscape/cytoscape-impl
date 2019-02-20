@@ -112,6 +112,10 @@ public interface NodeDetails {
 
 	double getHeight(View<CyNode> node);
 	
+	double getXPosition(View<CyNode> node);
+	
+	double getYPosition(View<CyNode> node);
+	
 	
 	/**
 	 * Returns the color of node in low detail rendering mode.

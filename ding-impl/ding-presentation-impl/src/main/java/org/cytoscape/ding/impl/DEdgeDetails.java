@@ -48,6 +48,7 @@ public final class DEdgeDetails implements EdgeDetails {
 
 	public static final int CURVED_LINES = 1;
 	public static final int STRAIGHT_LINES = 2;
+	public static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
 	
 	private static boolean isSelected(View<CyEdge> edgeView) {
@@ -230,6 +231,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			return (float) getWidth(edgeView) + size.floatValue();
 	}
 
+	@Override
 	public Integer getLineCurved(View<CyEdge> edgeView) {
 		Boolean curved = edgeView.getVisualProperty(EDGE_CURVED);
 		return Boolean.TRUE.equals(curved) ? CURVED_LINES : STRAIGHT_LINES;
@@ -248,29 +250,34 @@ public final class DEdgeDetails implements EdgeDetails {
 		return bend;
 	}
 	
+	private int getNumAnchors(View<CyEdge> edgeView) {
+		Bend bend = getBend(edgeView); 
+		int numHandles = bend.getAllHandles().size();
+		if (numHandles == 0)
+			return 0;
+		return getLineCurved(edgeView) == CURVED_LINES ? numHandles : 2 * numHandles;
+	}
+	
+	@Override
+	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
+		if (isSelected(edgeView) && getNumAnchors(edgeView) > 0)
+			return DEFAULT_ANCHOR_SIZE;
+		return 0.0f;
+	}
 
-//	public float getAnchorSize(final CyEdge edge, final int anchorInx) {
-//		final DEdgeView eView = (DEdgeView) dGraphView.getDEdgeView(edge);
-//
-//		if (eView.isSelected() && (eView.numAnchors() > 0))
-//			return dGraphView.getAnchorSize();
-//		else
-//			return 0.0f;
-//	}
-//
-//	/**
-//	 * Color of handles.
-//	 */
-//	@Override
-//	public Paint getAnchorPaint(final CyEdge edge, int anchorInx) {
-//		if (getLineCurved(edge) == DEdgeView.STRAIGHT_LINES)
-//			anchorInx = anchorInx / 2;
-//
+
+	@Override
+	public Paint getAnchorPaint(View<CyEdge> edgeView, int anchorInx) {
+		if (getLineCurved(edgeView) == STRAIGHT_LINES)
+			anchorInx = anchorInx / 2;
+
+		return null;
+		
 //		if (dGraphView.m_selectedAnchors.count((edge.getSUID() << 6) | anchorInx) > 0)
 //			return getSelectedPaint(edge);
 //		else
 //			return getUnselectedPaint(edge);
-//	}
+	}
 //	
 //	// Used by bends
 //	private final MinLongHeap m_heap = new MinLongHeap();
@@ -278,8 +285,6 @@ public final class DEdgeDetails implements EdgeDetails {
 //
 //
 //	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
-//		final DEdgeView edgeView = (DEdgeView) dGraphView.getDEdgeView(edge);
-//		
 //		if (edgeView == null)
 //			return null;
 //		

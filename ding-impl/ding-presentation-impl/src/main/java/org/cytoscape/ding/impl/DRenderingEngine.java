@@ -17,7 +17,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -30,7 +29,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,10 +45,6 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.GraphViewObject;
-import org.cytoscape.ding.NodeView;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.customgraphics.NullCustomGraphics;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
@@ -62,8 +56,10 @@ import org.cytoscape.ding.impl.strokes.AnimatedStroke;
 import org.cytoscape.ding.impl.visualproperty.CustomGraphicsVisualProperty;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
+import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -71,24 +67,11 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.SUIDFactory;
-import org.cytoscape.model.events.AboutToRemoveEdgesEvent;
-import org.cytoscape.model.events.AboutToRemoveEdgesListener;
-import org.cytoscape.model.events.AboutToRemoveNodesEvent;
-import org.cytoscape.model.events.AboutToRemoveNodesListener;
-import org.cytoscape.model.events.AddedEdgesEvent;
-import org.cytoscape.model.events.AddedEdgesListener;
-import org.cytoscape.model.events.AddedNodesEvent;
-import org.cytoscape.model.events.AddedNodesListener;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.spacial.SpacialEntry2DEnumerator;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.spacial.internal.dummy.DummySpacialFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
@@ -98,13 +81,11 @@ import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewListener;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
-import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
-import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
-import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.FitContentEvent;
 import org.cytoscape.view.model.events.FitContentListener;
 import org.cytoscape.view.model.events.FitSelectedEvent;
@@ -156,8 +137,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class DRenderingEngine implements RenderingEngine<CyNetwork>,
-		Printable, AddedEdgesListener, AddedNodesListener, AboutToRemoveEdgesListener,
-		AboutToRemoveNodesListener, FitContentListener, FitSelectedListener, RowsSetListener, ActionListener {
+		Printable, FitContentListener, FitSelectedListener, RowsSetListener, ActionListener, CyNetworkViewListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	
@@ -179,15 +159,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	public enum ShapeType {
 		NODE_SHAPE, LINE_TYPE, ARROW_SHAPE;
 	}
-
-	private String title;
 	
-//	/**
-//	 * Common object used for synchronization.
-//	 *
-//	 * Change this to a readwrite lock!
-//	 */
-//	final Object m_lock = new Object();
+	private String title;
+
+	private final CyServiceRegistrar serviceRegistrar;
+	private final CyNetworkView viewModel;
+	private final DVisualLexicon lexicon;
+	
+	/**
+	 * Common object used for synchronization.
+	 *
+	 * Change this to a readwrite lock!
+	 */
+	final DingLock m_lock = new DingLock();
 
 	/**
 	 * A common buffer object used to pass information about. X-Y coords of the
@@ -196,16 +180,18 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	final float[] m_extentsBuff = new float[4];
 	final double[] m_extentsBuffD = new double[4];
 
-	/**
-	 * A common general path variable used for holding lots of shapes.
-	 */
-	final GeneralPath m_path = new GeneralPath();
+	
+	
+//	/**
+//	 * A common general path variable used for holding lots of shapes.
+//	 */
+//	final GeneralPath m_path = new GeneralPath();
 
-	/**
-	 * Holds the NodeView data for the nodes that are visible. This will change
-	 * as nodes are hidden from the view.
-	 */
-	final CySubNetwork m_drawPersp;
+//	/**
+//	 * Holds the NodeView data for the nodes that are visible. This will change
+//	 * as nodes are hidden from the view.
+//	 */
+//	final CySubNetwork m_drawPersp;
 
 //	// FIXME
 //	DummySpacialFactory dummySpacialFactory;
@@ -221,10 +207,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 //	 */
 //	SpacialIndex2D m_spacialA;
 	
-	final DNodeDetails m_nodeDetails;
-	final DEdgeDetails m_edgeDetails;
-	final NodeViewDefaultSupport nodeViewDefaultSupport;
-	final EdgeViewDefaultSupport edgeViewDefaultSupport;
+	private final NodeDetails m_nodeDetails;
+	private final EdgeDetails m_edgeDetails;
+//	final NodeViewDefaultSupport nodeViewDefaultSupport;
+//	final EdgeViewDefaultSupport edgeViewDefaultSupport;
 
 	/**
 	 * Level of detail specific to printing. Not used for rendering.
@@ -276,15 +262,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	boolean m_edgeSelection = true;
 	boolean m_annotationSelection = true;
 
-	/**
-	 * BTree of selected nodes.
-	 */
-	final LongBTree m_selectedNodes; // Positive.
-
-	/**
-	 * BTree of selected edges.
-	 */
-	final LongBTree m_selectedEdges; // Positive.
+//	/**
+//	 * BTree of selected nodes.
+//	 */
+//	final LongBTree m_selectedNodes; // Positive.
+//
+//	/**
+//	 * BTree of selected edges.
+//	 */
+//	final LongBTree m_selectedEdges; // Positive.
 
 	/**
 	 * BTree of selected anchors.
@@ -361,8 +347,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	private final HandleFactory handleFactory;
 	private final VisualMappingManager vmm;
 
-	private List<CyNode> nodeSelectionList;
-	private List<CyEdge> edgeSelectionList;
+//	private List<CyNode> nodeSelectionList;
+//	private List<CyEdge> edgeSelectionList;
 	boolean largeModel = false;
 	boolean haveZOrder = false;
 	
@@ -372,29 +358,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	Timer animationTimer;
 	Set<View<CyEdge>> animatedEdges;
 
-	public DRenderingEngine(
-			final CyNetworkView view,
-			final VisualLexicon dingLexicon,
-			final ViewTaskFactoryListener vtfl,
-			final AnnotationFactoryManager annMgr,
-			final DingGraphLOD dingGraphLOD,
-			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar
-	) {
-		this(view.getModel(), dingLexicon, vtfl, annMgr, dingGraphLOD, handleFactory, registrar);
-	}
 	
 	public DRenderingEngine(
-			final CyNetwork model,
-			final VisualLexicon dingLexicon,
+			final CyNetworkView view,
+			final DVisualLexicon dingLexicon,
 			final ViewTaskFactoryListener vtfl,
 			final AnnotationFactoryManager annMgr,
 			final DingGraphLOD dingGraphLOD,
 			final HandleFactory handleFactory,
 			final CyServiceRegistrar registrar
 	) {
+		this.serviceRegistrar = registrar;
 		this.props = new Properties();
 		this.handleFactory = handleFactory;
+		this.viewModel = viewModel;
+		this.lexicon = dingLexicon;
 		
 		long start = System.currentTimeMillis();
 		logger.debug("Phase 1: rendering start.");
@@ -407,45 +385,45 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		this.cyNetworkViewContextMenuFactory = vtfl.cyNetworkViewContextMenuFactory;
 		
-		// New simple implementation of the graph to keep track of visible nodes/edges.
-		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
+//		// New simple implementation of the graph to keep track of visible nodes/edges.
+//		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
 
 //		final SpacialIndex2DFactory spacialFactory = registrar.getService(SpacialIndex2DFactory.class);
 		vmm = registrar.getService(VisualMappingManager.class);
 		
 //		m_spacial = spacialFactory.createSpacialIndex2D();
 //		m_spacialA = spacialFactory.createSpacialIndex2D();
-		m_nodeDetails = new DNodeDetails(this);
-		m_edgeDetails = new DEdgeDetails(this);
-		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
-		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
-		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
-		edgeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		m_nodeDetails = new DNodeDetails(registrar, dingLexicon);
+		m_edgeDetails = new DEdgeDetails();
+//		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
+//		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
+//		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+//		edgeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_printLOD = new PrintLOD();
-		m_defaultNodeXMin = 0.0f;
-		m_defaultNodeYMin = 0.0f;
-		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
-		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
+//		m_defaultNodeXMin = 0.0f;
+//		m_defaultNodeYMin = 0.0f;
+//		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
+//		m_defaultNodeYMax = m_defaultNodeYMin + DNodeView.DEFAULT_HEIGHT;
 		m_networkCanvas = new InnerCanvas(m_lock, this, registrar);
 		m_backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, m_networkCanvas, Color.white, true);
 		addViewportChangeListener(m_backgroundCanvas);
 		m_foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, m_networkCanvas, Color.white, false);
 		addViewportChangeListener(m_foregroundCanvas);
-		m_selectedNodes = new LongBTree();
-		m_selectedEdges = new LongBTree();
+//		m_selectedNodes = new LongBTree();
+//		m_selectedEdges = new LongBTree();
 		m_selectedAnchors = new LongBTree();
 
 		logger.debug("Phase 2: Canvas created: time = "
 				+ (System.currentTimeMillis() - start));
 
-		this.title = model.getRow(model).get(CyNetwork.NAME, String.class);
+		this.title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
 
-		// Create view model / presentations for the graph
-		for (final CyNode nn : model.getNodeList())
-			addNodeView(nn);
-
-		for (final CyEdge ee : model.getEdgeList())
-			addEdgeView(ee);
+//		// Create view model / presentations for the graph
+//		for (final CyNode nn : model.getNodeList())
+//			addNodeView(nn);
+//
+//		for (final CyEdge ee : model.getEdgeList())
+//			addEdgeView(ee);
 
 		logger.debug("Phase 3: All views created: time = " + (System.currentTimeMillis() - start));
 
@@ -459,18 +437,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 
 		// Finally, intialize our annotations
 		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
-		serviceRegistrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
+		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
 		
 		//Updating the snapshot for nested networks
 		this.addContentChangeListener(new DGraphViewContentChangeListener());
 
-		nodeSelectionList = new ArrayList<>();
-		edgeSelectionList = new ArrayList<>();
-		
-		if (!dingGraphLOD.detail(m_drawPersp.getNodeCount(), m_drawPersp.getEdgeCount()))
+//		nodeSelectionList = new ArrayList<>();
+//		edgeSelectionList = new ArrayList<>();
+//		
+		CyNetworkViewSnapshot snapshot = view.createSnapshot();
+		if (!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
 			largeModel = true;
 
-		dummySpacialFactory = new DummySpacialFactory(this);
+//		dummySpacialFactory = new DummySpacialFactory(this);
 
 		// Animation
 		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -479,152 +458,145 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		animationTimer.setRepeats(true);
 	}
 
-	@Override
-	public CyNetwork getNetwork() {
-		return model;
-	}
+//	@Override
+//	public CyNetwork getNetwork() {
+//		return model;
+//	}
 
-	@Override
+//	@Override
 	public boolean nodeSelectionEnabled() {
 		return m_nodeSelection;
 	}
 
-	@Override
+//	@Override
 	public boolean edgeSelectionEnabled() {
 		return m_edgeSelection;
 	}
 	
-	@Override
+//	@Override
 	public boolean annotationSelectionEnabled() {
 		return m_annotationSelection;
 	}
 
-	@Override
+//	@Override
 	public void enableNodeSelection() {
 		synchronized (m_lock) {
 			m_nodeSelection = true;
 		}
 	}
 
-	@Override
+//	@Override
 	public void disableNodeSelection() {
 		synchronized (m_lock) {
 			m_nodeSelection = false;
 		}
 	}
 
-	@Override
+//	@Override
 	public void enableEdgeSelection() {
 		synchronized (m_lock) {
 			m_edgeSelection = true;
 		}
 	}
 
-	@Override
+//	@Override
 	public void disableEdgeSelection() {
 		synchronized (m_lock) {
 			m_edgeSelection = false;
 		}
 	}
 	
-	@Override
+//	@Override
 	public void enableAnnotationSelection() {
 		synchronized (m_lock) {
 			m_annotationSelection = true;
 		}
 	}
 	
-	@Override
+//	@Override
 	public void disableAnnotationSelection() {
 		synchronized (m_lock) {
 			m_annotationSelection = false;
 		}
 	}
 
-	/**
-	 * Returns an array of selected node indices.
-	 *
-	 * @return An array of selected node indices.
-	 */
-	@Override
-	public long[] getSelectedNodeIndices() {
-		// XXX: why isn't this synchronized on m_selectedNodes?
-		synchronized (m_lock) {
-			// all nodes from the btree
-			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final long[] returnThis = new long[elms.numRemaining()];
+//	/**
+//	 * Returns an array of selected node indices.
+//	 *
+//	 * @return An array of selected node indices.
+//	 */
+//	@Override
+//	public long[] getSelectedNodeIndices() {
+//		// XXX: why isn't this synchronized on m_selectedNodes?
+//		synchronized (m_lock) {
+//			// all nodes from the btree
+//			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+//			final long[] returnThis = new long[elms.numRemaining()];
+//
+//			for (int i = 0; i < returnThis.length; i++)
+//				// GINY requires all node indices to be negative (why?),
+//				// hence the bitwise complement here.
+//				returnThis[i] = elms.nextLong();
+//
+//			return returnThis;
+//		}
+//	}
+//
+//	/**
+//	 * Returns a list of selected node objects.
+//	 */
+//	@Override
+//	public List<CyNode> getSelectedNodes() {
+//		synchronized (m_lock) {
+//			// all nodes from the btree
+//			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+//			final ArrayList<CyNode> returnThis = new ArrayList<>();
+//
+//			while (elms.numRemaining() > 0)
+//				// GINY requires all node indices to be negative (why?),
+//				// hence the bitwise complement here.
+//				returnThis.add(model.getNode(elms.nextLong()));
+//
+//			return returnThis;
+//		}
+//	}
+//
+//	/**
+//	 * Returns an array of selected edge indices.
+//	 *
+//	 * @return An array of selected edge indices.
+//	 */
+//	@Override
+//	public long[] getSelectedEdgeIndices() {
+//		synchronized (m_lock) {
+//			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+//			final long[] returnThis = new long[elms.numRemaining()];
+//
+//			for (int i = 0; i < returnThis.length; i++)
+//				returnThis[i] = elms.nextLong();
+//
+//			return returnThis;
+//		}
+//	}
+//
+//	/**
+//	 * Returns a list of selected edge objects.
+//	 *
+//	 * @return A list of selected edge objects.
+//	 */
+//	@Override
+//	public List<CyEdge> getSelectedEdges() {
+//		synchronized (m_lock) {
+//			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+//			final ArrayList<CyEdge> returnThis = new ArrayList<>();
+//
+//			while (elms.numRemaining() > 0)
+//				returnThis.add(model.getEdge(elms.nextLong()));
+//
+//			return returnThis;
+//		}
+//	}
 
-			for (int i = 0; i < returnThis.length; i++)
-				// GINY requires all node indices to be negative (why?),
-				// hence the bitwise complement here.
-				returnThis[i] = elms.nextLong();
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Returns a list of selected node objects.
-	 */
-	@Override
-	public List<CyNode> getSelectedNodes() {
-		synchronized (m_lock) {
-			// all nodes from the btree
-			final LongEnumerator elms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final ArrayList<CyNode> returnThis = new ArrayList<>();
-
-			while (elms.numRemaining() > 0)
-				// GINY requires all node indices to be negative (why?),
-				// hence the bitwise complement here.
-				returnThis.add(model.getNode(elms.nextLong()));
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Returns an array of selected edge indices.
-	 *
-	 * @return An array of selected edge indices.
-	 */
-	@Override
-	public long[] getSelectedEdgeIndices() {
-		synchronized (m_lock) {
-			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final long[] returnThis = new long[elms.numRemaining()];
-
-			for (int i = 0; i < returnThis.length; i++)
-				returnThis[i] = elms.nextLong();
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Returns a list of selected edge objects.
-	 *
-	 * @return A list of selected edge objects.
-	 */
-	@Override
-	public List<CyEdge> getSelectedEdges() {
-		synchronized (m_lock) {
-			final LongEnumerator elms = m_selectedEdges.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
-			final ArrayList<CyEdge> returnThis = new ArrayList<>();
-
-			while (elms.numRemaining() > 0)
-				returnThis.add(model.getEdge(elms.nextLong()));
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Sets the background color on the canvas.
-	 *
-	 * @param paint
-	 *            The Paint (color) to apply to the background.
-	 */
-	@Override
 	public void setBackgroundPaint(Paint paint) {
 		synchronized (m_lock) {
 			if (paint instanceof Color) {
@@ -638,12 +610,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		}
 	}
 
-	/**
-	 * Returns the background color on the canvas.
-	 *
-	 * @return The background color on the canvas.
-	 */
-	@Override
 	public Paint getBackgroundPaint() {
 		return m_backgroundCanvas.getBackground();
 	}
@@ -654,237 +620,244 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	 *
 	 * @return The InnerCanvas object.
 	 */
-	@Override
 	public Component getComponent() {
 		return m_networkCanvas;
 	}
 
-	/**
-	 * Creates a NodeView only if one doesn't already exist.
-	 */
-	@Override
-	public NodeView addNodeView(final CyNode node) {
-		final DNodeView newView;
+//	/**
+//	 * Creates a NodeView only if one doesn't already exist.
+//	 */
+//	@Override
+//	public NodeView addNodeView(final CyNode node) {
+//		final DNodeView newView;
+//
+//		synchronized (m_lock) {
+//			newView = addNodeViewInternal(node);
+//
+//			// View already exists.
+//			if (newView == null)
+//				return nodeViewMap.get(node);
+//
+//			setContentChanged();
+//		}
+//
+//		// final GraphViewChangeListener listener = m_lis[0];
+//
+//		// if (listener != null) {
+//		// 	listener.graphViewChanged(new GraphViewNodesRestoredEvent(this,
+//		// 			makeList(newView.getModel())));
+//		// }
+//
+//		return newView;
+//	}
+//
+//	/**
+//	 * Should synchronize around m_lock.
+//	 */
+//	private final DNodeView addNodeViewInternal(final CyNode node) {
+//		final long nodeInx = node.getSUID();
+//		final NodeView oldView = nodeViewMap.get(node);
+//
+//		if (oldView != null)
+//			return null;
+//
+//		m_drawPersp.addNode(node);
+//
+//		final DNodeView dNodeView = new DNodeView(lexicon, this, node, serviceRegistrar);
+//		
+//		// WARNING: DO not call the following in view creation.  This is VERY slow.
+//		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
+//		//if (selected != null && selected)
+//		//	dNodeView.select();
+//
+//		nodeViewMap.put(node, dNodeView);
+//		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, 
+//		                  m_defaultNodeXMax, m_defaultNodeYMax, dNodeView.getZPosition());
+//		
+//		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
+//		
+//		return dNodeView;
+//	}
+//
+//	@Override
+//	public EdgeView addEdgeView(final CyEdge edge) {
+//		if (edge == null)
+//			throw new NullPointerException("edge is null");
+//		
+//		final NodeView sourceNode;
+//		final NodeView targetNode;
+//		final DEdgeView dEdgeView;
+//		
+//		synchronized (m_lock) {
+//			final EdgeView oldView = edgeViewMap.get(edge);
+//
+//			if (oldView != null)
+//				return oldView;
+//		
+//			sourceNode = addNodeViewInternal(edge.getSource());
+//			targetNode = addNodeViewInternal(edge.getTarget());
+//
+//			m_drawPersp.addEdge(edge);
+//
+//			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, serviceRegistrar);
+//
+//			edgeViewMap.put(edge, dEdgeView);
+//			setContentChanged();
+//		}
+//
+//		// Under no circumstances should we be holding m_lock when the listener
+//		// events are fired.
+//		/* final GraphViewChangeListener listener = m_lis[0];
+//
+//		if (listener != null) {
+//			// Only fire this event if either of the nodes is new. The node
+//			// will be null if it already existed.
+//			if ((sourceNode != null) || (targetNode != null)) {
+//				long[] nodeInx;
+//
+//				if (sourceNode == null) {
+//					nodeInx = new long[] { targetNode.getCyNode().getSUID() };
+//				} else if (targetNode == null) {
+//					nodeInx = new long[] { sourceNode.getCyNode().getSUID() };
+//				} else {
+//					nodeInx = new long[] { sourceNode.getCyNode().getSUID(),
+//							targetNode.getCyNode().getSUID()};
+//				}
+//
+//				listener.graphViewChanged(new GraphViewNodesRestoredEvent(this,
+//						makeNodeList(nodeInx, this)));
+//			}
+//
+//			listener.graphViewChanged(new GraphViewEdgesRestoredEvent(this,
+//					makeList(dEdgeView.getCyEdge())));
+//		}
+//		*/
+//
+//		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) dEdgeView, AddedEdgeViewsEvent.class);
+//		
+//		return dEdgeView;
+//	}
+//
+//	@Override
+//	public NodeView removeNodeView(NodeView nodeView) {
+//		return removeNodeView(nodeView.getCyNode().getSUID());
+//	}
+//
+//	@Override
+//	public NodeView removeNodeView(CyNode node) {
+//		return removeNodeView(node.getSUID());
+//	}
+//
+//	@Override
+//	public NodeView removeNodeView(long suid) {
+//		final List<CyEdge> hiddenEdgeInx;
+//		final DNodeView returnThis;
+//		final CyNode nnode = model.getNode(suid);
+//		returnThis = (DNodeView) nodeViewMap.get(nnode);
+//		
+//		if (returnThis == null)
+//			return null;
+//		
+//		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) returnThis, AboutToRemoveNodeViewsEvent.class);
+//		
+//		synchronized (m_lock) {
+//			// We have to query edges in the m_structPersp, not m_drawPersp
+//			// because what if the node is hidden?
+//			hiddenEdgeInx = model.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
+//
+//			// This isn't an error. Only if the nodeInx is invalid will
+//			// getAdjacentEdgeIndicesArray
+//			// return null. If there are no adjacent edges, then it will return
+//			// an array of length 0.
+//			if (hiddenEdgeInx == null)
+//				return null;
+//
+//			for (final CyEdge ee : hiddenEdgeInx)
+//				removeEdgeViewInternal(ee);
+//
+//			nodeViewMap.remove(nnode);
+//			returnThis.unselectInternal();
+//
+//			// If this node was hidden, it won't be in m_drawPersp.
+//			m_drawPersp.removeNodes(Collections.singletonList(nnode));
+//			// m_structPersp.removeNode(nodeInx);
+//			m_nodeDetails.unregisterNode(nnode);
+//
+//			// If this node was hidden, it won't be in m_spacial.
+//			m_spacial.delete(suid);
+//
+//			setContentChanged();
+//		}
+//
+//		/*
+//		final GraphViewChangeListener listener = m_lis[0];
+//
+//		if (listener != null) {
+//			if (hiddenEdgeInx.size() > 0) {
+//				listener.graphViewChanged(new GraphViewEdgesHiddenEvent(this, hiddenEdgeInx));
+//			}
+//
+//			listener.graphViewChanged(new GraphViewNodesHiddenEvent(this,
+//					makeList(returnThis.getModel())));
+//		}
+//		*/
+//
+//		return returnThis;
+//	}
+//
+//	@Override
+//	public EdgeView removeEdgeView(EdgeView edgeView) {
+//		return removeEdgeView(edgeView.getCyEdge().getSUID());
+//	}
+//
+//	@Override
+//	public EdgeView removeEdgeView(CyEdge edge) {
+//		return removeEdgeView(edge.getSUID());
+//	}
+//
+//	@Override
+//	public EdgeView removeEdgeView(long suid) {
+//		final DEdgeView returnThis;
+//		final CyEdge edge = model.getEdge(suid);
+//		
+//		if (edge == null)
+//			return null;
+//		
+//		EdgeView view = edgeViewMap.get(edge);
+//		
+//		if (view == null)
+//			return null;
+//		
+//		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) view, AboutToRemoveEdgeViewsEvent.class);
+//		
+//		synchronized (m_lock) {
+//			returnThis = removeEdgeViewInternal(edge);
+//
+//			if (returnThis != null)
+//				setContentChanged();
+//		}
+//
+//		/*
+//		if (returnThis != null) {
+//			final GraphViewChangeListener listener = m_lis[0];
+//
+//			if (listener != null) {
+//				listener.graphViewChanged(new GraphViewEdgesHiddenEvent(this, makeList(edge)));
+//			}
+//		}
+//		*/
+//
+//		return returnThis;
+//	}
 
-		synchronized (m_lock) {
-			newView = addNodeViewInternal(node);
-
-			// View already exists.
-			if (newView == null)
-				return nodeViewMap.get(node);
-
-			setContentChanged();
-		}
-
-		// final GraphViewChangeListener listener = m_lis[0];
-
-		// if (listener != null) {
-		// 	listener.graphViewChanged(new GraphViewNodesRestoredEvent(this,
-		// 			makeList(newView.getModel())));
-		// }
-
-		return newView;
+	public NodeDetails getNodeDetails() {
+		return m_nodeDetails;
 	}
-
-	/**
-	 * Should synchronize around m_lock.
-	 */
-	private final DNodeView addNodeViewInternal(final CyNode node) {
-		final long nodeInx = node.getSUID();
-		final NodeView oldView = nodeViewMap.get(node);
-
-		if (oldView != null)
-			return null;
-
-		m_drawPersp.addNode(node);
-
-		final DNodeView dNodeView = new DNodeView(lexicon, this, node, serviceRegistrar);
-		
-		// WARNING: DO not call the following in view creation.  This is VERY slow.
-		//Boolean selected = getModel().getRow(node).get(CyNetwork.SELECTED, Boolean.class);
-		//if (selected != null && selected)
-		//	dNodeView.select();
-
-		nodeViewMap.put(node, dNodeView);
-		m_spacial.insert(nodeInx, m_defaultNodeXMin, m_defaultNodeYMin, 
-		                  m_defaultNodeXMax, m_defaultNodeYMax, dNodeView.getZPosition());
-		
-		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) dNodeView, AddedNodeViewsEvent.class);
-		
-		return dNodeView;
+	
+	public EdgeDetails getEdgeDetails() {
+		return m_edgeDetails;
 	}
-
-	@Override
-	public EdgeView addEdgeView(final CyEdge edge) {
-		if (edge == null)
-			throw new NullPointerException("edge is null");
-		
-		final NodeView sourceNode;
-		final NodeView targetNode;
-		final DEdgeView dEdgeView;
-		
-		synchronized (m_lock) {
-			final EdgeView oldView = edgeViewMap.get(edge);
-
-			if (oldView != null)
-				return oldView;
-		
-			sourceNode = addNodeViewInternal(edge.getSource());
-			targetNode = addNodeViewInternal(edge.getTarget());
-
-			m_drawPersp.addEdge(edge);
-
-			dEdgeView = new DEdgeView(this, edge, handleFactory, lexicon, serviceRegistrar);
-
-			edgeViewMap.put(edge, dEdgeView);
-			setContentChanged();
-		}
-
-		// Under no circumstances should we be holding m_lock when the listener
-		// events are fired.
-		/* final GraphViewChangeListener listener = m_lis[0];
-
-		if (listener != null) {
-			// Only fire this event if either of the nodes is new. The node
-			// will be null if it already existed.
-			if ((sourceNode != null) || (targetNode != null)) {
-				long[] nodeInx;
-
-				if (sourceNode == null) {
-					nodeInx = new long[] { targetNode.getCyNode().getSUID() };
-				} else if (targetNode == null) {
-					nodeInx = new long[] { sourceNode.getCyNode().getSUID() };
-				} else {
-					nodeInx = new long[] { sourceNode.getCyNode().getSUID(),
-							targetNode.getCyNode().getSUID()};
-				}
-
-				listener.graphViewChanged(new GraphViewNodesRestoredEvent(this,
-						makeNodeList(nodeInx, this)));
-			}
-
-			listener.graphViewChanged(new GraphViewEdgesRestoredEvent(this,
-					makeList(dEdgeView.getCyEdge())));
-		}
-		*/
-
-		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) dEdgeView, AddedEdgeViewsEvent.class);
-		
-		return dEdgeView;
-	}
-
-	@Override
-	public NodeView removeNodeView(NodeView nodeView) {
-		return removeNodeView(nodeView.getCyNode().getSUID());
-	}
-
-	@Override
-	public NodeView removeNodeView(CyNode node) {
-		return removeNodeView(node.getSUID());
-	}
-
-	@Override
-	public NodeView removeNodeView(long suid) {
-		final List<CyEdge> hiddenEdgeInx;
-		final DNodeView returnThis;
-		final CyNode nnode = model.getNode(suid);
-		returnThis = (DNodeView) nodeViewMap.get(nnode);
-		
-		if (returnThis == null)
-			return null;
-		
-		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyNode>) returnThis, AboutToRemoveNodeViewsEvent.class);
-		
-		synchronized (m_lock) {
-			// We have to query edges in the m_structPersp, not m_drawPersp
-			// because what if the node is hidden?
-			hiddenEdgeInx = model.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
-
-			// This isn't an error. Only if the nodeInx is invalid will
-			// getAdjacentEdgeIndicesArray
-			// return null. If there are no adjacent edges, then it will return
-			// an array of length 0.
-			if (hiddenEdgeInx == null)
-				return null;
-
-			for (final CyEdge ee : hiddenEdgeInx)
-				removeEdgeViewInternal(ee);
-
-			nodeViewMap.remove(nnode);
-			returnThis.unselectInternal();
-
-			// If this node was hidden, it won't be in m_drawPersp.
-			m_drawPersp.removeNodes(Collections.singletonList(nnode));
-			// m_structPersp.removeNode(nodeInx);
-			m_nodeDetails.unregisterNode(nnode);
-
-			// If this node was hidden, it won't be in m_spacial.
-			m_spacial.delete(suid);
-
-			setContentChanged();
-		}
-
-		/*
-		final GraphViewChangeListener listener = m_lis[0];
-
-		if (listener != null) {
-			if (hiddenEdgeInx.size() > 0) {
-				listener.graphViewChanged(new GraphViewEdgesHiddenEvent(this, hiddenEdgeInx));
-			}
-
-			listener.graphViewChanged(new GraphViewNodesHiddenEvent(this,
-					makeList(returnThis.getModel())));
-		}
-		*/
-
-		return returnThis;
-	}
-
-	@Override
-	public EdgeView removeEdgeView(EdgeView edgeView) {
-		return removeEdgeView(edgeView.getCyEdge().getSUID());
-	}
-
-	@Override
-	public EdgeView removeEdgeView(CyEdge edge) {
-		return removeEdgeView(edge.getSUID());
-	}
-
-	@Override
-	public EdgeView removeEdgeView(long suid) {
-		final DEdgeView returnThis;
-		final CyEdge edge = model.getEdge(suid);
-		
-		if (edge == null)
-			return null;
-		
-		EdgeView view = edgeViewMap.get(edge);
-		
-		if (view == null)
-			return null;
-		
-		getEventHelper().addEventPayload((CyNetworkView) this, (View<CyEdge>) view, AboutToRemoveEdgeViewsEvent.class);
-		
-		synchronized (m_lock) {
-			returnThis = removeEdgeViewInternal(edge);
-
-			if (returnThis != null)
-				setContentChanged();
-		}
-
-		/*
-		if (returnThis != null) {
-			final GraphViewChangeListener listener = m_lis[0];
-
-			if (listener != null) {
-				listener.graphViewChanged(new GraphViewEdgesHiddenEvent(this, makeList(edge)));
-			}
-		}
-		*/
-
-		return returnThis;
-	}
-
+	
 	public boolean isDirty() {
 		return isContentChanged() || isViewportChanged();
 	}
@@ -913,39 +886,30 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		viewportChanged = b;
 	}
 	
-	/**
-	 * Should synchronize around m_lock.
-	 */
-	private DEdgeView removeEdgeViewInternal(CyEdge edge) {
-		// We can't remove this yet, because the map is used
-		// later in unselectInternal...
-		final DEdgeView returnThis = (DEdgeView)edgeViewMap.get(edge);
+//	/**
+//	 * Should synchronize around m_lock.
+//	 */
+//	private DEdgeView removeEdgeViewInternal(CyEdge edge) {
+//		// We can't remove this yet, because the map is used
+//		// later in unselectInternal...
+//		final DEdgeView returnThis = (DEdgeView)edgeViewMap.get(edge);
+//
+//		if (returnThis == null) {
+//			return returnThis;
+//		}
+//
+//		returnThis.unselectInternal();
+//
+//		// Now we can remove it
+//		edgeViewMap.remove(edge);
+//		m_drawPersp.removeEdges(Collections.singletonList(edge)); 
+//		m_edgeDetails.unregisterEdge(edge);
+//
+//		return returnThis;
+//	}
 
-		if (returnThis == null) {
-			return returnThis;
-		}
 
-		returnThis.unselectInternal();
 
-		// Now we can remove it
-		edgeViewMap.remove(edge);
-		m_drawPersp.removeEdges(Collections.singletonList(edge)); 
-		m_edgeDetails.unregisterEdge(edge);
-
-		return returnThis;
-	}
-
-	@Override
-	public Long getIdentifier() {
-		return m_identifier;
-	}
-
-	@Override
-	public void setIdentifier(Long id) {
-		m_identifier = id;
-	}
-
-	@Override
 	public double getZoom() {
 		return m_networkCanvas.m_scaleFactor;
 	}
@@ -953,8 +917,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	/**
 	 * Set the zoom level and redraw the view.
 	 */
-	@Override
-	public void setZoom(final double zoom) {
+	public void setZoom(double zoom) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_scaleFactor = checkZoom(zoom, m_networkCanvas.m_scaleFactor);
 			setViewportChanged();
@@ -962,17 +925,18 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	}
 
 	private void fitContent(final boolean updateView) {
-		getEventHelper().flushPayloadEvents();
+		serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
 
+		// MKTODO why does this have to be on the edt?
 		invokeOnEDT(() -> {
 			synchronized (m_lock) {
-				if (m_spacial.queryOverlap(Float.NEGATIVE_INFINITY, Float.NEGATIVE_INFINITY,
-				                           Float.POSITIVE_INFINITY, Float.POSITIVE_INFINITY,
-				                           m_extentsBuff, 0, false).numRemaining() == 0)
+				CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+				if(netViewSnapshot.getNodeCount() == 0)
 					return;
-				
 				if (m_networkCanvas.getWidth() == 0 || m_networkCanvas.getHeight() == 0)
 					return;
+				
+				netViewSnapshot.getSpacialIndex2D().getMBR(m_extentsBuff);
 	
 				// At this point, we actually want doubles
 				m_extentsBuffD[0] = (double)m_extentsBuff[0];
@@ -985,22 +949,22 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 				// Adjust the content based on the background canvas
 				m_backgroundCanvas.adjustBounds(m_extentsBuffD);
 	
-				if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
-					setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
-							(m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d);
+				CyNetworkView netView = netViewSnapshot.getMutableNetworkView();
 				
-				if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
-					setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
-							(m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d);
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (m_extentsBuffD[0] + m_extentsBuffD[2]) / 2.0d);
+				
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (m_extentsBuffD[1] + m_extentsBuffD[3]) / 2.0d);
 	
-				if (!isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
 					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
 					final double zoom = Math.min(((double) m_networkCanvas.getWidth()) / 
 					                             (m_extentsBuffD[2] - m_extentsBuffD[0]), 
 					                              ((double) m_networkCanvas.getHeight()) / 
 					                             (m_extentsBuffD[3] - m_extentsBuffD[1])) * 0.98;
 					// Update view model.  Zoom Level should be modified.
-					setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
 				}
 			}
 			
@@ -1009,24 +973,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		});
 	}
 	
-	/**
-	 * Resize the network view to the size of the canvas and redraw it. 
-	 */
 	@Override
-	public void fitContent() {
+	public void handleFitContent() {
 		fitContent(/* updateView = */ true);
 	}
 	
-	/**
-	 * Redraw the canvas.
-	 */
 	@Override
-	public void updateView() {
+	public void handleUpdateView() {
 		updateView(true);
 	}
 	
 	private void updateView(final boolean forceRedraw) {
-		getEventHelper().flushPayloadEvents();
+		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.flushPayloadEvents();
 		
 		invokeOnEDTAndWait(() -> {
 			if (forceRedraw)
@@ -1038,315 +997,316 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 			if (m_networkCanvas.getWidth() != imageWidth || m_networkCanvas.getHeight() != imageHeight) {
 				imageWidth = m_networkCanvas.getWidth();
 				imageHeight = m_networkCanvas.getHeight();
-				setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) imageWidth);
-				setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
+				CyNetworkView netView = getViewModel();
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) imageWidth);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
 			}
 		});
 		
-		getEventHelper().fireEvent(new UpdateNetworkPresentationEvent(this));
+		// MKTODO what is this event for
+		eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel()));
 	}
 
-	/**
-	 * Returns an iterator of all node views, including those that are currently hidden.
-	 */
-	@Override
-	public Iterator<NodeView> getNodeViewsIterator() {
-		synchronized (m_lock) {
-			return nodeViewMap.values().iterator();
-		}
-	}
-
-	/**
-	 * Returns the count of all node views, including those that are currently hidden.
-	 */
-	@Override
-	public int getNodeViewCount() {
-		synchronized (m_lock) {
-			return nodeViewMap.size();
-		}
-	}
-
-	/**
-	 * Returns the count of all edge views, including those that are currently hidden.
-	 */
-	@Override
-	public int getEdgeViewCount() {
-		synchronized (m_lock) {
-			return edgeViewMap.size();
-		}
-	}
-
-	@Override
-	public DNodeView getDNodeView(final CyNode node) {
-		// TODO: remove cast!
-		if (node != null && nodeViewMap.containsKey(node))
-			return (DNodeView)nodeViewMap.get(node);
-		else
-			return null;
-	}
-	
-	@Override
-	public DNodeView getDNodeView(final long suid) {
-		return getDNodeView(model.getNode(suid));
-	}
-
-	@Override
-	public List<EdgeView> getEdgeViewsList() {
-		synchronized (m_lock) {
-			final ArrayList<EdgeView> returnThis = new ArrayList<>(edgeViewMap.size());
-			final Iterator<EdgeView> values = edgeViewMap.values().iterator();
-
-			while (values.hasNext())
-				returnThis.add(values.next());
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Returns all edge views (including the hidden ones) that are either 1.
-	 * directed, having oneNode as source and otherNode as target or 2.
-	 * undirected, having oneNode and otherNode as endpoints. Note that this
-	 * behaviour is similar to that of CyNetwork.edgesList(Node, Node).
-	 */
-	@Override
-	public List<EdgeView> getEdgeViewsList(CyNode oneNode, CyNode otherNode) {
-		synchronized (m_lock) {
-			List<CyEdge> edges = model.getConnectingEdgeList(oneNode,
-					otherNode, CyEdge.Type.ANY);
-
-			if (edges == null) {
-				return null;
-			}
-
-			final ArrayList<EdgeView> returnThis = new ArrayList<>();
-			Iterator<CyEdge> it = edges.iterator();
-
-			while (it.hasNext()) {
-				CyEdge e = it.next();
-				EdgeView ev = getDEdgeView(e);
-				if (ev != null)
-					returnThis.add(ev);
-			}
-
-			return returnThis;
-		}
-	}
-
-	/**
-	 * Similar to getEdgeViewsList(Node, Node), only that one has control of whether or not to include undirected edges.
-	 */
-	@Override
-	public List<EdgeView> getEdgeViewsList(long oneNodeSUID, long otherNodeSUID, boolean includeUndirected) {
-		CyNode n1;
-		CyNode n2;
-		synchronized (m_lock) {
-			n1 = model.getNode(oneNodeSUID);
-			n2 = model.getNode(otherNodeSUID);
-		}
-		return getEdgeViewsList(n1, n2);
-	}
-
-
-	@Override
-	public DEdgeView getDEdgeView(final long suid) {
-		return getDEdgeView(model.getEdge(suid));
-	}
-
-	@Override
-	public Iterator<EdgeView> getEdgeViewsIterator() {
-		return edgeViewMap.values().iterator();
-	}
-
-	
-	@Override
-	public DEdgeView getDEdgeView(final CyEdge edge) {
-		if (edge == null) {
-			return null;
-		}
-		return (DEdgeView)edgeViewMap.get(edge);
-	}
-
-	@Override
-	public int edgeCount() {
-		return getEdgeViewCount();
-	}
-
-	@Override
-	public int nodeCount() {
-		return getNodeViewCount();
-	}
-
-	@Override
-	public boolean hideGraphObject(Object obj) {
-		return hideGraphObjectInternal(obj, true);
-	}
-
-	private boolean hideGraphObjectInternal(Object obj, boolean fireListenerEvents) {
-		if (obj instanceof DEdgeView) {
-			final DEdgeView eView = (DEdgeView) obj;
-			final CyEdge edge;
-
-			synchronized (m_lock) {
-				edge = eView.getCyEdge();
-
-				if (!m_drawPersp.removeEdges(Collections.singletonList(edge)))
-					return false;
-
-				eView.unselectInternal();
-				setContentChanged();
-			}
-
-			return true;
-		} else if (obj instanceof DNodeView) {
-			List<CyEdge> edges;
-			long nodeInx;
-			CyNode nnode;
-
-			synchronized (m_lock) {
-				final DNodeView nView = (DNodeView) obj;
-				nodeInx = nView.getCyNode().getSUID();
-				nnode = model.getNode(nodeInx);
-				
-				// If the node is already hidden, don't do anything.
-				if (m_drawPersp.getNode(nodeInx) == null)
-					return false;
-				
-				edges = m_drawPersp.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
-
-				if (edges != null) {
-					for (final CyEdge ee : edges)
-						hideGraphObjectInternal(edgeViewMap.get(ee), false);
-				}
-
-				nView.unselectInternal();
-				m_spacial.exists(nodeInx, m_extentsBuff, 0);
-				nView.m_hiddenXMin = m_extentsBuff[0];
-				nView.m_hiddenYMin = m_extentsBuff[1];
-				nView.m_hiddenXMax = m_extentsBuff[2];
-				nView.m_hiddenYMax = m_extentsBuff[3];
-				m_drawPersp.removeNodes(Collections.singletonList(nnode));
-				m_spacial.delete(nodeInx);
-				setContentChanged();
-			}
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	final boolean isHidden(final DEdgeView edgeView) {
-		// synchronized (m_lock) {
-			final long suid = edgeView.getCyEdge().getSUID();
-			return !m_drawPersp.containsEdge(m_drawPersp.getEdge(suid));
-		// }
-	}
-
-	final boolean isHidden(final DNodeView nodeView) {
-		// synchronized (m_lock) {
-			final long suid = nodeView.getCyNode().getSUID();
-			return !m_drawPersp.containsNode(m_drawPersp.getNode(suid));
-		// }
-	}
-
-	@Override
-	public boolean showGraphObject(Object obj) {
-		return showGraphObjectInternal(obj, true);
-	}
-
-	private boolean showGraphObjectInternal(Object obj, boolean fireListenerEvents) {
-		if (obj instanceof DNodeView) {
-			long nodeInx;
-			final DNodeView nView = (DNodeView) obj;
-
-			synchronized (m_lock) {
-				nodeInx = nView.getCyNode().getSUID();
-				CyNode nnode = model.getNode(nodeInx);
-
-				if (nnode == null || !m_drawPersp.addNode(nnode))
-					return false;
-
-				m_spacial.insert(nodeInx, nView.m_hiddenXMin, nView.m_hiddenYMin, nView.m_hiddenXMax,
-						nView.m_hiddenYMax, nView.getZPosition());
-				setContentChanged();
-			}
-
-			/*
-			if (fireListenerEvents) {
-				final GraphViewChangeListener listener = m_lis[0];
-
-				if (listener != null) {
-					listener.graphViewChanged(new GraphViewNodesRestoredEvent(
-							this, makeList(nView.getModel())));
-				}
-			}
-			*/
-
-			return true;
-		} else if (obj instanceof DEdgeView) {
-			CyNode sourceNode;
-			CyNode targetNode;
-			CyEdge newEdge;
-
-			synchronized (m_lock) {
-				final CyEdge edge = model.getEdge(((DEdgeView) obj).getCyEdge().getSUID());
-
-				if (edge == null)
-					return false;
-
-				// The edge exists in m_structPersp, therefore its source and target
-				// node views must also exist.
-				sourceNode = edge.getSource();
-				targetNode = edge.getTarget();
-				final DNodeView srcDnv = getDNodeView(sourceNode);
-				final DNodeView tgtDnv = getDNodeView(targetNode);
-
-				if (isHidden(srcDnv) || isHidden(tgtDnv))
-					return false;
-				
-				if (!showGraphObjectInternal(srcDnv, false))
-					sourceNode = null;
-
-				if (!showGraphObjectInternal(tgtDnv, false))
-					targetNode = null;
-
-				newEdge = edge;
-
-				if (!m_drawPersp.addEdge(newEdge))
-					return false;
-
-				setContentChanged();
-			}
-
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	@Override
-	public boolean hideGraphObjects(List<? extends GraphViewObject> objects) {
-		final Iterator<? extends GraphViewObject> it = objects.iterator();
-
-		while (it.hasNext())
-			hideGraphObject(it.next());
-
-		return true;
-	}
-
-	@Override
-	public boolean showGraphObjects(List<? extends GraphViewObject> objects) {
-		final Iterator<? extends GraphViewObject> it = objects.iterator();
-
-		while (it.hasNext())
-			showGraphObject(it.next());
-
-		return true;
-	}
+//	/**
+//	 * Returns an iterator of all node views, including those that are currently hidden.
+//	 */
+//	@Override
+//	public Iterator<NodeView> getNodeViewsIterator() {
+//		synchronized (m_lock) {
+//			return nodeViewMap.values().iterator();
+//		}
+//	}
+//
+//	/**
+//	 * Returns the count of all node views, including those that are currently hidden.
+//	 */
+//	@Override
+//	public int getNodeViewCount() {
+//		synchronized (m_lock) {
+//			return nodeViewMap.size();
+//		}
+//	}
+//
+//	/**
+//	 * Returns the count of all edge views, including those that are currently hidden.
+//	 */
+//	@Override
+//	public int getEdgeViewCount() {
+//		synchronized (m_lock) {
+//			return edgeViewMap.size();
+//		}
+//	}
+//
+//	@Override
+//	public DNodeView getDNodeView(final CyNode node) {
+//		// TODO: remove cast!
+//		if (node != null && nodeViewMap.containsKey(node))
+//			return (DNodeView)nodeViewMap.get(node);
+//		else
+//			return null;
+//	}
+//	
+//	@Override
+//	public DNodeView getDNodeView(final long suid) {
+//		return getDNodeView(model.getNode(suid));
+//	}
+//
+//	@Override
+//	public List<EdgeView> getEdgeViewsList() {
+//		synchronized (m_lock) {
+//			final ArrayList<EdgeView> returnThis = new ArrayList<>(edgeViewMap.size());
+//			final Iterator<EdgeView> values = edgeViewMap.values().iterator();
+//
+//			while (values.hasNext())
+//				returnThis.add(values.next());
+//
+//			return returnThis;
+//		}
+//	}
+//
+//	/**
+//	 * Returns all edge views (including the hidden ones) that are either 1.
+//	 * directed, having oneNode as source and otherNode as target or 2.
+//	 * undirected, having oneNode and otherNode as endpoints. Note that this
+//	 * behaviour is similar to that of CyNetwork.edgesList(Node, Node).
+//	 */
+//	@Override
+//	public List<EdgeView> getEdgeViewsList(CyNode oneNode, CyNode otherNode) {
+//		synchronized (m_lock) {
+//			List<CyEdge> edges = model.getConnectingEdgeList(oneNode,
+//					otherNode, CyEdge.Type.ANY);
+//
+//			if (edges == null) {
+//				return null;
+//			}
+//
+//			final ArrayList<EdgeView> returnThis = new ArrayList<>();
+//			Iterator<CyEdge> it = edges.iterator();
+//
+//			while (it.hasNext()) {
+//				CyEdge e = it.next();
+//				EdgeView ev = getDEdgeView(e);
+//				if (ev != null)
+//					returnThis.add(ev);
+//			}
+//
+//			return returnThis;
+//		}
+//	}
+//
+//	/**
+//	 * Similar to getEdgeViewsList(Node, Node), only that one has control of whether or not to include undirected edges.
+//	 */
+//	@Override
+//	public List<EdgeView> getEdgeViewsList(long oneNodeSUID, long otherNodeSUID, boolean includeUndirected) {
+//		CyNode n1;
+//		CyNode n2;
+//		synchronized (m_lock) {
+//			n1 = model.getNode(oneNodeSUID);
+//			n2 = model.getNode(otherNodeSUID);
+//		}
+//		return getEdgeViewsList(n1, n2);
+//	}
+//
+//
+//	@Override
+//	public DEdgeView getDEdgeView(final long suid) {
+//		return getDEdgeView(model.getEdge(suid));
+//	}
+//
+//	@Override
+//	public Iterator<EdgeView> getEdgeViewsIterator() {
+//		return edgeViewMap.values().iterator();
+//	}
+//
+//	
+//	@Override
+//	public DEdgeView getDEdgeView(final CyEdge edge) {
+//		if (edge == null) {
+//			return null;
+//		}
+//		return (DEdgeView)edgeViewMap.get(edge);
+//	}
+//
+//	@Override
+//	public int edgeCount() {
+//		return getEdgeViewCount();
+//	}
+//
+//	@Override
+//	public int nodeCount() {
+//		return getNodeViewCount();
+//	}
+//
+//	@Override
+//	public boolean hideGraphObject(Object obj) {
+//		return hideGraphObjectInternal(obj, true);
+//	}
+//
+//	private boolean hideGraphObjectInternal(Object obj, boolean fireListenerEvents) {
+//		if (obj instanceof DEdgeView) {
+//			final DEdgeView eView = (DEdgeView) obj;
+//			final CyEdge edge;
+//
+//			synchronized (m_lock) {
+//				edge = eView.getCyEdge();
+//
+//				if (!m_drawPersp.removeEdges(Collections.singletonList(edge)))
+//					return false;
+//
+//				eView.unselectInternal();
+//				setContentChanged();
+//			}
+//
+//			return true;
+//		} else if (obj instanceof DNodeView) {
+//			List<CyEdge> edges;
+//			long nodeInx;
+//			CyNode nnode;
+//
+//			synchronized (m_lock) {
+//				final DNodeView nView = (DNodeView) obj;
+//				nodeInx = nView.getCyNode().getSUID();
+//				nnode = model.getNode(nodeInx);
+//				
+//				// If the node is already hidden, don't do anything.
+//				if (m_drawPersp.getNode(nodeInx) == null)
+//					return false;
+//				
+//				edges = m_drawPersp.getAdjacentEdgeList(nnode, CyEdge.Type.ANY);
+//
+//				if (edges != null) {
+//					for (final CyEdge ee : edges)
+//						hideGraphObjectInternal(edgeViewMap.get(ee), false);
+//				}
+//
+//				nView.unselectInternal();
+//				m_spacial.exists(nodeInx, m_extentsBuff, 0);
+//				nView.m_hiddenXMin = m_extentsBuff[0];
+//				nView.m_hiddenYMin = m_extentsBuff[1];
+//				nView.m_hiddenXMax = m_extentsBuff[2];
+//				nView.m_hiddenYMax = m_extentsBuff[3];
+//				m_drawPersp.removeNodes(Collections.singletonList(nnode));
+//				m_spacial.delete(nodeInx);
+//				setContentChanged();
+//			}
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
+//
+//	final boolean isHidden(final DEdgeView edgeView) {
+//		// synchronized (m_lock) {
+//			final long suid = edgeView.getCyEdge().getSUID();
+//			return !m_drawPersp.containsEdge(m_drawPersp.getEdge(suid));
+//		// }
+//	}
+//
+//	final boolean isHidden(final DNodeView nodeView) {
+//		// synchronized (m_lock) {
+//			final long suid = nodeView.getCyNode().getSUID();
+//			return !m_drawPersp.containsNode(m_drawPersp.getNode(suid));
+//		// }
+//	}
+//
+//	@Override
+//	public boolean showGraphObject(Object obj) {
+//		return showGraphObjectInternal(obj, true);
+//	}
+//
+//	private boolean showGraphObjectInternal(Object obj, boolean fireListenerEvents) {
+//		if (obj instanceof DNodeView) {
+//			long nodeInx;
+//			final DNodeView nView = (DNodeView) obj;
+//
+//			synchronized (m_lock) {
+//				nodeInx = nView.getCyNode().getSUID();
+//				CyNode nnode = model.getNode(nodeInx);
+//
+//				if (nnode == null || !m_drawPersp.addNode(nnode))
+//					return false;
+//
+//				m_spacial.insert(nodeInx, nView.m_hiddenXMin, nView.m_hiddenYMin, nView.m_hiddenXMax,
+//						nView.m_hiddenYMax, nView.getZPosition());
+//				setContentChanged();
+//			}
+//
+//			/*
+//			if (fireListenerEvents) {
+//				final GraphViewChangeListener listener = m_lis[0];
+//
+//				if (listener != null) {
+//					listener.graphViewChanged(new GraphViewNodesRestoredEvent(
+//							this, makeList(nView.getModel())));
+//				}
+//			}
+//			*/
+//
+//			return true;
+//		} else if (obj instanceof DEdgeView) {
+//			CyNode sourceNode;
+//			CyNode targetNode;
+//			CyEdge newEdge;
+//
+//			synchronized (m_lock) {
+//				final CyEdge edge = model.getEdge(((DEdgeView) obj).getCyEdge().getSUID());
+//
+//				if (edge == null)
+//					return false;
+//
+//				// The edge exists in m_structPersp, therefore its source and target
+//				// node views must also exist.
+//				sourceNode = edge.getSource();
+//				targetNode = edge.getTarget();
+//				final DNodeView srcDnv = getDNodeView(sourceNode);
+//				final DNodeView tgtDnv = getDNodeView(targetNode);
+//
+//				if (isHidden(srcDnv) || isHidden(tgtDnv))
+//					return false;
+//				
+//				if (!showGraphObjectInternal(srcDnv, false))
+//					sourceNode = null;
+//
+//				if (!showGraphObjectInternal(tgtDnv, false))
+//					targetNode = null;
+//
+//				newEdge = edge;
+//
+//				if (!m_drawPersp.addEdge(newEdge))
+//					return false;
+//
+//				setContentChanged();
+//			}
+//
+//			return true;
+//		} else {
+//			return false;
+//		}
+//	}
+//
+//	@Override
+//	public boolean hideGraphObjects(List<? extends GraphViewObject> objects) {
+//		final Iterator<? extends GraphViewObject> it = objects.iterator();
+//
+//		while (it.hasNext())
+//			hideGraphObject(it.next());
+//
+//		return true;
+//	}
+//
+//	@Override
+//	public boolean showGraphObjects(List<? extends GraphViewObject> objects) {
+//		final Iterator<? extends GraphViewObject> it = objects.iterator();
+//
+//		while (it.hasNext())
+//			showGraphObject(it.next());
+//
+//		return true;
+//	}
 
 	// Auxiliary methods specific to this GraphView implementation:
 	
-	@Override
 	public void setCenter(double x, double y) {
 		synchronized (m_lock) {
             m_networkCanvas.setCenter(x,y);
@@ -1354,51 +1314,62 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 			
 			// Update view model
 			// TODO: don't do it from here?
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
-			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
+			CyNetworkView netView = getViewModel();
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, m_networkCanvas.m_xCenter);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, m_networkCanvas.m_yCenter);
 		}
 	}
 
-	@Override
 	public Point2D getCenter() {
 		synchronized (m_lock) {
 			return new Point2D.Double(m_networkCanvas.m_xCenter, m_networkCanvas.m_yCenter);
 		}
 	}
-
+	
 	@Override
-	public void fitSelected() {
-		getEventHelper().flushPayloadEvents();
-		
-		synchronized (m_lock) {
-			LongEnumerator selectedElms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+	public void handleFitSelected() {
+		fitSelected();
+	}
 
-			// Only check for selected edges if we don't have selected nodes.
-			if (selectedElms.numRemaining() == 0 && edgeSelectionEnabled()) {
-				selectedElms = getSelectedEdgeNodes();
-				if (selectedElms.numRemaining() == 0)
-					return;
-			}
+	public void fitSelected() {
+		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.flushPayloadEvents();
+		
+//		synchronized (m_lock) {
+			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+			SpacialIndex2D spacial = netViewSnapshot.getSpacialIndex2D();
+			Collection<View<CyNode>> selectedElms = netViewSnapshot.getSelectedNodes();
+			if(selectedElms.isEmpty())
+				return;
+			
+			// MKTODO add edge selection???
+//			LongEnumerator selectedElms = m_selectedNodes.searchRange(Integer.MIN_VALUE, Integer.MAX_VALUE, false);
+//
+//			// Only check for selected edges if we don't have selected nodes.
+//			if (selectedElms.numRemaining() == 0 && edgeSelectionEnabled()) {
+//				selectedElms = getSelectedEdgeNodes();
+//				if (selectedElms.numRemaining() == 0)
+//					return;
+//			}
 
 			float xMin = Float.POSITIVE_INFINITY;
 			float yMin = Float.POSITIVE_INFINITY;
 			float xMax = Float.NEGATIVE_INFINITY;
 			float yMax = Float.NEGATIVE_INFINITY;
 
-			long leftMost = 0;
-			long rightMost = 0;
+			View<CyNode> leftMost;
+			View<CyNode> rightMost;
 
-			while (selectedElms.numRemaining() > 0) {
-				final long node = selectedElms.nextLong();
-				m_spacial.exists(node, m_extentsBuff, 0);
+			for(View<CyNode> nodeView : selectedElms) {
+				spacial.get(nodeView.getSUID(), m_extentsBuff);
 				if (m_extentsBuff[0] < xMin) {
 					xMin = m_extentsBuff[0];
-					leftMost = node;
+					leftMost = nodeView;
 				}
 
 				if (m_extentsBuff[2] > xMax) {
 					xMax = m_extentsBuff[2];
-					rightMost = node;
+					rightMost = nodeView;
 				}
 
 				yMin = Math.min(yMin, m_extentsBuff[1]);
@@ -1408,7 +1379,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 			xMin = xMin - (getLabelWidth(leftMost) / 2);
 			xMax = xMax + (getLabelWidth(rightMost) / 2);
 
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+			CyNetworkView netView = netViewSnapshot.getMutableNetworkView();
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
 				double zoom = Math.min(((double) m_networkCanvas.getWidth())
 						/ (((double) xMax) - ((double) xMin)),
 						((double) m_networkCanvas.getHeight())
@@ -1416,55 +1388,54 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 				zoom = checkZoom(zoom, m_networkCanvas.m_scaleFactor);
 				
 				// Update view model.  Zoom Level should be modified.
-				setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
 			}
 			
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
-				final double xCenter = (((double) xMin) + ((double) xMax)) / 2.0d;
-				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+				double xCenter = (((double) xMin) + ((double) xMax)) / 2.0d;
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
 			}
 			
-			if (!isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				final double yCenter = (((double) yMin) + ((double) yMax)) / 2.0d;
-				setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				double yCenter = (((double) yMin) + ((double) yMax)) / 2.0d;
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
 			}
-		}
+//		}
 			
 		updateView(false);
 	}
 
-	/**
-	 * @return An LongEnumerator listing the nodes that are endpoints of the currently selected edges.
-	 */
-	private LongEnumerator getSelectedEdgeNodes() {
-		synchronized (m_lock) {
-			final LongEnumerator selectedEdges = m_selectedEdges.searchRange(Integer.MIN_VALUE,Integer.MAX_VALUE,false);
+//	/**
+//	 * @return An LongEnumerator listing the nodes that are endpoints of the currently selected edges.
+//	 */
+//	private LongEnumerator getSelectedEdgeNodes() {
+//		synchronized (m_lock) {
+//			final LongEnumerator selectedEdges = m_selectedEdges.searchRange(Integer.MIN_VALUE,Integer.MAX_VALUE,false);
+//
+//			final LongHash nodeIds = new LongHash();
+//
+//			while (selectedEdges.numRemaining() > 0) {
+//				final long edge = selectedEdges.nextLong();
+//				CyEdge currEdge = model.getEdge(edge); 
+//
+//				CyNode source = currEdge.getSource();
+//				long sourceId = source.getSUID();
+//				nodeIds.put(sourceId);
+//
+//				CyNode target = currEdge.getTarget();
+//				long targetId = target.getSUID();
+//				nodeIds.put(targetId);
+//			}
+//
+//			return nodeIds.elements();
+//		}
+//	}
 
-			final LongHash nodeIds = new LongHash();
-
-			while (selectedEdges.numRemaining() > 0) {
-				final long edge = selectedEdges.nextLong();
-				CyEdge currEdge = model.getEdge(edge); 
-
-				CyNode source = currEdge.getSource();
-				long sourceId = source.getSUID();
-				nodeIds.put(sourceId);
-
-				CyNode target = currEdge.getTarget();
-				long targetId = target.getSUID();
-				nodeIds.put(targetId);
-			}
-
-			return nodeIds.elements();
-		}
-	}
-
-	private int getLabelWidth(long node) {
-		DNodeView x = ((DNodeView) getDNodeView(node));
-		if (x == null)
+	private int getLabelWidth(View<CyNode> nodeView) {
+		if (nodeView == null)
 			return 0;
 
-		String s = x.getText();
+		String s = m_nodeDetails.getLabelText(nodeView);
 		if (s == null)
 			return 0;
 
@@ -1478,7 +1449,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		return m_networkCanvas.m_fontMetrics.charsWidth(lab, 0, lab.length);
 	}
 
-	@Override
 	public void setGraphLOD(GraphLOD lod) {
 		synchronized (m_lock) {
 			m_networkCanvas.m_lod[0] = lod;
@@ -1486,12 +1456,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		}
 	}
 
-	@Override
 	public GraphLOD getGraphLOD() {
 		return m_networkCanvas.m_lod[0];
 	}
 
-	@Override
 	public void setPrintingTextAsShape(boolean textAsShape) {
 		synchronized (m_lock) {
 			m_printLOD.setPrintingTextAsShape(textAsShape);
@@ -2109,37 +2077,30 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		}
 	}
 
-	@Override
 	public void setSize(Dimension d) {
 		m_networkCanvas.setSize(d);
 	}
 
-	@Override
 	public void addMouseListener(MouseListener m) {
 		m_networkCanvas.addMouseListener(m);
 	}
 
-	@Override
 	public void addMouseMotionListener(MouseMotionListener m) {
 		m_networkCanvas.addMouseMotionListener(m);
 	}
 
-	@Override
 	public void addKeyListener(KeyListener k) {
 		m_networkCanvas.addKeyListener(k);
 	}
 
-	@Override
 	public void removeMouseListener(MouseListener m) {
 		m_networkCanvas.removeMouseListener(m);
 	}
 
-	@Override
 	public void removeMouseMotionListener(MouseMotionListener m) {
 		m_networkCanvas.removeMouseMotionListener(m);
 	}
 
-	@Override
 	public void removeKeyListener(KeyListener k) {
 		m_networkCanvas.removeKeyListener(k);
 	}
@@ -2149,29 +2110,29 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		nl.add(nodeOrEdge);
 		return nl;
 	}
-
-	static List<CyNode> makeNodeList(long[] nodeids, GraphView view) {
-		List<CyNode> l = new ArrayList<>(nodeids.length);
-		
-		for (long nid : nodeids)
-			l.add(((DNodeView)view.getDNodeView(nid)).getModel());
-
-		return l;
-	}
-
-	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
-		if (view == null || edgeids == null || edgeids.length == 0)
-			return new ArrayList<>();
-		
-		List<CyEdge> l = new ArrayList<>(edgeids.length);
-		
-		for (long nid : edgeids) {
-			if (view.getDEdgeView(nid) != null)
-				l.add(view.getDEdgeView(nid).getCyEdge());
-		}
-
-		return l;
-	}
+//
+//	static List<CyNode> makeNodeList(long[] nodeids, GraphView view) {
+//		List<CyNode> l = new ArrayList<>(nodeids.length);
+//		
+//		for (long nid : nodeids)
+//			l.add(((DNodeView)view.getDNodeView(nid)).getModel());
+//
+//		return l;
+//	}
+//
+//	static List<CyEdge> makeEdgeList(long[] edgeids, GraphView view) {
+//		if (view == null || edgeids == null || edgeids.length == 0)
+//			return new ArrayList<>();
+//		
+//		List<CyEdge> l = new ArrayList<>(edgeids.length);
+//		
+//		for (long nid : edgeids) {
+//			if (view.getDEdgeView(nid) != null)
+//				l.add(view.getDEdgeView(nid).getCyEdge());
+//		}
+//
+//		return l;
+//	}
 
 	@Override
 	public Printable createPrintable() {
@@ -2183,10 +2144,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		return this.props;
 	}
 	
-	/**
-	 * Common API for all rendering engines.
-	 */
-	@Override public Image createImage(int width, int height) {
+	@Override 
+	public Image createImage(int width, int height) {
 		return createImage(width, height, 1, false);
 	}
 
@@ -2196,8 +2155,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 	}
 
 	@Override
-	public CyNetworkView getViewModel() {
+	public CyNetworkViewSnapshot getViewModelSnapshot() {
 		return this;
+	}
+	
+	@Override
+	public CyNetworkView getViewModel() {
+		return viewModel;
 	}
 
 	@Override
@@ -2297,100 +2261,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		setViewportChanged(viewportChanged);
 	}
 
-	@Override
-	public void handleEvent(AboutToRemoveNodesEvent e) {
-		if (model != e.getSource())
-			return;
 
-		List<View<CyNode>> nvs = new ArrayList<>(e.getNodes().size());
-		
-		for (CyNode n : e.getNodes()) {
-			View<CyNode> v = this.getNodeView(n);
-			
-			if (v != null)
-				nvs.add(v);
-		}
-
-		if (nvs.size() <= 0)
-			return;
-		
-		//getEventHelper().fireEvent(new AboutToRemoveNodeViewsEvent(this, nvs));
-
-		for (CyNode n : e.getNodes())
-			this.removeNodeView(n);
-	}
-
-	@Override
-	public void handleEvent(AboutToRemoveEdgesEvent e) {
-		if (model != e.getSource())
-			return;
-
-		List<View<CyEdge>> evs = new ArrayList<>(e.getEdges().size());
-		
-		for (CyEdge edge : e.getEdges()) {
-			View<CyEdge> v = getEdgeView(edge);
-			if (v != null)
-				evs.add(v);
-		}
-
-		if (evs.size() <= 0)
-			return;
-
-		//getEventHelper().fireEvent(new AboutToRemoveEdgeViewsEvent(this, evs));
-
-		for (CyEdge edge : e.getEdges())
-			this.removeEdgeView(edge);
-			//edgeViews.remove(edge);
-	}
-
-	@Override
-	public void handleEvent(AddedNodesEvent e) {
-		// Respond to the event only if the source is equal to the network model associated with this view.
-		if (model != e.getSource())
-			return;
-
-		for (CyNode node : e.getPayloadCollection()) {
-			this.addNodeView(node);
-		}
-	}
-
-	@Override
-	public void handleEvent(AddedEdgesEvent e) {
-		if (model != e.getSource())
-			return;
-
-		for ( CyEdge edge : e.getPayloadCollection()) {
-			addEdgeView(edge);
-		}		
-	}
-
-	@Override
-	public Collection<View<CyNode>> getNodeViews() {
-		// This cast is always safe in current implementation.
-		// Also, since this is a concurrent collection, this operation is thread-safe.
-		return (Collection) nodeViewMap.values();
-	}
-
-	@Override
-	public Collection<View<CyEdge>> getEdgeViews() {
-		// This cast is always safe in current implementation.
-		// Also, since this is a concurrent collection, this operation is thread-safe.
-		return (Collection) edgeViewMap.values();
-	}
-
-	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Collection<View<? extends CyIdentifiable>> getAllViews() {
-		synchronized (m_lock) {
-			final List views = new ArrayList(nodeViewMap.size() + edgeViewMap.size() + 1);
-			Collection nodeViews = nodeViewMap.values();
-			views.addAll(nodeViews);
-			Collection edgeViews = edgeViewMap.values();
-			views.addAll(edgeViews);
-			views.add(this);
-			return views;
-		}
-	}
 
 	@Override
 	protected <T, V extends T> void applyVisualProperty(final VisualProperty<? extends T> vpOriginal, final V value) {
@@ -2484,15 +2355,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>,
 		return (T) value;
 	}
 
-	@Override
-	public View<CyNode> getNodeView(final CyNode node) {
-		return (View<CyNode>) getDNodeView(node.getSUID());
-	}
-
-	@Override
-	public View<CyEdge> getEdgeView(final CyEdge edge) {
-		return (View<CyEdge>) getDEdgeView(edge.getSUID());
-	}
+//	@Override
+//	public View<CyNode> getNodeView(final CyNode node) {
+//		return (View<CyNode>) getDNodeView(node.getSUID());
+//	}
+//
+//	@Override
+//	public View<CyEdge> getEdgeView(final CyEdge edge) {
+//		return (View<CyEdge>) getDEdgeView(edge.getSUID());
+//	}
 
 	@Override
 	public void handleEvent(FitSelectedEvent e) {
