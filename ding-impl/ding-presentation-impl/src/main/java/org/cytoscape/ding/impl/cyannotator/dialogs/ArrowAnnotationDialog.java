@@ -42,7 +42,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -84,18 +84,18 @@ public class ArrowAnnotationDialog extends JDialog {
 	private ArrowAnnotationPanel arrowAnnotationPanel;
 
 	private final CyAnnotator cyAnnotator;    
-	private final DGraphView view;    
+	private final DRenderingEngine re;    
 	private final ArrowAnnotationImpl annotation;
 	private ArrowAnnotationImpl preview;
 	private DingAnnotation source;
 	private final boolean create;
 		
-	public ArrowAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+	public ArrowAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
 		super(owner);
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.annotation = new ArrowAnnotationImpl(view, false);
-		this.source = cyAnnotator.getAnnotationAt(start != null ? start : view.getCenter());
+		this.re = re;
+		this.cyAnnotator = re.getCyAnnotator();
+		this.annotation = new ArrowAnnotationImpl(re, false);
+		this.source = cyAnnotator.getAnnotationAt(start != null ? start : re.getCenter());
 		this.create = true;
 
 		initComponents();
@@ -105,7 +105,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		super(owner);
 		this.annotation = annotation;
 		this.cyAnnotator = annotation.getCyAnnotator();
-		this.view = cyAnnotator.getView();
+		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 
 		initComponents();
@@ -118,7 +118,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		setResizable(false);
 
 		// Create the preview panel
-		preview = new ArrowAnnotationImpl(view, true);
+		preview = new ArrowAnnotationImpl(re, true);
 		((ArrowAnnotationImpl) preview).setSize(400.0, 100.0);
 		
 		final PreviewPanel previewPanel = new PreviewPanel(preview);
@@ -192,7 +192,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		cyAnnotator.addAnnotation(annotation);
 
 		// Update the canvas
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.positionArrow(annotation);

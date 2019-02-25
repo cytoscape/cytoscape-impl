@@ -9,7 +9,8 @@ import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -57,26 +58,28 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		// We need to be over an annotation
-		CyAnnotator cyAnnotator = ((DGraphView) view).getCyAnnotator();
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(location);
 		
 		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
-			JOptionPane.showMessageDialog(view.getCanvas(), "Please click another annotation.");
+			JOptionPane.showMessageDialog(re.getCanvas(), "Please click another annotation.");
 			return null;
 		}
 		
-		return new ArrowAnnotationDialog(view, location, ViewUtil.getActiveWindow(view));
+		return new ArrowAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override
-	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView) || !this.type.equals(type))
+	public ArrowAnnotation createAnnotation(Class<? extends ArrowAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+		if (!this.type.equals(type))
 			return null;
-
-		return new ArrowAnnotationImpl((DGraphView) view, argMap);
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if(re == null)
+			return null;
+		return new ArrowAnnotationImpl(re, argMap);
 	}
 	
 	@Override

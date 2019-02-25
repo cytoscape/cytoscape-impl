@@ -41,6 +41,14 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 		Rectangle mbr =  mbrOpt.isPresent() ? mbrOpt.get() : EMPTY_MBR;
 		copyExtents(mbr, extents);
 	}
+	
+	@Override
+	public void getMBR(double[] extents) {
+		Optional<Rectangle> mbrOpt = rtree.mbr();
+		Rectangle mbr =  mbrOpt.isPresent() ? mbrOpt.get() : EMPTY_MBR;
+		copyExtents(mbr, extents);
+	}
+
 
 	@Override
 	public boolean exists(long suid) {
@@ -49,6 +57,16 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 	
 	@Override
 	public boolean get(long suid, float[] extents) {
+		Option<Rectangle> r = geometries.get(suid);
+		if(r.isDefined()) {
+			copyExtents(r.get(), extents);
+			return true;
+		}
+		return false;
+	}
+	
+	@Override
+	public boolean get(long suid, double[] extents) {
 		Option<Rectangle> r = geometries.get(suid);
 		if(r.isDefined()) {
 			copyExtents(r.get(), extents);
@@ -83,7 +101,14 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 		}
 	}
 	
-	
+	private static void copyExtents(Rectangle r, double[] extents) {
+		if(extents != null) {
+			extents[X_MIN] = r.x1();
+			extents[Y_MIN] = r.y1();
+			extents[X_MAX] = r.x2();
+			extents[Y_MAX] = r.y2();
+		}
+	}
 	
 	private class AllEntriesEnumeratorImpl implements SpacialIndex2DEnumerator {
 

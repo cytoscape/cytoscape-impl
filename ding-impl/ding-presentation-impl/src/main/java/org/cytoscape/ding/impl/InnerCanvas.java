@@ -91,8 +91,7 @@ import org.cytoscape.work.TaskManager;
 /**
  * Canvas to be used for drawing actual network visualization
  */
-public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener,
-		KeyListener, MouseWheelListener {
+public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener {
 
 	private final static long serialVersionUID = 1202416511420671L;
 
@@ -164,8 +163,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_scaleFactor = 1.0d;
 		m_hash = new LongHash();
 		
-		addEdgeMode = new AddEdgeStateMonitor(this, m_view);
-		popup = new PopupMenuHelper(m_view, this, serviceRegistrar);
+		addEdgeMode = new AddEdgeStateMonitor(this, re);
+		popup = new PopupMenuHelper(re, this, serviceRegistrar);
 		
 		mousePressedDelegator = new MousePressedDelegator();
 		mouseReleasedDelegator = new MouseReleasedDelegator();
@@ -185,7 +184,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		ActionListener taskPerformer = (ActionEvent evt) -> {
 			hideEdgesTimer.stop();
 			m_lod[0].setDrawEdges(true);
-			m_view.setViewportChanged();
+			re.setViewportChanged();
 			repaint();
 		};
 		hideEdgesTimer = new Timer(600, taskPerformer);
@@ -208,15 +207,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			synchronized (m_lock) {
 				m_grafx = grafx;
 				
-				if (m_view != null)
-					m_view.setViewportChanged();
+				if (m_re != null)
+					m_re.setViewportChanged();
 			}
 		}
 	}
 
 	@Override
 	public void update(Graphics g) {
-		if (m_grafx == null || m_view == null)
+		if (m_grafx == null || m_re == null)
 			return;
 
 		// This is the magical portion of code that transfers what is in the
@@ -230,9 +229,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_fontMetrics = g.getFontMetrics();
 
 		synchronized (m_lock) {
-			if (m_view != null && m_view.isDirty()) {
-				contentChanged = m_view.isContentChanged();
-				viewportChanged = m_view.isViewportChanged();
+			if (m_re != null && m_re.isDirty()) {
+				contentChanged = m_re.isContentChanged();
+				viewportChanged = m_re.isViewportChanged();
 				renderGraph(m_grafx,/* setLastRenderDetail = */ true, m_lod[0]);
 				xCenter = m_xCenter;
 				yCenter = m_yCenter;
@@ -267,15 +266,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			}
 		}
 
-		if (contentChanged && m_view != null) {
-			final ContentChangeListener lis = m_view.m_cLis[0];
+		if (contentChanged && m_re != null) {
+			final ContentChangeListener lis = m_re.m_cLis[0];
 
 			if (lis != null)
 				lis.contentChanged();
 		}
 
-		if (viewportChanged && m_view != null) {
-			final ViewportChangeListener lis = m_view.m_vLis[0];
+		if (viewportChanged && m_re != null) {
+			final ViewportChangeListener lis = m_re.m_vLis[0];
 
 			if (lis != null)
 				lis.viewportChanged(getWidth(), getHeight(), xCenter, yCenter, scaleFactor);
@@ -296,10 +295,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		final int w = getWidth();
 		final int h = getHeight();
 		
-		if (m_view != null && w > 0 && h > 0)
+		if (m_re != null && w > 0 && h > 0)
 			renderGraph(
 					new GraphGraphics(new ImageImposter(g, w, h), /* debug = */ false, /* clear = */ false), 
-					/* setLastRenderDetail = */ false, m_view.m_printLOD);
+					/* setLastRenderDetail = */ false, m_re.m_printLOD);
 		
 		isPrinting = false;
 	}
@@ -310,8 +309,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		isPrinting = true;
 		final Image img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
 		
-		if (m_view != null)
-			renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_view.m_printLOD);
+		if (m_re != null)
+			renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, m_re.m_printLOD);
 		
 		isPrinting = false;
 	}
@@ -338,7 +337,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	// TODO: set timer and setDrawEdges to false.  Set back to true when timer expires.
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (!m_view.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+		if (!m_re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
 			setHideEdges();
 			adjustZoom(e.getWheelRotation());
 		}
@@ -408,7 +407,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private void handleBackspaceKey() {		//#1993
 		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
 		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-		taskManager.execute(taskFactory.createTaskIterator(m_view.getNetwork()));
+		taskManager.execute(taskFactory.createTaskIterator(m_re.getViewModel().getModel()));
 	}
 
 	/**
@@ -428,9 +427,9 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private long getChosenNode() {
 		m_ptBuff[0] = m_lastXMousePos;
 		m_ptBuff[1] = m_lastYMousePos;
-		m_view.xformComponentToNodeCoords(m_ptBuff);
+		m_re.xformComponentToNodeCoords(m_ptBuff);
 		m_stack.empty();
-		m_view.getNodesIntersectingRectangle((float) m_ptBuff[0], (float) m_ptBuff[1],
+		m_re.getNodesIntersectingRectangle((float) m_ptBuff[0], (float) m_ptBuff[1],
 		                                     (float) m_ptBuff[0], (float) m_ptBuff[1],
 		                                     (m_lastRenderDetail
 		                                     & GraphRenderer.LOD_HIGH_DETAIL) == 0,
@@ -439,11 +438,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		long chosenNode = -1;
 		if (m_stack.size() > 0) {
 			LongEnumerator le = m_stack.elements();
-			DNodeView nv = null;
+			View<CyNode> nv = null;
+			
 			while (le.numRemaining() > 0) {
 				long thisNode = le.nextLong();
-				DNodeView dnv = m_view.getDNodeView(thisNode);
-				if (nv == null || dnv.getZPosition() > nv.getZPosition()) {
+				View<CyNode> dnv = m_re.getViewModelSnapshot().getNodeView(thisNode);
+				if (nv == null || m_re.getNodeDetails().getZPosition(dnv) > m_re.getNodeDetails().getZPosition(nv)) {
 					nv = dnv;
 					chosenNode = thisNode;
 				}
@@ -452,23 +452,22 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return chosenNode;
 	}
 
-	private long getChosenAnchor() {
-		m_ptBuff[0] = m_lastXMousePos;
-		m_ptBuff[1] = m_lastYMousePos;
-		m_view.xformComponentToNodeCoords(m_ptBuff);
-
-		final LongEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0],
-		                                                          (float) m_ptBuff[1],
-		                                                          (float) m_ptBuff[0],
-		                                                          (float) m_ptBuff[1],
-		                                                          null, 0, false);
-		long chosenAnchor = (hits.numRemaining() > 0) ? hits.nextLong() : (-1);
-		return chosenAnchor;
-	}
+//	private long getChosenAnchor() {
+//		m_ptBuff[0] = m_lastXMousePos;
+//		m_ptBuff[1] = m_lastYMousePos;
+//		m_re.xformComponentToNodeCoords(m_ptBuff);
+//
+//		final LongEnumerator hits = m_view.m_spacialA.queryOverlap((float) m_ptBuff[0],
+//		                                                          (float) m_ptBuff[1],
+//		                                                          (float) m_ptBuff[0],
+//		                                                          (float) m_ptBuff[1],
+//		                                                          null, 0, false);
+//		long chosenAnchor = (hits.numRemaining() > 0) ? hits.nextLong() : (-1);
+//		return chosenAnchor;
+//	}
 	
 	private long getChosenEdge() {
-		computeEdgesIntersecting(m_lastXMousePos - 1, m_lastYMousePos - 1,
-                m_lastXMousePos + 1, m_lastYMousePos + 1, m_stack2);
+		computeEdgesIntersecting(m_lastXMousePos - 1, m_lastYMousePos - 1, m_lastXMousePos + 1, m_lastYMousePos + 1, m_stack2);
         long chosenEdge = (m_stack2.size() > 0) ? m_stack2.peek() : -1;
         return chosenEdge;
 	}
@@ -722,14 +721,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	 */
 	private String getToolTipText(final Point p) {
 		// display tips for nodes before edges
-		final DNodeView nv = (DNodeView) m_view.getPickedNodeView(p);
+		final View<CyNode> nv = m_re.getPickedNodeView(p);
 		if (nv != null)  {
-			final String tooltip = nv.getToolTip();
+			final String tooltip = m_re.getNodeDetails().getTooltipText(nv);
 			return tooltip;
 		}
 		// only display edge tool tips if the LOD is sufficient
 		if ((m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) != 0) {
-				DEdgeView ev = (DEdgeView) m_view.getPickedEdgeView(p);
+				DEdgeView ev = (DEdgeView) m_re.getPickedEdgeView(p);
 				if (ev != null) 
 					return m_view.m_edgeDetails.getTooltipText(ev.getCyEdge(), 0);
 		}
@@ -746,13 +745,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	                                    final int yMaxi, final LongStack stack) {
 		m_ptBuff[0] = xMini;
 		m_ptBuff[1] = yMini;
-		m_view.xformComponentToNodeCoords(m_ptBuff);
+		m_re.xformComponentToNodeCoords(m_ptBuff);
 
 		final double xMin = m_ptBuff[0];
 		final double yMin = m_ptBuff[1];
 		m_ptBuff[0] = xMaxi;
 		m_ptBuff[1] = yMaxi;
-		m_view.xformComponentToNodeCoords(m_ptBuff);
+		m_re.xformComponentToNodeCoords(m_ptBuff);
 
 		final double xMax = m_ptBuff[0];
 		final double yMax = m_ptBuff[1];
@@ -768,7 +767,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		edgeNodesEnum = m_stack.elements();
 		stack.empty();
 
-		final CyNetwork graph = m_view.m_drawPersp;
+		final CyNetwork graph = m_re.m_drawPersp;
 
 		if ((m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0) {
 			// We won't need to look up arrows and their sizes.
@@ -903,7 +902,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
             double newX = sourcePoint.getX() - changeX;
             double newY = sourcePoint.getY() - changeY;
             sourcePoint.setLocation(newX, newY);
-            AddEdgeStateMonitor.setSourcePoint(m_view, sourcePoint);
+            AddEdgeStateMonitor.setSourcePoint(m_re, sourcePoint);
         }
 
     }
@@ -923,10 +922,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			m_scaleFactor = m_scaleFactor * factor;
 		}
 
-		m_view.setViewportChanged();
+		m_re.setViewportChanged();
 		
 		// Update view model.
-		m_view.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
+		m_re.getViewModel().setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, m_scaleFactor);
 
         //This code updates the source point so that it is better related to the selected node.
         //TODO: Center the source point on the selected node perfectly.

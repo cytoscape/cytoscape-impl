@@ -17,7 +17,7 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.IllegalAnnotationStructureException;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -55,8 +55,8 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	List<DingAnnotation> annotations = new ArrayList<>();
 
 
-	public GroupAnnotationImpl(DGraphView view, Map<String, String> argMap) {
-		super(view, processArgs(argMap));
+	public GroupAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+		super(re, processArgs(argMap));
 	}
 	
 	private static Map<String,String> processArgs(Map<String,String> argMap) {
@@ -200,7 +200,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	public void moveAnnotation(Point2D location) {
 		// Location is in "node coordinates"
 		// Get the component coordinates of our new location
-		Point2D compLocation = ViewUtils.getComponentCoordinates(view, location.getX(), location.getY());
+		Point2D compLocation = ViewUtils.getComponentCoordinates(re, location.getX(), location.getY());
 
 		// Get our current location in component coordinates
 		Point currentLocation = getLocation();
@@ -215,7 +215,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			// Move each child to it's new location
 			Point childLocation = child.getLocation();
 
-			Point2D moveTo = ViewUtils.getNodeCoordinates(view, Math.round(childLocation.getX()-deltaX), Math.round(childLocation.getY()-deltaY));
+			Point2D moveTo = ViewUtils.getNodeCoordinates(re, Math.round(childLocation.getX()-deltaX), Math.round(childLocation.getY()-deltaY));
 			((AbstractAnnotation)child).moveAnnotation(moveTo);
 		}
 

@@ -24,7 +24,7 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.ImageUtil;
 import org.cytoscape.ding.customgraphics.bitmap.URLImageCustomGraphics;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ImageAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -79,8 +79,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			customGraphicsManager.setUsedInCurrentSession(cg, true);
 	}
 
-	public ImageAnnotationImpl(DGraphView view, boolean usedForPreviews) {
-		super(view, 0, 0, usedForPreviews);
+	public ImageAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) {
+		super(re, 0, 0, usedForPreviews);
 	}
 
 	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) { 
@@ -99,7 +99,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	public ImageAnnotationImpl(
-			DGraphView view,
+			DRenderingEngine re,
 			double x,
 			double y,
 			URL url,
@@ -107,7 +107,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			double zoom,
 			CustomGraphicsManager customGraphicsManager
 	) {
-		super(view, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
+		super(re, x, y, ShapeType.RECTANGLE, 0, 0, null, null, 0.0f);
 
 		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
@@ -123,11 +123,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	public ImageAnnotationImpl(
-			DGraphView view,
+			DRenderingEngine re,
 			Map<String, String> argMap,
 			CustomGraphicsManager customGraphicsManager
 	) {
-		super(view, argMap);
+		super(re, argMap);
 		
 		this.customGraphicsManager = customGraphicsManager;
 
@@ -417,7 +417,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(view));
+		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override

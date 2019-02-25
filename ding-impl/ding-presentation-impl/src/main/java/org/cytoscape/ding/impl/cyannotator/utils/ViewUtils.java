@@ -10,7 +10,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
@@ -174,13 +174,13 @@ public class ViewUtils {
 	}
 
 	// Private methods
-	static public void addNodeCoordinates(DGraphView view, Map<String, String> argMap, double x, double y) {
-		Point2D xy = getNodeCoordinates(view, x, y);
+	static public void addNodeCoordinates(DRenderingEngine re, Map<String,String> argMap, double x, double y) {
+		Point2D xy = getNodeCoordinates(re, x, y);
 		argMap.put(Annotation.X,Double.toString(xy.getX()));
 		argMap.put(Annotation.Y,Double.toString(xy.getY()));
 	}
 
-	static public Point2D getComponentCoordinates(DGraphView view, Map<String, String> argMap) {
+	static public Point2D getComponentCoordinates(DRenderingEngine re, Map<String, String> argMap) {
 		// Get our current transform
 		double[] nextLocn = new double[2];
 		nextLocn[0] = 0.0;
@@ -191,12 +191,12 @@ public class ViewUtils {
 		if (argMap.containsKey(Annotation.Y))
 			nextLocn[1] = Double.parseDouble(argMap.get(Annotation.Y));
 
-		view.xformNodeToComponentCoords(nextLocn);
+		re.xformNodeToComponentCoords(nextLocn);
 		
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
-	static public Rectangle2D getNodeCoordinates(DGraphView view, Rectangle2D bounds) {
+	static public Rectangle2D getNodeCoordinates(DRenderingEngine re, Rectangle2D bounds) {
 		double x1 = bounds.getX();
 		double y1 = bounds.getY();
 		double x2 = bounds.getX()+bounds.getWidth();
@@ -204,17 +204,17 @@ public class ViewUtils {
 		double[] nextLocn1 = new double[2];
 		nextLocn1[0] = x1;
 		nextLocn1[1] = y1;
-		view.xformComponentToNodeCoords(nextLocn1);
+		re.xformComponentToNodeCoords(nextLocn1);
 
 		double[] nextLocn2 = new double[2];
 		nextLocn2[0] = x2;
 		nextLocn2[1] = y2;
-		view.xformComponentToNodeCoords(nextLocn2);
+		re.xformComponentToNodeCoords(nextLocn2);
 
 		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
 	}
 
-	static public Rectangle2D getComponentCoordinates(DGraphView view, Rectangle2D bounds) {
+	static public Rectangle2D getComponentCoordinates(DRenderingEngine re, Rectangle2D bounds) {
 		double x1 = bounds.getX();
 		double y1 = bounds.getY();
 		double x2 = bounds.getX()+bounds.getWidth();
@@ -222,30 +222,29 @@ public class ViewUtils {
 		double[] nextLocn1 = new double[2];
 		nextLocn1[0] = x1;
 		nextLocn1[1] = y1;
-		view.xformNodeToComponentCoords(nextLocn1);
+		re.xformNodeToComponentCoords(nextLocn1);
 
 		double[] nextLocn2 = new double[2];
 		nextLocn2[0] = x2;
 		nextLocn2[1] = y2;
-		view.xformNodeToComponentCoords(nextLocn2);
+		re.xformNodeToComponentCoords(nextLocn2);
 
 		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
 	}
 
-	static public Point2D getNodeCoordinates(DGraphView view, double x, double y) {
-    // Get our current transform
+	static public Point2D getNodeCoordinates(DRenderingEngine re, double x, double y) {
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
-		view.xformComponentToNodeCoords(nextLocn);
+		re.xformComponentToNodeCoords(nextLocn);
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
-	static public Point2D getComponentCoordinates(DGraphView view, double x, double y) {
+	static public Point2D getComponentCoordinates(DRenderingEngine re, double x, double y) {
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
-		view.xformNodeToComponentCoords(nextLocn);
+		re.xformNodeToComponentCoords(nextLocn);
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 

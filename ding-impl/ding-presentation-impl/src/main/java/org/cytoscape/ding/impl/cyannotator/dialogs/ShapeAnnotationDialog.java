@@ -17,7 +17,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
@@ -61,18 +60,18 @@ public class ShapeAnnotationDialog extends JDialog {
 	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;    
-	private final DGraphView view;    
+	private final DRenderingEngine re;    
 	private final Point2D startingLocation;
 	private final ShapeAnnotationImpl shapeAnnotation;
 	private ShapeAnnotationImpl preview;
 	private final boolean create;
 		
-	public ShapeAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+	public ShapeAnnotationDialog(DRenderingEngine re, final Point2D start, final Window owner) {
 		super(owner);
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start != null ? start : view.getCenter();
-		this.shapeAnnotation = new ShapeAnnotationImpl(view, CREATE_WIDTH, CREATE_HEIGHT, false);
+		this.re = re;
+		this.cyAnnotator = re.getCyAnnotator();
+		this.startingLocation = start != null ? start : re.getCenter();
+		this.shapeAnnotation = new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false);
 		this.create = true;
 
 		initComponents();		        
@@ -82,7 +81,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		super(owner);
 		this.shapeAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.view = cyAnnotator.getView();
+		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 		this.startingLocation = null;
 
@@ -165,7 +164,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		cyAnnotator.addAnnotation(shapeAnnotation);
 
 		// Update the canvas
-		view.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
+		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(shapeAnnotation);

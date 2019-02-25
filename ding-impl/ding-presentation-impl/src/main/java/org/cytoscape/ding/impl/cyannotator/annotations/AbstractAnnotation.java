@@ -21,7 +21,6 @@ import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.ContentChangeListener;
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -68,7 +67,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	private Set<ArrowAnnotation> arrowList = new HashSet<>();
 
 	protected final boolean usedForPreviews;
-	protected DGraphView view;
+	protected DRenderingEngine re;
 	protected ArbitraryGraphicsCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
@@ -90,32 +89,32 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	 * to be functional, it must be added to the AnnotationManager
 	 * and setView must be called.
 	 */
-	protected AbstractAnnotation(DGraphView view, boolean usedForPreviews) {
-		this.view = view;
-		this.cyAnnotator = view == null ? null : view.getCyAnnotator();
+	protected AbstractAnnotation(DRenderingEngine re, boolean usedForPreviews) {
+		this.re = re;
+		this.cyAnnotator = re == null ? null : re.getCyAnnotator();
 		this.usedForPreviews = usedForPreviews;
-		this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.canvasName = DGraphView.Canvas.FOREGROUND_CANVAS;
-		this.globalZoom = view.getZoom();
+		this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS));
+		this.canvasName = DRenderingEngine.Canvas.FOREGROUND_CANVAS;
+		this.globalZoom = re.getZoom();
 		name = getDefaultName();
 	}
 
 	protected AbstractAnnotation(AbstractAnnotation c, boolean usedForPreviews) {
-		this(c.view, usedForPreviews);
+		this(c.re, usedForPreviews);
 		arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
 		this.canvasName = c.canvasName;
 	}
 
-	protected AbstractAnnotation(DGraphView view, double x, double y, double zoom) {
-		this(view, false);
+	protected AbstractAnnotation(DRenderingEngine re, double x, double y, double zoom) {
+		this(re, false);
 		setLocation((int)x, (int)y);
 	}
 
-	protected AbstractAnnotation(DGraphView view, Map<String, String> argMap) {
-		this(view, false);
+	protected AbstractAnnotation(DRenderingEngine re, Map<String, String> argMap) {
+		this(re, false);
 
-		Point2D coords = ViewUtils.getComponentCoordinates(view, argMap);
+		Point2D coords = ViewUtils.getComponentCoordinates(re, argMap);
 		this.globalZoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
 		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0);
 		
@@ -125,8 +124,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
-			this.canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
-			this.canvasName = DGraphView.Canvas.BACKGROUND_CANVAS;
+			this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS));
+			this.canvasName = DRenderingEngine.Canvas.BACKGROUND_CANVAS;
 		}
 
 		setLocation((int)coords.getX(), (int)coords.getY());
@@ -148,16 +147,15 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public String getCanvasName() {
-		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))
+		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
 			return BACKGROUND;
 		return FOREGROUND;
 	}
 
 	@Override
 	public void setCanvas(String cnvs) {
-		canvasName = (cnvs.equals(BACKGROUND)) ? 
-				DGraphView.Canvas.BACKGROUND_CANVAS : DGraphView.Canvas.FOREGROUND_CANVAS;
-		canvas = (ArbitraryGraphicsCanvas)(view.getCanvas(canvasName));
+		canvasName = (cnvs.equals(BACKGROUND)) ? DRenderingEngine.Canvas.BACKGROUND_CANVAS : DRenderingEngine.Canvas.FOREGROUND_CANVAS;
+		canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(canvasName));
 		for (ArrowAnnotation arrow: arrowList) 
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).setCanvas(cnvs);
@@ -168,8 +166,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public void changeCanvas(final String cnvs) {
 		// Are we really changing anything?
-		if ((cnvs.equals(BACKGROUND) && canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS)) ||
-		    (cnvs.equals(FOREGROUND) && canvasName.equals(DGraphView.Canvas.FOREGROUND_CANVAS)))
+		if ((cnvs.equals(BACKGROUND) && canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS)) ||
+		    (cnvs.equals(FOREGROUND) && canvasName.equals(DRenderingEngine.Canvas.FOREGROUND_CANVAS)))
 			return;
 
 		ViewUtil.invokeOnEDTAndWait(() -> {
@@ -190,7 +188,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public CyNetworkView getNetworkView() {
-		return (CyNetworkView)view;
+		return (CyNetworkView)re.getViewModel();
 	}
 
 	@Override
@@ -223,7 +221,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			} else if (cnvs == null) {
 				setCanvas(FOREGROUND);
 			} else {
-				if (cnvs.equals(view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS)))
+				if (cnvs.equals(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS)))
 					setCanvas(BACKGROUND);
 				else
 					setCanvas(FOREGROUND);
@@ -267,7 +265,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public void moveAnnotation(Point2D location) {
 		// Location is in "node coordinates"
-		Point2D coords = ViewUtils.getComponentCoordinates(view, location.getX(), location.getY());
+		Point2D coords = ViewUtils.getComponentCoordinates(re, location.getX(), location.getY());
 		if (!(this instanceof ArrowAnnotationImpl)) {
 			setLocation((int)coords.getX(), (int)coords.getY());
 		}
@@ -328,7 +326,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
 
 		// Now, switch back to component coordinates
-		Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getView(), newBounds);
+		Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getRenderingEngine(), newBounds);
 		getComponent().setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
 		resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
 	}
@@ -430,9 +428,9 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		Map<String, String> argMap = new HashMap<>();
 		if (name != null)
 			argMap.put(NAME, this.name);
-		ViewUtils.addNodeCoordinates(view, argMap, getX(), getY());
+		ViewUtils.addNodeCoordinates(re, argMap, getX(), getY());
 		argMap.put(ZOOM,Double.toString(this.globalZoom));
-		if (canvasName.equals(DGraphView.Canvas.BACKGROUND_CANVAS))
+		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
 			argMap.put(CANVAS, BACKGROUND);
 		else
 			argMap.put(CANVAS, FOREGROUND);
@@ -506,7 +504,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	// Save the bounds (in node coordinates)
 	@Override
 	public void saveBounds() {
-		initialBounds = ViewUtils.getNodeCoordinates(view, getBounds().getBounds2D());
+		initialBounds = ViewUtils.getNodeCoordinates(re, getBounds().getBounds2D());
 	}
 
 	@Override
@@ -522,8 +520,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			return;
 		}
 
-		Point2D mouse = ViewUtils.getNodeCoordinates(view, offset.getX(), offset.getY());
-		Point2D current = ViewUtils.getNodeCoordinates(view, getLocation().getX(), getLocation().getY());
+		Point2D mouse = ViewUtils.getNodeCoordinates(re, offset.getX(), offset.getY());
+		Point2D current = ViewUtils.getNodeCoordinates(re, getLocation().getX(), getLocation().getY());
 
 		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
 	}
@@ -535,10 +533,10 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void contentChanged() {
-		if (view == null)
+		if (re == null)
 			return;
 		
-		final ContentChangeListener lis = view.getContentChangeListener();
+		final ContentChangeListener lis = re.getContentChangeListener();
 		
 		if (lis != null)
 			lis.contentChanged();

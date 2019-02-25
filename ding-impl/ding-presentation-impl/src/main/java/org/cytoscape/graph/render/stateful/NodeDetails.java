@@ -112,9 +112,12 @@ public interface NodeDetails {
 
 	double getHeight(View<CyNode> node);
 	
+	
 	double getXPosition(View<CyNode> node);
 	
 	double getYPosition(View<CyNode> node);
+	
+	double getZPosition(View<CyNode> node);
 	
 	
 	/**
@@ -174,6 +177,8 @@ public interface NodeDetails {
 	 * character between lines of text.
 	 */
 	String getLabelText(View<CyNode> node);
+	
+	String getTooltipText(View<CyNode> nodeView);
 
 	/**
 	 * Returns the font to use when rendering this label. 

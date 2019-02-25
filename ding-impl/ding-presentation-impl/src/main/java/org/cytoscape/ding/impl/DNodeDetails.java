@@ -197,6 +197,7 @@ public class DNodeDetails implements NodeDetails {
 		return nodeView.getVisualProperty(NODE_LABEL);
 	}
 
+	@Override
 	public String getTooltipText(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_TOOLTIP);
 	}
@@ -316,6 +317,10 @@ public class DNodeDetails implements NodeDetails {
 		return nodeView.getVisualProperty(NODE_Y_LOCATION);
 	}
 	
+	@Override
+	public double getZPosition(View<CyNode> nodeView) {
+		return nodeView.getVisualProperty(NODE_Z_LOCATION);
+	}
 	
 	
 //	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {

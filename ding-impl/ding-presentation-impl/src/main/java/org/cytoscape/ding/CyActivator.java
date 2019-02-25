@@ -1,21 +1,6 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -179,10 +164,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
 		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID);
-		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory);
+		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory, dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, netViewFactoryMediator, NetworkViewAboutToBeDestroyedListener.class);
 		
-		DingRenderer renderer = new DingRenderer(netViewFactoryMediator, dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		DingRenderer renderer = new DingRenderer(netViewFactoryMediator, dVisualLexicon, serviceRegistrar);
 		registerService(bc, renderer, NetworkViewRenderer.class);
 		registerService(bc, renderer, DingRenderer.class);
 		

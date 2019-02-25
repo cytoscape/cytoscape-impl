@@ -4,13 +4,10 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.MouseListener;
 
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 /*
  * #%L
@@ -38,15 +35,8 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingVisualStyleRenderingEngineFactory extends DingRenderingEngineFactory {
 	
-	public DingVisualStyleRenderingEngineFactory(
-			VisualLexicon dingLexicon,
-			ViewTaskFactoryListener vtfListener,
-			AnnotationFactoryManager annMgr,
-			DingGraphLOD dingGraphLOD,
-			HandleFactory handleFactory,
-			CyServiceRegistrar serviceRegistrar
-	) {
-		super(dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory, serviceRegistrar);
+	public DingVisualStyleRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactory, VisualLexicon dingLexicon) {
+		super(viewFactory, dingLexicon);
 	}
 
 	@Override

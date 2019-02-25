@@ -1,32 +1,6 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.work.ServiceProperties.APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -49,7 +23,6 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.ding.NodeView;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -156,7 +129,7 @@ class PopupMenuHelper {
 				for (EdgeViewTaskFactory evtf : usableTFs) {
 					Object context = null;
 					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, edgeView, re.getViewModel());
-					addMenuItem(ev, menu, provisioner, context, tracker, re.edgeViewTFs.get(evtf));
+					addMenuItem(edgeView, menu, provisioner, context, tracker, re.edgeViewTFs.get(evtf));
 				}
 
 				for (CyEdgeViewContextMenuFactory edgeCMF : usableCMFs) {
@@ -178,7 +151,7 @@ class PopupMenuHelper {
 	 *
 	 * @param action Acceptable values are "NEW", "OPEN", or "EDGE". Case does not matter.
 	 */
-	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
+	void createNodeViewMenu(View<CyNode> nodeView, int x, int y , String action) {
 		if (nview != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(graphView.nodeViewTFs,action);
 			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(graphView.cyNodeViewContextMenuFactory,action);

@@ -65,7 +65,7 @@ import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
@@ -143,7 +143,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** GroupAnnotation icon when expanded */
 	private Icon openAnnotationIcon;
 	
-	private DGraphView view;
+	private DRenderingEngine re;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -285,8 +285,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
-	DGraphView getDGraphView() {
-		return view;
+	DRenderingEngine getRenderingEngine() {
+		return re;
 	}
 	
 	int getAnnotationCount() {
@@ -322,7 +322,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setSelected(Annotation a, boolean selected) {
-		if (view == null || getAnnotationCount() == 0)
+		if (re == null || getAnnotationCount() == 0)
 			return;
 
 		// group annotations can be on both canvases at the same time
@@ -345,18 +345,18 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
-	void update(DGraphView view) {
-		this.view = view;
+	void update(DRenderingEngine re) {
+		this.re = re;
 		
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
 		// Enable/disable before next steps
-		setEnabled(view != null);
+		setEnabled(re != null);
 		
 		// Update annotation trees
-		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view == null ? null : view.getCyAnnotator());
+		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re == null ? null : re.getCyAnnotator());
 		getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 		getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		
@@ -434,9 +434,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
-			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view.getCyAnnotator());
+			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re.getCyAnnotator());
 			getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 			getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		}

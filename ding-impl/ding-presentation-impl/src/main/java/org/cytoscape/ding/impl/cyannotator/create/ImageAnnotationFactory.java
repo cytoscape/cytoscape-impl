@@ -10,7 +10,8 @@ import javax.swing.JDialog;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.LoadImageDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -56,20 +57,21 @@ public class ImageAnnotationFactory extends AbstractDingAnnotationFactory<ImageA
 	}
 
 	@Override
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		
-		return new LoadImageDialog(view, location, customGraphicsManager, ViewUtil.getActiveWindow(view));
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		return new LoadImageDialog(re, location, customGraphicsManager, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override
-	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView) || !this.type.equals(type))
+	public ImageAnnotation createAnnotation(Class<? extends ImageAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+		if (!this.type.equals(type))
 			return null;
-
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if(re == null)
+			return null;
 		final CustomGraphicsManager customGraphicsManager = serviceRegistrar.getService(CustomGraphicsManager.class);
-		return new ImageAnnotationImpl((DGraphView) view, argMap, customGraphicsManager);
+		return new ImageAnnotationImpl(re, argMap, customGraphicsManager);
 	}
 	
 	@Override

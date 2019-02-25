@@ -304,7 +304,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		boundChanged = false; imageUpdated = false;
 	}
 
-	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
+	public void updateSubgraph(List<View<CyNode>> nodes, List<View<CyEdge>> edges) {
 		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
 			if (networkImage == null) {

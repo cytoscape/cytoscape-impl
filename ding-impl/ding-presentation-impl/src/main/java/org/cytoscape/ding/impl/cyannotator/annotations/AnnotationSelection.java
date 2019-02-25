@@ -1,15 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.view.presentation.property.values.Position.CENTER;
-import static org.cytoscape.view.presentation.property.values.Position.EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NONE;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.WEST;
+import static org.cytoscape.view.presentation.property.values.Position.*;
 
 /*
  * #%L
@@ -141,8 +132,8 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	}
 
 	public void saveBounds() {
-		initialBounds = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), getBounds().getBounds2D());
-		initialUnion  = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), union.getBounds2D());
+		initialBounds = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), getBounds().getBounds2D());
+		initialUnion  = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), union.getBounds2D());
 		
 		for(DingAnnotation da : selectedAnnotations) {
 			da.saveBounds();
@@ -196,7 +187,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	 */
 	public void moveSelection(int x, int y) {
 		// Get our current transform
-		Point2D pt = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), x, y);
+		Point2D pt = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), x, y);
 		
 		// Avoid moving the same annotation twice
 		Set<DingAnnotation> annotationsToMove = new HashSet<>(selectedAnnotations);
@@ -231,7 +222,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		if(isEast(anchor))
 			mouseX -= anchorOffsetX;
 		
-		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getView(), mouseX, mouseY);
+		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), mouseX, mouseY);
 		double x = mouse.getX();
 		double y = mouse.getY();
 		
@@ -355,7 +346,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		Rectangle2D shape = new Rectangle2D.Double(border*4,border*4,union.getWidth()+border*2,union.getHeight()+border*2);
 		g2.draw(shape);
 
-		if (cyAnnotator.getView().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (cyAnnotator.getRenderingEngine().getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			g2.setPaint(Color.GRAY);
 
 			// Draw the anchors

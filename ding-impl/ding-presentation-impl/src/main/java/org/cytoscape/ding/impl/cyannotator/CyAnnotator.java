@@ -184,7 +184,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	
 	public void loadAnnotations() {
-		CyNetwork network = view.getModel();
+		CyNetwork network = re.getViewModel().getModel();
 		// Now, see if this network has any existing annotations
 		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
@@ -236,9 +236,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		re.updateView();
 	}
 
-//	public DGraphView getView() {
-//		return view;
-//	}
+	public DRenderingEngine getRenderingEngine() {
+		return re;
+	}
 
 	public CyServiceRegistrar getRegistrar() {
 		return registrar;
@@ -559,7 +559,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		CyNetwork network = view.getModel();
+		CyNetwork network = re.getViewModel().getModel();
 		List<String> networkAnnotation = createSavableNetworkAttribute();
 		
 		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
@@ -625,7 +625,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				continue;
 			}
 
-			Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
+			Annotation a = annotationFactoryManager.createAnnotation(type, re.getViewModel() ,argMap);
 			
 			if (a == null || !(a instanceof DingAnnotation))
 				continue;
@@ -681,7 +681,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private void loadArrows(List<Map<String, String>> arrowList, Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
 		for (Map<String, String> argMap : arrowList) {
 			String type = argMap.get("type");
-			Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
+			Annotation annotation = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 			
 			if (annotation instanceof ArrowAnnotationImpl) {
 				ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;

@@ -18,7 +18,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -58,18 +58,18 @@ public class ImageAnnotationDialog extends JDialog {
 	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private final Point2D startingLocation;
 	private final ImageAnnotationImpl annotation;
 	private ImageAnnotationImpl preview;
 	private final boolean create;
 		
-	public ImageAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+	public ImageAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
 		super(owner);
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start != null ? start : view.getCenter();
-		this.annotation = new ImageAnnotationImpl(view, false);
+		this.re = re;
+		this.cyAnnotator = re.getCyAnnotator();
+		this.startingLocation = start != null ? start : re.getCenter();
+		this.annotation = new ImageAnnotationImpl(re, false);
 		this.create = true;
 
 		initComponents();
@@ -79,7 +79,7 @@ public class ImageAnnotationDialog extends JDialog {
 		super(owner);
 		this.annotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.view = cyAnnotator.getView();
+		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 		this.startingLocation = null;
 
@@ -170,7 +170,7 @@ public class ImageAnnotationDialog extends JDialog {
 		cyAnnotator.addAnnotation(annotation);
 
 		// Update the canvas
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(annotation);

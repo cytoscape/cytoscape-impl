@@ -15,7 +15,7 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -62,8 +62,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	/** Initially, the name is the same as the text */
 	private boolean updateNameFromText = true;
 
-	public TextAnnotationImpl(DGraphView view, boolean usedForPreviews) { 
-		super(view, usedForPreviews); 
+	public TextAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) { 
+		super(re, usedForPreviews); 
 		
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
@@ -81,14 +81,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	public TextAnnotationImpl(
-			DGraphView view,
+			DRenderingEngine re,
 			int x,
 			int y,
 			String text,
 			int compCount,
 			double zoom
 	) {
-		super(view, x, y, zoom);
+		super(re, x, y, zoom);
 
 		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
@@ -99,8 +99,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	// This constructor is used to construct a text annotation from an
 	// argument map.
 	// Need to make sure all arguments have reasonable options
-	public TextAnnotationImpl(DGraphView view, Map<String, String> argMap) {
-		super(view, argMap);
+	public TextAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+		super(re, argMap);
 		
 		font = ViewUtils.getArgFont(argMap, "Arial", Font.PLAIN, initialFontSize);
 		textColor = (Color) ViewUtils.getColor(argMap, COLOR, Color.BLACK);
@@ -122,7 +122,6 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		argMap.put(FONTFAMILY, this.font.getFamily());
 		argMap.put(FONTSIZE, Integer.toString(this.font.getSize()));
 		argMap.put(FONTSTYLE, Integer.toString(this.font.getStyle()));
-		
 		return argMap;
 	}
 
@@ -269,7 +268,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(view));
+		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
 	

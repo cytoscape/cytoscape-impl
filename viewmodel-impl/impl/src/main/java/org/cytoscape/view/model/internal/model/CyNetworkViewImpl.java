@@ -397,6 +397,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
+		if(vp.shouldIgnoreDefault())
+			return;
+		
 		synchronized (this) {
 			defaultValues = defaultValues.put(vp, defaultValue);
 			setDirty();

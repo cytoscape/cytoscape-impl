@@ -8,7 +8,8 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -54,17 +55,19 @@ public class ShapeAnnotationFactory extends AbstractDingAnnotationFactory<ShapeA
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new ShapeAnnotationDialog(view, location, ViewUtil.getActiveWindow(view));
+	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		return new ShapeAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override
-	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView) || !this.type.equals(type))
+	public ShapeAnnotation createAnnotation(Class<? extends ShapeAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+		if (!this.type.equals(type))
 			return null;
-
-		return new ShapeAnnotationImpl((DGraphView) view, argMap);
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if(re == null)
+			return null;
+		return new ShapeAnnotationImpl(re, argMap);
 	}
 	
 	@Override

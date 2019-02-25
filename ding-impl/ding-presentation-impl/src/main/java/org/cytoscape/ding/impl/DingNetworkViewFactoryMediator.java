@@ -2,21 +2,45 @@ package org.cytoscape.ding.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
+import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
 
 	private final CyNetworkViewFactory delegateFactory;
 	private final Map<CyNetworkView, DRenderingEngine> mainRenderingEngines = new HashMap<>();
 
-	public DingNetworkViewFactoryMediator(CyNetworkViewFactory delegateFactory) {
-		this.delegateFactory = Objects.requireNonNull(delegateFactory);
+	private final DVisualLexicon dingLexicon;
+	private final AnnotationFactoryManager annMgr;
+	private final CyServiceRegistrar registrar;
+	private final ViewTaskFactoryListener vtfListener;
+	private final DingGraphLOD dingGraphLOD;
+	private final HandleFactory handleFactory; 
+	
+	public DingNetworkViewFactoryMediator(
+			CyNetworkViewFactory delegateFactory, 
+			DVisualLexicon dingLexicon,
+			ViewTaskFactoryListener vtfListener,
+			AnnotationFactoryManager annMgr,
+			DingGraphLOD dingGraphLOD,
+			HandleFactory handleFactory,
+			CyServiceRegistrar registrar) {
+		
+		this.delegateFactory = delegateFactory;
+		this.dingLexicon = dingLexicon;
+		this.annMgr = annMgr;
+		this.handleFactory = handleFactory;
+		this.vtfListener = vtfListener;
+		this.dingGraphLOD = dingGraphLOD;
+		this.registrar = registrar;
 	}
 
 	@Override
@@ -24,6 +48,8 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 		CyNetworkView networkView = delegateFactory.createNetworkView(network);
 		
 		DRenderingEngine re = createRenderingEngine(networkView);
+
+		// MKTODO Do we still need to do this???
 		networkView.addNetworkViewListener(re);
 		mainRenderingEngines.put(networkView, re);
 		
@@ -31,7 +57,7 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 	}
 	
 	private DRenderingEngine createRenderingEngine(CyNetworkView networkView) {
-		DRenderingEngine re = new DRenderingEngine();
+		DRenderingEngine re = new DRenderingEngine(networkView, dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory, registrar);
 		return re;
 	}
 	

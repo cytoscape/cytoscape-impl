@@ -5,15 +5,12 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 /*
  * #%L
@@ -43,31 +40,10 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	
 	private final DingNetworkViewFactoryMediator viewFactory;
 	private final VisualLexicon dingLexicon;
-	private final AnnotationFactoryManager annMgr;
-	private final CyServiceRegistrar registrar;
-	
-	private ViewTaskFactoryListener vtfListener;
-	
-	private DingGraphLOD dingGraphLOD;
-	
-	private final HandleFactory handleFactory; 
 
-	public DingRenderingEngineFactory(
-			DingNetworkViewFactoryMediator viewFactory,
-			final VisualLexicon dingLexicon,
-			final ViewTaskFactoryListener vtfListener,
-			final AnnotationFactoryManager annMgr,
-			final DingGraphLOD dingGraphLOD,
-			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar
-	) {
+	public DingRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactory, VisualLexicon dingLexicon) {
 		this.viewFactory = viewFactory;
 		this.dingLexicon = dingLexicon;
-		this.annMgr = annMgr;
-		this.handleFactory = handleFactory;
-		this.vtfListener = vtfListener;
-		this.dingGraphLOD = dingGraphLOD;
-		this.registrar = registrar;
 	}
 
 	/**
