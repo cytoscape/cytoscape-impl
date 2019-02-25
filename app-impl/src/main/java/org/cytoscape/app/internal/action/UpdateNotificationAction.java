@@ -78,7 +78,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 	}
 
 	@Override
-	public void updateEnableState() {System.out.println(">>> updateEnableState()...");
+	public void updateEnableState() {
 		final int total = updateManager.getUpdateCount();
 		setEnabled(total > 0);
 		
