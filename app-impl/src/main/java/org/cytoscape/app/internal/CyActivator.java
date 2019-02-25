@@ -11,6 +11,7 @@ import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
 import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.action.CitationsAction;
+import org.cytoscape.app.internal.action.UpdateNotificationAction;
 import org.cytoscape.app.internal.action.YFilesAction;
 import org.cytoscape.app.internal.event.AppsChangedEvent;
 import org.cytoscape.app.internal.event.AppsChangedListener;
@@ -38,11 +39,13 @@ import org.cytoscape.app.internal.task.StatusTaskFactory;
 import org.cytoscape.app.internal.task.UninstallTaskFactory;
 import org.cytoscape.app.internal.task.UpdateTaskFactory;
 import org.cytoscape.app.internal.tunable.AppConflictHandlerFactory;
+import org.cytoscape.app.internal.ui.AppManagerMediator;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.swing.CySwingAppAdapter;
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyVersion;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.command.AvailableCommands;
@@ -415,6 +418,9 @@ public class CyActivator extends AbstractCyActivator {
 		final UpdateManager updateManager = new UpdateManager(appManager, downloadSitesManager);
 		registerService(bc, updateManager, AppsFinishedStartingListener.class);
 		
+		AppManagerMediator appManagerMediator = new AppManagerMediator(appManager, downloadSitesManager, updateManager, serviceRegistrar);
+		registerService(bc, appManagerMediator, CyShutdownListener.class);
+		
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
 		
@@ -428,6 +434,11 @@ public class CyActivator extends AbstractCyActivator {
 		// Show citations dialog
 		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, serviceRegistrar);
 		registerService(bc, citationsAction, CyAction.class);
+		{
+			UpdateNotificationAction action = new UpdateNotificationAction(appManager, updateManager,
+					appManagerMediator, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store

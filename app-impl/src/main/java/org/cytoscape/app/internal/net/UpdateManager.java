@@ -78,19 +78,26 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		this.updates = null;
 		
 		lastUpdateCheckTime = null;
+	
+	/**
+	 * Checks for updates for all installed apps.
+	 * @param apps The set of apps to check for updates for
+	 */
+	public void checkForUpdates() {
+		checkForUpdates(appManager.getInstalledApps());
 	}
 	
 	/**
-	 * Checks for updates using the given {@link WebQuerier} for the given set of apps.
-	 * @param webQuerier The {@link WebQuerier} used to access app store data
+	 * Checks for updates for the given set of apps.
 	 * @param apps The set of apps to check for updates for
 	 */
 	public void checkForUpdates(Set<App> apps) {
 		
-		Set<Update> potentialUpdates = appManager.getWebQuerier().checkForUpdates(apps, appManager);
+		Set<Update> set = appManager.getWebQuerier().checkForUpdates(apps, appManager);
 		
 		synchronized (updateMutex) {
-			this.updates = potentialUpdates;
+			updates.clear();
+			updates.addAll(set);
 			
 			// Update last update check time
 			lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
@@ -110,6 +117,9 @@ public class UpdateManager implements AppsFinishedStartingListener {
 		}
 		
 		return updatesCopy;
+	
+	public int getUpdateCount() {
+		return updates.size();
 	}
 	
 	public void addUpdatesChangedListener(UpdatesChangedListener updatesChangedListener) {
