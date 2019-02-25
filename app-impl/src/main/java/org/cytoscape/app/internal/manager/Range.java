@@ -1,7 +1,7 @@
 package org.cytoscape.app.internal.manager;
 
 import org.cytoscape.app.internal.util.MiniTest;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 
 class Range {
 	private static final char VERSION_DELIMITER = ',';
@@ -32,7 +32,7 @@ class Range {
 		if (range == null) {
 			setRange(new Version(null), true, new Version(null), true);
 		} else {
-			String[] rangeList = Utils.dumbSplit(range, VERSION_DELIMITER);
+			String[] rangeList = AppUtil.dumbSplit(range, VERSION_DELIMITER);
 			if (rangeList.length > 2) {
 				throw new Exception("Invalid range " + range);
 			}

@@ -1,11 +1,17 @@
 package org.cytoscape.app.internal;
 
-import java.io.File;
-import java.util.Arrays;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
+import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
+
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
+
 import org.cytoscape.app.CyAppAdapter;
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
@@ -13,8 +19,6 @@ import org.cytoscape.app.internal.action.AppManagerAction;
 import org.cytoscape.app.internal.action.CitationsAction;
 import org.cytoscape.app.internal.action.UpdateNotificationAction;
 import org.cytoscape.app.internal.action.YFilesAction;
-import org.cytoscape.app.internal.event.AppsChangedEvent;
-import org.cytoscape.app.internal.event.AppsChangedListener;
 import org.cytoscape.app.internal.manager.App;
 import org.cytoscape.app.internal.manager.App.AppStatus;
 import org.cytoscape.app.internal.manager.AppManager;
@@ -28,12 +32,12 @@ import org.cytoscape.app.internal.net.server.LocalhostServerSocketFactory;
 import org.cytoscape.app.internal.net.server.OriginOptionsBeforeResponse;
 import org.cytoscape.app.internal.net.server.ScreenOriginsBeforeResponse;
 import org.cytoscape.app.internal.task.AppStoreTaskFactory;
-import org.cytoscape.app.internal.task.EnableTaskFactory;
 import org.cytoscape.app.internal.task.DisableTaskFactory;
+import org.cytoscape.app.internal.task.EnableTaskFactory;
 import org.cytoscape.app.internal.task.InformationTaskFactory;
 import org.cytoscape.app.internal.task.InstallTaskFactory;
-import org.cytoscape.app.internal.task.ListAvailableTaskFactory;
 import org.cytoscape.app.internal.task.ListAppsTaskFactory;
+import org.cytoscape.app.internal.task.ListAvailableTaskFactory;
 import org.cytoscape.app.internal.task.ListUpdatesTaskFactory;
 import org.cytoscape.app.internal.task.StatusTaskFactory;
 import org.cytoscape.app.internal.task.UninstallTaskFactory;
@@ -135,12 +139,6 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyleFactory;
-import static org.cytoscape.work.ServiceProperties.COMMAND;
-import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
-import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
-import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
@@ -148,7 +146,9 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
 import org.cytoscape.work.undo.UndoSupport;
-import org.osgi.framework.*;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 import org.osgi.service.startlevel.StartLevel;
 
 /*
@@ -157,7 +157,7 @@ import org.osgi.service.startlevel.StartLevel;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -290,16 +290,14 @@ public class CyActivator extends AbstractCyActivator {
     	 ExpandGroupTaskFactory expandGroupTaskFactory= getService(bc,ExpandGroupTaskFactory.class);
     	 UnGroupNodesTaskFactory unGroupNodesTaskFactory= getService(bc,UnGroupNodesTaskFactory.class);
 
-		// End of core-task services
-
 		// Command execution services
 		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc,CommandExecutorTaskFactory.class);
 		AvailableCommands availableCommands = getService(bc,AvailableCommands.class);
-		 
-    	 StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
-    	 FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
+		
+		StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
+		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
 
-    	 CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
+		CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
 				 cyApplicationConfigurationRef,
 				 cyApplicationManagerRef,
                  cyEventHelperRef,
@@ -424,16 +422,15 @@ public class CyActivator extends AbstractCyActivator {
 		final AppConflictHandlerFactory appConflictHandlerFactory = new AppConflictHandlerFactory();
 		registerService(bc,appConflictHandlerFactory,GUITunableHandlerFactory.class);
 		
-		// AbstractCyAction implementation for updated app manager
-		AppManagerAction appManagerAction = new AppManagerAction(
-				appManager, downloadSitesManager, updateManager, 
-				cySwingApplicationRef, fileUtilServiceRef,
-				dialogTaskManagerRef, serviceRegistrar);
-		registerService(bc, appManagerAction, CyAction.class);
-
-		// Show citations dialog
-		final CitationsAction citationsAction = new CitationsAction(webQuerier, appManager, serviceRegistrar);
-		registerService(bc, citationsAction, CyAction.class);
+		// Actions
+		{
+			AppManagerAction action = new AppManagerAction(appManagerMediator);
+			registerService(bc, action, CyAction.class);
+		}
+		{
+			CitationsAction action = new CitationsAction(webQuerier, appManager, serviceRegistrar);
+			registerService(bc, action, CyAction.class);
+		}
 		{
 			UpdateNotificationAction action = new UpdateNotificationAction(appManager, updateManager,
 					appManagerMediator, serviceRegistrar);
@@ -456,202 +453,183 @@ public class CyActivator extends AbstractCyActivator {
 		YFilesChecker checker = new YFilesChecker(appManager, serviceRegistrar, openBrowser);
 		bc.addBundleListener(checker);
 		registerAllServices(bc, checker, new Properties());
+		
+		// Task Factories
 		{
 			AppStoreTaskFactory factory = new AppStoreTaskFactory(appManager, serviceRegistrar);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "open appstore");
-      props.setProperty(COMMAND_DESCRIPTION, "Open the app store page for an app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Open the app store page for an app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND, "open appstore");
+			props.setProperty(COMMAND_DESCRIPTION, "Open the app store page for an app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Open the app store page for an app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			DisableTaskFactory factory = new DisableTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "disable");
-      props.setProperty(COMMAND_DESCRIPTION, "Disable an app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Disable a currently installed app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
+			props.setProperty(COMMAND, "disable");
+			props.setProperty(COMMAND_DESCRIPTION, "Disable an app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Disable a currently installed app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			EnableTaskFactory factory = new EnableTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "enable");
-      props.setProperty(COMMAND_DESCRIPTION, "Enable a disabled app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Enable a currently disabled app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
+			props.setProperty(COMMAND, "enable");
+			props.setProperty(COMMAND_DESCRIPTION, "Enable a disabled app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Enable a currently disabled app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		
 		{
 			InformationTaskFactory factory = new InformationTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "information");
-      props.setProperty(COMMAND_DESCRIPTION, "Get app information");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Get information about an app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\""+
-			                                        ", \"description\": \"App description\""+
-			                                        ", \"version\": \"1.2.2\"}");
+			props.setProperty(COMMAND, "information");
+			props.setProperty(COMMAND_DESCRIPTION, "Get app information");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get information about an app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+					"{\"appName\": \"appname\""+
+                    ", \"description\": \"App description\""+
+                    ", \"version\": \"1.2.2\"}"
+			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		
 		{
 			InstallTaskFactory factory = new InstallTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "install");
-      props.setProperty(COMMAND_DESCRIPTION, "Install an app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Install an app given an app name or file.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND, "install");
+			props.setProperty(COMMAND_DESCRIPTION, "Install an app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Install an app given an app name or file.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			ListAvailableTaskFactory factory = new ListAvailableTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "list available");
-      props.setProperty(COMMAND_DESCRIPTION, "List the available apps");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Return a list of the available apps in the app store");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{\"appName\":\"name\", "+
-			    "\"description\":\"descriptions\", "+
-			    "\"details\":\"app details\"}]"
+			props.setProperty(COMMAND, "list available");
+			props.setProperty(COMMAND_DESCRIPTION, "List the available apps");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Return a list of the available apps in the app store");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+				    "[{\"appName\":\"name\", "+
+				    "\"description\":\"descriptions\", "+
+				    "\"details\":\"app details\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.DISABLED);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "list disabled");
-      props.setProperty(COMMAND_DESCRIPTION, "List the disabled apps");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Return a list of the disabled apps in the current installation.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"appName\": \"appname\","+
-			    "\"version\": \"1.1.0\","+
-			    "\"description\": \"descriptions\","+
-			    "\"status\": \"Disabled\"}]"
+			props.setProperty(COMMAND, "list disabled");
+			props.setProperty(COMMAND_DESCRIPTION, "List the disabled apps");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Return a list of the disabled apps in the current installation.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+				    "[{ \"appName\": \"appname\","+
+				    "\"version\": \"1.1.0\","+
+				    "\"description\": \"descriptions\","+
+				    "\"status\": \"Disabled\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.INSTALLED);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "list installed");
-      props.setProperty(COMMAND_DESCRIPTION, "List the installed apps");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Return a list of the installed apps in the current installation.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{\"appName\": \"appname\","+
-			    "\"version\": \"1.1.0\","+
-			    "\"description\": \"descriptions\","+
-			    "\"status\": \"Installed\"}]"
+			props.setProperty(COMMAND, "list installed");
+			props.setProperty(COMMAND_DESCRIPTION, "List the installed apps");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Return a list of the installed apps in the current installation.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+				    "[{\"appName\": \"appname\","+
+				    "\"version\": \"1.1.0\","+
+				    "\"description\": \"descriptions\","+
+				    "\"status\": \"Installed\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			ListAppsTaskFactory factory = new ListAppsTaskFactory(appManager, AppStatus.UNINSTALLED);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "list uninstalled");
-      props.setProperty(COMMAND_DESCRIPTION, "List the uninstalled apps");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Return a list of the uninstalled apps in the current installation.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"appName\": \"appname\","+
-			    "\"version\": \"1.1.0\","+
-			    "\"description\": \"descriptions\","+
-			    "\"status\": \"Uninstalled\"}]"
+			props.setProperty(COMMAND, "list uninstalled");
+			props.setProperty(COMMAND_DESCRIPTION, "List the uninstalled apps");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Return a list of the uninstalled apps in the current installation.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+				    "[{ \"appName\": \"appname\","+
+				    "\"version\": \"1.1.0\","+
+				    "\"description\": \"descriptions\","+
+				    "\"status\": \"Uninstalled\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			ListUpdatesTaskFactory factory = new ListUpdatesTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "list updates");
-      props.setProperty(COMMAND_DESCRIPTION, "List the apps available for updates");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Return a list of the apps that have updates in the app store.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, 
-			    "[{ \"appName\": \"appname\","+
-			    "\"version\": \"1.1.10\","+
-			    "\"information\": \"app information\"}]"
+			props.setProperty(COMMAND, "list updates");
+			props.setProperty(COMMAND_DESCRIPTION, "List the apps available for updates");
+			props.setProperty(COMMAND_LONG_DESCRIPTION,
+					"Return a list of the apps that have updates in the app store.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, 
+				    "[{ \"appName\": \"appname\","+
+				    "\"version\": \"1.1.10\","+
+				    "\"information\": \"app information\"}]"
 			);
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			StatusTaskFactory factory = new StatusTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "status");
-      props.setProperty(COMMAND_DESCRIPTION, "Get the status of an app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Get the status of an app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\", \"status\": \"Installed\"}");
+			props.setProperty(COMMAND, "status");
+			props.setProperty(COMMAND_DESCRIPTION, "Get the status of an app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Get the status of an app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\", \"status\": \"Installed\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 		{
 			UninstallTaskFactory factory = new UninstallTaskFactory(appManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "uninstall");
-      props.setProperty(COMMAND_DESCRIPTION, "Uninstall an app");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Uninstall a currently installed app.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
+			props.setProperty(COMMAND, "uninstall");
+			props.setProperty(COMMAND_DESCRIPTION, "Uninstall an app");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Uninstall a currently installed app.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"appName\": \"appname\"}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-		
 		{
 			UpdateTaskFactory factory = new UpdateTaskFactory(appManager, updateManager);
 			Properties props = new Properties();
 			props.setProperty(COMMAND_NAMESPACE, "apps");
-      props.setProperty(COMMAND, "update");
-      props.setProperty(COMMAND_DESCRIPTION, "Update an app or all apps");
-      props.setProperty(COMMAND_LONG_DESCRIPTION,
-          "Update an app or all apps.");
-      props.setProperty(COMMAND_SUPPORTS_JSON, "true");
-      props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
+			props.setProperty(COMMAND, "update");
+			props.setProperty(COMMAND_DESCRIPTION, "Update an app or all apps");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Update an app or all apps.");
+			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
+			props.setProperty(COMMAND_EXAMPLE_JSON, "{}");
 			registerService(bc, factory, TaskFactory.class, props);
 		}
-
 	}
-
 
 	private class YFilesChecker implements BundleListener, AppsFinishedStartingListener {
 
@@ -664,11 +642,12 @@ public class CyActivator extends AbstractCyActivator {
 				"Organic Layout", "Orthogonal Layout", "Radial Layout", "Tree Layout",
 				"Orthogonal Edge Router", "Organic Edge Router"
 		};
-		private final HashMap<String, CyAction> actionMap = new HashMap<String, CyAction>();
+		private final HashMap<String, CyAction> actionMap = new HashMap<>();
 
 		YFilesChecker(AppManager manager, CyServiceRegistrar serviceRegistrar, OpenBrowser openBrowser) {
 			this.manager = manager;
 			this.serviceRegistrar = serviceRegistrar;
+			
 			for (String s : yFilesLayouts) {
 				actionMap.put(s, new YFilesAction("Install yFiles ".concat(s), openBrowser));
 			}
@@ -680,7 +659,7 @@ public class CyActivator extends AbstractCyActivator {
 			final Set<App> filtered = installed.stream()
 					.filter(app -> app.getAppName().toLowerCase().contains(YFILES_TAG)).collect(Collectors.toSet());
 
-			if(filtered.isEmpty()) {
+			if (filtered.isEmpty()) {
 				for (CyAction action : actionMap.values()) {
 					serviceRegistrar.registerService(action, CyAction.class, new Properties());
 				}
@@ -690,7 +669,8 @@ public class CyActivator extends AbstractCyActivator {
 		@Override
 		public void bundleChanged(BundleEvent bundleEvent) {
 			final String bundleName = bundleEvent.getBundle().getSymbolicName();
-			if(bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
+			
+			if (bundleName.toLowerCase().contains(YFILES_TAG) && bundleEvent.getType() == BundleEvent.STARTED) {
 				for (CyAction action : actionMap.values()) {
 					serviceRegistrar.unregisterAllServices(action);
 				}

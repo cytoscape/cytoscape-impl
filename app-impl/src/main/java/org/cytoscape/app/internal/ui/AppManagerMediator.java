@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
@@ -73,7 +73,7 @@ public class AppManagerMediator implements CyShutdownListener {
 		if (dialog == null) {
 			final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
 			
-			final Window owner = Utils.getWindowAncestor(evt, swingApplication);
+			final Window owner = AppUtil.getWindowAncestor(evt, swingApplication);
 			dialog = new AppManagerDialog(owner, appManager, downloadSitesManager, updateManager, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override

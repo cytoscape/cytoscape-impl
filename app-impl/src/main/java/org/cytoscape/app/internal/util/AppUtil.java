@@ -16,7 +16,7 @@ import org.cytoscape.application.swing.CySwingApplication;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,7 +34,7 @@ import org.cytoscape.application.swing.CySwingApplication;
  * #L%
  */
 
-public class Utils {
+public class AppUtil {
 
 	/*
 	 * dumbSplit splits a string on delimiter boundaries and doesn't try any
@@ -44,9 +44,8 @@ public class Utils {
 	 * string that precedes any delimiter.
 	 */
 	public static String[] dumbSplit(String s, char delimiter) {
-		if (s == null) {
+		if (s == null)
 			return null;
-		}
 
 		// Count the number of delimiters
 		int delimiterCount = 0;
@@ -108,7 +107,7 @@ public class Utils {
 	 */
 	public static ArrayList<String> splitByChar(String packageList,
 			char delimiter) {
-		ArrayList<String> splitList = new ArrayList<String>();
+		ArrayList<String> splitList = new ArrayList<>();
 		int index = 0;
 		while (index < packageList.length()) {
 			int nextIndex = indexOfChar(packageList, index, delimiter);
@@ -186,5 +185,4 @@ public class Utils {
 		sb.append('"');
 		return sb.toString();
 	}
-
 }

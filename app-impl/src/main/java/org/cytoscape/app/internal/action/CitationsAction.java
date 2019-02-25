@@ -8,7 +8,7 @@ import java.awt.event.WindowEvent;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebQuerier;
 import org.cytoscape.app.internal.ui.CitationsDialog;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -59,7 +59,7 @@ public class CitationsAction extends AbstractCyAction {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (dialog == null) {
-			final Window owner = Utils.getWindowAncestor(e, serviceRegistrar.getService(CySwingApplication.class));
+			final Window owner = AppUtil.getWindowAncestor(e, serviceRegistrar.getService(CySwingApplication.class));
 			dialog = new CitationsDialog(owner, webQuerier, appManager, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override

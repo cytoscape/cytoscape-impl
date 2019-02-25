@@ -1,12 +1,34 @@
 package org.cytoscape.app.internal.net;
 
+import java.util.Calendar;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import org.cytoscape.app.event.AppsFinishedStartingEvent;
+import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.app.internal.event.UpdatesChangedEvent;
+import org.cytoscape.app.internal.event.UpdatesChangedListener;
+import org.cytoscape.app.internal.manager.App;
+import org.cytoscape.app.internal.manager.AppManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
+import org.cytoscape.application.CyUserLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,37 +46,6 @@ package org.cytoscape.app.internal.net;
  * #L%
  */
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import org.cytoscape.app.event.AppsFinishedStartingEvent;
-import org.cytoscape.app.event.AppsFinishedStartingListener;
-import org.cytoscape.app.internal.event.UpdatesChangedEvent;
-import org.cytoscape.app.internal.event.UpdatesChangedListener;
-import org.cytoscape.app.internal.exception.AppDownloadException;
-import org.cytoscape.app.internal.exception.AppInstallException;
-import org.cytoscape.app.internal.exception.AppParsingException;
-import org.cytoscape.app.internal.exception.AppUninstallException;
-import org.cytoscape.app.internal.exception.AppUpdateException;
-import org.cytoscape.app.internal.manager.App;
-import org.cytoscape.app.internal.manager.App.AppStatus;
-import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.manager.SimpleApp;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSite;
-import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
-import org.cytoscape.application.CyUserLog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class UpdateManager implements AppsFinishedStartingListener {
 	
 	private static final Logger sysLogger = LoggerFactory.getLogger(UpdateManager.class);
@@ -64,7 +55,7 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	private DownloadSitesManager downloadSitesManager;
 	
 	private List<UpdatesChangedListener> updatesChangedListeners;
-	private Set<Update> updates;
+	private Set<Update> updates = new HashSet<>();
 	
 	private Calendar lastUpdateCheckTime;
 	
@@ -73,11 +64,8 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	public UpdateManager(AppManager appManager, DownloadSitesManager downloadSitesManager) {
 		this.appManager = appManager;
 		this.downloadSitesManager = downloadSitesManager;
-		
-		this.updatesChangedListeners = new CopyOnWriteArrayList<UpdatesChangedListener>();
-		this.updates = null;
-		
-		lastUpdateCheckTime = null;
+		this.updatesChangedListeners = new CopyOnWriteArrayList<>();
+	}
 	
 	/**
 	 * Checks for updates for all installed apps.
@@ -92,7 +80,6 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	 * @param apps The set of apps to check for updates for
 	 */
 	public void checkForUpdates(Set<App> apps) {
-		
 		Set<Update> set = appManager.getWebQuerier().checkForUpdates(apps, appManager);
 		
 		synchronized (updateMutex) {
@@ -103,39 +90,36 @@ public class UpdateManager implements AppsFinishedStartingListener {
 			lastUpdateCheckTime = Calendar.getInstance(TimeZone.getDefault(), Locale.getDefault());
 		}
 		
-		
 		fireUpdatesChangedEvent();
 	}
 	
 	public Set<Update> getUpdates() {
-		Set<Update> updatesCopy = new HashSet<Update>();
+		Set<Update> set = new HashSet<>();
 		
 		synchronized (updateMutex) {
-			for (Update update : updates) {
-				updatesCopy.add(update);
-			}
+			set.addAll(updates);
 		}
 		
-		return updatesCopy;
+		return set;
+	}
 	
 	public int getUpdateCount() {
 		return updates.size();
 	}
 	
-	public void addUpdatesChangedListener(UpdatesChangedListener updatesChangedListener) {
-		this.updatesChangedListeners.add(updatesChangedListener);
+	public void addUpdatesChangedListener(UpdatesChangedListener listener) {
+		this.updatesChangedListeners.add(listener);
 	}
 	
-	public void removeUpdatesChangedListener(UpdatesChangedListener updatesChangedListener) {
-		this.updatesChangedListeners.remove(updatesChangedListener);
+	public void removeUpdatesChangedListener(UpdatesChangedListener listener) {
+		this.updatesChangedListeners.remove(listener);
 	}
 	
 	private void fireUpdatesChangedEvent() {
-		UpdatesChangedEvent updatesChangedEvent = new UpdatesChangedEvent(this);
+		UpdatesChangedEvent evt = new UpdatesChangedEvent(this);
 		
-		for (UpdatesChangedListener updatesChangedListener : updatesChangedListeners) {
-			updatesChangedListener.updatesChanged(updatesChangedEvent);
-		}
+		for (UpdatesChangedListener listener : updatesChangedListeners)
+			listener.updatesChanged(evt);
 	}
 	
 	public Calendar getLastUpdateCheckTime() {
@@ -143,20 +127,25 @@ public class UpdateManager implements AppsFinishedStartingListener {
 	}
 
 	@Override
-	public void handleEvent(AppsFinishedStartingEvent event) {
+	public void handleEvent(AppsFinishedStartingEvent evt) {
 		final ExecutorService service = Executors.newSingleThreadExecutor();
-		service.submit(()-> {
-		for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
-			appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
-			appManager.getWebQuerier().getAllApps();
-		}
-		checkForUpdates(appManager.getInstalledApps());
-		for(Update update: updates) {
-			userLogger.info("Update for " + update + " available (latest version: " + update.getUpdateVersion() + ", " + update.getApp().getVersion() + " installed)");
-		}
-		if(updates.size() > 0)
-			userLogger.info(updates.size() + " " + 
-						(updates.size() == 1 ? "update" : "updates") + " available" );
+		service.submit(() -> {
+			for (DownloadSite downloadSite : downloadSitesManager.getDownloadSites()) {
+				appManager.getWebQuerier().setCurrentAppStoreUrl(downloadSite.getSiteUrl());
+				appManager.getWebQuerier().getAllApps();
+			}
+			
+			checkForUpdates(appManager.getInstalledApps());
+			
+			for (Update update : updates) {
+				userLogger.info(
+						"Update for " + update + 
+						" available (latest version: " + update.getUpdateVersion() + ", " + update.getApp().getVersion() + " installed)"
+				);
+			}
+			
+			if (updates.size() > 0)
+				userLogger.info(updates.size() + " " + (updates.size() == 1 ? "update" : "updates") + " available");
 		});
 	}
 }

@@ -23,22 +23,18 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.ui.downloadsites.ManageDownloadSitesDialog;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileUtil;
-// import Help;
-// import org.cytoscape.util.swing.HelpImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.work.TaskManager;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import java.awt.Desktop;
-import java.net.URI;
+import org.cytoscape.work.swing.DialogTaskManager;
+
 /*
  * #%L
  * Cytoscape App Impl (app-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2018 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -63,43 +59,41 @@ import java.net.URI;
 public class AppManagerDialog extends JDialog {
 
 	private CheckForUpdatesPanel checkForUpdatesPanel;
-    private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
-    private InstallAppsPanel installAppsPanel;
-    private JTabbedPane mainTabbedPane;
-    private JLabel networkErrorLabel;
+	private CurrentlyInstalledAppsPanel currentlyInstalledAppsPanel;
+	private InstallAppsPanel installAppsPanel;
+	private JTabbedPane mainTabbedPane;
+	private JLabel networkErrorLabel;
 
-    private ManageDownloadSitesDialog manageDownloadSitesDialog;
-    private DownloadSitesManager downloadSitesManager;
-    
-    private final AppManager appManager;
-    private final UpdateManager updateManager;
-	private final FileUtil fileUtil;
-	private final TaskManager taskManager;
-    
-    public AppManagerDialog(
-    		final AppManager appManager, 
-    		final DownloadSitesManager downloadSitesManager,
-    		final UpdateManager updateManager,
-    		final FileUtil fileUtil, 
-    		final TaskManager taskManager, 
-    		final Window parent
-    ) {
-        super(parent, ModalityType.APPLICATION_MODAL);
-        
-        this.appManager = appManager;
-        this.downloadSitesManager = downloadSitesManager;
-        this.updateManager = updateManager;
-        this.fileUtil = fileUtil;
-        this.taskManager = taskManager;  
-        initComponents();
-        
-        // Create new manage download sites dialog
-        manageDownloadSitesDialog = new ManageDownloadSitesDialog(parent, downloadSitesManager);
-        manageDownloadSitesDialog.setLocationRelativeTo(this);
-        
-        this.setLocationRelativeTo(parent);
-        appManager.setAppManagerDialog(this);
-    }
+	private ManageDownloadSitesDialog manageDownloadSitesDialog;
+	private DownloadSitesManager downloadSitesManager;
+
+	private final AppManager appManager;
+	private final UpdateManager updateManager;
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public AppManagerDialog(
+			final Window parent,
+			final AppManager appManager,
+			final DownloadSitesManager downloadSitesManager,
+			final UpdateManager updateManager,
+			final CyServiceRegistrar serviceRegistrar
+	) {
+		super(parent, ModalityType.APPLICATION_MODAL);
+
+		this.appManager = appManager;
+		this.downloadSitesManager = downloadSitesManager;
+		this.updateManager = updateManager;
+		this.serviceRegistrar = serviceRegistrar;
+
+		initComponents();
+
+		// Create new manage download sites dialog
+		manageDownloadSitesDialog = new ManageDownloadSitesDialog(parent, downloadSitesManager);
+		manageDownloadSitesDialog.setLocationRelativeTo(this);
+
+		setLocationRelativeTo(parent);
+		appManager.setAppManagerDialog(this);
+	}
    
 	private void initComponents() {
     	setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -109,87 +103,78 @@ public class AppManagerDialog extends JDialog {
         		"Cannot access the App Store. Please check your internet connection.",
         		UIManager.getIcon("OptionPane.warningIcon"),
         		SwingConstants.LEFT);
-        networkErrorLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        networkErrorLabel.setVisible(false);
-        
-        installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
-        installAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
-        
-        currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
-        currentlyInstalledAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
-        
-        checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, updateManager, taskManager, this);
-        checkForUpdatesPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
+		networkErrorLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		networkErrorLabel.setVisible(false);
 
-        mainTabbedPane = new JTabbedPane();
-        mainTabbedPane.addTab("Install Apps", installAppsPanel);
-        mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel);
-        mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel);
+		final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
+		final DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
 
-        final JButton closeButton = new JButton(new AbstractAction("Close") {
+		installAppsPanel = new InstallAppsPanel(appManager, downloadSitesManager, fileUtil, taskManager, this);
+		installAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF()); // Transparent if Aqua
+
+		currentlyInstalledAppsPanel = new CurrentlyInstalledAppsPanel(appManager);
+		currentlyInstalledAppsPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
+
+		checkForUpdatesPanel = new CheckForUpdatesPanel(appManager, downloadSitesManager, updateManager, taskManager, this);
+		checkForUpdatesPanel.setOpaque(!LookAndFeelUtil.isAquaLAF());
+
+		mainTabbedPane = new JTabbedPane();
+		mainTabbedPane.addTab("Install Apps", installAppsPanel);
+		mainTabbedPane.addTab("Currently Installed", currentlyInstalledAppsPanel);
+		mainTabbedPane.addTab("Check for Updates", checkForUpdatesPanel);
+
+		final JButton closeButton = new JButton(new AbstractAction("Close") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				dispose();
 			}
 		});
         
-        final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");
-        
-        final GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setAutoCreateContainerGaps(true);
-        layout.setAutoCreateGaps(true);
-        
-        layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
-        		.addComponent(networkErrorLabel)
+		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(null, closeButton, "App_Manager");
+
+		final GroupLayout layout = new GroupLayout(getContentPane());
+		getContentPane().setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
+				.addComponent(networkErrorLabel)
         		.addComponent(mainTabbedPane, DEFAULT_SIZE, 640, Short.MAX_VALUE)
         		.addComponent(buttonPanel)
-        );
-        layout.setVerticalGroup(layout.createSequentialGroup()
-            .addComponent(networkErrorLabel)
-            .addComponent(mainTabbedPane, DEFAULT_SIZE, 490, Short.MAX_VALUE)
-            .addComponent(buttonPanel)
-        );
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(networkErrorLabel)
+				.addComponent(mainTabbedPane, DEFAULT_SIZE, 490, Short.MAX_VALUE)
+				.addComponent(buttonPanel)
+		);
         
         LookAndFeelUtil.setDefaultOkCancelKeyStrokes(getRootPane(), null, closeButton.getAction());
         
         pack();
     }
     
-    public void changeTab(int index) {
-    	mainTabbedPane.setSelectedIndex(index);
-    }
-    
-    public void showManageDownloadSitesDialog() {
-    	if (manageDownloadSitesDialog != null) {
-    		manageDownloadSitesDialog.setLocationRelativeTo(this);
-    		manageDownloadSitesDialog.setVisible(true);
-    	}
-    }
+	public void changeTab(int index) {
+		mainTabbedPane.setSelectedIndex(index);
+	}
 
-    public void showNetworkError() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    showNetworkError();
-                }
-            });
-        } else {
-            networkErrorLabel.setVisible(true);
-        }
-    }
+	public void showManageDownloadSitesDialog() {
+		if (manageDownloadSitesDialog != null) {
+			manageDownloadSitesDialog.setLocationRelativeTo(this);
+			manageDownloadSitesDialog.setVisible(true);
+		}
+	}
 
-    public void hideNetworkError() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    hideNetworkError();
-                }
-            });
-        } else {
-            networkErrorLabel.setVisible(false);
-        }
-    }
-    
-    
- }
+	public void showNetworkError() {
+		if (!SwingUtilities.isEventDispatchThread())
+			SwingUtilities.invokeLater(() -> showNetworkError());
+		else
+			networkErrorLabel.setVisible(true);
+	}
+
+	public void hideNetworkError() {
+		if (!SwingUtilities.isEventDispatchThread())
+			SwingUtilities.invokeLater(() -> hideNetworkError());
+		else
+			networkErrorLabel.setVisible(false);
+	}
+}

@@ -1,29 +1,5 @@
 package org.cytoscape.app.internal.net;
 
-/*
- * #%L
- * Cytoscape App Impl (app-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,13 +39,37 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain
  * information about available apps and app updates.
  */
 public class WebQuerier {
 	
-	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
+	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<>();
 	
 	public static final String DEFAULT_APP_STORE_URL = "https://apps.cytoscape.org/";
 	
@@ -189,17 +189,17 @@ public class WebQuerier {
 		/*
 		// *** Older initialization for previous implementation supporting a single app store page
 		apps = null;
-		appTags = new HashMap<String, AppTag>();
-		appsByTagName = new HashMap<String, Set<WebApp>>();
+		appTags = new HashMap<>();
+		appsByTagName = new HashMap<>();
 		*/
 		
-		appsByUrl = new HashMap<String, Set<WebApp>>();
-		appTagsByUrl = new HashMap<String, Map<String, AppTag>>();
-		appsByTagNameByUrl = new HashMap<String, Map<String,Set<WebApp>>>();
+		appsByUrl = new HashMap<>();
+		appTagsByUrl = new HashMap<>();
+		appsByTagNameByUrl = new HashMap<>();
 		
 		appsByUrl.put(currentAppStoreUrl, null);
-		appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
-		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+		appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
+		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 		
 		/*
 		Set<WebApp> webApps = getAllApps();
@@ -281,11 +281,11 @@ public class WebQuerier {
 			}
 			
 			if (appTagsByUrl.get(currentAppStoreUrl) == null) {
-				appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
+				appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 			
 			if (appsByTagNameByUrl.get(currentAppStoreUrl) == null) {
-				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 		}
 	}
@@ -643,7 +643,7 @@ public class WebQuerier {
 	}
 	
 	public Set<Update> checkForUpdates(Set<App> apps, AppManager appManager) {
-		Set<Update> updates = new HashSet<Update>();
+		Set<Update> updates = new HashSet<>();
 		
 		Update update;
 		for (App app : apps) {
