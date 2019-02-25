@@ -33,19 +33,19 @@ import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class EditAnnotationTask extends AbstractNetworkViewTask {
+public class EditAnnotationTask extends AbstractTask {
 	
+	private final DRenderingEngine re;
 	private final DingAnnotation annotation; 
 	private final Point2D location; 
 
-	public EditAnnotationTask(CyNetworkView view, DingAnnotation annotation, Point2D location) {
-		super(view);
+	public EditAnnotationTask(DRenderingEngine re, DingAnnotation annotation, Point2D location) {
+		this.re = re;
 		this.annotation = annotation;
 		this.location = location;
 	}
@@ -54,7 +54,7 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Edit Annotation");
 		
-		if (view instanceof DGraphView) {
+		if (re != null) {
 			invokeOnEDT(() -> {
 				final JDialog dialog = annotation.getModifyDialog();
 				
@@ -65,7 +65,7 @@ public class EditAnnotationTask extends AbstractNetworkViewTask {
 						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
 						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
 					} else {
-						dialog.setLocationRelativeTo(((DGraphView) view).getCanvas());
+						dialog.setLocationRelativeTo(re.getCanvas());
 					}
 					
 					dialog.setVisible(true);

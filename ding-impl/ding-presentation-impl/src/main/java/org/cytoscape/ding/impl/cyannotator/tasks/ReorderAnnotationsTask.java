@@ -7,15 +7,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -42,8 +41,9 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
+public class ReorderAnnotationsTask extends AbstractTask {
 
+	private final DRenderingEngine re;
 	private final List<DingAnnotation> annotations;
 	private final String canvasName;
 	
@@ -52,12 +52,12 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 
 
 	public ReorderAnnotationsTask(
-			CyNetworkView view,
+			DRenderingEngine re,
 			Collection<DingAnnotation> annotations,
 			String canvasName,
 			Shift shift
 	) {
-		super(view);
+		this.re = re;
 		this.annotations = annotations != null ? new ArrayList<>(annotations) : Collections.emptyList();
 		this.canvasName = canvasName;
 		this.shift = shift;
@@ -67,7 +67,7 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Reorder Annotations");
 		
-		if (!(view instanceof DGraphView))
+		if (re != null)
 			return;
 		if (annotations.isEmpty())
 			return;
@@ -80,7 +80,7 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 			reorder(shift);
 		}
 		
-		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		cyAnnotator.fireAnnotationsReordered();
 	}
 
@@ -94,14 +94,14 @@ public class ReorderAnnotationsTask extends AbstractNetworkViewTask {
 		}
 		
 		// need to rebuild the tree AFTER changing the canvas
-		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		AnnotationTree tree = cyAnnotator.getAnnotationTree();
 		tree.resetZOrder();
 	}
 	
 
 	private void reorder(Shift shift) {
-		CyAnnotator cyAnnotator = ((DGraphView)view).getCyAnnotator();
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		AnnotationTree tree = cyAnnotator.getAnnotationTree();
 		
 		Map<String,List<DingAnnotation>> byCanvas = 

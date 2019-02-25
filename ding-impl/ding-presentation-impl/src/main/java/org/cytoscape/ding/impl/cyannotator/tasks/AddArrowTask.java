@@ -29,20 +29,20 @@ import java.awt.geom.Point2D;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
-public class AddArrowTask extends AbstractNetworkViewTask {
+public class AddArrowTask extends AbstractTask {
 
+	private final DRenderingEngine re;
 	private final Point2D location;
 	private final AnnotationFactory<?> annotationFactory; 
 
-	public AddArrowTask(CyNetworkView view, Point2D location, AnnotationFactory<?> annotationFactory) {
-		super(view);
+	public AddArrowTask(DRenderingEngine re, Point2D location, AnnotationFactory<?> annotationFactory) {
+		this.re = re;
 		this.location = location;
 		this.annotationFactory = annotationFactory;
 	}
@@ -51,10 +51,9 @@ public class AddArrowTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Arrow Annotation");
 		
-		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
+		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			SwingUtilities.invokeLater(() -> {
-				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
-						.createAnnotationDialog((DGraphView) view, location);
+				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
 				
 				if (dialog != null) {
 					dialog.setLocation((int) location.getX(), (int) location.getY());

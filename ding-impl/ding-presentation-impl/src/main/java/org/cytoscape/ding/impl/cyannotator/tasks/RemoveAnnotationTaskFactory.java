@@ -28,7 +28,8 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.geom.Point2D;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -37,17 +38,29 @@ import org.cytoscape.work.TaskIterator;
 
 public class RemoveAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
 	
+	private final DingRenderer dingRenderer;
+	
+	public RemoveAnnotationTaskFactory(DingRenderer dingRenderer) {
+		this.dingRenderer = dingRenderer;
+	}
+	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+		if(re == null)
+			return null;
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
-		return new TaskIterator(new RemoveAnnotationTask(networkView, annotation));
+		return new TaskIterator(new RemoveAnnotationTask(re, annotation));
 
 	}
 
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+		if(re == null)
+			return false;
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
 		if (annotation != null)
 			return true;

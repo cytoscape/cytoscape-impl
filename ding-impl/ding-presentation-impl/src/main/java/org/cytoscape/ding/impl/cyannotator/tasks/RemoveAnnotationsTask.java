@@ -6,15 +6,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -41,13 +40,14 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class RemoveAnnotationsTask extends AbstractNetworkViewTask {
+public class RemoveAnnotationsTask extends AbstractTask {
 	
+	private final DRenderingEngine re;
 	private final Collection<Annotation> annotations;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public RemoveAnnotationsTask(CyNetworkView view, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
-		super(view);
+	public RemoveAnnotationsTask(DRenderingEngine re, Collection<Annotation> annotations, CyServiceRegistrar serviceRegistrar) {
+		this.re = re;
 		this.annotations = annotations;
 		this.serviceRegistrar = serviceRegistrar;
 	}
@@ -57,9 +57,8 @@ public class RemoveAnnotationsTask extends AbstractNetworkViewTask {
 		tm.setTitle("Remove Annotations");
 		tm.setProgress(-1);
 
-		if (view instanceof DGraphView) {
-			
-			CyAnnotator annotator = ((DGraphView)view).getCyAnnotator();
+		if (re != null) {
+			CyAnnotator annotator = re.getCyAnnotator();
 			annotator.markUndoEdit("Remove Annotations");
 			
 			Collection<? extends Annotation> newList = annotations;

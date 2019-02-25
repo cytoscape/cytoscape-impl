@@ -1,10 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,14 +32,15 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class RemoveAnnotationTask extends AbstractNetworkViewTask {
+public class RemoveAnnotationTask extends AbstractTask {
 	
+	private final DRenderingEngine re;
 	private final DingAnnotation annotation;
 
 	private static final Logger logger = LoggerFactory.getLogger(RemoveAnnotationTask.class);
 
-	public RemoveAnnotationTask(CyNetworkView view, DingAnnotation annotation) {
-		super(view);
+	public RemoveAnnotationTask(DRenderingEngine re, DingAnnotation annotation) {
+		this.re = re;
 		this.annotation = annotation;
 	}
 
@@ -48,7 +48,7 @@ public class RemoveAnnotationTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Remove Annotation");
 		
-		if (view instanceof DGraphView) {
+		if (re != null) {
 			CyAnnotator annotator = annotation.getCyAnnotator();
 			annotator.markUndoEdit("Delete Annotation");
 			

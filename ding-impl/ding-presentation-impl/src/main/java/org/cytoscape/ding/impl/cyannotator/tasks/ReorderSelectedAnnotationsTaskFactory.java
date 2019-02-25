@@ -3,7 +3,8 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.util.Collections;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -38,38 +39,46 @@ import org.cytoscape.work.TaskIterator;
 
 public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFactory {
 
+	private final DingRenderer dingRenderer;
+	
 	private String canvasName;
 	private Shift shift;
 	
 	/**
 	 * Use this constructor to move annotations to another canvas.
 	 */
-	public ReorderSelectedAnnotationsTaskFactory(String canvasName) {
+	public ReorderSelectedAnnotationsTaskFactory(DingRenderer dingRenderer, String canvasName) {
+		this.dingRenderer = dingRenderer;
 		this.canvasName = canvasName;
 	}
 	
 	/**
 	 * Use this constructor to reorder annotations on the same canvas.
 	 */
-	public ReorderSelectedAnnotationsTaskFactory(Shift shift) {
+	public ReorderSelectedAnnotationsTaskFactory(DingRenderer dingRenderer, Shift shift) {
+		this.dingRenderer = dingRenderer;
 		this.shift = shift;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		final CyAnnotator cyAnnotator = view instanceof DGraphView ? ((DGraphView) view).getCyAnnotator() : null;
+		DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+		if(re == null)
+			return null;
+		final CyAnnotator cyAnnotator = re.getCyAnnotator();
 		final Set<DingAnnotation> annotations = cyAnnotator != null ?
 				cyAnnotator.getAnnotationSelection().getSelectedAnnotations() : Collections.emptySet();
 		
-		return new TaskIterator(new ReorderAnnotationsTask(view, annotations, canvasName, shift));
+		return new TaskIterator(new ReorderAnnotationsTask(re, annotations, canvasName, shift));
 	}
 	
 	@Override
 	public boolean isReady(CyNetworkView view) {
-		if (view instanceof DGraphView == false)
+		DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+		if(re == null)
 			return false;
 		
-		final CyAnnotator cyAnnotator = ((DGraphView) view).getCyAnnotator();
+		final CyAnnotator cyAnnotator = re.getCyAnnotator();
 		final Set<DingAnnotation> annotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
 		
 		if (annotations == null || annotations.isEmpty())
