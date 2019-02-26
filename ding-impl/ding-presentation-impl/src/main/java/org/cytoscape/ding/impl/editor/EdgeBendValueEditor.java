@@ -1,24 +1,7 @@
 package org.cytoscape.ding.impl.editor;
 
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -41,7 +24,6 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
-import org.cytoscape.ding.impl.DEdgeView;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -295,8 +277,9 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		if (bendRemoved)
 			return EDGE_BEND.getDefault();
 		
-		if (!editCancelled && edgeView instanceof DEdgeView)
-			return ((DEdgeView)edgeView).getBend();
+		// MKTODO fix bends
+//		if (!editCancelled && edgeView instanceof DEdgeView)
+//			return ((DEdgeView)edgeView).getBend();
 		
 		return null;
 	}

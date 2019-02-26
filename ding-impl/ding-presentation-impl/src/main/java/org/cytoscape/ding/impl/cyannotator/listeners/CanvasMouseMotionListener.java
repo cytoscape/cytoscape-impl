@@ -60,7 +60,7 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		DingAnnotation a = cyAnnotator.getAnnotationAt(new Point(e.getX(), e.getY()));
 		
-		if (annotationSelection.isEmpty() || !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (annotationSelection.isEmpty() || !re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.mouseDragged(e);
 			return;
 		}
@@ -78,12 +78,12 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		} else if (a != null) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will want to move them also
-			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
+			if (!re.getViewModelSnapshot().getSelectedNodes().isEmpty()) //.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
 		} else if (annotationSelection.isMoving()) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will want to move them also
-			if (!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
+			if (!re.getViewModelSnapshot().getSelectedNodes().isEmpty()) { //(!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
 				networkCanvas.mouseDragged(e);
 			}
 		} else {

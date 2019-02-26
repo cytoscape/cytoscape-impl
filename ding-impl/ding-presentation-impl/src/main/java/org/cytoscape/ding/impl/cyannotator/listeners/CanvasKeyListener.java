@@ -54,7 +54,7 @@ public class CanvasKeyListener implements KeyListener {
 		int code = e.getKeyCode();
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 
-		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.keyPressed(e);
 			return;
 		}
@@ -143,7 +143,7 @@ public class CanvasKeyListener implements KeyListener {
 		int code = e.getKeyCode();
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 
-		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.keyPressed(e);
 			return;
 		}

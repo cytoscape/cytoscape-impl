@@ -13,6 +13,7 @@ import java.util.List;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
@@ -75,7 +76,7 @@ public class CanvasMouseListener implements MouseListener {
 		resizeUndoEdit = null;
 		movingUndoEdit = null;
 		
-		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			networkCanvas.processMouseEvent(e);
 			return;
 		}
@@ -185,7 +186,7 @@ public class CanvasMouseListener implements MouseListener {
 		}
 
 		DingAnnotation annotation = getAnnotation(e);
-		if (annotationSelection.isEmpty() || !view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+		if (annotationSelection.isEmpty() || !re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 			// Let the InnerCanvas handle this event
 			networkCanvas.processMouseEvent(e);
 		} else if (annotation != null) {
@@ -223,7 +224,7 @@ public class CanvasMouseListener implements MouseListener {
 
 		DingAnnotation annotation = getAnnotation(e);
 		if (annotation == null) {
-			if (view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
+			if (re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
 				// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
 				if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
 					cyAnnotator.clearSelectedAnnotations();
@@ -239,9 +240,9 @@ public class CanvasMouseListener implements MouseListener {
 		} else if (e.getClickCount()==2 && !e.isConsumed()) {
 			e.consume();
 			invokeOnEDT(() -> {
-				EditAnnotationTaskFactory tf = new EditAnnotationTaskFactory();
+				EditAnnotationTaskFactory tf = new EditAnnotationTaskFactory(serviceRegistrar.getService(DingRenderer.class));
 				DialogTaskManager dtm = cyAnnotator.getRegistrar().getService(DialogTaskManager.class);
-				dtm.execute(tf.createTaskIterator(view, annotation, new Point(e.getX(), e.getY())));
+				dtm.execute(tf.createTaskIterator(re.getViewModel(), annotation, new Point(e.getX(), e.getY())));
 
 			});
 		}
@@ -262,7 +263,7 @@ public class CanvasMouseListener implements MouseListener {
 		if (annotation == null)
 			return null;
 
-		if (!view.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION))
+		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION))
 			return null;
 
 		return annotation;
