@@ -1,8 +1,15 @@
 package org.cytoscape.app.internal.action;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.app.internal.manager.AppManager;
@@ -40,11 +47,8 @@ import org.cytoscape.util.swing.TextIcon;
 @SuppressWarnings("serial")
 public class UpdateNotificationAction extends AbstractCyAction {
 
-	private static float ICON_FONT_SIZE = 24f;
-	private static int ICON_SIZE = 32;
-	
-	private final TextIcon icon;
-	
+	private final BadgeIcon icon;
+
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
 
@@ -57,17 +61,15 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		super("App Updates");
 		this.updateManager = updateManager;
 		this.appManagerMediator = appManagerMediator;
-		
-		Font iconFont = serviceRegistrar.getService(IconManager.class).getIconFont(ICON_FONT_SIZE);
-		icon = new TextIcon(IconManager.ICON_BELL, iconFont, UIManager.getColor("CyColor.primary(0)"),
-				ICON_SIZE, ICON_SIZE);
-		
+
+		icon = new BadgeIcon(serviceRegistrar.getService(IconManager.class));
+
 		putValue(LARGE_ICON_KEY, icon);
 		putValue(SHORT_DESCRIPTION, "App Updates");
 		setIsInMenuBar(false);
 		setIsInToolBar(true);
 		setToolbarGravity(Float.MAX_VALUE);
-		
+
 		appManager.addAppListener(evt -> updateEnableState(true));
 		updateManager.addUpdatesChangedListener(evt -> updateEnableState(false));
 	}
@@ -79,23 +81,124 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	@Override
 	public void updateEnableState() {
-		final int total = updateManager.getUpdateCount();
-		setEnabled(total > 0);
-		
+		setEnabled(false); // to force the component to repaint later if 'count' changes
+	
+		final int count = updateManager.getUpdateCount();
 		final String text;
-		
-		if (total > 0)
-			text = total + " update" + (total > 1 ? "s" : "") + " available!";
+
+		if (count > 0)
+			text = count + " update" + (count > 1 ? "s" : "") + " available!";
 		else
 			text = "All your apps are up-to-date.";
-			
+
 		putValue(LONG_DESCRIPTION, text);
+		icon.setCount(count);
+		setEnabled(count > 0); // this should force the UI to repaint because we disabled this action previously
 	}
-	
+
 	public void updateEnableState(boolean checkForUpdates) {
 		if (checkForUpdates)
 			updateManager.checkForUpdates();
+
+		SwingUtilities.invokeLater(() -> updateEnableState());
+	}
+
+	private static class BadgeIcon extends TextIcon {
+
+		private static float ICON_FONT_SIZE = 20f;
+		private static int ICON_SIZE = 36;
+		private static int BADGE_BORDER_WIDTH = 1;
+		private static Color BADGE_COLOR = UIManager.getColor("CyColor.secondary2"); // Should be red
+		private static Color BADGE_BORDER_COLOR = Color.WHITE;
+		private static Color BADGE_TEXT_COLOR = Color.WHITE;
+		private static Color ICON_COLOR = UIManager.getColor("CyColor.complement(-2)");
+
+		private int count;
+
+		public BadgeIcon(IconManager iconManager) {
+			super(IconManager.ICON_BELL, iconManager.getIconFont(ICON_FONT_SIZE), ICON_COLOR, ICON_SIZE, ICON_SIZE);
+		}
+
+		@Override
+		public void paintIcon(Component c, Graphics g, int x, int y) {
+			super.paintIcon(c, g, x, y);
+
+			if (!c.isEnabled() || count <= 0) // Only draw a badge if there are notifications!
+				return;
+
+			Graphics2D g2d = (Graphics2D) g.create();
+
+			RenderingHints hints = new RenderingHints(null);
+			hints.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			hints.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+			g2d.setRenderingHints(hints);
+
+			int w = getIconWidth();
+			int h = getIconHeight();
+
+			// Position the badge in the top-right quadrant of the icon
+			int d = Math.max(w, h) / 2; // diameter
+			int di = d - 2 * BADGE_BORDER_WIDTH; // diameter of the internal circle (i.e. circle - border)
+			int bx = w - d; // x of badge's upper left corner
+			int by = 0; // y of badge's upper left corner
+
+			// Draw badge circle
+			g2d.setColor(BADGE_BORDER_COLOR);
+			g2d.fillOval(bx, by, d, d);
+			g2d.setColor(BADGE_COLOR);
+			g2d.fillOval(bx + BADGE_BORDER_WIDTH, by + BADGE_BORDER_WIDTH, di, di);
+			
+			// Draw badge count text inside the circle.
+			String text = count > 99 ? "\u2026" : "" + count; // just draw ELLIPSIS char if more than 2 digits
+			
+			int hr = (int) Math.sqrt((di * di) / 2.0); // height of square inside internal circle (Pythagoras)
+			int th = hr; // text height
+			int tw = 0; // text width
+			Font textFont = getFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD), th, g2d);
+			
+			g2d.setFont(textFont);
+			g2d.setColor(BADGE_TEXT_COLOR);
+			
+			FontMetrics fm = g2d.getFontMetrics();
+			th = fm.getHeight();
+			tw = fm.stringWidth(text);
+			
+			int tx = (int) (bx + (d - hr) / 2.0);
+			tx += (int) ((hr - tw) / 2.0);
+			
+			int ty = (int) (by + (d - hr) / 2.0);
+			ty += (int) (((hr - th) / 2.0) + fm.getAscent());
+
+			g2d.drawString(text, tx, ty);
+
+			g2d.dispose();
+		}
+
+		/**
+		 * Sets the count value to display.
+		 */
+		public void setCount(int count) {
+			this.count = count;
+		}
 		
-		updateEnableState();
+		private static Font getFont(Font f, int height, Graphics g) {
+			int size = height;
+			Boolean up = null;
+
+			while (true) {
+				Font font = f.deriveFont((float) size);
+				int testHeight = g.getFontMetrics(font).getHeight();
+				
+				if (testHeight < height && up != Boolean.FALSE) {
+					size++;
+					up = Boolean.TRUE;
+				} else if (testHeight > height && up != Boolean.TRUE) {
+					size--;
+					up = Boolean.FALSE;
+				} else {
+					return font;
+				}
+			}
+		}
 	}
 }
