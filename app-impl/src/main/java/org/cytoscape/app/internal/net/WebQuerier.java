@@ -32,6 +32,7 @@ import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -90,10 +91,6 @@ public class WebQuerier {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	private StreamUtil streamUtil;
-
-	private CyVersion cyVersion;
-	
 	/** A reference to the result obtained by the last successful query for all available apps. */
 	// private Set<WebApp> apps;
 	
@@ -129,7 +126,8 @@ public class WebQuerier {
 	
 	public static final Pattern OUTPUT_FILENAME_DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9.-]");
 
-	private AppManager appManager = null;
+	private AppManager appManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
@@ -182,9 +180,8 @@ public class WebQuerier {
 		}
 	}
 	
-	public WebQuerier(StreamUtil streamUtil, CyVersion cyVersion) {
-		this.streamUtil = streamUtil;
-		this.cyVersion = cyVersion;
+	public WebQuerier(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
 		/*
 		// *** Older initialization for previous implementation supporting a single app store page
@@ -203,7 +200,6 @@ public class WebQuerier {
 		
 		/*
 		Set<WebApp> webApps = getAllApps();
-		
 		DebugHelper.print("Apps found: " + webApps.size());
 		*/
 	}
@@ -218,6 +214,7 @@ public class WebQuerier {
 	private String query(String url) throws IOException {
 		// Convert the string url to a URL object
 		URL parsedUrl = null;
+		
 		try {
 			parsedUrl = new URL(url);
 		} catch (MalformedURLException e) {
@@ -225,7 +222,8 @@ public class WebQuerier {
 		}
 		
 		String result = null;
-	
+		
+		StreamUtil streamUtil = serviceRegistrar.getService(StreamUtil.class);
 		HttpURLConnection connection = (HttpURLConnection) streamUtil.getURLConnection(parsedUrl);
 		connection.setRequestProperty(REQUEST_JSON_HEADER_KEY, REQUEST_JSON_HEADER_VALUE);
 		//Set the read timeout to 10 seconds.
@@ -406,7 +404,7 @@ public class WebQuerier {
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
 								release.setCompatibleCytoscapeVersions(jsonRelease.get(keyName).toString());
-								isCompatible = release.isCompatible(cyVersion);
+								isCompatible = release.isCompatible(serviceRegistrar.getService(CyVersion.class));
 							}
 							
 							if (isCompatible)
@@ -511,10 +509,10 @@ public class WebQuerier {
 	 * @param directory The directory used to store the downloaded file
 	 * @param taskMonitor 
 	 */
-	public File downloadApp(WebApp webApp, String version, File directory, DownloadStatus status) throws AppDownloadException {
-	
+	public File downloadApp(WebApp webApp, String version, File directory, DownloadStatus status)
+			throws AppDownloadException {
 		List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
-		
+
 		if (compatibleReleases.size() > 0) {
 			WebApp.Release releaseToDownload = null;
 			
@@ -546,8 +544,8 @@ public class WebQuerier {
 			
 			if (downloadUrl != null) {
 				try {
-				
 					// Prepare to download
+					StreamUtil streamUtil = serviceRegistrar.getService(StreamUtil.class);
 					URLConnection connection = streamUtil.getURLConnection(downloadUrl);
 					InputStream inputStream = connection.getInputStream();
 					long contentLength = connection.getContentLength();
@@ -613,6 +611,7 @@ public class WebQuerier {
 			throw new AppDownloadException("No available releases were found for the app " 
 					+ webApp.getFullName() + ".");
 		}
+		
 		return null;
 	}
 

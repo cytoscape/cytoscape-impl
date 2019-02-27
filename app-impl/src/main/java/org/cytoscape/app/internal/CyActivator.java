@@ -63,7 +63,6 @@ import org.cytoscape.io.read.CyNetworkReaderManager;
 import org.cytoscape.io.read.CyPropertyReaderManager;
 import org.cytoscape.io.read.CySessionReaderManager;
 import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CyPropertyWriterManager;
 import org.cytoscape.io.write.CySessionWriterManager;
@@ -130,7 +129,6 @@ import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.task.write.ExportVizmapTaskFactory;
 import org.cytoscape.task.write.SaveSessionAsTaskFactory;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -180,163 +178,159 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		CyApplicationConfiguration cyApplicationConfigurationRef = getService(bc, CyApplicationConfiguration.class);
-		CyApplicationManager cyApplicationManagerRef = getService(bc, CyApplicationManager.class);
-		CyEventHelper cyEventHelperRef = getService(bc, CyEventHelper.class);
-		CyGroupAggregationManager cyGroupAggregationManagerRef = getService(bc, CyGroupAggregationManager.class);
-		CyGroupFactory cyGroupFactoryRef = getService(bc, CyGroupFactory.class);
-		CyGroupManager cyGroupManagerRef = getService(bc, CyGroupManager.class);
-		CyLayoutAlgorithmManager cyLayoutAlgorithmManagerRef = getService(bc, CyLayoutAlgorithmManager.class);
-		CyNetworkFactory cyNetworkFactoryRef = getService(bc, CyNetworkFactory.class);
-		CyNetworkManager cyNetworkManagerRef = getService(bc, CyNetworkManager.class);
-		CyNetworkViewFactory cyNetworkViewFactoryRef = getService(bc, CyNetworkViewFactory.class);
-		CyNetworkViewManager cyNetworkViewManagerRef = getService(bc, CyNetworkViewManager.class);
-		CyNetworkReaderManager cyNetworkViewReaderManagerRef = getService(bc, CyNetworkReaderManager.class);
-		CyNetworkViewWriterManager cyNetworkViewWriterManagerRef = getService(bc, CyNetworkViewWriterManager.class);
-		CyProperty<Properties> cyPropertyRef = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
-		CyPropertyReaderManager cyPropertyReaderManagerRef = getService(bc, CyPropertyReaderManager.class);
-		CyPropertyWriterManager cyPropertyWriterManagerRef = getService(bc, CyPropertyWriterManager.class);
-		CyRootNetworkManager cyRootNetworkFactoryRef = getService(bc, CyRootNetworkManager.class);
-		CySessionManager cySessionManagerRef = getService(bc, CySessionManager.class);
-		CySessionReaderManager cySessionReaderManagerRef = getService(bc, CySessionReaderManager.class);
-		CySessionWriterManager cySessionWriterManagerRef = getService(bc, CySessionWriterManager.class);
-		CySwingApplication cySwingApplicationRef = getService(bc, CySwingApplication.class);
-		CyTableFactory cyTableFactoryRef = getService(bc, CyTableFactory.class);
-		CyTableManager cyTableManagerRef = getService(bc, CyTableManager.class);
-		CyTableReaderManager cyTableReaderManagerRef = getService(bc, CyTableReaderManager.class);
-		CyTableWriterManager cyTableWriterManagerRef = getService(bc, CyTableWriterManager.class);
-		PanelTaskManager panelTaskManagerRef = getService(bc, PanelTaskManager.class);
-		DialogTaskManager dialogTaskManagerRef = getService(bc, DialogTaskManager.class);
-		PresentationWriterManager presentationWriterManagerRef = getService(bc, PresentationWriterManager.class);
-		RenderingEngineManager renderingEngineManagerRef = getService(bc, RenderingEngineManager.class);
-		TaskManager taskManagerRef = getService(bc, TaskManager.class);
-		UndoSupport undoSupportRef = getService(bc, UndoSupport.class);
-		TunablePropertySerializerFactory tunablePropertySerializerFactoryRef = getService(bc, TunablePropertySerializerFactory.class);
-		VisualMappingManager visualMappingManagerRef = getService(bc, VisualMappingManager.class);
-		VisualStyleFactory visualStyleFactoryRef = getService(bc, VisualStyleFactory.class);
-		CyVersion cytoscapeVersionService = getService(bc, CyVersion.class);
-		CyApplicationConfiguration cyApplicationConfigurationServiceRef = getService(bc, CyApplicationConfiguration.class);
-		
-		VisualMappingFunctionFactory vmfFactoryC = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
-		VisualMappingFunctionFactory vmfFactoryD = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
-		VisualMappingFunctionFactory vmfFactoryP = getService(bc,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
+		CyApplicationConfiguration applicationConfig = getService(bc, CyApplicationConfiguration.class);
+		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+		CyEventHelper eventHelper = getService(bc, CyEventHelper.class);
+		CyGroupAggregationManager groupAggregationManager = getService(bc, CyGroupAggregationManager.class);
+		CyGroupFactory groupFactory = getService(bc, CyGroupFactory.class);
+		CyGroupManager groupManager = getService(bc, CyGroupManager.class);
+		CyLayoutAlgorithmManager layoutAlgorithmManager = getService(bc, CyLayoutAlgorithmManager.class);
+		CyNetworkFactory networkFactory = getService(bc, CyNetworkFactory.class);
+		CyNetworkManager networkManager = getService(bc, CyNetworkManager.class);
+		CyNetworkViewFactory networkViewFactory = getService(bc, CyNetworkViewFactory.class);
+		CyNetworkViewManager networkViewManager = getService(bc, CyNetworkViewManager.class);
+		CyNetworkReaderManager networkViewReaderManager = getService(bc, CyNetworkReaderManager.class);
+		CyNetworkViewWriterManager networkViewWriterManager = getService(bc, CyNetworkViewWriterManager.class);
+		CyProperty<Properties> cyProperty = getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+		CyPropertyReaderManager cyPropertyReaderManager = getService(bc, CyPropertyReaderManager.class);
+		CyPropertyWriterManager cyPropertyWriterManager = getService(bc, CyPropertyWriterManager.class);
+		CyRootNetworkManager rootNetworkFactory = getService(bc, CyRootNetworkManager.class);
+		CySessionManager sessionManager = getService(bc, CySessionManager.class);
+		CySessionReaderManager sessionReaderManager = getService(bc, CySessionReaderManager.class);
+		CySessionWriterManager sessionWriterManager = getService(bc, CySessionWriterManager.class);
+		CySwingApplication swingApplication = getService(bc, CySwingApplication.class);
+		CyTableFactory tableFactory = getService(bc, CyTableFactory.class);
+		CyTableManager tableManager = getService(bc, CyTableManager.class);
+		CyTableReaderManager tableReaderManager = getService(bc, CyTableReaderManager.class);
+		CyTableWriterManager tableWriterManager = getService(bc, CyTableWriterManager.class);
+		PanelTaskManager panelTaskManager = getService(bc, PanelTaskManager.class);
+		DialogTaskManager dialogTaskManager = getService(bc, DialogTaskManager.class);
+		PresentationWriterManager presentationWriterManager = getService(bc, PresentationWriterManager.class);
+		RenderingEngineManager renderingEngineManager = getService(bc, RenderingEngineManager.class);
+		TaskManager<?, ?> taskManager = getService(bc, TaskManager.class);
+		UndoSupport undoSupport = getService(bc, UndoSupport.class);
+		TunablePropertySerializerFactory tunablePropSerializerFactory = getService(bc, TunablePropertySerializerFactory.class);
+		VisualMappingManager visualMappingManager = getService(bc, VisualMappingManager.class);
+		VisualStyleFactory visualStyleFactory = getService(bc, VisualStyleFactory.class);
+		CyVersion cyVersion = getService(bc, CyVersion.class);
+
+		VisualMappingFunctionFactory vmfFactoryC = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=continuous)");
+		VisualMappingFunctionFactory vmfFactoryD = getService(bc, VisualMappingFunctionFactory.class, "(mapping.type=discrete)");
+		VisualMappingFunctionFactory vmfFactoryP = getService(bc ,VisualMappingFunctionFactory.class, "(mapping.type=passthrough)");
 
 		DataSourceManager dataSourceManager = getService(bc, DataSourceManager.class);
 		
 		// Start of core-task services
-		
-		 LoadVizmapFileTaskFactory loadVizmapFileTaskFactory = getService(bc,LoadVizmapFileTaskFactory.class);
-		 LoadNetworkFileTaskFactory loadNetworkFileTaskFactory = getService(bc,LoadNetworkFileTaskFactory.class);
-		 LoadNetworkURLTaskFactory loadNetworkURLTaskFactory = getService(bc,LoadNetworkURLTaskFactory.class);
-		 DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory = getService(bc,DeleteSelectedNodesAndEdgesTaskFactory.class);
-		 SelectAllTaskFactory selectAllTaskFactory = getService(bc,SelectAllTaskFactory.class);
 
-		 SelectAllEdgesTaskFactory selectAllEdgesTaskFactory = getService(bc,SelectAllEdgesTaskFactory.class);
-		 SelectAllNodesTaskFactory selectAllNodesTaskFactory = getService(bc,SelectAllNodesTaskFactory.class);
-		 SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory = getService(bc,SelectAdjacentEdgesTaskFactory.class);
-		 SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory = getService(bc,SelectConnectedNodesTaskFactory.class);
-		
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Undirected)");
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Directed: Incoming)");
-		 SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = getService(bc,SelectFirstNeighborsTaskFactory.class,"(title=Directed: Outgoing)");
-		
-		 DeselectAllTaskFactory deselectAllTaskFactory = getService(bc,DeselectAllTaskFactory.class);
-		 DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory = getService(bc,DeselectAllEdgesTaskFactory.class);
-		 DeselectAllNodesTaskFactory deselectAllNodesTaskFactory = getService(bc,DeselectAllNodesTaskFactory.class);
-		 InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory = getService(bc,InvertSelectedEdgesTaskFactory.class);
-		 InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory = getService(bc,InvertSelectedNodesTaskFactory.class);
-		 SelectFromFileListTaskFactory selectFromFileListTaskFactory = getService(bc,SelectFromFileListTaskFactory.class);
-		
-		 SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory = getService(bc,SelectFirstNeighborsNodeViewTaskFactory.class);
-		
-		 HideSelectedTaskFactory hideSelectedTaskFactory = getService(bc,HideSelectedTaskFactory.class);
-		 HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory = getService(bc,HideSelectedNodesTaskFactory.class);
-		 HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory = getService(bc,HideSelectedEdgesTaskFactory.class);
-		 UnHideAllTaskFactory unHideAllTaskFactory = getService(bc,UnHideAllTaskFactory.class);
-		 UnHideAllNodesTaskFactory unHideAllNodesTaskFactory = getService(bc,UnHideAllNodesTaskFactory.class);
-		 UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory = getService(bc,UnHideAllEdgesTaskFactory.class);
+		LoadVizmapFileTaskFactory loadVizmapFileTaskFactory = getService(bc, LoadVizmapFileTaskFactory.class);
+		LoadNetworkFileTaskFactory loadNetworkFileTaskFactory = getService(bc, LoadNetworkFileTaskFactory.class);
+		LoadNetworkURLTaskFactory loadNetworkURLTaskFactory = getService(bc, LoadNetworkURLTaskFactory.class);
+		DeleteSelectedNodesAndEdgesTaskFactory deleteSelectedNodesAndEdgesTaskFactory = getService(bc, DeleteSelectedNodesAndEdgesTaskFactory.class);
+		SelectAllTaskFactory selectAllTaskFactory = getService(bc, SelectAllTaskFactory.class);
 
-		 NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory = getService(bc,NewEmptyNetworkViewFactory.class);
+		SelectAllEdgesTaskFactory selectAllEdgesTaskFactory = getService(bc, SelectAllEdgesTaskFactory.class);
+		SelectAllNodesTaskFactory selectAllNodesTaskFactory = getService(bc, SelectAllNodesTaskFactory.class);
+		SelectAdjacentEdgesTaskFactory selectAdjacentEdgesTaskFactory = getService(bc, SelectAdjacentEdgesTaskFactory.class);
+		SelectConnectedNodesTaskFactory selectConnectedNodesTaskFactory = getService(bc, SelectConnectedNodesTaskFactory.class);
 
-		 CloneNetworkTaskFactory cloneNetworkTaskFactory = getService(bc,CloneNetworkTaskFactory.class);
-		 NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory = getService(bc,NewNetworkSelectedNodesAndEdgesTaskFactory.class);
-		 NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = getService(bc,NewNetworkSelectedNodesOnlyTaskFactory.class);
-		 DestroyNetworkTaskFactory destroyNetworkTaskFactory = getService(bc,DestroyNetworkTaskFactory.class);
-		 DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory = getService(bc,DestroyNetworkViewTaskFactory.class);
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactory = getService(bc, SelectFirstNeighborsTaskFactory.class, "(title=Undirected)");
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryInEdge = getService(bc, SelectFirstNeighborsTaskFactory.class, "(title=Directed: Incoming)");
+		SelectFirstNeighborsTaskFactory selectFirstNeighborsTaskFactoryOutEdge = getService(bc, SelectFirstNeighborsTaskFactory.class, "(title=Directed: Outgoing)");
 
-		 NewSessionTaskFactory newSessionTaskFactory = getService(bc,NewSessionTaskFactory.class);
-		 OpenSessionTaskFactory openSessionTaskFactory = getService(bc,OpenSessionTaskFactory.class);
-		 SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc,SaveSessionAsTaskFactory.class);
-		 EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = getService(bc,EditNetworkTitleTaskFactory.class);
-		 CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc,CreateNetworkViewTaskFactory.class);
-		 ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = getService(bc,ExportNetworkImageTaskFactory.class);
-		 ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = getService(bc,ExportNetworkViewTaskFactory.class);
-		 ExportSelectedTableTaskFactory exportSelectedTableTaskFactory = getService(bc,ExportSelectedTableTaskFactory.class);
-		 ExportTableTaskFactory exportTableTaskFactory = getService(bc,ExportTableTaskFactory.class);
-		 ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc,ApplyPreferredLayoutTaskFactory.class);
-		 DeleteColumnTaskFactory deleteColumnTaskFactory = getService(bc,DeleteColumnTaskFactory.class);
-		 RenameColumnTaskFactory renameColumnTaskFactory = getService(bc,RenameColumnTaskFactory.class);
-		 DeleteTableTaskFactory deleteTableTaskFactory = getService(bc,DeleteTableTaskFactory.class);
-		 ExportVizmapTaskFactory exportVizmapTaskFactory = getService(bc,ExportVizmapTaskFactory.class);
-		
-		 ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = getService(bc,ConnectSelectedNodesTaskFactory.class);
-		 MapGlobalToLocalTableTaskFactory mapGlobal = getService(bc,MapGlobalToLocalTableTaskFactory.class);
-		 ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc,ApplyVisualStyleTaskFactory.class);
-		 MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory = getService(bc,MapTableToNetworkTablesTaskFactory.class);
+		DeselectAllTaskFactory deselectAllTaskFactory = getService(bc, DeselectAllTaskFactory.class);
+		DeselectAllEdgesTaskFactory deselectAllEdgesTaskFactory = getService(bc, DeselectAllEdgesTaskFactory.class);
+		DeselectAllNodesTaskFactory deselectAllNodesTaskFactory = getService(bc, DeselectAllNodesTaskFactory.class);
+		InvertSelectedEdgesTaskFactory invertSelectedEdgesTaskFactory = getService(bc, InvertSelectedEdgesTaskFactory.class);
+		InvertSelectedNodesTaskFactory invertSelectedNodesTaskFactory = getService(bc, InvertSelectedNodesTaskFactory.class);
+		SelectFromFileListTaskFactory selectFromFileListTaskFactory = getService(bc, SelectFromFileListTaskFactory.class);
 
-    	 GroupNodesTaskFactory groupNodesTaskFactory = getService(bc,GroupNodesTaskFactory.class);
-    	 UnGroupTaskFactory unGroupTaskFactory= getService(bc,UnGroupTaskFactory.class);
-    	 CollapseGroupTaskFactory collapseGroupTaskFactory= getService(bc,CollapseGroupTaskFactory.class);
-    	 ExpandGroupTaskFactory expandGroupTaskFactory= getService(bc,ExpandGroupTaskFactory.class);
-    	 UnGroupNodesTaskFactory unGroupNodesTaskFactory= getService(bc,UnGroupNodesTaskFactory.class);
+		SelectFirstNeighborsNodeViewTaskFactory selectFirstNeighborsNodeViewTaskFactory = getService(bc, SelectFirstNeighborsNodeViewTaskFactory.class);
+
+		HideSelectedTaskFactory hideSelectedTaskFactory = getService(bc, HideSelectedTaskFactory.class);
+		HideSelectedNodesTaskFactory hideSelectedNodesTaskFactory = getService(bc, HideSelectedNodesTaskFactory.class);
+		HideSelectedEdgesTaskFactory hideSelectedEdgesTaskFactory = getService(bc, HideSelectedEdgesTaskFactory.class);
+		UnHideAllTaskFactory unHideAllTaskFactory = getService(bc, UnHideAllTaskFactory.class);
+		UnHideAllNodesTaskFactory unHideAllNodesTaskFactory = getService(bc, UnHideAllNodesTaskFactory.class);
+		UnHideAllEdgesTaskFactory unHideAllEdgesTaskFactory = getService(bc, UnHideAllEdgesTaskFactory.class);
+
+		NewEmptyNetworkViewFactory newEmptyNetworkTaskFactory = getService(bc, NewEmptyNetworkViewFactory.class);
+
+		CloneNetworkTaskFactory cloneNetworkTaskFactory = getService(bc, CloneNetworkTaskFactory.class);
+		NewNetworkSelectedNodesAndEdgesTaskFactory newNetworkSelectedNodesEdgesTaskFactory = getService(bc, NewNetworkSelectedNodesAndEdgesTaskFactory.class);
+		NewNetworkSelectedNodesOnlyTaskFactory newNetworkSelectedNodesOnlyTaskFactory = getService(bc, NewNetworkSelectedNodesOnlyTaskFactory.class);
+		DestroyNetworkTaskFactory destroyNetworkTaskFactory = getService(bc, DestroyNetworkTaskFactory.class);
+		DestroyNetworkViewTaskFactory destroyNetworkViewTaskFactory = getService(bc, DestroyNetworkViewTaskFactory.class);
+
+		NewSessionTaskFactory newSessionTaskFactory = getService(bc, NewSessionTaskFactory.class);
+		OpenSessionTaskFactory openSessionTaskFactory = getService(bc, OpenSessionTaskFactory.class);
+		SaveSessionAsTaskFactory saveSessionAsTaskFactory = getService(bc, SaveSessionAsTaskFactory.class);
+		EditNetworkTitleTaskFactory editNetworkTitleTaskFactory = getService(bc, EditNetworkTitleTaskFactory.class);
+		CreateNetworkViewTaskFactory createNetworkViewTaskFactory = getService(bc, CreateNetworkViewTaskFactory.class);
+		ExportNetworkImageTaskFactory exportNetworkImageTaskFactory = getService(bc, ExportNetworkImageTaskFactory.class);
+		ExportNetworkViewTaskFactory exportNetworkViewTaskFactory = getService(bc, ExportNetworkViewTaskFactory.class);
+		ExportSelectedTableTaskFactory exportSelectedTableTaskFactory = getService(bc, ExportSelectedTableTaskFactory.class);
+		ExportTableTaskFactory exportTableTaskFactory = getService(bc, ExportTableTaskFactory.class);
+		ApplyPreferredLayoutTaskFactory applyPreferredLayoutTaskFactory = getService(bc, ApplyPreferredLayoutTaskFactory.class);
+		DeleteColumnTaskFactory deleteColumnTaskFactory = getService(bc, DeleteColumnTaskFactory.class);
+		RenameColumnTaskFactory renameColumnTaskFactory = getService(bc, RenameColumnTaskFactory.class);
+		DeleteTableTaskFactory deleteTableTaskFactory = getService(bc, DeleteTableTaskFactory.class);
+		ExportVizmapTaskFactory exportVizmapTaskFactory = getService(bc, ExportVizmapTaskFactory.class);
+
+		ConnectSelectedNodesTaskFactory connectSelectedNodesTaskFactory = getService(bc, ConnectSelectedNodesTaskFactory.class);
+		MapGlobalToLocalTableTaskFactory mapGlobal = getService(bc, MapGlobalToLocalTableTaskFactory.class);
+		ApplyVisualStyleTaskFactory applyVisualStyleTaskFactory = getService(bc, ApplyVisualStyleTaskFactory.class);
+		MapTableToNetworkTablesTaskFactory mapNetworkAttrTaskFactory = getService(bc, MapTableToNetworkTablesTaskFactory.class);
+
+		GroupNodesTaskFactory groupNodesTaskFactory = getService(bc, GroupNodesTaskFactory.class);
+		UnGroupTaskFactory unGroupTaskFactory = getService(bc, UnGroupTaskFactory.class);
+		CollapseGroupTaskFactory collapseGroupTaskFactory = getService(bc, CollapseGroupTaskFactory.class);
+		ExpandGroupTaskFactory expandGroupTaskFactory = getService(bc, ExpandGroupTaskFactory.class);
+		UnGroupNodesTaskFactory unGroupNodesTaskFactory = getService(bc, UnGroupNodesTaskFactory.class);
 
 		// Command execution services
-		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc,CommandExecutorTaskFactory.class);
-		AvailableCommands availableCommands = getService(bc,AvailableCommands.class);
+		CommandExecutorTaskFactory cyCommandExecutorTaskFactory = getService(bc, CommandExecutorTaskFactory.class);
+		AvailableCommands availableCommands = getService(bc, AvailableCommands.class);
 		
-		StreamUtil streamUtilServiceRef = getService(bc, StreamUtil.class);
-		FileUtil fileUtilServiceRef = getService(bc, FileUtil.class);
-
 		CySwingAppAdapter cyAppAdapter = new CyAppAdapterImpl(
-				 cyApplicationConfigurationRef,
-				 cyApplicationManagerRef,
-                 cyEventHelperRef,
-                 cyGroupAggregationManagerRef, 
-                 cyGroupFactoryRef, 
-                 cyGroupManagerRef,
-                 cyLayoutAlgorithmManagerRef,
-                 cyNetworkFactoryRef,
-                 cyNetworkManagerRef,
-                 cyNetworkViewFactoryRef,
-                 cyNetworkViewManagerRef,
-                 cyNetworkViewReaderManagerRef,
-                 cyNetworkViewWriterManagerRef,
-                 cyPropertyRef,
-                 cyPropertyReaderManagerRef,
-                 cyPropertyWriterManagerRef,
-                 cyRootNetworkFactoryRef,
+				 applicationConfig,
+				 applicationManager,
+                 eventHelper,
+                 groupAggregationManager, 
+                 groupFactory, 
+                 groupManager,
+                 layoutAlgorithmManager,
+                 networkFactory,
+                 networkManager,
+                 networkViewFactory,
+                 networkViewManager,
+                 networkViewReaderManager,
+                 networkViewWriterManager,
+                 cyProperty,
+                 cyPropertyReaderManager,
+                 cyPropertyWriterManager,
+                 rootNetworkFactory,
                  serviceRegistrar,
-                 cySessionManagerRef,
-                 cySessionReaderManagerRef,
-                 cySessionWriterManagerRef,
-                 cySwingApplicationRef,
-                 cyTableFactoryRef,
-                 cyTableManagerRef,
-                 cyTableReaderManagerRef,
-                 cyTableWriterManagerRef,
-                 cytoscapeVersionService, 
-                 dialogTaskManagerRef,
-                 panelTaskManagerRef,
-                 presentationWriterManagerRef,
-                 renderingEngineManagerRef,
-                 taskManagerRef,
-                 undoSupportRef, 
-                 tunablePropertySerializerFactoryRef,
+                 sessionManager,
+                 sessionReaderManager,
+                 sessionWriterManager,
+                 swingApplication,
+                 tableFactory,
+                 tableManager,
+                 tableReaderManager,
+                 tableWriterManager,
+                 cyVersion, 
+                 dialogTaskManager,
+                 panelTaskManager,
+                 presentationWriterManager,
+                 renderingEngineManager,
+                 taskManager,
+                 undoSupport, 
+                 tunablePropSerializerFactory,
                  vmfFactoryC, 
                  vmfFactoryD, 
                  vmfFactoryP, 
-                 visualMappingManagerRef,
-                 visualStyleFactoryRef, 
+                 visualMappingManager,
+                 visualStyleFactory, 
                  dataSourceManager,
                  // from core-task-api
                  loadVizmapFileTaskFactory,
@@ -400,18 +394,18 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cyAppAdapter, CyAppAdapter.class);
 		registerService(bc, cyAppAdapter, CySwingAppAdapter.class);
 		
-		WebQuerier webQuerier = new WebQuerier(streamUtilServiceRef, cytoscapeVersionService);
+		WebQuerier webQuerier = new WebQuerier(serviceRegistrar);
 		registerService(bc, webQuerier, WebQuerier.class);
 		
 		StartLevel startLevel = getService(bc, StartLevel.class);
 		
 		// Instantiate new manager
-		final AppManager appManager = new AppManager(cyAppAdapter, cyApplicationConfigurationServiceRef,
-				cytoscapeVersionService, cyEventHelperRef, webQuerier, startLevel, bc);
+		final AppManager appManager = new AppManager(cyAppAdapter, applicationConfig, cyVersion, eventHelper,
+				webQuerier, startLevel, bc);
 		registerService(bc, appManager, AppManager.class);
 		bc.addFrameworkListener(appManager);
 		
-		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyPropertyRef);
+		final DownloadSitesManager downloadSitesManager = new DownloadSitesManager(cyProperty);
 		
 		final UpdateManager updateManager = new UpdateManager(appManager, downloadSitesManager);
 		registerService(bc, updateManager, AppsFinishedStartingListener.class);
@@ -439,7 +433,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		// Start local server that reports app installation status to the app store when requested,
 		// also able to install an app when told by the app store
-		final AppGetResponder appGetResponder = new AppGetResponder(appManager, cytoscapeVersionService);
+		final AppGetResponder appGetResponder = new AppGetResponder(appManager, cyVersion);
 		final CyHttpd httpd = (new CyHttpdFactoryImpl()).createHttpd(new LocalhostServerSocketFactory(2607));
 		httpd.addBeforeResponse(new ScreenOriginsBeforeResponse(WebQuerier.DEFAULT_APP_STORE_URL));
 		httpd.addBeforeResponse(new OriginOptionsBeforeResponse("x-csrftoken"));
