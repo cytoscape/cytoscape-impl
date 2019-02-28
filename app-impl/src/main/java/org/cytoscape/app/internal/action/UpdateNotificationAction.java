@@ -15,6 +15,7 @@ import javax.swing.UIManager;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerMediator;
+import org.cytoscape.app.internal.util.CoalesceTimer;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -49,6 +50,8 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	private final BadgeIcon icon;
 
+	private final CoalesceTimer coalesceTimer = new CoalesceTimer(2000, 1);
+	
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
 
@@ -97,10 +100,13 @@ public class UpdateNotificationAction extends AbstractCyAction {
 	}
 
 	public void updateEnableState(boolean checkForUpdates) {
-		if (checkForUpdates)
-			updateManager.checkForUpdates();
-
-		SwingUtilities.invokeLater(() -> updateEnableState());
+		// Debounce the update events, because checkForUpdates() can be expensive!
+		coalesceTimer.coalesce(() -> {
+			if (checkForUpdates)
+				updateManager.checkForUpdates();
+	
+			SwingUtilities.invokeLater(() -> updateEnableState());
+		});
 	}
 
 	private static class BadgeIcon extends TextIcon {
@@ -108,15 +114,17 @@ public class UpdateNotificationAction extends AbstractCyAction {
 		private static float ICON_FONT_SIZE = 20f;
 		private static int ICON_SIZE = 36;
 		private static int BADGE_BORDER_WIDTH = 1;
-		private static Color BADGE_COLOR = UIManager.getColor("CyColor.secondary2"); // Should be red
+		private static Color BADGE_COLOR = Color.RED;
 		private static Color BADGE_BORDER_COLOR = Color.WHITE;
 		private static Color BADGE_TEXT_COLOR = Color.WHITE;
 		private static Color ICON_COLOR = UIManager.getColor("CyColor.complement(-2)");
 
 		private int count;
+		private final IconManager iconManager;
 
 		public BadgeIcon(IconManager iconManager) {
 			super(IconManager.ICON_BELL, iconManager.getIconFont(ICON_FONT_SIZE), ICON_COLOR, ICON_SIZE, ICON_SIZE);
+			this.iconManager = iconManager;
 		}
 
 		@Override
@@ -137,24 +145,26 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			int h = getIconHeight();
 
 			// Position the badge in the top-right quadrant of the icon
-			int d = Math.max(w, h) / 2; // diameter
-			int di = d - 2 * BADGE_BORDER_WIDTH; // diameter of the internal circle (i.e. circle - border)
-			int bx = w - d; // x of badge's upper left corner
-			int by = 0; // y of badge's upper left corner
+			float d = Math.max(w, h) / 2.0f; // diameter
+			float di = d - 2 * BADGE_BORDER_WIDTH; // diameter of the internal circle (i.e. circle - border)
+			float bx = w - d; // x of badge's upper left corner
+			float by = 0; // y of badge's upper left corner
 
 			// Draw badge circle
 			g2d.setColor(BADGE_BORDER_COLOR);
-			g2d.fillOval(bx, by, d, d);
+			g2d.fillOval(Math.round(bx), Math.round(by), Math.round(d), Math.round(d));
 			g2d.setColor(BADGE_COLOR);
-			g2d.fillOval(bx + BADGE_BORDER_WIDTH, by + BADGE_BORDER_WIDTH, di, di);
+			g2d.fillOval(Math.round(bx + BADGE_BORDER_WIDTH), Math.round(by + BADGE_BORDER_WIDTH), Math.round(di), Math.round(di));
 			
 			// Draw badge count text inside the circle.
-			String text = count > 99 ? "\u2026" : "" + count; // just draw ELLIPSIS char if more than 2 digits
+			String text = count > 99 ? IconManager.ICON_ELLIPSIS_H : "" + count; // just draw ELLIPSIS char if more than 2 digits
 			
-			int hr = (int) Math.sqrt((di * di) / 2.0); // height of square inside internal circle (Pythagoras)
-			int th = hr; // text height
-			int tw = 0; // text width
-			Font textFont = getFont(UIManager.getFont("Label.font").deriveFont(Font.BOLD), th, g2d);
+			float hr = (float) Math.sqrt((di * di) / 2.0f); // height of square inside internal circle (Pythagoras)
+			float th = hr; // text height
+			float tw = 0; // text width
+			Font textFont = count > 99 ? iconManager.getIconFont(h)
+					: UIManager.getFont("Label.font").deriveFont(Font.BOLD);
+			textFont = getFont(textFont, th, g2d);
 			
 			g2d.setFont(textFont);
 			g2d.setColor(BADGE_TEXT_COLOR);
@@ -163,11 +173,11 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			th = fm.getHeight();
 			tw = fm.stringWidth(text);
 			
-			int tx = (int) (bx + (d - hr) / 2.0);
-			tx += (int) ((hr - tw) / 2.0);
+			float tx = bx + (d - hr) / 2.0f;
+			tx += (hr - tw) / 2.0f;
 			
-			int ty = (int) (by + (d - hr) / 2.0);
-			ty += (int) (((hr - th) / 2.0) + fm.getAscent());
+			float ty = by + (d - hr) / 2.0f;
+			ty += ((hr - th) / 2.0f) + fm.getAscent();
 
 			g2d.drawString(text, tx, ty);
 
@@ -181,12 +191,12 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			this.count = count;
 		}
 		
-		private static Font getFont(Font f, int height, Graphics g) {
-			int size = height;
+		private static Font getFont(Font f, float height, Graphics g) {
+			float size = height;
 			Boolean up = null;
 
 			while (true) {
-				Font font = f.deriveFont((float) size);
+				Font font = f.deriveFont(size);
 				int testHeight = g.getFontMetrics(font).getHeight();
 				
 				if (testHeight < height && up != Boolean.FALSE) {
