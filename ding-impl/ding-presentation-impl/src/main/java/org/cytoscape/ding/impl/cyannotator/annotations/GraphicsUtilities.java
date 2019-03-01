@@ -43,23 +43,14 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
-
-// import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
-
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 class GraphicsUtilities {
 	private static double halfPI = Math.PI/2.0;
@@ -81,11 +72,13 @@ class GraphicsUtilities {
 		ShapeType.PENTAGON.shapeName(),
 		ShapeType.OCTAGON.shapeName(),
 		ShapeType.PARALLELOGRAM.shapeName(),
+		ShapeType.DIAMOND.shapeName(),
+		ShapeType.VEE.shapeName(),
 		ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = {
 		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE, ArrowType.DIAMOND, ArrowType.OPEN, 
-		ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
+		ArrowType.X, ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
 	};
 
 	protected static final List<String> supportedArrowNames = Arrays.asList(
@@ -95,6 +88,7 @@ class GraphicsUtilities {
 		ArrowType.DIAMOND.arrowName(), 
 		ArrowType.OPEN.arrowName(), 
 		ArrowType.NONE.arrowName(), 
+		ArrowType.X.arrowName(), 
 		ArrowType.TRIANGLE.arrowName(), 
 		ArrowType.TSHAPE.arrowName());
 
@@ -111,6 +105,8 @@ class GraphicsUtilities {
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
 			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon  added 3.6
 			case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram  added 3.7
+			case DIAMOND: return diamondShape(x, y, width, height); 	// Diamond  added 3.8
+			case VEE: return veeShape(x, y, width, height); 			// V  added 3.8
 			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}
@@ -168,7 +164,7 @@ class GraphicsUtilities {
       final double destW = width - border;
       final double destH = height - border;
 
-			shape = annotation.getShape();
+      shape = annotation.getShape();
       if (shape == null)
         return;
 			// Scale the shape appropriately
@@ -438,7 +434,7 @@ class GraphicsUtilities {
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		}
 
-		if (type != ArrowType.OPEN && type != ArrowType.TSHAPE)
+		if (type != ArrowType.OPEN && type != ArrowType.TSHAPE && type != ArrowType.X)
 			g2.fill(arrow); 
 
 		g2.draw(arrow);	// We're relying on the stroke to be done by the caller
@@ -460,6 +456,34 @@ class GraphicsUtilities {
     poly.lineTo(((2.0f * xMax) + x) / 3.0f, y);
     poly.lineTo(xMax, yMax);
     poly.lineTo(((2.0f * x) + xMax) / 3.0f, yMax);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape diamondShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double halfWidth = width / 2;
+		double halfHeight = height / 2;
+		
+		poly.moveTo(x + halfWidth, y);
+		poly.lineTo(x + width, y + halfHeight);
+		poly.lineTo(x + halfWidth, y + height);
+		poly.lineTo(x , y + halfHeight);
+		poly.lineTo(x + halfWidth, y);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape veeShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double halfWidth = width / 2;
+		double halfHeight = height / 2;
+
+		poly.moveTo(x, y);
+		poly.lineTo(x + halfWidth, y + halfHeight);
+		poly.lineTo(x + width, y);
+		poly.lineTo(x + halfWidth , y + height);
+		poly.lineTo(x, y);
 		poly.closePath();
 		return poly;
 	}
