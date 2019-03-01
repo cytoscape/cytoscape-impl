@@ -99,6 +99,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		DIAMOND("Diamond"),
 		OPEN("Open Arrow"),
 		NONE("No Arrow"),
+		X("X Arrow"),
 		TRIANGLE("Triangular Head"),
 		TSHAPE("T-Shape");
 
