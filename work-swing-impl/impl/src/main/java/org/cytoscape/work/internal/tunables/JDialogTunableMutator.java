@@ -1,12 +1,23 @@
 package org.cytoscape.work.internal.tunables;
 
+import java.awt.Dialog;
+import java.awt.Window;
+
+import javax.swing.JPanel;
+
+import org.cytoscape.work.internal.tunables.utils.SimplePanel;
+import org.cytoscape.work.internal.tunables.utils.TunableDialog;
+import org.cytoscape.work.swing.GUITunableHandler;
+import org.cytoscape.work.swing.RequestsUIHelper;
+import org.cytoscape.work.swing.TunableUIHelper;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,20 +34,6 @@ package org.cytoscape.work.internal.tunables;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Dialog;
-import java.awt.Window;
-
-import java.awt.Component;
-import javax.swing.JPanel;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.cytoscape.work.internal.tunables.utils.SimplePanel;
-import org.cytoscape.work.internal.tunables.utils.TunableDialog;
-import org.cytoscape.work.swing.GUITunableHandler;
-import org.cytoscape.work.swing.RequestsUIHelper;
-import org.cytoscape.work.swing.TunableUIHelper;
 
 /**
  * Interceptor of <code>Tunable</code> that will be applied on
@@ -66,14 +63,10 @@ import org.cytoscape.work.swing.TunableUIHelper;
  */
 public class JDialogTunableMutator extends JPanelTunableMutator implements TunableUIHelper {
 
-	/** Provides an initialised logger. */
-	private Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
 	private Window parent;
 
 	private Dialog.ModalityType modality = Dialog.DEFAULT_MODALITY_TYPE;
 	private	TunableDialog dialogWindow;
-	private JPanel lastPanel = null;
 
 	/**
 	 * Constructor.
@@ -117,7 +110,7 @@ public class JDialogTunableMutator extends JPanelTunableMutator implements Tunab
 	@Override
 	public boolean validateAndWriteBack(Object objectWithTunables) {
 		JPanel panel = buildConfiguration(objectWithTunables, parent);
-		lastPanel = panel;
+		
 		return validateAndWriteBack(panel, objectWithTunables);
 	}
 

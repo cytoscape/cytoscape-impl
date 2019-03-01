@@ -1,12 +1,28 @@
 package org.cytoscape.tableimport.internal.task;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +40,6 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class SelectFileTableTask extends AbstractTask {
 	
 	@Tunable(description="Data table file", 
@@ -57,7 +55,7 @@ public class SelectFileTableTask extends AbstractTask {
 	private InputStream stream;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME); 
 
 	public SelectFileTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {

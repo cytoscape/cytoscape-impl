@@ -1,30 +1,5 @@
 package org.cytoscape.log.internal;
 
-/*
- * #%L
- * Cytoscape Log Swing Impl (log-swing-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -68,6 +43,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.log4j.Level;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.AbstractTaskFactory;
@@ -78,8 +54,34 @@ import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Log Swing Impl (log-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 class ConsoleDialog {
+	
 	static class LogEvent {
+		
 		static final Level[] LEVELS = {
 			Level.TRACE,
 			Level.DEBUG,
@@ -114,8 +116,7 @@ class ConsoleDialog {
 			return log;
 		}
 
-		public void appendToLogViewer(final LogViewer logViewer)
-		{
+		public void appendToLogViewer(final LogViewer logViewer) {
 			final String submessage = String.format("%s %s [%s] %s", timeFmt.format(this.timestamp), this.levelToString(), this.thread, this.log);
 			logViewer.append(levelToString(), this.message, submessage);
 		}
@@ -125,8 +126,7 @@ class ConsoleDialog {
 		 * a) Does the log event come from the currently selected log?
 		 * b) Does the log event match the specified regular expression?
 		 */
-		public boolean logEventMatches(final String selectedLog, final Pattern regex, int logLevelThreshold)
-		{
+		public boolean logEventMatches(final String selectedLog, final Pattern regex, int logLevelThreshold) {
 			if (this.level < logLevelThreshold)
 				return false;
 			if (selectedLog != null && !(this.log.startsWith(selectedLog)))
@@ -136,25 +136,26 @@ class ConsoleDialog {
 			return true;
 		}
 
+		@Override
 		public String toString() {
 			return String.format("%s %s [%s] %s: %s", levelToString(), timeFmt.format(this.timestamp), this.thread, this.log, this.message);
 		}
 	}
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	/**
 	 * Contains all log events (except those deleted with the Clear button) that were added with the
 	 * <code>addLogEvent</code> method.
 	 */
-	final List<LogEvent> allLogEvents = new ArrayList<LogEvent>();
+	final List<LogEvent> allLogEvents = new ArrayList<>();
 
 	/**
 	 * Contains a subset of log events in <code>allLogEvents</code>. Only log events that are in the
 	 * currently selected log and match the currently specified regular expression filter are stored
 	 * in this array.
 	 */
-	final List<LogEvent> solicitedLogEvents = new ArrayList<LogEvent>();
+	final List<LogEvent> solicitedLogEvents = new ArrayList<>();
 
 	/**
 	 * A hierarchy tree of all the logs.
@@ -174,15 +175,16 @@ class ConsoleDialog {
 	/**
 	 * The compiled regular expression specified by the user in <code>filterTextField</code>.
 	 */
-	Pattern currentPattern = null;
+	Pattern currentPattern;
 
-	final JDialog		dialog;
-	final TaskManager	taskManager;
-	final JTextField	filterTextField;
-	final JComboBox		levelComboBox;
-	final JTree		logsTree;
-	final LogViewer		logViewer;
-	final JCheckBox 	scrollCheckBox;
+	private final JDialog dialog;
+	private final JTextField filterTextField;
+	private final JComboBox<Level> levelComboBox;
+	private final JTree logsTree;
+	private final JCheckBox scrollCheckBox;
+	
+	private final LogViewer logViewer;
+	private final TaskManager taskManager;
 
 	public ConsoleDialog(final TaskManager taskManager, final CySwingApplication app, final Map<String,String> logViewerConfig) {
 		this.taskManager = taskManager;
@@ -194,7 +196,7 @@ class ConsoleDialog {
 		makeFilterTextFieldValid();
 		filterTextField.getDocument().addDocumentListener(new FilterUpdater());
 
-		levelComboBox = new JComboBox(LogEvent.LEVELS);
+		levelComboBox = new JComboBox<>(LogEvent.LEVELS);
 		levelComboBox.setSelectedItem(LogEvent.DEFAULT_LEVEL);
 		levelComboBox.addActionListener(new LevelThresholdListener());
 
@@ -279,7 +281,6 @@ class ConsoleDialog {
         }
 	}
 
-
 	/**
 	 * this function is only for testing whether logs 
 	 * in different levels are displayed and filtered
@@ -297,15 +298,16 @@ class ConsoleDialog {
 	/**
 	 * Add a log message
 	 */
-	public void addLogEvent(final PaxLoggingEvent paxEvent)
-	{
+	public void addLogEvent(final PaxLoggingEvent paxEvent) {
 		final LogEvent event = new LogEvent(paxEvent);
 		allLogEvents.add(event);
 		updateLogs(event.getLog());
-		if (dialog.isVisible() && event.logEventMatches(getSelectedLog(), currentPattern, getSelectedLogLevelThreshold()))
-		{
+		
+		if (dialog.isVisible()
+				&& event.logEventMatches(getSelectedLog(), currentPattern, getSelectedLogLevelThreshold())) {
 			solicitedLogEvents.add(event);
 			event.appendToLogViewer(logViewer);
+			
 			if (doScrollToBottom())
 				logViewer.scrollToBottom();
 		}
@@ -315,14 +317,15 @@ class ConsoleDialog {
 	 * Gets the selected log
 	 * @return The currently selected fully-qualified log name, or <code>null</code> if the root is selected.
 	 */
-	String getSelectedLog()
-	{
+	String getSelectedLog() {
 		Object[] nodes = logsTree.getSelectionPath().getPath();
+		
 		if (nodes.length == 1)
 			return null;
+		
 		StringBuffer path = new StringBuffer();
-		for (int i = 0; i < nodes.length; i++)
-		{
+		
+		for (int i = 0; i < nodes.length; i++) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) nodes[i];
 			if (node.isRoot())
 				continue;
@@ -330,6 +333,7 @@ class ConsoleDialog {
 			if (i != (nodes.length - 1))
 				path.append('.');
 		}
+		
 		return path.toString();
 	}
 
@@ -341,26 +345,24 @@ class ConsoleDialog {
 	 * Adds a log to <code>logs</code>.
 	 * @param newLog A fully-qualified log name
 	 */
-	void updateLogs(String newLog)
-	{
+	void updateLogs(String newLog) {
 		String[] path = newLog.split("\\.");
 		DefaultMutableTreeNode node = logs;
-		for (int pathIndex = 0; pathIndex < path.length; pathIndex++)
-		{
+		
+		for (int pathIndex = 0; pathIndex < path.length; pathIndex++) {
 			DefaultMutableTreeNode child = null;
 			Enumeration e = node.children();
-			while (e.hasMoreElements())
-			{
+			
+			while (e.hasMoreElements()) {
 				DefaultMutableTreeNode potential = (DefaultMutableTreeNode) e.nextElement();
-				if (potential.getUserObject().equals(path[pathIndex]))
-				{
+				
+				if (potential.getUserObject().equals(path[pathIndex])) {
 					child = potential;
 					break;
 				}
 			}
 
-			if (child == null)
-			{
+			if (child == null) {
 				child = new DefaultMutableTreeNode(path[pathIndex]);
 				addSortedNode(node, child);
 			}
@@ -374,17 +376,17 @@ class ConsoleDialog {
 	 * that the child is added to the parent such that all the children of the
 	 * parent are sorted.
 	 */
-	static void addSortedNode(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild)
-	{
+	static void addSortedNode(DefaultMutableTreeNode parent, DefaultMutableTreeNode newChild) {
 		String newChildName = (String) newChild.getUserObject();
-
 		int childIndex = 0;
-		while(childIndex < parent.getChildCount())
-		{
+		
+		while (childIndex < parent.getChildCount()) {
 			DefaultMutableTreeNode child = (DefaultMutableTreeNode) parent.getChildAt(childIndex);
 			String childName = (String) child.getUserObject();
+			
 			if (newChildName.compareTo(childName) < 0)
 				break;
+			
 			childIndex++;
 		}
 
@@ -400,31 +402,30 @@ class ConsoleDialog {
 	 * This class uses <code>logEventMatches</code> to determine if the elements in
 	 * <code>allLogEvents</code> matches the criteria for being in <code>solicitedLogEvents</code>.
 	 */
-	class SolicitedLogEventsUpdater implements Runnable
-	{
+	class SolicitedLogEventsUpdater implements Runnable {
 		boolean cancel = false;
 
-		public void run()
-		{
+		@Override
+		public void run() {
 			logViewer.clear();
 			solicitedLogEvents.clear();
 			final String selectedLog = getSelectedLog();
-            final int logLevelThreshold = getSelectedLogLevelThreshold();
+			final int logLevelThreshold = getSelectedLogLevelThreshold();
 			cancel = false;
-			for (final LogEvent event : allLogEvents)
-			{
-				if (cancel) break;
-				if (event.logEventMatches(selectedLog, currentPattern, logLevelThreshold))
-				{
+			
+			for (final LogEvent event : allLogEvents) {
+				if (cancel)
+					break;
+				if (event.logEventMatches(selectedLog, currentPattern, logLevelThreshold)) {
 					solicitedLogEvents.add(event);
 					event.appendToLogViewer(logViewer);
 				}
 			}
+			
 			logViewer.scrollToBottom();
 		}
 
-		public void cancel()
-		{
+		public void cancel() {
 			cancel = true;
 		}
 	}
@@ -435,8 +436,7 @@ class ConsoleDialog {
 	 * executes it. If a <code>SolicitedLogEventsUpdater</code> is already
 	 * running, this will cancel it.
 	 */
-	void refreshSolicitedLogEvents()
-	{
+	void refreshSolicitedLogEvents() {
 		logEventsUpdater.cancel();
 		solicitedLogEventsUpdaterExecutor.submit(logEventsUpdater);
 	}
@@ -468,14 +468,18 @@ class ConsoleDialog {
 	 * user modifies <code>filterTextField</code>.
 	 */
 	class FilterUpdater implements DocumentListener {
+		
+		@Override
 		public void changedUpdate(DocumentEvent e) {
 			update();
 		}
 
+		@Override
 		public void insertUpdate(DocumentEvent e) {
 			update();
 		}
 
+		@Override
 		public void removeUpdate(DocumentEvent e) {
 			update();
 		}
@@ -499,23 +503,30 @@ class ConsoleDialog {
 					return;
 				}
 			}
+			
 			refreshSolicitedLogEvents();
 		}
 	}
 
 	class LevelThresholdListener implements ActionListener {
+		
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			refreshSolicitedLogEvents();
 		}
 	}
 
 	class LogsTreeSelectionListener implements TreeSelectionListener {
+		
+		@Override
 		public void valueChanged(TreeSelectionEvent e) {
 			refreshSolicitedLogEvents();
 		}
 	}
 
 	class ClearAction implements ActionListener {
+		
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			logEventsUpdater.cancel();
 			allLogEvents.removeAll(solicitedLogEvents);
@@ -525,6 +536,8 @@ class ConsoleDialog {
 	}
 	
 	class ExportAction implements ActionListener {
+		
+		@Override
 		public void actionPerformed(ActionEvent e) {
 			JFileChooser fileChooser = new JFileChooser();
 			if (fileChooser.showSaveDialog(null) != JFileChooser.APPROVE_OPTION)
@@ -537,18 +550,21 @@ class ConsoleDialog {
 	}
 
 	class ExportTaskFactory extends AbstractTaskFactory {
+		
 		private final File file;
 
 		ExportTaskFactory(final File file) {
 			this.file = file;
 		}
 
+		@Override
 		public TaskIterator createTaskIterator() {
 			return new TaskIterator(new ExportTask(file));
 		}
 	}
 
 	class ExportTask extends AbstractTask {
+		
 		private final File file;
 		private boolean cancelled = false;
 
@@ -557,19 +573,21 @@ class ConsoleDialog {
 		}
 
 		@Override
-		public void run(TaskMonitor monitor) throws Exception {
-			monitor.setTitle("Developer's Log Console: Save to file");
-			monitor.setStatusMessage("Saving to " + file.getName());
+		public void run(TaskMonitor tm) throws Exception {
+			tm.setTitle("Developer's Log Console: Save to file");
+			tm.setStatusMessage("Saving to " + file.getName());
 			final PrintWriter output = new PrintWriter(file);
 			final int numEvents = solicitedLogEvents.size();
 			cancelled = false;
+			
 			for (int i = 0; (i < numEvents) && !cancelled; i++) {
-				monitor.setProgress(i / ((double) numEvents));
+				tm.setProgress(i / ((double) numEvents));
 				for (final LogEvent event : solicitedLogEvents) {
 					output.write(event.toString());
 					output.println();
 				}
 			}
+			
 			output.close();
 		}
 

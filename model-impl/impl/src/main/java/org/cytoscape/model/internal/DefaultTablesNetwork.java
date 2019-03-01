@@ -1,12 +1,28 @@
 package org.cytoscape.model.internal;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableFactory;
+import org.cytoscape.model.CyTableFactory.InitialTableSize;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +40,6 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Collection;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableFactory;
-import org.cytoscape.model.CyTableFactory.InitialTableSize;
-
-
 /**
  * A SimpleNetwork but with default table support added. 
  */
@@ -56,8 +54,14 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	private final int tableSizeDeterminer;
 	protected final CyEventHelper eventHelper;
 
-	DefaultTablesNetwork(final long suid, final CyNetworkTableManager tableManager, final CyTableFactory tableFactory,
-			final boolean publicTables, final int tableSizeDeterminer, final CyEventHelper eventHelper) {
+	DefaultTablesNetwork(
+			final long suid,
+			final CyNetworkTableManager tableManager,
+			final CyTableFactory tableFactory,
+			final boolean publicTables,
+			final int tableSizeDeterminer,
+			final CyEventHelper eventHelper
+	) {
 		super(suid);
 		this.networkTableManager = tableManager;
 		this.publicTables = publicTables;
@@ -68,7 +72,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 	
 	protected void initTables(final CyNetwork network, final SharedTableFacade sharedNetworkTable, 
 	                          final SharedTableFacade sharedNodeTable, final SharedTableFacade sharedEdgeTable) {
-		this.networkRef = new WeakReference<CyNetwork>(network);
+		this.networkRef = new WeakReference<>(network);
 		
 		createNetworkTables(super.getSUID(), tableFactory, publicTables /* table size is always small */, sharedNetworkTable);
 		createNodeTables(super.getSUID(), tableFactory, publicTables, tableSizeDeterminer, sharedNodeTable);
@@ -196,7 +200,7 @@ abstract class DefaultTablesNetwork extends SimpleNetwork {
 
 	// This doesn't remove the SHARED_ATTRS rows?
 	protected <T extends CyIdentifiable> void removeRows(Collection<T> items, Class<? extends T> type) {
-		Collection<Long> primaryKeys = new ArrayList<Long>();
+		Collection<Long> primaryKeys = new ArrayList<>();
 		for (T item : items) {
 			primaryKeys.add(item.getSUID());
 		}

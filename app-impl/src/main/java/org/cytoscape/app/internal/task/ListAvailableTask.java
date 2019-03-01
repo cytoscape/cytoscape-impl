@@ -15,7 +15,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -46,9 +46,9 @@ public class ListAvailableTask extends AbstractAppTask implements ObservableTask
 				int index = 0;
 				for (WebApp app: webAppList) {
 					stringBuilder.append("{\"appName\": \""+app.getName()+"\",");
-					stringBuilder.append("\"description\": "+Utils.quote(app.getDescription())+",");
+					stringBuilder.append("\"description\": "+AppUtil.quote(app.getDescription())+",");
 					if (app.getDetails() != null)
-						stringBuilder.append("\"details\": "+Utils.quote(app.getDetails())+"}");
+						stringBuilder.append("\"details\": "+AppUtil.quote(app.getDetails())+"}");
 					else
 						stringBuilder.append("\"details\": \"\"}");
 					index++;

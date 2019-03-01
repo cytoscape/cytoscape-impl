@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Component;
 import java.beans.PropertyEditor;
 import java.util.HashSet;
@@ -39,6 +15,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -70,6 +47,30 @@ import com.l2fprod.common.propertysheet.PropertyRendererRegistry;
 import com.l2fprod.common.propertysheet.PropertySheetPanel;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Create property for the Property Sheet object.
  */
@@ -79,7 +80,7 @@ public class VizMapPropertyBuilder {
 	public static final String MAPPING_TYPE = "Mapping Type";
 	public static final String GRAPHICAL_MAP_VIEW = "Graphical View";
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final DefaultTableCellRenderer defaultTableCellRenderer;
 	private final DefaultTableCellRenderer defaultTableCellRendererForColumn;
@@ -108,9 +109,8 @@ public class VizMapPropertyBuilder {
 			throw new IllegalArgumentException("'propertySheetPanel' must not be null.");
 		
 		// TODO: Refactor--create new view component for mapping editor???
-		final VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory> columnProp = 
-				new VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory>(
-						CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
+		final VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory> columnProp =
+				new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, visualProperty, String.class);
 
 		// Build Property object
 		columnProp.setDisplayName(COLUMN);
@@ -118,8 +118,7 @@ public class VizMapPropertyBuilder {
 				columnProp, defaultTableCellRendererForColumn);
 		
 		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>> mapTypeProp = 
-				new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<?, V>>(
-						CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
+				new VizMapperProperty<>(CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
 		
 		mapTypeProp.setDisplayName(MAPPING_TYPE);
 		((PropertyRendererRegistry) propertySheetPanel.getTable().getRendererFactory()).registerRenderer(
@@ -153,8 +152,7 @@ public class VizMapPropertyBuilder {
 
 		final VisualProperty<V> vp = visualMapping.getVisualProperty();
 		final VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory> columnProp = 
-				new VizMapperProperty<VisualProperty<V>, String, VisualMappingFunctionFactory>(
-						CellType.VISUAL_PROPERTY_TYPE, vp, String.class);
+				new VizMapperProperty<>(CellType.VISUAL_PROPERTY_TYPE, vp, String.class);
 
 		// Build Property object
 		columnProp.setDisplayName(COLUMN);
@@ -163,8 +161,7 @@ public class VizMapPropertyBuilder {
 
 		final String attrName = visualMapping.getMappingColumnName();
 		final VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>> mapTypeProp = 
-				new VizMapperProperty<String, VisualMappingFunctionFactory, VisualMappingFunction<K, V>>(
-						CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
+				new VizMapperProperty<>(CellType.MAPPING_TYPE, MAPPING_TYPE, VisualMappingFunctionFactory.class);
 
 		if (attrName == null)
 			columnProp.setValue(null);
@@ -210,12 +207,12 @@ public class VizMapPropertyBuilder {
 		if (visualMapping instanceof DiscreteMapping) {
 			// Discrete Mapping
 			// This set should not contain null!
-			final SortedSet<Object> attrSet = new TreeSet<Object>();
+			final SortedSet<Object> attrSet = new TreeSet<>();
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			final CyNetwork network = appMgr.getCurrentNetwork();
 			
 			if (network != null) {
-				final Set<CyIdentifiable> graphObjects = new HashSet<CyIdentifiable>();
+				final Set<CyIdentifiable> graphObjects = new HashSet<>();
 
 				if (network != null) {
 					if (vp.getTargetDataType().equals(CyNode.class)) {
@@ -264,7 +261,7 @@ public class VizMapPropertyBuilder {
 		} else if (visualMapping instanceof ContinuousMapping) {
 			// TODO: How do we decide when to reset the range tracer for this mapping?
 			final VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>> graphicalView = 
-					new VizMapperProperty<String, VisualMappingFunction, VisualMappingFunction<K, V>>(
+					new VizMapperProperty<>(
 							CellType.CONTINUOUS,
 							visualMapping.getVisualProperty().getDisplayName() + "_" + GRAPHICAL_MAP_VIEW,
 							visualMapping.getClass());
@@ -420,8 +417,8 @@ public class VizMapPropertyBuilder {
 		final PropertyEditorRegistry cellEditorFactory = (PropertyEditorRegistry) table.getEditorFactory();
 
 		for (final Object key : attrSet) {
-			valProp = new VizMapperProperty<K, V, VisualMappingFunction<K, V>>(CellType.DISCRETE, (K) key, mapping
-					.getVisualProperty().getRange().getType());
+			valProp = new VizMapperProperty<>(
+					CellType.DISCRETE, (K) key, mapping.getVisualProperty().getRange().getType());
 			strVal = key.toString();
 			valProp.setDisplayName(strVal);
 

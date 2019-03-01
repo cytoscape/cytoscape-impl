@@ -1,12 +1,35 @@
 package org.cytoscape.log.internal;
 
+import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
+import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
+import org.ops4j.pax.logging.spi.PaxAppender;
+import org.ops4j.pax.logging.spi.PaxLoggingEvent;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Log Swing Impl (log-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +47,7 @@ package org.cytoscape.log.internal;
  * #L%
  */
 
-import org.osgi.framework.BundleContext;
-
-import org.ops4j.pax.logging.spi.PaxAppender;
-import org.ops4j.pax.logging.spi.PaxLoggingEvent;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Properties;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import org.cytoscape.work.TaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.Task;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.service.util.AbstractCyActivator;
-
-import static org.cytoscape.work.ServiceProperties.*;
-
 public class CyActivator extends AbstractCyActivator {
-	public CyActivator() {
-		super();
-	}
 
 	static Properties ezProps(String... args) {
 		final Properties props = new Properties();
@@ -60,15 +57,16 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	static <T> Map<T,T> ezMap(T... args) {
-		final Map<T,T> map = new HashMap<T,T>();
+		final Map<T,T> map = new HashMap<>();
 		for (int i = 0; i < args.length; i+= 2)
 			map.put(args[i], args[i + 1]);
 		return map;
 	}
 
+	@Override
 	public void start(final BundleContext bc) {
-		final CySwingApplication cySwingApplicationRef = getService(bc,CySwingApplication.class);
-		final TaskManager taskManagerRef = getService(bc,TaskManager.class);
+		final CySwingApplication cySwingApplicationRef = getService(bc, CySwingApplication.class);
+		final TaskManager taskManagerRef = getService(bc, TaskManager.class);
 
 		final Map<String,String> logViewerConfig = ezMap(
 			"baseHTMLPath","/consoledialogbase.html",
@@ -84,10 +82,13 @@ public class CyActivator extends AbstractCyActivator {
 
 		final UserMessagesDialog userMessagesDialog = new UserMessagesDialog(cySwingApplicationRef, logViewerConfig);
 		registerService(bc, new AbstractTaskFactory() {
+			@Override
 			public TaskIterator createTaskIterator() {
 				return new TaskIterator(new Task() {
+					@Override
 					public void cancel() {}
-					public void run(TaskMonitor monitor) {
+					@Override
+					public void run(TaskMonitor tm) {
 						userMessagesDialog.open();
 					}
 				});
@@ -107,23 +108,26 @@ public class CyActivator extends AbstractCyActivator {
 
 		final ExecutorService executor = Executors.newCachedThreadPool(new LowPriorityDaemonThreadFactory());
 
-		final LinkedBlockingQueue<PaxLoggingEvent> userMessagesQueue = new LinkedBlockingQueue<PaxLoggingEvent>();
+		final LinkedBlockingQueue<PaxLoggingEvent> userMessagesQueue = new LinkedBlockingQueue<>();
 		executor.submit(new UserMessagesProcesser(userMessagesQueue, statusBar, userMessagesDialog));
 		registerService(bc, new AppenderToQueue(userMessagesQueue), PaxAppender.class, ezProps(
 			"org.ops4j.pax.logging.appender.name", "OrgCytoscapeLogSwingUserMessagesAppender"));
 
 		final ConsoleDialog consoleDialog = new ConsoleDialog(taskManagerRef, cySwingApplicationRef, logViewerConfig);
 
-		final LinkedBlockingQueue<PaxLoggingEvent> allLogMessagesQueue = new LinkedBlockingQueue<PaxLoggingEvent>();
+		final LinkedBlockingQueue<PaxLoggingEvent> allLogMessagesQueue = new LinkedBlockingQueue<>();
 		executor.submit(new AllLogMessagesProcesser(allLogMessagesQueue, consoleDialog));
 		registerService(bc, new AppenderToQueue(allLogMessagesQueue), PaxAppender.class, ezProps(
 			"org.ops4j.pax.logging.appender.name", "OrgCytoscapeLogSwingAllLogMessagesAppender"));
 
 		registerService(bc, new AbstractTaskFactory() {
+			@Override
 			public TaskIterator createTaskIterator() {
 				return new TaskIterator(new Task() {
+					@Override
 					public void cancel() {}
-					public void run(TaskMonitor monitor) {
+					@Override
+					public void run(TaskMonitor tm) {
 						consoleDialog.open();
 					}
 				});

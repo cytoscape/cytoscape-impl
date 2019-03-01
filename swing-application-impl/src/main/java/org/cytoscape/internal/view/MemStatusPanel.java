@@ -5,14 +5,10 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -22,7 +18,10 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
@@ -51,8 +50,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 @SuppressWarnings("serial")
 class MemStatusPanel extends JPanel {
 	
-	static final int MEM_UPDATE_DELAY_MS = 2000;
-	static final int MEM_STATE_ICON_DIM_PX = 14;
+	static final int UPDATE_DELAY_MS = 2000;
+	static final int ICON_SIZE = 14;
+	static final float ICON_FONT_SIZE = 14.0f;
 	
 	static enum MemState {
 		MEM_OK       (0.00f, 0.75f, LookAndFeelUtil.getSuccessColor(), "OK"),
@@ -61,28 +61,27 @@ class MemStatusPanel extends JPanel {
 
 		final float minRange;
 		final float maxRange;
-		final Icon icon;
+		final Color color;
 		final String name;
+		Icon icon;
 
 		MemState(final float minRange, final float maxRange, final Color color, final String name) {
 			this.minRange = minRange;
 			this.maxRange = maxRange;
+			this.color = color;
 			this.name = name;
-
-			final BufferedImage image = new BufferedImage(MEM_STATE_ICON_DIM_PX, MEM_STATE_ICON_DIM_PX, BufferedImage.TYPE_INT_ARGB);
-			final Graphics2D g2d = (Graphics2D) image.getGraphics();
-			g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			g2d.setColor(color);
-			g2d.fillOval(1, 1, MEM_STATE_ICON_DIM_PX - 2, MEM_STATE_ICON_DIM_PX - 2);
-			
-			this.icon = new ImageIcon(image);
 		}
 
 		public boolean isInRange(final float memUsed) {
 			return (this.minRange < memUsed) && (memUsed <= this.maxRange);
 		}
 
-		public Icon getIcon() {
+		public Icon getIcon(IconManager iconManager) {
+			if (icon == null) {
+				icon = new TextIcon(IconManager.ICON_MICROCHIP, iconManager.getIconFont(ICON_FONT_SIZE), color,
+						ICON_SIZE, ICON_SIZE);
+			}
+
 			return icon;
 		}
 
@@ -138,8 +137,11 @@ class MemStatusPanel extends JPanel {
 
 	final JLabel memAmountLabel;
 	final JToggleButton memStatusBtn;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-	public MemStatusPanel() {
+	public MemStatusPanel(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		memAmountLabel = new JLabel();
 		makeSmall(memAmountLabel);
 		memAmountLabel.setVisible(false);
@@ -164,7 +166,7 @@ class MemStatusPanel extends JPanel {
 		gcBtn.setToolTipText("<html>Try to free memory&mdash;may temporarily freeze Cytoscape</html>");
 		gcBtn.setVisible(false);
 
-		memStatusBtn = new JToggleButton("Memory", MemState.MEM_OK.getIcon());
+		memStatusBtn = new JToggleButton(MemState.MEM_OK.getIcon(serviceRegistrar.getService(IconManager.class)));
 		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
 		
 		if (LookAndFeelUtil.isAquaLAF())
@@ -178,7 +180,7 @@ class MemStatusPanel extends JPanel {
 		memStatusBtn.setHorizontalTextPosition(SwingConstants.LEFT);
 		memStatusBtn.setFocusPainted(false);
 
-		final Timer updateTimer = new Timer(MEM_UPDATE_DELAY_MS, evt -> updateMemStatus());
+		final Timer updateTimer = new Timer(UPDATE_DELAY_MS, evt -> updateMemStatus());
 		updateTimer.setRepeats(true);
 		updateTimer.start();
 
@@ -208,9 +210,9 @@ class MemStatusPanel extends JPanel {
 		final float memUsed = getMemUsed();
 		final MemState memState = MemState.which(memUsed);
 		
-		memStatusBtn.setIcon(memState.getIcon());
+		memStatusBtn.setIcon(memState.getIcon(serviceRegistrar.getService(IconManager.class)));
 		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
-		memStatusBtn.setToolTipText(memState.getName());
+		memStatusBtn.setToolTipText("Memory " + memState.getName());
 		
 		memAmountLabel.setText(String.format("%.1f%% used of %s", memUsed * 100.0f, memTotalFmt));
 	}

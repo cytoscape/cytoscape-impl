@@ -1,39 +1,13 @@
 package org.cytoscape.app.internal.manager;
 
-/*
- * #%L
- * Cytoscape App Impl (app-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -73,6 +47,30 @@ import org.osgi.framework.FrameworkListener;
 import org.osgi.service.startlevel.StartLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This class represents an App Manager, which is capable of maintaining a list of all currently installed and available apps. The class
@@ -201,9 +199,9 @@ public class AppManager implements FrameworkListener {
 		this.bundleContext = bundleContext;
 		
 		appParser = new AppParser();
-		appListeners = new CopyOnWriteArrayList<AppsChangedListener>();
+		appListeners = new CopyOnWriteArrayList<>();
 		
-		apps = new CopyOnWriteArraySet<App>();
+		apps = new CopyOnWriteArraySet<>();
 
 		// cleanKarafDeployDirectory();
 		purgeTemporaryDirectories();
@@ -316,7 +314,7 @@ public class AppManager implements FrameworkListener {
 		Set<App> installedApps = obtainAppsFromDirectory(getBundledAppsPath(), true);
 		installedApps.addAll(obtainAppsFromDirectory(new File(getInstalledAppsPath()), false));
 		
-		Map<String, App> appsToStart = new HashMap<String, App>();
+		Map<String, App> appsToStart = new HashMap<>();
 		for(App app: installedApps) {
 			boolean appRegistered = false;
 			for (App regApp : apps) {
@@ -354,7 +352,7 @@ public class AppManager implements FrameworkListener {
 			}
 		}
 		
-		Set<App> coreAppsToStart = new HashSet<App>();
+		Set<App> coreAppsToStart = new HashSet<>();
 		App coreAppsMetaApp = appsToStart.get("core apps");
 		if(coreAppsMetaApp != null && coreAppsMetaApp.getDependencies() != null) {
 			for(App.Dependency dep: coreAppsMetaApp.getDependencies()) {
@@ -370,7 +368,7 @@ public class AppManager implements FrameworkListener {
 			userLogger.warn("One or more core apps failed to load or start");
 		eventHelper.fireEvent(new CyStartEvent(this));
 		
-		Set<App> otherAppsToStart = new HashSet<App>(appsToStart.values());
+		Set<App> otherAppsToStart = new HashSet<>(appsToStart.values());
 		otherAppsToStart.removeAll(coreAppsToStart);
 		
 		if(!startApps(otherAppsToStart))
@@ -909,7 +907,7 @@ public class AppManager implements FrameworkListener {
 //     * If you wish to display uninstalled apps for purposes of completion, avoid calling this function.
 //     */
 //    public void clearUninstalledApps() {
-//    	Set<App> appsToBeRemoved = new HashSet<App>();
+//    	Set<App> appsToBeRemoved = new HashSet<>();
 //    	
 //    	for (App app : apps) {
 //    		if (app.getStatus() == AppStatus.UNINSTALLED
@@ -942,7 +940,7 @@ public class AppManager implements FrameworkListener {
 	 * @return The set of all installed apps.
 	 */
 	public Set<App> getInstalledApps() {
-		final Set<App> installedApps = new HashSet<App>();
+		final Set<App> installedApps = new HashSet<>();
 		
 		for (App app : apps) {
 			if (app.getStatus() != AppStatus.INACTIVE
@@ -1151,7 +1149,7 @@ public class AppManager implements FrameworkListener {
 		// Obtain all files in the given directory with supported extensions, perform a non-recursive search
 		Collection<File> files = FileUtils.listFiles(directory, APP_EXTENSIONS, false); 
 		
-		Set<App> parsedApps = new HashSet<App>();
+		Set<App> parsedApps = new HashSet<>();
 		
 		App app;
 		for (File file : files) {

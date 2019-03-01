@@ -1,12 +1,27 @@
 package org.cytoscape.tableimport.internal.task;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,23 +39,6 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-
-import org.cytoscape.io.util.StreamUtil;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 public class SelectURLTableTask extends AbstractTask {
 	
 	@Tunable(description="Data Table URL", 
@@ -56,7 +54,7 @@ public class SelectURLTableTask extends AbstractTask {
 	private InputStream stream;
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog"); 
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME); 
 
 	public SelectURLTableTask(final Task readerTask, final CyServiceRegistrar serviceRegistrar) {
 		if (readerTask instanceof LoadTableReaderTask) {
@@ -73,7 +71,7 @@ public class SelectURLTableTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
+	public void run(final TaskMonitor tm) throws Exception {
 		try{
 			stream = serviceRegistrar.getService(StreamUtil.class).getInputStream(url.toURI().toURL());
 		} catch (IOException e) {
@@ -89,4 +87,3 @@ public class SelectURLTableTask extends AbstractTask {
 					serviceRegistrar.getService(IconManager.class));
 	}
 }
-

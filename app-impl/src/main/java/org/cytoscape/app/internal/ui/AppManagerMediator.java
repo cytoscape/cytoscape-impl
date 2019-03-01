@@ -1,4 +1,4 @@
-package org.cytoscape.app.internal.action;
+package org.cytoscape.app.internal.ui;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -6,10 +6,11 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import org.cytoscape.app.internal.manager.AppManager;
-import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.ui.CitationsDialog;
+import org.cytoscape.app.internal.net.UpdateManager;
+import org.cytoscape.app.internal.ui.downloadsites.DownloadSitesManager;
 import org.cytoscape.app.internal.util.AppUtil;
-import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -19,7 +20,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -37,30 +38,43 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class CitationsAction extends AbstractCyAction {
+public class AppManagerMediator implements CyShutdownListener {
+
+	private AppManagerDialog dialog;
 	
-	private CitationsDialog dialog;
-	
-	private final WebQuerier webQuerier;
 	private final AppManager appManager;
+	private final DownloadSitesManager downloadSitesManager;
+	private final UpdateManager updateManager;
 	private final CyServiceRegistrar serviceRegistrar;
-
-	public CitationsAction(WebQuerier webQuerier, AppManager appManager, CyServiceRegistrar serviceRegistrar) {
-		super("Citations");
-		super.setPreferredMenu("Help");
-		super.setMenuGravity(2.0f);
-
-		this.webQuerier = webQuerier;
+	
+	public AppManagerMediator(
+			AppManager appManager,
+			DownloadSitesManager downloadSitesManager,
+			UpdateManager updateManager,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.appManager = appManager;
+		this.downloadSitesManager = downloadSitesManager;
+		this.updateManager = updateManager;
 		this.serviceRegistrar = serviceRegistrar;
 	}
-
+	
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void handleEvent(CyShutdownEvent e) {
+		if (dialog != null) {	
+			dialog.setVisible(false);
+			dialog.dispose();
+			dialog = null;
+		}
+	}
+	
+	public void showAppManager(boolean goToUpdates, ActionEvent evt) {
+		// Create and display the App Manager dialog
 		if (dialog == null) {
-			final Window owner = AppUtil.getWindowAncestor(e, serviceRegistrar.getService(CySwingApplication.class));
-			dialog = new CitationsDialog(owner, webQuerier, appManager, serviceRegistrar);
+			final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
+			
+			final Window owner = AppUtil.getWindowAncestor(evt, swingApplication);
+			dialog = new AppManagerDialog(owner, appManager, downloadSitesManager, updateManager, serviceRegistrar);
 			dialog.addWindowListener(new WindowAdapter() {
 				@Override
 				public void windowClosed(WindowEvent e) {
@@ -69,11 +83,13 @@ public class CitationsAction extends AbstractCyAction {
 			});
 		}
 		
+		if (goToUpdates)
+			dialog.changeTab(2);
+		
 		dialog.setVisible(true);
 	}
 	
-	@Override
-	public boolean isEnabled() {
-		return dialog == null || !dialog.isVisible();
+	public boolean isAppManagerVisible() {
+		return dialog != null && dialog.isVisible();
 	}
 }

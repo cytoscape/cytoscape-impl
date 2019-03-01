@@ -1,12 +1,22 @@
 package org.cytoscape.util.swing.internal;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Swing Utility Impl (swing-util-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +34,9 @@ package org.cytoscape.util.swing.internal;
  * #L%
  */
 
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-
-import org.cytoscape.util.swing.OpenBrowser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class OpenBrowserImpl implements OpenBrowser {
 
-	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static String[] BROWSERS =
         { "xdg-open", "htmlview", "firefox", "mozilla", "konqueror", "chrome", "chromium" };
 

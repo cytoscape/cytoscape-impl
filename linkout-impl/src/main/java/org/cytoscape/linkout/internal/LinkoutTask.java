@@ -4,6 +4,17 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -11,7 +22,7 @@ import java.net.URLEncoder;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -29,20 +40,9 @@ import java.net.URLEncoder;
  * #L%
  */
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class LinkoutTask extends AbstractTask {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final String link;
 	private final CyIdentifiable[] tableEntries;

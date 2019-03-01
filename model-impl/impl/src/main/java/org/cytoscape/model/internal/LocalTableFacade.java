@@ -1,12 +1,23 @@
 package org.cytoscape.model.internal;
 
+import java.util.List;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Model Impl (model-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,18 +35,6 @@ package org.cytoscape.model.internal;
  * #L%
  */
 
-
-import java.util.List;
-
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyTable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * A facade class that provides a unified interface for a default table
  * that has properties of both shared and local tables. All accessor methods
@@ -47,17 +46,15 @@ import org.slf4j.LoggerFactory;
  */
 public final class LocalTableFacade extends AbstractTableFacade implements CyTable {
 	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 	private final SharedTableFacade shared;
 	private final CyTable local;
-	private final CyEventHelper cyEventHelper;
 
-	public LocalTableFacade(CyTable local, SharedTableFacade shared, CyEventHelper cyEventHelper) {
-		super(local, cyEventHelper);
+	public LocalTableFacade(CyTable local, SharedTableFacade shared, CyEventHelper eventHelper) {
+		super(local, eventHelper);
 		this.local = local;
 		this.shared = shared;
-		this.cyEventHelper = cyEventHelper;
 
 		// this adds virtual columns for any existing columns already in the shared table
 		for (CyColumn col: shared.getActualTable().getColumns()){
@@ -83,7 +80,7 @@ public final class LocalTableFacade extends AbstractTableFacade implements CyTab
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable) {
-		createColumn(columnName,type,isImmutable,null);
+		createColumn(columnName, type, isImmutable, null);
 	}
 
 	public <T> void createColumn(String columnName, Class<?extends T> type, boolean isImmutable, T defaultValue) {

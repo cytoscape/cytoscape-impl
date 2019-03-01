@@ -2,9 +2,8 @@ package org.cytoscape.view.manual.internal;
 
 import static org.cytoscape.view.manual.internal.util.Util.invokeOnEDTAndWait;
 
-import java.util.Properties;
-
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -21,7 +20,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -44,21 +43,21 @@ public class CyActivator extends AbstractCyActivator {
 	private ControlPanel controlPanel;
 	private ControlPanelAction controlPanelAction;
 	
-	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	@Override
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		final CySwingApplication cySwingApplicationServiceRef = getService(bc, CySwingApplication.class);
-		final CyApplicationManager cyApplicationManagerServiceRef = getService(bc, CyApplicationManager.class);
-		final CyNetworkViewManager cyNetworkViewManagerServiceRef = getService(bc, CyNetworkViewManager.class);
+		final CySwingApplication swingApplication = getService(bc, CySwingApplication.class);
+		final CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
+		final CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 
 		invokeOnEDTAndWait(() -> {
 			controlPanel = new ControlPanel(serviceRegistrar);
-			controlPanelAction = new ControlPanelAction(controlPanel, cySwingApplicationServiceRef, cyApplicationManagerServiceRef, cyNetworkViewManagerServiceRef);
+			controlPanelAction = new ControlPanelAction(controlPanel, swingApplication, applicationManager, netViewManager);
 		}, logger);
 		
-		registerAllServices(bc, controlPanelAction, new Properties());
-		registerAllServices(bc, controlPanel, new Properties());
+		registerAllServices(bc, controlPanelAction);
+		registerAllServices(bc, controlPanel);
 	}
 }

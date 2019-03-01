@@ -1,7 +1,7 @@
 package org.cytoscape.app.internal.manager;
 
 import org.cytoscape.app.internal.util.MiniTest;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 
 /*
  * Version class parses and compares versions. We assume a semantic version
@@ -27,7 +27,7 @@ class Version {
 		if (version != null) {
 			version = version.trim();
 			if (version.length() > 0) {
-				String[] parts = Utils.dumbSplit(version, '.');
+				String[] parts = AppUtil.dumbSplit(version, '.');
 				if (parts.length > 3) {
 					throw new Exception("Invalid version " + version);
 				}
@@ -36,7 +36,7 @@ class Version {
 					if (parts.length > 1) {
 						minor = Integer.valueOf(parts[1]);
 						if (parts.length > 2) {
-							String[] stepParts = Utils.dumbSplit(parts[2],
+							String[] stepParts = AppUtil.dumbSplit(parts[2],
 									'-');
 							if (stepParts.length > 0) {
 								step = Integer.valueOf(stepParts[0]);

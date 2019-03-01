@@ -1,29 +1,5 @@
 package org.cytoscape.webservice.internal.ui;
 
-/*
- * #%L
- * Cytoscape Webservice Impl (webservice-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
@@ -52,6 +28,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.io.webservice.WebServiceClient;
 import org.cytoscape.io.webservice.swing.WebServiceGUIClient;
@@ -61,10 +38,34 @@ import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Webservice Impl (webservice-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class WebServiceImportDialog<T> extends JDialog {
 
 	private static final long serialVersionUID = 4454012178961756787L;
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final String NO_CLIENT = "No Service Client";
 
@@ -90,7 +91,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 	private Set<WebServiceClient> clients;
 
 	// Client-Dependent GUI panels
-	private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<WebServiceClient, Container>();
+	private Map<WebServiceClient, Container> serviceUIPanels = new HashMap<>();
 	private int numClients;
 
 	private final Class<T> type;
@@ -105,7 +106,7 @@ public class WebServiceImportDialog<T> extends JDialog {
 		this.serviceRegistrar = serviceRegistrar;
 
 		numClients = 0;
-		this.clients = new HashSet<WebServiceClient>();
+		this.clients = new HashSet<>();
 
 		initGUI();
 

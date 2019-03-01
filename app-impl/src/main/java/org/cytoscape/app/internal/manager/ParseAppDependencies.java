@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.cytoscape.app.internal.util.MiniTest;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 
 public class ParseAppDependencies {
 	private static final char PACKAGE_DELIMITER = ',';
@@ -21,7 +21,7 @@ public class ParseAppDependencies {
 	 * the value may be surrounded by quotes.
 	 */
 	private static ArrayList<String> splitByPkg(String packageList) {
-		return Utils.splitByChar(packageList.trim(), PACKAGE_DELIMITER);
+		return AppUtil.splitByChar(packageList.trim(), PACKAGE_DELIMITER);
 	}
 
 	/*
@@ -36,7 +36,7 @@ public class ParseAppDependencies {
 			throws Exception {
 		HashMap<String, String> attrMap = new HashMap<String, String>();
 
-		String[] attrList = Utils.dumbSplit(app, ATTR_DELIMITER);
+		String[] attrList = AppUtil.dumbSplit(app, ATTR_DELIMITER);
 		for (int index = 0; index < attrList.length; index++) {
 			String attr = attrList[index];
 			if (index == 0) {

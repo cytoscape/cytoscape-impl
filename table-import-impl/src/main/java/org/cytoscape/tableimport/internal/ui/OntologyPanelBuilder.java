@@ -1,5 +1,40 @@
 package org.cytoscape.tableimport.internal.ui;
 
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.LOCAL_SOURCE_ICON;
+import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.REMOTE_SOURCE_ICON;
+
+import java.awt.Component;
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.zip.GZIPInputStream;
+
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.xml.bind.JAXBException;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.io.read.InputStreamTaskFactory;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.property.bookmark.Attribute;
+import org.cytoscape.property.bookmark.Bookmarks;
+import org.cytoscape.property.bookmark.BookmarksUtil;
+import org.cytoscape.property.bookmark.DataSource;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
+import org.cytoscape.work.swing.DialogTaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
@@ -24,43 +59,9 @@ package org.cytoscape.tableimport.internal.ui;
  * #L%
  */
 
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.LOCAL_SOURCE_ICON;
-import static org.cytoscape.tableimport.internal.ui.theme.ImportDialogIcons.REMOTE_SOURCE_ICON;
-
-import java.awt.Component;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.zip.GZIPInputStream;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
-import javax.xml.bind.JAXBException;
-
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.io.read.InputStreamTaskFactory;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.bookmark.Attribute;
-import org.cytoscape.property.bookmark.Bookmarks;
-import org.cytoscape.property.bookmark.BookmarksUtil;
-import org.cytoscape.property.bookmark.DataSource;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.task.ImportOntologyAndAnnotationTaskFactory;
-import org.cytoscape.work.swing.DialogTaskManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class OntologyPanelBuilder {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final String GENE_ASSOCIATION = "gene_association";
 	private static final String DEF_ANNOTATION_ITEM = "Please select an annotation data source...";

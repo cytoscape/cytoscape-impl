@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -28,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,7 +52,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CyNetworkManagerImpl implements CyNetworkManager {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final Map<Long, CyNetwork> networkMap;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -63,14 +64,14 @@ public class CyNetworkManagerImpl implements CyNetworkManager {
      * @param cyEventHelper
      */
 	public CyNetworkManagerImpl(final CyServiceRegistrar serviceRegistrar) {
-		this.networkMap = new HashMap<Long, CyNetwork>();
+		this.networkMap = new HashMap<>();
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public Set<CyNetwork> getNetworkSet() {
 		synchronized (lock) {
-			return new HashSet<CyNetwork>(networkMap.values());
+			return new HashSet<>(networkMap.values());
 		}
 	}
 
