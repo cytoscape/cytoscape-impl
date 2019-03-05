@@ -70,7 +70,6 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -1647,7 +1646,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// synchronized (m_lock) {
 		try {
 			GraphRenderer.renderGraph(getViewModelSnapshot(), lod, m_nodeDetails,
-			                          m_edgeDetails, new LongHash(), new GraphGraphics(img, false, false),
+			                          m_edgeDetails, new GraphGraphics(img, false, false),
 			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder, dependencies);
 		} catch (Exception e) { 
 			// We probably had a node or edge view removed out from underneath us.  Just quietly return, but
@@ -1679,7 +1678,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		try {
 			synchronized (m_lock) {
-				renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, new LongHash(), nodes, edges);
+				renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, nodes, edges);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1687,13 +1686,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
-	                   Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash,
+	                   Paint bgColor, double xCenter, double yCenter, double scale,
 	                   List<View<CyNode>> nodeList, List<View<CyEdge>> edgeList) {
 
 		// If we're updateing more then 1/4 of the nodes or edges, just redraw the entire network to avoid
 		// the overhead of creating the SpacialIndex2D and CySubNetwork
 //		if (!largeModel) // || ((nodeList.size() + edgeList.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4))
-			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale, hash);
+			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale);
 //
 ////		// Make a copy of the nodes and edges arrays to avoid a conflict with selection events
 ////		// The assumption here is that these arrays are relatively small
@@ -1760,22 +1759,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	/**
 	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
 	 */
-	int renderGraph(GraphGraphics graphics, final GraphLOD lod, Paint bgColor, double xCenter, double yCenter, double scale, LongHash hash) {
+	int renderGraph(GraphGraphics graphics, final GraphLOD lod, Paint bgColor, double xCenter, double yCenter, double scale) {
 		int lastRenderDetail = 0;
 		
 		try {
 //			synchronized (m_lock) {
 				// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-				final Set<VisualPropertyDependency<?>> dependencies =
-						vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
+			Set<VisualPropertyDependency<?>> dependencies = vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
 				
-				lastRenderDetail = GraphRenderer.renderGraph(getViewModelSnapshot(),
-				  						     lod,
-				  						     m_nodeDetails,
-				  						     m_edgeDetails, hash,
-				  						     graphics, bgColor, xCenter,
-				  						     yCenter, scale, haveZOrder,
-				  						     dependencies);
+			lastRenderDetail = GraphRenderer.renderGraph(getViewModelSnapshot(),
+			  						     lod,
+			  						     m_nodeDetails,
+			  						     m_edgeDetails,
+			  						     graphics, bgColor, xCenter,
+			  						     yCenter, scale, haveZOrder,
+			  						     dependencies);
 //			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1987,7 +1985,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return nv;
 	}
 
-
 	public View<CyEdge> getPickedEdgeView(Point2D pt) {
 		View<CyEdge> ev = null;
 		List<Long> edges = queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY());
@@ -1999,6 +1996,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		return ev;
 	}
+	
 
 	private double checkZoom(double zoom, double orig) {
 		if (zoom > 0)
@@ -2618,7 +2616,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	public void selectBySuid(Collection<Long> suids, Class<? extends CyIdentifiable> type, boolean selected) {
-		if (suids.isEmpty())
+		if (suids == null || suids.isEmpty())
 			return;
 		
 		List<RowSetRecord> records = new ArrayList<>();
@@ -2648,8 +2646,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	public void select(Collection<View<? extends CyIdentifiable>> nodesOrEdgeViews, Class<? extends CyIdentifiable> type, boolean selected) {
-		if (nodesOrEdgeViews.isEmpty())
+	public <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
+		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
 			return;
 		
 		List<RowSetRecord> records = new ArrayList<>();

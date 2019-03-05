@@ -151,7 +151,6 @@ public final class GraphRenderer {
 	                                    final GraphLOD lod,
 	                                    final NodeDetails nodeDetails,
 	                                    final EdgeDetails edgeDetails,
-	                                    final LongHash nodeBuff,
 	                                    final GraphGraphics grafx,
 	                                    final Paint bgPaint,
 	                                    final double xCenter,
@@ -159,7 +158,8 @@ public final class GraphRenderer {
 	                                    final double scaleFactor,
 	                                    final boolean haveZOrder,
 	                                    final Set<VisualPropertyDependency<?>> dependencies) {
-		nodeBuff.empty(); // Make sure we keep our promise.
+		
+		LongHash nodeBuff = new LongHash(); // Make sure we keep our promise.
 
 		if (grafx == null || grafx.image == null)
 			return 0;
@@ -287,35 +287,25 @@ public final class GraphRenderer {
 
 		// Based on number of objects we are going to render, determine LOD.
 		final int lodBits;
-
 		{
 			int lodTemp = 0;
-
 			if (lod.detail(renderNodeCount, renderEdgeCount)) {
 				lodTemp |= LOD_HIGH_DETAIL;
-
 				if (lod.nodeBorders(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_NODE_BORDERS;
-
 				if (lod.nodeLabels(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_NODE_LABELS;
-
 				if (lod.edgeArrows(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_EDGE_ARROWS;
-
 				if (lod.dashedEdges(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_DASHED_EDGES;
-
 				if (lod.edgeAnchors(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_EDGE_ANCHORS;
-
 				if (lod.edgeLabels(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_EDGE_LABELS;
-
 				if ((((lodTemp & LOD_NODE_LABELS) != 0) || ((lodTemp & LOD_EDGE_LABELS) != 0))
 				    && lod.textAsShape(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_TEXT_AS_SHAPE;
-
 				if (lod.customGraphics(renderNodeCount, renderEdgeCount))
 					lodTemp |= LOD_CUSTOM_GRAPHICS;
 			}
