@@ -20,8 +20,6 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -29,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,13 +47,10 @@ import org.slf4j.LoggerFactory;
 
 public class BitmapWriter extends AbstractTask implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
 	private static final double MAX_ZOOM = 500;
 	
 	private static final int DEFAULT_RESOLUTION = 72;
-	private static final List<Integer> RESOLUTION_VALUES = Arrays.asList(
-			new Integer[] { DEFAULT_RESOLUTION, 100, 150, 300, 600 });
+	private static final List<Integer> RESOLUTION_VALUES = Arrays.asList(DEFAULT_RESOLUTION, 100, 150, 300, 600);
 
 	private static final String PIXELS = "pixels";
 	private static final String INCHES = "inches";

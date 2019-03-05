@@ -15,7 +15,6 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -73,7 +72,7 @@ import org.cytoscape.work.TaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -185,7 +184,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		setFocusable(true);
 
 		// Timer to reset edge drawing
-		ActionListener taskPerformer = (ActionEvent evt) -> {
+		ActionListener taskPerformer = evt -> {
 			hideEdgesTimer.stop();
 			m_lod[0].setDrawEdges(true);
 			m_view.setViewportChanged();
@@ -291,7 +290,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		update(g);
 	}
 
-
 	@Override
 	public void print(Graphics g) {
 		isPrinting = true;
@@ -306,7 +304,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		isPrinting = false;
 	}
-
 
 	@Override
 	public void printNoImposter(Graphics g) {
@@ -657,7 +654,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return selectedNodes;
 	}
 	
-	
 	private long [] setSelectedEdges() {
 		long [] selectedEdges = null;
 		if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
@@ -893,25 +889,21 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
      * When the center is changed, this method ought to be called rather than modifying m_xCenter and m_yCenter
      * directly so that edges maintain appropriate starting points at the center of whatever node they are associated with.
      */
-    void setCenter(double x, double y)
-    {
+	void setCenter(double x, double y) {
         double changeX = x - m_xCenter;
         double changeY = y - m_yCenter;
         m_xCenter = x;
         m_yCenter = y;
 
-        if(addEdgeMode != null && addEdgeMode.addingEdge() )
-        {
+		if (addEdgeMode != null && addEdgeMode.addingEdge()) {
             Point2D sourcePoint = AddEdgeStateMonitor.getSourcePoint(m_view);
             double newX = sourcePoint.getX() - changeX;
             double newY = sourcePoint.getY() - changeY;
             sourcePoint.setLocation(newX, newY);
             AddEdgeStateMonitor.setSourcePoint(m_view, sourcePoint);
         }
-
     }
 
-	
 	private void adjustZoom(int notches) {
 		final double factor;
 		
@@ -965,8 +957,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return selecting;
 	}
 
-	// 
-
 	/**
 	 * Called to get the tranform matrix used by the inner canvas
 	 * to move the nodes.
@@ -989,7 +979,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return !(this.NodeMovement);
 	}
 
-	
 	public void enablePopupMenu(){
 		this.enablePopupMenu = true;
 	}

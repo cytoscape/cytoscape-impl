@@ -2289,11 +2289,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		final boolean viewportChanged = isViewportChanged();
 		
 		// Check properties related to printing:
-		boolean exportAsShape = false;
-		final String exportAsShapeString = props.getProperty("exportTextAsShape");
-		
-		if (exportAsShapeString != null)
-			exportAsShape = Boolean.parseBoolean(exportAsShapeString);
+		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
 		
 		setPrintingTextAsShape(exportAsShape);
 		print(printCanvas);
