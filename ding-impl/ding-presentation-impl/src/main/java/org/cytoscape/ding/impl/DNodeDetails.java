@@ -86,7 +86,8 @@ public class DNodeDetails implements NodeDetails {
 	}
 	
 	
-	private static boolean isSelected(View<CyNode> nodeView) {
+	@Override
+	public boolean isSelected(View<CyNode> nodeView) {
 		return Boolean.TRUE.equals(nodeView.getVisualProperty(BasicVisualLexicon.NODE_SELECTED));
 	}
 	

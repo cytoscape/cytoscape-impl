@@ -385,4 +385,6 @@ public interface NodeDetails {
 	default TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> node) {
 		return null;
 	}
+
+	boolean isSelected(View<CyNode> nodeView);
 }

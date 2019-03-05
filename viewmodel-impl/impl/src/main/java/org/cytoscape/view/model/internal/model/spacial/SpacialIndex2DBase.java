@@ -1,10 +1,9 @@
-package org.cytoscape.view.model.internal.model.snapshot;
+package org.cytoscape.view.model.internal.model.spacial;
 
 import java.util.Iterator;
 
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import com.github.davidmoten.guavamini.Optional;
 import com.github.davidmoten.rtree.Entry;
@@ -17,47 +16,36 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import rx.Observable;
 
-public class SpacialIndex2DImpl implements SpacialIndex2D {
-
+abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
+	
 	// MKTODO what to return if the rtree is empty????
 	private static final Rectangle EMPTY_MBR = RectangleFloat.create(0, 0, 0, 0);
 	
-	private final CyNetworkViewSnapshotImpl snapshot;
-	private final RTree<Long,Rectangle> rtree;
-	private final Map<Long,Rectangle> geometries;
-	
-	
-	
-	public SpacialIndex2DImpl(CyNetworkViewSnapshotImpl snapshot, RTree<Long,Rectangle> rtree, Map<Long,Rectangle> geometries) {
-		this.snapshot = snapshot;
-		this.rtree = rtree;
-		this.geometries = geometries;
-	}
-	
+	protected abstract RTree<T,Rectangle> getRTree();
+	protected abstract Map<T,Rectangle> getGeometries();
 	
 	@Override
 	public void getMBR(float[] extents) {
-		Optional<Rectangle> mbrOpt = rtree.mbr();
+		Optional<Rectangle> mbrOpt = getRTree().mbr();
 		Rectangle mbr =  mbrOpt.isPresent() ? mbrOpt.get() : EMPTY_MBR;
 		copyExtents(mbr, extents);
 	}
 	
 	@Override
 	public void getMBR(double[] extents) {
-		Optional<Rectangle> mbrOpt = rtree.mbr();
+		Optional<Rectangle> mbrOpt = getRTree().mbr();
 		Rectangle mbr =  mbrOpt.isPresent() ? mbrOpt.get() : EMPTY_MBR;
 		copyExtents(mbr, extents);
 	}
 
-
 	@Override
-	public boolean exists(long suid) {
-		return geometries.containsKey(suid);
+	public boolean exists(T suid) {
+		return getGeometries().containsKey(suid);
 	}
 	
 	@Override
-	public boolean get(long suid, float[] extents) {
-		Option<Rectangle> r = geometries.get(suid);
+	public boolean get(T suid, float[] extents) {
+		Option<Rectangle> r = getGeometries().get(suid);
 		if(r.isDefined()) {
 			copyExtents(r.get(), extents);
 			return true;
@@ -66,8 +54,8 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 	}
 	
 	@Override
-	public boolean get(long suid, double[] extents) {
-		Option<Rectangle> r = geometries.get(suid);
+	public boolean get(T suid, double[] extents) {
+		Option<Rectangle> r = getGeometries().get(suid);
 		if(r.isDefined()) {
 			copyExtents(r.get(), extents);
 			return true;
@@ -76,21 +64,21 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 	}
 	
 	@Override
-	public SpacialIndex2DEnumerator queryAll() {
+	public int size() {
+		return getGeometries().size();
+	}
+	
+	@Override
+	public SpacialIndex2DEnumerator<T> queryAll() {
 		return new AllEntriesEnumeratorImpl();
 	}
 	
 	@Override
-	public SpacialIndex2DEnumerator queryOverlap(float xMin, float yMin, float xMax, float yMax) {
-		Observable<Entry<Long,Rectangle>> overlap = rtree.search(RectangleFloat.create(xMin, yMin, xMax, yMax));
+	public SpacialIndex2DEnumerator<T> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
+		Observable<Entry<T,Rectangle>> overlap = getRTree().search(RectangleFloat.create(xMin, yMin, xMax, yMax));
 		return new SearchResultEnumeratorImpl(overlap);
 	}
 	
-	@Override
-	public double getZOrder(long suid) {
-		Number z = (Number) snapshot.getVisualProperties(suid).getOrElse(BasicVisualLexicon.NODE_Z_LOCATION, 0.0);
-		return z == null ? 0.0 : z.doubleValue(); // being extra cautious
-	}
 	
 	private static void copyExtents(Rectangle r, float[] extents) {
 		if(extents != null) {
@@ -110,17 +98,20 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 		}
 	}
 	
-	private class AllEntriesEnumeratorImpl implements SpacialIndex2DEnumerator {
+	private class AllEntriesEnumeratorImpl implements SpacialIndex2DEnumerator<T> {
 
-		private io.vavr.collection.Iterator<Tuple2<Long,Rectangle>> iterator;
-
+		private final io.vavr.collection.Iterator<Tuple2<T,Rectangle>> iterator;
+		private final int size;
+		
 		public AllEntriesEnumeratorImpl() {
+			Map<T, Rectangle> geometries = getGeometries();
 			iterator = geometries.iterator();
+			size = geometries.size();
 		}
 		
 		@Override
 		public int size() {
-			return geometries.size();
+			return size;
 		}
 
 		@Override
@@ -129,21 +120,20 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 		}
 
 		@Override
-		public long nextExtents(float[] extents) {
-			Tuple2<Long,Rectangle> next = iterator.next();
+		public T nextExtents(float[] extents) {
+			Tuple2<T,Rectangle> next = iterator.next();
 			copyExtents(next._2(), extents);
 			return next._1();
 		}
-		
 	}
 	
 	
-	private static class SearchResultEnumeratorImpl implements SpacialIndex2DEnumerator {
+	private static class SearchResultEnumeratorImpl<T> implements SpacialIndex2DEnumerator<T> {
 		
 		private final int size;
-		private final Iterator<Entry<Long,Rectangle>> overlap;
+		private final Iterator<Entry<T,Rectangle>> overlap;
 		
-		public SearchResultEnumeratorImpl(Observable<Entry<Long, Rectangle>> overlap) {
+		public SearchResultEnumeratorImpl(Observable<Entry<T, Rectangle>> overlap) {
 			this.size = overlap.count().toBlocking().first();
 			this.overlap = overlap.toBlocking().getIterator();
 		}
@@ -159,11 +149,11 @@ public class SpacialIndex2DImpl implements SpacialIndex2D {
 		}
 		
 		@Override
-		public long nextExtents(float[] extents) {
-			Entry<Long,Rectangle> entry = overlap.next();
+		public T nextExtents(float[] extents) {
+			Entry<T,Rectangle> entry = overlap.next();
 			copyExtents(entry.geometry(), extents);
 			return entry.value();
 		}
-
 	}
+	
 }

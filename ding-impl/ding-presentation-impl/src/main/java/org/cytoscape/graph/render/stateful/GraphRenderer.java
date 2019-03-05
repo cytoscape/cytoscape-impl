@@ -220,7 +220,7 @@ public final class GraphRenderer {
 		long start = System.currentTimeMillis();
 
 		{
-			SpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 			
 			final int visibleNodeCount = nodeHits.size();
 			final int totalNodeCount = netView.getNodeCount();
@@ -332,7 +332,7 @@ public final class GraphRenderer {
 		// labels.  A label is not necessarily on top of every edge; it is only
 		// on top of the edge it belongs to.
 		if (renderEdges >= 0) {
-			final SpacialIndex2DEnumerator nodeHits;
+			final SpacialIndex2DEnumerator<Long> nodeHits;
 
 			// System.out.println("Rendering edges: high detail = "+(lodBits & LOD_HIGH_DETAIL));
 			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
@@ -647,7 +647,7 @@ public final class GraphRenderer {
 		// Render nodes and labels.  A label is not necessarily on top of every
 		// node; it is only on top of the node it belongs to.
 		{
-			SpacialIndex2DEnumerator nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
 			// System.out.println("Rendering nodes: high detail = "+(lodBits & LOD_HIGH_DETAIL));
 			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
@@ -663,7 +663,7 @@ public final class GraphRenderer {
 						                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
 				}
 			} else { // High detail.
-				SpacialIndex2DEnumerator zHits = nodeHits;
+				SpacialIndex2DEnumerator<Long> zHits = nodeHits;
 				if (haveZOrder) {
 					zHits = new SpacialEntry2DEnumeratorZSort(netView.getSpacialIndex2D(), nodeHits);
 				}
@@ -1157,11 +1157,11 @@ public final class GraphRenderer {
 		return xform.createTransformedShape(nodeShape);
 	}
 
-	private static class SpacialEntry2DEnumeratorZSort implements SpacialIndex2DEnumerator {
+	private static class SpacialEntry2DEnumeratorZSort implements SpacialIndex2DEnumerator<Long> {
 		private final Iterator<ZSpacialEntry> entries;
 		private final int size;
 
-		public SpacialEntry2DEnumeratorZSort (SpacialIndex2D nodePositions, SpacialIndex2DEnumerator nodeHits) {
+		public SpacialEntry2DEnumeratorZSort(SpacialIndex2D<Long> nodePositions, SpacialIndex2DEnumerator<Long> nodeHits) {
 			// Get arrays of SUIDs, extents, Z
 			List<ZSpacialEntry> entryList = new ArrayList<>();
 			while (nodeHits.hasNext()) {
@@ -1196,7 +1196,7 @@ public final class GraphRenderer {
 		}
 
 		@Override
-		public long nextExtents(float[] extents) {
+		public Long nextExtents(float[] extents) {
 			return copyExtents(extents, entries.next());
 		}
 	}

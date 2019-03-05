@@ -367,8 +367,8 @@ public class NetworkViewImplTest {
 		List<CyNode> nodes = network.getNodeList();
 		View<CyNode> n0 = netView.getNodeView(nodes.get(0));
 		View<CyNode> n1 = netView.getNodeView(nodes.get(1));
-		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
-		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
+//		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
+//		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
 		
 		assertTrue(netView.createSnapshot().getSelectedNodes().isEmpty());
 		

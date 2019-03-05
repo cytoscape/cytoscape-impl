@@ -34,11 +34,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
@@ -58,18 +57,20 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
-import org.cytoscape.util.intr.LongBTree;
-import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.intr.LongHash;
-import org.cytoscape.util.intr.LongStack;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -79,6 +80,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
+import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -126,13 +128,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	
-	// Size of square for moving handle
-	static final float DEFAULT_ANCHOR_SIZE = 12.0f;
 	
 	// Size of snapshot image
 	protected static int DEF_SNAPSHOT_SIZE = 400;
 	
-	private static Pattern CG_SIZE_PATTERN = Pattern.compile("NODE_CUSTOMGRAPHICS_SIZE_[1-9]");
 
 	/**
 	 * Enum to identify ding canvases - used in getCanvas(Canvas canvasId)
@@ -141,15 +140,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		BACKGROUND_CANVAS, NETWORK_CANVAS, FOREGROUND_CANVAS;
 	}
 
-	public enum ShapeType {
-		NODE_SHAPE, LINE_TYPE, ARROW_SHAPE;
-	}
+//	public enum ShapeType {
+//		NODE_SHAPE, LINE_TYPE, ARROW_SHAPE;
+//	}
 	
 	private String title;
 
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyNetworkView viewModel;
 	private final DVisualLexicon lexicon;
+	
+	private CyNetworkViewSnapshot viewModelSnapshot;
 	
 	/**
 	 * Common object used for synchronization.
@@ -257,10 +258,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //	 */
 //	final LongBTree m_selectedEdges; // Positive.
 
-	/**
-	 * BTree of selected anchors.
-	 */
-	final LongBTree m_selectedAnchors;
+//	/**
+//	 * BTree of selected anchors.
+//	 */
+//	final LongBTree m_selectedAnchors;
 
 	/**
 	 * Flag that indicates that the content has changed and the graph needs to be redrawn.
@@ -329,7 +330,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private boolean annotationsLoaded;
 	private boolean servicesRegistered;
 	
-	private final HandleFactory handleFactory;
+	
 	private final VisualMappingManager vmm;
 
 //	private List<CyNode> nodeSelectionList;
@@ -337,12 +338,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	boolean largeModel = false;
 	boolean haveZOrder = false;
 	
-	private boolean ignoreRowsSetEvents;
+//	private boolean ignoreRowsSetEvents;
 
-	// Animated edges
-	Timer animationTimer;
-	Set<View<CyEdge>> animatedEdges;
+//	// Animated edges
+//	Timer animationTimer;
+//	Set<View<CyEdge>> animatedEdges;
 
+
+	private final Timer redrawTimer;
+	
+	private final BendStore bendStore;
 	
 	public DRenderingEngine(
 			final CyNetworkView view,
@@ -355,7 +360,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	) {
 		this.serviceRegistrar = registrar;
 		this.props = new Properties();
-		this.handleFactory = handleFactory;
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
 		
@@ -369,6 +373,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		this.cyEdgeViewContextMenuFactory = vtfl.cyEdgeViewContextMenuFactory;
 		this.cyNodeViewContextMenuFactory = vtfl.cyNodeViewContexMenuFactory;
 		this.cyNetworkViewContextMenuFactory = vtfl.cyNetworkViewContextMenuFactory;
+		
+		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
+		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
 		
 //		// New simple implementation of the graph to keep track of visible nodes/edges.
 //		m_drawPersp = new MinimalNetwork(SUIDFactory.getNextSUID());
@@ -396,10 +403,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		addViewportChangeListener(m_foregroundCanvas);
 //		m_selectedNodes = new LongBTree();
 //		m_selectedEdges = new LongBTree();
-		m_selectedAnchors = new LongBTree();
+//		m_selectedAnchors = new LongBTree();
 
-		logger.debug("Phase 2: Canvas created: time = "
-				+ (System.currentTimeMillis() - start));
+		logger.debug("Phase 2: Canvas created: time = " + (System.currentTimeMillis() - start));
 
 		this.title = view.getModel().getRow(view.getModel()).get(CyNetwork.NAME, String.class);
 
@@ -437,12 +443,47 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		dummySpacialFactory = new DummySpacialFactory(this);
 
 		// Animation
-		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<>());
-
-		animationTimer = new Timer(200, this);
-		animationTimer.setRepeats(true);
+//		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<>());
+//
+//		animationTimer = new Timer(200, this);
+//		animationTimer.setRepeats(true);
+		
+		
+		// Check if the view model has changed approximately 30 times per second
+		redrawTimer = new Timer(30, e -> redraw());
+		redrawTimer.setRepeats(true);
+		redrawTimer.start();
 	}
-
+	
+	
+	/**
+	 * TEMPORARY
+	 * 
+	 * This is being called by a Swing Timer, so the redraw() method is being run on the EDT.
+	 * Painting is also done on the EDT. This is how we make sure that viewModelSnapshot does not
+	 * change while a frame is being rendered.
+	 * 
+	 * Also the EDT will coalece paint events, so if the timer runs faster than the frame rate the
+	 * EDT will take care of that.
+	 * 
+	 * MKTODO Move drawing off the EDT.
+	 * If we move drawing off the EDT then we need another solution for ensuring that viewModelSnapshot
+	 * does not get re-assigned while a frame is being drawn.
+	 */
+	private void redraw() {
+		// Must run on EDT
+		if(viewModel.isDirty()) {
+			viewModelSnapshot = viewModel.createSnapshot();
+			bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
+			updateView();
+		}
+	}
+	
+	public BendStore getBendStore() {
+		return bendStore;
+	}
+	
+	
 //	@Override
 //	public CyNetwork getNetwork() {
 //		return model;
@@ -835,6 +876,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		return returnThis;
 //	}
 
+	
+	public boolean isNodeSelected(long suid) {
+		return m_nodeDetails.isSelected(getViewModelSnapshot().getNodeView(suid));
+	}
+	
+	public boolean isEdgeSelected(long suid) {
+		return m_edgeDetails.isSelected(getViewModelSnapshot().getEdgeView(suid));
+	}
+	
 	public NodeDetails getNodeDetails() {
 		return m_nodeDetails;
 	}
@@ -987,7 +1037,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}
 		});
 		
-		// MKTODO what is this event for
+		// MKTODO what is this event for ??
 		eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel()));
 	}
 
@@ -1482,9 +1532,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 *            will be placed onto this stack; the stack is not emptied by
 	 *            this method initially.
 	 */
-	public void getNodesIntersectingRectangle(double xMinimum, double yMinimum, double xMaximum,
-	                                          double yMaximum, boolean treatNodeShapesAsRectangle,
-	                                          LongStack returnVal) {
+	public List<Long> getNodesIntersectingRectangle(double xMinimum, double yMinimum, double xMaximum,
+	                                          double yMaximum, boolean treatNodeShapesAsRectangle) {
 //		synchronized (m_lock) {
 		
 			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
@@ -1494,15 +1543,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			final float xMax = (float) xMaximum;
 			final float yMax = (float) yMaximum;
 			
-			SpacialIndex2DEnumerator under = netViewSnapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			SpacialIndex2DEnumerator<Long> under = netViewSnapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			if(!under.hasNext())
+				return Collections.emptyList();
 			
-//			final SpacialEntry2DEnumerator under = m_spacial.queryOverlap(xMin, yMin, xMax, yMax,
-//			                                                              null, 0, false);
-//			final int totalHits = under.size();
-
+			List<Long> returnVal = new ArrayList<>(under.size());
+			
 			if (treatNodeShapesAsRectangle) {
 				while(under.hasNext()) {
-					returnVal.push(under.next());
+					returnVal.add(under.next());
 				}
 			} else {
 				final double x = xMin;
@@ -1532,21 +1581,22 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 						if ((w > 0) && (h > 0)) {
 							if (path.intersects(x, y, w, h))
-								returnVal.push(suid);
+								returnVal.add(suid);
 						} else {
 							if (path.contains(x, y))
-								returnVal.push(suid);
+								returnVal.add(suid);
 						}
 					} else
-						returnVal.push(suid);
+						returnVal.add(suid);
 				}
 			}
+			return returnVal;
 //		}
 	}
 
-	public void queryDrawnEdges(int xMin, int yMin, int xMax, int yMax, LongStack returnVal) {
+	public List<Long> queryDrawnEdges(int xMin, int yMin, int xMax, int yMax) {
 		synchronized (m_lock) {
-			m_networkCanvas.computeEdgesIntersecting(xMin, yMin, xMax, yMax, returnVal);
+			return m_networkCanvas.computeEdgesIntersecting(xMin, yMin, xMax, yMax);
 		}
 	}
 
@@ -1919,24 +1969,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		locn[1] = pt.getY();
 
 		xformComponentToNodeCoords(locn);
+		float x = (float) locn[0];
+		float y = (float) locn[1];
 
-		final LongStack nodeStack = new LongStack();
-		getNodesIntersectingRectangle(
-				(float) locn[0],
-				(float) locn[1],
-				(float) locn[0],
-				(float) locn[1],
-				(m_networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0,
-				nodeStack);
+		boolean treatNodeShapesAsRectangle = (m_networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0;
+		List<Long> suids = getNodesIntersectingRectangle(x, y, x, y, treatNodeShapesAsRectangle);
 
 		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-		// Sort the nodeStack by Z
-		if (nodeStack.size() > 0) {
-			LongEnumerator le = nodeStack.elements();
-			while (le.numRemaining() > 0) {
-				View<CyNode> dnv = netViewSnapshot.getNodeView(le.nextLong());
-				if (nv == null || m_nodeDetails.getZPosition(dnv) > m_nodeDetails.getZPosition(nv))
-					nv = dnv;
+		
+		// return node with topmost Z
+		for(Long suid : suids) {
+			View<CyNode> dnv = netViewSnapshot.getNodeView(suid);
+			if (nv == null || m_nodeDetails.getZPosition(dnv) > m_nodeDetails.getZPosition(nv)) {
+				nv = dnv;
 			}
 		}
 		return nv;
@@ -1945,20 +1990,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	public View<CyEdge> getPickedEdgeView(Point2D pt) {
 		View<CyEdge> ev = null;
-		final LongStack edgeStack = new LongStack();
-		queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY(), edgeStack);
+		List<Long> edges = queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY());
 
-		long chosenEdge = (edgeStack.size() > 0) ? edgeStack.peek() : -1;
-
+		long chosenEdge = edges.isEmpty() ? -1 : edges.get(edges.size()-1);
 		if (chosenEdge >= 0) {
 			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 			ev = netViewSnapshot.getEdgeView(chosenEdge);
 		}
 		return ev;
-	}
-
-	final float getAnchorSize() {
-		return DEFAULT_ANCHOR_SIZE;
 	}
 
 	private double checkZoom(double zoom, double orig) {
@@ -2113,8 +2152,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return lexicon;
 	}
 
+
+	// For now the viewModelSnapshot should only be re-assigned on the EDT.
 	public CyNetworkViewSnapshot getViewModelSnapshot() {
-		return this;
+		return viewModelSnapshot;
 	}
 	
 	@Override
@@ -2427,6 +2468,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	@Override
 	public void dispose() {
 		synchronized (this) {
+			redrawTimer.stop();
+			
 			if (!servicesRegistered)
 				return;
 			
@@ -2571,56 +2614,84 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //			}
 //		}
 //	}
-//	
-//	public void select(Collection<? extends CyIdentifiable> nodesOrEdges, Class<? extends CyIdentifiable> type,
-//			boolean selected) {
-//		if (nodesOrEdges.isEmpty())
-//			return;
-//		
-//		List<RowSetRecord> records = new ArrayList<>();
-//		CyTable table = type.equals(CyNode.class) ? getModel().getDefaultNodeTable() : getModel().getDefaultEdgeTable();
-//		
-//		// Disable events
-//		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-//		eventHelper.silenceEventSource(table);
-//
-//		try {
-//			for (final CyIdentifiable nodeOrEdge : nodesOrEdges) {
-//				CyRow row = getModel().getRow(nodeOrEdge);
-//				row.set(CyNetwork.SELECTED, selected);		
-//				
-//				// Add to paylod
-//				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
-//			}
-//		} finally {
-//			eventHelper.unsilenceEventSource(table);
-//		}
-//		
-//		// Update the selection before firing the event to prevent race conditions
+	
+	
+	
+	public void selectBySuid(Collection<Long> suids, Class<? extends CyIdentifiable> type, boolean selected) {
+		if (suids.isEmpty())
+			return;
+		
+		List<RowSetRecord> records = new ArrayList<>();
+		CyNetwork model = getViewModel().getModel();
+		CyTable table = type.equals(CyNode.class) ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
+		
+		// Disable events
+		// MKTODO With the new event coalesce logic in the event helper this shouldn't be necessary, but I'll leave it in for now.
+		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.silenceEventSource(table);
+
+		try {
+			for (Long suid : suids) {
+				CyRow row = table.getRow(suid);
+				row.set(CyNetwork.SELECTED, selected);		
+				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
+			}
+		} finally {
+			eventHelper.unsilenceEventSource(table);
+		}
+		
+		// Update the selection before firing the event to prevent race conditions
 //		updateSelection(type, records);
-//		
-//		// Only now it can fire the RowsSetEvent
-//		fireRowsSetEvent(table, records, eventHelper);
-//	}
-//
-//	private void fireRowsSetEvent(CyTable table, List<RowSetRecord> records, CyEventHelper eventHelper) {
-//		// Make sure the event is not fired on the EDT,
-//		// otherwise selecting many nodes and edges may lock up the UI momentarily
-//		if (SwingUtilities.isEventDispatchThread()) {
-//			new Thread(() -> {
-//				fireRowsSetEvent(table, records, eventHelper);
-//			}).start();
-//		} else {
-//			ignoreRowsSetEvents = true;
-//			
-//			try {
-//				eventHelper.fireEvent(new RowsSetEvent(table, records));
-//			} finally {
-//				ignoreRowsSetEvents = false;
-//			}
-//		}
-//	}
-//	
+		
+		// Only now it can fire the RowsSetEvent
+		fireRowsSetEvent(table, records, eventHelper);
+	}
+	
+	
+	public void select(Collection<View<? extends CyIdentifiable>> nodesOrEdgeViews, Class<? extends CyIdentifiable> type, boolean selected) {
+		if (nodesOrEdgeViews.isEmpty())
+			return;
+		
+		List<RowSetRecord> records = new ArrayList<>();
+		CyNetwork model = getViewModel().getModel();
+		CyTable table = type.equals(CyNode.class) ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
+		
+		// Disable events
+		// MKTODO With the new event coalesce logic in the event helper this shouldn't be necessary, but I'll leave it in for now.
+		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		eventHelper.silenceEventSource(table);
+
+		try {
+			for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
+				CyRow row = model.getRow(nodeOrEdgeView.getModel());
+				row.set(CyNetwork.SELECTED, selected);		
+				
+				// Add to paylod
+				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
+			}
+		} finally {
+			eventHelper.unsilenceEventSource(table);
+		}
+		
+		// Update the selection before firing the event to prevent race conditions
+//		updateSelection(type, records);
+		
+		// Only now it can fire the RowsSetEvent
+		fireRowsSetEvent(table, records, eventHelper);
+	}
+
+	private void fireRowsSetEvent(CyTable table, List<RowSetRecord> records, CyEventHelper eventHelper) {
+		// Make sure the event is not fired on the EDT,
+		// otherwise selecting many nodes and edges may lock up the UI momentarily
+		if (SwingUtilities.isEventDispatchThread()) {
+			new Thread(() -> {
+				fireRowsSetEvent(table, records, eventHelper);
+			}).start();
+		} else {
+			eventHelper.fireEvent(new RowsSetEvent(table, records));
+		}
+	}
+	
 //	private void updateSelection(Class<? extends CyIdentifiable> type, Collection<RowSetRecord> records) {
 //		if (type == null)
 //			return;

@@ -16,6 +16,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
+import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 
 import com.github.davidmoten.rtree.RTree;
@@ -42,6 +43,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	// Key is SUID of View object
 	private final Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap;
 	private final Set<Long> selectedNodes;
+	private final Set<Long> selectedEdges;
 		
 	// Key is SUID of View object
 	private final Map<Long,Map<VisualProperty<?>,Object>> visualProperties;
@@ -49,7 +51,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final Map<Long,Map<VisualProperty<?>,Object>> directLocks;
 	private final Map<VisualProperty<?>,Object> defaultValues;
 	
-	private final SpacialIndex2D spacialIndex;
+	private final SpacialIndex2D<Long> spacialIndex;
 	
 	// Store of immutable node/edge objects
 	// MKTODO these objects probably won't change much between snapshots, they don't actually store the VPs,
@@ -68,6 +70,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			Map<Long,CyEdgeViewImpl> viewSuidToEdge,
 			Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap,
 			Set<Long> selectedNodes,
+			Set<Long> selectedEdges,
 			Map<VisualProperty<?>, Object> defaultValues,
 			Map<Long, Map<VisualProperty<?>, Object>> visualProperties,
 			Map<Long, Map<VisualProperty<?>, Object>> allLocks,
@@ -84,11 +87,12 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.dataSuidToEdge = dataSuidToEdge;
 		this.adjacentEdgeMap = adjacentEdgeMap;
 		this.selectedNodes = selectedNodes;
+		this.selectedEdges = selectedEdges;
 		this.defaultValues = defaultValues;
 		this.visualProperties = visualProperties;
 		this.allLocks = allLocks;
 		this.directLocks = directLocks;
-		this.spacialIndex = new SpacialIndex2DImpl(this, rtree, geometries);
+		this.spacialIndex = new SpacialIndex2DSnapshotImpl(rtree, geometries);
 	}
 	
 	
@@ -118,7 +122,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public SpacialIndex2D getSpacialIndex2D() {
+	public SpacialIndex2D<Long> getSpacialIndex2D() {
 		return spacialIndex;
 	}
 	
@@ -138,6 +142,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return defaultValues;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getViewDefault(VisualProperty<T> vp) {
 		return (T) defaultValues.getOrElse(vp, null);
@@ -242,6 +247,24 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return nodes;
 	}
 
+	@Override
+	public int getSelectedNodeCount() {
+		return selectedNodes.size();
+	}
+	
+	@Override
+	public Collection<View<CyEdge>> getSelectedEdges() {
+		java.util.HashSet<View<CyEdge>> nodes = new java.util.HashSet<>();
+		for(Long suid : selectedEdges) {
+			nodes.add(getEdgeView(suid));
+		}
+		return nodes;
+	}
+
+	@Override
+	public int getSelectedEdgeCount() {
+		return selectedEdges.size();
+	}
 	
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {

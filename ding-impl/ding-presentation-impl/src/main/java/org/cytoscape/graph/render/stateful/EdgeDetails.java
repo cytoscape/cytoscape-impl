@@ -10,6 +10,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Justification;
 import org.cytoscape.view.presentation.property.values.Position;
 
@@ -64,6 +65,11 @@ public interface EdgeDetails {
 	 *
 	public static final byte EDGE_ANCHOR_TARGET = 18;
 	*/
+	
+	
+	public static final int CURVED_LINES = 1;
+	public static final int STRAIGHT_LINES = 2;
+	
 
 
 	/**
@@ -323,4 +329,11 @@ public interface EdgeDetails {
 
 	Integer getLineCurved(View<CyEdge> edgeView);
 
+	Bend getBend(View<CyEdge> edgeView);
+
+	Bend getBend(View<CyEdge> edgeView, boolean forceCreate);
+
+	boolean isSelected(View<CyEdge> edgeView);
+
+	String getTooltipText(View<CyEdge> edgeView);
 }

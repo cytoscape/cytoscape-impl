@@ -46,12 +46,8 @@ import org.cytoscape.view.presentation.property.values.LineType;
 
 public final class DEdgeDetails implements EdgeDetails {
 
-	public static final int CURVED_LINES = 1;
-	public static final int STRAIGHT_LINES = 2;
-	public static final float DEFAULT_ANCHOR_SIZE = 12.0f;
-	
-	
-	private static boolean isSelected(View<CyEdge> edgeView) {
+	@Override
+	public boolean isSelected(View<CyEdge> edgeView) {
 		return Boolean.TRUE.equals(edgeView.getVisualProperty(BasicVisualLexicon.EDGE_SELECTED));
 	}
 
@@ -178,6 +174,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		return edgeView.getVisualProperty(EDGE_LABEL);
 	}
 
+	@Override
 	public String getTooltipText(View<CyEdge> edgeView) {
 		return edgeView.getVisualProperty(EDGE_TOOLTIP);
 	}
@@ -238,10 +235,12 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 
+	@Override
 	public Bend getBend(View<CyEdge> edgeView) {
 		return getBend(edgeView, false);
 	}
 
+	@Override
 	public Bend getBend(View<CyEdge> edgeView, boolean forceCreate) {
 		Bend bend = edgeView.getVisualProperty(EDGE_BEND);
 		if (bend == null && forceCreate) {
@@ -261,7 +260,7 @@ public final class DEdgeDetails implements EdgeDetails {
 	@Override
 	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
 		if (isSelected(edgeView) && getNumAnchors(edgeView) > 0)
-			return DEFAULT_ANCHOR_SIZE;
+			return BendStore.DEFAULT_HANDLE_SIZE;
 		return 0.0f;
 	}
 

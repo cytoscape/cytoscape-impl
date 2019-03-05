@@ -60,6 +60,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
 	private Set<Long> selectedNodes = HashSet.empty();
+	private Set<Long> selectedEdges = HashSet.empty();
 
 	// Key is SUID of View object.
 	private Map<Long,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
@@ -110,6 +111,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					viewSuidToEdge,
 					adjacentEdgeMap,
 					selectedNodes,
+					selectedEdges,
 					defaultValues, 
 					visualProperties, 
 					allLocks, 
@@ -289,8 +291,18 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
+	public View<CyNode> getNodeView(long suid) {
+		return viewSuidToNode.getOrElse(suid, null);
+	}
+	
+	@Override
 	public View<CyEdge> getEdgeView(CyEdge edge) {
 		return dataSuidToEdge.getOrElse(edge.getSUID(), null);
+	}
+	
+	@Override
+	public View<CyEdge> getEdgeView(long suid) {
+		return viewSuidToEdge.getOrElse(suid, null);
 	}
 	
 	@Override
@@ -316,9 +328,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		Long suid = view.getSUID();
 		synchronized (this) {
 			visualProperties = put(visualProperties, suid, vp, value);
+			// MKTODO ignoring locked vp for now
 			if(vp == BasicVisualLexicon.NODE_SELECTED) {
-				// ignoring locked vp for now
 				selectedNodes = Boolean.TRUE.equals(value) ? selectedNodes.add(suid) : selectedNodes.remove(suid);
+			} else if(vp == BasicVisualLexicon.EDGE_SELECTED) {
+				selectedEdges = Boolean.TRUE.equals(value) ? selectedEdges.add(suid) : selectedEdges.remove(suid);
 			}
 			setDirty();
 		}
