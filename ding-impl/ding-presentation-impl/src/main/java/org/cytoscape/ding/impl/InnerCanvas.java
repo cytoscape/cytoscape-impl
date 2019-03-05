@@ -161,7 +161,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		this.serviceRegistrar = serviceRegistrar;
 		m_lod[0] = new GraphLOD(); // Default LOD.
 		m_backgroundColor = Color.WHITE;
-		m_isOpaque = false;
+		setOpaque(false);
 		m_xCenter = 0.0d;
 		m_yCenter = 0.0d;
 		m_scaleFactor = 1.0d;
@@ -1032,7 +1032,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
 	 */
 	private void renderGraph(GraphGraphics graphics, final boolean setLastRenderDetail, final GraphLOD lod) {
-		final int alpha = (m_isOpaque) ? 255 : 0;
+		final int alpha = isOpaque() ? 255 : 0;
 
 		final Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 							m_backgroundColor.getBlue(), alpha);

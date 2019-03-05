@@ -69,11 +69,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private InnerCanvas m_innerCanvas;
 
 	/*
-	 * Map of component(s) to hidden node(s)
-	 */        
-	private Map<Component, CyNode> m_componentToNodeMap;
-
-	/*
 	 * Map of component(s) to hidden Points on the canvas
 	 */        
 	private Map<Component, Point> m_componentToPointMap;
@@ -98,20 +93,19 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param innerCanvas InnerCanvas
 	 * @param backgroundColor Color
 	 * @param isVisible boolean
-	 * @param isOpaque boolean
+	 * @param opaque boolean
 	 */
 	public ArbitraryGraphicsCanvas(DGraphView dGraphView,
 								   Canvas canvasId,
 	                               InnerCanvas innerCanvas,
 	                               Color backgroundColor,
-	                               boolean isOpaque) {
+	                               boolean opaque) {
 		super(canvasId);
 		m_dGraphView = dGraphView;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
-		m_isOpaque = isOpaque;
-		m_componentToNodeMap = new HashMap<Component, CyNode>();
-		m_componentToPointMap = new HashMap<Component, Point>();
+		setOpaque(opaque);
+		m_componentToPointMap = new HashMap<>();
 	}
 
 	/**
@@ -287,7 +281,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// get image graphics
 		final Graphics2D image2D = image.createGraphics();
 		// System.out.println("drawCanvas: new scaleFactor = "+scaleFactor+", xCenter = "+xCenter+", yCenter = "+yCenter);
-		if (m_isOpaque)
+		
+		if (isOpaque())
 			clearImage(image2D);
 
 		double xOffset = ((image.getWidth()/2)/scaleFactor - xCenter);
@@ -368,7 +363,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	public void print(Graphics graphics) {
 		isPrinting = true;
 		// Only do this if we're opaque (i.e. the background canvas)
-		if (m_isOpaque)
+		if (isOpaque())
 			clearImage((Graphics2D)graphics);
 		this.printChildren(graphics);
 		isPrinting = false;
@@ -424,7 +419,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private void clearImage(Graphics2D image2D) {
 		if (img != null) {
 			// set color alpha based on opacity setting
-			int alpha = (m_isOpaque) ? 255 : 0;
+			int alpha = isOpaque() ? 255 : 0;
 			Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 			                                  m_backgroundColor.getBlue(), alpha);
 
@@ -471,7 +466,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// release them here.
 		m_dGraphView = null;
 		m_innerCanvas = null;
-		m_componentToNodeMap = null;
 		m_componentToPointMap = null;
 	}
 

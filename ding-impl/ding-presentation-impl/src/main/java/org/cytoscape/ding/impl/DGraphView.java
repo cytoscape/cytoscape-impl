@@ -2070,7 +2070,13 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	 */
 	@Override
 	public void print(Graphics g) {
+		boolean opaque = m_backgroundCanvas.isOpaque();
+		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		
+		m_backgroundCanvas.setOpaque(!transparentBackground);
 		m_backgroundCanvas.print(g);
+		m_backgroundCanvas.setOpaque(opaque); // restore the previous opaque value
+
 		m_networkCanvas.print(g);
 		m_foregroundCanvas.print(g);
 	}

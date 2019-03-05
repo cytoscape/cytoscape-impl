@@ -55,11 +55,6 @@ public abstract class DingCanvas extends JComponent {
 	 */
 	protected Color m_backgroundColor;
 
-	/**
-	 * ref to opaque boolean
-	 */
-	protected boolean m_isOpaque;
-	
 	protected final Canvas canvasId;
 
 	
@@ -71,20 +66,6 @@ public abstract class DingCanvas extends JComponent {
 		return canvasId;
 	}
 	
-	/**
-	 * Sets opacity of component
-	 *
-	 * @param isOpaque boolean
-	 */
-	public void setOpaque(boolean isOpaque) {
-		m_isOpaque = isOpaque;
-	}
-
-	/**
-	 * Returns the background color of this component.
-	 *
-	 * @return Color
-	 */
 	public Color getBackground() {
 		return m_backgroundColor;
 	}

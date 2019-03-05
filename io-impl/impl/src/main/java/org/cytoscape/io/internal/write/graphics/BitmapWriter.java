@@ -229,7 +229,17 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		heightInInches = heightInPixels / dpi;
 	}
 	
-
+	// ----------------------------
+	@Tunable(
+			description = "Transparent Background:",
+			longDescription = "If true and the image format supports it, the background will be rendered transparent.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.1
+			)
+	public boolean transparentBackground;
+	
+	// ----------------------------
 	private final OutputStream outStream;
 	private RenderingEngine<?> re;
 	private String extension;
@@ -268,26 +278,36 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Bitmap Image Writer");
+		tm.setStatusMessage("Creating image...");
 		tm.setProgress(0.0);
-		logger.debug("Bitmap image rendering start.");
 
+		final boolean isPng = "png".equalsIgnoreCase(extension);
+		final int imageType = isPng ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
+		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, imageType);
+		
+		final Graphics2D g = (Graphics2D) image.getGraphics();
 		final double scale = zoom.getValue() / 100.0;
-		tm.setProgress(0.1);
-		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = (Graphics2D) image.getGraphics();
 		g.scale(scale, scale);
+		
 		tm.setProgress(0.2);
+		
+		if (isPng)
+			re.getProperties().setProperty("exportTransparentBackground", "" + transparentBackground);
+		
 		re.printCanvas(g);
+		re.getProperties().remove("exportTransparentBackground");
+		
 		tm.setProgress(0.4);
 		g.dispose();
 
 		try {
+			tm.setStatusMessage("Writing " + extension + "...");
 			ImageIO.write(image, extension, outStream);
 		} finally {
 			outStream.close();
 		}
 
-		logger.debug("Bitmap image rendering finished.");
 		tm.setProgress(1.0);
 	}
 }
