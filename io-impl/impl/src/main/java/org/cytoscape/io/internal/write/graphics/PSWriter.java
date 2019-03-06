@@ -1,12 +1,28 @@
 package org.cytoscape.io.internal.write.graphics;
 
+import java.awt.Dimension;
+import java.io.OutputStream;
+import java.util.Properties;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.freehep.graphicsio.ps.PSGraphics2D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +40,9 @@ package org.cytoscape.io.internal.write.graphics;
  * #L%
  */
 
-import java.awt.Dimension;
-import java.io.OutputStream;
-import java.util.Properties;
-
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.freehep.graphicsio.ps.PSGraphics2D;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class PSWriter extends AbstractTask implements CyWriter {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	@Tunable(
 			description = "Export text as font:",
@@ -76,9 +77,10 @@ public class PSWriter extends AbstractTask implements CyWriter {
 
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setStatusMessage("PS image rendering start...");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("PS Writer");
+		tm.setStatusMessage("PS image rendering start...");
+		tm.setProgress(0.0);
 		logger.debug("PS image rendering start.");
 		
 		// TODO should be accomplished with presentation properties
@@ -88,19 +90,19 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		p.setProperty(PSGraphics2D.PAGE_SIZE, "Letter");
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
 				Boolean.toString(!exportTextAsFont));
-		taskMonitor.setProgress(0.1);
+		tm.setProgress(0.1);
 		PSGraphics2D g = new PSGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
 		g.setMultiPage(false); // true for PS file
 		g.setProperties(p);
 		
-		taskMonitor.setProgress(0.2);
+		tm.setProgress(0.2);
 		
 		g.startExport();
 		engine.printCanvas(g);
 		g.endExport();
 		
 		logger.debug("PS image created.");
-		taskMonitor.setStatusMessage("PS image created.");
-		taskMonitor.setProgress(1.0);
+		tm.setStatusMessage("PS image created.");
+		tm.setProgress(1.0);
 	}
 }
