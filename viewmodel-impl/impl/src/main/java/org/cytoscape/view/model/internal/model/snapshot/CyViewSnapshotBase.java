@@ -27,6 +27,8 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	public abstract CyNetworkViewSnapshotImpl getNetworkSnapshot();
 	
 	
+	// VisualProperties are looked up a lot by the renderer, don't want to do
+	// the suid lookup constantly, so we cache the visualProperties maps here.
 	public Map<VisualProperty<?>,Object> getVisualProperties() {
 		if(visualProperties == null) {
 			visualProperties = getNetworkSnapshot().getVisualProperties(suid);
@@ -48,36 +50,15 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 		return directLocks;
 	}
 	
-	
-	private <T> T getVisualPropertyStoredValue(VisualProperty<T> vp) {
-		Object value = getDirectLocks().getOrElse(vp, null);
-		if(value != null)
-			return (T) value;
-		
-		value = getAllLocks().getOrElse(vp, null);
-		if(value != null)
-			return (T) value;
-		
-		return (T) getVisualProperties().getOrElse(vp, null);
-	}
-
 	@Override
 	public <T> T getVisualProperty(VisualProperty<T> vp) {
-		Object value = getVisualPropertyStoredValue(vp);
-		if(value != null)
-			return (T) value;
-		
-		value = getNetworkSnapshot().getDefaultValues().getOrElse(vp,null);
-		if(value != null)
-			return (T) value;
-		
-		return vp.getDefault();
+		return getNetworkSnapshot().getVisualProperty(getDirectLocks(), getAllLocks(), getVisualProperties(), vp);
 	}
 	
-
+	
 	@Override
 	public boolean isSet(VisualProperty<?> vp) {
-		return getVisualPropertyStoredValue(vp) != null;
+		return getNetworkSnapshot().getVisualPropertyStoredValue(getDirectLocks(), getAllLocks(), getVisualProperties(), vp) != null;
 	}
 	
 	@Override

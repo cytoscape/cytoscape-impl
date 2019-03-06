@@ -80,21 +80,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.visualLexicon = visualLexicon;
 		
 		// faster than calling addNode() and addEdge()
-		for(CyNode node : network.getNodeList()) {
-			CyNodeViewImpl nodeView = new CyNodeViewImpl(this, node);
-			dataSuidToNode = dataSuidToNode.put(node.getSUID(), nodeView);
-			viewSuidToNode = viewSuidToNode.put(nodeView.getSUID(), nodeView);
-		}
-		for(CyEdge edge : network.getEdgeList()) {
-			CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
-			CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
-			
-			CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
-			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), edgeView);
-			viewSuidToEdge = viewSuidToEdge.put(edgeView.getSUID(), edgeView);
-			
-			updateAdjacentEdgeMap(edgeView, true);
-		}
+		for(CyNode node : network.getNodeList())
+			addNode(node);
+		for(CyEdge edge : network.getEdgeList())
+			addEdge(edge);
 	}
 	
 	
@@ -138,13 +127,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		snapshot = null;
 	}
 	
-	private Rectangle getGeometry(View<CyNode> view) {
-		return geometries.getOrElse(view.getSUID(), DEFAULT_GEOMETRY);
-	}
-	
 	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp, V value) {
 		Long suid = node.getSUID();
-		Rectangle r = getGeometry(node);
+		Rectangle r = geometries.getOrElse(suid, null);
 		Rectangle newGeom = null;
 		
 		if(vp == BasicVisualLexicon.NODE_X_LOCATION) {
@@ -207,6 +192,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
 			rtree = rtree.add(view.getSUID(), DEFAULT_GEOMETRY);
+			geometries = geometries.put(view.getSUID(), DEFAULT_GEOMETRY);
 			setDirty();
 		}
 		return view;
@@ -239,7 +225,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				}
 				adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 				clearVisualProperties(nodeView);
-				rtree = rtree.delete(nodeView.getSUID(), getGeometry(nodeView));
+				
+				Rectangle r = geometries.getOrElse(nodeView.getSUID(), null);
+				rtree = rtree.delete(nodeView.getSUID(),r);
+				geometries = geometries.remove(nodeView.getSUID());
 				setDirty();
 			}
 		}
@@ -272,7 +261,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
-		// we actually can't clear certain VPs, the renderer expects node size and location to remain
+		// we actually can't clear certain VPs, the renderer expects node size and location to remain consistent
 		java.util.HashMap<VisualProperty<?>,Object> values = new java.util.HashMap<>();
 		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPERTIES) {
 			values.put(vp, get(map, suid, vp));
@@ -328,12 +317,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		Long suid = view.getSUID();
 		synchronized (this) {
 			visualProperties = put(visualProperties, suid, vp, value);
-			// MKTODO ignoring locked vp for now
-			if(vp == BasicVisualLexicon.NODE_SELECTED) {
-				selectedNodes = Boolean.TRUE.equals(value) ? selectedNodes.add(suid) : selectedNodes.remove(suid);
-			} else if(vp == BasicVisualLexicon.EDGE_SELECTED) {
-				selectedEdges = Boolean.TRUE.equals(value) ? selectedEdges.add(suid) : selectedEdges.remove(suid);
-			}
+			// don't pass 'value' directly to updateSelectionAndVisibility(), it needs to check the locked values as well
+			updateSelectionAndVisibility(view, vp);
 			setDirty();
 		}
 	}
@@ -376,9 +361,48 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			
 			VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
 			propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
+			
+			updateSelectionAndVisibility(view, vp);
 			setDirty();
 		}
 	}
+	
+	
+	private synchronized void updateSelectionAndVisibility(CyIdentifiable view, VisualProperty<?> vp) {
+		Long suid = view.getSUID();
+		// note, edge visibility isn't tracked in any special way, just by the standard VP
+		
+		if(vp == BasicVisualLexicon.NODE_SELECTED) {
+			Object value = getVisualProperty(suid, vp);
+			selectedNodes = Boolean.TRUE.equals(value) ? selectedNodes.add(suid) : selectedNodes.remove(suid);
+		} else if(vp == BasicVisualLexicon.EDGE_SELECTED) {
+			Object value = getVisualProperty(suid, vp);
+			selectedEdges = Boolean.TRUE.equals(value) ? selectedEdges.add(suid) : selectedEdges.remove(suid);
+		} else if(vp == BasicVisualLexicon.NODE_VISIBLE) {
+			Object value = getVisualProperty(suid, vp);
+			if(Boolean.TRUE.equals(value)) {
+				Rectangle r = geometries.getOrElse(view.getSUID(), null);
+				if(r == null) {
+					float x = ((Number)getVisualProperty(suid, BasicVisualLexicon.NODE_X_LOCATION)).floatValue();
+					float y = ((Number)getVisualProperty(suid, BasicVisualLexicon.NODE_Y_LOCATION)).floatValue();
+					float w = ((Number)getVisualProperty(suid, BasicVisualLexicon.NODE_WIDTH)).floatValue();
+					float h = ((Number)getVisualProperty(suid, BasicVisualLexicon.NODE_HEIGHT)).floatValue();
+					float halfW = w / 2f;
+					float halfH = h / 2f;
+					r = RectangleFloat.create(x - halfW, y - halfH, x + halfW, y + halfH);
+					rtree = rtree.add(suid, r);
+					geometries = geometries.put(suid, r);
+				}
+			} else {
+				Rectangle r = geometries.getOrElse(suid, null);
+				if(r != null) { // can be null if view is already hidden
+					rtree = rtree.delete(suid, r);
+					geometries = geometries.remove(suid);
+				}
+			}
+		}
+	}
+	
 	
 	private synchronized void propagateLockedVisualProperty(Long suid, VisualProperty parent, Collection<VisualLexiconNode> roots, Object value) {
 		LinkedList<VisualLexiconNode> nodes = new LinkedList<>(roots);

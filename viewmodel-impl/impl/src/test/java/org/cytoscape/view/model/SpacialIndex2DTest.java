@@ -4,12 +4,16 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
@@ -39,6 +43,15 @@ public class SpacialIndex2DTest {
 		node.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, w);
 	}
 	
+	public static void assertMBR(CyNetworkViewSnapshot snapshot, float xMin, float yMin, float xMax, float yMax) {
+		float[] mbr = new float[4];
+		snapshot.getSpacialIndex2D().getMBR(mbr);
+		assertEquals(xMin, mbr[SpacialIndex2D.X_MIN], 0.0f);
+		assertEquals(yMin, mbr[SpacialIndex2D.Y_MIN], 0.0f);
+		assertEquals(xMax, mbr[SpacialIndex2D.X_MAX], 0.0f);
+		assertEquals(yMax, mbr[SpacialIndex2D.Y_MAX], 0.0f);
+	}
+	
 	private static Map<Long,float[]> toMap(SpacialIndex2DEnumerator<Long> overlap) {
 		HashMap<Long,float[]> map = new HashMap<>();
 		while(overlap.hasNext()) {
@@ -47,6 +60,12 @@ public class SpacialIndex2DTest {
 			map.put(suid, extents);
 		}
 		return map;
+	}
+	
+	private static <T> Set<T> toSet(Iterable<T> iterable) {
+		Set<T> set = new HashSet<>();
+		iterable.forEach(set::add);
+		return set;
 	}
 	
 	@Test
@@ -74,12 +93,7 @@ public class SpacialIndex2DTest {
 		assertFalse(spacialIndex.exists(999l));
 		
 		// minimum bounding rectangle
-		float[] mbr = new float[4];
-		spacialIndex.getMBR(mbr);
-		assertEquals(2.0f,  mbr[SpacialIndex2D.X_MIN], 0.0f);
-		assertEquals(11.0f, mbr[SpacialIndex2D.X_MAX], 0.0f);
-		assertEquals(1.0f,  mbr[SpacialIndex2D.Y_MIN], 0.0f);
-		assertEquals(10.0f, mbr[SpacialIndex2D.Y_MAX], 0.0f);
+		assertMBR(snapshot, 2, 1, 11, 10);
 		
 		// query overlap
 		SpacialIndex2DEnumerator<Long> overlap = spacialIndex.queryOverlap(0, 0, 6, 9);
@@ -146,6 +160,94 @@ public class SpacialIndex2DTest {
 		spacialIndex.delete(SUID_2);
 		assertFalse(spacialIndex.exists(SUID_1));
 		assertEquals(0, spacialIndex.size());
+	}
+	
+	
+	
+	private static void assertHidden(CyNetworkViewSnapshot snapshot, CyNode n) {
+		assertNull(snapshot.getNodeView(n));
+	}
+	
+	private static void assertVisible(CyNetworkViewSnapshot snapshot, CyNode n, int adj) {
+		View<CyNode> nv = snapshot.getNodeView(n);
+		assertNotNull(nv);
+		assertEquals(adj, toSet(snapshot.getAdjacentEdgeIterable(nv)).size());
+	}
+	
+	
+	@Test
+	public void testHiddenNodes() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		CyNode n3 = network.addNode();
+		CyEdge e1 = network.addEdge(n1, n2, false);
+		CyEdge e2 = network.addEdge(n2, n3, false);
+		CyEdge e3 = network.addEdge(n3, n1, false);
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2);
+		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2);
+		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2);
+		
+		CyNetworkViewSnapshot snapshot;
+		
+		// test things are set up correctly
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 2, 2, 13, 11);
+		assertVisible(snapshot, n1, 2);
+		assertVisible(snapshot, n2, 2);
+		assertVisible(snapshot, n3, 2);
+		
+		// hide nv1
+		networkView.getNodeView(n1).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 3, 7, 13, 11);
+		assertHidden(snapshot, n1);
+		assertVisible(snapshot, n2, 1);
+		assertVisible(snapshot, n3, 1);
+		
+		// hide nv2
+		networkView.getNodeView(n2).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 9, 9, 13, 11);
+		assertHidden(snapshot, n1);
+		assertHidden(snapshot, n2);
+		assertVisible(snapshot, n3, 0);
+		
+		// show nv2
+		networkView.getNodeView(n2).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 3, 7, 13, 11);
+		assertHidden(snapshot, n1);
+		assertVisible(snapshot, n2, 1);
+		assertVisible(snapshot, n3, 1);
+		
+		// hide edges
+		networkView.getEdgeView(e1).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+		networkView.getEdgeView(e2).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 3, 7, 13, 11);
+		assertHidden(snapshot, n1);
+		assertVisible(snapshot, n2, 0);
+		assertVisible(snapshot, n3, 0);
+		
+		// show all nodes
+		networkView.getNodeView(n1).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 2, 2, 13, 11);
+		assertVisible(snapshot, n1, 1);
+		assertVisible(snapshot, n2, 0);
+		assertVisible(snapshot, n3, 1);
+		
+		// show all edges
+		networkView.getEdgeView(e1).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+		networkView.getEdgeView(e2).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+		snapshot = networkView.createSnapshot();
+		assertMBR(snapshot, 2, 2, 13, 11);
+		assertVisible(snapshot, n1, 2);
+		assertVisible(snapshot, n2, 2);
+		assertVisible(snapshot, n3, 2);
 	}
 	
 }

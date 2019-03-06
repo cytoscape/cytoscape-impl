@@ -376,7 +376,6 @@ public class NetworkViewImplTest {
 		n1.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
 		
 		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
-		
 		assertEquals(2, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));
 		assertTrue(selectedNodes.contains(n1.getSUID()));

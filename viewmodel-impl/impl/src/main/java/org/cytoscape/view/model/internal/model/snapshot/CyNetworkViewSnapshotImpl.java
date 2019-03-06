@@ -18,6 +18,7 @@ import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
@@ -28,8 +29,6 @@ import io.vavr.collection.Map;
 import io.vavr.collection.Set;
 
 public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> implements CyNetworkViewSnapshot {
-	
-	private static final boolean MEMOIZE_VIEW_OBJECTS = true;
 	
 	private final String rendererId;
 	private final CyNetworkView networkView;
@@ -96,18 +95,83 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	
+	private boolean isNodeVisible(Long nodeSuid) {
+		return spacialIndex.exists(nodeSuid);
+	}
+	
+	private boolean isEdgeVisible(CyEdgeViewImpl mutableEdgeView) {
+		if(!checkBooleanVP(mutableEdgeView.getSUID(), BasicVisualLexicon.EDGE_VISIBLE))
+			return false;
+		if(!isNodeVisible(mutableEdgeView.getSourceSuid()))
+			return false;
+		if(!isNodeVisible(mutableEdgeView.getTargetSuid()))
+			return false;
+		return true;
+	}
+	
+	private boolean checkBooleanVP(Long suid, VisualProperty<?> vp) {
+		Map<VisualProperty<?>,Object> directLocks = getDirectLocks(suid);
+		Map<VisualProperty<?>,Object> allLocks = getAllLocks(suid);
+		Map<VisualProperty<?>,Object> visualProperties = getVisualProperties(suid);
+		Object value = getVisualProperty(directLocks, allLocks, visualProperties, vp);
+		return Boolean.TRUE.equals(value);
+	}
+	
+	protected <T> T getVisualPropertyStoredValue(Map<VisualProperty<?>,Object> directLocks, 
+			Map<VisualProperty<?>,Object> allLocks, Map<VisualProperty<?>,Object> visualProperties, VisualProperty<T> vp) {
+		Object value = directLocks.getOrElse(vp, null);
+		if(value != null)
+			return (T) value;
+		
+		value = allLocks.getOrElse(vp, null);
+		if(value != null)
+			return (T) value;
+		
+		return (T) visualProperties.getOrElse(vp, null);
+	}
+
+	protected <T> T getVisualProperty(Map<VisualProperty<?>,Object> directLocks, 
+			Map<VisualProperty<?>,Object> allLocks, Map<VisualProperty<?>,Object> visualProperties, VisualProperty<T> vp) {
+		Object value = getVisualPropertyStoredValue(directLocks, allLocks, visualProperties, vp);
+		if(value != null)
+			return (T) value;
+		
+		value = getDefaultValues().getOrElse(vp,null);
+		if(value != null)
+			return (T) value;
+		
+		return vp.getDefault();
+	}
+	
+	/**
+	 * Returns null if the node is not visible.
+	 */
 	protected CyNodeViewSnapshotImpl getSnapshotNodeView(CyNodeViewImpl mutableNodeView) {
-		if(MEMOIZE_VIEW_OBJECTS)
-			return snapshotNodeViews.computeIfAbsent(mutableNodeView.getSUID(), k -> new CyNodeViewSnapshotImpl(this, mutableNodeView));
-		else
-			return new CyNodeViewSnapshotImpl(this, mutableNodeView);
+		Long suid = mutableNodeView.getSUID();
+		if(snapshotNodeViews.containsKey(suid)) {
+			return snapshotNodeViews.get(suid);
+		}
+		
+		CyNodeViewSnapshotImpl view = null;
+		if(isNodeVisible(suid)) {
+			view = new CyNodeViewSnapshotImpl(this, mutableNodeView);
+		}
+		snapshotNodeViews.put(suid, view); // maps to null if not visible
+		return view;
 	}
 	
 	protected CyEdgeViewSnapshotImpl getSnapshotEdgeView(CyEdgeViewImpl mutableEdgeView) {
-		if(MEMOIZE_VIEW_OBJECTS)
-			return snapshotEdgeViews.computeIfAbsent(mutableEdgeView.getSUID(), k -> new CyEdgeViewSnapshotImpl(this, mutableEdgeView));
-		else
-			return new CyEdgeViewSnapshotImpl(this, mutableEdgeView);
+		Long suid = mutableEdgeView.getSUID();
+		if(snapshotEdgeViews.containsKey(suid)) {
+			return snapshotEdgeViews.get(suid);
+		}
+		
+		CyEdgeViewSnapshotImpl view = null;
+		if(isEdgeVisible(mutableEdgeView)) {
+			view = new CyEdgeViewSnapshotImpl(this, mutableEdgeView);
+		}
+		snapshotEdgeViews.put(suid, view); // maps to null if not visible
+		return view;
 	}
 	
 	
@@ -179,7 +243,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	public Collection<View<CyNode>> getNodeViews() {
 		List<View<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
 		for(CyNodeViewImpl view : viewSuidToNode.values()) {
-			nodeViews.add(getSnapshotNodeView(view));
+			CyNodeViewSnapshotImpl nv = getSnapshotNodeView(view);
+			if(nv != null) {
+				nodeViews.add(nv);
+			}
 		}
 		return nodeViews;
 	}
@@ -188,7 +255,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	public Collection<View<CyEdge>> getEdgeViews() {
 		List<View<CyEdge>> edgeViews = new ArrayList<>(viewSuidToEdge.size());
 		for(CyEdgeViewImpl view : viewSuidToEdge.values()) {
-			edgeViews.add(getSnapshotEdgeView(view));
+			CyEdgeViewSnapshotImpl ev = getSnapshotEdgeView(view);
+			if(ev != null) {
+				edgeViews.add(ev);
+			}
 		}
 		return edgeViews;
 	}
@@ -225,7 +295,14 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	@Override
 	public Iterable<View<CyEdge>> getAdjacentEdgeIterable(long nodeSuid) {
-		return adjacentEdgeMap.getOrElse(nodeSuid,HashSet.empty()).map(this::getSnapshotEdgeView);
+		List<View<CyEdge>> result = new ArrayList<>();
+		for(CyEdgeViewImpl edgeViewImpl : adjacentEdgeMap.getOrElse(nodeSuid,HashSet.empty())) {
+			CyEdgeViewSnapshotImpl ev = getSnapshotEdgeView(edgeViewImpl);
+			if(ev != null) {
+				result.add(ev);
+			}
+		}
+		return result;
 	}
 	
 	@Override
@@ -242,30 +319,26 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	public Collection<View<CyNode>> getSelectedNodes() {
 		java.util.HashSet<View<CyNode>> nodes = new java.util.HashSet<>();
 		for(Long suid : selectedNodes) {
-			nodes.add(getNodeView(suid));
+			View<CyNode> nv = getNodeView(suid);
+			if(nv != null) {
+				nodes.add(nv);
+			}
 		}
 		return nodes;
 	}
 
-	@Override
-	public int getSelectedNodeCount() {
-		return selectedNodes.size();
-	}
-	
 	@Override
 	public Collection<View<CyEdge>> getSelectedEdges() {
 		java.util.HashSet<View<CyEdge>> nodes = new java.util.HashSet<>();
 		for(Long suid : selectedEdges) {
-			nodes.add(getEdgeView(suid));
+			View<CyEdge> ev = getEdgeView(suid);
+			if(ev != null) {
+				nodes.add(ev);
+			}
 		}
 		return nodes;
 	}
 
-	@Override
-	public int getSelectedEdgeCount() {
-		return selectedEdges.size();
-	}
-	
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		throw new UnsupportedOperationException("Cannot modify view snapshot");
