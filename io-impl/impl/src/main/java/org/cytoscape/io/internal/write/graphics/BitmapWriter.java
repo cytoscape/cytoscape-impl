@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
@@ -20,6 +21,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.BoundedDouble;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -47,6 +50,8 @@ import org.cytoscape.work.util.ListSingleSelection;
 
 public class BitmapWriter extends AbstractTask implements CyWriter {
 
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	private static final double MAX_ZOOM = 500;
 	
 	private static final int DEFAULT_RESOLUTION = 72;
@@ -225,18 +230,8 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	}
 	
 	// ----------------------------
-	@Tunable(
-			description = "Transparent Background:",
-			longDescription = "If true and the image format supports it, the background will be rendered transparent.",
-			exampleStringValue = "true",
-			groups = { "_Others" },
-			gravity = 2.1
-			)
-	public boolean transparentBackground;
-	
-	// ----------------------------
 	private final OutputStream outStream;
-	private RenderingEngine<?> re;
+	protected final RenderingEngine<?> re;
 	private String extension;
 	private int initialWPixel, initialHPixel; 
 
@@ -276,22 +271,17 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		tm.setTitle("Bitmap Image Writer");
 		tm.setStatusMessage("Creating image...");
 		tm.setProgress(0.0);
+		logger.debug("Bitmap image rendering start.");
 
-		final boolean isPng = "png".equalsIgnoreCase(extension);
-		final int imageType = isPng ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB;
-		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, imageType);
+		
+		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, getImageType());
 		
 		final Graphics2D g = (Graphics2D) image.getGraphics();
 		final double scale = zoom.getValue() / 100.0;
 		g.scale(scale, scale);
 		
 		tm.setProgress(0.2);
-		
-		if (isPng)
-			re.getProperties().setProperty("exportTransparentBackground", "" + transparentBackground);
-		
 		re.printCanvas(g);
-		re.getProperties().remove("exportTransparentBackground");
 		
 		tm.setProgress(0.4);
 		g.dispose();
@@ -303,6 +293,11 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 			outStream.close();
 		}
 
+		logger.debug("Bitmap image rendering finished.");
 		tm.setProgress(1.0);
+	}
+	
+	protected int getImageType() {
+		return BufferedImage.TYPE_INT_RGB;
 	}
 }

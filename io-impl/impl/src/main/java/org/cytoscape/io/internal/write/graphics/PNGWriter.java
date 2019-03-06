@@ -1,13 +1,12 @@
 package org.cytoscape.io.internal.write.graphics;
 
+import java.awt.image.BufferedImage;
 import java.io.OutputStream;
 import java.util.Set;
 
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.io.write.PresentationWriterFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
 
 /*
  * #%L
@@ -33,22 +32,34 @@ import org.cytoscape.view.presentation.RenderingEngine;
  * #L%
  */
 
-public class BitmapWriterFactory extends AbstractCyWriterFactory implements PresentationWriterFactory {
+public class PNGWriter extends BitmapWriter {
 
-	public BitmapWriterFactory(final CyFileFilter bitmapFilter) {
-		super(bitmapFilter);
+	@Tunable(
+			description = "Transparent Background:",
+			longDescription = "If true and the image format supports it, the background will be rendered transparent.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.1
+	)
+	public boolean transparentBackground;
+	
+	public PNGWriter(RenderingEngine<?> re, OutputStream outStream, Set<String> extensions) {
+		super(re, outStream, extensions);
 	}
-
+	
 	@Override
-	public CyWriter createWriter(OutputStream outputStream, RenderingEngine<?> re) {
-		if (re == null)
-			throw new NullPointerException("RenderingEngine is null");
-
-		Set<String> contentTypes = getFileFilter().getContentTypes();
+	public void run(TaskMonitor tm) throws Exception {
+		re.getProperties().setProperty("exportTransparentBackground", "" + transparentBackground);
 		
-		if (contentTypes.size() == 1 && "image/png".equalsIgnoreCase(contentTypes.iterator().next()))
-			return new PNGWriter(re, outputStream, getFileFilter().getExtensions());
-		
-		return new BitmapWriter(re, outputStream, getFileFilter().getExtensions());
+		try {
+			super.run(tm);
+		} finally {
+			re.getProperties().remove("exportTransparentBackground");
+		}
+	}
+	
+	@Override
+	protected int getImageType() {
+		return BufferedImage.TYPE_INT_ARGB;
 	}
 }
