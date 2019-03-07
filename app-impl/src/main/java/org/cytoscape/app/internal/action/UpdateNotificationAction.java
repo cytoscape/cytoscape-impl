@@ -147,8 +147,8 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			// Position the badge in the top-right quadrant of the icon
 			float d = Math.max(w, h) / 2.0f; // diameter
 			float di = d - 2 * BADGE_BORDER_WIDTH; // diameter of the internal circle (i.e. circle - border)
-			float bx = w - d; // x of badge's upper left corner
-			float by = 0; // y of badge's upper left corner
+			float bx = x + w - d; // x of badge's upper left corner
+			float by = y; // y of badge's upper left corner
 
 			// Draw badge circle
 			g2d.setColor(BADGE_BORDER_COLOR);
