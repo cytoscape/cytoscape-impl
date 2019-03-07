@@ -1325,7 +1325,8 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			viewDialog.addWindowFocusListener(new WindowFocusListener() {
 				@Override
 				public void windowLostFocus(WindowEvent e) {
-					viewDialog.dispose();
+					if (viewDialog != null)
+						viewDialog.dispose();
 				}
 				@Override
 				public void windowGainedFocus(WindowEvent e) {
@@ -1340,7 +1341,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 			viewDialog.addKeyListener(new KeyAdapter() {
 				@Override
 				public void keyPressed(KeyEvent e) {
-					if (e.getKeyCode() == KeyEvent.VK_ESCAPE)
+					if (e.getKeyCode() == KeyEvent.VK_ESCAPE && viewDialog != null)
 						viewDialog.dispose();
 				}
 			});
