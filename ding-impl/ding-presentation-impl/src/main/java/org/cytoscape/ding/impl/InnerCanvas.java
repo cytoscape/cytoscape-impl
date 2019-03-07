@@ -32,6 +32,7 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -51,14 +52,14 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
-import org.cytoscape.util.intr.LongEnumerator;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -105,11 +106,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	final Color SELECTION_RECT_BORDER_COLOR_1;
 	final Color SELECTION_RECT_BORDER_COLOR_2;
 	
+	// MKTODO  GET RID OF GLOBAL VARIABLES!!!!!
 	final double[] m_ptBuff = new double[2];
-	final float[] m_extentsBuff2 = new float[4];
+//	final float[] m_extentsBuff2 = new float[4];
 	final float[] m_floatBuff1 = new float[2];
 	final float[] m_floatBuff2 = new float[2];
-	final Line2D.Float m_line = new Line2D.Float();
+//	final Line2D.Float m_line = new Line2D.Float();
 	final GeneralPath m_path = new GeneralPath();
 	final GeneralPath m_path2 = new GeneralPath();
 	
@@ -128,6 +130,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private ViewChangeEdit m_undoable_edit;
 	private boolean isPrinting;
 	private PopupMenuHelper popup;
+	
+	// MKTODO Really need to get rid of this!!!
 //	private LongHash m_hash;
 
 	FontMetrics m_fontMetrics;
@@ -719,95 +723,88 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		m_ptBuff[1] = yMini;
 		m_re.xformComponentToNodeCoords(m_ptBuff);
 
-		final double xMin = m_ptBuff[0];
-		final double yMin = m_ptBuff[1];
+		final float xMin = (float) m_ptBuff[0];
+		final float yMin = (float) m_ptBuff[1];
 		m_ptBuff[0] = xMaxi;
 		m_ptBuff[1] = yMaxi;
 		m_re.xformComponentToNodeCoords(m_ptBuff);
-
-		final double xMax = m_ptBuff[0];
-		final double yMax = m_ptBuff[1];
-		LongEnumerator edgeNodesEnum = m_hash.elements(); // Positive.
-		m_stack.empty();
-
-		final int edgeNodesCount = edgeNodesEnum.numRemaining();
-
-		for (int i = 0; i < edgeNodesCount; i++)
-			m_stack.push(edgeNodesEnum.nextLong());
-
-		m_hash.empty();
-		edgeNodesEnum = m_stack.elements();
-		stack.empty();
-
-		final CyNetwork graph = m_re.m_drawPersp;
-
+		
+		final float xMax = (float) m_ptBuff[0];
+		final float yMax = (float) m_ptBuff[1];
+		
+		Line2D.Float line = new Line2D.Float();
+		float[] extentsBuff = new float[4];
+		float[] extentsBuff2 = new float[4];
+		
+		CyNetworkViewSnapshot snapshot = m_re.getViewModelSnapshot();
+		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+		
+		Set<Long> processedNodes = new HashSet<>();
+		List<Long> resultEdges = new ArrayList<>();
+		
 		if ((m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0) {
 			// We won't need to look up arrows and their sizes.
-			for (int i = 0; i < edgeNodesCount; i++) {
-				final long node = edgeNodesEnum.nextLong(); // Positive.
-				final CyNode nodeObj = graph.getNode(node);
-
-				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
-					continue; // Will happen if e.g. node was removed. 
-
-				final float nodeX = (m_view.m_extentsBuff[0] + m_view.m_extentsBuff[2]) / 2;
-				final float nodeY = (m_view.m_extentsBuff[1] + m_view.m_extentsBuff[3]) / 2;
-				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
-
-				for ( CyEdge e : touchingEdges ) {      
-					final long edge = e.getSUID(); 
-					final long otherNode = node ^ e.getSource().getSUID().longValue() ^ e.getTarget().getSUID().longValue(); 
-
-					if (m_hash.get(otherNode) < 0) {
-						m_view.m_spacial.exists(otherNode, m_view.m_extentsBuff, 0);
-
-						final float otherNodeX = (m_view.m_extentsBuff[0] + m_view.m_extentsBuff[2]) / 2;
-						final float otherNodeY = (m_view.m_extentsBuff[1] + m_view.m_extentsBuff[3]) / 2;
-						m_line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
-
-						if (m_line.intersects(xMin, yMin, xMax - xMin, yMax - yMin))
-							stack.push(edge);
+			while(nodeHits.hasNext()) {
+				Long node = nodeHits.nextExtents(extentsBuff);
+				
+				// MKTODO make this into a utility method
+				float nodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
+				float nodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
+				
+				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
+				
+				for(View<CyEdge> e : touchingEdges) {
+					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
+					long edge = e.getSUID();
+					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+					
+					if(!processedNodes.contains(otherNode)) {
+						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
+						float otherNodeX = extentsBuff[0] + extentsBuff[2] / 2;
+						float otherNodeY = extentsBuff[1] + extentsBuff[3] / 2;
+						line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
+						
+						if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
+							resultEdges.add(edge);
+						}
 					}
 				}
-
-				m_hash.put(node);
+				processedNodes.add(node);
 			}
 		} else { // Last render high detail.
-			for (int i = 0; i < edgeNodesCount; i++) {
-				final long node = edgeNodesEnum.nextLong(); // Positive.
-				final CyNode nodeObj = graph.getNode(node);
-
-				if (!m_view.m_spacial.exists(node, m_view.m_extentsBuff, 0))
-					continue; /* Will happen if e.g. node was removed. */
-
-				final byte nodeShape = m_view.m_nodeDetails.getShape(nodeObj);
-				final Iterable<CyEdge> touchingEdges = graph.getAdjacentEdgeIterable(nodeObj, CyEdge.Type.ANY);
- 
-				for ( CyEdge edge : touchingEdges ) {      
-//					final int edge = e.getIndex(); // Positive.
-					final double segThicknessDiv2 = m_view.m_edgeDetails.getWidth(edge) / 2.0d;
-					final long otherNode = node ^ edge.getSource().getSUID().longValue() ^ edge.getTarget().getSUID().longValue();
-					final CyNode otherNodeObj = graph.getNode(otherNode);
-
-					if (m_hash.get(otherNode) < 0) {
-						m_view.m_spacial.exists(otherNode, m_extentsBuff2, 0);
-
-						final byte otherNodeShape = m_view.m_nodeDetails.getShape(otherNodeObj);
+			
+			while(nodeHits.hasNext()) {
+				Long node = nodeHits.nextExtents(extentsBuff);
+				View<CyNode> nodeView = snapshot.getNodeView(node);
+				byte nodeShape = m_re.getNodeDetails().getShape(nodeView);
+				
+				Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
+				
+				for(View<CyEdge> edge : touchingEdges) {
+					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(edge);
+					double segThicknessDiv2 = m_re.getEdgeDetails().getWidth(edge) / 2.0d;
+					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
+					
+					if(!processedNodes.contains(otherNode)) {
+						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
+						
+						final byte otherNodeShape = m_re.getNodeDetails().getShape(otherNodeView);
 						final byte srcShape;
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
 
-						if (node == edge.getSource().getSUID().longValue()) {
+						if (node == edgeInfo.getSourceViewSUID()) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
-							srcExtents = m_view.m_extentsBuff;
-							trgExtents = m_extentsBuff2;
+							srcExtents = extentsBuff;
+							trgExtents = extentsBuff2;
 						} else { // node == graph.edgeTarget(edge).
 							srcShape = otherNodeShape;
 							trgShape = nodeShape;
-							srcExtents = m_extentsBuff2;
-							trgExtents = m_view.m_extentsBuff;
+							srcExtents = extentsBuff2;
+							trgExtents = extentsBuff;
 						}
 
 						final ArrowShape srcArrow;
@@ -819,19 +816,15 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
-							srcArrow = m_view.m_edgeDetails.getSourceArrowShape(edge);
-							trgArrow = m_view.m_edgeDetails.getTargetArrowShape(edge);
-							srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) 
-							                ? 0.0f
-							                : m_view.m_edgeDetails.getSourceArrowSize(edge));
-							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) 
-							                ? 0.0f
-							                : m_view.m_edgeDetails.getTargetArrowSize(edge));
+							srcArrow = m_re.getEdgeDetails().getSourceArrowShape(edge);
+							trgArrow = m_re.getEdgeDetails().getTargetArrowShape(edge);
+							srcArrowSize = ((srcArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : m_re.getEdgeDetails().getSourceArrowSize(edge));
+							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : m_re.getEdgeDetails().getTargetArrowSize(edge));
 						}
 
 						final EdgeAnchors anchors = (((m_lastRenderDetail
 						                              & GraphRenderer.LOD_EDGE_ANCHORS) == 0)
-						                             ? null : m_view.m_edgeDetails.getAnchors(edge));
+						                             ? null : m_re.getEdgeDetails().getAnchors(edge));
 
 						if (!GraphRenderer.computeEdgeEndpoints(m_grafx, srcExtents, srcShape,
 						                                        srcArrow, srcArrowSize, anchors,
@@ -848,11 +841,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						if (m_path2.intersects(xMin - segThicknessDiv2, yMin - segThicknessDiv2,
 						                       (xMax - xMin) + (segThicknessDiv2 * 2),
 						                       (yMax - yMin) + (segThicknessDiv2 * 2)))
-							stack.push(edge.getSUID().longValue());
+							resultEdges.add(edge.getSUID().longValue());
 					}
 				}
 
-				m_hash.put(node);
+				processedNodes.add(node);
 			}
 		}
 	}

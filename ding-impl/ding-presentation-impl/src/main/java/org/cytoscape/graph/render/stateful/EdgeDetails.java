@@ -5,7 +5,6 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 
-import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -145,9 +144,9 @@ public interface EdgeDetails {
 	 * the source node shape or if the last anchor lies inside the target
 	 * node shape, the edge is not rendered.
 	 */
-	default public EdgeAnchors getAnchors(View<CyEdge> edgeView) {
-		return null;
-	}
+//	default public EdgeAnchors getAnchors(View<CyEdge> edgeView) {
+//		return null;
+//	}
 
 	/**
 	 * For edges with anchors, the anchors can be rendered as squares.  To render
