@@ -111,8 +111,8 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	private static class BadgeIcon extends TextIcon {
 
-		private static float ICON_FONT_SIZE = 20f;
-		private static int ICON_SIZE = 36;
+		private static float ICON_FONT_SIZE = 24f;
+		private static int ICON_SIZE = 32;
 		private static int BADGE_BORDER_WIDTH = 1;
 		private static Color BADGE_COLOR = Color.RED;
 		private static Color BADGE_BORDER_COLOR = Color.WHITE;
@@ -145,7 +145,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 			int h = getIconHeight();
 
 			// Position the badge in the top-right quadrant of the icon
-			float d = Math.max(w, h) / 2.0f; // diameter
+			float d = Math.max(w, h) / 1.75f; // diameter
 			float di = d - 2 * BADGE_BORDER_WIDTH; // diameter of the internal circle (i.e. circle - border)
 			float bx = x + w - d; // x of badge's upper left corner
 			float by = y; // y of badge's upper left corner
