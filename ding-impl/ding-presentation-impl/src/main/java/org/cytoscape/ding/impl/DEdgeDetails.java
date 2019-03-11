@@ -32,20 +32,36 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.geom.Point2D;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.cytoscape.ding.impl.BendStore.HandleKey;
+import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.util.intr.LongEnumerator;
+import org.cytoscape.util.intr.MinLongHeap;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.LineType;
 
 
 public final class DEdgeDetails implements EdgeDetails {
 
+	private final DRenderingEngine re;
+	
+	public DEdgeDetails(DRenderingEngine re) {
+		this.re = re;
+	}
+	
 	@Override
 	public boolean isSelected(View<CyEdge> edgeView) {
 		return Boolean.TRUE.equals(edgeView.getVisualProperty(BasicVisualLexicon.EDGE_SELECTED));
@@ -147,7 +163,8 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 
-	private Paint getUnselectedPaint(View<CyEdge> edgeView) {
+	@Override
+	public Paint getUnselectedPaint(View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_UNSELECTED_PAINT);
 		if(paint == null)
 			paint = edgeView.getVisualProperty(EDGE_UNSELECTED_PAINT);
@@ -155,7 +172,8 @@ public final class DEdgeDetails implements EdgeDetails {
 		return DNodeDetails.getTransparentColor(paint, trans);
 	}
 
-	private Paint getSelectedPaint(View<CyEdge> edgeView) {
+	@Override
+	public Paint getSelectedPaint(View<CyEdge> edgeView) {
 		Paint paint = edgeView.getVisualProperty(EDGE_STROKE_SELECTED_PAINT);
 		if(paint == null)
 			paint = edgeView.getVisualProperty(EDGE_SELECTED_PAINT);
@@ -249,14 +267,6 @@ public final class DEdgeDetails implements EdgeDetails {
 		return bend;
 	}
 	
-	private int getNumAnchors(View<CyEdge> edgeView) {
-		Bend bend = getBend(edgeView); 
-		int numHandles = bend.getAllHandles().size();
-		if (numHandles == 0)
-			return 0;
-		return getLineCurved(edgeView) == CURVED_LINES ? numHandles : 2 * numHandles;
-	}
-	
 	@Override
 	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
 		if (isSelected(edgeView) && getNumAnchors(edgeView) > 0)
@@ -270,212 +280,232 @@ public final class DEdgeDetails implements EdgeDetails {
 		if (getLineCurved(edgeView) == STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
 
-		return null;
-		
-//		if (dGraphView.m_selectedAnchors.count((edge.getSUID() << 6) | anchorInx) > 0)
-//			return getSelectedPaint(edge);
-//		else
-//			return getUnselectedPaint(edge);
+		HandleKey handleKey = new HandleKey(edgeView.getSUID(), anchorInx);
+		if(re.getBendStore().isHandleSelected(handleKey))
+			return getSelectedPaint(edgeView);
+		else
+			return getUnselectedPaint(edgeView);
 	}
-//	
-//	// Used by bends
+
+
+	// Used by bends
 //	private final MinLongHeap m_heap = new MinLongHeap();
 //	private final float[] m_extentsBuff = new float[4];
-//
-//
-//	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
-//		if (edgeView == null)
-//			return null;
-//		
-//		final EdgeAnchors returnThis = new EdgeAnchors() {
-//			
-//			@Override
-//			public int numAnchors() {
-//				// TODO Auto-generated method stub
-//				return 0;
-//			}
-//			
-//			@Override
-//			public void getAnchor(int anchorIndex, float[] anchorArr, int offset) {
-//				// TODO Auto-generated method stub
-//				
-//			}
-//		};
-//
-//		if (returnThis.numAnchors() > 0)
-//			return returnThis;
-//
-//		final CyNetwork graph = dGraphView.m_drawPersp;
-//
-//		final long srcNodeIndex = edgeView.getModel().getSource().getSUID();
-//		final long trgNodeIndex = edgeView.getModel().getTarget().getSUID();
-//
-//		// Calculate anchors necessary for self edges.
-//		if (srcNodeIndex == trgNodeIndex) {
-//			dGraphView.m_spacial.exists(srcNodeIndex, m_extentsBuff, 0);
-//
-//			final double w = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-//			final double h = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-//			final double x = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-//			final double y = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-//			final double nodeSize = Math.max(w, h);
-//			int i = 0;
-//
-//			final List<CyEdge> selfEdgeList = graph.getConnectingEdgeList(edgeView.getModel().getSource(), edgeView
-//					.getModel().getSource(), CyEdge.Type.ANY);
-//			// final IntIterator selfEdges = graph.edgesConnecting(srcNodeIndex,
-//			// srcNodeIndex, true, true, true);
-//
-//			for (final CyEdge selfEdge : selfEdgeList) {
-//				// while (selfEdges.hasNext()) 
-//				// final int e2 = selfEdges.nextInt();
-//				final long e2 = selfEdge.getSUID();
-//
-//				if (e2 == edge.getSUID())
-//					break;
-//
-//				if (((EdgeAnchors) dGraphView.getDEdgeView(e2)).numAnchors() == 0)
-//					i++;
-//			}
-//
-//			final int inx = i;
-//
-//			return new EdgeAnchors() {
-//				@Override
-//				public int numAnchors() {
-//					return 2;
-//				}
-//				@Override
-//				public void getAnchor(int anchorInx, float[] anchorArr, int offset) {
-//					if (anchorInx == 0) {
-//						anchorArr[offset] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
-//						anchorArr[offset + 1] = (float) y;
-//					} else if (anchorInx == 1) {
-//						anchorArr[offset] = (float) x;
-//						anchorArr[offset + 1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
-//					}
-//				}
-//			};
-//		}
-//
-//		// Now add "invisible" anchors to edges for the case where multiple edges
-//		// exist between two nodes. This has no effect if user specified anchors exist on the edge.
-//		while (true) {
-//			// By consistently ordering the source and target nodes, dx and dy
-//			// will always
-//			// be calculated according to the same orientation. This allows the
-//			// offset
-//			// calculation to toggle the edges from side to side without any
-//			// overlap.
-//			final long tmpSrcIndex = Math.min(srcNodeIndex, trgNodeIndex);
-//			final long tmpTrgIndex = Math.max(srcNodeIndex, trgNodeIndex);
-//
-//			// Sort the connecting edges.
-//			final CyNode tmpSrc = graph.getNode(tmpSrcIndex);
-//			final CyNode tmpTrg = graph.getNode(tmpTrgIndex);
-//			final List<CyEdge> conEdgeList = graph.getConnectingEdgeList(tmpSrc, tmpTrg, CyEdge.Type.ANY);
-//			// final IntIterator conEdges = graph.edgesConnecting(tmpSrc,
-//			// tmpTrg,
-//			// true, true, true);
-//			m_heap.empty();
-//
-//			for (final CyEdge conEdge : conEdgeList) {
-//				// while (conEdges.hasNext()) 
-//				// m_heap.toss(conEdges.nextInt());
-//				m_heap.toss(conEdge.getSUID());
-//			}
-//
-//			final LongEnumerator otherEdges = m_heap.orderedElements(false);
-//			long otherEdge = otherEdges.nextLong();
-//
-//			// If the first other edge is the same as this edge,
-//			// (i.e. we're at the end of the list?).
-//			if (otherEdge == edge.getSUID())
-//				break;
-//
-//			// So we don't count the other edge twice?
-//			DEdgeView otherEdgeView = dGraphView.getDEdgeView(otherEdge);
-//			
-//			if (otherEdgeView == null)
-//				continue;
-//			
-//			int i = (((EdgeAnchors) otherEdgeView).numAnchors() == 0) ? 1 : 0;
-//
-//			// Count the number of other edges.
-//			while (true) {
-//				if (edge.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
-//					break;
-//
-//				if (((EdgeAnchors) otherEdgeView).numAnchors() == 0)
-//					i++;
-//			}
-//
-//			final int inx = i;
-//
-//			// Get source node size and position.
-//			dGraphView.m_spacial.exists(tmpSrcIndex, m_extentsBuff, 0);
-//			final double srcW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-//			final double srcH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-//			final double srcX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-//			final double srcY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-//
-//			// Get target node size and position.
-//			dGraphView.m_spacial.exists(tmpTrgIndex, m_extentsBuff, 0);
-//			final double trgW = ((double) m_extentsBuff[2]) - m_extentsBuff[0];
-//			final double trgH = ((double) m_extentsBuff[3]) - m_extentsBuff[1];
-//			final double trgX = (((double) m_extentsBuff[0]) + m_extentsBuff[2]) / 2.0d;
-//			final double trgY = (((double) m_extentsBuff[1]) + m_extentsBuff[3]) / 2.0d;
-//
-//			// Used for determining the space between the edges.
-//			final double nodeSize = Math.max(Math.max(Math.max(srcW, srcH), trgW), trgH);
-//
-//			// Midpoint between nodes.
-//			final double midX = (srcX + trgX) / 2;
-//			final double midY = (srcY + trgY) / 2;
-//
-//			// Distance in X and Y dimensions.
-//			// Note that dx and dy may be negative. This is OK, because this will ensure
-//			// that the handle is always correctly placed offset from the midpoint of,
-//			// and perpendicular to, the original edge.
-//			final double dx = trgX - srcX;
-//			final double dy = trgY - srcY;
-//
-//			// Distance or length between nodes.
-//			final double len = Math.sqrt((dx * dx) + (dy * dy));
-//
-//			if (((float) len) == 0.0f)
-//				break;
-//
-//			// This determines which side of the first edge and how far from the first
-//			// edge the other edge should be placed.
-//			// - Divide by 2 puts consecutive edges at the same distance from the center because of integer math.
-//			// - Modulo puts consecutive edges on opposite sides.
-//			// - Node size is for consistent scaling.
-//			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
-//
-//			// Depending on orientation sine or cosine. This adjusts the length
-//			// of the offset according the appropriate X and Y dimensions.
-//			final double normX = dx / len;
-//			final double normY = dy / len;
-//
-//			// Calculate the anchor points.
-//			final double anchorX = midX + (offset * normY);
-//			final double anchorY = midY - (offset * normX);
-//
-//			return new EdgeAnchors() {
-//				public int numAnchors() {
-//					return 1;
-//				}
-//
-//				public void getAnchor(int inx, float[] arr, int off) {
-//					arr[off] = (float) anchorX;
-//					arr[off + 1] = (float) anchorY;
-//				}
-//			};
-//		}
-//
-//		return returnThis;
-//	}
+
+	// Interface org.cytoscape.graph.render.immed.EdgeAnchors:
+
+	private int getNumAnchors(View<CyEdge> edgeView) {
+		Bend bend = getBend(edgeView); 
+		int numHandles = bend.getAllHandles().size();
+		if (numHandles == 0)
+			return 0;
+		return getLineCurved(edgeView) == CURVED_LINES ? numHandles : 2 * numHandles;
+	}
+	
+	/**
+	 * Actual method to be used in the Graph Renderer.
+	 */
+	private void getAnchor(View<CyEdge> edgeView, int anchorIndex, float[] anchorArr) {
+		Bend bend = getBend(edgeView);
+		
+		Handle handle;
+		if (getLineCurved(edgeView) == CURVED_LINES)
+			handle = bend.getAllHandles().get(anchorIndex);
+		else
+			handle = bend.getAllHandles().get(anchorIndex/2);
+
+		Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), edgeView);
+		anchorArr[0] = (float) newPoint.getX();
+		anchorArr[1] = (float) newPoint.getY();
+	}
+	
+	
+	// MKTODO this may need to be optimized
+	private List<View<CyEdge>> getConnectingEdgeList(CyNetworkViewSnapshot netView, long sourceSuid, long targetSuid) {
+		List<View<CyEdge>> connectingEdges = new ArrayList<>();
+		Iterable<View<CyEdge>> adjacentEdgeIterable = netView.getAdjacentEdgeIterable(sourceSuid);
+		for(View<CyEdge> edge : adjacentEdgeIterable) {
+			SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+			long otherNode = sourceSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+			if(targetSuid == otherNode) {
+				connectingEdges.add(edge);
+			}
+		}
+		return connectingEdges;
+	}
+	
+	@Override
+	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
+		if (edgeView == null)
+			return null;
+		
+		final EdgeAnchors returnThis = new EdgeAnchors() {
+			public int numAnchors() { 
+				return DEdgeDetails.this.getNumAnchors(edgeView); 
+			}
+			public void getAnchor(int anchorIndex, float[] anchorArr) {
+				DEdgeDetails.this.getAnchor(edgeView, anchorIndex, anchorArr);
+			}
+		};
+		
+		int numAnchors = getNumAnchors(edgeView);
+		if (numAnchors > 0) {
+			return returnThis;
+		}
+
+		float[]	extentsBuff = new float[4];
+		SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edgeView);
+		final long srcNodeIndex = edgeInfo.getSourceViewSUID();
+		final long trgNodeIndex = edgeInfo.getTargetViewSUID();
+
+		// Calculate anchors necessary for self edges.
+		if (srcNodeIndex == trgNodeIndex) {
+			netView.getSpacialIndex2D().get(srcNodeIndex, extentsBuff);
+
+			final double w = ((double) extentsBuff[2]) - extentsBuff[0];
+			final double h = ((double) extentsBuff[3]) - extentsBuff[1];
+			final double x = (((double) extentsBuff[0]) + extentsBuff[2]) / 2.0d;
+			final double y = (((double) extentsBuff[1]) + extentsBuff[3]) / 2.0d;
+			final double nodeSize = Math.max(w, h);
+			
+			List<View<CyEdge>> selfEdgeList = getConnectingEdgeList(netView, srcNodeIndex, srcNodeIndex);
+
+			int i = 0;
+			for (View<CyEdge> selfEdge : selfEdgeList) {
+				if (selfEdge.getSUID() == edgeView.getSUID())
+					break; // MKTODO break???? shouldn't this be continue??? what about edges that haven't been processed yet???
+				if (getNumAnchors(selfEdge) == 0)
+					i++;
+			}
+
+			final int inx = i;
+
+			return new EdgeAnchors() {
+				@Override
+				public int numAnchors() {
+					return 2;
+				}
+				@Override
+				public void getAnchor(int anchorInx, float[] anchorArr) {
+					if (anchorInx == 0) {
+						anchorArr[0] = (float) (x - (((inx + 3) * nodeSize) / 2.0d));
+						anchorArr[1] = (float) y;
+					} else if (anchorInx == 1) {
+						anchorArr[0] = (float) x;
+						anchorArr[1] = (float) (y - (((inx + 3) * nodeSize) / 2.0d));
+					}
+				}
+			};
+		}
+
+		MinLongHeap heap = new MinLongHeap();
+		
+		// Now add "invisible" anchors to edges for the case where multiple edges
+		// exist between two nodes. This has no effect if user specified anchors exist on the edge.
+		while (true) {
+			// By consistently ordering the source and target nodes, dx and dy will always
+			// be calculated according to the same orientation. This allows the offset
+			// calculation to toggle the edges from side to side without any overlap.
+			long tmpSrcIndex = Math.min(srcNodeIndex, trgNodeIndex);
+			long tmpTrgIndex = Math.max(srcNodeIndex, trgNodeIndex);
+
+			// Sort the connecting edges.
+			View<CyNode> tmpSrc = netView.getNodeView(tmpSrcIndex);
+			View<CyNode> tmpTrg = netView.getNodeView(tmpTrgIndex);
+			List<View<CyEdge>> conEdgeList = getConnectingEdgeList(netView, tmpSrc.getSUID(), tmpTrg.getSUID());
+
+			for (View<CyEdge> conEdge : conEdgeList) {
+				heap.toss(conEdge.getSUID());
+			}
+
+			LongEnumerator otherEdges = heap.orderedElements(false);
+			long otherEdge = otherEdges.nextLong();
+
+			// If the first other edge is the same as this edge,
+			// (i.e. we're at the end of the list?).
+			if (otherEdge == edgeView.getSUID())
+				break;
+
+			// So we don't count the other edge twice?
+			View<CyEdge> otherEdgeView = netView.getEdgeView(otherEdge);
+			if (otherEdgeView == null)
+				continue;
+			
+			int i = (getNumAnchors(otherEdgeView) == 0) ? 1 : 0;
+
+			// Count the number of other edges.
+			while (true) {
+				if (edgeView.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
+					break;
+				if (((EdgeAnchors) otherEdgeView).numAnchors() == 0)
+					i++;
+			}
+
+			final int inx = i;
+
+			// Get source node size and position.
+			netView.getSpacialIndex2D().get(tmpSrcIndex, extentsBuff);
+			final double srcW = ((double) extentsBuff[2]) - extentsBuff[0];
+			final double srcH = ((double) extentsBuff[3]) - extentsBuff[1];
+			final double srcX = (((double) extentsBuff[0]) + extentsBuff[2]) / 2.0d;
+			final double srcY = (((double) extentsBuff[1]) + extentsBuff[3]) / 2.0d;
+
+			// Get target node size and position.
+			netView.getSpacialIndex2D().get(tmpTrgIndex, extentsBuff);
+			final double trgW = ((double) extentsBuff[2]) - extentsBuff[0];
+			final double trgH = ((double) extentsBuff[3]) - extentsBuff[1];
+			final double trgX = (((double) extentsBuff[0]) + extentsBuff[2]) / 2.0d;
+			final double trgY = (((double) extentsBuff[1]) + extentsBuff[3]) / 2.0d;
+
+			// Used for determining the space between the edges.
+			final double nodeSize = Math.max(Math.max(Math.max(srcW, srcH), trgW), trgH);
+
+			// Midpoint between nodes.
+			final double midX = (srcX + trgX) / 2;
+			final double midY = (srcY + trgY) / 2;
+
+			// Distance in X and Y dimensions.
+			// Note that dx and dy may be negative. This is OK, because this will ensure
+			// that the handle is always correctly placed offset from the midpoint of,
+			// and perpendicular to, the original edge.
+			final double dx = trgX - srcX;
+			final double dy = trgY - srcY;
+
+			// Distance or length between nodes.
+			final double len = Math.sqrt((dx * dx) + (dy * dy));
+
+			if (((float) len) == 0.0f)
+				break;
+
+			// This determines which side of the first edge and how far from the first
+			// edge the other edge should be placed.
+			// - Divide by 2 puts consecutive edges at the same distance from the center because of integer math.
+			// - Modulo puts consecutive edges on opposite sides.
+			// - Node size is for consistent scaling.
+			final double offset = ((inx + 1) / 2) * (inx % 2 == 0 ? 1 : -1) * nodeSize;
+
+			// Depending on orientation sine or cosine. This adjusts the length
+			// of the offset according the appropriate X and Y dimensions.
+			final double normX = dx / len;
+			final double normY = dy / len;
+
+			// Calculate the anchor points.
+			final double anchorX = midX + (offset * normY);
+			final double anchorY = midY - (offset * normX);
+
+			return new EdgeAnchors() {
+				public int numAnchors() {
+					return 1;
+				}
+
+				public void getAnchor(int inx, float[] arr) {
+					arr[0] = (float) anchorX;
+					arr[1] = (float) anchorY;
+				}
+			};
+		}
+		return returnThis;
+	}
 
 	
 	

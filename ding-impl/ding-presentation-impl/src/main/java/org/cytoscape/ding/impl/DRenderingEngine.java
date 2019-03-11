@@ -74,7 +74,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
@@ -384,8 +383,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 //		m_spacial = spacialFactory.createSpacialIndex2D();
 //		m_spacialA = spacialFactory.createSpacialIndex2D();
-		m_nodeDetails = new DNodeDetails(registrar, dingLexicon);
-		m_edgeDetails = new DEdgeDetails();
+		m_nodeDetails = new DNodeDetails(this);
+		m_edgeDetails = new DEdgeDetails(this);
 //		nodeViewDefaultSupport = new NodeViewDefaultSupport(m_nodeDetails, m_lock);
 //		edgeViewDefaultSupport = new EdgeViewDefaultSupport(m_edgeDetails, m_lock);
 //		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
@@ -2146,7 +2145,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	@Override
-	public VisualLexicon getVisualLexicon() {
+	public DVisualLexicon getVisualLexicon() {
 		return lexicon;
 	}
 

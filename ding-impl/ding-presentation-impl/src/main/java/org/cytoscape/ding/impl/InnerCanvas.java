@@ -824,7 +824,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 						final EdgeAnchors anchors = (((m_lastRenderDetail
 						                              & GraphRenderer.LOD_EDGE_ANCHORS) == 0)
-						                             ? null : m_re.getEdgeDetails().getAnchors(edge));
+						                             ? null : m_re.getEdgeDetails().getAnchors(snapshot, edge));
 
 						if (!GraphRenderer.computeEdgeEndpoints(m_grafx, srcExtents, srcShape,
 						                                        srcArrow, srcArrowSize, anchors,
@@ -848,6 +848,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				processedNodes.add(node);
 			}
 		}
+		return resultEdges;
 	}
 
     /**

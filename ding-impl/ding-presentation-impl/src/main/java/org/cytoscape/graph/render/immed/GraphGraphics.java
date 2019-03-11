@@ -230,7 +230,7 @@ public final class GraphGraphics {
 	// package scoped for unit testing
 	final EdgeAnchors m_noAnchors = new EdgeAnchors() {
 		public final int numAnchors() { return 0; }
-		public final void getAnchor(final int inx, final float[] arr, final int off) { }
+		public final void getAnchor(final int inx, final float[] arr) { }
 	};
 
 	private final double[] m_edgePtsBuff = new double[(MAX_EDGE_ANCHORS + 1) * 6];
@@ -1655,7 +1655,7 @@ public final class GraphGraphics {
 		// finds the first anchor point other than the start point and
 		// add it to the edge points buffer
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff, 0);
+			anchors.getAnchor(anchorInx++, m_floatBuff);
 
 			if (!((m_floatBuff[0] == x0) && (m_floatBuff[1] == y0))) {
 				m_edgePtsBuff[2] = m_floatBuff[0];
@@ -1668,7 +1668,7 @@ public final class GraphGraphics {
 
 		// now fill edge points buffer with all subsequent anchors
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff, 0);
+			anchors.getAnchor(anchorInx++, m_floatBuff);
 			// Duplicate anchors are allowed.
 			m_edgePtsBuff[m_edgePtsCount * 2] = m_floatBuff[0];
 			m_edgePtsBuff[(m_edgePtsCount * 2) + 1] = m_floatBuff[1];

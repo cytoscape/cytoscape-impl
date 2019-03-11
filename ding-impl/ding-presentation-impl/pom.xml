@@ -210,6 +210,13 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.cytoscape</groupId>
+			<artifactId>viewmodel-impl</artifactId>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math</artifactId>
 			<version>2.1</version>

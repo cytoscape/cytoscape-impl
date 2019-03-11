@@ -5,6 +5,7 @@ import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
 
+import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -335,4 +336,11 @@ public interface EdgeDetails {
 	boolean isSelected(View<CyEdge> edgeView);
 
 	String getTooltipText(View<CyEdge> edgeView);
+
+	EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView);
+	
+	Paint getUnselectedPaint(View<CyEdge> edgeView);
+
+	Paint getSelectedPaint(View<CyEdge> edgeView);
+	
 }

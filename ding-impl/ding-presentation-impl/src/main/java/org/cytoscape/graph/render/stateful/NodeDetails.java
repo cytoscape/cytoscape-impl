@@ -387,4 +387,6 @@ public interface NodeDetails {
 	}
 
 	boolean isSelected(View<CyNode> nodeView);
+
+	Integer getBorderTransparency(View<CyNode> nodeView);
 }

@@ -8,11 +8,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -22,7 +22,7 @@ import org.junit.Before;
 public class AbstractAnnotationTest {
 
 	private NetworkViewTestSupport nvTest = new NetworkViewTestSupport();
-	protected DGraphView graphView;
+	protected CyNetworkView graphView;
 	protected AnnotationManager annotationManager;
 	
 	protected ShapeAnnotationFactory shapeFactory;
@@ -34,7 +34,7 @@ public class AbstractAnnotationTest {
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 		
-		graphView = (DGraphView) nvTest.getNetworkView();
+		graphView = nvTest.getNetworkView();
 		annotationManager = new AnnotationManagerImpl(registrar);
 		
 		shapeFactory = new ShapeAnnotationFactory(registrar);

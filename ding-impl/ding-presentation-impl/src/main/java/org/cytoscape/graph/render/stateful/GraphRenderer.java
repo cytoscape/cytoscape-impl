@@ -50,7 +50,6 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.CyCustomGraphics;
@@ -435,7 +434,7 @@ public final class GraphRenderer {
 							}
 
 							// Compute the anchors to use when rendering edge.
-							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null : edgeDetails.getAnchors(edge));
+							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null : edgeDetails.getAnchors(netView, edge));
 
 							if (!computeEdgeEndpoints(grafx, srcExtents, srcShape, srcArrow,
 							                          srcArrowSize, anchors, trgExtents, trgShape,
@@ -457,7 +456,7 @@ public final class GraphRenderer {
 									final float anchorSize;
 
 									if ((anchorSize = edgeDetails.getAnchorSize(edge, k)) > 0.0f) {
-										anchors.getAnchor(k, floatBuff4, 0);
+										anchors.getAnchor(k, floatBuff4);
 										grafx.drawNodeFull(GraphGraphics.SHAPE_RECTANGLE,
 										                   (float) (floatBuff4[0] - (anchorSize / 2.0d)),
 										                   (float) (floatBuff4[1] - (anchorSize / 2.0d)),
@@ -655,7 +654,7 @@ public final class GraphRenderer {
 			} else { // High detail.
 				SpacialIndex2DEnumerator<Long> zHits = nodeHits;
 				if (haveZOrder) {
-					zHits = new SpacialEntry2DEnumeratorZSort(netView.getSpacialIndex2D(), nodeHits);
+					zHits = new SpacialEntry2DEnumeratorZSort(netView, nodeDetails, nodeHits);
 				}
 				while (zHits.hasNext()) {
 					final long node = zHits.nextExtents(floatBuff1);
@@ -838,10 +837,10 @@ public final class GraphRenderer {
 			trgXOut = srcX;
 			trgYOut = srcY;
 		} else {
-			anchors.getAnchor(0, floatBuff, 0);
+			anchors.getAnchor(0, floatBuff);
 			srcXOut = floatBuff[0];
 			srcYOut = floatBuff[1];
-			anchors.getAnchor(anchors.numAnchors() - 1, floatBuff, 0);
+			anchors.getAnchor(anchors.numAnchors() - 1, floatBuff);
 			trgXOut = floatBuff[0];
 			trgYOut = floatBuff[1];
 		}
@@ -1151,14 +1150,15 @@ public final class GraphRenderer {
 		private final Iterator<ZSpacialEntry> entries;
 		private final int size;
 
-		public SpacialEntry2DEnumeratorZSort(SpacialIndex2D<Long> nodePositions, SpacialIndex2DEnumerator<Long> nodeHits) {
+		public SpacialEntry2DEnumeratorZSort(CyNetworkViewSnapshot netView, NodeDetails nodeDetails, SpacialIndex2DEnumerator<Long> nodeHits) {
 			// Get arrays of SUIDs, extents, Z
 			List<ZSpacialEntry> entryList = new ArrayList<>();
 			while (nodeHits.hasNext()) {
 				float[] extents = new float[4];
 				long suid = nodeHits.nextExtents(extents);
 				// Create an index
-				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodePositions.getZOrder(suid));
+				View<CyNode> node = netView.getNodeView(suid);
+				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodeDetails.getZPosition(node));
 				entryList.add(entry);
 			}
 			Collections.sort(entryList);

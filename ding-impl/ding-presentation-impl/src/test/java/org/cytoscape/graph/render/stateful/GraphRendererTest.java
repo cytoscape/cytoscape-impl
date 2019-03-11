@@ -268,7 +268,7 @@ public class GraphRendererTest extends TestCase {
 			this.pt = pt;
 		}
     	public int numAnchors() { return 1;	}
-    	public void getAnchor(int anchorIndex, float[] anchorArr, int offset) {
+    	public void getAnchor(int anchorIndex, float[] anchorArr) {
 			anchorArr[0] = pt[0];
 			anchorArr[1] = pt[1];
 		}

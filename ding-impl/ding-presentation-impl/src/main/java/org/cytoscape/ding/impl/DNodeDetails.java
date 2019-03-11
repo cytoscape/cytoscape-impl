@@ -44,7 +44,6 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -59,8 +58,7 @@ import org.cytoscape.view.presentation.property.values.Position;
 
 public class DNodeDetails implements NodeDetails {
 
-	private final CyServiceRegistrar serviceRegistrar;
-	private final DVisualLexicon lexicon;
+	private final DRenderingEngine re;
 	
 	// These images will be used when a view is not available for a nested network.
 	private static BufferedImage DEFAULT_NESTED_NETWORK_IMAGE;
@@ -80,9 +78,8 @@ public class DNodeDetails implements NodeDetails {
 		}
 	}
 	
-	public DNodeDetails(CyServiceRegistrar serviceRegistrar, DVisualLexicon lexicon) {
-		this.serviceRegistrar = serviceRegistrar;
-		this.lexicon = lexicon;
+	public DNodeDetails(DRenderingEngine re) {
+		this.re = re;
 	}
 	
 	
@@ -225,6 +222,7 @@ public class DNodeDetails implements NodeDetails {
 		if(cg == null)
 			return null;
 		
+		DVisualLexicon lexicon = re.getVisualLexicon();
 		VisualProperty<Double> sizeVP = lexicon.getAssociatedCustomGraphicsSizeVP(cgVP);
 		Double size = node.getVisualProperty(sizeVP);
 		
@@ -243,6 +241,7 @@ public class DNodeDetails implements NodeDetails {
 	public Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> getCustomGraphics(View<CyNode> nodeView) {
 		Map<VisualProperty<CyCustomGraphics>, CustomGraphicsInfo> cgInfoMap = new TreeMap<>(Comparator.comparing(VisualProperty::getIdString));
 		
+		DVisualLexicon lexicon = re.getVisualLexicon();
 		for (VisualProperty<CyCustomGraphics> cgVP : lexicon.getCustomGraphicsVisualProperties()) {
 			CustomGraphicsInfo info = getCustomGraphicsInfo(cgVP, nodeView);
 			if(info != null)
@@ -296,6 +295,7 @@ public class DNodeDetails implements NodeDetails {
 		return nodeView.getVisualProperty(NODE_LABEL_TRANSPARENCY);
 	}
 
+	@Override
 	public Integer getBorderTransparency(View<CyNode> nodeView) {
 		return nodeView.getVisualProperty(NODE_BORDER_TRANSPARENCY);
 	}
