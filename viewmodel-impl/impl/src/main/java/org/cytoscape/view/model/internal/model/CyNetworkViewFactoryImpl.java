@@ -25,7 +25,7 @@ public class CyNetworkViewFactoryImpl implements CyNetworkViewFactory {
 	
 	@Override
 	public CyNetworkView createNetworkView(CyNetwork network) {
-		CyNetworkViewImpl networkViewImpl = new CyNetworkViewImpl(network, visualLexicon, rendererId);
+		CyNetworkViewImpl networkViewImpl = new CyNetworkViewImpl(registrar, network, visualLexicon, rendererId);
 		NetworkModelListener modelListener = new NetworkModelListener(networkViewImpl, registrar);
 		
 		networkViewImpl.addNetworkViewListener(new CyNetworkViewListener() {

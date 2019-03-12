@@ -7,16 +7,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
@@ -32,7 +36,11 @@ public class SpacialIndex2DTest {
 	private static CyNetworkViewImpl createNetworkView(CyNetwork network) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
-		CyNetworkViewImpl networkView = new CyNetworkViewImpl(network, lexicon, "test");
+		
+		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
+		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
+		
+		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test");
 		return networkView;
 	}
 	

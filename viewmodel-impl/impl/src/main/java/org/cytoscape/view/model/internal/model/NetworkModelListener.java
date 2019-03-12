@@ -36,6 +36,13 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		return registrar.getService(CyEventHelper.class);
 	}
 	
+//	public void handleEvent(RowsSetEvent e) {
+//		if(!e.containsColumn(CyNetwork.SELECTED))
+//			return;
+//		if(e.getSource() == networkView.getModel().getDefaultNodeTable()) {
+//			
+//		}
+//	}
 	
 	@Override
 	public void handleEvent(AddedNodesEvent e) {

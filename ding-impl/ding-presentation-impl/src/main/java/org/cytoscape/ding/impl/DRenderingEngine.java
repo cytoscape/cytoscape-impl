@@ -2614,37 +2614,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	
-	public void selectBySuid(Collection<Long> suids, Class<? extends CyIdentifiable> type, boolean selected) {
-		if (suids == null || suids.isEmpty())
-			return;
-		
-		List<RowSetRecord> records = new ArrayList<>();
-		CyNetwork model = getViewModel().getModel();
-		CyTable table = type.equals(CyNode.class) ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
-		
-		// Disable events
-		// MKTODO With the new event coalesce logic in the event helper this shouldn't be necessary, but I'll leave it in for now.
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.silenceEventSource(table);
-
-		try {
-			for (Long suid : suids) {
-				CyRow row = table.getRow(suid);
-				row.set(CyNetwork.SELECTED, selected);		
-				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
-			}
-		} finally {
-			eventHelper.unsilenceEventSource(table);
-		}
-		
-		// Update the selection before firing the event to prevent race conditions
-//		updateSelection(type, records);
-		
-		// Only now it can fire the RowsSetEvent
-		fireRowsSetEvent(table, records, eventHelper);
-	}
-	
-	
 	public <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
 		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
 			return;
@@ -2659,19 +2628,24 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		eventHelper.silenceEventSource(table);
 
 		try {
+			// MKTODO is this right? what if the row doesn't exist?
+			CyNetworkViewSnapshot snapshot = getViewModelSnapshot();
 			for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
-				CyRow row = model.getRow(nodeOrEdgeView.getModel());
+				Long suid;
+				if(type.equals(CyNode.class)) {
+					suid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
+				} else {
+					suid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
+				}
+				
+				CyRow row = table.getRow(suid);
 				row.set(CyNetwork.SELECTED, selected);		
 				
-				// Add to paylod
 				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
 			}
 		} finally {
 			eventHelper.unsilenceEventSource(table);
 		}
-		
-		// Update the selection before firing the event to prevent race conditions
-//		updateSelection(type, records);
 		
 		// Only now it can fire the RowsSetEvent
 		fireRowsSetEvent(table, records, eventHelper);

@@ -614,7 +614,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return chosenEdgeSelected;
 	}
 	
-	private List<Long> getAndApplySelectedNodes() {
+	private List<View<CyNode>> getAndApplySelectedNodes() {
 		m_ptBuff[0] = m_selectionRect.x;
 		m_ptBuff[1] = m_selectionRect.y;
 		m_re.xformComponentToNodeCoords(m_ptBuff);
@@ -631,11 +631,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		boolean treatNodeShapesAsRectangle = (m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0;
 		List<Long> nodesXSect = m_re.getNodesIntersectingRectangle(xMin, yMin, xMax, yMax, treatNodeShapesAsRectangle);
 
-		List<Long> selectedNodes = new ArrayList<>(nodesXSect.size());
+		List<View<CyNode>> selectedNodes = new ArrayList<>(nodesXSect.size());
 		for(Long suid : nodesXSect) {
 			View<CyNode> node = m_re.getViewModelSnapshot().getNodeView(suid);
 			if (m_re.getNodeDetails().isSelected(node)) {
-				selectedNodes.add(suid);
+				selectedNodes.add(node);
 			}
 		}
 		
@@ -646,7 +646,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	}
 	
 	
-	private List<Long> getAndApplySelectedEdges() {
+	private List<View<CyEdge>> getAndApplySelectedEdges() {
 		if ((m_lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 			m_ptBuff[0] = m_selectionRect.x;
 			m_ptBuff[1] = m_selectionRect.y;
@@ -677,12 +677,12 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                         m_selectionRect.y + m_selectionRect.height);
 
 
-		List<Long> selectedEdges = new ArrayList<>(edges.size());
+		List<View<CyEdge>> selectedEdges = new ArrayList<>(edges.size());
 		
 		for (Long edgeXSect : edges) {
 			View<CyEdge> edge = m_re.getViewModelSnapshot().getEdgeView(edgeXSect);
 			if (m_re.getEdgeDetails().isSelected(edge)) {
-				selectedEdges.add(edgeXSect);
+				selectedEdges.add(edge);
 			}
 		}
 
@@ -1175,7 +1175,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				if (chosenNode >= 0)
 				    chosenNodeSelected = toggleSelectedNode(chosenNode, e);
 	
-				if (chosenAnchor == null)
+				if (chosenAnchor != null)
 					toggleChosenAnchor(chosenAnchor, e);
 	
 				if (chosenEdge >= 0)
@@ -1337,8 +1337,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				m_currMouseButton = 0;
 	
 				if (m_selectionRect != null) {
-					List<Long> selectedNodes = null;
-					List<Long> selectedEdges = null;
+					List<View<CyNode>> selectedNodes = null;
+					List<View<CyEdge>> selectedEdges = null;
 	
 					synchronized (m_lock) {
 						if (m_re.m_nodeSelection)
@@ -1367,10 +1367,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					if ((selectedNodes != null) && (!selectedNodes.isEmpty()))
-						m_re.selectBySuid(selectedNodes, CyNode.class, true);
+						m_re.select(selectedNodes, CyNode.class, true);
 	
 					if ((selectedEdges != null) && (!selectedEdges.isEmpty()))
-						m_re.selectBySuid(selectedEdges, CyEdge.class, true);
+						m_re.select(selectedEdges, CyEdge.class, true);
 					
 					repaint();
 				} else if (draggingCanvas) {

@@ -5,10 +5,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -16,6 +18,11 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
+import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
+import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
+import org.cytoscape.view.model.events.AddedNodeViewsEvent;
+import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
@@ -44,7 +51,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					   BasicVisualLexicon.NODE_HEIGHT, BasicVisualLexicon.NODE_WIDTH);
 	
 	
-	
+	private final CyEventHelper eventHelper;
 	private final String rendererId;
 	private final BasicVisualLexicon visualLexicon;
 	
@@ -74,8 +81,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private RTree<Long,Rectangle> rtree = RTree.create();
 	
 
-	public CyNetworkViewImpl(CyNetwork network, BasicVisualLexicon visualLexicon, String rendererId) {
+	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, BasicVisualLexicon visualLexicon, String rendererId) {
 		super(network);
+		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
@@ -108,6 +116,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					rtree, 
 					geometries
 				);
+				
 			}
 			return snapshot;
 		}
@@ -195,6 +204,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			geometries = geometries.put(view.getSUID(), DEFAULT_GEOMETRY);
 			setDirty();
 		}
+		
+		eventHelper.addEventPayload(this, view, AddedNodeViewsEvent.class);
 		return view;
 	}
 	
@@ -202,14 +213,16 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
 		CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
 		
-		CyEdgeViewImpl edgeView = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
+		CyEdgeViewImpl view = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
 		synchronized (this) {
-			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), edgeView);
-			viewSuidToEdge = viewSuidToEdge.put(edgeView.getSUID(), edgeView);
-			updateAdjacentEdgeMap(edgeView, true);
+			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), view);
+			viewSuidToEdge = viewSuidToEdge.put(view.getSUID(), view);
+			updateAdjacentEdgeMap(view, true);
 			setDirty();
 		}
-		return edgeView;
+		
+		eventHelper.addEventPayload(this, view, AddedEdgeViewsEvent.class);
+		return view;
 	}
 	
 	public View<CyNode> removeNode(CyNode model) {
@@ -217,6 +230,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (this) {
 			nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
 			if(nodeView != null) {
+				
+				// this is non-blocking, so its ok to call in the synchronized block
+				eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
+				
 				dataSuidToNode = dataSuidToNode.remove(model.getSUID());
 				viewSuidToNode = viewSuidToNode.remove(nodeView.getSUID());
 				Set<CyEdgeViewImpl> adjacentEdges = adjacentEdgeMap.getOrElse(nodeView.getSUID(), HashSet.empty());
@@ -240,6 +257,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (this) {
 			edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
 			if(edgeView != null) {
+				
+				// this is non-blocking, so its ok to call in the synchronized block
+				eventHelper.addEventPayload(this, edgeView, AboutToRemoveEdgeViewsEvent.class);
+				
 				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
 				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
@@ -494,6 +515,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 
 	@Override
 	public void updateView() {
+		// MKTODO this is temporary.
+		// The old Ding view model used to fire this event when you call updateView()
+		// If we want updateView() to be a no-op we need to move this.
+		eventHelper.fireEvent(new UpdateNetworkPresentationEvent(this));
+		
 		for(CyNetworkViewListener listener : listeners) {
 			listener.handleUpdateView();
 		}

@@ -336,9 +336,7 @@ public final class GraphRenderer {
 		
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
-				final int nodeHitCount = nodeHits.size();
-
-				for (int i = 0; i < nodeHitCount; i++) {
+				while (nodeHits.hasNext()) {
 					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
 					// Casting to double and then back we could achieve better accuracy
@@ -368,8 +366,9 @@ public final class GraphRenderer {
 					nodeBuff.put(nodeSuid);
 				}
 			} else { // High detail.
-				while (nodeHits.size() > 0) {
+				while (nodeHits.hasNext()) {
 					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
+					
 					final View<CyNode> node = netView.getNodeView(nodeSuid);
 					final byte nodeShape = nodeDetails.getShape(node);
 					Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
