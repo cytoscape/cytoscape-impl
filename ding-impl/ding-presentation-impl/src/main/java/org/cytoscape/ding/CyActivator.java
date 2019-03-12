@@ -178,10 +178,9 @@ public class CyActivator extends AbstractCyActivator {
 //		EdgeBendEditor edgeBendEditor =
 //				new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		
-//		Properties dingRenderingEngineFactoryProps = new Properties();
-//		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
-//		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
+		Properties dingRenderingEngineFactoryProps = new Properties();
+		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
+		registerAllServices(bc, renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT), dingRenderingEngineFactoryProps);
 //
 //		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
 //		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");

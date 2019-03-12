@@ -135,7 +135,9 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 	private final Paint getTargetArrowUnselectedPaint(View<CyEdge> edgeView) {
-		return edgeView.getVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		Paint paint = edgeView.getVisualProperty(EDGE_TARGET_ARROW_UNSELECTED_PAINT);
+		Integer trans = edgeView.getVisualProperty(EDGE_TRANSPARENCY);
+		return DNodeDetails.getTransparentColor(paint, trans);
 	}
 	
 	@Override

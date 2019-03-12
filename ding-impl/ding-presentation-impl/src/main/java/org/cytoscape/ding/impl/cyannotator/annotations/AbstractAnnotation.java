@@ -137,6 +137,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	//------------------------------------------------------------------------
 
 	protected String getDefaultName() {
+		if(cyAnnotator == null)
+			return "Annotation";
 		return cyAnnotator.getDefaultAnnotationName(getType().getSimpleName().replace("Annotation", ""));
 	}
 	

@@ -23,6 +23,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.NodeShape;
@@ -69,8 +70,6 @@ public class DGraphViewApplyTest {
 	NetworkViewTestSupport testSupport = new NetworkViewTestSupport();
 
 	private CyNetwork network;
-//	private CyRootNetworkManager rootNetworkManager;
-//	private SpacialIndex2DFactory spacialFactory;
 	private DVisualLexicon dingLexicon;
 	private HandleFactory handleFactory;
 
@@ -109,20 +108,16 @@ public class DGraphViewApplyTest {
 
 		testSupport.getNetworkTableManager();
 		network = buildNetworkModel();
-//		rootNetworkManager = new CyRootNetworkManagerImpl();
-//		spacialFactory = new RTreeFactory();
 		dingLexicon = new DVisualLexicon(cgManager);
 		handleFactory = new HandleFactoryImpl();
 		
-//		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetworkManager);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
-//		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(spacialFactory);
 		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(dialogTaskManager);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
-
+		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(testSupport.getSpacialIndex2DFactory());
 		
 		dgv = testSupport.getNetworkViewFactoryFactory().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
 		re = new DRenderingEngine(dgv, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
@@ -180,7 +175,6 @@ public class DGraphViewApplyTest {
 		assertEquals(255, ((Color) edgeDetails.getUnselectedPaint(ev23)).getAlpha());
 
 		dgv.setViewDefault(DVisualLexicon.EDGE_TRANSPARENCY, 100);
-
 		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev12)).getAlpha());
 		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev13)).getAlpha());
 		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev23)).getAlpha());
@@ -313,7 +307,7 @@ public class DGraphViewApplyTest {
 
 		final Color resultColor = new Color(Color.magenta.getRed(), Color.magenta.getGreen(), Color.magenta.getBlue(), trans);
 		assertEquals(borderW, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
-		assertEquals(resultColor, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(Color.magenta, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
 		assertEquals(resultColor, nodeDetails.getBorderPaint(nodeView1));
 		assertEquals(resultColor.getAlpha(), ((Color) nodeDetails.getBorderPaint(nodeView1)).getAlpha());
 		assertEquals(trans, nodeDetails.getBorderTransparency(nodeView1));
@@ -331,7 +325,7 @@ public class DGraphViewApplyTest {
 		assertEquals(222, nodeDetails.getBorderTransparency(nodeView1).intValue());
 
 		assertEquals(borderW, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
-		assertEquals(resultColor, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(Color.magenta, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
 		assertEquals(resultColor, nodeDetails.getBorderPaint(nodeView2));
 		assertEquals(resultColor.getAlpha(), ((Color) nodeDetails.getBorderPaint(nodeView2)).getAlpha());
 		assertEquals(trans, nodeDetails.getBorderTransparency(nodeView2));
