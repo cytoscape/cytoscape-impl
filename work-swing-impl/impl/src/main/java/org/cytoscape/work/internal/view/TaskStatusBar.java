@@ -112,22 +112,19 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 	}
 
 	public void setTitle(final FinishStatus.Type finishType, final String title) {
-		TaskIcon icon = null;
+		TaskIcon icon = GUIDefaults.getIcon(finishType);
 		String type = null;
 
 		if (finishType != null) {
 			switch (finishType) {
 				case SUCCEEDED:
 					type = "finished";
-					icon = TaskIcon.FINISHED;
 					break;
 				case FAILED:
 					type = "error";
-					icon = TaskIcon.ERROR;
 					break;
 				case CANCELLED:
 					type = "cancelled";
-					icon = TaskIcon.CANCELLED;
 					break;
 			}
 		}
@@ -136,22 +133,19 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 	}
 
 	public void setTitle(final Level level, final String title) {
-		TaskIcon icon = null;
+		TaskIcon icon = GUIDefaults.getIcon(level);
 		String type = null;
 
 		if (level != null) {
 			switch (level) {
 				case INFO:
 					type = "info";
-					icon = TaskIcon.INFO;
 					break;
 				case WARN: 
 					type = "warn";
-					icon = TaskIcon.WARN;
 					break;
 				case ERROR:
 					type = "error";
-					icon = TaskIcon.ERROR;
 					break;
 			}
 		}

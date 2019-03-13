@@ -5,6 +5,7 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static org.cytoscape.work.internal.tunables.utils.ViewUtil.invokeOnEDT;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
@@ -21,7 +22,9 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.internal.task.TaskHistory;
+import org.cytoscape.work.internal.tunables.utils.ColorUtil;
 import org.cytoscape.work.internal.tunables.utils.GUIDefaults;
+import org.cytoscape.work.internal.tunables.utils.GUIDefaults.TaskIcon;
 
 /*
  * #%L
@@ -63,9 +66,14 @@ public class TaskHistoryWindow {
 		pane = new JEditorPane();
 		pane.setEditable(false);
 		pane.setContentType("text/html");
+		
+		final int fontSize = (int) LookAndFeelUtil.getSmallFontSize();
+		final String fontFamily = "\"Courier New\", monospace";
+		
 		final HTMLEditorKit htmlEditorKit = (HTMLEditorKit) pane.getEditorKit();
 		final StyleSheet styleSheet = htmlEditorKit.getStyleSheet();
-		styleSheet.addRule("ul {list-style-type: none;}");
+		styleSheet.addRule("h1, h2, h3, p { font-family: " + fontFamily + "; font-size:" + fontSize  + "px; }");
+		styleSheet.addRule("ul { list-style-type: none; font-family: " + fontFamily + "; font-size:" + fontSize  + "px; }");
 
 		final JButton clearButton = new JButton("Clear Display");
 		clearButton.addActionListener(evt -> {
@@ -123,65 +131,18 @@ public class TaskHistoryWindow {
 		dialog.setVisible(true);
 	}
 
-	private static String getIconURL(final FinishStatus.Type finishType) {
-		if (finishType == null)
-			return null;
-		
-		String name = null;
-		
-		switch (finishType) {
-			case SUCCEEDED:
-				name = "finished";
-				break;
-			case FAILED:
-				name = "error";
-				break;
-			case CANCELLED:
-				name = "cancelled";
-				break;
-		}
-		
-		if (name == null)
-			return null;
-		
-		return GUIDefaults.ICON_URLS.get(name).toString();
-	}
-
-	private static String getIconURL(final TaskMonitor.Level level) {
-		if (level == null)
-			return null;
-		
-		String name = null;
-		
-		switch (level) {
-			case INFO:
-				name = "info";
-				break;
-			case WARN:
-				name = "warn";
-				break;
-			case ERROR:
-				name = "error";
-				break;
-		}
-		
-		if (name == null)
-			return null;
-		
-		return GUIDefaults.ICON_URLS.get(name).toString();
-	}
-
 	private void generateMessage(final TaskHistory.Message message, final StringBuffer buffer) {
 		final TaskMonitor.Level level = message.level();
-		final String levelIconURL = getIconURL(level);
+		final String iconText = GUIDefaults.getIconText(level);
 		
-		if (levelIconURL != null) {
-			buffer.append("<li style=\"margin-top: 5px;\">");
-			buffer.append("<img src=\"");
-			buffer.append(levelIconURL);
-			buffer.append("\">&nbsp;");
+		if (iconText != null) {
+			final Color color = GUIDefaults.getForeground(level);
+			final String fg = ColorUtil.toHexString(color);
+			
+			buffer.append("<li style='margin-top: 5px;'>");
+			buffer.append("<span style='font-family: FontAwesome; color: " + fg + ";'>" + iconText + "</span>&nbsp;");
 		} else {
-			buffer.append("<li style=\"margin-top: 10px;\">");
+			buffer.append("<li style='margin-top: 10px;'>");
 			buffer.append("<b>");
 		}
 		
@@ -203,15 +164,17 @@ public class TaskHistoryWindow {
 		}
 
 		buffer.append("<p>");
-		buffer.append("<h1 style=\"margin-top: 0px; margin-bottom: 0px;\">&nbsp;");
+		buffer.append("<h1 style='margin-top: 0px; margin-bottom: 0px;'>&nbsp;");
 
 		final FinishStatus.Type finishType = history.getFinishType();
-		final String finishIconURL = getIconURL(finishType);
+		final TaskIcon icon = GUIDefaults.getIcon(finishType);
+		final String iconText = icon != null ? icon.getText() : null;
 		
-		if (finishIconURL != null) {
-			buffer.append("<img src=\"");
-			buffer.append(finishIconURL);
-			buffer.append("\">&nbsp;");
+		if (iconText != null) {
+			final Color color = GUIDefaults.getForeground(iconText);
+			final String fg = ColorUtil.toHexString(color);
+			
+			buffer.append("<span style='font-family: FontAwesome; color: " + fg + ";'>" + iconText + "</span>&nbsp;");
 		}
 
 		final String title = history.getTitle();
@@ -221,7 +184,7 @@ public class TaskHistoryWindow {
 			final Class<?> klass = history.getFirstTaskClass();
 			
 			if (klass != null) {
-				buffer.append(" <font size=\"-1\">(");
+				buffer.append(" <font size='-1'>(");
 				buffer.append(klass.getName());
 				buffer.append(")</font>");
 			}
@@ -230,14 +193,13 @@ public class TaskHistoryWindow {
 		}
 		
 		buffer.append("</h1>");
-		buffer.append("<ul style=\"margin-top: 0px; margin-bottom: 0px;\">");
+		buffer.append("<ul style='margin-top: 0px; margin-bottom: 0px;'>");
 		
-		for (final TaskHistory.Message message : history) {
+		for (final TaskHistory.Message message : history)
 			generateMessage(message, buffer);
-		}
 		
 		buffer.append("</ul>");
-		buffer.append("</p>");
+		buffer.append("</p><br>");
 	}
 
 	private String generateHistoryHTML() {
@@ -249,7 +211,7 @@ public class TaskHistoryWindow {
 				generateHistory((TaskHistory.History) element, buffer);
 			} else if (element instanceof TaskHistory.Message) {
 				buffer.append(
-						"<ul style=\"margin-top: 0px; margin-bottom: 0px; margin-left: 0px; padding-left: 0px;\">");
+						"<ul style='margin-top: 0px; margin-bottom: 0px; margin-left: 0px; padding-left: 0px;'>");
 				generateMessage((TaskHistory.Message) element, buffer);
 				buffer.append("</ul>");
 			}

@@ -1,30 +1,5 @@
 package org.cytoscape.work.internal.tunables;
 
-/*
- * #%L
- * Cytoscape Work Swing Impl (work-swing-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
@@ -46,7 +21,6 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -55,13 +29,39 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.DataCategory;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.FileChooserFilter;
 import org.cytoscape.util.swing.FileUtil;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
 
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Handler for the type <i>File</i> of <code>Tunable</code>
@@ -70,13 +70,11 @@ import org.cytoscape.work.swing.DirectlyPresentableTunableHandler;
  */
 public class FileHandler extends AbstractGUITunableHandler implements DirectlyPresentableTunableHandler, FocusListener{
 	
-	private final FileUtil fileUtil;
-	private CyApplicationManager cyApplicationManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
 	private JPanel controlPanel;
 	private JButton browseButton;
 	private JTextField textField;
-	private ImageIcon image;
 	private JLabel label;
 	private SupportedFileTypesManager fileTypesManager;
 	private boolean input;
@@ -96,25 +94,31 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	 * @param field the field that has been annotated
 	 * @param obj object contained in <code>field</code>
 	 * @param t the tunable associated to <code>field</code>
-	 * @param fileTypesManager
 	 */
-	public FileHandler(final Field field, final Object obj, final Tunable t,
-			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil, 
-			final CyApplicationManager cyApplicationManager) {
+	public FileHandler(
+			final Field field,
+			final Object obj,
+			final Tunable t,
+			final SupportedFileTypesManager fileTypesManager,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(field, obj, t);
 		this.fileTypesManager = fileTypesManager;
-		this.fileUtil = fileUtil;
-		this.cyApplicationManager = cyApplicationManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
-	public FileHandler(final Method getter, final Method setter, final Object instance, final Tunable tunable,
-			final SupportedFileTypesManager fileTypesManager, final FileUtil fileUtil,
-			final CyApplicationManager cyApplicationManager) {
+	public FileHandler(
+			final Method getter,
+			final Method setter,
+			final Object instance,
+			final Tunable tunable,
+			final SupportedFileTypesManager fileTypesManager,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		super(getter, setter, instance, tunable);
 		this.fileTypesManager = fileTypesManager;
-		this.fileUtil = fileUtil;
-		this.cyApplicationManager = cyApplicationManager;
+		this.serviceRegistrar = serviceRegistrar;
 		init();
 	}
 
@@ -124,18 +128,11 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		final String fileCategory = getFileCategory();
 		final DataCategory dataCategory = DataCategory.valueOf(fileCategory.toUpperCase());
 		filters = fileTypesManager.getSupportedFileTypes(dataCategory, input);
-		String displayName = dataCategory.getDisplayName().toLowerCase();
-		String a = isVowel( displayName.charAt(0) ) ? "an" : "a";
 
 		setGui();
-		
+
 		updateFieldPanel(panel, label, controlPanel, horizontal);
 		setTooltip(getTooltip(), textField, browseButton);
-	}
-
-	private boolean isVowel(char ch){
-		ch=Character.toLowerCase(ch);
-		return ch=='a' ||ch=='e' ||ch=='i' ||ch=='o' ||ch=='u';
 	}
 
 	/**
@@ -152,13 +149,15 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 			} else {
 				String path = textField.getText();
 				File file = null;
-				
+
 				if (path.contains(System.getProperty("file.separator"))) {
 					file = new File(path);
 				} else {
-					file = new File(cyApplicationManager.getCurrentDirectory(), path);
+					CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+					file = new File(applicationManager.getCurrentDirectory(), path);
 					textField.setText(file.getAbsolutePath());
 				}
+
 				setValue(file);
 			}
 		} catch (Exception e) {
@@ -168,30 +167,28 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 
 	@Override
 	public void update(){
-		
 		File file = null;
+		
 		try {
 			file = (File) getValue();
 		} catch (IllegalAccessException | InvocationTargetException e) {
 			e.printStackTrace();
 		}
 		
-		if (file != null) {
-			textField.setText(file.getAbsolutePath());
-		} else {
-			textField.setText("");
-		}
+		textField.setText(file != null ? file.getAbsolutePath() : "");
 	}
 	
 	/** Construction of the GUI depending on the file type expected */
 	private void setGui() {
 		label = new JLabel();
-		image = new ImageIcon(getClass().getResource("/images/open-file-24.png"));
 		
 		textField = new JTextField();
 		textField.addFocusListener(this);
 		
-		browseButton = new JButton( (input ? "Open File..." : "Browse..."), (input ? image : null) );
+		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+		final TextIcon inputIcon = new TextIcon(IconManager.ICON_FOLDER_OPEN, iconManager.getIconFont(16.0f), 16, 16);
+		
+		browseButton = new JButton((input ? "Open File..." : "Browse..."), (input ? inputIcon : null));
 		browseButton.setActionCommand(input ? "open" : "save");
 		browseButton.addActionListener(new MyFileActionListener());
 		
@@ -210,7 +207,8 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 		
 		try {
 			File file = (File) getValue();
-			if(file != null)
+			
+			if (file != null)
 				textField.setText(file.getAbsolutePath());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -265,32 +263,32 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	 * without first presenting the tunable dialog.
 	 */
 	@Override
-	public boolean setTunableDirectly (Window possibleParent) {
+	public boolean setTunableDirectly(Window possibleParent) {
 		this.possibleParent = possibleParent;
 		setGui();
 		MyFileActionListener action = new MyFileActionListener();
 		action.actionPerformed(null);
 		handle();
-		
+
 		return !textField.getText().equals("");
 	}
 
 	// Click on the "open" or "save" button action listener
-	private final class MyFileActionListener implements ActionListener{
+	private final class MyFileActionListener implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent ae) {
-			final int load_or_save = input ? FileUtil.LOAD : FileUtil.SAVE;
+			final int loadOrSave = input ? FileUtil.LOAD : FileUtil.SAVE;
 				
-			if (load_or_save == FileUtil.SAVE){
-				//In case of export, we can not detect the filter current used, so we we use filter "All image files" or 
-				//"All network files" when export image or network
+			if (loadOrSave == FileUtil.SAVE) {
+				// In case of export, we can not detect the filter current used, so we we use filter "All image files" or 
+				// "All network files" when export image or network
 				FileChooserFilter filter = null;
 				
-				for (int i=0; i<filters.size(); i++){
+				for (int i = 0; i < filters.size(); i++) {
 					filter = filters.get(i);
-					
-					if (filter.getDescription().trim().equalsIgnoreCase("All image files") ||
-					    filter.getDescription().trim().equalsIgnoreCase("All network files")){
+
+					if (filter.getDescription().trim().equalsIgnoreCase("All image files")
+							|| filter.getDescription().trim().equalsIgnoreCase("All network files")) {
 						filters = new ArrayList<FileChooserFilter>();
 						filters.add(filter);
 						break;
@@ -305,10 +303,12 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 			if (parentComponent == null)
 				parentComponent = possibleParent;
 	
-			final File file = fileUtil.getFile(parentComponent, label.getText(), load_or_save, filters);
+			final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
+			final File file = fileUtil.getFile(parentComponent, label.getText(), loadOrSave, filters);
 			
 			if (file != null)
 				textField.setText(file.getAbsolutePath());
+			
 			handle();
 		}
 	}
@@ -317,7 +317,7 @@ public class FileHandler extends AbstractGUITunableHandler implements DirectlyPr
 	public String getState(){
 		try{
 			return textField.getText();
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return "";
