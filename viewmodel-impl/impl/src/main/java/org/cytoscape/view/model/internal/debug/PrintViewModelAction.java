@@ -73,16 +73,15 @@ public class PrintViewModelAction extends AbstractCyAction {
 	
 	private static void printVPs(CyNetworkViewSnapshot snapshot, View<? extends CyIdentifiable> elem, List<VisualProperty<?>> vps) {
 		for(VisualProperty<?> vp : vps) {
-			if(elem.isSet(vp)) {
-				Object value = elem.getVisualProperty(vp);
-				boolean locked = elem.isValueLocked(vp);
-				System.out.println(vp.getDisplayName() + " = " + value + (locked ? " (locked)" : " (value)"));
-			} else {
-				Object defaultValue = snapshot.getViewDefault(vp);
-				if(defaultValue != null) {
-					System.out.println(vp.getDisplayName() + " = " + defaultValue + " (default)");
-				}
-			}
+			Object value = elem.getVisualProperty(vp);
+			boolean locked = elem.isValueLocked(vp);
+			boolean def = !elem.isSet(vp);
+			
+			String     opt = "value";
+			if(locked) opt = "locked";
+			if(def)    opt = "default";
+			
+			System.out.println(vp.getDisplayName() + " = " + value + " (" + opt + ")");
 		}
 	}
 	

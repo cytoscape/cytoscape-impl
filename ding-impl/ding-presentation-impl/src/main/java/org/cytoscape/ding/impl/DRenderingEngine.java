@@ -446,6 +446,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		animationTimer = new Timer(200, this);
 //		animationTimer.setRepeats(true);
 		
+		viewModelSnapshot = viewModel.createSnapshot();
 		
 		// Check if the view model has changed approximately 30 times per second
 		redrawTimer = new Timer(30, e -> redraw());

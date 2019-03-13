@@ -10,7 +10,7 @@ public class CyNodeViewImpl extends CyViewImpl<CyNode> {
 	}
 
 	private static boolean isGeometric(VisualProperty<?> vp) {
-		return CyNetworkViewImpl.NODE_GEOMETRIC_PROPERTIES.contains(vp);
+		return CyNetworkViewImpl.NODE_GEOMETRIC_PROPS.contains(vp);
 	}
 	
 	@Override

@@ -30,6 +30,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.internal.debug.PrintSpacialIndexAction;
 import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
@@ -61,8 +62,12 @@ public class CyActivator extends AbstractCyActivator {
 		
 		
 		// Debug actions
-		CyAction printAction = new PrintViewModelAction(serviceRegistrar);
-		printAction.setPreferredMenu("Tools.Renderer DEBUG");
-		registerAllServices(bc, printAction, new Properties());
+		CyAction printModelAction = new PrintViewModelAction(serviceRegistrar);
+		printModelAction.setPreferredMenu("Tools.Renderer DEBUG");
+		registerAllServices(bc, printModelAction, new Properties());
+		
+		CyAction printSpacialAction = new PrintSpacialIndexAction(serviceRegistrar);
+		printSpacialAction.setPreferredMenu("Tools.Renderer DEBUG");
+		registerAllServices(bc, printSpacialAction, new Properties());
 	}
 }

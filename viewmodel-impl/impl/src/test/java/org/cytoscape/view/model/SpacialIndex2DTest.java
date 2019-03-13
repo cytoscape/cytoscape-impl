@@ -45,10 +45,10 @@ public class SpacialIndex2DTest {
 	}
 	
 	private static void setGeometry(View<CyNode> node, float x, float y, float w, float h) {
-		node.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
-		node.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 		node.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, h);
 		node.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, w);
+		node.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
+		node.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
 	}
 	
 	public static void assertMBR(CyNetworkViewSnapshot snapshot, float xMin, float yMin, float xMax, float yMax) {
@@ -108,13 +108,8 @@ public class SpacialIndex2DTest {
 		Map<Long,float[]> map = toMap(overlap);
 		assertEquals(2, map.size());
 		
-		float[] extents1 = map.get(nv1.getSUID());
-		assertNotNull(extents1);
-		assertArrayEquals(new float[] {2.0f, 1.0f, 6.0f, 3.0f}, extents1, 0.0f);
-		
-		float[] extents2 = map.get(nv2.getSUID());
-		assertNotNull(extents2);
-		assertArrayEquals(new float[] {4.0f, 2.0f, 8.0f, 4.0f}, extents2, 0.0f);
+		assertArrayEquals(new float[] {2.0f, 1.0f, 6.0f, 3.0f}, map.get(nv1.getSUID()), 0);
+		assertArrayEquals(new float[] {4.0f, 2.0f, 8.0f, 4.0f}, map.get(nv2.getSUID()), 0);
 		
 		try {
 			spacialIndex.delete(nv1.getSUID());
@@ -129,6 +124,29 @@ public class SpacialIndex2DTest {
 		}
 	}
 	
+	@Test
+	public void testSpacialIndex2DDefaultVPs() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		View<CyNode> nv1 = networkView.getNodeView(n1);
+		View<CyNode> nv2 = networkView.getNodeView(n2);
+		
+		networkView.setViewDefault(BasicVisualLexicon.NODE_HEIGHT, 100);
+		networkView.setViewDefault(BasicVisualLexicon.NODE_WIDTH, 200);
+		
+		nv1.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, 0);
+		nv1.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, 0);
+		
+		CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
+		SpacialIndex2D<Long> spacialIndex = snapshot.getSpacialIndex2D();
+		
+		Map<Long,float[]> map = toMap(spacialIndex.queryAll());
+		assertArrayEquals(new float[] {-100, -50, 100, 50}, map.get(nv1.getSUID()), 0);
+		
+	}
 	
 	private static final long SUID_1 = 100, SUID_2 = 200;
 	
