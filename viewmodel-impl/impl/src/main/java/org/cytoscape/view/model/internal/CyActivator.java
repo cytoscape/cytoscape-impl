@@ -26,9 +26,11 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
@@ -56,5 +58,11 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		
 		registerService(bc, new SpacialIndex2DFactoryImpl(), SpacialIndex2DFactory.class);
+		
+		
+		// Debug actions
+		CyAction printAction = new PrintViewModelAction(serviceRegistrar);
+		printAction.setPreferredMenu("Tools.Renderer DEBUG");
+		registerAllServices(bc, printAction, new Properties());
 	}
 }
