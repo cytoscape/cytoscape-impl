@@ -449,7 +449,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
 		// Check if the view model has changed approximately 30 times per second
-		redrawTimer = new Timer(30, e -> redraw());
+		redrawTimer = new Timer(30, e -> checkModelIsDirty());
 		redrawTimer.setRepeats(true);
 		redrawTimer.start();
 	}
@@ -469,12 +469,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * If we move drawing off the EDT then we need another solution for ensuring that viewModelSnapshot
 	 * does not get re-assigned while a frame is being drawn.
 	 */
-	private void redraw() {
+	private void checkModelIsDirty() {
 		// Must run on EDT
 		if(viewModel.isDirty()) {
+			System.out.println("DIRTY!");
 			viewModelSnapshot = viewModel.createSnapshot();
 			bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
-			updateView();
+			updateView(true);
 		}
 	}
 	
@@ -893,6 +894,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	public boolean isDirty() {
+		// MKTODO this method probably isn't needed anymore, right?
 		return isContentChanged() || isViewportChanged();
 	}
 	

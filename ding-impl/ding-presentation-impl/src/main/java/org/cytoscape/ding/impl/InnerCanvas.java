@@ -48,6 +48,7 @@ import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
@@ -631,10 +632,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		boolean treatNodeShapesAsRectangle = (m_lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0;
 		List<Long> nodesXSect = m_re.getNodesIntersectingRectangle(xMin, yMin, xMax, yMax, treatNodeShapesAsRectangle);
 
+		NodeDetails nodeDetails = m_re.getNodeDetails();
 		List<View<CyNode>> selectedNodes = new ArrayList<>(nodesXSect.size());
 		for(Long suid : nodesXSect) {
 			View<CyNode> node = m_re.getViewModelSnapshot().getNodeView(suid);
-			if (m_re.getNodeDetails().isSelected(node)) {
+			if(!nodeDetails.isSelected(node)) { // MKTODO is this check necessary? so what if it re-selects a node
 				selectedNodes.add(node);
 			}
 		}
@@ -677,11 +679,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		                         m_selectionRect.y + m_selectionRect.height);
 
 
+		EdgeDetails edgeDetails = m_re.getEdgeDetails();
 		List<View<CyEdge>> selectedEdges = new ArrayList<>(edges.size());
-		
 		for (Long edgeXSect : edges) {
 			View<CyEdge> edge = m_re.getViewModelSnapshot().getEdgeView(edgeXSect);
-			if (m_re.getEdgeDetails().isSelected(edge)) {
+			if (!edgeDetails.isSelected(edge)) {
 				selectedEdges.add(edge);
 			}
 		}
@@ -1366,10 +1368,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						m_re.setViewportChanged();
 					}
 	
-					if ((selectedNodes != null) && (!selectedNodes.isEmpty()))
+					if (selectedNodes != null && !selectedNodes.isEmpty())
 						m_re.select(selectedNodes, CyNode.class, true);
 	
-					if ((selectedEdges != null) && (!selectedEdges.isEmpty()))
+					if (selectedEdges != null && !selectedEdges.isEmpty())
 						m_re.select(selectedEdges, CyEdge.class, true);
 					
 					repaint();
