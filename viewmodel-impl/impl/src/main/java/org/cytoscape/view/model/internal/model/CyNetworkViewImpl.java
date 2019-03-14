@@ -1,12 +1,6 @@
 package org.cytoscape.view.model.internal.model;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,6 +44,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		NODE_X_LOCATION, NODE_Y_LOCATION, NODE_HEIGHT, NODE_WIDTH, NODE_VISIBLE
 	);
 	
+	// If you add more special case network properties make sure to update the JUnit test.
+	public static final Set<VisualProperty<?>> NETWORK_PROPS = HashSet.of(
+		NETWORK_CENTER_X_LOCATION, NETWORK_CENTER_Y_LOCATION, NETWORK_SCALE_FACTOR
+	);
 	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
@@ -74,6 +72,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private Map<Long,Map<VisualProperty<?>,Object>> allLocks = HashMap.empty();
 	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
+	
+	// Special case network visual properties that get updated a lot. This is an optimization.
+	private double networkCenterXLocation = NETWORK_CENTER_X_LOCATION.getDefault();
+	private double networkCenterYLocation = NETWORK_CENTER_Y_LOCATION.getDefault();
+	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();
 	
 	// RTree
 	// Need to store the bounds of each node so that they can be looked up in this RTree
@@ -114,7 +117,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					allLocks, 
 					directLocks, 
 					rtree, 
-					geometries
+					geometries,
+					networkCenterXLocation,
+					networkCenterYLocation,
+					networkScaleFactor
 				);
 			}
 			return snapshot;
@@ -376,6 +382,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
 		Long suid = view.getSUID();
 		synchronized (this) {
+			if(view == this && NETWORK_PROPS.contains(vp)) {
+				setNetworkProp(vp, value);
+				return;
+			}
+			
 			visualProperties = put(visualProperties, suid, vp, value);
 			// don't pass 'value' directly to updateSelectionAndVisibility(), it needs to check the locked values as well
 			updateSelection(view, vp);
@@ -383,6 +394,26 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		}
 	}
 	
+	
+	
+	private double getNetworkProp(VisualProperty<?> vp) {
+		if(vp == NETWORK_CENTER_X_LOCATION)
+			return networkCenterXLocation;
+		if(vp == NETWORK_CENTER_Y_LOCATION)
+			return networkCenterYLocation;
+		if(vp == NETWORK_SCALE_FACTOR)
+			return networkScaleFactor;
+		return 0; // should never happen
+	}
+	
+	private void setNetworkProp(VisualProperty<?> vp, Object value) {
+		if(vp == NETWORK_CENTER_X_LOCATION)
+			networkCenterXLocation = ((Number)value).doubleValue();
+		else if(vp == NETWORK_CENTER_Y_LOCATION)
+			networkCenterYLocation = ((Number)value).doubleValue();
+		if(vp == NETWORK_SCALE_FACTOR)
+			networkScaleFactor = ((Number)value).doubleValue();
+	}
 	
 	private <T> T getVisualPropertyStoredValue(Long suid, VisualProperty<T> vp) {
 		Object value = get(directLocks, suid, vp);
@@ -392,6 +423,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		value = get(allLocks, suid, vp);
 		if(value != null)
 			return (T) value;
+		
+		if(suid.equals(this.getSUID()) && NETWORK_PROPS.contains(vp))
+			return (T) Double.valueOf(getNetworkProp(vp));
 		
 		return (T) get(visualProperties, suid, vp);
 	}

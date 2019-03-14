@@ -1,5 +1,9 @@
 package org.cytoscape.view.model.internal.model.snapshot;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -15,6 +19,7 @@ import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
+import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
@@ -50,6 +55,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final Map<Long,Map<VisualProperty<?>,Object>> directLocks;
 	private final Map<VisualProperty<?>,Object> defaultValues;
 	
+	// Network special case properties.
+	private final double networkCenterXLocation;
+	private final double networkCenterYLocation;
+	private final double networkScaleFactor;
+	
 	private final SpacialIndex2D<Long> spacialIndex;
 	
 	// Store of immutable node/edge objects
@@ -75,7 +85,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			Map<Long, Map<VisualProperty<?>, Object>> allLocks,
 			Map<Long, Map<VisualProperty<?>, Object>> directLocks,
 			RTree<Long,Rectangle> rtree,
-			Map<Long,Rectangle> geometries
+			Map<Long,Rectangle> geometries,
+			double networkCenterXLocation,
+			double networkCenterYLocation,
+			double networkScaleFactor    
 	) {
 		super(networkView.getSUID());
 		this.networkView = networkView;
@@ -92,6 +105,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.allLocks = allLocks;
 		this.directLocks = directLocks;
 		this.spacialIndex = new SpacialIndex2DSnapshotImpl(rtree, geometries);
+		this.networkCenterXLocation = networkCenterXLocation;
+		this.networkCenterYLocation = networkCenterYLocation;
+		this.networkScaleFactor = networkScaleFactor;
 	}
 	
 	
@@ -117,6 +133,17 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return Boolean.TRUE.equals(value);
 	}
 	
+	private double getNetworkProp(VisualProperty<?> vp) {
+		if(vp == NETWORK_CENTER_X_LOCATION)
+			return networkCenterXLocation;
+		if(vp == NETWORK_CENTER_Y_LOCATION)
+			return networkCenterYLocation;
+		if(vp == NETWORK_SCALE_FACTOR)
+			return networkScaleFactor;
+		return 0; // should never happen
+	}
+	
+	
 	protected <T> T getVisualPropertyStoredValue(Map<VisualProperty<?>,Object> directLocks, 
 			Map<VisualProperty<?>,Object> allLocks, Map<VisualProperty<?>,Object> visualProperties, VisualProperty<T> vp) {
 		Object value = directLocks.getOrElse(vp, null);
@@ -127,6 +154,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		if(value != null)
 			return (T) value;
 		
+		// MKTODO we don't have an easy way to tell if this is being called on the 
+		// network object, comparing the directLocks object is kind of a hack
+		if(directLocks == this.getDirectLocks() && CyNetworkViewImpl.NETWORK_PROPS.contains(vp))
+			return (T) Double.valueOf(getNetworkProp(vp));
+		
 		return (T) visualProperties.getOrElse(vp, null);
 	}
 
@@ -136,11 +168,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		if(value != null)
 			return (T) value;
 		
-		value = getDefaultValues().getOrElse(vp,null);
-		if(value != null)
-			return (T) value;
-		
-		return vp.getDefault();
+		return (T) getDefaultValues().getOrElse(vp, vp.getDefault());
 	}
 	
 	/**

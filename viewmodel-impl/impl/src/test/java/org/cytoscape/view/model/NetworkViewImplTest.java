@@ -1,8 +1,12 @@
 package org.cytoscape.view.model;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.junit.Assert.assertEquals;
@@ -380,20 +384,66 @@ public class NetworkViewImplTest {
 		
 		assertTrue(netView.createSnapshot().getSelectedNodes().isEmpty());
 		
-		n0.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
-		n1.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, true);
+		n0.setVisualProperty(NODE_SELECTED, true);
+		n1.setVisualProperty(NODE_SELECTED, true);
 		
 		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
 		assertEquals(2, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));
 		assertTrue(selectedNodes.contains(n1.getSUID()));
 		
-		n1.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, false);
+		n1.setVisualProperty(NODE_SELECTED, false);
 		
 		selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
 		
 		assertEquals(1, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));
+	}
+	
+	
+	@Test
+	public void testNetworkVisualProperties() {
+		CyNetworkViewImpl netView = createSquareTestNetworkView();
+		
+		netView.setVisualProperty(NETWORK_CENTER_X_LOCATION, 100);
+		netView.setVisualProperty(NETWORK_CENTER_Y_LOCATION, 200);
+		netView.setVisualProperty(NETWORK_SCALE_FACTOR, 300);
+		
+		assertEquals(100, netView.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0);
+		assertEquals(200, netView.getVisualProperty(NETWORK_CENTER_Y_LOCATION), 0);
+		assertEquals(300, netView.getVisualProperty(NETWORK_SCALE_FACTOR), 0);
+		
+		assertTrue(netView.isSet(NETWORK_CENTER_X_LOCATION));
+		assertTrue(netView.isSet(NETWORK_CENTER_Y_LOCATION));
+		assertTrue(netView.isSet(NETWORK_SCALE_FACTOR));
+		
+		assertFalse(netView.isValueLocked(NETWORK_CENTER_X_LOCATION));
+		assertFalse(netView.isValueLocked(NETWORK_CENTER_Y_LOCATION));
+		assertFalse(netView.isValueLocked(NETWORK_SCALE_FACTOR));
+		
+		CyNetworkViewSnapshot snapshot = netView.createSnapshot();
+		
+		assertEquals(100, snapshot.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0);
+		assertEquals(200, snapshot.getVisualProperty(NETWORK_CENTER_Y_LOCATION), 0);
+		assertEquals(300, snapshot.getVisualProperty(NETWORK_SCALE_FACTOR), 0);
+		
+		assertTrue(snapshot.isSet(NETWORK_CENTER_X_LOCATION));
+		assertTrue(snapshot.isSet(NETWORK_CENTER_Y_LOCATION));
+		assertTrue(snapshot.isSet(NETWORK_SCALE_FACTOR));
+		
+		assertFalse(snapshot.isValueLocked(NETWORK_CENTER_X_LOCATION));
+		assertFalse(snapshot.isValueLocked(NETWORK_CENTER_Y_LOCATION));
+		assertFalse(snapshot.isValueLocked(NETWORK_SCALE_FACTOR));
+		
+		// Just test one VP for locked
+		netView.setLockedValue(NETWORK_CENTER_X_LOCATION, 99d);
+		assertTrue(netView.isSet(NETWORK_CENTER_X_LOCATION));
+		assertTrue(netView.isValueLocked(NETWORK_CENTER_X_LOCATION));
+			
+		snapshot = netView.createSnapshot();
+		assertEquals(99d, snapshot.getVisualProperty(NETWORK_CENTER_X_LOCATION), 0);
+		assertTrue(snapshot.isSet(NETWORK_CENTER_X_LOCATION));
+		assertTrue(snapshot.isValueLocked(NETWORK_CENTER_X_LOCATION));
 	}
 	
 }
