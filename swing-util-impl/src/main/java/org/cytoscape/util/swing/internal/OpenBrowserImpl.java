@@ -4,9 +4,19 @@ import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.command.AvailableCommands;
+import org.cytoscape.command.CommandExecutorTaskFactory;
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +49,20 @@ public class OpenBrowserImpl implements OpenBrowser {
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static String[] BROWSERS =
         { "xdg-open", "htmlview", "firefox", "mozilla", "konqueror", "chrome", "chromium" };
+	final CyServiceRegistrar serviceRegistrar;
+	AvailableCommands availableCommands = null;
+	CommandExecutorTaskFactory taskFactory = null;
+	SynchronousTaskManager taskManager = null;
+	Properties props;
+
+	public OpenBrowserImpl(final CyServiceRegistrar registrar) {
+		this.serviceRegistrar = registrar;
+		/*
+		CyProperty<Properties> cyProps =
+          serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+    props = cyProps.getProperties();
+		*/
+	}
 
 	/**
 	 * Opens the specified URL in the system default web browser.
@@ -54,9 +78,17 @@ public class OpenBrowserImpl implements OpenBrowser {
             throw new IllegalArgumentException("URL has an incorrect format: " + url);
         }
 
+				if (openURLWithCyBrowser(url, new HashMap<>()))
+					return true;
+
         if (openURLWithDesktop(uri)) {
             return true;
         } else {
+						// See if the override browser works
+						String defBrowser = props.getProperty(DEF_WEB_BROWSER_PROP_NAME);
+						if (defBrowser != null && openURLWithBrowser(url, defBrowser))
+							return true;
+
             for (final String browser : BROWSERS) {
                 if (openURLWithBrowser(url, browser)) {
                     return true;
@@ -91,4 +123,37 @@ public class OpenBrowserImpl implements OpenBrowser {
             return false;
         }
     }
+
+		private boolean openURLWithCyBrowser(final String url, Map<String, Object> extraArgs) {
+			if (availableCommands == null) {
+				availableCommands = serviceRegistrar.getService(AvailableCommands.class);
+				taskFactory = serviceRegistrar.getService(CommandExecutorTaskFactory.class);
+				taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+				CyProperty<Properties> cyProps =
+       		   serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+    		props = cyProps.getProperties();
+			}
+
+			String useCyBrowser = props.getProperty(USE_CYBROWSER);
+			if (useCyBrowser != null && !Boolean.parseBoolean(useCyBrowser)) {
+				return false;
+			}
+
+			List<String> args = availableCommands.getArguments("cybrowser", "dialog");
+			if (args == null || args.size() == 0)
+				return false;
+
+			if (extraArgs == null)
+				extraArgs = new HashMap<>();
+
+			extraArgs.put("url", url);
+
+			TaskIterator ti = taskFactory.createTaskIterator("cybrowser", "dialog", extraArgs, null);
+			try {
+				taskManager.execute(ti);
+			} catch (Exception e) {
+				return false;
+			}
+			return true;
+		}
 }

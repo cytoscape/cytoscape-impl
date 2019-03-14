@@ -109,6 +109,7 @@ import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
+import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -186,6 +187,7 @@ public class CyActivator extends AbstractCyActivator {
 	private LayoutSettingsManager layoutSettingsManager;
 	
 	private HelpUserManualTaskFactory helpUserManualTaskFactory;
+	private HelpTutorialsTaskFactory helpTutorialsTaskFactory;
 	private HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory;
 	private HelpReportABugTaskFactory helpReportABugTaskFactory;
 	
@@ -289,6 +291,14 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "1.0");
 			props.setProperty(TOOLTIP, "Show User Manual");
 			registerService(bc, helpUserManualTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
+			props.setProperty(TITLE, "Tutorials");
+			props.setProperty(MENU_GRAVITY, "1.5");
+			props.setProperty(TOOLTIP, "Show Tutorials");
+			registerService(bc, helpTutorialsTaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
@@ -484,6 +494,7 @@ public class CyActivator extends AbstractCyActivator {
 		layoutSettingsManager = new LayoutSettingsManager(serviceRegistrar);
 		
 		helpUserManualTaskFactory = new HelpUserManualTaskFactory(serviceRegistrar);
+		helpTutorialsTaskFactory = new HelpTutorialsTaskFactory(serviceRegistrar);
 		helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(serviceRegistrar);
 		helpReportABugTaskFactory = new HelpReportABugTaskFactory(serviceRegistrar);
 		
