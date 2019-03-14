@@ -57,10 +57,11 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 
 	private static final int CLEAR_DELAY_MS = 5000;
 
-	final Timer clearingTimer;
-	final JLabel titleIconLabel;
-	final JLabel titleLabel;
-	final JButton showBtn;
+	private final JLabel titleIconLabel;
+	private final JLabel titleLabel;
+	private final JButton showBtn;
+	
+	private final Timer clearingTimer;
 
 	public TaskStatusBar(final CyServiceRegistrar serviceRegistrar) {
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
@@ -77,13 +78,13 @@ public class TaskStatusBar extends JPanel implements StatusBarPanelFactory {
 		if (LookAndFeelUtil.isAquaLAF())
 			showBtn.putClientProperty("JButton.buttonType", "gradient");
 		
+		showBtn.setToolTipText("Show Tasks");
+		showBtn.setFocusPainted(false);
 		showBtn.addActionListener(evt -> {
 			showBtn.setText(GUIDefaults.TaskIcon.TASKS.getText());
 			showBtn.setForeground(GUIDefaults.TaskIcon.TASKS.getForeground());
 			firePropertyChange(TASK_HISTORY_CLICK, null, null);
 		});
-		showBtn.setToolTipText("Show Tasks");
-		showBtn.setFocusPainted(false);
 		
 		clearingTimer = new Timer(CLEAR_DELAY_MS, evt -> clearStatusBar());
 		clearingTimer.setRepeats(false);
