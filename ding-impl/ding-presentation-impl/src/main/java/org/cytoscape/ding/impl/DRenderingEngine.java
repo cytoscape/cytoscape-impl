@@ -50,6 +50,7 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.ding.impl.events.ViewportChangeListenerChain;
+import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -343,7 +344,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //	Set<View<CyEdge>> animatedEdges;
 
 
-	private final Timer redrawTimer;
+	private final Timer checkDirtyTimer;
+	private final CoalesceTimer coalesceTimer;
 	
 	private final BendStore bendStore;
 	
@@ -448,10 +450,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		viewModelSnapshot = viewModel.createSnapshot();
 		
+		coalesceTimer = new CoalesceTimer();
+		
 		// Check if the view model has changed approximately 30 times per second
-		redrawTimer = new Timer(30, e -> checkModelIsDirty());
-		redrawTimer.setRepeats(true);
-		redrawTimer.start();
+		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());
+		checkDirtyTimer.setRepeats(true);
+		checkDirtyTimer.start();
 	}
 	
 	
@@ -1038,8 +1042,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}
 		});
 		
-		// MKTODO what is this event for ??
-		eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel()));
+		// Fire this event on another thread so that it doesn't block the renderer, debounce while we're at it.
+		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
 
 //	/**
@@ -2468,7 +2472,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	@Override
 	public void dispose() {
 		synchronized (this) {
-			redrawTimer.stop();
+			checkDirtyTimer.stop();
+			coalesceTimer.shutdown();
 			
 			if (!servicesRegistered)
 				return;

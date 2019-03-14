@@ -1540,12 +1540,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					}
 	
 					Collection<View<CyNode>> selectedNodes = m_re.getViewModelSnapshot().getSelectedNodes();
+					
 					// MKTODO rename to 'handlesToMove'
 					Set<HandleKey> anchorsToMove = m_re.getBendStore().getSelectedHandles();
 					
-					if (!anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
-//					    for (int i = 0; i < selectedNodes.length; i++) {
-//						    final NodeView dNodeView = m_view.getDNodeView(selectedNodes[i]);
+					if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
 						for (View<CyNode> node : selectedNodes) {
 							View<CyNode> mutableNode = m_re.getViewModel().getNodeView(node.getSUID());
 							if(mutableNode != null) {
@@ -1553,8 +1552,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 								double oldXPos = nodeDetails.getXPosition(node);
 								double oldYPos = nodeDetails.getYPosition(node);
 								// MKTODO Should setting VPs be done using NodeDetails as well??
-								node.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + deltaX);
-								node.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldXPos + deltaY);
+								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + deltaX);
+								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
 							}
 					    }
 					}

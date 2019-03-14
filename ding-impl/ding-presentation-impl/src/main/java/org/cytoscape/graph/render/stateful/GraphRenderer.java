@@ -46,6 +46,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
@@ -1106,27 +1107,27 @@ public final class GraphRenderer {
 				final List<CustomGraphicsInfo> infoList = new ArrayList<>(cgMap.values());
 				
 				for (final CustomGraphicsInfo cgInfo : infoList) {
-					final List<CustomGraphicLayer> layers = cgInfo.createLayers(netView, cyNode, nodeDetails, dependencies);
-					
-					// The graphic index used to retrieve non custom graphic info corresponds to the zero-based
-					// index of the CustomGraphicLayer returned by the iterator:
-					int graphicInx = 0;
-					
-					for (final CustomGraphicLayer layer : layers) {
-						final float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode);
-						final float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode);
-						doubleBuff1[0] = floatBuff1[0];
-						doubleBuff1[1] = floatBuff1[1];
-						doubleBuff1[2] = floatBuff1[2];
-						doubleBuff1[3] = floatBuff1[3];
-						lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+					// MKTODO I guess there's no way around doing this? The charts need access to the underlying table model.
+					CyNetworkView netViewForCharts = netView.getMutableNetworkView();
+					View<CyNode> mutableNode = netViewForCharts.getNodeView(cyNode.getSUID());
+					if(mutableNode != null) {
+						List<CustomGraphicLayer> layers = cgInfo.createLayers(netViewForCharts, mutableNode, nodeDetails, dependencies);
 						
-						float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
-						float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
-						nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
-						
-						grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, layer, xOffset, yOffset);
-						graphicInx++;
+						for (CustomGraphicLayer layer : layers) {
+							float offsetVectorX = nodeDetails.graphicOffsetVectorX(cyNode);
+							float offsetVectorY = nodeDetails.graphicOffsetVectorY(cyNode);
+							doubleBuff1[0] = floatBuff1[0];
+							doubleBuff1[1] = floatBuff1[1];
+							doubleBuff1[2] = floatBuff1[2];
+							doubleBuff1[3] = floatBuff1[3];
+							lemma_computeAnchor(Position.CENTER, doubleBuff1, doubleBuff2);
+							
+							float xOffset = (float) (doubleBuff2[0] + offsetVectorX);
+							float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
+							nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
+							
+							grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, layer, xOffset, yOffset);
+						}
 					}
 				}
 			}
