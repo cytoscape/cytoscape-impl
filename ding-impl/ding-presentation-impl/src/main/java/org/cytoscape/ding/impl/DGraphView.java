@@ -367,6 +367,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 	boolean largeModel = false;
 	boolean haveZOrder = false;
 	
+	private final DingGraphLOD m_dingGraphLOD;
+	private final DingGraphLODAll m_dingGraphLODAll = new DingGraphLODAll();
+	
 	private boolean ignoreRowsSetEvents;
 
 	// Animated edges
@@ -424,6 +427,7 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 		nodeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		edgeViewMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		m_printLOD = new PrintLOD();
+		m_dingGraphLOD = dingGraphLOD;
 		m_defaultNodeXMin = 0.0f;
 		m_defaultNodeYMin = 0.0f;
 		m_defaultNodeXMax = m_defaultNodeXMin + DNodeView.DEFAULT_WIDTH;
@@ -2454,6 +2458,9 @@ public class DGraphView extends AbstractDViewModel<CyNetwork> implements CyNetwo
 			invokeOnEDT(() -> {
 				m_networkCanvas.setSize(m_networkCanvas.getWidth(), ((Double)value).intValue());
 			});
+		} else if (vp == DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL) {
+			final boolean hd = ((Boolean) value).booleanValue();
+			setGraphLOD(hd ? m_dingGraphLODAll : m_dingGraphLOD);
 		}
 	}
 

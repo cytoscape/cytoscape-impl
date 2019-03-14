@@ -1,8 +1,6 @@
 package org.cytoscape.ding;
 
 import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -33,17 +31,9 @@ import org.cytoscape.work.TaskIterator;
 
 public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 
-	private final DingGraphLOD dingGraphLOD;
-	private final DingGraphLODAll dingGraphLODAll;
-	
-	public ShowGraphicsDetailsTaskFactory(final DingGraphLOD dingGraphLOD, final DingGraphLODAll dingGraphLODAll) {
-		this.dingGraphLOD = dingGraphLOD;
-		this.dingGraphLODAll = dingGraphLODAll;
-	}
-	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		return new TaskIterator(new ShowGraphicsDetailsTask(view, dingGraphLOD, dingGraphLODAll));
+		return new TaskIterator(new ShowGraphicsDetailsTask(view));
 	}
 	
 	@Override

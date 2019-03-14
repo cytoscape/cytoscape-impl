@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.swing.JOptionPane;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTableManager;
@@ -18,6 +20,9 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.read.OpenSessionTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 
@@ -94,6 +99,65 @@ public final class Util {
 	
 	public static boolean isDisposed(final CyNetworkView view) {
 		return view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null;
+	}
+	
+	public static boolean isVisualPropertySupported(final String vpId, final Class<?> type, final CyNetworkView view,
+			final CyServiceRegistrar serviceRegistrar) {
+		if (view == null)
+			return false;
+		
+		VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+		
+		if (lexicon == null) // Should not happen!
+			return false;
+		
+		VisualProperty<?> vp = lexicon.lookup(type, vpId);
+		
+		return vp != null && lexicon.isSupported(vp);
+	}
+	
+	/**
+	 * Sets a {@link VisualProperty} value by property id, but only if it's supported by the view's lexicon.
+	 */
+	public static void setLockedValue(final String vpId, final Class<?> type, final Object value,
+			final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
+		if (view == null)
+			return;
+		
+		VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+		
+		if (lexicon == null) // Should not happen!
+			return;
+		
+		VisualProperty<?> vp = lexicon.lookup(type, vpId);
+		
+		if (vp != null && lexicon.isSupported(vp))
+			view.setLockedValue(vp, value);
+	}
+	
+	public static Object getVisualProperty(final String vpId, final Class<?> type,
+			final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
+		if (view != null) {
+			VisualLexicon lexicon = getVisualLexicon(view, serviceRegistrar);
+			
+			if (lexicon != null) { // Should never be null, but just in case...
+				VisualProperty<?> vp = lexicon.lookup(type, vpId);
+				
+				if (vp != null && lexicon.isSupported(vp))
+					return view.getVisualProperty(vp);
+			}
+		}
+		
+		return null;
+	}
+	
+	public static VisualLexicon getVisualLexicon(final CyNetworkView view, final CyServiceRegistrar serviceRegistrar) {
+    	final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+    	NetworkViewRenderer renderer = applicationManager.getNetworkViewRenderer(view.getRendererId());
+		RenderingEngineFactory<CyNetwork> factory = renderer == null ? null
+				: renderer.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT);
+		
+		return factory == null ? null : factory.getVisualLexicon();
 	}
 	
 	public static double squarenessRatio(final double w, final double h) {

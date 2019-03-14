@@ -1,13 +1,10 @@
-package org.cytoscape.ding;
+package org.cytoscape.internal.util;
 
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import javax.swing.JToggleButton;
 
 /*
  * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -29,19 +26,27 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class ShowGraphicsDetailsTask extends AbstractTask {
+@SuppressWarnings("serial")
+public class SimpleToolBarToggleButton extends JToggleButton {
 
-	private final CyNetworkView view;
+	public SimpleToolBarToggleButton(String text) {
+		this(text, false);
+	}
 
-	public ShowGraphicsDetailsTask(CyNetworkView view) {
-		this.view = view;
+	public SimpleToolBarToggleButton(String text, Boolean selected) {
+		super(text, selected);
+		addActionListener(evt -> update());
+	}
+
+	@Override
+	public void setSelected(boolean b) {
+		if (b != isSelected()) {
+			super.setSelected(b);
+			update();
+		}
 	}
 	
-	@Override
-	public void run(TaskMonitor tm) {
-		if (view instanceof DGraphView) {
-			Boolean hd = view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-			view.setLockedValue(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL, !hd);
-		}
+	protected void update() {
+		ViewUtil.updateToolBarStyle(this);
 	}
 }
