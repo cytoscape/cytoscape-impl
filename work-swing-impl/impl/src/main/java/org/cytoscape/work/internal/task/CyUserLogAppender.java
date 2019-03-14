@@ -55,12 +55,12 @@ public class CyUserLogAppender implements PaxAppender {
 
 	private static TaskMonitor.Level getCorrespondingLevel(final int level) {
 		switch (level) {
-		case 40000:
-			return TaskMonitor.Level.ERROR;
-		case 30000:
-			return TaskMonitor.Level.WARN;
-		default:
-			return TaskMonitor.Level.INFO;
+			case PaxLogger.LEVEL_ERROR:
+				return TaskMonitor.Level.ERROR;
+			case PaxLogger.LEVEL_WARNING:
+				return TaskMonitor.Level.WARN;
+			default:
+				return TaskMonitor.Level.INFO;
 		}
 	}
 }
