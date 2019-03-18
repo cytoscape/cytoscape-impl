@@ -6,6 +6,7 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -118,7 +119,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private CyNetworkViewSnapshot viewModelSnapshot;
 	
 	// Common object lock used for state synchronization
-	final DingLock m_lock = new DingLock();
+	final DingLock dingLock = new DingLock();
 
 	private final NodeDetails nodeDetails;
 	private final EdgeDetails edgeDetails;
@@ -186,7 +187,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		networkCanvas = new InnerCanvas(m_lock, this, registrar);
+		networkCanvas = new InnerCanvas(dingLock, this, registrar);
 		backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, networkCanvas, Color.white, true);
 		addViewportChangeListener(backgroundCanvas);
 		foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, networkCanvas, Color.white, false);
@@ -262,43 +263,43 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public void enableNodeSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			nodeSelection = true;
 		}
 	}
 
 	public void disableNodeSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			nodeSelection = false;
 		}
 	}
 
 	public void enableEdgeSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			edgeSelection = true;
 		}
 	}
 
 	public void disableEdgeSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			edgeSelection = false;
 		}
 	}
 	
 	public void enableAnnotationSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			annotationSelection = true;
 		}
 	}
 	
 	public void disableAnnotationSelection() {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			annotationSelection = false;
 		}
 	}
 
 	public void setBackgroundPaint(Paint paint) {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			if (paint instanceof Color) {
 				backgroundCanvas.setBackground((Color) paint);
 				networkCanvas.setBackground((Color)paint); // for antialiasing...
@@ -369,7 +370,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 
 	public double getZoom() {
-		return networkCanvas.m_scaleFactor;
+		return networkCanvas.scaleFactor;
 	}
 
 	public boolean isLargeModel() {
@@ -384,8 +385,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * Set the zoom level and redraw the view.
 	 */
 	public void setZoom(double zoom) {
-		synchronized (m_lock) {
-			networkCanvas.m_scaleFactor = checkZoom(zoom, networkCanvas.m_scaleFactor);
+		synchronized (dingLock) {
+			networkCanvas.scaleFactor = checkZoom(zoom, networkCanvas.scaleFactor);
 			setViewportChanged();
 		}
 	}
@@ -395,7 +396,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		// MKTODO why does this have to run on the edt?
 		invokeOnEDT(() -> {
-			synchronized (m_lock) {
+			synchronized (dingLock) {
 				CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 				if(netViewSnapshot.getNodeCount() == 0)
 					return;
@@ -474,21 +475,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	
 	public void setCenter(double x, double y) {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
             networkCanvas.setCenter(x,y);
 			setViewportChanged();
 			
 			// Update view model
 			// TODO: don't do it from here?
 			CyNetworkView netView = getViewModel();
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.m_xCenter);
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.m_yCenter);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.xCenter);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.yCenter);
 		}
 	}
 
 	public Point2D getCenter() {
-		synchronized (m_lock) {
-			return new Point2D.Double(networkCanvas.m_xCenter, networkCanvas.m_yCenter);
+		synchronized (dingLock) {
+			return new Point2D.Double(networkCanvas.xCenter, networkCanvas.yCenter);
 		}
 	}
 	
@@ -543,7 +544,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 						/ (((double) xMax) - ((double) xMin)),
 						((double) networkCanvas.getHeight())
 								/ (((double) yMax) - ((double) yMin)));
-				zoom = checkZoom(zoom, networkCanvas.m_scaleFactor);
+				zoom = checkZoom(zoom, networkCanvas.scaleFactor);
 				
 				// Update view model.  Zoom Level should be modified.
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
@@ -575,25 +576,25 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		if (lab == null)
 			return 0;
 
-		if (networkCanvas.m_fontMetrics == null)
+		FontMetrics fontMetrics = networkCanvas.getFontMetrics();
+		if (fontMetrics == null)
 			return 0;
-
-		return networkCanvas.m_fontMetrics.charsWidth(lab, 0, lab.length);
+		return fontMetrics.charsWidth(lab, 0, lab.length);
 	}
 
 	public void setGraphLOD(GraphLOD lod) {
-		synchronized (m_lock) {
-			networkCanvas.m_lod[0] = lod;
+		synchronized (dingLock) {
+			networkCanvas.lod = lod;
 			setContentChanged();
 		}
 	}
 
 	public GraphLOD getGraphLOD() {
-		return networkCanvas.m_lod[0];
+		return networkCanvas.lod;
 	}
 
 	public void setPrintingTextAsShape(boolean textAsShape) {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			printLOD.setPrintingTextAsShape(textAsShape);
 		}
 	}
@@ -671,7 +672,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 					    || ((extentsBuff[2] > xMax) && (extentsBuff[1] < yMin))) {
 						
 						GeneralPath path = new GeneralPath();
-						networkCanvas.m_grafx.getNodeShape(nodeDetails.getShape(cyNode),
+						networkCanvas.grafx.getNodeShape(nodeDetails.getShape(cyNode),
 								extentsBuff[0], extentsBuff[1],
 								extentsBuff[2], extentsBuff[3], path);
 
@@ -691,7 +692,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public List<Long> queryDrawnEdges(int xMin, int yMin, int xMax, int yMax) {
-		synchronized (m_lock) {
+		synchronized (dingLock) {
 			return networkCanvas.computeEdgesIntersecting(xMin, yMin, xMax, yMax);
 		}
 	}
@@ -713,16 +714,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public void xformComponentToNodeCoords(double[] coords) {
-		synchronized (m_lock) {
-			if (networkCanvas != null && networkCanvas.m_grafx != null)
-				networkCanvas.m_grafx.xformImageToNodeCoords(coords);
+		synchronized (dingLock) {
+			if (networkCanvas != null && networkCanvas.grafx != null)
+				networkCanvas.grafx.xformImageToNodeCoords(coords);
 		}
 	}
 	
 	public void xformNodeToComponentCoords(double[] coords) {
-		synchronized (m_lock) {
-			if (networkCanvas != null && networkCanvas.m_grafx != null)
-				networkCanvas.m_grafx.xformNodetoImageCoords(coords);
+		synchronized (dingLock) {
+			if (networkCanvas != null && networkCanvas.grafx != null)
+				networkCanvas.grafx.xformNodetoImageCoords(coords);
 		}
 	}
 
@@ -775,7 +776,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 
 		try {
-			synchronized (m_lock) {
+			synchronized (dingLock) {
 				renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, nodes, edges);
 			}
 		} catch (Exception e) {
