@@ -74,7 +74,6 @@ public class DGraphViewApplyTest {
 	private HandleFactory handleFactory;
 
 	@Mock private UndoSupport undoSupport;
-	@Mock private ViewTaskFactoryListener vtfListener;
 	@Mock private DialogTaskManager dialogTaskManager;
 	@Mock private CyEventHelper eventHelper;
 	@Mock private IconManager iconManager;
@@ -120,7 +119,7 @@ public class DGraphViewApplyTest {
 		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(testSupport.getSpacialIndex2DFactory());
 		
 		dgv = testSupport.getNetworkViewFactoryFactory().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
-		re = new DRenderingEngine(dgv, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		re = new DRenderingEngine(dgv, dingLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		nodeDetails = re.getNodeDetails();
 		edgeDetails = re.getEdgeDetails();
 

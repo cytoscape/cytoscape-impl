@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import javax.swing.Icon;
 
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowsSetEvent;
@@ -108,7 +107,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		if(isVisible()) {
 			//long start = System.currentTimeMillis();
 			
-			re.m_networkCanvas.ensureInitialized();
+			re.getCanvas().ensureInitialized();
 	
 			int w = getWidth();
 			int h = getHeight();

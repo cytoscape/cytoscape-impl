@@ -20,7 +20,6 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.ContentChangeListener;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
@@ -535,13 +534,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	@Override
 	public void contentChanged() {
-		if (re == null)
-			return;
-		
-		final ContentChangeListener lis = re.getContentChangeListener();
-		
-		if (lis != null)
-			lis.contentChanged();
+		if (re != null)
+			re.fireContentChanged();
 	}
 
 	/**

@@ -21,14 +21,12 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 	private final DVisualLexicon dingLexicon;
 	private final AnnotationFactoryManager annMgr;
 	private final CyServiceRegistrar registrar;
-	private final ViewTaskFactoryListener vtfListener;
 	private final DingGraphLOD dingGraphLOD;
 	private final HandleFactory handleFactory; 
 	
 	public DingNetworkViewFactoryMediator(
 			CyNetworkViewFactory delegateFactory, 
 			DVisualLexicon dingLexicon,
-			ViewTaskFactoryListener vtfListener,
 			AnnotationFactoryManager annMgr,
 			DingGraphLOD dingGraphLOD,
 			HandleFactory handleFactory,
@@ -38,7 +36,6 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 		this.dingLexicon = dingLexicon;
 		this.annMgr = annMgr;
 		this.handleFactory = handleFactory;
-		this.vtfListener = vtfListener;
 		this.dingGraphLOD = dingGraphLOD;
 		this.registrar = registrar;
 	}
@@ -57,7 +54,7 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 	}
 	
 	private DRenderingEngine createRenderingEngine(CyNetworkView networkView) {
-		DRenderingEngine re = new DRenderingEngine(networkView, dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory, registrar);
+		DRenderingEngine re = new DRenderingEngine(networkView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);
 		return re;
 	}
 	

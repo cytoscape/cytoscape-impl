@@ -46,7 +46,6 @@ import javax.swing.JComponent;
 
 import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNode;
 
 
@@ -438,10 +437,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	}
 
 	private void contentChanged() {
-		ContentChangeListener lis = m_view.m_cLis[0];
-
-		if (lis != null)
-			lis.contentChanged();
+		m_view.fireContentChanged();
 	}
 
 	// Sort the components by z order

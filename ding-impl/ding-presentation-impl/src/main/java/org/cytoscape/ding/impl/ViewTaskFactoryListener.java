@@ -37,117 +37,128 @@ import org.cytoscape.task.NodeViewTaskFactory;
 
 public class ViewTaskFactoryListener {
 
-	final Map<NodeViewTaskFactory, Map> nodeViewTFs;
-	final Map<EdgeViewTaskFactory, Map> edgeViewTFs;
-	final Map<NetworkViewTaskFactory, Map> emptySpaceTFs;
-	final Map<NetworkViewLocationTaskFactory, Map> networkViewLocationTFs;
-	final Map<CyNodeViewContextMenuFactory, Map> cyNodeViewContexMenuFactory;
-	final Map<CyEdgeViewContextMenuFactory, Map> cyEdgeViewContextMenuFactory;
-	final Map<CyNetworkViewContextMenuFactory, Map> cyNetworkViewContextMenuFactory;
+	private final Map<NodeViewTaskFactory, Map<String,String>> nodeViewTFs;
+	private final Map<EdgeViewTaskFactory, Map<String,String>> edgeViewTFs;
+	private final Map<NetworkViewTaskFactory, Map<String,String>> emptySpaceTFs;
+	private final Map<NetworkViewLocationTaskFactory, Map<String,String>> networkViewLocationTFs;
+	private final Map<CyNodeViewContextMenuFactory, Map<String,String>> cyNodeViewContexMenuFactory;
+	private final Map<CyEdgeViewContextMenuFactory, Map<String,String>> cyEdgeViewContextMenuFactory;
+	private final Map<CyNetworkViewContextMenuFactory, Map<String,String>> cyNetworkViewContextMenuFactory;
 	
 	private final NVLTFActionSupport nvltfActionSupport;
 
-	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport){
+	public ViewTaskFactoryListener(NVLTFActionSupport nvltfActionSupport) {
 		this.nvltfActionSupport = nvltfActionSupport;
-		nodeViewTFs = new ConcurrentHashMap<NodeViewTaskFactory, Map>(16, 0.75f, 2);
-		edgeViewTFs = new ConcurrentHashMap<EdgeViewTaskFactory, Map>(16, 0.75f, 2);
-		emptySpaceTFs = new ConcurrentHashMap<NetworkViewTaskFactory, Map>(16, 0.75f, 2);
-		networkViewLocationTFs = new ConcurrentHashMap<NetworkViewLocationTaskFactory, Map>(16, 0.75f, 2);
-		cyNodeViewContexMenuFactory = new ConcurrentHashMap<CyNodeViewContextMenuFactory, Map>(16, 0.75f, 2);
-		cyEdgeViewContextMenuFactory = new ConcurrentHashMap<CyEdgeViewContextMenuFactory, Map>(16, 0.75f, 2);
-		cyNetworkViewContextMenuFactory = new ConcurrentHashMap<CyNetworkViewContextMenuFactory, Map>(16, 0.75f, 2);
+		nodeViewTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		edgeViewTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		emptySpaceTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		networkViewLocationTFs = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyNodeViewContexMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyEdgeViewContextMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
+		cyNetworkViewContextMenuFactory = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	
-	public void addNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		nodeViewTFs.put(nvtf, props);
-	}
-
-	public void removeNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map props) {
-		if (nvtf == null)
-			return;
-
-		nodeViewTFs.remove(nvtf);
-	}
-
-	public void addEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		edgeViewTFs.put(evtf, props);
-	}
-
-	public void removeEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		edgeViewTFs.remove(evtf);
-	}
-
-	public void addNetworkViewTaskFactory(NetworkViewTaskFactory evtf, Map props) {
-		if (evtf == null)
-			return;
-
-		emptySpaceTFs.put(evtf, props);
-	}
-
-	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory evtf,
-			Map props) {
-		if (evtf == null)
-			return;
-
-		emptySpaceTFs.remove(evtf);
-	}
-
-	public void addNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map props){
-		if(nvltf == null)
-			return;
-		networkViewLocationTFs.put(nvltf, props);
-		nvltfActionSupport.registerAction(nvltf,props);
+	
+	public Map<NodeViewTaskFactory, Map<String,String>> getNodeViewTaskFactoryMap() {
+		return nodeViewTFs;
 	}
 	
-	public void removeNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map props){
-		if(nvltf == null)
-			return;
-		networkViewLocationTFs.remove(nvltf);
+	public Map<EdgeViewTaskFactory, Map<String,String>> getEdgeViewTaskFactoryMap() {
+		return edgeViewTFs;
 	}
 	
-	public void addCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map props){
-		if(cnvcmf == null)
-			return;
-		cyNodeViewContexMenuFactory.put(cnvcmf, props);
+	public Map<NetworkViewTaskFactory, Map<String,String>> getEmptySpaceTaskFactoryMap() {
+		return emptySpaceTFs;
 	}
 	
-	public void removeCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map props){
-		if(cnvcmf == null)
-			return;
-		cyNodeViewContexMenuFactory.remove(cnvcmf);
+	public Map<NetworkViewLocationTaskFactory, Map<String,String>> getNetworkViewLocationTaskFactoryMap() {
+		return networkViewLocationTFs;
 	}
 	
-	public void addCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map props){
-		if(cevcmf == null)
-			return;
-		cyEdgeViewContextMenuFactory.put(cevcmf, props);
+	public Map<CyNodeViewContextMenuFactory, Map<String,String>> getCyNodeViewContextMenuFactoryMap() {
+		return cyNodeViewContexMenuFactory;
 	}
 	
-	public void removeCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map props){
-		if(cevcmf == null)
-			return;
-		cyEdgeViewContextMenuFactory.remove(cevcmf);
+	public Map<CyEdgeViewContextMenuFactory, Map<String,String>> getCyEdgeViewContextMenuFactoryMap() {
+		return cyEdgeViewContextMenuFactory;
 	}
 	
-	public void addCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map props){
-		if(cnvcmf == null)
-			return;
-		cyNetworkViewContextMenuFactory.put(cnvcmf, props);
+	public Map<CyNetworkViewContextMenuFactory, Map<String,String>> getCyNetworkViewContextMenuFactoryMap() {
+		return cyNetworkViewContextMenuFactory;
 	}
 	
-	public void removeCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map props){
-		if(cnvcmf == null)
-			return;
+	
+	
+	public void addNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map<String,String> props) {
+		if (nvtf != null)
+			nodeViewTFs.put(nvtf, props);
+	}
+
+	public void removeNodeViewTaskFactory(NodeViewTaskFactory nvtf, Map<String,String> props) {
+		if (nvtf != null)
+			nodeViewTFs.remove(nvtf);
+	}
+
+	public void addEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map<String,String> props) {
+		if (evtf != null)
+			edgeViewTFs.put(evtf, props);
+	}
+
+	public void removeEdgeViewTaskFactory(EdgeViewTaskFactory evtf, Map<String,String> props) {
+		if (evtf != null)
+			edgeViewTFs.remove(evtf);
+	}
+
+	public void addNetworkViewTaskFactory(NetworkViewTaskFactory evtf, Map<String,String> props) {
+		if (evtf != null)
+			emptySpaceTFs.put(evtf, props);
+	}
+
+	public void removeNetworkViewTaskFactory(NetworkViewTaskFactory evtf, Map<String,String> props) {
+		if (evtf != null)
+			emptySpaceTFs.remove(evtf);
+	}
+
+	public void addNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map<String,String> props){
+		if(nvltf != null) {
+			networkViewLocationTFs.put(nvltf, props);
+			nvltfActionSupport.registerAction(nvltf,props);
+		}
+	}
+	
+	public void removeNetworkViewLocationTaskFactory(NetworkViewLocationTaskFactory nvltf, Map<String,String> props){
+		if(nvltf != null)
+			networkViewLocationTFs.remove(nvltf);
+	}
+	
+	public void addCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map<String,String> props){
+		if(cnvcmf != null)
+			cyNodeViewContexMenuFactory.put(cnvcmf, props);
+	}
+	
+	public void removeCyNodeViewContextMenuFactory(CyNodeViewContextMenuFactory cnvcmf, Map<String,String> props){
+		if(cnvcmf != null)
+			cyNodeViewContexMenuFactory.remove(cnvcmf);
+	}
+	
+	public void addCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map<String,String> props){
+		if(cevcmf != null)
+			cyEdgeViewContextMenuFactory.put(cevcmf, props);
+	}
+	
+	public void removeCyEdgeViewContextMenuFactory(CyEdgeViewContextMenuFactory cevcmf, Map<String,String> props){
+		if(cevcmf != null)
+			cyEdgeViewContextMenuFactory.remove(cevcmf);
+	}
+	
+	public void addCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map<String,String> props){
+		if(cnvcmf != null)
+			cyNetworkViewContextMenuFactory.put(cnvcmf, props);
+	}
+	
+	public void removeCyNetworkViewContextMenuFactory(CyNetworkViewContextMenuFactory cnvcmf, Map<String,String> props){
+		if(cnvcmf != null)
 		cyNetworkViewContextMenuFactory.remove(cnvcmf);
 	}
 }

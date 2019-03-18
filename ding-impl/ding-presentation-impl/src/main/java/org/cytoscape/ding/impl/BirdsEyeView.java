@@ -50,7 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -139,8 +138,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 		// Create thread pool
 		redrawTimer = new Timer("Bird's Eye View Timer");
-
-		this.re.m_navigationCanvas = this;
 	}
 	
 	private void initializeView(final DRenderingEngine re) {
@@ -219,7 +216,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * Render actual image on the panel.
 	 */
 	@Override public void update(Graphics g) {
-		re.m_networkCanvas.ensureInitialized();
+		re.getCanvas().ensureInitialized();
 
 		ArbitraryGraphicsCanvas foregroundCanvas = 
 		    (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
@@ -256,7 +253,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				// actually is slower
 				// TODO: at some point, we need to implement a different model of drawSnapshot that doesn't
 				// use the RTree, which isn't needed since we redraw everything anyways
-				if (re.largeModel) {
+				if (re.isLargeModel()) {
 						// Run as a thread
 						if (redrawTask != null) {
 							redrawTask.cancel();
@@ -400,7 +397,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final class InnerMouseWheelListener implements MouseWheelListener {
 		@Override 
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			re.m_networkCanvas.mouseWheelMoved(e);
+			re.getCanvas().mouseWheelMoved(e);
 		}
 	}
 	
@@ -430,7 +427,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				if (deltaX != 0 || deltaY != 0) {
 					final Point2D pt = re.getCenter();
 					re.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
-					re.m_networkCanvas.setHideEdges();
+					re.getCanvas().setHideEdges();
 					re.updateView();
 				}
 			}

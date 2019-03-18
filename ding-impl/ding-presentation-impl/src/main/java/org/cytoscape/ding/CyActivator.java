@@ -141,6 +141,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		NVLTFActionSupport nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
+		registerService(bc, vtfListener, ViewTaskFactoryListener.class);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		AnnotationManager annotationManager = new AnnotationManagerImpl(serviceRegistrar);
@@ -164,7 +165,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
 		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID);
-		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory, dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, netViewFactoryMediator, NetworkViewAboutToBeDestroyedListener.class);
 		
 		DingRenderer renderer = new DingRenderer(netViewFactoryMediator, dVisualLexicon, serviceRegistrar);

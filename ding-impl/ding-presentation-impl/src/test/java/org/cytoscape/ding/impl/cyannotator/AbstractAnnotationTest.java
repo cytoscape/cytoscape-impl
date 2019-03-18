@@ -14,7 +14,6 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
-import org.cytoscape.ding.impl.ViewTaskFactoryListener;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.event.CyEventHelper;
@@ -50,11 +49,10 @@ public class AbstractAnnotationTest {
 		graphView = nvTest.getNetworkView();
 		
 		DVisualLexicon dingLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
-		ViewTaskFactoryListener vtfl = mock(ViewTaskFactoryListener.class);
 		AnnotationFactoryManager annMgr = mock(AnnotationFactoryManager.class);
 		DingGraphLOD dingGraphLOD = mock(DingGraphLOD.class);
 		HandleFactory handleFactory = new HandleFactoryImpl();
-		DRenderingEngine re = new DRenderingEngine(graphView, dingLexicon, vtfl, annMgr, dingGraphLOD, handleFactory, registrar);
+		DRenderingEngine re = new DRenderingEngine(graphView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);
 		
 		when(dingRenderer.getRenderingEngine(graphView)).thenReturn(re);
 		

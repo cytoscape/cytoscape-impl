@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.events;
+package org.cytoscape.ding.impl;
 
 /*
  * #%L
