@@ -3,7 +3,6 @@ package org.cytoscape.io.internal.read.xgmml;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -189,8 +188,8 @@ public class GenericXGMMLReader extends AbstractCyNetworkReader {
 		setNetworkViewProperties(netView);
 		
 		if (netView.getModel().getNodeCount() > 0) {
-			final Collection<View<CyNode>> nodes = netView.getNodeViews();
-			final Collection<View<CyEdge>> edges = netView.getEdgeViews();
+			final Iterable<View<CyNode>> nodes = netView.getNodeViewsIterable();
+			final Iterable<View<CyEdge>> edges = netView.getEdgeViewsIterable();
 			
 			for (final View<CyNode> nodeView : nodes)
 				setNodeViewProperties(netView, nodeView);

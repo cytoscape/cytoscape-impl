@@ -162,6 +162,14 @@ public class BendStore {
 		}
 	}
 	
+	public List<HandleKey> getHandles(View<CyEdge> edge) {
+		return selectedEdges.get(edge.getSUID());
+	}
+	
+	public boolean hasHandles(View<CyEdge> edge) {
+		return selectedEdges.containsKey(edge.getSUID());
+	}
+	
 	public void moveHandle(HandleKey key, float x, float y) {
 		if(handleSpacialIndex.exists(key)) {
 			View<CyEdge> edge = getEdge(key);

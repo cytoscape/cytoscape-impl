@@ -114,7 +114,8 @@ public final class GraphRenderer {
 	// No constructor.
 	private GraphRenderer() {
 	}
-
+	
+	
 	/**
 	 * Renders a graph.
 	 * @param netView the network view; nodes in this graph must correspond to
@@ -158,66 +159,32 @@ public final class GraphRenderer {
 	                                    final double scaleFactor,
 	                                    final boolean haveZOrder,
 	                                    final Set<VisualPropertyDependency<?>> dependencies) {
-		
-		LongHash nodeBuff = new LongHash(); // Make sure we keep our promise.
 
 		if (grafx == null || grafx.image == null)
 			return 0;
 		
-//		final CyNetwork graph = netView.getModel();
+		LongHash nodeBuff = new LongHash();
 		
 		// Define the visible window in node coordinate space.
-		final float xMin;
+		final float xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
+		final float yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
+		final float xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null)) / scaleFactor)); 
+		final float yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
 
-		// Define the visible window in node coordinate space.
-		final float yMin;
-
-		// Define the visible window in node coordinate space.
-		final float xMax;
-
-		// Define the visible window in node coordinate space.
-		final float yMax;
-		xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
-		yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
-		xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
-		yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
-
-		// Define buffers.  These are of the few objects we're instantiating
-		// directly in this method.
-		final float[] floatBuff1;
-
-		// Define buffers.  These are of the few objects we're instantiating
-		// directly in this method.
-		final float[] floatBuff2;
-
-		// Define buffers.  These are of the few objects we're instantiating
-		// directly in this method.
-		final float[] floatBuff3;
-
-		// Define buffers.  These are of the few objects we're instantiating
-		// directly in this method.
-		final float[] floatBuff4;
-
-		// Define buffers.  These are of the few objects we're instantiating
-		// directly in this method.
-		final float[] floatBuff5;
-		final double[] doubleBuff1;
-		final double[] doubleBuff2;
-		final GeneralPath path2d;
-		floatBuff1 = new float[4];
-		floatBuff2 = new float[4];
-		floatBuff3 = new float[2];
-		floatBuff4 = new float[2];
-		floatBuff5 = new float[8];
-		doubleBuff1 = new double[4];
-		doubleBuff2 = new double[2];
-		path2d = new GeneralPath();
-
+		// Define buffers.  These are of the few objects we're instantiating directly in this method.
+		final float[] floatBuff1 = new float[4];
+		final float[] floatBuff2 = new float[4];
+		final float[] floatBuff3 = new float[2];
+		final float[] floatBuff4 = new float[2];
+		final float[] floatBuff5 = new float[8];
+		final double[] doubleBuff1 = new double[4];
+		final double[] doubleBuff2 = new double[2];
+		final GeneralPath path2d = new GeneralPath();
+		
 		// Determine the number of nodes and edges that we are about to render.
 		final int renderNodeCount;
 		final int renderEdgeCount;
 		final byte renderEdges;
-		long start = System.currentTimeMillis();
 
 		{
 			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
@@ -229,10 +196,8 @@ public final class GraphRenderer {
 
 			if (renderEdges > 0) {
 				int runningNodeCount = 0;
-
-				for (int i = 0; i < visibleNodeCount; i++) {
+				while (nodeHits.hasNext()) {
 					nodeHits.nextExtents(floatBuff1);
-
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
 				}
@@ -241,10 +206,8 @@ public final class GraphRenderer {
 				renderEdgeCount = totalEdgeCount;
 			} else if (renderEdges < 0) {
 				int runningNodeCount = 0;
-
-				for (int i = 0; i < visibleNodeCount; i++) {
+				while (nodeHits.hasNext()) {
 					nodeHits.nextExtents(floatBuff1);
-
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 						runningNodeCount++;
 				}
@@ -255,7 +218,7 @@ public final class GraphRenderer {
 				int runningNodeCount = 0;
 				int runningEdgeCount = 0;
 
-				for (int i = 0; i < visibleNodeCount; i++) {
+				while (nodeHits.hasNext()) {
 					final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
 					if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
@@ -267,7 +230,6 @@ public final class GraphRenderer {
 						SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
 						if (!edgeDetails.isVisible(e))
 							continue;
-						final long edge = e.getSUID(); 
 						final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 
 						if (nodeBuff.get(otherNode) < 0)

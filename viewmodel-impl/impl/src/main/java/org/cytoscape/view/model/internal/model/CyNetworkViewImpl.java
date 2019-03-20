@@ -4,6 +4,7 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -36,6 +37,7 @@ import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
+import io.vavr.collection.Traversable;
 
 public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetworkView {
 	
@@ -362,13 +364,63 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public Collection<View<CyNode>> getNodeViews() {
-		return (Collection<View<CyNode>>) (Collection<?>) dataSuidToNode.values().asJava();
+		// The asJava() method returns a collection that is unbearably slow, so we create our own collection instead.
+		java.util.List<View<CyNode>> nodeList = new ArrayList<>();
+		for(CyNodeViewImpl node : dataSuidToNode.values()) {
+			nodeList.add(node);
+		}
+		return nodeList;
 	}
-
+	
+	@Override
+	public Iterable<View<CyNode>> getNodeViewsIterable() {
+		Traversable<CyNodeViewImpl> traversable = dataSuidToNode.values();
+		return new Iterable<View<CyNode>>() {
+			@Override public Iterator<View<CyNode>> iterator() {
+				return new TraversableIterator<>(traversable);
+			}
+		};
+	}
+	
 	@Override
 	public Collection<View<CyEdge>> getEdgeViews() {
-		return (Collection<View<CyEdge>>) (Collection<?>) dataSuidToEdge.values().asJava();
+		java.util.List<View<CyEdge>> edgeList = new ArrayList<>();
+		for(CyEdgeViewImpl edge : dataSuidToEdge.values()) {
+			edgeList.add(edge);
+		}
+		return edgeList;
 	}
+	
+	public Iterable<View<CyEdge>> getEdgeViewsIterable() {
+		Traversable<CyEdgeViewImpl> traversable = dataSuidToEdge.values();
+		return new Iterable<View<CyEdge>>() {
+			@Override public Iterator<View<CyEdge>> iterator() {
+				return new TraversableIterator<>(traversable);
+			}
+		};
+	}
+	
+	
+	private static class TraversableIterator<T> implements Iterator<T> {
+		private Traversable<? extends T> traversable;
+
+		TraversableIterator(Traversable<? extends T> traversable) {
+			this.traversable = traversable;
+		}
+
+        @Override
+        public boolean hasNext() {
+            return !traversable.isEmpty();
+        }
+
+        @Override
+        public T next() {
+        	T element = traversable.head();
+            traversable = traversable.tail();
+            return element;
+        }
+	}
+	
 	
 	@Override
 	public Collection<View<? extends CyIdentifiable>> getAllViews() {

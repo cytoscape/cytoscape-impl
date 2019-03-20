@@ -85,6 +85,20 @@ public class NetworkViewImplTest {
 		for(CyEdge e : network.getEdgeList())
 			assertNotNull(networkView.getEdgeView(e));
 		
+		int nodeCount = 0;
+		for(View<CyNode> nv : networkView.getNodeViewsIterable()) {
+			assertNotNull(nv);
+			++nodeCount;
+		}
+		assertEquals(4, nodeCount);
+		
+		int edgeCount = 0;
+		for(View<CyEdge> ev : networkView.getEdgeViewsIterable()) {
+			assertNotNull(ev);
+			++edgeCount;
+		}
+		assertEquals(4, edgeCount);
+		
 		for(View<CyNode> node : networkView.getNodeViews())
 			node.setVisualProperty(NODE_PAINT, Color.RED);
 		

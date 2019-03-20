@@ -439,7 +439,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			while (true) {
 				if (edgeView.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
-				if (((EdgeAnchors) otherEdgeView).numAnchors() == 0)
+				if (re.getBendStore().hasHandles(otherEdgeView))
 					i++;
 			}
 

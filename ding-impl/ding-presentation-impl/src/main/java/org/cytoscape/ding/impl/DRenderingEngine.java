@@ -239,7 +239,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private void checkModelIsDirty() {
 		// Must run on EDT
 		if(viewModel.isDirty()) {
-			System.out.println("DIRTY!");
 			viewModelSnapshot = viewModel.createSnapshot();
 			bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
 			updateView(true);
@@ -784,6 +783,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 
+	
+	/**
+	 * MKTODO
+	 * This is commented out for now.
+	 * Typically this is called when the selection changes, and only the selected nodes are re-rendered.
+	 * This worsk by drawing just the selected nodes over top of the current canvas.
+	 * 
+	 * This is the following issues:
+	 * - Complex and heavyweight. The old solution required creating a separate spacial index and network.
+	 * - Doesn't respect z-order, the selected nodes are always rendered on top, causing them to pop to the top.
+	 * - Only happens for one frame. Anything else that triggers a render will overwrite the entire canvas.
+	 *   So the users selects some nodes, they pop up to the top, then they go back down again, it looks strange.
+	 *
+	 * I feel that we should look to alternate ways to optimize the renderer, and abandon the logic in this method.
+	 */
 	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
 	                   Paint bgColor, double xCenter, double yCenter, double scale,
 	                   List<View<CyNode>> nodeList, List<View<CyEdge>> edgeList) {

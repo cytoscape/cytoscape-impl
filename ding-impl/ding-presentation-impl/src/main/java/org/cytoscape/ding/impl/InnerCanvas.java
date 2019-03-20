@@ -4,7 +4,6 @@ import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
 import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -35,7 +34,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.Timer;
 import javax.swing.UIManager;
@@ -334,12 +332,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		if (addEdgeMode.addingEdge())
 			addEdgeMode.drawRubberBand(e);
 		else {
-			final String tooltipText = getToolTipText(e.getPoint());
-			final Component[] components = this.getParent().getComponents();
-			for (Component comp : components) {
-				if (comp instanceof JComponent)
-					((JComponent) comp).setToolTipText(tooltipText);
-			}
+			// MKTODO this results in the RTree being constantly queried, is there a better way???
+//			final String tooltipText = getToolTipText(e.getPoint());
+//			final Component[] components = this.getParent().getComponents();
+//			for (Component comp : components) {
+//				if (comp instanceof JComponent)
+//					((JComponent) comp).setToolTipText(tooltipText);
+//			}
 		}
 	}
 
@@ -688,10 +687,16 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		Line2D.Float line = new Line2D.Float();
 		float[] extentsBuff = new float[4];
-		float[] extentsBuff2 = new float[4];
 		
+		// MKTODO this code was copied from GraphRenderer.renderGraph()
+		// get viewport bounds
+		float image_xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
+		float image_yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
+		float image_xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null)) / scaleFactor)); 
+		float image_yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
+
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(image_xMin, image_yMin, image_xMax, image_yMax);
 		
 		Set<Long> processedNodes = new HashSet<>();
 		List<Long> resultEdges = new ArrayList<>();
@@ -699,7 +704,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		if ((lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0) {
 			// We won't need to look up arrows and their sizes.
 			while(nodeHits.hasNext()) {
-				Long node = nodeHits.nextExtents(extentsBuff);
+				long node = nodeHits.nextExtents(extentsBuff);
 				
 				// MKTODO make this into a utility method
 				float nodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
@@ -714,8 +719,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					
 					if(!processedNodes.contains(otherNode)) {
 						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
-						float otherNodeX = extentsBuff[0] + extentsBuff[2] / 2;
-						float otherNodeY = extentsBuff[1] + extentsBuff[3] / 2;
+						float otherNodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
+						float otherNodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
 						line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
 						
 						if(line.intersects(xMin, yMin, xMax - xMin, yMax - yMin)) {
@@ -726,9 +731,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				processedNodes.add(node);
 			}
 		} else { // Last render high detail.
+			float[] extentsBuff2 = new float[4];
 			
 			while(nodeHits.hasNext()) {
-				Long node = nodeHits.nextExtents(extentsBuff);
+				long node = nodeHits.nextExtents(extentsBuff);
 				View<CyNode> nodeView = snapshot.getNodeView(node);
 				byte nodeShape = re.getNodeDetails().getShape(nodeView);
 				
@@ -741,7 +747,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 					View<CyNode> otherNodeView = snapshot.getNodeView(otherNode);
 					
 					if(!processedNodes.contains(otherNode)) {
-						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
+						snapshot.getSpacialIndex2D().get(otherNode, extentsBuff2);
 						
 						final byte otherNodeShape = re.getNodeDetails().getShape(otherNodeView);
 						final byte srcShape;
@@ -799,7 +805,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						if (path2.intersects(xMin - segThicknessDiv2, yMin - segThicknessDiv2,
 						                       (xMax - xMin) + (segThicknessDiv2 * 2),
 						                       (yMax - yMin) + (segThicknessDiv2 * 2)))
-							resultEdges.add(edge.getSUID().longValue());
+							resultEdges.add(edge.getSUID());
 					}
 				}
 
