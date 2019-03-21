@@ -259,7 +259,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			StatusBarPanelFactory taskStatusPanelFactory) {
 		final JPanel taskStatusPanel = taskStatusPanelFactory.createTaskStatusPanel();
 		final JPanel jobStatusPanel = jobStatusPanelFactory.createTaskStatusPanel();
-		final MemStatusPanel memStatusPanel = new MemStatusPanel();
+		final MemStatusPanel memStatusPanel = new MemStatusPanel(serviceRegistrar);
 		
 		final JToolBar statusToolBar = new JToolBar();
 		statusToolBar.setFloatable(false);

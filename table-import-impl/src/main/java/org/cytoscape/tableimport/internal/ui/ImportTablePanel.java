@@ -129,6 +129,7 @@ import org.cytoscape.tableimport.internal.reader.NetworkTableMappingParameters;
 import org.cytoscape.tableimport.internal.reader.SupportedFileType;
 import org.cytoscape.tableimport.internal.reader.TextDelimiter;
 import org.cytoscape.tableimport.internal.reader.TextTableReader.ObjectType;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.tableimport.internal.ui.PreviewTablePanel.PreviewTableModel;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.FileType;
@@ -223,19 +224,22 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 	private OntologyPanelBuilder panelBuilder;
 
 	private final InputStreamTaskFactory factory;
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 	private File tempFile;
 	
 	private boolean updating;
 
 	public ImportTablePanel(
-			final ImportType importType,
-			final InputStream is,
-			final String fileType,
-			final InputStreamTaskFactory factory,
-			final CyServiceRegistrar serviceRegistrar
+			ImportType importType,
+			InputStream is,
+			String fileType,
+			InputStreamTaskFactory factory,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
 	) throws JAXBException, IOException {
 		this.factory = factory;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		this.fileType = fileType;
 
@@ -278,19 +282,23 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		getPreviewPanel().addPropertyChangeListener(this);
 
 		// Hide input file and use inputStream
-		this.attributeFileLabel.setVisible(false);
-		this.selectAttributeFileButton.setVisible(false);
-		this.targetDataSourceTextField.setVisible(false);
+		attributeFileLabel.setVisible(false);
+		selectAttributeFileButton.setVisible(false);
+		targetDataSourceTextField.setVisible(false);
 
 		// Case import network
 		if (this.importType == NETWORK_IMPORT) {
-			this.edgeRadioButton.setVisible(false);
-			this.nodeRadioButton.setVisible(false);
+			edgeRadioButton.setVisible(false);
+			nodeRadioButton.setVisible(false);
 		}
 
 		// Case import node/edge attribute
-		if (this.importType == TABLE_IMPORT)
-			this.networkRadioButton.setVisible(false);
+		if (this.importType == TABLE_IMPORT) {
+			networkRadioButton.setVisible(false);
+			
+			if (tableImportContext != null)
+				tableImportContext.addPropertyChangeListener("keyRequired", evt -> getPreviewPanel().updateKeyType());
+		}
 
 		try {
 			setPreviewPanel();
@@ -768,7 +776,8 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 				getImportAllCheckBox().setEnabled(false);
 			}
 			
-			previewPanel = new PreviewTablePanel(importType, serviceRegistrar.getService(IconManager.class));
+			previewPanel = new PreviewTablePanel(importType, tableImportContext,
+					serviceRegistrar.getService(IconManager.class));
 		}
 		
 		return previewPanel;
@@ -1056,7 +1065,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		final String commentChar = getCommentLinePrefix();
 		final int startLine = getStartLineNumber();
 		final InputStream tempIs = URLUtil.getInputStream(sourceURL);
-		getPreviewPanel().updatePreviewTable(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters,
+		getPreviewPanel().update(workbook, this.fileType, sourceURL.toString(), tempIs, delimiters,
 				commentChar, startLine - 1);
 
 		tempIs.close();
@@ -1117,7 +1126,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		if (tempFile != null)
 			tempIs2 = new FileInputStream(tempFile);
 
-		getPreviewPanel().updatePreviewTable(workbook, fileType, "", tempIs2, delimiters, commentChar, startLine - 1);
+		getPreviewPanel().update(workbook, fileType, "", tempIs2, delimiters, commentChar, startLine - 1);
 
 		if (tempIs2 != null)
 			tempIs2.close();
@@ -1286,7 +1295,7 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 			getPreviewPanel().setType(keyInFile, KEY);
 		}
 		
-		getPreviewPanel().updatePreviewTable();
+		getPreviewPanel().update();
 	}
 
 	public List<String> checkDelimiter() {

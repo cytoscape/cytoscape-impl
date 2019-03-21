@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.read.VizmapReader;
 import org.cytoscape.io.read.VizmapReaderManager;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -50,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 public class ImportDefaultVizmapTask extends AbstractTask {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final ServicesUtil servicesUtil;
 	private final File vizmapFile;
@@ -63,7 +64,7 @@ public class ImportDefaultVizmapTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) throws Exception {
+	public void run(final TaskMonitor tm) throws Exception {
 		final VizmapReader reader;
 		final VizmapReaderManager vizmapReaderMgr = servicesUtil.get(VizmapReaderManager.class);
 

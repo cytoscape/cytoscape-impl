@@ -1,12 +1,38 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.text.DecimalFormat;
+import java.util.List;
+
+import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.internal.tunables.utils.TunableBoundedField;
+import org.cytoscape.work.internal.tunables.utils.TunableSlider;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.cytoscape.work.util.AbstractBounded;
+import org.cytoscape.work.util.BoundedChangeListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +50,6 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
-
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.text.DecimalFormat;
-import java.util.List;
-
-import javax.swing.JLabel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.internal.tunables.utils.TunableBoundedField;
-import org.cytoscape.work.internal.tunables.utils.TunableSlider;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.cytoscape.work.util.AbstractBounded;
-import org.cytoscape.work.util.BoundedChangeListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * Handler for the type <i>Bounded</i> of <code>Tunable</code>
  *
@@ -62,7 +61,7 @@ import org.slf4j.LoggerFactory;
 public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITunableHandler 
                                                           implements BoundedChangeListener<N> {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	/**
 	 * Representation of the <code>Bounded</code> in a <code>JSlider</code>

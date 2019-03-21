@@ -44,6 +44,8 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
+import org.cytoscape.tableimport.internal.task.ImportTableDataTaskFactoryImpl;
+import org.cytoscape.tableimport.internal.task.TableImportContext;
 import org.cytoscape.task.internal.network.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
@@ -68,7 +70,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -102,7 +104,7 @@ public class MappingIntegrationTest {
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 	private Interpreter interpreter = new InterpreterImpl();
 	
-	private SyncTunableMutator stm = new SyncTunableMutator();
+	private SyncTunableMutator<?> stm = new SyncTunableMutator();
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
@@ -265,10 +267,11 @@ public class MappingIntegrationTest {
 	}
 	
 	public void mapping(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
-		ImportTableDataTaskFactoryImpl mappingTF = new ImportTableDataTaskFactoryImpl(serviceRegistrar);
-		List<CyNetwork> nets = new ArrayList<CyNetwork>();
+		ImportTableDataTaskFactoryImpl mappingTF =
+				new ImportTableDataTaskFactoryImpl(new TableImportContext(), serviceRegistrar);
+		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
-		
+
 		TaskIterator ti = mappingTF.createTaskIterator(table, selectedOnly, false, nets ,rootNet,col, CyNode.class);
 		assertNotNull("task iterator is null", ti);
 		

@@ -4,9 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.FileUtil;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.internal.tunables.utils.SupportedFileTypesManager;
 import org.cytoscape.work.swing.GUITunableHandler;
@@ -18,7 +16,7 @@ import org.cytoscape.work.swing.GUITunableHandlerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -41,39 +39,24 @@ public final class FileHandlerFactory implements GUITunableHandlerFactory {
 	private final SupportedFileTypesManager fileTypesManager;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public FileHandlerFactory(final SupportedFileTypesManager fileTypesManager,
-			final CyServiceRegistrar serviceRegistrar) {
+	public FileHandlerFactory(SupportedFileTypesManager fileTypesManager, CyServiceRegistrar serviceRegistrar) {
 		this.fileTypesManager = fileTypesManager;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
 	public GUITunableHandler createTunableHandler(Field field, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(field.getType()))
 			return null;
 
-		return new FileHandler(
-				field,
-				instance,
-				tunable,
-				fileTypesManager,
-				serviceRegistrar.getService(FileUtil.class),
-				serviceRegistrar.getService(CyApplicationManager.class)
-		);
+		return new FileHandler(field, instance, tunable, fileTypesManager, serviceRegistrar);
 	}
 
+	@Override
 	public GUITunableHandler createTunableHandler(Method getter, Method setter, Object instance, Tunable tunable) {
 		if (!File.class.isAssignableFrom(getter.getReturnType()))
 			return null;
 
-		return new FileHandler(
-				getter,
-				setter,
-				instance,
-				tunable,
-				fileTypesManager,
-				serviceRegistrar.getService(FileUtil.class),
-				serviceRegistrar.getService(CyApplicationManager.class)
-		);
+		return new FileHandler(getter, setter, instance, tunable, fileTypesManager, serviceRegistrar);
 	}
 }
-

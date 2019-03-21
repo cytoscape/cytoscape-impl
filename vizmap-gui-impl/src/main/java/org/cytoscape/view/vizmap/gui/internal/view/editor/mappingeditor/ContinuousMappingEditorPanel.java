@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
@@ -57,6 +33,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.util.color.BrewerType;
@@ -78,6 +55,30 @@ import org.jdesktop.swingx.multislider.Thumb;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Abstract class for all Continuous Mapping Editors. This is the mapping from
  * Number to visual property value.
@@ -85,7 +86,7 @@ import org.slf4j.LoggerFactory;
 @SuppressWarnings("serial")
 public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends JPanel {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private static final Dimension SPINNER_SIZE = new Dimension(100, 25);
 
@@ -228,7 +229,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				.createVisualMappingFunction(attribute, attributeType, visualProperty);
 		
 		for (ContinuousMappingPoint<K, V> point : source.getAllPoints()) {
-			BoundaryRangeValues<V> range = new BoundaryRangeValues<V>(point.getRange());
+			BoundaryRangeValues<V> range = new BoundaryRangeValues<>(point.getRange());
 			mapping.addPoint(point.getValue(), range);
 		}
 		
@@ -318,7 +319,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (palettesPanel == null) {
 			palettesPanel = new JPanel();
 			JLabel label = new JLabel("Current Palette: ");
-			// paletteBox = new JComboBox<Palette>(getPalettes().toArray(new Palette[1]));
+			// paletteBox = new JComboBox<>(getPalettes().toArray(new Palette[1]));
 			final GroupLayout layout = new GroupLayout(palettesPanel);
 			palettesPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
@@ -463,7 +464,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	
 	protected JXMultiThumbSlider<V> getSlider() {
 		if (slider == null) {
-			slider = new JXMultiThumbSlider<V>();
+			slider = new JXMultiThumbSlider<>();
 			slider.setMaximumValue(100.0F);
 		}
 		
@@ -777,12 +778,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 			final BoundaryRangeValues<V> newRange;
 			if (equalVal instanceof Number) {
-				newRange = new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number) lesserVal),
+				newRange = new BoundaryRangeValues<>(NumberConverter.convert(vpValueType, (Number) lesserVal),
 						NumberConverter.convert(vpValueType, (Number) equalVal), NumberConverter.convert(vpValueType,
 								(Number) greaterVal));
 
 			} else {
-				newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
+				newRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 			}
 
 			point.setRange(newRange);
@@ -801,11 +802,11 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 		if (equalVal instanceof Number)
 			mapping.getPoint(0).setRange(
-					new BoundaryRangeValues<V>(NumberConverter.convert(vpValueType, (Number) lesserVal), NumberConverter
+					new BoundaryRangeValues<>(NumberConverter.convert(vpValueType, (Number) lesserVal), NumberConverter
 							.convert(vpValueType, (Number) equalVal), NumberConverter.convert(vpValueType,
 							(Number) greaterVal)));
 		else {
-			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+			mapping.getPoint(0).setRange(new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal));
 		}
 		Number newVal = ((thumbs.get(0).getPosition() / 100) * range) + min;
 		mapping.getPoint(0).setValue((K) newVal);

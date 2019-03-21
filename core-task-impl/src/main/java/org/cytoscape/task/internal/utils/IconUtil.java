@@ -122,7 +122,6 @@ public abstract class IconUtil {
 	public static final String[] LAYERED_HIDE_SELECTED = new String[] { HIDE_SELECTED_1, HIDE_SELECTED_2, HIDE_SELECTED_3 };
 	// IMPORT
 	public static final String[] LAYERED_IMPORT_NET = new String[] { IMPORT_NET_1, IMPORT_NET_2 };
-	public static final String[] LAYERED_IMPORT_TABLE = new String[] { IMPORT_TABLE_1, IMPORT_TABLE_2, IMPORT_TABLE_3 };
 	// OPEN / SAVE / NEW
 	public static final String[] LAYERED_OPEN_FILE = new String[] { OPEN_FILE_1, OPEN_FILE_2 };
 	public static final String[] LAYERED_SAVE = new String[] { SAVE_1, SAVE_2, SAVE_3 };

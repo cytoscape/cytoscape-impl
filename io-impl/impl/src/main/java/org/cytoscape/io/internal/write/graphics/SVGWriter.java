@@ -1,12 +1,28 @@
 package org.cytoscape.io.internal.write.graphics;
 
+import java.awt.Dimension;
+import java.io.OutputStream;
+import java.util.Properties;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.freehep.graphicsio.svg.SVGGraphics2D;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,24 +40,9 @@ package org.cytoscape.io.internal.write.graphics;
  * #L%
  */
 
-import java.awt.Dimension;
-import java.io.OutputStream;
-import java.util.Properties;
-
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.freehep.graphicsio.svg.SVGGraphics2D;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class SVGWriter extends AbstractTask implements CyWriter {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	@Tunable(
 			description = "Export text as font:",
@@ -76,9 +77,10 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setStatusMessage("SVG Rendering Start...");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("SVG Writer");
+		tm.setStatusMessage("SVG Rendering Start...");
+		tm.setProgress(0.0);
 		logger.debug("SVG Rendering Start.");
 
 		final SVGGraphics2D g = new SVGGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
@@ -88,14 +90,14 @@ public class SVGWriter extends AbstractTask implements CyWriter {
 		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES", Boolean.toString(!exportTextAsFont));
 		g.setProperties(p);
 		
-		taskMonitor.setProgress(0.2);
+		tm.setProgress(0.2);
 		
 		g.startExport();
 		engine.printCanvas(g);
 		g.endExport();
 		
 		logger.debug("SVG Rendering DONE.");
-		taskMonitor.setStatusMessage("SVG Rendering DONE.");
-		taskMonitor.setProgress(1.0);
+		tm.setStatusMessage("SVG Rendering DONE.");
+		tm.setProgress(1.0);
 	}
 }

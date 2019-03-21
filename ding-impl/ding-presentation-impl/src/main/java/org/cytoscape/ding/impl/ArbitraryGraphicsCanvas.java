@@ -1,30 +1,5 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Component;
@@ -46,8 +21,30 @@ import javax.swing.JComponent;
 
 import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.model.CyNode;
 
+/*
+ * #%L
+ * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * This class extends cytoscape.view.CytoscapeCanvas.  Its meant
@@ -55,6 +52,7 @@ import org.cytoscape.model.CyNode;
  * used for arbitrary graphics drawing (background & foreground panes).
  */
 public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChangeListener {
+	
 	private final static long serialVersionUID = 1202416510975364L;
 
 	/**
@@ -68,11 +66,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private InnerCanvas m_innerCanvas;
 
 	/*
-	 * Map of component(s) to hidden node(s)
-	 */        
-	private Map<Component, CyNode> m_componentToNodeMap;
-
-	/*
 	 * Map of component(s) to hidden Points on the canvas
 	 */        
 	private Map<Component, Point> m_componentToPointMap;
@@ -80,7 +73,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	/*
  	 * Flag to record that we're printing since we don't use the PrinterGraphics interface
  	 */
-	private boolean isPrinting = false;
+	private boolean isPrinting;
 	
 	/**
 	 * Rendered image.
@@ -97,20 +90,19 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param innerCanvas InnerCanvas
 	 * @param backgroundColor Color
 	 * @param isVisible boolean
-	 * @param isOpaque boolean
+	 * @param opaque boolean
 	 */
 	public ArbitraryGraphicsCanvas(DRenderingEngine re,
 								   Canvas canvasId,
 	                               InnerCanvas innerCanvas,
 	                               Color backgroundColor,
-	                               boolean isOpaque) {
+	                               boolean opaque) {
 		super(canvasId);
 		m_view = re;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
-		m_isOpaque = isOpaque;
-		m_componentToNodeMap = new HashMap<Component, CyNode>();
-		m_componentToPointMap = new HashMap<Component, Point>();
+		setOpaque(opaque);
+		m_componentToPointMap = new HashMap<>();
 	}
 
 	/**
@@ -165,22 +157,17 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		contentChanged();
 	}
 
-
 	private void removeInternal(Component component) {
 		if (m_componentToPointMap.containsKey(component))
 			m_componentToPointMap.remove(component);
 		super.remove(component);
 	}
         
-	/**
-	 * Our implementation of remove
-	 */
 	@Override
 	public void remove(Component component) {
 		removeInternal(component);
 		contentChanged();
 	}
-	
 	
 	public void removeAll(Collection<Component> components) {
 		components.forEach(this::removeInternal);
@@ -188,14 +175,12 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		contentChanged();
 	}
 	
-	
 	public void removeAnnotations(Collection<DingAnnotation> annotations) {
 		annotations.stream().map(DingAnnotation::getComponent).forEach(this::removeInternal);
 		contentChanged();
 	}
-	/**
-	 * Our implementation of ViewportChangeListener.
-	 */
+	
+	@Override
 	public void viewportChanged(int viewportWidth, int viewportHeight, double newXCenter,
 	                            double newYCenter, double newScaleFactor) {
 		if (setBoundsChildren())
@@ -218,9 +203,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		contentChanged();
 	}
 
-	/**
-	 * Our implementation of JComponent setBounds.
-	 */
+	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
                 
@@ -280,13 +263,12 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		return true;
 	}
 
-
 	public void drawCanvas(VolatileImage image, double xMin, double yMin, double xCenter, double yCenter, 
 	                       double scaleFactor) {
 		// get image graphics
 		final Graphics2D image2D = image.createGraphics();
-		// System.out.println("drawCanvas: new scaleFactor = "+scaleFactor+", xCenter = "+xCenter+", yCenter = "+yCenter);
-		if (m_isOpaque)
+		
+		if (isOpaque())
 			clearImage(image2D);
 
 		double xOffset = ((image.getWidth()/2)/scaleFactor - xCenter);
@@ -319,15 +301,9 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 				a.drawAnnotation(image2D, position.getX()+xOffset, position.getY()+yOffset, scaleFactor);
 			}
 		}
-		// System.out.println("drawCanvas: done");
 	}
 
-	/**
-	 * Our implementation of paint.
-	 * Invoked by Swing to draw components.
-	 *
-	 * @param graphics Graphics
-	 */
+	@Override
 	public void paint(Graphics graphics) {
 		// only paint if we have an image to paint on
 		if (img != null) {
@@ -356,25 +332,20 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			// Make img publicly available *after* it has been rendered
 			m_img = img;
 		}
-                
 	}
 
-	/**
-	 * Invoke this method to print the component.
-	 *
-	 * @param graphics Graphics
-	 */
+	@Override
 	public void print(Graphics graphics) {
 		isPrinting = true;
 		// Only do this if we're opaque (i.e. the background canvas)
-		if (m_isOpaque)
+		if (isOpaque())
 			clearImage((Graphics2D)graphics);
 		this.printChildren(graphics);
 		isPrinting = false;
 	}
 
 	/**
- 	 * Return true if this view is curerntly being printed (as opposed to painted on the screen)
+ 	 * Return true if this view is currently being printed (as opposed to painted on the screen)
  	 * @return true if we're currently being printed, false otherwise
  	 */
 	public boolean isPrinting() { 
@@ -413,7 +384,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		return true;
 	}
 
-
 	/**
 	 * Utility function to clean the background of the image,
 	 * using m_backgroundColor
@@ -423,7 +393,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private void clearImage(Graphics2D image2D) {
 		if (img != null) {
 			// set color alpha based on opacity setting
-			int alpha = (m_isOpaque) ? 255 : 0;
+			int alpha = isOpaque() ? 255 : 0;
 			Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(),
 			                                  m_backgroundColor.getBlue(), alpha);
 
@@ -447,6 +417,8 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	}
 
 	class ZComparator implements Comparator<Component> {
+		
+		@Override
 		public int compare(Component o1, Component o2) {
 			if (getComponentZOrder(o1) > getComponentZOrder(o2))
 				return -1;
@@ -467,8 +439,6 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// release them here.
 		m_view = null;
 		m_innerCanvas = null;
-		m_componentToNodeMap = null;
 		m_componentToPointMap = null;
 	}
-
 }

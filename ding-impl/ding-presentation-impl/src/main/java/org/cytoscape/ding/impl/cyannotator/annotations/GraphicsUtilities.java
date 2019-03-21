@@ -43,23 +43,14 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RoundRectangle2D;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
-import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
-
-// import org.cytoscape.ding.impl.cyannotator.api.ShapeAnnotation;
-
-import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl.ArrowType;
-
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation;
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowEnd;
-// import org.cytoscape.ding.impl.cyannotator.api.ArrowAnnotation.ArrowType;
+import org.cytoscape.view.presentation.annotations.ArrowAnnotation.ArrowEnd;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 class GraphicsUtilities {
 	private static double halfPI = Math.PI/2.0;
@@ -85,7 +76,7 @@ class GraphicsUtilities {
 
 	protected static final ArrowType supportedArrows[] = {
 		ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE, ArrowType.DIAMOND, ArrowType.OPEN, 
-		ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
+		ArrowType.X, ArrowType.NONE, ArrowType.TRIANGLE, ArrowType.TSHAPE
 	};
 
 	protected static final List<String> supportedArrowNames = Arrays.asList(
@@ -95,6 +86,7 @@ class GraphicsUtilities {
 		ArrowType.DIAMOND.arrowName(), 
 		ArrowType.OPEN.arrowName(), 
 		ArrowType.NONE.arrowName(), 
+		ArrowType.X.arrowName(), 
 		ArrowType.TRIANGLE.arrowName(), 
 		ArrowType.TSHAPE.arrowName());
 
@@ -438,7 +430,7 @@ class GraphicsUtilities {
 			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 		}
 
-		if (type != ArrowType.OPEN && type != ArrowType.TSHAPE)
+		if (type != ArrowType.OPEN && type != ArrowType.TSHAPE && type != ArrowType.X)
 			g2.fill(arrow); 
 
 		g2.draw(arrow);	// We're relying on the stroke to be done by the caller

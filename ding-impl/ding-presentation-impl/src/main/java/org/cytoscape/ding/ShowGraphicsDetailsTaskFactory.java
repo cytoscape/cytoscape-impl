@@ -1,8 +1,5 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -14,7 +11,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -34,25 +31,10 @@ import org.cytoscape.work.TaskIterator;
 
 public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 
-	private final DingRenderer dingRenderer;
-	private final DingGraphLOD dingGraphLOD;
-	private final DingGraphLODAll dingGraphLODAll;
-	
-	public ShowGraphicsDetailsTaskFactory(DingRenderer dingRenderer, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
-		this.dingRenderer = dingRenderer;
-		this.dingGraphLOD = dingGraphLOD;
-		this.dingGraphLODAll = dingGraphLODAll;
-	}
-	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView view) {
-		DRenderingEngine renderer = dingRenderer.getRenderingEngine(view);
-		if(renderer != null) {
-			return new TaskIterator(new ShowGraphicsDetailsTask(renderer, dingGraphLOD, dingGraphLODAll));
-		}
-		return null;
+		return new TaskIterator(new ShowGraphicsDetailsTask(view));
 	}
-	
 	
 	@Override
 	public boolean isReady(CyNetworkView view) {

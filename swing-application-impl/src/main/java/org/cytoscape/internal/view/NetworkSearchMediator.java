@@ -20,6 +20,7 @@ import javax.swing.event.DocumentListener;
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
 import org.cytoscape.app.event.AppsFinishedStartingListener;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.search.AbstractNetworkSearchTaskFactory;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -35,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -66,7 +67,7 @@ public class NetworkSearchMediator implements AppsFinishedStartingListener {
 	
 	private final Object lock = new Object();
 	
-	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	public NetworkSearchMediator(NetworkSearchBar networkSearchBar, CyServiceRegistrar serviceRegistrar) {
 		this.networkSearchBar = networkSearchBar;

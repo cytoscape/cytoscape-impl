@@ -2,6 +2,7 @@ package org.cytoscape.work.internal.task;
 
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.internal.view.TaskMediator;
+import org.ops4j.pax.logging.PaxLogger;
 import org.ops4j.pax.logging.spi.PaxAppender;
 import org.ops4j.pax.logging.spi.PaxLoggingEvent;
 
@@ -11,7 +12,7 @@ import org.ops4j.pax.logging.spi.PaxLoggingEvent;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -43,7 +44,7 @@ public class CyUserLogAppender implements PaxAppender {
 	public void doAppend(final PaxLoggingEvent event) {
 		final TaskMonitor.Level level = getCorrespondingLevel(event.getLevel().toInt());
 		final String message = event.getMessage();
-
+		
 		history.addUnnestedMessage(level, message);
 		taskMediator.setTitle(level, message);
 
@@ -55,12 +56,12 @@ public class CyUserLogAppender implements PaxAppender {
 
 	private static TaskMonitor.Level getCorrespondingLevel(final int level) {
 		switch (level) {
-		case 40000:
-			return TaskMonitor.Level.ERROR;
-		case 30000:
-			return TaskMonitor.Level.WARN;
-		default:
-			return TaskMonitor.Level.INFO;
+			case PaxLogger.LEVEL_ERROR:
+				return TaskMonitor.Level.ERROR;
+			case PaxLogger.LEVEL_WARNING:
+				return TaskMonitor.Level.WARN;
+			default:
+				return TaskMonitor.Level.INFO;
 		}
 	}
 }

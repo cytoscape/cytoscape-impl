@@ -33,6 +33,7 @@ import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DingGraphLODAll;
 import org.cytoscape.ding.impl.DingNetworkViewFactoryMediator;
+import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
@@ -99,7 +100,7 @@ import org.osgi.framework.BundleContext;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -118,9 +119,6 @@ import org.osgi.framework.BundleContext;
  */
 
 public class CyActivator extends AbstractCyActivator {
-	
-	/** View Context Menu - Reorder Right-Clicked Annotation */
-	private static final String REORDER_ANNOTATION_MENU = NETWORK_EDIT_MENU + ".Reorder Annotation[2.2]";
 	
 	private CustomGraphicsManager cgManager;
 	private CyCustomGraphics2Manager cg2Manager;
@@ -148,8 +146,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		DingGraphLOD dingGraphLOD = new DingGraphLOD(serviceRegistrar);
 		registerService(bc, dingGraphLOD, PropertyUpdatedListener.class);
-		
-		DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 		
 		HandleFactory handleFactory = new HandleFactoryImpl();
 		registerService(bc, handleFactory, HandleFactory.class);
@@ -444,7 +440,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		{
 			// Toggle Graphics Details
-			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory(renderer, dingGraphLOD, dingGraphLODAll);
+			ShowGraphicsDetailsTaskFactory factory = new ShowGraphicsDetailsTaskFactory();
 			Properties props = new Properties();
 			props.setProperty(ID, "showGraphicsDetailsTaskFactory");
 			registerService(bc, factory, NetworkViewTaskFactory.class, props); // Used at least by cyREST
@@ -452,12 +448,6 @@ public class CyActivator extends AbstractCyActivator {
 			// Main menu
 			GraphicsDetailAction mainMenuAction = new GraphicsDetailAction(5.0f, "View", factory, serviceRegistrar);
 			registerAllServices(bc, mainMenuAction);
-			
-			// Network tab's context menu
-			GraphicsDetailAction networkMenuAction = new GraphicsDetailAction(11.0f, null, factory, serviceRegistrar);
-			props = new Properties();
-			props.setProperty(IN_NETWORK_PANEL_CONTEXT_MENU, "true");
-			registerAllServices(bc, networkMenuAction, props);
 		}
 
 		final String vtfFilter = String.format("(| (!(%s=*)) (%s=true))", IN_CONTEXT_MENU, IN_CONTEXT_MENU); // if IN_CONTEXT_MENU is not specified, default to true

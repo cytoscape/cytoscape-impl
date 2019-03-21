@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.equations.EquationUtil;
 import org.cytoscape.equations.event.EquationFunctionAddedEvent;
@@ -37,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -61,7 +62,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestroyedListener, EquationFunctionAddedListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	@SuppressWarnings("unchecked")
 	private static final Class<? extends CyIdentifiable>[] COMPATIBLE_TYPES = new Class[] { CyNetwork.class,
@@ -135,7 +136,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 	@Override
 	public Set<CyTable> getAllTables(final boolean includePrivate) {
 		synchronized (lock) {
-			final Set<CyTable> res = new HashSet<CyTable>();
+			final Set<CyTable> res = new HashSet<>();
 	
 			for (final Long key : tables.keySet()) {
 				if (includePrivate || tables.get(key).isPublic())
@@ -210,8 +211,8 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public Set<CyTable> getGlobalTables() {
-		final Set<CyTable> nonGlobalTables = new HashSet<CyTable>();
-		final Set<CyTable> globalTables = new HashSet<CyTable>();
+		final Set<CyTable> nonGlobalTables = new HashSet<>();
+		final Set<CyTable> globalTables = new HashSet<>();
 		final Set<CyNetwork> networks = networkTableManager.getNetworkSet();
 
 		for (final CyNetwork network : networks) {
@@ -229,7 +230,7 @@ public class CyTableManagerImpl implements CyTableManager, NetworkAboutToBeDestr
 
 	@Override
 	public Set<CyTable> getLocalTables(final Class<? extends CyIdentifiable> type) {
-		final Set<CyTable> localTables = new HashSet<CyTable>();
+		final Set<CyTable> localTables = new HashSet<>();
 
 		final Set<CyNetwork> networks = networkManager.getNetworkSet();
 

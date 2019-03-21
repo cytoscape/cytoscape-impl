@@ -1,29 +1,5 @@
 package org.cytoscape.app.internal.net;
 
-/*
- * #%L
- * Cytoscape App Impl (app-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2008 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,6 +32,7 @@ import org.cytoscape.app.internal.util.DebugHelper;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.CyVersion;
 import org.cytoscape.io.util.StreamUtil;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.TaskMonitor;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,13 +40,37 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape App Impl (app-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2008 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * This class is responsible for querying the Cytoscape App Store web service to obtain
  * information about available apps and app updates.
  */
 public class WebQuerier {
 	
-	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<DownloadSite>();
+	public static final List<DownloadSite> DEFAULT_DOWNLOAD_SITES = new LinkedList<>();
 	
 	public static final String DEFAULT_APP_STORE_URL = "https://apps.cytoscape.org/";
 	
@@ -89,10 +90,6 @@ public class WebQuerier {
 	private static final String COMPATIBLE_RELEASE_REGEX = "(^\\s*|.*,)\\s*3(\\..*)?\\s*(\\s*$|,.*)";
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
-	
-	private StreamUtil streamUtil;
-
-	private CyVersion cyVersion;
 	
 	/** A reference to the result obtained by the last successful query for all available apps. */
 	// private Set<WebApp> apps;
@@ -129,7 +126,8 @@ public class WebQuerier {
 	
 	public static final Pattern OUTPUT_FILENAME_DISALLOWED_CHARACTERS = Pattern.compile("[^a-zA-Z0-9.-]");
 
-	private AppManager appManager = null;
+	private AppManager appManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * A class that represents a tag used for apps, containing information about the tag
@@ -182,28 +180,26 @@ public class WebQuerier {
 		}
 	}
 	
-	public WebQuerier(StreamUtil streamUtil, CyVersion cyVersion) {
-		this.streamUtil = streamUtil;
-		this.cyVersion = cyVersion;
+	public WebQuerier(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		
 		/*
 		// *** Older initialization for previous implementation supporting a single app store page
 		apps = null;
-		appTags = new HashMap<String, AppTag>();
-		appsByTagName = new HashMap<String, Set<WebApp>>();
+		appTags = new HashMap<>();
+		appsByTagName = new HashMap<>();
 		*/
 		
-		appsByUrl = new HashMap<String, Set<WebApp>>();
-		appTagsByUrl = new HashMap<String, Map<String, AppTag>>();
-		appsByTagNameByUrl = new HashMap<String, Map<String,Set<WebApp>>>();
+		appsByUrl = new HashMap<>();
+		appTagsByUrl = new HashMap<>();
+		appsByTagNameByUrl = new HashMap<>();
 		
 		appsByUrl.put(currentAppStoreUrl, null);
-		appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
-		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+		appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
+		appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 		
 		/*
 		Set<WebApp> webApps = getAllApps();
-		
 		DebugHelper.print("Apps found: " + webApps.size());
 		*/
 	}
@@ -218,6 +214,7 @@ public class WebQuerier {
 	private String query(String url) throws IOException {
 		// Convert the string url to a URL object
 		URL parsedUrl = null;
+		
 		try {
 			parsedUrl = new URL(url);
 		} catch (MalformedURLException e) {
@@ -225,7 +222,8 @@ public class WebQuerier {
 		}
 		
 		String result = null;
-	
+		
+		StreamUtil streamUtil = serviceRegistrar.getService(StreamUtil.class);
 		HttpURLConnection connection = (HttpURLConnection) streamUtil.getURLConnection(parsedUrl);
 		connection.setRequestProperty(REQUEST_JSON_HEADER_KEY, REQUEST_JSON_HEADER_VALUE);
 		//Set the read timeout to 10 seconds.
@@ -281,11 +279,11 @@ public class WebQuerier {
 			}
 			
 			if (appTagsByUrl.get(currentAppStoreUrl) == null) {
-				appTagsByUrl.put(currentAppStoreUrl, new HashMap<String, AppTag>());
+				appTagsByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 			
 			if (appsByTagNameByUrl.get(currentAppStoreUrl) == null) {
-				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<String, Set<WebApp>>());
+				appsByTagNameByUrl.put(currentAppStoreUrl, new HashMap<>());
 			}
 		}
 	}
@@ -406,7 +404,7 @@ public class WebQuerier {
 							keyName = "works_with";
 							if (jsonRelease.has(keyName)) {
 								release.setCompatibleCytoscapeVersions(jsonRelease.get(keyName).toString());
-								isCompatible = release.isCompatible(cyVersion);
+								isCompatible = release.isCompatible(serviceRegistrar.getService(CyVersion.class));
 							}
 							
 							if (isCompatible)
@@ -511,10 +509,10 @@ public class WebQuerier {
 	 * @param directory The directory used to store the downloaded file
 	 * @param taskMonitor 
 	 */
-	public File downloadApp(WebApp webApp, String version, File directory, DownloadStatus status) throws AppDownloadException {
-	
+	public File downloadApp(WebApp webApp, String version, File directory, DownloadStatus status)
+			throws AppDownloadException {
 		List<WebApp.Release> compatibleReleases = getCompatibleReleases(webApp);
-		
+
 		if (compatibleReleases.size() > 0) {
 			WebApp.Release releaseToDownload = null;
 			
@@ -546,8 +544,8 @@ public class WebQuerier {
 			
 			if (downloadUrl != null) {
 				try {
-				
 					// Prepare to download
+					StreamUtil streamUtil = serviceRegistrar.getService(StreamUtil.class);
 					URLConnection connection = streamUtil.getURLConnection(downloadUrl);
 					InputStream inputStream = connection.getInputStream();
 					long contentLength = connection.getContentLength();
@@ -613,6 +611,7 @@ public class WebQuerier {
 			throw new AppDownloadException("No available releases were found for the app " 
 					+ webApp.getFullName() + ".");
 		}
+		
 		return null;
 	}
 
@@ -643,7 +642,7 @@ public class WebQuerier {
 	}
 	
 	public Set<Update> checkForUpdates(Set<App> apps, AppManager appManager) {
-		Set<Update> updates = new HashSet<Update>();
+		Set<Update> updates = new HashSet<>();
 		
 		Update update;
 		for (App app : apps) {

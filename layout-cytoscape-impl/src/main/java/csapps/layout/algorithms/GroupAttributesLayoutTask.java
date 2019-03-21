@@ -1,30 +1,5 @@
 package csapps.layout.algorithms;
 
-/*
- * #%L
- * Cytoscape Layout Algorithms Impl (layout-cytoscape-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -42,13 +17,33 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Layout Algorithms Impl (layout-cytoscape-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	
-	private static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
 	private TaskMonitor taskMonitor;	
 	private CyNetwork network;
 
@@ -66,7 +61,6 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 		this.network = networkView.getModel();
 		construct(); 
 	}
-
 
 	/**
 	  Pseudo-procedure:
@@ -109,8 +103,8 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	}
 	/** Needed to allow usage of parametric types */
 	private <T extends Comparable<T>> void doConstruct(Class<T> klass){
-		final Map<T, List<CyNode>> partitionMap = new TreeMap<T, List<CyNode>>();
-		final List<CyNode> invalidNodes = new ArrayList<CyNode>();
+		final Map<T, List<CyNode>> partitionMap = new TreeMap<>();
+		final List<CyNode> invalidNodes = new ArrayList<>();
 		makeDiscrete(partitionMap, invalidNodes, klass);
 
 		final List<List<CyNode>> partitionList = sort(partitionMap);
@@ -160,7 +154,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 				} else {
 					List<CyNode> list = map.get(key);
 					if (list == null) {
-						list = new ArrayList<CyNode>();
+						list = new ArrayList<>();
 						map.put(key, list);
 					}
 					list.add(node);
@@ -170,7 +164,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 	}
 
 	private <T extends Comparable<T>> List<List<CyNode>> sort(final Map<T, List<CyNode>> map) {
-		List<T> keys = new ArrayList<T>(map.keySet());
+		List<T> keys = new ArrayList<>(map.keySet());
 		Collections.sort(keys);
 
 		Comparator<CyNode> comparator = new Comparator<CyNode>() {
@@ -185,7 +179,7 @@ public class GroupAttributesLayoutTask extends AbstractLayoutTask {
 			}
 		};
 
-		List<List<CyNode>> sortedlist = new ArrayList<List<CyNode>>(map.keySet().size());
+		List<List<CyNode>> sortedlist = new ArrayList<>(map.keySet().size());
 
 		for (T key : keys) {
 			List<CyNode> partition = map.get(key);

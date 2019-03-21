@@ -50,7 +50,7 @@ import org.cytoscape.view.presentation.property.values.ObjectPosition;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -79,7 +79,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 	private static final Map<VisualProperty<CyCustomGraphics>, VisualProperty<ObjectPosition>> CG_TO_POSITION = new HashMap<>();
 	private static final Map<VisualProperty<Double>, VisualProperty<CyCustomGraphics>> SIZE_TO_CG = new HashMap<>();
 	
-	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<VisualProperty<?>>();
+	private static final Set<VisualProperty<?>> UNSUPPORTED_VP_SET = new HashSet<>();
 
 
 	// Root of Ding's VP tree.
@@ -87,6 +87,8 @@ public class DVisualLexicon extends BasicVisualLexicon {
 			"DING_RENDERING_ENGINE_ROOT",
 			"Ding Rndering Engine Root Visual Property");
 
+	public static final VisualProperty<Boolean> NETWORK_FORCE_HIGH_DETAIL = new BooleanVisualProperty(
+			Boolean.FALSE, "NETWORK_FORCE_HIGH_DETAIL", "Force High Detail", CyNetwork.class);
 	public static final VisualProperty<Boolean> NETWORK_NODE_SELECTION = new BooleanVisualProperty(
 			Boolean.TRUE, "NETWORK_NODE_SELECTION", "Network Node Selection",
 			CyNetwork.class);
@@ -386,6 +388,7 @@ public class DVisualLexicon extends BasicVisualLexicon {
 
 		CG_RANGE.setManager(manager);
 
+		addVisualProperty(NETWORK_FORCE_HIGH_DETAIL, NETWORK);
 		addVisualProperty(NETWORK_NODE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_EDGE_SELECTION, NETWORK);
 		addVisualProperty(NETWORK_ANNOTATION_SELECTION, NETWORK);

@@ -1,12 +1,21 @@
 package org.cytoscape.io.internal.write.graphics;
 
+import java.io.OutputStream;
+import java.util.Set;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.io.write.PresentationWriterFactory;
+import org.cytoscape.view.presentation.RenderingEngine;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,27 +33,22 @@ package org.cytoscape.io.internal.write.graphics;
  * #L%
  */
 
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyWriter;
-import java.io.OutputStream;
-import org.cytoscape.io.write.PresentationWriterFactory;
-import org.cytoscape.view.presentation.RenderingEngine;
-import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
-
-/**
- * Returns a Task that will write
- */
 public class BitmapWriterFactory extends AbstractCyWriterFactory implements PresentationWriterFactory {
 
 	public BitmapWriterFactory(final CyFileFilter bitmapFilter) {
 		super(bitmapFilter);
 	}
 
-	public CyWriter createWriter(OutputStream outputStream, RenderingEngine re) {
-		if ( re == null )
+	@Override
+	public CyWriter createWriter(OutputStream outputStream, RenderingEngine<?> re) {
+		if (re == null)
 			throw new NullPointerException("RenderingEngine is null");
+
+		Set<String> contentTypes = getFileFilter().getContentTypes();
 		
-		return new BitmapWriter(re, outputStream, getFileFilter().getExtensions() );
+		if (contentTypes.size() == 1 && "image/png".equalsIgnoreCase(contentTypes.iterator().next()))
+			return new PNGWriter(re, outputStream, getFileFilter().getExtensions());
+		
+		return new BitmapWriter(re, outputStream, getFileFilter().getExtensions());
 	}
 }

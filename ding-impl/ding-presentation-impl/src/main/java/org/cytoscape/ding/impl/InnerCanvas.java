@@ -72,7 +72,7 @@ import org.cytoscape.work.TaskManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -148,11 +148,11 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		this.serviceRegistrar = serviceRegistrar;
 		this.lod = new GraphLOD(); // Default LOD.
 		this.m_backgroundColor = Color.WHITE;
-		this.m_isOpaque = false;
+		setOpaque(false);
 		this.xCenter = 0.0d;
 		this.yCenter = 0.0d;
 		this.scaleFactor = 1.0d;
-		
+
 		addEdgeMode = new AddEdgeStateMonitor(this, re);
 		popup = new PopupMenuHelper(re, this, serviceRegistrar);
 		
@@ -266,7 +266,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		update(g);
 	}
 
-
 	@Override
 	public void print(Graphics g) {
 		isPrinting = true;
@@ -281,7 +280,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		isPrinting = false;
 	}
-
 
 	@Override
 	public void printNoImposter(Graphics g) {
@@ -596,7 +594,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return selectedNodes;
 	}
 	
-	
+
 	private List<View<CyEdge>> getAndApplySelectedEdges() {
 		if ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 			double[] ptBuff = new double[2];
@@ -832,10 +830,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
             sourcePoint.setLocation(newX, newY);
             AddEdgeStateMonitor.setSourcePoint(re.getViewModel(), sourcePoint);
         }
-
     }
 
-	
 	private void adjustZoom(int notches) {
 		final double factor;
 		
@@ -890,7 +886,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public FontMetrics getFontMetrics() {
 		return fontMetrics;
 	}
-
+	
 	/**
 	 * Called to get the tranform matrix used by the inner canvas
 	 * to move the nodes.
@@ -911,7 +907,6 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		return !(this.NodeMovement);
 	}
 
-	
 	public void enablePopupMenu(){
 		this.enablePopupMenu = true;
 	}
@@ -951,7 +946,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
 	 */
 	private void renderGraph(GraphGraphics graphics, boolean setLastRenderDetail, GraphLOD lod) {
-		int alpha = (m_isOpaque) ? 255 : 0;
+		int alpha = (isOpaque()) ? 255 : 0;
 		Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(), m_backgroundColor.getBlue(), alpha);
 
 		// long timeBegin = System.currentTimeMillis();

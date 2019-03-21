@@ -1,14 +1,22 @@
-package org.cytoscape.task.internal.loaddatatable;
+package org.cytoscape.tableimport.internal.task;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -26,15 +34,6 @@ import org.cytoscape.application.CyUserLog;
  * #L%
  */
 
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 class AddImportedTableTask extends AbstractTask {
 
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -48,7 +47,7 @@ class AddImportedTableTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		if (reader != null && reader.getTables() != null) {
 			final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);
 			

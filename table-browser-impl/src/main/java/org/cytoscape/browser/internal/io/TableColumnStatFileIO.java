@@ -1,12 +1,32 @@
 package org.cytoscape.browser.internal.io;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.browser.internal.util.TableColumnStat;
+import org.cytoscape.session.CySession;
+import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,28 +44,9 @@ package org.cytoscape.browser.internal.io;
  * #L%
  */
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.browser.internal.util.TableColumnStat;
-import org.cytoscape.session.CySession;
-import org.cytoscape.session.events.SessionAboutToBeSavedEvent;
-import org.cytoscape.session.events.SessionLoadedEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class TableColumnStatFileIO {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	static String APP_NAME = "org.cytoscape.browser";
 	
@@ -62,7 +63,7 @@ public final class TableColumnStatFileIO {
 			writer.close();
 			
 			// Add it to the apps list
-			List<File> fileList = new ArrayList<File>();
+			List<File> fileList = new ArrayList<>();
 			boolean flag = false;
 			if (e.getAppFileListMap().containsKey(APP_NAME)){
 				fileList = e.getAppFileListMap().get(APP_NAME);
@@ -76,8 +77,8 @@ public final class TableColumnStatFileIO {
 		}
 	}
 	
-	public static Map<String, TableColumnStat>  read ( SessionLoadedEvent e, String className){
-		Map<String, TableColumnStat> tableColStats = new HashMap<String, TableColumnStat>();
+	public static Map<String, TableColumnStat> read(SessionLoadedEvent e, String className) {
+		Map<String, TableColumnStat> tableColStats = new HashMap<>();
 		CySession sess = e.getLoadedSession();
 
 		if (sess == null) 

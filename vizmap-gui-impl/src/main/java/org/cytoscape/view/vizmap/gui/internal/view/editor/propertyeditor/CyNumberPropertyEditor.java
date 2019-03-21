@@ -6,8 +6,6 @@ import java.awt.event.FocusListener;
 import javax.swing.JTextField;
 
 import org.cytoscape.view.model.VisualProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.l2fprod.common.beans.editor.StringPropertyEditor;
 
@@ -17,7 +15,7 @@ import com.l2fprod.common.beans.editor.StringPropertyEditor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -36,8 +34,6 @@ import com.l2fprod.common.beans.editor.StringPropertyEditor;
  */
 
 public class CyNumberPropertyEditor<T extends Number> extends StringPropertyEditor {
-
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private Object currentValue;
 	private VisualProperty<T> visualProperty;

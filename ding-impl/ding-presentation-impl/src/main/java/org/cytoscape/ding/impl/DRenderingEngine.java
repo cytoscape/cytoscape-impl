@@ -156,6 +156,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private boolean annotationsLoaded;
 	private boolean largeModel = false;
 	private boolean haveZOrder = true; // MKTODO assume node zorder matters, maybe remove this
+	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
+	private final DingGraphLOD dingGraphLOD;
 	
 //	// Animated edges
 //	Timer animationTimer;
@@ -179,6 +181,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		this.props = new Properties();
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
+		this.dingGraphLOD = dingGraphLOD;
 		
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
@@ -241,6 +244,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		if(viewModel.isDirty()) {
 			viewModelSnapshot = viewModel.createSnapshot();
 			bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
+			updateGraphLOD();
 			updateView(true);
 		}
 	}
@@ -581,10 +585,18 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return fontMetrics.charsWidth(lab, 0, lab.length);
 	}
 
+	
+	private void updateGraphLOD() {
+		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
+		setGraphLOD(hd ? dingGraphLODAll : dingGraphLOD);
+	}
+	
 	public void setGraphLOD(GraphLOD lod) {
 		synchronized (dingLock) {
-			networkCanvas.lod = lod;
-			setContentChanged();
+			if(lod != networkCanvas.lod) {
+				networkCanvas.lod = lod;
+				setContentChanged();
+			}
 		}
 	}
 
@@ -1118,7 +1130,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * This method is used by freehep lib to export network as graphics.
 	 */
 	public void print(Graphics g) {
+		boolean opaque = backgroundCanvas.isOpaque();
+		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		backgroundCanvas.setOpaque(!transparentBackground);
 		backgroundCanvas.print(g);
+		
+		backgroundCanvas.setOpaque(opaque); // restore the previous opaque value
 		networkCanvas.print(g);
 		foregroundCanvas.print(g);
 	}
@@ -1266,11 +1283,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		final boolean viewportChanged = isViewportChanged();
 		
 		// Check properties related to printing:
-		boolean exportAsShape = false;
-		final String exportAsShapeString = props.getProperty("exportTextAsShape");
-		
-		if (exportAsShapeString != null)
-			exportAsShape = Boolean.parseBoolean(exportAsShapeString);
+		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
 		
 		setPrintingTextAsShape(exportAsShape);
 		print(printCanvas);

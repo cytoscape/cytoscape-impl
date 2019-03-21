@@ -17,6 +17,7 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 import org.cytoscape.application.CyApplicationConfiguration;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -31,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -52,7 +53,7 @@ import org.slf4j.LoggerFactory;
 public class CytoscapeMenuBar extends JMenuBar {
 	
 	private final static long serialVersionUID = 1202339868642259L;
-	private final static Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final Map<Action,JMenuItem> actionMenuItemMap; 
 	private final Map<String,String> actionOverrideMap; 
@@ -66,8 +67,8 @@ public class CytoscapeMenuBar extends JMenuBar {
 	 */
 	public CytoscapeMenuBar(CyServiceRegistrar reg) {
 		registrar = reg;
-		actionMenuItemMap = new HashMap<Action,JMenuItem>();
-		actionOverrideMap = new HashMap<String,String>();			// map the name to the whole line
+		actionMenuItemMap = new HashMap<>();
+		actionOverrideMap = new HashMap<>(); // map the name to the whole line
 		menuTracker = new JMenuTracker(this);
 
 		// Load the first menu, just to please the layouter. Also make sure the
@@ -287,7 +288,7 @@ public class CytoscapeMenuBar extends JMenuBar {
 	}
 
 	//---------------------------------
-	private HashSet<String> 	stopList = new HashSet<String>();
+	private HashSet<String> stopList = new HashSet<>();
 	//---------------------------------
 	private void readStopList()
 	{

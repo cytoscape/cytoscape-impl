@@ -121,7 +121,7 @@ public class DefaultAttributeTableReader implements TextTableReader {
 					String [] rowData; //Note that rowData is roughly equivalent to "parts" in the old code.
 					
 					while ((rowData = reader.readNext()) != null) {
-						// If key dos not exists, ignore the line.
+						// If key does not exists, ignore the line.
 						if (lineCount >= startLineNumber && rowData.length >= mapping.getKeyIndex() + 1) {
 							try {
 								parser.parseAll(table, rowData);

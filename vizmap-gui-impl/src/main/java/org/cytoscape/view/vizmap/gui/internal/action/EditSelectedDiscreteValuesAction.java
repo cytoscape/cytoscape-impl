@@ -1,34 +1,11 @@
 package org.cytoscape.view.vizmap.gui.internal.action;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.VizMapperProperty;
@@ -47,6 +24,30 @@ import org.slf4j.LoggerFactory;
 import com.l2fprod.common.propertysheet.PropertySheetTable;
 import com.l2fprod.common.propertysheet.PropertySheetTableModel.Item;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Action that allows the user to edit all the selected discrete mapping values at once.
  */
@@ -55,7 +56,7 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 	public static final String NAME = "Edit Selected Discrete Mapping Values";
 
 	private static final long serialVersionUID = 7640977428847967990L;
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> previousMappingValues;
 	private final Map<DiscreteMapping<?, ?>, Map<Object, Object>> newMappingValues;
@@ -66,8 +67,8 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 	public EditSelectedDiscreteValuesAction(final ServicesUtil servicesUtil, final EditorManager editorManager) {
 		super(NAME, servicesUtil);
 		this.editorManager = editorManager;
-		previousMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
-		newMappingValues = new HashMap<DiscreteMapping<?,?>, Map<Object, Object>>();
+		previousMappingValues = new HashMap<>();
+		newMappingValues = new HashMap<>();
 	}
 
 	// ==[ PUBLIC METHODS ]=============================================================================================
@@ -113,8 +114,8 @@ public class EditSelectedDiscreteValuesAction extends AbstractVizMapperAction {
 			if (newValue == null)
 				continue;
 	
-			final Map<Object, Object> newValues = new HashMap<Object, Object>();
-			final Map<Object, Object> previousValues = new HashMap<Object, Object>();
+			final Map<Object, Object> newValues = new HashMap<>();
+			final Map<Object, Object> previousValues = new HashMap<>();
 			
 			for (int i = 0; i < selected.length; i++) {
 				final Item item = ((Item) table.getValueAt(selected[i], 0));

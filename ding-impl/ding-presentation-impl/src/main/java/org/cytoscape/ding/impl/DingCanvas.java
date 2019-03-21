@@ -1,12 +1,20 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
+
+import javax.swing.JComponent;
+
+import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,15 +31,6 @@ package org.cytoscape.ding.impl;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
-
-import javax.swing.JComponent;
-
-import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
-
 
 /**
  * This class is meant to be extended by a class which
@@ -55,11 +54,6 @@ public abstract class DingCanvas extends JComponent {
 	 */
 	protected Color m_backgroundColor;
 
-	/**
-	 * ref to opaque boolean
-	 */
-	protected boolean m_isOpaque;
-	
 	protected final Canvas canvasId;
 
 	
@@ -71,29 +65,12 @@ public abstract class DingCanvas extends JComponent {
 		return canvasId;
 	}
 	
-	/**
-	 * Sets opacity of component
-	 *
-	 * @param isOpaque boolean
-	 */
-	public void setOpaque(boolean isOpaque) {
-		m_isOpaque = isOpaque;
-	}
-
-	/**
-	 * Returns the background color of this component.
-	 *
-	 * @return Color
-	 */
+	@Override
 	public Color getBackground() {
 		return m_backgroundColor;
 	}
 
-	/**
-	 * Set the component background color.
-	 *
-	 * backgroundColor Color
-	 */
+	@Override
 	public void setBackground(Color backgroundColor) {
 		m_backgroundColor = backgroundColor;
 	}
@@ -106,7 +83,6 @@ public abstract class DingCanvas extends JComponent {
 	public Image getImage() {
 		return m_img;
 	}
-
 
 	/**
 	 * Method used to print canvas without using image imposter.

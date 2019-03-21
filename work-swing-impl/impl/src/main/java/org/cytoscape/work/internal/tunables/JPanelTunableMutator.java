@@ -21,6 +21,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
 import org.cytoscape.work.AbstractTunableHandler;
 import org.cytoscape.work.AbstractTunableInterceptor;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -93,8 +94,7 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 	/** A reference to the parent <code>JPanel</code>, if any. */
 	private JPanel tunablePanel;
 
-	/** Provides an initialised logger. */
-	private final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	/** Do not ever modify this panel. Used for special case handling of files. */
 	protected final JPanel HANDLER_CANCEL_PANEL = new JPanel();

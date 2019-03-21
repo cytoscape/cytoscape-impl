@@ -1,12 +1,24 @@
 package org.cytoscape.log.internal;
 
+import java.io.IOException;
+import java.util.Map;
+
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JScrollBar;
+import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
+import javax.swing.text.html.HTMLDocument;
+
 /*
  * #%L
  * Cytoscape Log Swing Impl (log-swing-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,14 +36,8 @@ package org.cytoscape.log.internal;
  * #L%
  */
 
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.text.*;
-import javax.swing.text.html.*;
-
-public class LogViewer
-{
+public class LogViewer {
+	
 	final Map config;
 	final JEditorPane editorPane;
 	final JScrollPane scrollPane;
@@ -39,8 +45,7 @@ public class LogViewer
 	Element root;
 	boolean colorParity = true;
 
-	public LogViewer(Map config)
-	{
+	public LogViewer(Map config) {
 		this.config = config;
 		editorPane = new JEditorPane();
 		editorPane.setEditable(false);
@@ -48,57 +53,51 @@ public class LogViewer
 		scrollPane = new JScrollPane(editorPane);
 	}
 
-	public void append(String level, String message, String secondaryMessage)
-	{
+	public void append(String level, String message, String secondaryMessage) {
 		String icon = config.get(level).toString();
-		String bgColor = (colorParity ? config.get("colorParityTrue").toString() : config.get("colorParityFalse").toString());
-		try
-		{
+		String bgColor = (colorParity ? config.get("colorParityTrue").toString()
+				: config.get("colorParityFalse").toString());
+		
+		try {
 			document.insertBeforeEnd(root,
-				String.format(config.get("entryTemplate").toString(),
-						bgColor, icon,
-						message, secondaryMessage));
+					String.format(config.get("entryTemplate").toString(), bgColor, icon, message, secondaryMessage));
+		} catch (BadLocationException e) {
+		} catch (IOException e) {
 		}
-		catch (BadLocationException e) {}
-		catch (IOException e) {}
+		
 		colorParity = !colorParity;
 	}
 
-	public void scrollToBottom()
-	{
+	public void scrollToBottom() {
 		// If we scroll the bottom immediately after
 		// we call document.insertBeforeEnd(), the scroll bar won't go to
 		// end because the scroll bar by then does not recognize the latest
 		// update to document. If we wrap the scrolling code in an
 		// invokeLater() call, this will ensure the scroll bar will move
 		// to the bottom.
-		SwingUtilities.invokeLater(new Runnable()
-		{
-			public void run()
-			{
-				JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
-				if (scrollBar != null)
-					scrollBar.setValue(scrollBar.getMaximum());
-			}
+		SwingUtilities.invokeLater(() -> {
+			JScrollBar scrollBar = scrollPane.getVerticalScrollBar();
+			
+			if (scrollBar != null)
+				scrollBar.setValue(scrollBar.getMaximum());
 		});
 	}
 
-	public void clear()
-	{
+	public void clear() {
 		editorPane.setText("");
 		editorPane.setContentType("text/html");
-		try
-		{
+		
+		try {
 			editorPane.setPage(getClass().getResource(config.get("baseHTMLPath").toString()));
+		} catch (IOException e) {
 		}
-		catch (IOException e) {}
+		
 		document = (HTMLDocument) editorPane.getDocument();
 		root = document.getRootElements()[0];
 		colorParity = true;
 	}
 
-	public JComponent getComponent()
-	{
+	public JComponent getComponent() {
 		return scrollPane;
 	}
 }

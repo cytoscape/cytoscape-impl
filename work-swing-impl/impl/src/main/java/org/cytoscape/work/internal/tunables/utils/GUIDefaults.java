@@ -5,15 +5,10 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -24,6 +19,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.TaskMonitor.Level;
 import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
 
@@ -33,7 +29,7 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -51,10 +47,8 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler.TunableFieldPanel;
  * #L%
  */
 
-
 /**
  * This class is for setting an initial default size for the tunable text boxes.
- * @author rozagh
  */
 public final class GUIDefaults {
 
@@ -93,27 +87,47 @@ public final class GUIDefaults {
 		public String getText() {
 			return text;
 		}
+		
+		public static TaskIcon toIcon(final String text) {
+			for (TaskIcon icon : TaskIcon.values()) {
+				if (icon.getText().equals(text))
+					return icon;
+			}
+			
+			return null;
+		}
 	}
 	
 	public static final int TEXT_BOX_WIDTH = 150;
 	
-	public static final Map<String, URL> ICON_URLS = new HashMap<>();
-	static {
-		ICON_URLS.put("info", GUIDefaults.class.getResource("/images/info-icon.png"));
-		ICON_URLS.put("warn", GUIDefaults.class.getResource("/images/warn-icon.png"));
-		ICON_URLS.put("error", GUIDefaults.class.getResource("/images/error-icon.png"));
-		ICON_URLS.put("finished", GUIDefaults.class.getResource("/images/finished-icon.png"));
-		ICON_URLS.put("cancelled", GUIDefaults.class.getResource("/images/cancelled-icon.png"));
+	public static TaskIcon getIcon(final Level level) {
+		if (level == null)
+			return null;
+		
+		switch (level) {
+			case INFO:  return TaskIcon.INFO;
+			case WARN:  return TaskIcon.WARN;
+			case ERROR: return TaskIcon.ERROR;
+			default:    return null;
+		}
 	}
-
-	public static final Map<String, Icon> ICONS = new HashMap<>();
-	static {
-		for (final Map.Entry<String, URL> entry : ICON_URLS.entrySet()) {
-			ICONS.put(entry.getKey(), new ImageIcon(entry.getValue()));
+	
+	public static TaskIcon getIcon(final FinishStatus.Type type) {
+		if (type == null)
+			return null;
+		
+		switch (type) {
+			case SUCCEEDED: return TaskIcon.FINISHED;
+			case FAILED:    return TaskIcon.ERROR;
+			case CANCELLED: return TaskIcon.CANCELLED;
+			default:        return null;
 		}
 	}
 	
 	public static String getIconText(final Level level) {
+		if (level == null)
+			return null;
+		
 		switch (level) {
 			case INFO:  return ICON_INFO;
 			case WARN:  return ICON_WARN;
@@ -123,12 +137,21 @@ public final class GUIDefaults {
 	}
 	
 	public static Color getForeground(final Level level) {
+		if (level == null)
+			return null;
+		
 		switch (level) {
 			case INFO:  return LookAndFeelUtil.getInfoColor();
 			case WARN:  return LookAndFeelUtil.getWarnColor();
 			case ERROR: return LookAndFeelUtil.getErrorColor();
 			default:    return null;
 		}
+	}
+	
+	public static Color getForeground(final String iconText) {
+		final TaskIcon icon = TaskIcon.toIcon(iconText);
+		
+		return icon != null ? icon.getForeground() : UIManager.getColor("Label.foreground");
 	}
 	
 	public static void updateFieldPanel(final JPanel p, final Component control, final boolean horizontalForm) {

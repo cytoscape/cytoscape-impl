@@ -1,5 +1,24 @@
 package org.cytoscape.work.internal.tunables;
 
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.TEXT_BOX_WIDTH;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
+
+import java.awt.Dimension;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
+import javax.swing.JLabel;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.swing.AbstractGUITunableHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Work Swing Impl (work-swing-impl)
@@ -24,37 +43,16 @@ package org.cytoscape.work.internal.tunables;
  * #L%
  */
 
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.TEXT_BOX_WIDTH;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
-
-import java.awt.Dimension;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import javax.swing.JLabel;
-import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.swing.AbstractGUITunableHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-
 /**
  * Handler for the type <i>String</i> of <code>Tunable</code>
- *
- * @author pasteur
  */
 public class StringHandler extends AbstractGUITunableHandler implements DocumentListener {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private JTextField textField;
-	private boolean readOnly = false;
-	private boolean isUpdating = false;
+	private boolean readOnly;
+	private boolean isUpdating;
 
 	/**
 	 * It creates the Swing component for this Object (JTextField) that contains the initial string,

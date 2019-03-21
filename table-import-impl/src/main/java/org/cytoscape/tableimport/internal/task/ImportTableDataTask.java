@@ -1,28 +1,4 @@
-package org.cytoscape.task.internal.table;
-
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
+package org.cytoscape.tableimport.internal.task;
 
 import java.io.IOException;
 import java.text.Collator;
@@ -40,7 +16,6 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -55,7 +30,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.internal.utils.DataUtils;
+import org.cytoscape.tableimport.internal.util.DataUtils;
 import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -64,10 +39,36 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.TunableValidator;
 import org.cytoscape.work.json.JSONResult;
+import org.cytoscape.work.util.ListChangeListener;
 import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ImportTableDataTask extends AbstractTask implements TunableValidator, ObservableTask {
 	
@@ -102,6 +103,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	public static final String UNASSIGNED_TABLE = "To an unassigned table";
 	
 	private CyTableReader reader;
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	private CyTable globalTable;
@@ -113,19 +115,37 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private List<CyTable> mappedTables;
 	
 	
-	public ListSingleSelection<String> whereImportTable ;
+	public ListSingleSelection<String> whereImportTable;
 	
 	@Tunable(
 			description = "Where to Import Table Data",
 			gravity = 1.0,
 			groups = { "Target Table Data" },
 			xorChildren = true, 
-			longDescription="Determines what network(s) the imported table will be associated with (if any).  "+
-			                "A table can be imported into a ```Network Collection```, ```Selected networks``` or ```to an unassigned table```.", 
+			longDescription = "Determines what network(s) the imported table will be associated with (if any).  "+
+			                  "A table can be imported into a ```Network Collection```, ```Selected networks``` or ```to an unassigned table```.", 
 			exampleStringValue = "To a Network Collection"
 	)
-	public ListSingleSelection<String> getWhereImportTable() {	return whereImportTable;	}
-	public void setWhereImportTable(ListSingleSelection<String> chooser) {	this.whereImportTable = chooser; }
+	public ListSingleSelection<String> getWhereImportTable() {
+		return whereImportTable;
+	}
+	public void setWhereImportTable(ListSingleSelection<String> chooser) {
+		if (chooser != null && chooser != whereImportTable) {
+			chooser.addListener(new ListChangeListener<String>() {
+				@Override
+				public void selectionChanged(ListSelection<String> source) {
+					if (tableImportContext != null)
+						tableImportContext.setKeyRequired(isKeyMandatory());
+				}
+				@Override
+				public void listChanged(ListSelection<String> source) {
+					// Ignore...
+				}
+			});
+		}
+		
+		whereImportTable = chooser;
+	}
 
 	/* --- [ NETWORK_COLLECTION ]------------------------------------------------------------------------------------ */
 	
@@ -139,8 +159,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			longDescription="The network collection to use for the table import", 
 			exampleStringValue = "galFiltered.sif"
 	)
-	public ListSingleSelection<String> getTargetNetworkCollection() {	return targetNetworkCollection;	}
-
+	public ListSingleSelection<String> getTargetNetworkCollection() {
+		return targetNetworkCollection;
+	}
 	public void setTargetNetworkCollection(ListSingleSelection<String> roots) {
 		targetNetworkCollection = roots;
 		updateKeyColumnForMapping();
@@ -273,17 +294,29 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 //	public ListSingleSelection<NetworkViewRenderer> renderers;
 	
 	@ProvidesTitle
-	public String getTitle() {		return "Import Data";	}
+	public String getTitle() {
+		return "Import Data";
+	}
 
-	public ImportTableDataTask(final CyTableReader reader, final CyServiceRegistrar serviceRegistrar) {
+	public ImportTableDataTask(
+			final CyTableReader reader,
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.reader = reader;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		this.byReader = true;
 		init();
 	}
 
-	public ImportTableDataTask(final CyTable globalTable, final CyServiceRegistrar serviceRegistrar) {
+	public ImportTableDataTask(
+			final CyTable globalTable, 
+			final TableImportContext tableImportContext,
+			final CyServiceRegistrar serviceRegistrar
+	) {
 		this.byReader = false;
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 		this.globalTable = globalTable;
 
@@ -299,21 +332,25 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
 		
 		if (netMgr.getNetworkSet().size() > 0) {
-			whereImportTable = new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE);
-			whereImportTable.setSelectedValue(NETWORK_COLLECTION);
+			setWhereImportTable(new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE));
+			getWhereImportTable().setSelectedValue(NETWORK_COLLECTION);
 			networksPresent = true;
 		} else {
-			whereImportTable = new ListSingleSelection<>(UNASSIGNED_TABLE);
-			whereImportTable.setSelectedValue(UNASSIGNED_TABLE);
+			setWhereImportTable(new ListSingleSelection<>(UNASSIGNED_TABLE));
+			getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
 		}
+		
+		// Force-update the TableImportContext!
+		if (tableImportContext != null)
+			tableImportContext.setKeyRequired(isKeyMandatory());
 		
 		if (byReader) {
 			if (reader != null && reader.getTables() != null)
 				newTableName = reader.getTables()[0].getTitle();
-		} else 
+		} else {
 			newTableName = globalTable.getTitle();
+		}
 		
-
 		if (networksPresent) {
 			final List<TableType> options = new ArrayList<>();
 			
@@ -401,9 +438,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		if (!checkKeys()) {
-			if(byReader)
+			if (byReader)
 				throw new IllegalArgumentException("Types of keys selected for tables are not valid.\n"
 						+ "Keys must be of type Integer, Long, or String.");
 			else
@@ -416,11 +453,11 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				return;
 		}
 
-		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
 			mapTableToDefaultAttrs(getDataTypeOptions());
-		if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION))
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION))
 			mapTableToLocalAttrs(getDataTypeOptions());
-		if (whereImportTable.getSelectedValue().matches(UNASSIGNED_TABLE))
+		if (getWhereImportTable().getSelectedValue().matches(UNASSIGNED_TABLE))
 			addTable();
 	}
 	
@@ -569,9 +606,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	private CyColumn getJoinTargetColumn(final CyTable targetTable) {
 		String joinKeyName = CyNetwork.NAME;
 		
-		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
 			joinKeyName = keyColumnForMapping.getSelectedValue();
-		else if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION))
+		else if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION))
 			joinKeyName = keyColumnForMappingNetworkList.getSelectedValue();
 		
 		return targetTable.getColumn(joinKeyName);
@@ -673,12 +710,12 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		if (byReader) {
 			if (this.reader != null && this.reader.getTables() != null) {
 				for (CyTable table : reader.getTables()) {
-					if (!newTableName.isEmpty())
+					if (newTableName != null && !newTableName.isEmpty())
 						table.setTitle(newTableName);
 					
 					tableMgr.addTable(table);
 				}
-			} else{
+			} else {
 				if (reader == null)
 					logger.warn("reader is null." );
 				else
@@ -690,7 +727,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				globalTable.setPublic(true);
 			}
 			
-			if (!newTableName.isEmpty())
+			if (newTableName != null && !newTableName.isEmpty())
 				globalTable.setTitle(newTableName);
 			
 			tableMgr.addTable(globalTable);
@@ -704,6 +741,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(List.class))
 			return mappedTables;
@@ -726,23 +764,25 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	}
 
 	private TableType getDataTypeOptions() {
-		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION))
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION))
 			return dataTypeTargetForNetworkCollection.getSelectedValue();
 		
 		return dataTypeTargetForNetworkList.getSelectedValue();
 	}
 
+	private boolean isKeyMandatory() {
+		return !getWhereImportTable().getSelectedValue().matches(UNASSIGNED_TABLE);
+	}
+	
 	public boolean checkKeys() {
-		List<CyColumn> joinTargetColumns = new ArrayList<CyColumn>();
+		List<CyColumn> joinTargetColumns = new ArrayList<>();
 
-		if (whereImportTable.getSelectedValue().matches(NETWORK_COLLECTION)) {
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_COLLECTION)) {
 			joinTargetColumns.add(getJoinTargetColumn(
 					getTable(name2RootMap.get(targetNetworkCollection.getSelectedValue()), getDataTypeOptions(),
 							CyNetwork.DEFAULT_ATTRS)));
-		}
-		
-		else if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION)) {
-			for(String targetNetwork: targetNetworkList.getSelectedValues()) {
+		} else if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION)) {
+			for (String targetNetwork: targetNetworkList.getSelectedValues()) {
 				joinTargetColumns.add(getJoinTargetColumn(
 						getTable(name2NetworkMap.get(targetNetwork), getDataTypeOptions(),
 								CyNetwork.DEFAULT_ATTRS)));
@@ -750,23 +790,23 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 
 		if (byReader) {
-			for (CyTable readerTable : reader.getTables()) {
-				if (!isMappableColumn(readerTable.getPrimaryKey()))
-					return false;
+			if (tableImportContext.isKeyRequired()) {
+				for (CyTable readerTable : reader.getTables()) {
+					if (!isMappableColumn(readerTable.getPrimaryKey()))
+						return false;
+				}
 			}
-			
-			for(CyColumn joinTargetColumn : joinTargetColumns) {
+
+			for (CyColumn joinTargetColumn : joinTargetColumns) {
 				if (!isMappableColumn(joinTargetColumn))
 					return false;
 			}
-		}
-		
-		else {
-			if (!isMappableColumn(globalTable.getPrimaryKey()))
+		} else {
+			if (tableImportContext.isKeyRequired() && !isMappableColumn(globalTable.getPrimaryKey()))
 				return false;
-			
-			//Don't need to check if mappable since equality implies this
-			for(CyColumn joinTargetColumn: joinTargetColumns) {
+
+			// Don't need to check if mappable since equality implies this
+			for (CyColumn joinTargetColumn : joinTargetColumns) {
 				if (joinTargetColumn.getType() != globalTable.getPrimaryKey().getType())
 					return false;
 			}
@@ -777,7 +817,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 	
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if (whereImportTable.getSelectedValue().matches(NETWORK_SELECTION) && 
+		if (getWhereImportTable().getSelectedValue().matches(NETWORK_SELECTION) && 
 				targetNetworkList.getSelectedValues().isEmpty()) {
 			try {
 				errMsg.append("Please select at least one network.");
@@ -788,7 +828,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			}
 		}
 		
-		if (!whereImportTable.getSelectedValue().matches(UNASSIGNED_TABLE) || newTableName.isEmpty())
+		if (!getWhereImportTable().getSelectedValue().matches(UNASSIGNED_TABLE)
+				|| newTableName == null || newTableName.isEmpty())
 			return ValidationState.OK;
 
 		final CyTableManager tableMgr = serviceRegistrar.getService(CyTableManager.class);

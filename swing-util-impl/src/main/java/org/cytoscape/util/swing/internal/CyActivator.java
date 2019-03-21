@@ -45,7 +45,7 @@ public class CyActivator extends AbstractCyActivator {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		final PaletteProviderManager paletteProviderManager = getService(bc, PaletteProviderManager.class);
 
-		final OpenBrowserImpl openBrowser = new OpenBrowserImpl();
+		final OpenBrowserImpl openBrowser = new OpenBrowserImpl(serviceRegistrar);
 		registerService(bc, openBrowser, OpenBrowser.class, new Properties());
 
 		final FileUtilImpl fileUtil = new FileUtilImpl(serviceRegistrar);

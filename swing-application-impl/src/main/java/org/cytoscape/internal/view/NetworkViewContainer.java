@@ -57,6 +57,7 @@ import javax.swing.text.JTextComponent;
 
 import org.cytoscape.internal.model.SelectionMode;
 import org.cytoscape.internal.util.IconUtil;
+import org.cytoscape.internal.util.SimpleToolBarToggleButton;
 import org.cytoscape.internal.util.Util;
 import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
@@ -78,7 +79,7 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -95,7 +96,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
 
 @SuppressWarnings("serial")
 public class NetworkViewContainer extends SimpleRootPaneContainer {
@@ -124,6 +124,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel edgeSelectionLabel;
 	private JLabel nodeHiddenLabel;
 	private JLabel edgeHiddenLabel;
+	private JToggleButton highDetailButton;
 	private JToggleButton birdsEyeViewButton;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
@@ -214,19 +215,24 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		}
 	}
 	
-	public void update() {
+	public void update(boolean updateSelectionInfo, boolean updateHiddenInfo) {
 		getVisualizationContainer().repaint();
-		updateTollBar();
+		updateTollBar(updateSelectionInfo, updateHiddenInfo);
 		
 		if (isVisible() && getBirdsEyeViewPanel().isVisible())
 			updateBirdsEyeViewPanel();
 	}
 	
-	protected void updateTollBar() {
+	protected void updateTollBar(boolean updateSelectionInfo, boolean updateHiddenInfo) {
 		gridViewTogglePanel.setVisible(!isDetached() && !isComparing());
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
 		getExportButton().setVisible(!isComparing());
+		getHighDetailButton().setVisible(
+				!isComparing() && 
+						Util.isVisualPropertySupported("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView,
+								serviceRegistrar)
+		);
 		getSelectionModePanel().setVisible(!isComparing() && !selectionModeButtons.isEmpty());
 		getInfoPanel().setVisible(!isComparing());
 		getCurrentLabel().setVisible(isComparing());
@@ -235,19 +241,32 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
+		ViewUtil.updateToolBarStyle(getHighDetailButton());
+		
 		if (getSelectionModePanel().isVisible())
 			updateSelectionModePanel();
 		
-		updateInfoPanel();
+		if (updateSelectionInfo)
+			updateSelectionInfo();
+		if (updateHiddenInfo)
+			updateHiddenInfo();
 		
 		if (isComparing())
 			updateCurrentLabel();
+		
+		if (getHighDetailButton().isVisible())
+			updateHighDetailButton();
 		
 		sanitizeToolBar();
 		
 		updateBirdsEyeButton();
 		getToolBar().updateUI();
 		updateBirdsEyeViewPanel();
+	}
+	
+	private void updateHighDetailButton() {
+		getHighDetailButton().setSelected(Boolean.TRUE.equals(
+				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar)));
 	}
 	
 	private void updateSelectionModePanel() {
@@ -257,14 +276,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		});
 	}
 	
-	protected void updateInfoPanel() {
-		if (getInfoPanel().isVisible()) {
-			final CyNetworkView view = getNetworkView();
-			
-			if (view.getModel().getDefaultNodeTable() == null || view.getModel().getDefaultEdgeTable() == null)
-				return; // The view has probably been disposed
-			
-			// Selected nodes/edges info
+	protected void updateSelectionInfo() {
+		final CyNetworkView view = getNetworkView();
+		
+		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			final int sn = view.getModel().getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			final int se = view.getModel().getDefaultEdgeTable().countMatchingRows(CyNetwork.SELECTED, Boolean.TRUE);
 			getNodeSelectionLabel().setText("" + sn);
@@ -273,8 +288,13 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final String sTooltip = createInfoToolTipText(sn, se, "selected");
 			getSelectionIconLabel().setToolTipText(sTooltip);
 			getNodeSelectionLabel().setToolTipText(sTooltip);
-			
-			// Hidden nodes/edges info
+		}
+	}
+
+	protected void updateHiddenInfo() {
+		final CyNetworkView view = getNetworkView();
+		
+		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			final int hn = ViewUtil.getHiddenNodeCount(view);
 			final int he = ViewUtil.getHiddenEdgeCount(view);
 			getNodeHiddenLabel().setText("" + hn);
@@ -349,7 +369,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		setKeyBindings(this);
 		setKeyBindings(getRootPane());
 		
-		updateTollBar();
+		updateTollBar(true, true);
 		updateBirdsEyeViewPanel();
 		
 		glassPane.add(getBirdsEyeViewPanel());
@@ -374,10 +394,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 				final SelectionModeButton btn = new SelectionModeButton((VisualProperty<Boolean>) vp, mode);
 				selectionModeButtons.add(btn);
 				
-				btn.addActionListener(evt -> {
-					btn.update();
-					networkView.setLockedValue(vp, btn.isSelected());
-				});
+				btn.addActionListener(evt -> networkView.setLockedValue(vp, btn.isSelected()));
 			}
 		}
 	}
@@ -435,6 +452,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
+					.addComponent(getHighDetailButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addPreferredGap(RELATED)
 					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep5, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -458,6 +477,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(getHighDetailButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -694,6 +714,22 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		return edgeHiddenLabel;
 	}
 	
+	JToggleButton getHighDetailButton() {
+		if (highDetailButton == null) {
+			highDetailButton = new SimpleToolBarToggleButton(IconUtil.HD);
+			
+			highDetailButton.addActionListener(evt -> {
+				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, highDetailButton.isSelected(),
+						networkView, serviceRegistrar);
+			});
+			
+			styleToolBarButton(highDetailButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
+		}
+		
+		return highDetailButton;
+	}
+	
 	JToggleButton getBirdsEyeViewButton() {
 		if (birdsEyeViewButton == null) {
 			birdsEyeViewButton = new JToggleButton(ICON_CROSSHAIRS, getBirdsEyeViewPanel().isVisible());
@@ -885,7 +921,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	@SuppressWarnings("unused")
-	private final class SelectionModeButton extends JToggleButton {
+	private final class SelectionModeButton extends SimpleToolBarToggleButton {
 
 		private static final int ICON_SIZE = 22;
 		
@@ -920,14 +956,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			);
 		}
 		
-		@Override
-		public void setSelected(boolean b) {
-			if (b != isSelected()) {
-				super.setSelected(b);
-				update();
-			}
-		}
-		
 		public SelectionMode getMode() {
 			return mode;
 		}
@@ -945,10 +973,6 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			styleToolBarButton(this, font);
 			
 			update();
-		}
-		
-		private void update() {
-			ViewUtil.updateToolBarStyle(this);
 		}
 	}
 }

@@ -1,12 +1,28 @@
 package org.cytoscape.tableimport.internal.task;
 
+import java.util.List;
+import java.util.Set;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
+import org.cytoscape.tableimport.internal.reader.ontology.OBOReader;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
+
 /*
  * #%L
- * Cytoscape Table Import Impl (table-import-impl)
+ * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +40,12 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-import java.util.List;
-import java.util.Set;
-
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.tableimport.internal.reader.ontology.GeneAssociationReader;
-import org.cytoscape.tableimport.internal.reader.ontology.OBOReader;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
- * Map global annotation table to local tables. This does not create copy, just
- * add shared columns.
- * 
+ * Map global annotation table to local tables. This does not create copy, just add shared columns.
  */
 public class MapGeneAssociationTask extends AbstractTask {
 
 	private static final String MAPPING_KEY = "mapping key";
-
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
 
 	private final CyTableReader tableReader;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -62,9 +56,9 @@ public class MapGeneAssociationTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setTitle("Mapping Global Gene Association Table to Local Network Tabels");
-		taskMonitor.setStatusMessage("Mapping global colums to local...");
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Mapping Global Gene Association Table to Local Network Tabels");
+		tm.setStatusMessage("Mapping global colums to local...");
 
 		final CyTable[] tables = tableReader.getTables();
 
@@ -73,8 +67,8 @@ public class MapGeneAssociationTask extends AbstractTask {
 
 		serviceRegistrar.getService(CyTableManager.class).addTable(tables[0]);
 
-		mapping(taskMonitor, tables[0]);
-		taskMonitor.setProgress(1.0d);
+		mapping(tm, tables[0]);
+		tm.setProgress(1.0d);
 	}
 
 	private void mapping(TaskMonitor taskMonitor, final CyTable globalTable) {

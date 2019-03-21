@@ -27,14 +27,33 @@ package org.cytoscape.util.swing.internal;
 import static org.junit.Assert.assertFalse;
 
 import java.awt.Desktop;
+import java.util.Properties;
 
+import org.cytoscape.property.CyProperty;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.OpenBrowser;
 import org.junit.Assume;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+
+import static org.mockito.Mockito.when;
 
 public class OpenBrowserImplTest {
+	@Mock private CyServiceRegistrar serviceRegistrar;
+	@Mock private CyProperty<Properties> cyProperty;
+	OpenBrowser openBrowser;
 
-	OpenBrowser openBrowser = new OpenBrowserImpl();
+	@Before
+	public void setUp() throws Exception {
+		MockitoAnnotations.initMocks(this);
+		
+		when(serviceRegistrar.getService(CyProperty.class)).thenReturn(cyProperty);
+
+		openBrowser = new OpenBrowserImpl(serviceRegistrar);
+	}
+
 
 	
 	@Test(expected=java.lang.IllegalArgumentException.class)

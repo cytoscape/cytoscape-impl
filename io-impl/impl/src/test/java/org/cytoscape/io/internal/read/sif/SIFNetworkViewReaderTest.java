@@ -21,7 +21,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -42,19 +42,18 @@ import org.junit.Test;
 public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 
 	/**
-	 * 'typical' means that all lines have the form "node1 pd node2 [node3 node4
-	 * ...]
+	 * 'typical' means that all lines have the form "node1 pd node2 [node3 node4...]
 	 */
 	@Test
 	public void testReadFromTypicalFile() throws Exception {
-		List<CyNetworkView> views = getViews("sample.sif");
+		List<CyNetworkView> views = getViews("typical.sif");
 		
 		for ( CyNetworkView view : views ) {
 			for (CyNode n : view.getModel().getNodeList()) {
-				System.out.println("sample.sif: NODE " + view.getModel().getRow(n).get("name",String.class));
+				System.out.println("typical.sif: NODE " + view.getModel().getRow(n).get("name",String.class));
 			}
 			for (CyEdge e : view.getModel().getEdgeList()) {
-				System.out.println("sample.sif: EDGE " + view.getModel().getRow(e).get("name",String.class));
+				System.out.println("typical.sif: EDGE " + view.getModel().getRow(e).get("name",String.class));
 			}
 		}
 		CyNetwork net = checkSingleNetwork(views, 31, 27);
@@ -63,13 +62,24 @@ public class SIFNetworkViewReaderTest extends AbstractNetworkReaderTest {
 	}
 
 	/**
-	 * all lines have the degenerate form "node1" that is, with no interaction
-	 * type and no target
+	 * All lines have the degenerate form "node1" that is, with no interaction type and no target
 	 */
 	@Test
 	public void testReadFileWithNoInteractions() throws Exception {
 		List<CyNetworkView> views = getViews("degenerate.sif");
 		CyNetwork net = checkSingleNetwork(views, 9, 0);
+
+		for (CyNode n : net.getNodeList())
+			assertTrue(net.getRow(n).get("name", String.class).startsWith("Y"));
+	}
+	
+	/**
+	 * The first line has an orphan node (node with no connections) and the second has TAB as separator
+	 */
+	@Test
+	public void testReadFileWithOrphanNodeFirst() throws Exception {
+		List<CyNetworkView> views = getViews("orphanFirst.sif");
+		CyNetwork net = checkSingleNetwork(views, 4, 1);
 
 		for (CyNode n : net.getNodeList())
 			assertTrue(net.getRow(n).get("name", String.class).startsWith("Y"));

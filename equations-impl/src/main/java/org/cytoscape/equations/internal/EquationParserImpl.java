@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.equations.AbstractNode;
 import org.cytoscape.equations.EquationParser;
 import org.cytoscape.equations.Function;
@@ -96,7 +97,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -116,7 +117,7 @@ import org.slf4j.LoggerFactory;
 
 public class EquationParserImpl implements EquationParser {
 	
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private Tokeniser tokeniser;
 	private Map<String, Function> nameToFunctionMap;
@@ -179,8 +180,8 @@ public class EquationParserImpl implements EquationParser {
 			throw new NullPointerException("0: formula string must start with an equal sign.");
 
 		this.variableNameToTypeMap = variableNameToTypeMap;
-		this.variableReferences = new TreeSet<String>();
-		this.defaultVariableValues = new TreeMap<String, Object>();
+		this.variableReferences = new TreeSet<>();
+		this.defaultVariableValues = new TreeMap<>();
 		this.tokeniser = new Tokeniser(formula.substring(1));
 		this.lastErrorMessage = null;
 
@@ -439,8 +440,8 @@ public class EquationParserImpl implements EquationParser {
 			                                + functionNameCandidate + "\".");
 
 		// Parse the comma-separated argument list.
-		final ArrayList<Class<?>> argTypes = new ArrayList<Class<?>>();
-		ArrayList<AbstractNode> args = new ArrayList<AbstractNode>();
+		final ArrayList<Class<?>> argTypes = new ArrayList<>();
+		ArrayList<AbstractNode> args = new ArrayList<>();
 		int sourceLocation;
 		for (;;) {
 			token = tokeniser.getToken();

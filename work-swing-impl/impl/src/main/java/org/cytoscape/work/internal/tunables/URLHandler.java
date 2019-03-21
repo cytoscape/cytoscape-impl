@@ -1,31 +1,7 @@
 package org.cytoscape.work.internal.tunables;
 
-/*
- * #%L
- * Cytoscape Work Swing Impl (work-swing-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.setTooltip;
+import static org.cytoscape.work.internal.tunables.utils.GUIDefaults.updateFieldPanel;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -44,6 +20,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ToolTipManager;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.io.datasource.DataSource;
 import org.cytoscape.io.datasource.DataSourceManager;
@@ -52,13 +29,37 @@ import org.cytoscape.work.swing.AbstractGUITunableHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/*
+ * #%L
+ * Cytoscape Work Swing Impl (work-swing-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Handler for the type <i>URL</i> of <code>Tunable</code>
  */
 @SuppressWarnings("serial")
 public class URLHandler extends AbstractGUITunableHandler {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
 	private JComboBox<String> networkFileComboBox;
 
@@ -98,7 +99,7 @@ public class URLHandler extends AbstractGUITunableHandler {
 		final Collection<DataSource> dataSources = dsManager.getDataSources(
 				DataCategory.valueOf(((String)getParams().get("fileCategory")).toUpperCase()));
 		
-		final SortedSet<String> labelSet = new TreeSet<String>();
+		final SortedSet<String> labelSet = new TreeSet<>();
 		
 		if (dataSources != null) {
 			for (DataSource ds : dataSources) {

@@ -1,12 +1,23 @@
-package org.cytoscape.task.internal.loaddatatable;
+package org.cytoscape.tableimport.internal.task;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.io.read.CyTableReaderManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.read.LoadTableURLTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,31 +35,19 @@ package org.cytoscape.task.internal.loaddatatable;
  * #L%
  */
 
-
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.io.read.CyTableReaderManager;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.read.LoadTableURLTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
-
 public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements LoadTableURLTaskFactory {
 
+	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public LoadTableURLTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+	public LoadTableURLTaskFactoryImpl(TableImportContext tableImportContext, CyServiceRegistrar serviceRegistrar) {
+		this.tableImportContext = tableImportContext;
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(2, new LoadTableURLTask(serviceRegistrar));
+		return new TaskIterator(2, new LoadTableURLTask(tableImportContext, serviceRegistrar));
 	}
 
 	@Override
@@ -64,6 +63,6 @@ public class LoadTableURLTaskFactoryImpl extends AbstractTaskFactory implements 
 		final CyTableReaderManager tableReaderMgr = serviceRegistrar.getService(CyTableReaderManager.class);
 		final CyTableReader reader = tableReaderMgr.getReader(uri, uri.toString());
 
-		return new TaskIterator(new CombineReaderAndMappingTask(reader, serviceRegistrar));
+		return new TaskIterator(new CombineTableReaderAndMappingTask(reader, tableImportContext, serviceRegistrar));
 	}
 }

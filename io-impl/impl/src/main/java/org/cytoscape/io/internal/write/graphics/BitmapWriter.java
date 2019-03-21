@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.imageio.ImageIO;
 
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.io.write.CyWriter;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.work.AbstractTask;
@@ -29,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,13 +50,12 @@ import org.slf4j.LoggerFactory;
 
 public class BitmapWriter extends AbstractTask implements CyWriter {
 
-	private static final Logger logger = LoggerFactory.getLogger("org.cytoscape.application.userlog");
-
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
 	private static final double MAX_ZOOM = 500;
 	
 	private static final int DEFAULT_RESOLUTION = 72;
-	private static final List<Integer> RESOLUTION_VALUES = Arrays.asList(
-			new Integer[] { DEFAULT_RESOLUTION, 100, 150, 300, 600 });
+	private static final List<Integer> RESOLUTION_VALUES = Arrays.asList(DEFAULT_RESOLUTION, 100, 150, 300, 600);
 
 	private static final String PIXELS = "pixels";
 	private static final String INCHES = "inches";
@@ -229,9 +229,9 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		heightInInches = heightInPixels / dpi;
 	}
 	
-
+	// ----------------------------
 	private final OutputStream outStream;
-	private RenderingEngine<?> re;
+	protected final RenderingEngine<?> re;
 	private String extension;
 	private int initialWPixel, initialHPixel; 
 
@@ -268,20 +268,26 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Bitmap Image Writer");
+		tm.setStatusMessage("Creating image...");
 		tm.setProgress(0.0);
 		logger.debug("Bitmap image rendering start.");
 
+		
+		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, getImageType());
+		
+		final Graphics2D g = (Graphics2D) image.getGraphics();
 		final double scale = zoom.getValue() / 100.0;
-		tm.setProgress(0.1);
-		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g = (Graphics2D) image.getGraphics();
 		g.scale(scale, scale);
+		
 		tm.setProgress(0.2);
 		re.printCanvas(g);
+		
 		tm.setProgress(0.4);
 		g.dispose();
 
 		try {
+			tm.setStatusMessage("Writing " + extension + "...");
 			ImageIO.write(image, extension, outStream);
 		} finally {
 			outStream.close();
@@ -289,5 +295,9 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 
 		logger.debug("Bitmap image rendering finished.");
 		tm.setProgress(1.0);
+	}
+	
+	protected int getImageType() {
+		return BufferedImage.TYPE_INT_RGB;
 	}
 }

@@ -548,7 +548,7 @@ public class NetworkViewComparisonPanel extends JPanel {
 		
 		void update() {
 			updateBorder();
-			getNetworkViewContainer().update();
+			getNetworkViewContainer().update(true, true);
 		}
 		
 		private void updateBorder() {

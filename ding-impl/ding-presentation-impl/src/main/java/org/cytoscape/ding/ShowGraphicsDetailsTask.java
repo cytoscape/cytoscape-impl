@@ -1,9 +1,7 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
@@ -13,7 +11,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -33,25 +31,17 @@ import org.cytoscape.work.TaskMonitor;
 
 public class ShowGraphicsDetailsTask extends AbstractTask {
 
-	private final DRenderingEngine renderer;
-	private final DingGraphLOD dingGraphLOD;
-	private final DingGraphLODAll dingGraphLODAll;
+	private final CyNetworkView view;
 
-	public ShowGraphicsDetailsTask(DRenderingEngine renderer, DingGraphLOD dingGraphLOD, DingGraphLODAll dingGraphLODAll) {
-		this.renderer = renderer;
-		this.dingGraphLOD = dingGraphLOD;
-		this.dingGraphLODAll = dingGraphLODAll;
+	public ShowGraphicsDetailsTask(CyNetworkView view) {
+		this.view = view;
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) {
-		final GraphLOD lod = renderer.getGraphLOD();
-
-		if (lod instanceof DingGraphLODAll)
-			renderer.setGraphLOD(dingGraphLOD);
-		else
-			renderer.setGraphLOD(dingGraphLODAll);
-		
-		renderer.updateView();
+	public void run(TaskMonitor tm) {
+		if (DingRenderer.ID.equals(view.getRendererId())) {
+			Boolean hd = view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
+			view.setLockedValue(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL, !hd);
+		}
 	}
 }

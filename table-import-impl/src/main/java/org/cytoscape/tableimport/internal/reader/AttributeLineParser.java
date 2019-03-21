@@ -32,6 +32,7 @@ import java.util.Map;
 
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.tableimport.internal.util.AttributeDataType;
 import org.cytoscape.tableimport.internal.util.SourceColumnSemantic;
@@ -55,34 +56,45 @@ public class AttributeLineParser extends AbstractLineParser {
 	 */
 	public void parseAll(final CyTable table, final String[] parts) {
 		// Get key
-		final Object primaryKey ;
+		final Object primaryKey;
 		final int partsLen = parts.length;
-		final AttributeDataType typeKey = mapping.getDataTypes()[mapping.getKeyIndex()];
+		final int keyIndex = mapping.getKeyIndex();
 		
-		switch (typeKey) {
-			case TYPE_BOOLEAN:
-				primaryKey = Boolean.valueOf(parts[mapping.getKeyIndex()].trim());
-				break;
-			case TYPE_INTEGER:
-				primaryKey = Integer.valueOf(parts[mapping.getKeyIndex()].trim());
-				break;
-			case TYPE_LONG:
-				primaryKey = Long.valueOf(parts[mapping.getKeyIndex()].trim());
-				break;
-			case TYPE_FLOATING:
-				primaryKey = Double.valueOf(parts[mapping.getKeyIndex()].trim());
-				break;
-			default:
-				primaryKey = parts[mapping.getKeyIndex()].trim();
+		if (keyIndex >= 0) {
+			final AttributeDataType typeKey = mapping.getDataTypes()[keyIndex];
+			
+			switch (typeKey) {
+				case TYPE_BOOLEAN:
+					primaryKey = Boolean.valueOf(parts[keyIndex].trim());
+					break;
+				case TYPE_INTEGER:
+					primaryKey = Integer.valueOf(parts[keyIndex].trim());
+					break;
+				case TYPE_LONG:
+					primaryKey = Long.valueOf(parts[keyIndex].trim());
+					break;
+				case TYPE_FLOATING:
+					primaryKey = Double.valueOf(parts[keyIndex].trim());
+					break;
+				default:
+					primaryKey = parts[keyIndex].trim();
+			}
+		} else { // Not importing a key column, so the table must have the default SUID one
+			if (!table.getPrimaryKey().getName().equals(CyTable.SUID))
+				throw new RuntimeException("When not importing a primary key columnm, the primary key must be the default 'SUID'");
+			if (table.getPrimaryKey().getType() != Long.class)
+				throw new RuntimeException("The type of the primary key column 'SUID' must be Long");
+			
+			primaryKey = SUIDFactory.getNextSUID();
 		}
 
-		if (partsLen == 1) {
+		if (keyIndex >= 0 && partsLen == 1) {
 			table.getRow(parts[0]);
 		} else {
 			final SourceColumnSemantic[] types = mapping.getTypes();
 			
 			for (int i = 0; i < partsLen; i++) {
-				if (i != mapping.getKeyIndex() && types[i] != SourceColumnSemantic.NONE) {
+				if (i != keyIndex && types[i] != SourceColumnSemantic.NONE) {
 					if (parts[i] == null)
 						continue;
 					else

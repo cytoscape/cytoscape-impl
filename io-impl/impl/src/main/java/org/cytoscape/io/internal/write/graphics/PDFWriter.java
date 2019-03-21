@@ -86,12 +86,13 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 	
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
 		// TODO should be accomplished with renderer properties
 		// view.setPrintingTextAsShape(!exportTextAsFont);
 
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setStatusMessage("Creating PDF image...");
+		tm.setTitle("PDF Writer");
+		tm.setStatusMessage("Creating PDF image...");
+		tm.setProgress(0.0);
 
 		logger.debug("PDF Rendering start");
 		final Rectangle pageSize = PageSize.LETTER;
@@ -102,7 +103,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		final PdfWriter writer = PdfWriter.getInstance(document, stream);
 		document.open();
 		
-		taskMonitor.setProgress(0.1);
+		tm.setProgress(0.1);
 		
 		final PdfContentByte canvas = writer.getDirectContent();
 		logger.debug("CB0 created: " + canvas.getClass());
@@ -118,7 +119,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		
 		engine.getProperties().setProperty("exportTextAsShape", new Boolean(!exportTextAsFont).toString());
 		
-		taskMonitor.setProgress(0.2);
+		tm.setProgress(0.2);
 		
 		if (exportTextAsFont) {
 			g = canvas.createGraphics(pageWidth, pageHeight, new DefaultFontMapper());
@@ -126,7 +127,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 			g = canvas.createGraphicsShapes(pageWidth, pageHeight);
 		}
 		
-		taskMonitor.setProgress(0.4);
+		tm.setProgress(0.4);
 		
 		logger.debug("##### G2D created: " + g);
 		
@@ -137,7 +138,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		engine.printCanvas(g);
 		logger.debug("##### Canvas Rendering Done: ");
 			
-		taskMonitor.setProgress(0.8);
+		tm.setProgress(0.8);
 		
 		g.dispose();
 		document.close();
@@ -146,7 +147,7 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		stream.close();
 
 		logger.debug("PDF rendering finished.");
-		taskMonitor.setProgress(1.0);
+		tm.setProgress(1.0);
 	}
 	
 }

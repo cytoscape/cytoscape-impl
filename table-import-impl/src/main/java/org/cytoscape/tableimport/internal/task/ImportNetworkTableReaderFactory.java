@@ -46,8 +46,8 @@ public class ImportNetworkTableReaderFactory extends AbstractInputStreamTaskFact
 		String fileFormat = FilenameUtils.getExtension(inputName);
 
 		if (!fileFormat.isEmpty())
-			fileFormat = "." + fileFormat; // "." is surprisingly required somewhere within CombineReaderAndMappingTask
+			fileFormat = "." + fileFormat; // "." is surprisingly required somewhere within CombineNetworkReaderAndMappingTask
 
-		return new TaskIterator(new CombineReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));
+		return new TaskIterator(new CombineNetworkReaderAndMappingTask(inputStream, fileFormat, inputName, serviceRegistrar));
 	}
 }

@@ -2,6 +2,7 @@ package org.cytoscape.util.swing.internal;
 
 import java.awt.Font;
 import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,6 +32,8 @@ public class IconManagerImpl implements IconManager {
 		} catch (IOException e) {
 			throw new RuntimeException();
 		}
+		
+		GraphicsEnvironment.getLocalGraphicsEnvironment().registerFont(defFont);
 	}
 	
 	@Override

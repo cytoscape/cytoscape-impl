@@ -1,12 +1,18 @@
 package org.cytoscape.tableimport.internal.task;
 
+import java.io.InputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,21 +30,20 @@ package org.cytoscape.tableimport.internal.task;
  * #L%
  */
 
-
-import java.io.InputStream;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.work.TaskIterator;
-
-
 public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactory {
 	
+	private final TableImportContext tableImportContext;
+
 	/**
 	 * Creates a new ImportAttributeTableReaderFactory object.
 	 */
-	public ImportAttributeTableReaderFactory(final CyFileFilter filter, final CyServiceRegistrar serviceRegistrar) {
+	public ImportAttributeTableReaderFactory(
+			CyFileFilter filter,
+			TableImportContext tableImportContext,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(filter, serviceRegistrar);
+		this.tableImportContext = tableImportContext;
 	}
 
 	@Override
@@ -46,6 +51,7 @@ public class ImportAttributeTableReaderFactory extends AbstractTableReaderFactor
 		int lastIndex = inputName.lastIndexOf('.');
 		String fileFormat = lastIndex == -1 ? "" : inputName.substring(lastIndex);
 		
-		return new TaskIterator(new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName, serviceRegistrar));
+		return new TaskIterator(new ImportAttributeTableReaderTask(inputStream, fileFormat, inputName,
+				tableImportContext, serviceRegistrar));
 	}
 }

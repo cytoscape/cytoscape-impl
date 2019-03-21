@@ -15,7 +15,7 @@ import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.WebApp;
 import org.cytoscape.app.internal.net.WebApp.Release;
 import org.cytoscape.app.internal.net.WebQuerier;
-import org.cytoscape.app.internal.util.Utils;
+import org.cytoscape.app.internal.util.AppUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -61,7 +61,7 @@ public class InformationTask extends AbstractAppTask implements ObservableTask {
 			JSONResult res = () -> {
 				String str = "{";
 				str += "\"app\": \""+app+"\",";
-				str += "\"descriptionName\": "+Utils.quote(webApp.getDescription())+",";
+				str += "\"descriptionName\": "+AppUtil.quote(webApp.getDescription())+",";
 				str += "\"version\": \""+getVersion(webApp)+"\"}";
 				return str;
 			};
