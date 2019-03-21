@@ -1509,47 +1509,47 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							View<CyNode> mutableNode = re.getViewModel().getNodeView(node.getSUID());
 							if(mutableNode != null) {
 								NodeDetails nodeDetails = re.getNodeDetails();
-								double oldXPos = nodeDetails.getXPosition(node);
-								double oldYPos = nodeDetails.getYPosition(node);
+								double oldXPos = nodeDetails.getXPosition(mutableNode);
+								double oldYPos = nodeDetails.getYPosition(mutableNode);
 								// MKTODO Should setting VPs be done using NodeDetails as well??
 								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + deltaX);
 								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
 							}
 					    }
-					}
+					} else {
+						for (HandleKey handleKey : anchorsToMove) {
+							View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
 	
-					for (HandleKey handleKey : anchorsToMove) {
-						View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
-
-						if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-							Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
-								if( defaultBend instanceof BendImpl )
-									ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-								else
-									ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-							} else {
-								Bend bend = re.getEdgeDetails().getBend(ev, true);
-								ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+							if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
+								Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
+								if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
+									if( defaultBend instanceof BendImpl )
+										ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
+									else
+										ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+								} else {
+									Bend bend = re.getEdgeDetails().getBend(ev, true);
+									ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+								}
 							}
+							final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
+							//TODO: Refactor to fix this ordering problem.
+							//This test is necessary because in some instances, an anchor can still be present in the selected
+							//anchor list, even though the anchor has been removed. A better fix would be to remove the
+							//anchor from that list before this code is ever reached. However, this is not currently possible
+							//under the present API, so for now we just detect this situation and continue.
+							if( bend.getAllHandles().isEmpty() )
+								continue;
+							final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
+							final Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
+							
+							float x = (float) newPoint.getX();
+							float y = (float) newPoint.getY();
+							
+							re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
 						}
-						final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-						//TODO: Refactor to fix this ordering problem.
-						//This test is necessary because in some instances, an anchor can still be present in the selected
-						//anchor list, even though the anchor has been removed. A better fix would be to remove the
-						//anchor from that list before this code is ever reached. However, this is not currently possible
-						//under the present API, so for now we just detect this situation and continue.
-						if( bend.getAllHandles().isEmpty() )
-							continue;
-						final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-						final Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
-						
-						float x = (float) newPoint.getX();
-						float y = (float) newPoint.getY();
-						
-						re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
 					}
-	
+					
 					if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
 						re.setContentChanged();
 					}
