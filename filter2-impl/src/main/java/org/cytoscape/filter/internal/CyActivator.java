@@ -1,6 +1,9 @@
 package org.cytoscape.filter.internal;
 
-import static org.cytoscape.work.ServiceProperties.*;
+import static org.cytoscape.work.ServiceProperties.COMMAND;
+import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_LONG_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 
 import java.util.Properties;
 
@@ -124,7 +127,7 @@ public class CyActivator extends AbstractCyActivator {
 		TransformerPanelController transformerPanelController = new TransformerPanelController(transformerManager, transformerViewManager, validationManager, filterPanelController, transformerWorker, filterIo, style, serviceRegistrar);
 		TransformerPanel transformerPanel = new TransformerPanel(transformerPanelController, transformerWorker, serviceRegistrar);
 	
-		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, modelMonitor, filterPanel, transformerPanel);
+		CytoPanelComponent selectPanel = new FilterCytoPanelComponent(transformerViewManager, modelMonitor, filterPanel, transformerPanel, serviceRegistrar);
 		registerService(bc, selectPanel, CytoPanelComponent.class, new Properties());
 		
 		FilterSettingsManager settingsManager = new FilterSettingsManager(filterPanel, transformerPanel, filterIo);

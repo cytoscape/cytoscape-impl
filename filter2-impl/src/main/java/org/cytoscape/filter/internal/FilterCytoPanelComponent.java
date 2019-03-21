@@ -13,6 +13,9 @@ import org.cytoscape.filter.internal.view.SelectPanel;
 import org.cytoscape.filter.internal.view.TransformerPanel;
 import org.cytoscape.filter.internal.view.TransformerViewManager;
 import org.cytoscape.filter.view.InteractivityChangedListener;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
@@ -44,8 +47,18 @@ public class FilterCytoPanelComponent implements CytoPanelComponent2 {
 	
 	SelectPanel panel;
 
-	public FilterCytoPanelComponent(TransformerViewManager transformerViewManager, ModelMonitor modelMonitor,
-			final FilterPanel filterPanel, TransformerPanel transformerPanel) {
+	private TextIcon icon;
+
+	private final CyServiceRegistrar serviceRegistrar;
+
+	public FilterCytoPanelComponent(
+			TransformerViewManager transformerViewManager,
+			ModelMonitor modelMonitor,
+			FilterPanel filterPanel,
+			TransformerPanel transformerPanel,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		this.serviceRegistrar = serviceRegistrar;
 		filterPanel.setPreferredSize(new Dimension(450, 300));
 		
 		modelMonitor.addInteractivityChangedListener(new InteractivityChangedListener() {
@@ -77,7 +90,11 @@ public class FilterCytoPanelComponent implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_FILTER,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 
 	@Override

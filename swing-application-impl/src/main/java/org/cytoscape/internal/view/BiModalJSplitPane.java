@@ -165,11 +165,15 @@ public class BiModalJSplitPane extends JSplitPane {
 		Component lc = getLeftComponent();
 		Component rc = getRightComponent();
 		
-		if (lc != null && lc.isVisible() && rc != null && rc.isVisible()) {
+		if (lc != null && lc.isVisible() && rc != null && rc.isVisible())
 			showSplit();
-		} else {
+		else
 			hideSplit();
-		}
+		
+		Container parent = getParent();
+		
+		if (parent instanceof BiModalJSplitPane)
+			((BiModalJSplitPane) parent).update();
 	}
 	
 	/**

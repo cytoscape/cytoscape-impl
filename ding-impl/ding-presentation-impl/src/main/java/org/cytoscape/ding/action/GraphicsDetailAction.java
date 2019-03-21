@@ -59,7 +59,7 @@ public class GraphicsDetailAction extends AbstractCyAction {
 			CyServiceRegistrar serviceRegistrar
 	) {
 		super(
-				"Force High Graphics Details",
+				"Always Show Graphics Details",
 				serviceRegistrar.getService(CyApplicationManager.class),
 				"networkAndView",
 				serviceRegistrar.getService(CyNetworkViewManager.class)

@@ -17,9 +17,9 @@ import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
 import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
-import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -38,7 +38,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
@@ -62,7 +61,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -86,9 +85,9 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	private static final int FLOAT_PANEL_SCALE_FACTOR = 2;
 
 	private static final String TOOL_TIP_SWITCH = "Switch To...";
-	private static final String TOOL_TIP_FLOAT = "Float Window";
-	private static final String TOOL_TIP_DOCK = "Dock Window";
-	private static final String TOOL_TIP_CLOSE = "Close Window";
+	private static final String TOOL_TIP_FLOAT = "Float";
+	private static final String TOOL_TIP_DOCK = "Dock";
+	private static final String TOOL_TIP_MINIMIZE = "Minimize";
 	
 	/* These are the minimum sizes for our CytoPanels. A CytoPanel can't exceed these values. */
 	private final int NOTIFICATION_STATE_CHANGE = 0;
@@ -96,14 +95,14 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	private final int NOTIFICATION_COMPONENT_ADDED = 2;
 	private final int NOTIFICATION_COMPONENT_REMOVED = 3;
 
+	private JPanel titlePanel;
 	private JTabbedPane tabbedPane;
 	private JLabel floatLabel;
 	private JButton switchCompButton;
 	private JButton floatButton;
-	private JButton closeButton;
+	private JButton minimizeButton;
 	
 	private final JComponent contentPane = new ContentPane();
-	private final BiModalJSplitPane splitPane;
 	private final CytoPanelNameInternal compassDirection;
 	private final int tabPlacement;
 	
@@ -123,46 +122,10 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		this.tabPlacement = tabPlacement;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		splitPane = null;
-		
 		init();
 		setState(cytoPanelState);
 	}
 	
-	/**
-	 * Use this constructor to create a CytoPanel that can contain another CytoPanel.
-	 * In this case, it uses a {@link BiModalJSplitPane} to separate this CytoPanel from the other CytoPanel.
-	 * @param compassDirection
-	 * @param tabPlacement
-	 * @param cytoPanelState
-	 * @param otherPanel
-	 * @param splitOrientation see {@link JSplitPane}
-	 * @param resizeWeight see {@link JSplitPane}
-	 * @param serviceRegistrar
-	 */
-	public CytoPanelImpl(
-			final CytoPanelNameInternal compassDirection,
-			final int tabPlacement,
-			final CytoPanelState cytoPanelState,
-			final CytoPanelImpl otherPanel,
-			final int splitOrientation,
-			final double resizeWeight, 
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		this.compassDirection = compassDirection;
-		this.tabPlacement = tabPlacement;
-		this.serviceRegistrar = serviceRegistrar;
-		
-		splitPane = new BiModalJSplitPane(otherPanel.getCytoPanelNameInternal(), splitOrientation, contentPane,
-				otherPanel.getThisComponent());
-		
-		if (resizeWeight >= 0.0)
-			splitPane.setResizeWeight(resizeWeight);
-		
-		init();
-		setState(cytoPanelState);
-	}
-
 	String getTitle() {
 		return compassDirection.getTitle();
 	}
@@ -190,12 +153,18 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 			componentsById.put(comp2.getIdentifier(), comp2);
 		}
 		
-		// Check our sizes, and override, if necessary
-		checkSizes(comp.getComponent());
-		// add tab to JTabbedPane
-		getTabbedPane().insertTab(comp.getTitle(), comp.getIcon(), comp.getComponent(), null, index);
-		// send out a notification
-		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
+		checkSizes(comp.getComponent()); // Check our sizes, and override, if necessary
+		insert(comp.getComponent(), comp.getTitle(), comp.getIcon(), index, true);
+	}
+	
+	void insert(Component c, String title, Icon icon, int index, boolean notify) {
+		if (getTabbedPane().indexOfComponent(c) == -1) {
+			// Add tab to JTabbedPane
+			getTabbedPane().insertTab(title, icon, c, null, index);
+			
+			if (notify) // Send out a notification
+				notifyListeners(NOTIFICATION_COMPONENT_ADDED);
+		}
 	}
 
 	@Override
@@ -243,10 +212,6 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 			return;
 		
 		getTabbedPane().setSelectedIndex(index);
-		
-		if (splitPane != null && getTabbedPane().getSelectedComponent() != null)
-			splitPane.updateDividerLocation();
-		// Do not have to sent out notification--the tabbedPane will let us know...
 	}
 
 	@Override
@@ -268,7 +233,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	
 	@Override
 	public Component getThisComponent() {
-		return splitPane != null ? splitPane : contentPane;
+		return contentPane;
 	}
 
 	/**
@@ -277,10 +242,6 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	@Override
 	public void stateChanged(ChangeEvent e) {
 		updateSwitchCompButton();
-		
-		if (splitPane != null && getTabbedPane().getSelectedComponent() != null)
-			splitPane.updateDividerLocation();
-		
 		notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
 	}
 	
@@ -300,36 +261,36 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	}
 	
 	private void init() {
+		titlePanel = new JPanel();
 		initButtons();
 
-		// add label and button components to yet another panel, 
-		// so we can layout properly
-		final JPanel floatDockPanel = new JPanel();
-		final BoxLayout boxLayout = new BoxLayout(floatDockPanel, BoxLayout.X_AXIS);
-		floatDockPanel.setLayout(boxLayout);
+		BoxLayout boxLayout = new BoxLayout(titlePanel, BoxLayout.X_AXIS);
+		titlePanel.setLayout(boxLayout);
 		
-		floatDockPanel.add(Box.createHorizontalStrut(8));
-		floatDockPanel.add(getFloatLabel());
-		floatDockPanel.add(Box.createHorizontalGlue());
-		floatDockPanel.add(switchCompButton);
-		floatDockPanel.add(Box.createHorizontalStrut(8));
-		floatDockPanel.add(floatButton);
-		floatDockPanel.add(closeButton);
-		floatDockPanel.add(Box.createHorizontalStrut(8));
+		titlePanel.add(Box.createHorizontalStrut(8));
+		titlePanel.add(getFloatLabel());
+		titlePanel.add(Box.createHorizontalGlue());
+		titlePanel.add(switchCompButton);
+		titlePanel.add(Box.createHorizontalStrut(8));
+		titlePanel.add(floatButton);
+		titlePanel.add(minimizeButton);
+//		titlePanel.add(closeButton);
+		titlePanel.add(Box.createHorizontalStrut(8));
 
 		// set preferred size - we can use float or dock icon dimensions - they are the same
-		final FontMetrics fm = getFloatLabel().getFontMetrics(getFloatLabel().getFont());
-		floatDockPanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
+		FontMetrics fm = getFloatLabel().getFontMetrics(getFloatLabel().getFont());
+		titlePanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
 				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
+		
 		if (compassDirection == BOTTOM)
-			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
+			titlePanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
 					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
 		else
-			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
+			titlePanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
 					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 2));
 
 		contentPane.setLayout(new BorderLayout());
-		contentPane.add(floatDockPanel, BorderLayout.NORTH);
+		contentPane.add(titlePanel, BorderLayout.NORTH);
 		contentPane.add(getTabbedPane(), BorderLayout.CENTER);
 		contentPane.setBorder(BorderFactory.createEmptyBorder());
 		
@@ -398,12 +359,12 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		floatButton.setSelected(true);
 		floatButton.addActionListener(evt -> setState(cytoPanelState == FLOAT ? DOCK : FLOAT));
 		
-		closeButton = new JButton(ICON_REMOVE);
-		closeButton.setToolTipText(TOOL_TIP_CLOSE);
-		CytoPanelUtil.styleButton(closeButton);
-		closeButton.setFont(iconManager.getIconFont(13));
-		closeButton.setSelected(true);
-		closeButton.addActionListener(evt -> setState(HIDE));
+		minimizeButton = new JButton(ICON_WINDOW_MINIMIZE);
+		minimizeButton.setToolTipText(TOOL_TIP_MINIMIZE);
+		CytoPanelUtil.styleButton(minimizeButton);
+		minimizeButton.setFont(iconManager.getIconFont(11));
+		minimizeButton.setSelected(true);
+		minimizeButton.addActionListener(evt -> setState(HIDE));
 	}
 
 	private void notifyListeners(int notificationType) {

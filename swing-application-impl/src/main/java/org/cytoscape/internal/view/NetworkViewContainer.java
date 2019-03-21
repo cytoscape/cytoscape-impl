@@ -28,6 +28,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -65,6 +66,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
@@ -484,6 +486,14 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
+			
+			Set<JComponent> allButtons = new HashSet<>(selectionModeButtons);
+			allButtons.add(getDetachViewButton());
+			allButtons.add(getReattachViewButton());
+			allButtons.add(getExportButton());
+			allButtons.add(getHighDetailButton());
+			allButtons.add(getBirdsEyeViewButton());
+			LookAndFeelUtil.equalizeSize(allButtons.toArray(new JComponent[allButtons.size()]));
 		}
 		
 		return toolBar;
@@ -716,15 +726,16 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JToggleButton getHighDetailButton() {
 		if (highDetailButton == null) {
-			highDetailButton = new SimpleToolBarToggleButton(IconUtil.HD);
+			highDetailButton = new SimpleToolBarToggleButton(
+					new TextIcon("GD", UIManager.getFont("Button.font").deriveFont(14.0f).deriveFont(Font.BOLD), 16, 16));
+			highDetailButton.setToolTipText("Always Show Graphics Details");
 			
 			highDetailButton.addActionListener(evt -> {
 				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, highDetailButton.isSelected(),
 						networkView, serviceRegistrar);
 			});
 			
-			styleToolBarButton(highDetailButton,
-					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
+			styleToolBarButton(highDetailButton);
 		}
 		
 		return highDetailButton;
@@ -734,7 +745,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (birdsEyeViewButton == null) {
 			birdsEyeViewButton = new JToggleButton(ICON_CROSSHAIRS, getBirdsEyeViewPanel().isVisible());
 			
-			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(20.0f));
 			
 			birdsEyeViewButton.addActionListener(evt -> {
 				getBirdsEyeViewPanel().setVisible(!getBirdsEyeViewPanel().isVisible());
@@ -923,7 +934,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	@SuppressWarnings("unused")
 	private final class SelectionModeButton extends SimpleToolBarToggleButton {
 
-		private static final int ICON_SIZE = 22;
+		private static final int ICON_SIZE = 18;
 		
 		private final ImageIcon tipIcon;
 		private final SelectionMode mode;

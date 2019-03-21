@@ -90,6 +90,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -150,6 +151,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private boolean doNotUpdateCollapseExpandButtons;
 	
 	private NetworkViewPreviewDialog viewDialog;
+	private TextIcon icon;
 
 	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -185,7 +187,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_SHARE_ALT,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	private void init() {

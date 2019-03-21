@@ -33,6 +33,7 @@ import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
 import org.cytoscape.view.model.CyNetworkView;
@@ -66,7 +67,7 @@ import org.cytoscape.view.model.View;
  * GUI for Align and Distribute of manualLayout
  */
 @SuppressWarnings("serial")
-public class ControlPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
+public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
 	private static final String TITLE = "Node Layout Tools";
@@ -78,11 +79,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 	private StackPanel stackPanel;
 	private RotatePanel rotatePanel;
 	
+	private TextIcon icon;
+	
 	private boolean loadingSession;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
+	public LayoutToolsPanel(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
@@ -145,7 +148,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_SLIDERS,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	@Override

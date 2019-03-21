@@ -75,7 +75,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentTable = true;
-
+	
 	public DefaultTableBrowser(
 			final String tabTitle,
 			final Class<? extends CyIdentifiable> objType,

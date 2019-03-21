@@ -143,6 +143,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** GroupAnnotation icon when expanded */
 	private Icon openAnnotationIcon;
 	
+	/** Tab icon */
+	private TextIcon icon;
+	
 	private DGraphView view;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -195,7 +198,11 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_STICKY_NOTE,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	@Override

@@ -64,6 +64,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.MenuGravityTracker;
 import org.cytoscape.util.swing.PopupMenuGravityTracker;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
@@ -126,7 +127,9 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 	private JMenu mapValueGeneratorsSubMenu;
 	
 	private Map<String/*visual style name*/, JPanel> defViewPanelsMap;
-
+	
+	private TextIcon icon;
+	
 	private CyNetworkView previewNetView;
 	private RenderingEngineFactory<CyNetwork> engineFactory; // TODO refactor
 	private ServicesUtil servicesUtil;
@@ -173,7 +176,11 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_PAINT_BRUSH,
+					servicesUtil.get(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 
 	/**

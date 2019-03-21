@@ -8,7 +8,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.manual.internal.control.actions.ControlPanelAction;
-import org.cytoscape.view.manual.internal.control.view.ControlPanel;
+import org.cytoscape.view.manual.internal.control.view.LayoutToolsPanel;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
 
 public class CyActivator extends AbstractCyActivator {
 	
-	private ControlPanel controlPanel;
+	private LayoutToolsPanel layoutToolsPanel;
 	private ControlPanelAction controlPanelAction;
 	
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -53,11 +53,11 @@ public class CyActivator extends AbstractCyActivator {
 		final CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 
 		invokeOnEDTAndWait(() -> {
-			controlPanel = new ControlPanel(serviceRegistrar);
-			controlPanelAction = new ControlPanelAction(controlPanel, swingApplication, applicationManager, netViewManager);
+			layoutToolsPanel = new LayoutToolsPanel(serviceRegistrar);
+			controlPanelAction = new ControlPanelAction(layoutToolsPanel, swingApplication, applicationManager, netViewManager);
 		}, logger);
 		
 		registerAllServices(bc, controlPanelAction);
-		registerAllServices(bc, controlPanel);
+		registerAllServices(bc, layoutToolsPanel);
 	}
 }

@@ -21,6 +21,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
@@ -44,7 +45,7 @@ import org.slf4j.Logger;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -70,6 +71,11 @@ public final class ViewUtil {
 	public static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
+	public static final Border DESELECTED_TOGLLE_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+	public static final Border SELECTED_TOGLLE_BORDER = BorderFactory.createCompoundBorder(
+			BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 1),
+			BorderFactory.createEmptyBorder(1, 1, 1, 1));
 	
 	public static String getName(final CyNetwork network) {
 		String name = "";
@@ -165,6 +171,12 @@ public final class ViewUtil {
 		if (font != null)
 			btn.setFont(font);
 		
+		// Decrease the padding, because it will have a border
+//		if (btn instanceof JToggleButton) {
+//			hPad = Math.max(0, hPad - 4);
+//			vPad = Math.max(0, vPad - 4);
+//		}
+		
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
 		btn.setBorder(BorderFactory.createEmptyBorder());
@@ -174,16 +186,23 @@ public final class ViewUtil {
 		btn.setVerticalTextPosition(SwingConstants.TOP);
 		
 		if (hPad > 0 || vPad > 0) {
-			final Dimension d = btn.getPreferredSize();
-			btn.setPreferredSize(new Dimension(d.width + 2 * hPad, d.height + 2 * vPad));
+			Dimension d = btn.getPreferredSize();
+			d = new Dimension(d.width + 2 * hPad, d.height + 2 * vPad);
+			btn.setPreferredSize(d);
+			btn.setMinimumSize(d);
+			btn.setMaximumSize(d);
+			btn.setSize(d);
 		}
 		
-		if (btn instanceof JToggleButton)
+		if (btn instanceof JToggleButton) {
+			btn.addItemListener(evt -> updateToolBarStyle((JToggleButton) btn));
 			updateToolBarStyle((JToggleButton) btn);
+		}
 	}
 	
 	public static void updateToolBarStyle(final JToggleButton btn) {
 		if (btn.isEnabled()) {
+			btn.setBorder(btn.isSelected() ? SELECTED_TOGLLE_BORDER : DESELECTED_TOGLLE_BORDER);
 			btn.setBackground(
 					btn.isSelected() ?
 					UIManager.getColor("ToggleButton.selectedBackground") :
@@ -193,7 +212,9 @@ public final class ViewUtil {
 					UIManager.getColor("ToggleButton.selectedForeground") :
 					UIManager.getColor("ToggleButton.unselectedForeground"));
 		} else {
+			btn.setBorder(DESELECTED_TOGLLE_BORDER);
 			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
+			btn.setBackground(UIManager.getColor("ToggleButton.unselectedBackground"));
 		}
 	}
 	

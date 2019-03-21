@@ -108,8 +108,8 @@ import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
-import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
+import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -129,6 +129,7 @@ import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
+import org.jdesktop.swingx.color.ColorUtil;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -762,16 +763,18 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("ToggleButton.unselectedBackground", UIManager.getColor("Button.background"));
 			UIManager.put("ToggleButton.unselectedForeground", UIManager.getColor("Button.foreground"));
 			
-			if (isNimbusLAF()) {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
-			} else if (isAquaLAF()) {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Tree.selectionBackground"));
-			} else {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
-			}
+//			if (isNimbusLAF()) {
+//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
+//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
+//			} else if (isAquaLAF()) {
+//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
+//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Tree.selectionBackground"));
+//			} else {
+//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
+//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
+//			}
+			UIManager.put("ToggleButton.selectedBackground", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.8f));
+			UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Button.foreground"));
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}
