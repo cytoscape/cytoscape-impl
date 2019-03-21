@@ -19,7 +19,7 @@ public class CyNodeViewImpl extends CyViewImpl<CyNode> {
 		synchronized (networkView) {
 			networkView.setVisualProperty(this, vp, value);
 			if(isGeometric(vp)) {
-				networkView.updateNodeGeometry(this, vp, value);
+				networkView.updateNodeGeometry(this, vp);
 			}
 		}
 	}
@@ -30,7 +30,7 @@ public class CyNodeViewImpl extends CyViewImpl<CyNode> {
 		synchronized (networkView) {
 			networkView.setLockedValue(this, vp, value);
 			if(isGeometric(vp)) {
-				networkView.updateNodeGeometry(this, vp, value);
+				networkView.updateNodeGeometry(this, vp);
 			}
 		}
 	}
@@ -42,8 +42,7 @@ public class CyNodeViewImpl extends CyViewImpl<CyNode> {
 			networkView.clearValueLock(this, vp);
 			if(isGeometric(vp)) {
 				// Clearing X, Y etc requires recalculation of node's geometry
-				Object value = networkView.getVisualProperty(vp);
-				networkView.updateNodeGeometry(this, vp, value);
+				networkView.updateNodeGeometry(this, vp);
 			}
 		}
 	}

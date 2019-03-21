@@ -1,5 +1,6 @@
 package org.cytoscape.view.model;
 
+import static org.cytoscape.view.model.NetworkViewTestUtils.asSuidSet;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
@@ -18,7 +19,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
@@ -64,13 +63,6 @@ public class NetworkViewImplTest {
 		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test");
 		return networkView;
 	}
-	
-	private static Set<Long> asSuidSet(Iterable<? extends CyIdentifiable> iterable) {
-		HashSet<Long> set = new HashSet<>();
-		iterable.forEach(item -> set.add(item.getSUID()));
-		return set;
-	}
-	
 	
 	
 	@Test
@@ -459,6 +451,7 @@ public class NetworkViewImplTest {
 		assertTrue(snapshot.isSet(NETWORK_CENTER_X_LOCATION));
 		assertTrue(snapshot.isValueLocked(NETWORK_CENTER_X_LOCATION));
 	}
+	
 	
 }
 

@@ -143,10 +143,12 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		snapshot = null;
 	}
 	
-	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp, V value) {
+	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
 		Long suid = node.getSUID();
 		Rectangle r = geometries.getOrElse(suid, null);
 		Rectangle newGeom = null;
+		// need to look up the actual value because it might be locked
+		Object value = getVisualProperty(node.getSUID(), vp);
 		
 		if(r != null) {
 			if(vp == NODE_X_LOCATION) {
@@ -330,13 +332,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
 		// we actually can't clear certain VPs, the renderer expects node size and location to remain consistent
-		java.util.HashMap<VisualProperty<?>,Object> values = new java.util.HashMap<>();
+		java.util.HashMap<VisualProperty<?>,Object> valuesToRestore = new java.util.HashMap<>();
 		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPS) {
-			values.put(vp, get(map, suid, vp));
+			valuesToRestore.put(vp, get(map, suid, vp));
 		}
 		map = map.remove(suid);
 		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPS) {
-			map = put(map, suid, vp, values.get(vp));
+			map = put(map, suid, vp, valuesToRestore.get(vp));
 		}
 		return map;
 	}
@@ -560,7 +562,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			defaultValues = defaultValues.put(vp, value);
 			if(NODE_GEOMETRIC_PROPS.contains(vp)) {
 				for(CyNodeViewImpl node : dataSuidToNode.values()) {
-					updateNodeGeometry(node, vp, value);
+					updateNodeGeometry(node, vp);
 				}
 			}
 			setDirty();

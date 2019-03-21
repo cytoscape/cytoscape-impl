@@ -1,80 +1,38 @@
 package org.cytoscape.view.model;
 
+import static org.cytoscape.view.model.NetworkViewTestUtils.assertHidden;
+import static org.cytoscape.view.model.NetworkViewTestUtils.assertMBR;
+import static org.cytoscape.view.model.NetworkViewTestUtils.assertVisible;
+import static org.cytoscape.view.model.NetworkViewTestUtils.createNetworkView;
+import static org.cytoscape.view.model.NetworkViewTestUtils.setGeometry;
+import static org.cytoscape.view.model.NetworkViewTestUtils.toMap;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Test;
 
 public class SpacialIndex2DTest {
 
 	private NetworkTestSupport networkSupport = new NetworkTestSupport();
-	
-	private static CyNetworkViewImpl createNetworkView(CyNetwork network) {
-		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
-		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
-		
-		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
-		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
-		
-		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test");
-		return networkView;
-	}
-	
-	private static void setGeometry(View<CyNode> node, float x, float y, float w, float h) {
-		node.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, h);
-		node.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, w);
-		node.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
-		node.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
-	}
-	
-	public static void assertMBR(CyNetworkViewSnapshot snapshot, float xMin, float yMin, float xMax, float yMax) {
-		float[] mbr = new float[4];
-		snapshot.getSpacialIndex2D().getMBR(mbr);
-		assertEquals(xMin, mbr[SpacialIndex2D.X_MIN], 0.0f);
-		assertEquals(yMin, mbr[SpacialIndex2D.Y_MIN], 0.0f);
-		assertEquals(xMax, mbr[SpacialIndex2D.X_MAX], 0.0f);
-		assertEquals(yMax, mbr[SpacialIndex2D.Y_MAX], 0.0f);
-	}
-	
-	private static Map<Long,float[]> toMap(SpacialIndex2DEnumerator<Long> overlap) {
-		HashMap<Long,float[]> map = new HashMap<>();
-		while(overlap.hasNext()) {
-			float[] extents = new float[4];
-			Long suid = overlap.nextExtents(extents);
-			map.put(suid, extents);
-		}
-		return map;
-	}
-	
-	private static <T> Set<T> toSet(Iterable<T> iterable) {
-		Set<T> set = new HashSet<>();
-		iterable.forEach(set::add);
-		return set;
-	}
 	
 	@Test
 	public void testSpacialIndex2DSnapshot() {
@@ -134,11 +92,11 @@ public class SpacialIndex2DTest {
 		View<CyNode> nv1 = networkView.getNodeView(n1);
 		View<CyNode> nv2 = networkView.getNodeView(n2);
 		
-		networkView.setViewDefault(BasicVisualLexicon.NODE_HEIGHT, 100);
-		networkView.setViewDefault(BasicVisualLexicon.NODE_WIDTH, 200);
+		networkView.setViewDefault(NODE_HEIGHT, 100);
+		networkView.setViewDefault(NODE_WIDTH, 200);
 		
-		nv1.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, 0);
-		nv1.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, 0);
+		nv1.setVisualProperty(NODE_X_LOCATION, 0);
+		nv1.setVisualProperty(NODE_Y_LOCATION, 0);
 		
 		CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
 		SpacialIndex2D<Long> spacialIndex = snapshot.getSpacialIndex2D();
@@ -189,18 +147,6 @@ public class SpacialIndex2DTest {
 	}
 	
 	
-	
-	private static void assertHidden(CyNetworkViewSnapshot snapshot, CyNode n) {
-		assertNull(snapshot.getNodeView(n));
-	}
-	
-	private static void assertVisible(CyNetworkViewSnapshot snapshot, CyNode n, int adj) {
-		View<CyNode> nv = snapshot.getNodeView(n);
-		assertNotNull(nv);
-		assertEquals(adj, toSet(snapshot.getAdjacentEdgeIterable(nv)).size());
-	}
-	
-	
 	@Test
 	public void testHiddenNodes() {
 		CyNetwork network = networkSupport.getNetwork();
@@ -226,7 +172,7 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 2);
 		
 		// hide nv1
-		networkView.getNodeView(n1).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+		networkView.getNodeView(n1).setVisualProperty(NODE_VISIBLE, false);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 3, 7, 13, 11);
 		assertHidden(snapshot, n1);
@@ -234,7 +180,7 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 1);
 		
 		// hide nv2
-		networkView.getNodeView(n2).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, false);
+		networkView.getNodeView(n2).setVisualProperty(NODE_VISIBLE, false);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 9, 9, 13, 11);
 		assertHidden(snapshot, n1);
@@ -242,7 +188,7 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 0);
 		
 		// show nv2
-		networkView.getNodeView(n2).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+		networkView.getNodeView(n2).setVisualProperty(NODE_VISIBLE, true);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 3, 7, 13, 11);
 		assertHidden(snapshot, n1);
@@ -250,8 +196,8 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 1);
 		
 		// hide edges
-		networkView.getEdgeView(e1).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
-		networkView.getEdgeView(e2).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, false);
+		networkView.getEdgeView(e1).setVisualProperty(EDGE_VISIBLE, false);
+		networkView.getEdgeView(e2).setVisualProperty(EDGE_VISIBLE, false);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 3, 7, 13, 11);
 		assertHidden(snapshot, n1);
@@ -259,7 +205,7 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 0);
 		
 		// show all nodes
-		networkView.getNodeView(n1).setVisualProperty(BasicVisualLexicon.NODE_VISIBLE, true);
+		networkView.getNodeView(n1).setVisualProperty(NODE_VISIBLE, true);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 2, 2, 13, 11);
 		assertVisible(snapshot, n1, 1);
@@ -267,13 +213,35 @@ public class SpacialIndex2DTest {
 		assertVisible(snapshot, n3, 1);
 		
 		// show all edges
-		networkView.getEdgeView(e1).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
-		networkView.getEdgeView(e2).setVisualProperty(BasicVisualLexicon.EDGE_VISIBLE, true);
+		networkView.getEdgeView(e1).setVisualProperty(EDGE_VISIBLE, true);
+		networkView.getEdgeView(e2).setVisualProperty(EDGE_VISIBLE, true);
 		snapshot = networkView.createSnapshot();
 		assertMBR(snapshot, 2, 2, 13, 11);
 		assertVisible(snapshot, n1, 2);
 		assertVisible(snapshot, n2, 2);
 		assertVisible(snapshot, n3, 2);
 	}
+	
+
+	@Test
+	public void testVisibilityBypass() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2);
+		
+		View<CyNode> nv1 = networkView.getNodeView(n1);
+		
+		nv1.setLockedValue(NODE_VISIBLE, false);
+		nv1.setVisualProperty(NODE_VISIBLE, true);
+		
+		assertHidden(networkView.createSnapshot(), n1);
+		
+		nv1.setLockedValue(NODE_VISIBLE, true);
+		
+		assertVisible(networkView.createSnapshot(), n1, 0);
+	}
+	
 	
 }
