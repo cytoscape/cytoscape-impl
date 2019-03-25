@@ -200,6 +200,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		}
 		
 		if(newGeom != null) {
+			System.out.println(node.getSUID() + " " + newGeom);
 			rtree = rtree.delete(suid, r).add(suid, newGeom);
 			geometries = geometries.put(suid, newGeom);
 		}

@@ -423,7 +423,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// MKTODO why does this have to run on the edt?
 		invokeOnEDT(() -> {
 			synchronized (dingLock) {
-				CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+				// make sure we use the latest snapshot
+				CyNetworkViewSnapshot netViewSnapshot = viewModel.createSnapshot();
 				if(netViewSnapshot.getNodeCount() == 0)
 					return;
 				if (networkCanvas.getWidth() == 0 || networkCanvas.getHeight() == 0)
