@@ -35,7 +35,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 
 public class DingVisualStyleRenderingEngineFactory extends DingRenderingEngineFactory {
 	
-	public DingVisualStyleRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactory, VisualLexicon dingLexicon) {
+	public DingVisualStyleRenderingEngineFactory(DingNetworkViewFactory viewFactory, VisualLexicon dingLexicon) {
 		super(viewFactory, dingLexicon);
 	}
 

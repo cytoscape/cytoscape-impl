@@ -31,9 +31,7 @@ import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
 import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
 import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingGraphLODAll;
-import org.cytoscape.ding.impl.DingNetworkViewFactoryMediator;
-import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
@@ -59,6 +57,8 @@ import org.cytoscape.ding.impl.cyannotator.tasks.UngroupAnnotationsTaskFactory;
 import org.cytoscape.ding.impl.cyannotator.ui.AnnotationMediator;
 import org.cytoscape.ding.impl.editor.CustomGraphicsVisualPropertyEditor;
 import org.cytoscape.ding.impl.editor.CyCustomGraphicsValueEditor;
+import org.cytoscape.ding.impl.editor.EdgeBendEditor;
+import org.cytoscape.ding.impl.editor.EdgeBendValueEditor;
 import org.cytoscape.ding.impl.editor.ObjectPositionEditor;
 import org.cytoscape.ding.internal.charts.bar.BarChartFactory;
 import org.cytoscape.ding.internal.charts.box.BoxChartFactory;
@@ -68,6 +68,7 @@ import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -79,6 +80,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -161,24 +163,22 @@ public class CyActivator extends AbstractCyActivator {
 
 		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
 		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID);
-		DingNetworkViewFactoryMediator netViewFactoryMediator = new DingNetworkViewFactoryMediator(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
-		registerService(bc, netViewFactoryMediator, NetworkViewAboutToBeDestroyedListener.class);
+		DingNetworkViewFactory dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
 		
-		DingRenderer renderer = new DingRenderer(netViewFactoryMediator, dVisualLexicon, serviceRegistrar);
+		DingRenderer renderer = new DingRenderer(dingNetViewFactory, dVisualLexicon, serviceRegistrar);
 		registerService(bc, renderer, NetworkViewRenderer.class);
 		registerService(bc, renderer, DingRenderer.class);
+		RenderingEngineFactory<CyNetwork> dingRenderingEngineFactory = renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT);
 		
 		// Edge Bend editor
-		// MKTODO
-//		EdgeBendValueEditor edgeBendValueEditor =
-//				new EdgeBendValueEditor(netViewFactory, dingRenderingEngineFactory, serviceRegistrar);
-//		EdgeBendEditor edgeBendEditor =
-//				new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(dingNetViewFactory, dingRenderingEngineFactory, serviceRegistrar);
+		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
-		registerAllServices(bc, renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT), dingRenderingEngineFactoryProps);
-//
+		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
+
 //		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
 //		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
 //		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
@@ -202,8 +202,8 @@ public class CyActivator extends AbstractCyActivator {
 		objectPositionEditorProp.setProperty(ID, "objectPositionEditor");
 		registerService(bc, objectPositionEditor, VisualPropertyEditor.class, objectPositionEditorProp);
 
-//		registerAllServices(bc, edgeBendValueEditor);
-//		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
+		registerAllServices(bc, edgeBendValueEditor);
+		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
 
 		// Annotation Manager
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);

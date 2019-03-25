@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
@@ -252,12 +253,12 @@ public class BendStore {
 	private void addHandleInternal(View<CyEdge> edge, Point2D handleLocation, int insertInx) {
 		Long suid = edge.getSUID();
 		Bend bend = re.getEdgeDetails().getBend(edge, true);
-		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		CyNetworkView netView = re.getViewModel();
 		
-		Handle handle = handleFactory.createHandle(snapshot, edge, handleLocation.getX(), handleLocation.getY());
+		Handle handle = handleFactory.createHandle(netView, edge, handleLocation.getX(), handleLocation.getY());
 		bend.insertHandleAt(insertInx, handle);
 
-		selectedEdges.get(suid).add(insertInx, new HandleKey(suid, insertInx));
+		selectedEdges.computeIfAbsent(suid, s -> new ArrayList<>()).add(insertInx, new HandleKey(suid, insertInx));
 		
 		if (re.getEdgeDetails().isSelected(edge)) {
 			float[] extentsBuff = new float[4];

@@ -507,7 +507,10 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
 
-		View<CyEdge> edgeView = re.getViewModelSnapshot().getEdgeView(chosenEdge);
+		View<CyEdge> edgeView = re.getViewModel().getEdgeView(chosenEdge);
+		if(edgeView == null)
+			return chosenEdgeSelected;
+		
 		boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
 		
 		// Add new Handle for Edge Bend.
@@ -1536,7 +1539,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 							if( bend.getAllHandles().isEmpty() )
 								continue;
 							final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-							final Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
+							final Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), ev);
 							
 							float x = (float) newPoint.getX();
 							float y = (float) newPoint.getY();

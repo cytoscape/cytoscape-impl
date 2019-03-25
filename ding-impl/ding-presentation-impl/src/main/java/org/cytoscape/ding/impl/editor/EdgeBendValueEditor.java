@@ -24,6 +24,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
+import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -33,7 +34,6 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -74,7 +74,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private CyNetworkView dummyView;
 	private View<CyEdge> edgeView;
 
-	private final CyNetworkViewFactory cyNetworkViewFactory;
+	private final DingNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -83,7 +83,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private boolean bendRemoved;
 
 	public EdgeBendValueEditor(
-			final CyNetworkViewFactory cyNetworkViewFactory,
+			final DingNetworkViewFactory cyNetworkViewFactory,
 			final RenderingEngineFactory<CyNetwork> presentationFactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
@@ -245,8 +245,9 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 
 		// Render it in this panel.  It is not necessary to register this engine to manager.
 		presentationFactory.createRenderingEngine(innerPanel, dummyView);
+		dummyView.fitContent();
 		
-		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
+		InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
 		innerCanvas.disablePopupMenu();
 	}
 
@@ -273,6 +274,8 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		dialog.setVisible(true);
 		
 		EditMode.setMode(false);
+		
+		cyNetworkViewFactory.removeRenderingEngine(dummyView);
 		
 		if (bendRemoved)
 			return EDGE_BEND.getDefault();

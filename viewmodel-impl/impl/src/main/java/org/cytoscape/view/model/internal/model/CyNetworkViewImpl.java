@@ -56,7 +56,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	private final BasicVisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
-	private CyNetworkViewSnapshot snapshot = null;
+	private boolean dirty = true;
 	
 	// View object is stored twice, using both the view suid and model suid as keys.
 	private Map<Long,CyNodeViewImpl> dataSuidToNode = HashMap.empty();
@@ -103,29 +103,27 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {
 		synchronized (this) {
-			if(snapshot == null) {
-				snapshot = new CyNetworkViewSnapshotImpl(
-					this, 
-					rendererId, 
-					dataSuidToNode,
-					viewSuidToNode,
-					dataSuidToEdge,
-					viewSuidToEdge,
-					adjacentEdgeMap,
-					selectedNodes,
-					selectedEdges,
-					defaultValues, 
-					visualProperties, 
-					allLocks, 
-					directLocks, 
-					rtree, 
-					geometries,
-					networkCenterXLocation,
-					networkCenterYLocation,
-					networkScaleFactor
-				);
-			}
-			return snapshot;
+			this.dirty = false;
+			return new CyNetworkViewSnapshotImpl(
+				this, 
+				rendererId, 
+				dataSuidToNode,
+				viewSuidToNode,
+				dataSuidToEdge,
+				viewSuidToEdge,
+				adjacentEdgeMap,
+				selectedNodes,
+				selectedEdges,
+				defaultValues, 
+				visualProperties, 
+				allLocks, 
+				directLocks, 
+				rtree, 
+				geometries,
+				networkCenterXLocation,
+				networkCenterYLocation,
+				networkScaleFactor
+			);
 		}
 	}
 	
@@ -136,11 +134,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public boolean isDirty() {
-		return snapshot == null;
+		return dirty;
 	}
 	
 	private void setDirty() {
-		snapshot = null;
+		this.dirty = true;
 	}
 	
 	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
@@ -438,6 +436,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (this) {
 			if(view == this && NETWORK_PROPS.contains(vp)) {
 				setNetworkProp(vp, value);
+				// don't set the dirty flag in this case
 				return;
 			}
 			
@@ -447,7 +446,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 			setDirty();
 		}
 	}
-	
 	
 	
 	private double getNetworkProp(VisualProperty<?> vp) {

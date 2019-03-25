@@ -18,11 +18,11 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
  */
 public class DingThumbnailRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
-	private final DingNetworkViewFactoryMediator viewFactoryMediator;
+	private final DingNetworkViewFactory viewFactoryMediator;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
-	public DingThumbnailRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactoryMediator, VisualLexicon dingLexicon, CyServiceRegistrar registrar) {
+	public DingThumbnailRenderingEngineFactory(DingNetworkViewFactory viewFactoryMediator, VisualLexicon dingLexicon, CyServiceRegistrar registrar) {
 		this.viewFactoryMediator = viewFactoryMediator;
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;

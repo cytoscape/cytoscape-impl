@@ -47,12 +47,12 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 	
 	private static final Logger logger = LoggerFactory.getLogger(DingNavigationRenderingEngineFactory.class);
 
-	private final DingNetworkViewFactoryMediator viewFactoryMediator;
+	private final DingNetworkViewFactory viewFactoryMediator;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
 	
-	public DingNavigationRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactoryMediator, CyServiceRegistrar registrar, VisualLexicon dingLexicon) {
+	public DingNavigationRenderingEngineFactory(DingNetworkViewFactory viewFactoryMediator, CyServiceRegistrar registrar, VisualLexicon dingLexicon) {
 		this.viewFactoryMediator = viewFactoryMediator;
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;

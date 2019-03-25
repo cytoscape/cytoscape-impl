@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.geom.Point2D;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -29,10 +31,10 @@ import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.Handle;
-
-import java.awt.geom.Point2D;
 
 /**
  * A simple implementation of edge handle.
@@ -68,12 +70,22 @@ public class HandleImpl implements Handle {
 		if (Double.isNaN(sinTheta) || Double.isNaN(cosTheta)) {
 			defineHandle(graphView, view, x, y);
 		}
-		final CyNode source = view.getModel().getSource();
-		final CyNode target = view.getModel().getTarget();
-
-		final View<CyNode> sourceView = graphView.getNodeView(source);
-		final View<CyNode> targetView = graphView.getNodeView(target);
-
+		
+		final View<CyNode> sourceView;
+		final View<CyNode> targetView;
+		
+		if(graphView instanceof CyNetworkViewSnapshot) {
+			CyNetworkViewSnapshot snapshot = (CyNetworkViewSnapshot) graphView;
+			SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(view);
+			sourceView = edgeInfo.getSourceNodeView();
+			targetView = edgeInfo.getTargetNodeView();
+		} else {
+			CyNode source = view.getModel().getSource();
+			CyNode target = view.getModel().getTarget();
+			sourceView = graphView.getNodeView(source);
+			targetView = graphView.getNodeView(target);
+		}
+		
 		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
 		final double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 		final double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);

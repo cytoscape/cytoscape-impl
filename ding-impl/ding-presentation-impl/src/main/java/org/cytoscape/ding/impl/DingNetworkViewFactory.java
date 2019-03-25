@@ -13,7 +13,7 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 
-public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
+public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
 
 	private final CyNetworkViewFactory delegateFactory;
 	private final Map<CyNetworkView, DRenderingEngine> mainRenderingEngines = new HashMap<>();
@@ -24,7 +24,7 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 	private final DingGraphLOD dingGraphLOD;
 	private final HandleFactory handleFactory; 
 	
-	public DingNetworkViewFactoryMediator(
+	public DingNetworkViewFactory(
 			CyNetworkViewFactory delegateFactory, 
 			DVisualLexicon dingLexicon,
 			AnnotationFactoryManager annMgr,
@@ -48,8 +48,8 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 
 		// MKTODO Do we still need to do this???
 		networkView.addNetworkViewListener(re);
-		mainRenderingEngines.put(networkView, re);
 		
+		mainRenderingEngines.put(networkView, re);
 		return networkView;
 	}
 	
@@ -62,6 +62,10 @@ public class DingNetworkViewFactoryMediator implements CyNetworkViewFactory, Net
 		return mainRenderingEngines.get(networkView);
 	}
 
+	public void removeRenderingEngine(CyNetworkView networkView) {
+		mainRenderingEngines.remove(networkView);
+	}
+	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
 		mainRenderingEngines.remove(e.getNetworkView());

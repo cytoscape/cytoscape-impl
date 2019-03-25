@@ -13,7 +13,7 @@ public class DingRenderer implements NetworkViewRenderer {
 	public static final String ID = "org.cytoscape.ding";
 	public static final String DISPLAY_NAME = "Cytoscape 2D";
 	
-	private final DingNetworkViewFactoryMediator viewFactory;
+	private final DingNetworkViewFactory viewFactory;
 	
 	private final DingRenderingEngineFactory defaultEngineFactory;
 	private final DingNavigationRenderingEngineFactory navigationEngineFactory;
@@ -21,7 +21,7 @@ public class DingRenderer implements NetworkViewRenderer {
 	private final DingThumbnailRenderingEngineFactory thumbnailEngineFactory;
 	
 	
-	public DingRenderer(DingNetworkViewFactoryMediator viewFactory, DVisualLexicon dVisualLexicon, CyServiceRegistrar serviceRegistrar) {
+	public DingRenderer(DingNetworkViewFactory viewFactory, DVisualLexicon dVisualLexicon, CyServiceRegistrar serviceRegistrar) {
 		this.viewFactory = viewFactory;
 		
 		defaultEngineFactory    = new DingRenderingEngineFactory(viewFactory, dVisualLexicon);

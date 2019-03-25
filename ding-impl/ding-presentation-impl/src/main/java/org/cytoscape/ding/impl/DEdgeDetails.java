@@ -316,7 +316,7 @@ public final class DEdgeDetails implements EdgeDetails {
 		else
 			handle = bend.getAllHandles().get(anchorIndex/2);
 
-		Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), edgeView);
+		Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), edgeView);
 		anchorArr[0] = (float) newPoint.getX();
 		anchorArr[1] = (float) newPoint.getY();
 	}

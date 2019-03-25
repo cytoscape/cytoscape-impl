@@ -241,13 +241,36 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	private void checkModelIsDirty() {
 		// Must run on EDT
-		if(viewModel.isDirty()) {
-			viewModelSnapshot = viewModel.createSnapshot();
-			bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
-			updateGraphLOD();
-			updateView(true);
+		if(viewModelSnapshot == null || viewModel.isDirty()) {
+			updateSnapshotAndView();
 		}
 	}
+	
+	private void updateSnapshotAndView() {
+		// create a new snapshot, this should be very fast
+		viewModelSnapshot = viewModel.createSnapshot();
+		
+		bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
+		
+		// update LOD
+		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
+		setGraphLOD(hd ? dingGraphLODAll : dingGraphLOD);
+		
+		// update view (for example if "fit selected" was run)
+		double x = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+		double y = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+		if(networkCanvas.xCenter != x || networkCanvas.yCenter != y) {
+			setCenter(x, y);
+		}
+		
+		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+		if(networkCanvas.scaleFactor != scaleFactor) {
+			setZoom(scaleFactor);
+		}
+		
+		updateView(true);
+	}
+	
 	
 	public BendStore getBendStore() {
 		return bendStore;
@@ -434,7 +457,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}
 			
 			if (updateView)
-				updateView(false);
+				updateSnapshotAndView();
 		});
 	}
 	
@@ -564,7 +587,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			}
 //		}
 			
-		updateView(false);
+		updateSnapshotAndView();
 	}
 
 	private int getLabelWidth(View<CyNode> nodeView) {
@@ -585,11 +608,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return fontMetrics.charsWidth(lab, 0, lab.length);
 	}
 
-	
-	private void updateGraphLOD() {
-		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-		setGraphLOD(hd ? dingGraphLODAll : dingGraphLOD);
-	}
 	
 	public void setGraphLOD(GraphLOD lod) {
 		synchronized (dingLock) {

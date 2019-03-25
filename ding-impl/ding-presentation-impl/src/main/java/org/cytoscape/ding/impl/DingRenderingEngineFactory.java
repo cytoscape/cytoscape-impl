@@ -38,10 +38,10 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
 
 public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
-	private final DingNetworkViewFactoryMediator viewFactory;
+	private final DingNetworkViewFactory viewFactory;
 	private final VisualLexicon dingLexicon;
 
-	public DingRenderingEngineFactory(DingNetworkViewFactoryMediator viewFactory, VisualLexicon dingLexicon) {
+	public DingRenderingEngineFactory(DingNetworkViewFactory viewFactory, VisualLexicon dingLexicon) {
 		this.viewFactory = viewFactory;
 		this.dingLexicon = dingLexicon;
 	}
