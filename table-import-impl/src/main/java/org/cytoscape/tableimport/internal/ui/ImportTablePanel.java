@@ -1007,9 +1007,9 @@ public class ImportTablePanel extends JPanel implements PropertyChangeListener, 
 		SpinnerNumberModel model = (SpinnerNumberModel) source.getModel();
 		Integer oldValue = (Integer) source.getValue();
 		int intValue = oldValue.intValue() - (evt.getWheelRotation() * model.getStepSize().intValue());
-		Integer newValue = new Integer(intValue);
+		Integer newValue = Integer.valueOf(intValue);
 
-		if ((model.getMaximum().compareTo(newValue) >= 0) && (model.getMinimum().compareTo(newValue) <= 0)) {
+		if ((Integer.valueOf(((Number)model.getMaximum()).intValue()).compareTo(newValue) >= 0) && (Integer.valueOf(((Number)model.getMinimum()).intValue()).compareTo(newValue) <= 0)) {
 			source.setValue(newValue);
 		}
 	}
