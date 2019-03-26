@@ -34,10 +34,10 @@ import java.awt.event.WindowEvent;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -904,7 +904,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private CytoPanelImpl getNorthWestPanel() {
 		if (northWestPanel == null) {
-			northWestPanel = new CytoPanelImpl(WEST, JTabbedPane.TOP, DOCK, serviceRegistrar);
+			northWestPanel = new CytoPanelImpl(WEST, 0, JTabbedPane.TOP, DOCK, serviceRegistrar);
 		}
 
 		return northWestPanel;
@@ -912,7 +912,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	private CytoPanelImpl getSouthWestPanel() {
 		if (southWestPanel == null) {
-			southWestPanel = new CytoPanelImpl(SOUTH_WEST, JTabbedPane.TOP, HIDE, serviceRegistrar);
+			southWestPanel = new CytoPanelImpl(SOUTH_WEST, 1, JTabbedPane.TOP, HIDE, serviceRegistrar);
 		}
 		
 		return southWestPanel;
@@ -920,7 +920,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private CytoPanelImpl getEastPanel() {
 		if (eastPanel == null) {
-			eastPanel = new CytoPanelImpl(EAST, JTabbedPane.TOP, HIDE, serviceRegistrar);
+			eastPanel = new CytoPanelImpl(EAST, 2, JTabbedPane.TOP, HIDE, serviceRegistrar);
 		}
 
 		return eastPanel;
@@ -928,7 +928,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private CytoPanelImpl getSouthPanel() {
 		if (southPanel == null) {
-			southPanel = new CytoPanelImpl(SOUTH, JTabbedPane.BOTTOM, DOCK, serviceRegistrar);
+			southPanel = new CytoPanelImpl(SOUTH, 3, JTabbedPane.BOTTOM, DOCK, serviceRegistrar);
 		}
 
 		return southPanel;
@@ -936,7 +936,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 	private CytoPanelImpl getAutomationPanel() {
 		if (automationPanel == null) {
-			automationPanel = new CytoPanelImpl(BOTTOM, JTabbedPane.RIGHT, HIDE, serviceRegistrar);
+			automationPanel = new CytoPanelImpl(BOTTOM, 4, JTabbedPane.RIGHT, HIDE, serviceRegistrar);
 		}
 		
 		return automationPanel;
@@ -951,11 +951,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	private class TrimBar extends JPanel {
 		
-		private Set<TrimStack> stacks = new LinkedHashSet<>();
+		private final Set<TrimStack> stacks;
 		private final int compassDirection;
 		
 		public TrimBar(int compassDirection) {
 			this.compassDirection = compassDirection;
+			
+			stacks = new TreeSet<>((t1, t2) -> {
+				return t1.getCytoPanel().getTrimBarIndex() - t2.getCytoPanel().getTrimBarIndex();
+			});
 			
 			if (compassDirection == SwingConstants.WEST)
 				setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, UIManager.getColor("Separator.foreground")));

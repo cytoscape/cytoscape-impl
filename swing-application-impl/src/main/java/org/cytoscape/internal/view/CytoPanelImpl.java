@@ -104,6 +104,7 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	
 	private final JComponent contentPane = new ContentPane();
 	private final CytoPanelNameInternal compassDirection;
+	private final int trimBarIndex;
 	private final int tabPlacement;
 	
 	private CytoPanelState cytoPanelState;
@@ -114,11 +115,13 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 
 	public CytoPanelImpl(
 			final CytoPanelNameInternal compassDirection,
+			final int trimBarIndex,
 			final int tabPlacement,
 			final CytoPanelState cytoPanelState,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.compassDirection = compassDirection;
+		this.trimBarIndex = trimBarIndex;
 		this.tabPlacement = tabPlacement;
 		this.serviceRegistrar = serviceRegistrar;
 		
@@ -137,6 +140,10 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	
 	public CytoPanelNameInternal getCytoPanelNameInternal() {
 		return compassDirection;
+	}
+	
+	public int getTrimBarIndex() {
+		return trimBarIndex;
 	}
 
 	public void add(CytoPanelComponent comp) {
