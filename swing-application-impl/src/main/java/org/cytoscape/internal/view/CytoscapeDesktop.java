@@ -816,7 +816,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane getMasterPane() {
 		if (masterPane == null) {
 			masterPane = new BiModalJSplitPane(
-					SOUTH,
 					JSplitPane.VERTICAL_SPLIT,
 					getTopPane(),
 					getAutomationPanel().getThisComponent()
@@ -829,7 +828,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane getTopPane() {
 		if (topPane == null) {
 			topPane = new BiModalJSplitPane(
-					WEST,
 					JSplitPane.HORIZONTAL_SPLIT,
 					getLeftPane(),
 					getRightPane()
@@ -843,7 +841,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane getLeftPane() {
 		if (leftPane == null) {
 			leftPane = new BiModalJSplitPane(
-					WEST,
 					JSplitPane.VERTICAL_SPLIT,
 					getNorthWestPanel().getThisComponent(),
 					getSouthWestPanel().getThisComponent()
@@ -857,7 +854,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane getRightPane() {
 		if (rightPane == null) {
 			rightPane = new BiModalJSplitPane(
-					SOUTH,
 					JSplitPane.VERTICAL_SPLIT,
 					getTopRightPane(),
 					getSouthPanel().getThisComponent()
@@ -872,7 +868,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private BiModalJSplitPane getTopRightPane() {
 		if (topRightPane == null) {
 			topRightPane = new BiModalJSplitPane(
-					EAST,
 					JSplitPane.HORIZONTAL_SPLIT,
 					getCenterPanel(),
 					getEastPanel().getThisComponent()
