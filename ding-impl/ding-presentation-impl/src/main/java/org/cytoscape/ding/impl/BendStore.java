@@ -253,7 +253,7 @@ public class BendStore {
 	private void addHandleInternal(View<CyEdge> edge, Point2D handleLocation, int insertInx) {
 		Long suid = edge.getSUID();
 		Bend bend = re.getEdgeDetails().getBend(edge, true);
-		CyNetworkView netView = re.getViewModel();
+		CyNetworkView netView = re.getViewModelSnapshot();
 		
 		Handle handle = handleFactory.createHandle(netView, edge, handleLocation.getX(), handleLocation.getY());
 		bend.insertHandleAt(insertInx, handle);

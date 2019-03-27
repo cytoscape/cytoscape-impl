@@ -4,7 +4,6 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -339,13 +338,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	public Paint getBackgroundPaint() {
 		return backgroundCanvas.getBackground();
-	}
-
-	/**
-	 * Returns the InnerCanvas object. The InnerCanvas object is the actual component that the network is rendered on.
-	 */
-	public Component getComponent() {
-		return networkCanvas;
 	}
 
 	

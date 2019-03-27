@@ -507,7 +507,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	private int toggleSelectedEdge(long chosenEdge, MouseEvent e) {
 		int chosenEdgeSelected = 0;
 
-		View<CyEdge> edgeView = re.getViewModel().getEdgeView(chosenEdge);
+		View<CyEdge> edgeView = re.getViewModelSnapshot().getEdgeView(chosenEdge);
 		if(edgeView == null)
 			return chosenEdgeSelected;
 		
@@ -528,10 +528,13 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
 			
 			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-				if (defaultBend instanceof BendImpl)
-					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
-				else
-					edgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
+				if(mutableEdgeView != null) {
+					if (defaultBend instanceof BendImpl)
+						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
+					else
+						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+				}
 			}
 			
 			HandleKey handleKey = re.getBendStore().addHandle(edgeView, newHandlePoint);
@@ -1025,11 +1028,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 				// MKTODO this code is copy-pasted in a few places, clean it up
 				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
 					Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-					if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-					} else {
-						Bend bend = re.getEdgeDetails().getBend(ev, true);
-						ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+					View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
+					if(mutableEdgeView != null) {
+						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
+							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
+						} else {
+							Bend bend = re.getEdgeDetails().getBend(ev, true);
+							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+						}
 					}
 				}
 				
@@ -1520,14 +1526,17 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	
 							if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
 								Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-								if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
-									if( defaultBend instanceof BendImpl )
-										ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-									else
-										ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-								} else {
-									Bend bend = re.getEdgeDetails().getBend(ev, true);
-									ev.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+								View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
+								if(mutableEdgeView != null) {
+									if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
+										if( defaultBend instanceof BendImpl )
+											mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
+										else
+											mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+									} else {
+										Bend bend = re.getEdgeDetails().getBend(ev, true);
+										mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+									}
 								}
 							}
 							final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);

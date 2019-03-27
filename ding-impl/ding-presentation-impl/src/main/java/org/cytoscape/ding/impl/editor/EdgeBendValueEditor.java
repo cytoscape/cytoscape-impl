@@ -280,9 +280,8 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		if (bendRemoved)
 			return EDGE_BEND.getDefault();
 		
-		// MKTODO fix bends
-//		if (!editCancelled && edgeView instanceof DEdgeView)
-//			return ((DEdgeView)edgeView).getBend();
+		if (!editCancelled)
+			return edgeView.getVisualProperty(EDGE_BEND);
 		
 		return null;
 	}

@@ -172,7 +172,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 	
 	private Rectangle2D getViewableRect() {
-		final Rectangle r = re.getComponent().getBounds();
+		final Rectangle r = re.getCanvas().getBounds();
 		return new Rectangle2D.Double(r.x, r.y, r.width, r.height);
 	}
 

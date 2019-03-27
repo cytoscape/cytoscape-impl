@@ -71,7 +71,7 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 			} else {
 				final JComponent component = (JComponent) presentationContainer;
 				component.setLayout(new BorderLayout());
-				component.add(re.getComponent(), BorderLayout.CENTER);
+				component.add(re.getCanvas(), BorderLayout.CENTER);
 			}
 		} else {
 			throw new IllegalArgumentException(

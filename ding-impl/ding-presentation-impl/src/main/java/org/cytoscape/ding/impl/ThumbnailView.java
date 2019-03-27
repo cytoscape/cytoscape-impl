@@ -62,7 +62,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		// because the ContentChangeListener won't fire if the network view isn't visible.
 		CyNetworkView source = e.getSource();
 		if(source.equals(re.getViewModel())) {
-			if(!re.getComponent().isShowing() && hasNonResizeEvent(e)) {
+			if(!re.getCanvas().isShowing() && hasNonResizeEvent(e)) {
 				forceRender = true;
 			}
 			repaint();
@@ -76,7 +76,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		
 		CyTable source = e.getSource();
 		CyNetwork model = re.getViewModel().getModel();
-		if(!re.getComponent().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
+		if(!re.getCanvas().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
 			forceRender = true;
 			repaint();
 		}
