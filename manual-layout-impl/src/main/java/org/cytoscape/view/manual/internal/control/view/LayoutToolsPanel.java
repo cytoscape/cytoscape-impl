@@ -36,6 +36,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
+import org.cytoscape.view.manual.internal.util.IconUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -149,8 +150,8 @@ public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, Ses
 	@Override
 	public Icon getIcon() {
 		if (icon == null)
-			icon = new TextIcon(IconManager.ICON_SLIDERS,
-					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+			icon = new TextIcon(IconUtil.RULER_COMBINED_SOLID,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14.0f), 16, 16);
 		
 		return icon;
 	}

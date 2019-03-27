@@ -117,7 +117,7 @@ public abstract class AbstractTableBrowser extends JPanel
 	protected final String appFileName;
 	protected Class<? extends CyIdentifiable> currentTableType;
 
-	private TextIcon icon;
+	protected TextIcon icon;
 	
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();

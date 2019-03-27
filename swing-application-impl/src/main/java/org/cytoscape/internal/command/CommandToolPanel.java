@@ -65,6 +65,7 @@ import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -146,8 +147,8 @@ public class CommandToolPanel extends JPanel implements CytoPanelComponent2, Act
 	@Override
 	public Icon getIcon() { 
 		if (icon == null)
-			icon = new TextIcon(IconManager.ICON_TERMINAL,
-					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+			icon = new TextIcon(IconUtil.TERMINAL,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16.0f), 16, 16);
 		
 		return icon;
 	}
