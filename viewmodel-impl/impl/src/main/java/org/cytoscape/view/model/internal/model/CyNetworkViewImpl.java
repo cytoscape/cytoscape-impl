@@ -200,7 +200,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		}
 		
 		if(newGeom != null) {
-			System.out.println(node.getSUID() + " " + newGeom);
 			rtree = rtree.delete(suid, r).add(suid, newGeom);
 			geometries = geometries.put(suid, newGeom);
 		}
@@ -353,6 +352,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return viewSuidToNode.getOrElse(suid, null);
 	}
 	
+	public View<CyNode> getNodeViewByDataSuid(Long suid) {
+		return dataSuidToNode.getOrElse(suid, null);
+	}
+	
 	@Override
 	public View<CyEdge> getEdgeView(CyEdge edge) {
 		return dataSuidToEdge.getOrElse(edge.getSUID(), null);
@@ -361,6 +364,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	@Override
 	public View<CyEdge> getEdgeView(long suid) {
 		return viewSuidToEdge.getOrElse(suid, null);
+	}
+	
+	public View<CyEdge> getEdgeViewByDataSuid(Long suid) {
+		return dataSuidToEdge.getOrElse(suid, null);
 	}
 	
 	@Override
