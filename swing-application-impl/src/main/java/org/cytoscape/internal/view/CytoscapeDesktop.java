@@ -1117,10 +1117,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			
 			private void addComponents() {
 				componentButtons.clear();
-				
 				JTabbedPane tabbedPane = cytoPanel.getTabbedPane();
 				
-				for (int i = 0; i < tabbedPane.getComponentCount(); i++) {
+				for (int i = 0; i < tabbedPane.getTabCount(); i++) {
 					Component c = tabbedPane.getComponentAt(i);
 					String title = tabbedPane.getTitleAt(i);
 					Icon icon = tabbedPane.getIconAt(i);
