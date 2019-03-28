@@ -42,20 +42,13 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 
 	@Override
 	public CyNetworkView createNetworkView(CyNetwork network) {
-		CyNetworkView networkView = delegateFactory.createNetworkView(network);
+		CyNetworkView netView = delegateFactory.createNetworkView(network);
 		
-		DRenderingEngine re = createRenderingEngine(networkView);
-
-		// MKTODO Do we still need to do this???
-		networkView.addNetworkViewListener(re);
+		DRenderingEngine re = new DRenderingEngine(netView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);
+		netView.addNetworkViewListener(re);
 		
-		mainRenderingEngines.put(networkView, re);
-		return networkView;
-	}
-	
-	private DRenderingEngine createRenderingEngine(CyNetworkView networkView) {
-		DRenderingEngine re = new DRenderingEngine(networkView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);
-		return re;
+		mainRenderingEngines.put(netView, re);
+		return netView;
 	}
 	
 	public DRenderingEngine getRenderingEngine(CyNetworkView networkView) {

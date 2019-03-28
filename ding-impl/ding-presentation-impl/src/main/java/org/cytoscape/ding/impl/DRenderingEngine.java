@@ -239,8 +239,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * does not get re-assigned while a frame is being drawn.
 	 */
 	private void checkModelIsDirty() {
-		// Must run on EDT
-		if(viewModelSnapshot == null || viewModel.isDirty()) {
+		if(viewModel.isDirty()) {
 			updateSnapshotAndView();
 		}
 	}
@@ -248,6 +247,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private void updateSnapshotAndView() {
 		// create a new snapshot, this should be very fast
 		viewModelSnapshot = viewModel.createSnapshot();
+		
+		// Check for important changes between snapshots
+		
+		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
+		if(!backgroundPaint.equals(networkCanvas.getBackground())) {
+			setBackgroundPaint(backgroundPaint);
+		}
 		
 		bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
 		
@@ -461,7 +467,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	@Override
 	public void handleUpdateView() {
-		updateView(true);
+		updateSnapshotAndView();
 	}
 	
 	public void updateView() {
