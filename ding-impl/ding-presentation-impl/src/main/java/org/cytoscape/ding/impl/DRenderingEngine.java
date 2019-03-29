@@ -1026,12 +1026,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private Image createImage(int width, final int height, double shrink, final boolean skipBackground) {
 		// Validate arguments
 		if (width < 0 || height < 0)
-			throw new IllegalArgumentException("DGraphView.createImage(int width, int height): "
-							   + "width and height arguments must be greater than zero");
-
+			throw new IllegalArgumentException("width and height arguments must be greater than zero");
 		if (shrink < 0 || shrink > 1.0) {
-			logger.debug("DGraphView.createImage(width,height,shrink) shrink is invalid: "
-			                   + shrink + "  using default of 1.0");
+			logger.debug("shrink is invalid: " + shrink + " using default of 1.0");
 			shrink = 1.0;
 		}
 
@@ -1040,14 +1037,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		invokeOnEDTAndWait(() -> {
 			// Save current sizes, zoom and viewport position
-			Dimension originalBgSize = backgroundCanvas.getSize();
+			Dimension originalBgSize  = backgroundCanvas.getSize();
 			Dimension originalNetSize = networkCanvas.getSize();
-			Dimension originalFgSize = foregroundCanvas.getSize();
+			Dimension originalFgSize  = foregroundCanvas.getSize();
 			double zoom = getZoom();
-//			CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
 			
-//			Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
-//			Double centerY = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+			CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
+			Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+			Double centerY = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+			Double scaleFactor = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 			
 			// Create image to return
 			final Graphics g = image.getGraphics();
@@ -1060,7 +1058,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			
 			// Paint inner canvas (network)
 			networkCanvas.setSize(width, height);
-			fitContent(/* updateView = */ false);
+			fitContent(true);
 			setZoom(getZoom() * scale);
 			networkCanvas.paint(g);
 			
@@ -1074,25 +1072,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			foregroundCanvas.setSize(originalFgSize);
 			setZoom(zoom);
 			
-			// MKTODO why do we need to set these VPs here???
-//			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
-//			setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
+			CyNetworkView netView = getViewModel();
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+			
+			updateSnapshotAndView();
 		});
 		
 		return image;
 	}
 
-	/**
-	 * Method to return a reference to an Image object,
-	 * which represents the current network view.
-	 *
-	 * @param shrink Percent to shrink the network shown in the image. 
-	 * This doesn't shrink the image, just the network shown, as if the user zoomed out.
-	 * Can be between 0 and 1, if not it will default to 1.  
-	 */
-	public Image createImage(int width, int height, double shrink) {
-		return createImage(width, height, shrink, /* skipBackground = */ false);
-	}
 
 	/**
 	 * utility that returns the nodeView that is located at input point
@@ -1266,9 +1256,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	TexturePaint getSnapshot(final double width, final double height) {
 		if (!latest) {
 			// Need to update snapshot.
-			snapshotImage =
-				(BufferedImage)createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE, 1,
-				                           /* skipBackground = */ true);
+			snapshotImage = (BufferedImage) createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE, 1, true);
 			latest = true;
 		}
 
