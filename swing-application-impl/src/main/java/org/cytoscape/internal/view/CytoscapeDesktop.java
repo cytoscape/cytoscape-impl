@@ -53,6 +53,7 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JPanel;
@@ -1059,7 +1060,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				this.cytoPanel = cytoPanel;
 				
 				setBorder(BorderFactory.createCompoundBorder(
-						BorderFactory.createEmptyBorder(1, 1, 1, 1),
+						BorderFactory.createEmptyBorder(1, 1, 2, 1),
 						BorderFactory.createCompoundBorder(
 								BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground"), 1),
 								BorderFactory.createEmptyBorder(1, 1, 1, 1)
@@ -1098,7 +1099,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				setLayout(layout);
 				
 				add(restoreButton);
-				add(Box.createVerticalStrut(5));
+				add(Box.createVerticalStrut(10));
 				addComponents();
 				add(Box.createVerticalStrut(5));
 			}
@@ -1280,13 +1281,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 					BorderFactory.createEmptyBorder(4, 4, 4, 4)
 			));
 			
-			if (comp.getSize() != null) {
-				getContentPane().setPreferredSize(comp.getSize());
-				getContentPane().setSize(comp.getSize());
-			}
+			JLabel titleLabel = new JLabel(title);
+			titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 8, 4));
 			
 			cytoPanel.getTabbedPane().remove(comp);
 			
+			getContentPane().add(titleLabel, BorderLayout.NORTH);
 			getContentPane().add(comp, BorderLayout.CENTER);
 			pack();
 		}
