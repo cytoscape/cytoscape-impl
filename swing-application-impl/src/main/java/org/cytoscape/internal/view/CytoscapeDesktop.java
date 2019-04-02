@@ -22,7 +22,6 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -196,9 +195,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private TrimBar westTrimBar;
 	private TrimBar eastTrimBar;
 	private ComponentPopup popup;
+	private final ButtonGroup trimButtonGroup;
 	
 	private int lastPopupIndex = -1;
 	private long lastPopupTime;
+	private ButtonModel lastTrimButtonModel;
+	private boolean isAdjusting;
 	
 	private BiModalJSplitPane masterPane;
 	private BiModalJSplitPane topPane;
@@ -259,6 +261,24 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		setJMenuBar(cyMenus.getJMenuBar());
+		
+		// Modified ButtonGroup that allows a selected toggle button to be deselected
+		// when it's clicked again
+		trimButtonGroup = new ButtonGroup() {
+			@Override
+			public void setSelected(ButtonModel m, boolean b) {
+				if (isAdjusting)
+					return;
+				if (m == lastTrimButtonModel) {
+					isAdjusting = true;
+					clearSelection();
+					isAdjusting = false;
+				} else {
+					super.setSelected(m, b);
+				}
+				lastTrimButtonModel = getSelection();
+			}
+		};
 		
 		addWindowListener(new WindowAdapter() {
 			@Override
@@ -567,8 +587,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	@Override
 	public void handleEvent(CytoPanelStateChangedEvent e) {
 		disposeComponentPopup();
-		getWestTrimBar().clearSelection();
-		getEastTrimBar().clearSelection();
 		
 		if (e.getCytoPanel() instanceof CytoPanelImpl == false)
 			return;
@@ -1013,11 +1031,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			return null;
 		}
 		
-		void clearSelection() {
-			for (TrimStack ts : stacks)
-				ts.clearSelection();
-		}
-		
 		void update() {
 			removeAll();
 			
@@ -1053,9 +1066,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			
 			private JButton restoreButton;
 			private final CytoPanelImpl cytoPanel;
-			private final ButtonGroup buttonGroup;
-			private final List<JToggleButton> componentButtons = new ArrayList<>();
-
+			private final List<JToggleButton> trimButtons = new ArrayList<>();
+			
 			TrimStack(CytoPanelImpl cytoPanel) {
 				this.cytoPanel = cytoPanel;
 				
@@ -1075,26 +1087,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				restoreButton.setAlignmentX(CENTER_ALIGNMENT);
 				restoreButton.addActionListener(evt -> cytoPanel.setState(DOCK));
 				
-				// Modified ButtonGroup that allows a selected toggle button to be deselected
-				// when it's clicked again
-				buttonGroup = new ButtonGroup() {
-					private ButtonModel prevModel;
-					private boolean isAdjusting;
-					@Override
-					public void setSelected(ButtonModel m, boolean b) {
-						if (isAdjusting)
-							return;
-						if (m.equals(prevModel)) {
-							isAdjusting = true;
-							clearSelection();
-							isAdjusting = false;
-						} else {
-							super.setSelected(m, b);
-						}
-						prevModel = getSelection();
-					}
-				};
-				
 				BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
 				setLayout(layout);
 				
@@ -1108,16 +1100,12 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				return cytoPanel;
 			}
 			
-			void clearSelection() {
-				buttonGroup.clearSelection();
-			}
-			
 			JToggleButton getButton(int index) {
-				return index >= 0 && index < componentButtons.size() ? componentButtons.get(index) : null;
+				return index >= 0 && index < trimButtons.size() ? trimButtons.get(index) : null;
 			}
 			
 			private void addComponents() {
-				componentButtons.clear();
+				trimButtons.clear();
 				JTabbedPane tabbedPane = cytoPanel.getTabbedPane();
 				
 				for (int i = 0; i < tabbedPane.getTabCount(); i++) {
@@ -1144,6 +1132,8 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 					btn.setToolTipText(title);
 					btn.setAlignmentX(CENTER_ALIGNMENT);
 					btn.addItemListener(evt -> {
+						if (isAdjusting)
+							return;
 						if (evt.getStateChange() == ItemEvent.SELECTED)
 							showComponentPopup(c, title, icon, index);
 						else
@@ -1152,15 +1142,18 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 					
 					styleToolBarButton(btn, null, BTN_HPAD, BTN_VPAD);
 					
-					componentButtons.add(btn);
+					trimButtons.add(btn);
 					
-					buttonGroup.add(btn);
+					trimButtonGroup.add(btn);
 					add(btn);
 				}
 			}
 			
 			private void showComponentPopup(Component c, String title, Icon icon, int index) {
 				disposeComponentPopup(); // Always make sure the previous popup has been disposed
+				
+				if (index < 0) // Should not happen!
+					return;
 				
 				// So clicking the same button again can actually dispose the popup,
 				// otherwise it would dispose and then show the popup again
@@ -1169,10 +1162,6 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				
 				lastPopupIndex = -1;
 				lastPopupTime = 0;
-				
-				// Clear the selection of the other Trim Bar
-				getTrimBar(compassDirection == SwingConstants.WEST ? SwingConstants.EAST : SwingConstants.WEST)
-						.clearSelection();
 				
 				popup = new ComponentPopup(c, title, icon, index, cytoPanel);
 				
@@ -1183,28 +1172,27 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 							lastPopupIndex = index;
 							lastPopupTime = System.currentTimeMillis();
 							
-							// If cursor is not over the toggle button, clear its selection state,
-							// otherwise do nothing, as the user is clicking it again to close the popup,
-							// and that will deselect the button by itself
-							JToggleButton btn = getButton(index);
-							
-							if (btn != null && btn.isShowing() && btn.isSelected()) {
-								Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
-								Point buttonLoc = btn.getLocationOnScreen();
-								mouseLoc.x -= buttonLoc.x;
-								mouseLoc.y -= buttonLoc.y;
-								
-								if (!btn.contains(mouseLoc))
-									btn.setSelected(false);
-							}
+							isAdjusting = true;
+							trimButtonGroup.clearSelection();
+							isAdjusting = false;
 							
 							disposeComponentPopup();
 						}
 					}
 					@Override
 					public void windowGainedFocus(WindowEvent evt) {
+						// Just ignore...
 					}
 				});
+				
+				// Adjust button selection
+				JToggleButton btn = getButton(index);
+				
+				if (btn != null && !btn.isSelected()) {
+					isAdjusting = true;
+					btn.setSelected(true);
+					isAdjusting = false;
+				}
 				
 				// Show it -- get Absolute Location and Bounds, relative to Screen
 				Rectangle bounds = TrimBar.this.getBounds();
@@ -1297,6 +1285,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		
 		CytoPanelImpl getCytoPanel() {
 			return cytoPanel;
+		}
+		
+		Component getCytoPanelComponent() {
+			return comp;
 		}
 		
 		@Override
