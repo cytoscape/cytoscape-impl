@@ -1,6 +1,5 @@
 package org.cytoscape.search.internal;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -15,6 +14,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.search.internal.EnhancedSearch.Status;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
@@ -60,8 +60,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	 * The constructor. Any necessary data that is <i>not</i> provided by
 	 * the user should be provided as arguments to the constructor.
 	 */
-	public IndexAndSearchTask(final CyNetwork network, final EnhancedSearch enhancedSearch, final String query,
-			final CyServiceRegistrar serviceRegistrar) {
+	public IndexAndSearchTask(CyNetwork network, EnhancedSearch enhancedSearch, String query, CyServiceRegistrar serviceRegistrar) {
 		super(network);
 		this.enhancedSearch = enhancedSearch;
 		this.query = query;
@@ -75,15 +74,13 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		// Index the given network or use existing index
 		RAMDirectory idx = null;
-		final String status = enhancedSearch.getNetworkIndexStatus(network);
+		final Status status = enhancedSearch.getNetworkIndexStatus(network);
 		
-		if (status != null && status.equalsIgnoreCase(EnhancedSearch.INDEX_SET)
-				&& !EnhancedSearchPlugin.attributeChanged) {
+		if (status != null && status.equals(Status.INDEX_SET) && !EnhancedSearchPlugin.attributeChanged) {
 			idx = enhancedSearch.getNetworkIndex(network);
 		} else {
 			taskMonitor.setStatusMessage("Indexing network");
-			final EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);
-			idx = indexHandler.getIndex();
+			idx = EnhancedSearchIndex.buildIndex(network, taskMonitor);
 			enhancedSearch.setNetworkIndex(network, idx);
 			EnhancedSearchPlugin.attributeChanged = false;
 		}
@@ -159,8 +156,8 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
 
-		ArrayList<String> nodeHits = queryHandler.getNodeHits();
-		ArrayList<String> edgeHits = queryHandler.getEdgeHits();
+		List<String> nodeHits = queryHandler.getNodeHits();
+		List<String> edgeHits = queryHandler.getEdgeHits();
 
 		final Iterator<String> nodeIt = nodeHits.iterator();
 		int numCompleted = 0;

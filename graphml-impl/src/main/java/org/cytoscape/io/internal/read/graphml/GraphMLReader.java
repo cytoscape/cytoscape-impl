@@ -33,7 +33,6 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
@@ -164,7 +163,8 @@ public class GraphMLReader extends AbstractCyNetworkReader {
 		}
 		
 		final CyLayoutAlgorithm layout = layouts.getDefaultLayout();
-		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
+		String attribte = layouts.getLayoutAttribute(layout, view);
+		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),CyLayoutAlgorithm.ALL_NODE_VIEWS, attribte);
 		Task nextTask = itr.next();
 		try {
 			nextTask.run(taskMonitor);

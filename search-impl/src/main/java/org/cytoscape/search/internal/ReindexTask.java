@@ -26,7 +26,6 @@ package org.cytoscape.search.internal;
 
 
 import org.apache.lucene.store.RAMDirectory;
-
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.work.TaskMonitor;
@@ -51,8 +50,8 @@ public class ReindexTask extends AbstractNetworkTask {
 		RAMDirectory idx = null;
 
 		taskMonitor.setStatusMessage("Re-indexing network");
-		EnhancedSearchIndex indexHandler = new EnhancedSearchIndex(network, taskMonitor);
-		idx = indexHandler.getIndex();
+		
+		idx = EnhancedSearchIndex.buildIndex(network, taskMonitor);
 		enhancedSearch.setNetworkIndex(network, idx);
 
 		if (interrupted) {

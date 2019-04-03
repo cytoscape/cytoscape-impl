@@ -1,5 +1,7 @@
 package org.cytoscape.search.internal.util;
 
+import org.apache.lucene.analysis.Analyzer;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
@@ -26,15 +28,11 @@ package org.cytoscape.search.internal.util;
 
 
 import org.apache.lucene.queryParser.MultiFieldQueryParser;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
-import org.apache.lucene.util.NumericUtils;
 import org.apache.lucene.queryParser.ParseException;
-import org.apache.lucene.util.Version;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.NumericRangeQuery;
-import org.cytoscape.search.internal.util.AttributeFields;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.util.Version;
 
 
 
@@ -48,17 +46,13 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 
 	private AttributeFields attrFields;
 
-	public CustomMultiFieldQueryParser(AttributeFields attrFields,
-			StandardAnalyzer analyzer) {
+	public CustomMultiFieldQueryParser(AttributeFields attrFields, Analyzer analyzer) {
 		super(Version.LUCENE_30,attrFields.getFields(), analyzer);
-		analyzer.setMaxTokenLength(1024*10);  // Increase for sequences
 		this.attrFields = attrFields;
 		setAllowLeadingWildcard(true);
 	}
 
-	protected Query getFieldQuery(String field, String queryText)
-			throws ParseException {
-		
+	protected Query getFieldQuery(String field, String queryText) throws ParseException {
 		if (attrFields.getType(field) == Integer.class) {
 			try {
 				int num1 = Integer.parseInt(queryText);
@@ -97,8 +91,7 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 		return super.getFieldQuery(field, queryText);
 	}
 
-	protected Query getRangeQuery(String field, String part1, String part2,
-			boolean inclusive) throws ParseException {
+	protected Query getRangeQuery(String field, String part1, String part2, boolean inclusive) throws ParseException {
 		
 		// a workaround to avoid a TooManyClauses exception.
 		// Temporary until RangeFilter is implemented.

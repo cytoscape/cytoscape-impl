@@ -1,5 +1,7 @@
 package org.cytoscape.search.internal;
 
+import org.apache.lucene.store.RAMDirectory;
+
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
@@ -26,12 +28,13 @@ package org.cytoscape.search.internal;
 
 
 import org.cytoscape.model.CyNetwork;
-import org.apache.lucene.store.RAMDirectory;
 
 public interface EnhancedSearch {
 
-	String INDEX_SET = "INDEX_SET";
-	String REINDEX = "REINDEX";
+	public static enum Status {
+		INDEX_SET, REINDEX;
+	}
+	
 	public static final String INDEX_FIELD = "ESP_INDEX";
 	public static final String TYPE_FIELD = "ESP_TYPE";
 	public static final String NODE_TYPE = "node";
@@ -59,7 +62,7 @@ public interface EnhancedSearch {
 	 * @param network        CyNetwork object
 	 * @return               network indexing status
 	 */
-	String getNetworkIndexStatus(CyNetwork network);
+	Status getNetworkIndexStatus(CyNetwork network);
 
 	/**
 	 * Sets the index for the specified network.
@@ -75,6 +78,6 @@ public interface EnhancedSearch {
 	 * @param network        CyNetwork object
 	 * @param status         the indexing status required for this network
 	 */
-	void setNetworkIndexStatus(CyNetwork network, String status);
+	void setNetworkIndexStatus(CyNetwork network, Status status);
 
 }
