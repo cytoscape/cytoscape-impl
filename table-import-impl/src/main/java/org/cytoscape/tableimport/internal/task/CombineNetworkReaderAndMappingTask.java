@@ -134,9 +134,10 @@ public class CombineNetworkReaderAndMappingTask extends AbstractCyNetworkReader 
 	@Override
 	public CyNetworkView buildCyNetworkView(final CyNetwork network) {
 		final CyNetworkView view = collectionHelper.getNetworkViewFactory().createNetworkView(network);
-		final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
-		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
-				CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
+		CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+		CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
+		String attribute = layoutMgr.getLayoutAttribute(layout, view);
+		TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, attribute);
 		Task nextTask = itr.next();
 		
 		try {

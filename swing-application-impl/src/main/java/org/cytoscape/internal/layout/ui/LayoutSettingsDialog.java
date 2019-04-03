@@ -79,6 +79,8 @@ import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.swing.PanelTaskManager;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 
 
@@ -344,7 +346,6 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 				public void actionPerformed(ActionEvent e) {
 					final Object context = currentLayout.getDefaultLayoutContext();
 					final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
-					
 					if (taskMgr.validateAndApplyTunables(context))
 						taskMgr.execute(currentAction.createTaskIterator());
 				}
@@ -439,27 +440,39 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 		boolean haveNodeAttribute = (currentLayout.getSupportedNodeAttributeTypes() != null && currentLayout.getSupportedNodeAttributeTypes().size() > 0);
 		boolean haveEdgeAttribute = (currentLayout.getSupportedEdgeAttributeTypes() != null && currentLayout.getSupportedEdgeAttributeTypes().size() > 0);
 		layoutAttrPnl.removeAll();
-		if (currentLayout.getSupportedEdgeAttributeTypes() != null && currentLayout.getSupportedEdgeAttributeTypes().size() > 0)
-			layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
-		else if (currentLayout.getSupportedNodeAttributeTypes() != null && currentLayout.getSupportedNodeAttributeTypes().size() > 0)
-			layoutNodeAttrTunable = new LayoutNodeAttributeTunable();
 		
 		if (view != null) {
 			List<String> attributeList = getAttributeList(view.getModel(),
 					currentLayout.getSupportedNodeAttributeTypes(), currentLayout.getSupportedEdgeAttributeTypes());
 			
-			if (attributeList.size() > 0) {
+			if (!attributeList.isEmpty()) {
+				CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+				String layoutAttribute = layoutMgr.getLayoutAttribute(currentLayout, view);
+				String selectedAttribute = attributeList.contains(layoutAttribute) ? layoutAttribute : attributeList.get(0);
+				
 				final PanelTaskManager taskMgr = serviceRegistrar.getService(PanelTaskManager.class);
 				JPanel panel = null;
 				if (haveEdgeAttribute) {
 					layoutEdgeAttrTunable = new LayoutEdgeAttributeTunable();
 					layoutEdgeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
-					layoutEdgeAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+					layoutEdgeAttrTunable.layoutAttribute.setSelectedValue(selectedAttribute);
+					layoutEdgeAttrTunable.layoutAttribute.addListener(new ListChangeListener<String>() {
+						@Override 
+						public void selectionChanged(ListSelection<String> source) {
+							layoutMgr.setLayoutAttribute(currentLayout, ((ListSingleSelection<String>)source).getSelectedValue());
+						}
+					});
 					panel = taskMgr.getConfiguration(null, layoutEdgeAttrTunable);
 				} else if (haveNodeAttribute) {
 					layoutNodeAttrTunable = new LayoutNodeAttributeTunable();
 					layoutNodeAttrTunable.layoutAttribute = new ListSingleSelection<String>(attributeList);
-					layoutNodeAttrTunable.layoutAttribute.setSelectedValue(attributeList.get(0));
+					layoutNodeAttrTunable.layoutAttribute.setSelectedValue(selectedAttribute);
+					layoutNodeAttrTunable.layoutAttribute.addListener(new ListChangeListener<String>() {
+						@Override 
+						public void selectionChanged(ListSelection<String> source) {
+							layoutMgr.setLayoutAttribute(currentLayout, ((ListSingleSelection<String>)source).getSelectedValue());
+						}
+					});
 					panel = taskMgr.getConfiguration(null, layoutNodeAttrTunable);
 				}
 				
@@ -481,32 +494,34 @@ public class LayoutSettingsDialog extends JDialog implements ActionListener {
 	}
 	
 	private List<String> getAttributeList(CyNetwork network, Set<Class<?>> allowedNodeAttributeTypes, Set<Class<?>> allowedEdgeAttributeTypes) {
-		List<String> attributes = new ArrayList<String>();
-        Set<Class<?>> allowedTypes;
-		CyTable table; if (allowedNodeAttributeTypes.size() > 0) { allowedTypes = allowedNodeAttributeTypes;
-			table = network.getDefaultNodeTable();
-		} else if (allowedEdgeAttributeTypes.size() > 0) {
+		List<String> attributes = new ArrayList<>();
+		Set<Class<?>> allowedTypes;
+		CyTable table;
+		
+		if (!allowedEdgeAttributeTypes.isEmpty()) {
 			allowedTypes = allowedEdgeAttributeTypes;
 			table = network.getDefaultEdgeTable();
+		} else if (!allowedNodeAttributeTypes.isEmpty()) {
+			allowedTypes = allowedNodeAttributeTypes;
+			table = network.getDefaultNodeTable();
 		} else {
 			return attributes;
 		}
-		
-		for (final CyColumn column : table.getColumns()) {
-						if (column.getName().equals(CyNetwork.SELECTED) ||
-						    column.getName().equals(CyNetwork.SUID))
-							continue;
 
-            if (allowedTypes.contains(column.getType())) {
-            	attributes.add(column.getName());
-            }
+		for (CyColumn column : table.getColumns()) {
+			if (column.getName().equals(CyNetwork.SELECTED) || column.getName().equals(CyNetwork.SUID)) {
+				continue;
+			}
+			if (allowedTypes.contains(column.getType())) {
+				attributes.add(column.getName());
+			}
 		}
 
 		Collections.sort(attributes);
-		
-		if (attributes.size()>0)
+
+		if (!attributes.isEmpty())
 			attributes.add(0, UNWEIGHTED);
-        return attributes;
+		return attributes;
 	}
 	
 	private String getLayoutAttribute() {
