@@ -2,6 +2,7 @@ package org.cytoscape.internal.view;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
@@ -40,6 +41,7 @@ import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
@@ -142,19 +144,30 @@ public class CytoscapeToolBar extends JToolBar {
 							Icon icon = button.getIcon();
 							
 							if (icon instanceof ImageIcon) {
+								if (icon.getIconWidth() > ICON_WIDTH || icon.getIconHeight() > ICON_HEIGHT)
+									icon = IconManager.resizeIcon(icon, Math.min(ICON_WIDTH, ICON_HEIGHT));
+								
+								int originalWidth = icon.getIconWidth();
+								
 								icon = new ImageIcon(((ImageIcon) icon).getImage()) {
 									@Override
-									public int getIconWidth() {
+									public int getIconWidth() { // To align the menu texts
 										return ICON_WIDTH;
 									}
 									@Override
-									public int getIconHeight() {
-										return ICON_HEIGHT;
+									public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+										// Center the icon horizontally
+										g.translate((getIconWidth() - originalWidth) / 2, 0);
+										super.paintIcon(c, g, x, y);
 									}
 								};
 							}
 							
 							mi.setIcon(icon);
+							mi.setPreferredSize(new Dimension(
+									mi.getPreferredSize().width,
+									Math.max(ICON_WIDTH, mi.getPreferredSize().height)
+							));
 							mi.addActionListener(ev -> {
 								button.setVisible(!button.isVisible());
 								resave();
@@ -245,33 +258,20 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	
 	public void showAll() {
-		for (Object o : orderedList)
-		{	
-			System.out.println(o.getClass());
+		for (Object o : orderedList) {
 			if (o instanceof Component)
 				((Component) o).setVisible(true);
 			if (o instanceof ActionButton)
-			{
-				ActionButton b= ((ActionButton) o);
-				String s = b.component.getActionCommand();
-				System.out.println(b.component.getName());
-				b.component.setVisible(true);
-			}
+				((ActionButton) o).component.setVisible(true);
 		}
 	}
 
 	public void hideAll() {
-		for (Object o : orderedList)
-		{	
+		for (Object o : orderedList) {
 			if (o instanceof Component)
 				((Component) o).setVisible(false);
 			if (o instanceof ActionButton)
-			{
-				ActionButton b= ((ActionButton) o);
-				String s = b.component.getActionCommand();
-//				System.out.println(s);
-				b.component.setVisible(false);
-			}
+				((ActionButton) o).component.setVisible(false);
 		}
 	}
 
@@ -383,14 +383,23 @@ public class CytoscapeToolBar extends JToolBar {
 		button.setPreferredSize(dim);
 		button.setMaximumSize(dim);
 
-		Object normalIcon = action.getValue(Action.LARGE_ICON_KEY);
+		Object iconObj = action.getValue(Action.LARGE_ICON_KEY);
 		
-		if (normalIcon instanceof ImageIcon) {
-			Image normalImage = ((ImageIcon) normalIcon).getImage();
-			GrayFilter filter = new GrayFilter(true, 71);
-	        ImageProducer prod = new FilteredImageSource(normalImage.getSource(), filter);
-	        Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
-	        button.setDisabledIcon(new ImageIcon(grayImage));
+		if (iconObj instanceof Icon) {
+			Icon icon = (Icon) iconObj;
+			
+			if (icon.getIconWidth() > ICON_WIDTH || icon.getIconHeight() > ICON_HEIGHT) {
+				icon = IconManager.resizeIcon(icon, Math.min(ICON_WIDTH, ICON_HEIGHT));
+				button.setIcon(icon);
+			}
+			
+			if (icon instanceof ImageIcon) {
+				Image img = ((ImageIcon) icon).getImage();
+				GrayFilter filter = new GrayFilter(true, 71);
+		        ImageProducer prod = new FilteredImageSource(img.getSource(), filter);
+		        Image grayImage = Toolkit.getDefaultToolkit().createImage(prod);
+		        button.setDisabledIcon(new ImageIcon(grayImage));
+			}
 		}
 		
 		return button;
