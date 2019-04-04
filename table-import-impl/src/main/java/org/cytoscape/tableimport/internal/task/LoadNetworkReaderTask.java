@@ -456,8 +456,10 @@ public class LoadNetworkReaderTask extends AbstractTask implements CyNetworkRead
 			return netReader.buildCyNetworkView(net);
 		} else {
 			final CyNetworkView view = networkViewFactory.createNetworkView(net);
-			final CyLayoutAlgorithm layout = serviceRegistrar.getService(CyLayoutAlgorithmManager.class).getDefaultLayout();
-			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS,"");
+			CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+			CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
+			String attribute = layoutMgr.getLayoutAttribute(layout, view);
+			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), CyLayoutAlgorithm.ALL_NODE_VIEWS, attribute);
 			Task nextTask = itr.next();
 			
 			try {

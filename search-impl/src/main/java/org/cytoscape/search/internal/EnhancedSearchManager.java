@@ -26,16 +26,17 @@ package org.cytoscape.search.internal;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.lucene.store.RAMDirectory;
 import org.cytoscape.model.CyNetwork;
 
 public class EnhancedSearchManager implements EnhancedSearch {
 	// Keeps the index for each network
-	private HashMap networkIndexMap = new HashMap();
+	private Map<CyNetwork,RAMDirectory> networkIndexMap = new HashMap<>();
 
 	// Keeps indexing status of each network
-	private HashMap networkIndexStatusMap = new HashMap();
+	private Map<CyNetwork,Status> networkIndexStatusMap = new HashMap<>();
 
 	public EnhancedSearchManager(){
 		
@@ -59,7 +60,7 @@ public class EnhancedSearchManager implements EnhancedSearch {
 	 * @return               the index for this network
 	 */
 	public synchronized RAMDirectory getNetworkIndex(CyNetwork network) {
-		return (RAMDirectory) networkIndexMap.get(network);
+		return networkIndexMap.get(network);
 	}
 
 	/**
@@ -68,8 +69,8 @@ public class EnhancedSearchManager implements EnhancedSearch {
 	 * @param network        CyNetwork object
 	 * @return               network indexing status
 	 */
-	public synchronized String getNetworkIndexStatus(CyNetwork network) {
-		return (String) networkIndexStatusMap.get(network);
+	public synchronized Status getNetworkIndexStatus(CyNetwork network) {
+		return networkIndexStatusMap.get(network);
 	}
 
 	/**
@@ -80,7 +81,7 @@ public class EnhancedSearchManager implements EnhancedSearch {
 	 */
 	public synchronized void setNetworkIndex(CyNetwork network, RAMDirectory index) {
 		networkIndexMap.put(network, index);
-		networkIndexStatusMap.put(network, INDEX_SET);
+		networkIndexStatusMap.put(network, Status.INDEX_SET);
 	}
 
 	/**
@@ -89,8 +90,8 @@ public class EnhancedSearchManager implements EnhancedSearch {
 	 * @param network        CyNetwork object
 	 * @param status         the indexing status required for this network
 	 */
-	public synchronized void setNetworkIndexStatus(CyNetwork network, String status) {
-		if (status == INDEX_SET || status == REINDEX) {
+	public synchronized void setNetworkIndexStatus(CyNetwork network, Status status) {
+		if (status == Status.INDEX_SET || status == Status.REINDEX) {
 			networkIndexStatusMap.put(network, status);
 		} else {
 			System.out.println("Invalid status '" + status + "'");

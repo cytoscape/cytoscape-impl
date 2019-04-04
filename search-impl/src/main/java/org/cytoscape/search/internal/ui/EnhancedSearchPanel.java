@@ -72,10 +72,6 @@ public class EnhancedSearchPanel extends JPanel {
 		initComponents();
 	}
 
-	private void tfSearchTextActionPerformed(ActionEvent evt) {
-		doSearching();
-	}
-
 	// Do searching based on the query string from user on text-field
 	private void doSearching() {
 		final String queryStr = tfSearchText.getText().trim();
@@ -115,7 +111,7 @@ public class EnhancedSearchPanel extends JPanel {
 				tfSearchText.setFont(defFont);
 		}
 		
-		tfSearchText.addActionListener(evt -> tfSearchTextActionPerformed(evt));
+		tfSearchText.addActionListener(evt -> doSearching());
 		tfSearchText.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent e) {
@@ -154,8 +150,7 @@ public class EnhancedSearchPanel extends JPanel {
 		final ActionMap actionMap = comp.getActionMap();
 		final InputMap inputMap = comp.getInputMap(WHEN_IN_FOCUSED_WINDOW);
 
-		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()),
-				KeyAction.FOCUS);
+		inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()), KeyAction.FOCUS);
 		actionMap.put(KeyAction.FOCUS, new KeyAction(KeyAction.FOCUS));
 	}
 	
