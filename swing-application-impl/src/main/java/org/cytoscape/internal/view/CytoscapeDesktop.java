@@ -50,6 +50,7 @@ import javax.swing.ButtonModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -813,14 +814,14 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	private TrimBar getTrimBarOf(CytoPanelImpl cytoPanel) {
 		switch (cytoPanel.getCytoPanelNameInternal()) {
-			case EAST:
-			case SOUTH:
-				return getEastTrimBar();
 			case WEST:
 			case SOUTH_WEST:
+				return getWestTrimBar();
+			case EAST:
+			case SOUTH:
 			case BOTTOM:
 			default:
-				return getWestTrimBar();
+				return getEastTrimBar();
 		}
 	}
 	
@@ -1154,7 +1155,11 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 								CytoPanelUtil.BUTTON_SIZE,
 								CytoPanelUtil.BUTTON_SIZE
 						);
-					
+					else if (buttonIcon instanceof ImageIcon
+							&& (buttonIcon.getIconWidth() > CytoPanelUtil.BUTTON_SIZE
+							|| buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE))
+						buttonIcon = IconManager.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
+
 					final int index = i;
 					
 					JToggleButton btn = new JToggleButton(buttonIcon);
@@ -1170,6 +1175,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 					});
 					
 					styleToolBarButton(btn, null, BTN_HPAD, BTN_VPAD);
+					
+					// Make the button squared
+					if (btn.getWidth() != btn.getHeight()) {
+						int s = Math.max(btn.getWidth(), btn.getHeight());
+						btn.setMinimumSize(new Dimension(s, s));
+						btn.setMaximumSize(new Dimension(s, s));
+						btn.setPreferredSize(new Dimension(s, s));
+						btn.setSize(s, s);
+					}
 					
 					trimButtons.add(btn);
 					
@@ -1305,7 +1319,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 		ComponentPopup(Component comp, String title, Icon icon, int index, CytoPanelImpl cytoPanel) {
 			super(CytoscapeDesktop.this);
 			this.comp = comp;
-			this.title = title;
+			this.title = title != null ? title.trim() : null;
 			this.icon = icon;
 			this.index = index;
 			this.cytoPanel = cytoPanel;
@@ -1318,6 +1332,9 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			
 			JLabel titleLabel = new JLabel(title);
 			titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 8, 4));
+			
+			if (title == null || title.isEmpty())
+				titleLabel.setIcon(icon);
 			
 			cytoPanel.getTabbedPane().remove(comp);
 			
