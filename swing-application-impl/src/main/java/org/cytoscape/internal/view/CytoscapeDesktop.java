@@ -22,6 +22,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -212,7 +213,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	private CytoPanelImpl southWestPanel;
 	private CytoPanelImpl eastPanel;
 	private CytoPanelImpl southPanel;
-	private CytoPanelImpl automationPanel; 
+	private CytoPanelImpl automationPanel;
 
 	// Status Bar TODO: Move this to log-swing to avoid cyclic dependency.
 	private JPanel mainPanel;
@@ -327,8 +328,16 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			}
 		});
 
-		// Prepare to show the desktop...
 		setContentPane(getMainPanel());
+		
+		// Prepare to show the desktop...
+		CytoPanelImpl[] allCytoPanels = new CytoPanelImpl[] { getNorthWestPanel(), getSouthWestPanel(), getEastPanel(),
+				getSouthPanel(), getAutomationPanel() };
+		
+		for (CytoPanelImpl cp : allCytoPanels) {
+			if (cp.getState() == HIDE)
+				minimizeCytoPanel(cp);
+		}
 		
 		pack();
 		setSize(DEF_DESKTOP_SIZE);
@@ -469,6 +478,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 
 			int index = getInsertIndex(cp, impl);
 			impl.insert(cp, index);
+			
+			if (impl.getState() == HIDE) {
+				TrimBar.TrimStack ts = getTrimStackOf(impl);
+				
+				if (ts != null)
+					ts.update();
+			}
 		});
 	}
 
@@ -482,6 +498,13 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				impl = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cp.getCytoPanelName()));
 			
 			impl.remove(cp);
+			
+			if (impl.getState() == HIDE) {
+				TrimBar.TrimStack ts = getTrimStackOf(impl);
+				
+				if (ts != null)
+					ts.update();
+			}
 		});
 	}
 
@@ -586,10 +609,10 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 	
 	@Override
 	public void handleEvent(CytoPanelStateChangedEvent e) {
-		disposeComponentPopup();
-		
 		if (e.getCytoPanel() instanceof CytoPanelImpl == false)
 			return;
+		
+		trimButtonGroup.clearSelection();
 		
 		CytoPanelImpl cytoPanel = (CytoPanelImpl) e.getCytoPanel();
 		CytoPanelState state = e.getNewState();
@@ -1090,10 +1113,7 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 				BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
 				setLayout(layout);
 				
-				add(restoreButton);
-				add(Box.createVerticalStrut(10));
-				addComponents();
-				add(Box.createVerticalStrut(5));
+				update();
 			}
 			
 			CytoPanelImpl getCytoPanel() {
@@ -1102,6 +1122,15 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 			
 			JToggleButton getButton(int index) {
 				return index >= 0 && index < trimButtons.size() ? trimButtons.get(index) : null;
+			}
+			
+			void update() {
+				removeAll();
+				
+				add(restoreButton);
+				add(Box.createVerticalStrut(10));
+				addComponents();
+				add(Box.createVerticalStrut(5));
 			}
 			
 			private void addComponents() {
@@ -1175,6 +1204,24 @@ public class CytoscapeDesktop extends JFrame implements CySwingApplication, CySt
 							isAdjusting = true;
 							trimButtonGroup.clearSelection();
 							isAdjusting = false;
+							
+							// Reset lastTrimButtonModel when clicking "background" and no trim button clicked
+							Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
+							boolean overTrimButton = false;
+							
+							for (JToggleButton btn : trimButtons) {
+								Point buttonLoc = btn.getLocationOnScreen();
+								mouseLoc.x -= buttonLoc.x;
+								mouseLoc.y -= buttonLoc.y;
+								
+								if (btn.contains(mouseLoc)) {
+									overTrimButton = true;
+									break;
+								}
+							}
+							
+							if (!overTrimButton)
+								lastTrimButtonModel = null;
 							
 							disposeComponentPopup();
 						}
