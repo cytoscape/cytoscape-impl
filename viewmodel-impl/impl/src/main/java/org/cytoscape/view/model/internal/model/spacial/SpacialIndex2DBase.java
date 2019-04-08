@@ -1,6 +1,7 @@
 package org.cytoscape.view.model.internal.model.spacial;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
@@ -130,12 +131,13 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 	
 	private static class SearchResultEnumeratorImpl<T> implements SpacialIndex2DEnumerator<T> {
 		
+		private final Iterator<Entry<T,Rectangle>> iterator;
 		private final int size;
-		private final Iterator<Entry<T,Rectangle>> overlap;
 		
 		public SearchResultEnumeratorImpl(Observable<Entry<T, Rectangle>> overlap) {
-			this.size = overlap.count().toBlocking().first();
-			this.overlap = overlap.toBlocking().getIterator();
+			List<Entry<T, Rectangle>> list = overlap.toList().toBlocking().first();
+			this.size = list.size();
+			this.iterator = list.iterator();
 		}
 
 		@Override
@@ -145,12 +147,12 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 		
 		@Override
 		public boolean hasNext() {
-			return overlap.hasNext();
+			return iterator.hasNext();
 		}
 		
 		@Override
 		public T nextExtents(float[] extents) {
-			Entry<T,Rectangle> entry = overlap.next();
+			Entry<T,Rectangle> entry = iterator.next();
 			copyExtents(entry.geometry(), extents);
 			return entry.value();
 		}
