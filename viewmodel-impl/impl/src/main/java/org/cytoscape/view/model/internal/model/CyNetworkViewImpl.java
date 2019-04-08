@@ -66,9 +66,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
 	
-	protected final Object nodeLock = new Object();
-	protected final Object edgeLock = new Object();
-	protected final Object netLock  = new Object();
+	protected final ViewLock nodeLock = new ViewLock();
+	protected final ViewLock edgeLock = new ViewLock();
+	protected final ViewLock netLock  = new ViewLock();
 	
 	protected final VPStore nodeVPs;
 	protected final VPStore edgeVPs;
@@ -98,22 +98,28 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {
-		synchronized (this) {
-			this.dirty = false;
-			return new CyNetworkViewSnapshotImpl(
-				this, 
-				rendererId, 
-				dataSuidToNode,
-				viewSuidToNode,
-				dataSuidToEdge,
-				viewSuidToEdge,
-				adjacentEdgeMap,
-				nodeVPs.createSnapshot(),
-				edgeVPs.createSnapshot(),
-				netVPs.createSnapshot(),
-				rtree, 
-				geometries
-			);
+		// MKTODO If we used ReentrantLock objects and the try() method we could have this
+		// bail out early so as not to block the renderer.
+		synchronized (nodeLock) {
+			synchronized (edgeLock) {
+				synchronized (netLock) {
+					this.dirty = false;
+					return new CyNetworkViewSnapshotImpl(
+						this, 
+						rendererId, 
+						dataSuidToNode,
+						viewSuidToNode,
+						dataSuidToEdge,
+						viewSuidToEdge,
+						adjacentEdgeMap,
+						nodeVPs.createSnapshot(),
+						edgeVPs.createSnapshot(),
+						netVPs.createSnapshot(),
+						rtree, 
+						geometries
+					);
+				}
+			}
 		}
 	}
 	
