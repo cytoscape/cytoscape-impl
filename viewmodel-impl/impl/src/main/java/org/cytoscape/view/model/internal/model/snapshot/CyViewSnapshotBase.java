@@ -4,6 +4,7 @@ import java.util.Objects;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.internal.model.VPStore;
 
 import io.vavr.collection.Map;
 
@@ -15,6 +16,7 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	private Map<VisualProperty<?>,Object> allLocks;
 	private Map<VisualProperty<?>,Object> directLocks;
 	
+	
 	public CyViewSnapshotBase(Long suid) {
 		this.suid = suid;
 	}
@@ -25,50 +27,80 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	}
 
 	public abstract CyNetworkViewSnapshotImpl getNetworkSnapshot();
+	public abstract VPStore getVPStore();
 	
 	
 	// VisualProperties are looked up a lot by the renderer, don't want to do
 	// the suid lookup constantly, so we cache the visualProperties maps here.
-	public Map<VisualProperty<?>,Object> getVisualProperties() {
+	public Map<VisualProperty<?>,Object> getVisualPropertiesMap() {
 		if(visualProperties == null) {
-			visualProperties = getNetworkSnapshot().getVisualProperties(suid);
+			visualProperties = getVPStore().getVisualPropertiesMap(suid);
 		}
 		return visualProperties;
 	}
 	
-	public Map<VisualProperty<?>,Object> getAllLocks() {
+	public Map<VisualProperty<?>,Object> getAllLocksMap() {
 		if(allLocks == null) {
-			allLocks = getNetworkSnapshot().getAllLocks(suid);
+			allLocks = getVPStore().getAllLocksMap(suid);
 		}
 		return allLocks;
 	}
 	
-	public Map<VisualProperty<?>,Object> getDirectLocks() {
+	public Map<VisualProperty<?>,Object> getDirectLocksMap() {
 		if(directLocks == null) {
-			directLocks = getNetworkSnapshot().getDirectLocks(suid);
+			directLocks = getVPStore().getDirectLocksMap(suid);
 		}
 		return directLocks;
 	}
 	
+	
+	protected <T> T getSpecialVisualProperty(Long suid, VisualProperty<T> vp) {
+		return null;
+	}
+	
 	@Override
 	public <T> T getVisualProperty(VisualProperty<T> vp) {
-		return getNetworkSnapshot().getVisualProperty(getDirectLocks(), getAllLocks(), getVisualProperties(), vp);
+		Object value = getDirectLocksMap().getOrElse(vp, null);
+		if(value != null)
+			return (T) value;
+		
+		value = getAllLocksMap().getOrElse(vp, null);
+		if(value != null)
+			return (T) value;
+		
+		value = getSpecialVisualProperty(suid, vp);
+		if(value != null)
+			return (T) value;
+		
+		value = getVisualPropertiesMap().getOrElse(vp, null);
+		if(value != null)
+			return (T) value;
+		
+		return getNetworkSnapshot().getViewDefault(vp);
 	}
 	
 	
 	@Override
 	public boolean isSet(VisualProperty<?> vp) {
-		return getNetworkSnapshot().getVisualPropertyStoredValue(getDirectLocks(), getAllLocks(), getVisualProperties(), vp) != null;
+		if(getDirectLocksMap().containsKey(vp))
+			return true;
+		if(getAllLocksMap().containsKey(vp))
+			return true;
+		if(getSpecialVisualProperty(suid, vp) != null)
+			return true;
+		if(getVisualPropertiesMap().containsKey(vp))
+			return true;
+		return false;
 	}
 	
 	@Override
 	public boolean isValueLocked(VisualProperty<?> vp) {
-		return getAllLocks().containsKey(vp);
+		return getAllLocksMap().containsKey(vp);
 	}
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> vp) {
-		return getDirectLocks().containsKey(vp);
+		return getDirectLocksMap().containsKey(vp);
 	}
 	
 	

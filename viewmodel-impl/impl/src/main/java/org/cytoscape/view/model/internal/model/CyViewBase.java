@@ -8,15 +8,23 @@ import org.cytoscape.view.model.VisualProperty;
 
 public abstract class CyViewBase<M> implements View<M> {
 	
-	private final Long suid = SUIDFactory.getNextSUID();
-	
+	private final Long suid;
 	private final M model;
 
 	public CyViewBase(M model) {
 		this.model = Objects.requireNonNull(model);
+		this.suid = SUIDFactory.getNextSUID();
 	}
 	
+	/**
+	 * There could potentially be millions of these objects on the heap.
+	 * We want to keep the size of these objects as small as possible.
+	 * Look up these values using abstract methods, rather than store them as fields.
+	 */
 	public abstract CyNetworkViewImpl getNetworkView();
+	public abstract VPStore getVPStore();
+	public abstract Object getLock();
+	
 	
 	@Override
 	public Long getSUID() {
@@ -30,42 +38,50 @@ public abstract class CyViewBase<M> implements View<M> {
 	
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
-		getNetworkView().setVisualProperty(this, vp, value);
+		synchronized (getLock()) {
+			getVPStore().setVisualProperty(suid, vp, value);
+			getNetworkView().setDirty();
+		}
 	}
 	
 	@Override
 	public <T> T getVisualProperty(VisualProperty<T> vp) {
-		return getNetworkView().getVisualProperty(suid, vp);
+		return getVPStore().getVisualProperty(suid, vp);
 	}
 
 	@Override
 	public boolean isSet(VisualProperty<?> vp) {
-		return getNetworkView().isSet(this, vp);
+		return getVPStore().isSet(suid, vp);
 	}
 
 	@Override
 	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
-		getNetworkView().setLockedValue(this, vp, value);
+		synchronized (getLock()) {
+			getVPStore().setLockedValue(suid, vp, value);
+			getNetworkView().setDirty();
+		}
 	}
 
 	@Override
 	public boolean isValueLocked(VisualProperty<?> vp) {
-		return getNetworkView().isValueLocked(this, vp);
+		return getVPStore().isValueLocked(suid, vp);
 	}
 
 	@Override
 	public void clearValueLock(VisualProperty<?> vp) {
-		getNetworkView().clearValueLock(this, vp);
+		getVPStore().clearValueLock(suid, vp);
 	}
 
 	@Override
 	public boolean isDirectlyLocked(VisualProperty<?> vp) {
-		return getNetworkView().isDirectlyLocked(this, vp);
+		return getVPStore().isDirectlyLocked(suid, vp);
 	}
 
 	@Override
 	public void clearVisualProperties() {
-		getNetworkView().clearVisualProperties(this);
+		synchronized (getLock()) {
+			getVPStore().clear(suid);
+		}
 	}
 	
 }

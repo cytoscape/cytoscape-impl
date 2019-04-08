@@ -1,9 +1,5 @@
 package org.cytoscape.view.model.internal.model.snapshot;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -19,8 +15,9 @@ import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
-import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
+import org.cytoscape.view.model.internal.model.VPNetworkStore;
+import org.cytoscape.view.model.internal.model.VPStore;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -28,7 +25,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 
-import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
@@ -46,19 +42,10 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	// Key is SUID of View object
 	private final Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap;
-	private final Set<Long> selectedNodes;
-	private final Set<Long> selectedEdges;
-		
-	// Key is SUID of View object
-	private final Map<Long,Map<VisualProperty<?>,Object>> visualProperties;
-	private final Map<Long,Map<VisualProperty<?>,Object>> allLocks;
-	private final Map<Long,Map<VisualProperty<?>,Object>> directLocks;
-	private final Map<VisualProperty<?>,Object> defaultValues;
 	
-	// Network special case properties.
-	private final double networkCenterXLocation;
-	private final double networkCenterYLocation;
-	private final double networkScaleFactor;
+	protected final VPStore nodeVPs;
+	protected final VPStore edgeVPs;
+	protected final VPNetworkStore netVPs;
 	
 	private final SpacialIndex2D<Long> spacialIndex;
 	
@@ -69,7 +56,6 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	private final java.util.Map<Long,CyEdgeViewSnapshotImpl> snapshotEdgeViews = new java.util.HashMap<>();
 	
 	
-	
 	public CyNetworkViewSnapshotImpl(
 			CyNetworkView networkView,
 			String rendererId,
@@ -78,17 +64,11 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			Map<Long,CyEdgeViewImpl> dataSuidToEdge,
 			Map<Long,CyEdgeViewImpl> viewSuidToEdge,
 			Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap,
-			Set<Long> selectedNodes,
-			Set<Long> selectedEdges,
-			Map<VisualProperty<?>, Object> defaultValues,
-			Map<Long, Map<VisualProperty<?>, Object>> visualProperties,
-			Map<Long, Map<VisualProperty<?>, Object>> allLocks,
-			Map<Long, Map<VisualProperty<?>, Object>> directLocks,
+			VPStore nodeVPs,
+			VPStore edgeVPs,
+			VPNetworkStore netVPs,
 			RTree<Long,Rectangle> rtree,
-			Map<Long,Rectangle> geometries,
-			double networkCenterXLocation,
-			double networkCenterYLocation,
-			double networkScaleFactor    
+			Map<Long,Rectangle> geometries
 	) {
 		super(networkView.getSUID());
 		this.networkView = networkView;
@@ -98,25 +78,23 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.viewSuidToEdge = viewSuidToEdge;
 		this.dataSuidToEdge = dataSuidToEdge;
 		this.adjacentEdgeMap = adjacentEdgeMap;
-		this.selectedNodes = selectedNodes;
-		this.selectedEdges = selectedEdges;
-		this.defaultValues = defaultValues;
-		this.visualProperties = visualProperties;
-		this.allLocks = allLocks;
-		this.directLocks = directLocks;
+		this.nodeVPs = nodeVPs;
+		this.edgeVPs = edgeVPs;
+		this.netVPs = netVPs;
 		this.spacialIndex = new SpacialIndex2DSnapshotImpl(rtree, geometries);
-		this.networkCenterXLocation = networkCenterXLocation;
-		this.networkCenterYLocation = networkCenterYLocation;
-		this.networkScaleFactor = networkScaleFactor;
 	}
 	
+	@Override
+	public VPStore getVPStore() {
+		return netVPs;
+	}
 	
 	private boolean isNodeVisible(Long nodeSuid) {
 		return spacialIndex.exists(nodeSuid);
 	}
 	
 	private boolean isEdgeVisible(CyEdgeViewImpl mutableEdgeView) {
-		if(!checkBooleanVP(mutableEdgeView.getSUID(), BasicVisualLexicon.EDGE_VISIBLE))
+		if(!Boolean.TRUE.equals(edgeVPs.getVisualProperty(mutableEdgeView.getSUID(), BasicVisualLexicon.EDGE_VISIBLE)))
 			return false;
 		if(!isNodeVisible(mutableEdgeView.getSourceSuid()))
 			return false;
@@ -125,50 +103,13 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return true;
 	}
 	
-	private boolean checkBooleanVP(Long suid, VisualProperty<?> vp) {
-		Map<VisualProperty<?>,Object> directLocks = getDirectLocks(suid);
-		Map<VisualProperty<?>,Object> allLocks = getAllLocks(suid);
-		Map<VisualProperty<?>,Object> visualProperties = getVisualProperties(suid);
-		Object value = getVisualProperty(directLocks, allLocks, visualProperties, vp);
-		return Boolean.TRUE.equals(value);
-	}
-	
-	private double getNetworkProp(VisualProperty<?> vp) {
-		if(vp == NETWORK_CENTER_X_LOCATION)
-			return networkCenterXLocation;
-		if(vp == NETWORK_CENTER_Y_LOCATION)
-			return networkCenterYLocation;
-		if(vp == NETWORK_SCALE_FACTOR)
-			return networkScaleFactor;
-		return 0; // should never happen
-	}
-	
-	
-	protected <T> T getVisualPropertyStoredValue(Map<VisualProperty<?>,Object> directLocks, 
-			Map<VisualProperty<?>,Object> allLocks, Map<VisualProperty<?>,Object> visualProperties, VisualProperty<T> vp) {
-		Object value = directLocks.getOrElse(vp, null);
-		if(value != null)
-			return (T) value;
-		
-		value = allLocks.getOrElse(vp, null);
-		if(value != null)
-			return (T) value;
-		
-		// MKTODO we don't have an easy way to tell if this is being called on the 
-		// network object, comparing the directLocks object is kind of a hack
-		if(directLocks == this.getDirectLocks() && CyNetworkViewImpl.NETWORK_PROPS.contains(vp))
-			return (T) Double.valueOf(getNetworkProp(vp));
-		
-		return (T) visualProperties.getOrElse(vp, null);
-	}
 
-	protected <T> T getVisualProperty(Map<VisualProperty<?>,Object> directLocks, 
-			Map<VisualProperty<?>,Object> allLocks, Map<VisualProperty<?>,Object> visualProperties, VisualProperty<T> vp) {
-		Object value = getVisualPropertyStoredValue(directLocks, allLocks, visualProperties, vp);
-		if(value != null)
-			return (T) value;
-		
-		return (T) getDefaultValues().getOrElse(vp, vp.getDefault());
+	@Override
+	protected <T> T getSpecialVisualProperty(Long suid, VisualProperty<T> vp) {
+		if(getSUID().equals(suid)) {
+			return netVPs.getSpecialVisualProperty(suid, vp);
+		}
+		return null;
 	}
 	
 	/**
@@ -218,26 +159,16 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return spacialIndex;
 	}
 	
-	public Map<VisualProperty<?>, Object> getVisualProperties(Long suid) {
-		return visualProperties.getOrElse(suid, HashMap.empty());
-	}
-	
-	public Map<VisualProperty<?>, Object> getAllLocks(Long suid) {
-		return allLocks.getOrElse(suid, HashMap.empty());
-	}
-	
-	public Map<VisualProperty<?>, Object> getDirectLocks(Long suid) {
-		return directLocks.getOrElse(suid, HashMap.empty());
-	}
-
-	public Map<VisualProperty<?>,Object> getDefaultValues() {
-		return defaultValues;
-	}
-
-	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T getViewDefault(VisualProperty<T> vp) {
-		return (T) defaultValues.getOrElse(vp, null);
+		if(vp.getTargetDataType().equals(CyNode.class)) {
+			return nodeVPs.getViewDefault(vp);
+		} else if(vp.getTargetDataType().equals(CyEdge.class)) {
+			return edgeVPs.getViewDefault(vp);
+		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {
+			return netVPs.getViewDefault(vp);
+		}
+		return vp.getDefault();
 	}
 	
 	// MKTODO
@@ -346,7 +277,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	@Override
 	public Collection<View<CyNode>> getSelectedNodes() {
 		java.util.HashSet<View<CyNode>> nodes = new java.util.HashSet<>();
-		for(Long suid : selectedNodes) {
+		for(Long suid : nodeVPs.getSelected()) {
 			View<CyNode> nv = getNodeView(suid);
 			if(nv != null) {
 				nodes.add(nv);
@@ -358,7 +289,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	@Override
 	public Collection<View<CyEdge>> getSelectedEdges() {
 		java.util.HashSet<View<CyEdge>> nodes = new java.util.HashSet<>();
-		for(Long suid : selectedEdges) {
+		for(Long suid : edgeVPs.getSelected()) {
 			View<CyEdge> ev = getEdgeView(suid);
 			if(ev != null) {
 				nodes.add(ev);

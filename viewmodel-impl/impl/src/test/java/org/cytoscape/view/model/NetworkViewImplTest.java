@@ -1,15 +1,7 @@
 package org.cytoscape.view.model;
 
 import static org.cytoscape.view.model.NetworkViewTestUtils.asSuidSet;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -19,11 +11,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -91,6 +84,7 @@ public class NetworkViewImplTest {
 		}
 		assertEquals(4, edgeCount);
 		
+		networkView.setViewDefault(NODE_BORDER_PAINT, Color.PINK);
 		for(View<CyNode> node : networkView.getNodeViews())
 			node.setVisualProperty(NODE_PAINT, Color.RED);
 		
@@ -111,15 +105,19 @@ public class NetworkViewImplTest {
 		assertEquals(6, networkView.getNodeViews().size());
 		assertEquals(5, networkView.getEdgeViews().size());
 		assertNotNull(networkView.getNodeView(n5));
-		for(View<CyNode> node : networkView.getNodeViews())
+		for(View<CyNode> node : networkView.getNodeViews()) {
 			assertEquals(Color.BLUE, node.getVisualProperty(NODE_PAINT));
+			assertEquals(Color.PINK, node.getVisualProperty(NODE_BORDER_PAINT));
+		}
 		
 		// snapshot should not be affected
 		assertEquals(4, snapshot.getNodeViews().size());
 		assertEquals(4, snapshot.getEdgeViews().size());
 		assertNull(snapshot.getNodeView(n5));
-		for(View<CyNode> node : snapshot.getNodeViews())
-			assertEquals(Color.RED, node.getVisualProperty(NODE_PAINT));
+		for(View<CyNode> node : snapshot.getNodeViews()) {
+			assertEquals(Color.RED,  node.getVisualProperty(NODE_PAINT));
+			assertEquals(Color.PINK, node.getVisualProperty(NODE_BORDER_PAINT));
+		}
 	}
 	
 	
@@ -214,11 +212,14 @@ public class NetworkViewImplTest {
 	public void testVisualPropertiesParallel() throws Exception {
 		CyNetwork network = networkSupport.getNetwork();
 		CyNetworkViewImpl netView = createNetworkView(network);
+		final int numTasks = 1000;
 		
 		{
 			ExecutorService executor = Executors.newCachedThreadPool();
-			for(int i = 0; i < 100; i++) {
-				executor.submit(() -> {
+			List<Future<?>> futures = new ArrayList<>(numTasks);
+			
+			for(int i = 0; i < numTasks; i++) {
+				Future<?> future = executor.submit(() -> {
 					CyNode n1 = network.addNode();
 					CyNode n2 = network.addNode();
 					CyEdge e1 = network.addEdge(n1, n2, false);
@@ -226,30 +227,35 @@ public class NetworkViewImplTest {
 					netView.addNode(n2);
 					netView.addEdge(e1);
 				});
+				futures.add(future);
 			}
 			
 			executor.shutdown();
-			executor.awaitTermination(100, TimeUnit.MILLISECONDS);
-		}
+			for(Future<?> future : futures) {
+				future.get();
+			}
+ 		}
 		
-		assertEquals(200, netView.getNodeViews().size());
-		assertEquals(100, netView.getEdgeViews().size());
+		assertEquals(numTasks*2, netView.getNodeViews().size());
+		assertEquals(numTasks,   netView.getEdgeViews().size());
 		
 		{
 			ExecutorService executor = Executors.newCachedThreadPool();
+			List<Future<?>> futures = new ArrayList<>(numTasks*3);
+			
 			for(View<CyNode> nv : netView.getNodeViews()) {
-				executor.submit(() -> {
-					nv.setVisualProperty(NODE_PAINT, Color.RED);
-				});
+				Future<?> f = executor.submit(() -> nv.setVisualProperty(NODE_PAINT, Color.RED));
+				futures.add(f);
 			}
 			for(View<CyEdge> ev : netView.getEdgeViews()) {
-				executor.submit(() -> {
-					ev.setVisualProperty(EDGE_PAINT, Color.BLUE);
-				});
+				Future<?> f = executor.submit(() -> ev.setVisualProperty(EDGE_PAINT, Color.BLUE));
+				futures.add(f);
 			}
 			
 			executor.shutdown();
-			executor.awaitTermination(100, TimeUnit.MILLISECONDS);
+			for(Future<?> future : futures) {
+				future.get();
+			}
 		}
 		
 		for(View<CyNode> nv : netView.getNodeViews()) {

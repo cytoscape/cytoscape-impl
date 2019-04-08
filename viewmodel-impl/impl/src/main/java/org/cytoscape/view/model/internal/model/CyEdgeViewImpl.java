@@ -26,5 +26,15 @@ public class CyEdgeViewImpl extends CyViewImpl<CyEdge> {
 	public boolean isDirected() {
 		return isDirected;
 	}
+
+	@Override
+	public VPStore getVPStore() {
+		return getNetworkView().edgeVPs;
+	}
+
+	@Override
+	public Object getLock() {
+		return getNetworkView().edgeLock;
+	}
 	
 }

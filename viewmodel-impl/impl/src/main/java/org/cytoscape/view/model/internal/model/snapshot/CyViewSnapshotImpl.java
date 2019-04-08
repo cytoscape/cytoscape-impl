@@ -1,6 +1,6 @@
 package org.cytoscape.view.model.internal.model.snapshot;
 
-public class CyViewSnapshotImpl<M> extends CyViewSnapshotBase<M> {
+public abstract class CyViewSnapshotImpl<M> extends CyViewSnapshotBase<M> {
 
 	private final CyNetworkViewSnapshotImpl parent;
 	

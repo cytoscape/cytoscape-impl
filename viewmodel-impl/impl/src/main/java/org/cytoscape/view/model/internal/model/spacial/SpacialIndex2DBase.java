@@ -77,7 +77,7 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 	@Override
 	public SpacialIndex2DEnumerator<T> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
 		Observable<Entry<T,Rectangle>> overlap = getRTree().search(RectangleFloat.create(xMin, yMin, xMax, yMax));
-		return new SearchResultEnumeratorImpl(overlap);
+		return new SearchResultEnumeratorImpl<>(overlap);
 	}
 	
 	
@@ -135,6 +135,8 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 		private final int size;
 		
 		public SearchResultEnumeratorImpl(Observable<Entry<T, Rectangle>> overlap) {
+			// Important to convert to a list first, that avoids enabling the RTree's 
+			// backpressure support which we don't need and has too much overhead.
 			List<Entry<T, Rectangle>> list = overlap.toList().toBlocking().first();
 			this.size = list.size();
 			this.iterator = list.iterator();

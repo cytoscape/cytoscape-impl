@@ -1,11 +1,16 @@
 package org.cytoscape.view.model.internal.model;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.event.CyEventHelper;
@@ -19,7 +24,6 @@ import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
-import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.AboutToRemoveEdgeViewsEvent;
 import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
@@ -46,11 +50,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		NODE_X_LOCATION, NODE_Y_LOCATION, NODE_HEIGHT, NODE_WIDTH, NODE_VISIBLE
 	);
 	
-	// If you add more special case network properties make sure to update the JUnit test.
-	public static final Set<VisualProperty<?>> NETWORK_PROPS = HashSet.of(
-		NETWORK_CENTER_X_LOCATION, NETWORK_CENTER_Y_LOCATION, NETWORK_SCALE_FACTOR
-	);
-	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
 	private final BasicVisualLexicon visualLexicon;
@@ -66,22 +65,16 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
-	private Set<Long> selectedNodes = HashSet.empty();
-	private Set<Long> selectedEdges = HashSet.empty();
-
-	// Key is SUID of View object.
-	private Map<Long,Map<VisualProperty<?>,Object>> visualProperties = HashMap.empty();
-	private Map<Long,Map<VisualProperty<?>,Object>> allLocks = HashMap.empty();
-	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
-	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
 	
-	// Special case network visual properties that get updated a lot. This is an optimization.
-	private double networkCenterXLocation = NETWORK_CENTER_X_LOCATION.getDefault();
-	private double networkCenterYLocation = NETWORK_CENTER_Y_LOCATION.getDefault();
-	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();
+	protected final Object nodeLock = new Object();
+	protected final Object edgeLock = new Object();
+	protected final Object netLock  = new Object();
+	
+	protected final VPStore nodeVPs;
+	protected final VPStore edgeVPs;
+	protected final VPNetworkStore netVPs;
 	
 	// RTree
-	// Need to store the bounds of each node so that they can be looked up in this RTree
 	private Map<Long,Rectangle> geometries = HashMap.empty();
 	private RTree<Long,Rectangle> rtree = RTree.create();
 	
@@ -92,7 +85,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
-		// faster than calling addNode() and addEdge()
+		this.edgeVPs = new VPStore(visualLexicon, null, EDGE_SELECTED);
+		this.nodeVPs = new VPStore(visualLexicon, NODE_GEOMETRIC_PROPS, NODE_SELECTED);
+		this.netVPs  = new VPNetworkStore(visualLexicon);
+		
 		for(CyNode node : network.getNodeList())
 			addNode(node);
 		for(CyEdge edge : network.getEdgeList())
@@ -112,17 +108,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				dataSuidToEdge,
 				viewSuidToEdge,
 				adjacentEdgeMap,
-				selectedNodes,
-				selectedEdges,
-				defaultValues, 
-				visualProperties, 
-				allLocks, 
-				directLocks, 
+				nodeVPs.createSnapshot(),
+				edgeVPs.createSnapshot(),
+				netVPs.createSnapshot(),
 				rtree, 
-				geometries,
-				networkCenterXLocation,
-				networkCenterYLocation,
-				networkScaleFactor
+				geometries
 			);
 		}
 	}
@@ -137,18 +127,28 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return dirty;
 	}
 	
-	private void setDirty() {
+	@Override
+	public VPStore getVPStore() {
+		return netVPs;
+	}
+	
+	@Override
+	public Object getLock() {
+		return netLock;
+	}
+	
+	public void setDirty() {
 		this.dirty = true;
 	}
 	
-	protected synchronized <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
+	protected <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
 		Long suid = node.getSUID();
 		Rectangle r = geometries.getOrElse(suid, null);
-		Rectangle newGeom = null;
 		// need to look up the actual value because it might be locked
-		Object value = getVisualProperty(node.getSUID(), vp);
+		Object value = nodeVPs.getVisualProperty(node.getSUID(), vp);
 		
 		if(r != null) {
+			Rectangle newGeom = null;
 			if(vp == NODE_X_LOCATION) {
 				float x = ((Number)value).floatValue();
 				float wDiv2 = (float) (r.x2() - r.x1()) / 2.0f;
@@ -179,38 +179,43 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				float yMax = yMid + hDiv2;
 				newGeom = RectangleFloat.create((float)r.x1(), yMin, (float)r.x2(), yMax);
 			} 
+			
+			if(newGeom != null) {
+				synchronized (nodeLock) {
+					rtree = rtree.delete(suid, r).add(suid, newGeom);
+					geometries = geometries.put(suid, newGeom);
+				}
+			}
 		}
 		if(vp == NODE_VISIBLE) {
 			if(Boolean.TRUE.equals(value)) {
 				if(r == null) {
-					float x = ((Number)getVisualProperty(suid, NODE_X_LOCATION)).floatValue();
-					float y = ((Number)getVisualProperty(suid, NODE_Y_LOCATION)).floatValue();
-					float w = ((Number)getVisualProperty(suid, NODE_WIDTH)).floatValue();
-					float h = ((Number)getVisualProperty(suid, NODE_HEIGHT)).floatValue();
+					float x = ((Number)nodeVPs.getVisualProperty(suid, NODE_X_LOCATION)).floatValue();
+					float y = ((Number)nodeVPs.getVisualProperty(suid, NODE_Y_LOCATION)).floatValue();
+					float w = ((Number)nodeVPs.getVisualProperty(suid, NODE_WIDTH)).floatValue();
+					float h = ((Number)nodeVPs.getVisualProperty(suid, NODE_HEIGHT)).floatValue();
 					r = vpToRTree(x, y, w, h);
-					rtree = rtree.add(suid, r);
-					geometries = geometries.put(suid, r);
+					synchronized (nodeLock) {
+						rtree = rtree.add(suid, r);
+						geometries = geometries.put(suid, r);
+					}
 				}
 			} else {
 				if(r != null) { // can be null if view is already hidden
-					rtree = rtree.delete(suid, r);
-					geometries = geometries.remove(suid);
+					synchronized (nodeLock) {
+						rtree = rtree.delete(suid, r);
+						geometries = geometries.remove(suid);
+					}
 				}
 			}
 		}
-		
-		if(newGeom != null) {
-			rtree = rtree.delete(suid, r).add(suid, newGeom);
-			geometries = geometries.put(suid, newGeom);
-		}
 	}
 	
-	
 	private Rectangle getDefaultGeometry() {
-		float x = ((Number)defaultValues.getOrElse(NODE_X_LOCATION, NODE_X_LOCATION.getDefault())).floatValue();
-		float y = ((Number)defaultValues.getOrElse(NODE_Y_LOCATION, NODE_Y_LOCATION.getDefault())).floatValue();
-		float w = ((Number)defaultValues.getOrElse(NODE_WIDTH, NODE_WIDTH.getDefault())).floatValue();
-		float h = ((Number)defaultValues.getOrElse(NODE_HEIGHT, NODE_HEIGHT.getDefault())).floatValue();
+		float x = nodeVPs.getViewDefault(NODE_X_LOCATION).floatValue();
+		float y = nodeVPs.getViewDefault(NODE_Y_LOCATION).floatValue();
+		float w = nodeVPs.getViewDefault(NODE_WIDTH).floatValue();
+		float h = nodeVPs.getViewDefault(NODE_HEIGHT).floatValue();
 		return vpToRTree(x, y, w, h);
 	}
 	
@@ -226,7 +231,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
 		Set<CyEdgeViewImpl> edges;
-		synchronized (this) {
+		synchronized (edgeLock) {
 			edges = adjacentEdgeMap.getOrElse(edgeView.getSourceSuid(), HashSet.empty());
 			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
 			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getSourceSuid(), edges);
@@ -239,11 +244,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	
 	public View<CyNode> addNode(CyNode model) {
-		if(dataSuidToNode.containsKey(getSUID()))
+		if(dataSuidToNode.containsKey(model.getSUID()))
 			return null;
 		
 		CyNodeViewImpl view = new CyNodeViewImpl(this, model);
-		synchronized (this) {
+		synchronized (nodeLock) {
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
 			Rectangle r = getDefaultGeometry();
@@ -259,9 +264,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	public View<CyEdge> addEdge(CyEdge edge) {
 		CyNodeViewImpl sourceView = dataSuidToNode.getOrElse(edge.getSource().getSUID(), null);
 		CyNodeViewImpl targetView = dataSuidToNode.getOrElse(edge.getTarget().getSUID(), null);
-		
 		CyEdgeViewImpl view = new CyEdgeViewImpl(this, edge, sourceView.getSUID(), targetView.getSUID());
-		synchronized (this) {
+		
+		synchronized (edgeLock) {
 			dataSuidToEdge = dataSuidToEdge.put(edge.getSUID(), view);
 			viewSuidToEdge = viewSuidToEdge.put(view.getSUID(), view);
 			updateAdjacentEdgeMap(view, true);
@@ -273,72 +278,49 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	public View<CyNode> removeNode(CyNode model) {
-		View<CyNode> nodeView;
-		synchronized (this) {
-			nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
-			if(nodeView != null) {
-				
-				// this is non-blocking, so its ok to call in the synchronized block
-				eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
-				
-				dataSuidToNode = dataSuidToNode.remove(model.getSUID());
-				viewSuidToNode = viewSuidToNode.remove(nodeView.getSUID());
-				Set<CyEdgeViewImpl> adjacentEdges = adjacentEdgeMap.getOrElse(nodeView.getSUID(), HashSet.empty());
-				for(CyEdgeViewImpl adjacentEdge : adjacentEdges) {
-					removeEdge(adjacentEdge.getModel());
+		synchronized (nodeLock) {
+			synchronized (edgeLock) {
+				View<CyNode> nodeView = dataSuidToNode.getOrElse(model.getSUID(), null);
+				if(nodeView != null) {
+					// this is non-blocking, so its ok to call in the synchronized block
+					eventHelper.addEventPayload(this, nodeView, AboutToRemoveNodeViewsEvent.class);
+					
+					dataSuidToNode = dataSuidToNode.remove(model.getSUID());
+					viewSuidToNode = viewSuidToNode.remove(nodeView.getSUID());
+					Set<CyEdgeViewImpl> adjacentEdges = adjacentEdgeMap.getOrElse(nodeView.getSUID(), HashSet.empty());
+					for(CyEdgeViewImpl adjacentEdge : adjacentEdges) {
+						removeEdge(adjacentEdge.getModel());
+					}
+					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
+					
+					nodeVPs.clear(nodeView.getSUID());
+					
+					Rectangle r = geometries.getOrElse(nodeView.getSUID(), null);
+					rtree = rtree.delete(nodeView.getSUID(),r);
+					geometries = geometries.remove(nodeView.getSUID());
+					setDirty();
 				}
-				adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
-				clearVisualProperties(nodeView);
-				
-				Rectangle r = geometries.getOrElse(nodeView.getSUID(), null);
-				rtree = rtree.delete(nodeView.getSUID(),r);
-				geometries = geometries.remove(nodeView.getSUID());
-				setDirty();
+				return nodeView;
 			}
 		}
-		return nodeView;
 	}
 	
 	public View<CyEdge> removeEdge(CyEdge model) {
-		CyEdgeViewImpl edgeView;
-		synchronized (this) {
-			edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
+		synchronized (edgeLock) {
+			CyEdgeViewImpl edgeView = dataSuidToEdge.getOrElse(model.getSUID(), null);
 			if(edgeView != null) {
-				
 				// this is non-blocking, so its ok to call in the synchronized block
 				eventHelper.addEventPayload(this, edgeView, AboutToRemoveEdgeViewsEvent.class);
 				
 				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
 				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
-				clearVisualProperties(edgeView);
+				edgeVPs.clear(edgeView.getSUID());
 				setDirty();
 			}
+			return edgeView;
 		}
-		return edgeView;
-	}
-	
-	public void clearVisualProperties(CyIdentifiable view) {
-		synchronized (this) {
-			Long suid = view.getSUID();
-			visualProperties = clear(visualProperties, suid);
-//			allLocks = clear(allLocks, suid);
-//			directLocks = clear(directLocks, suid);
-			setDirty();
-		}
-	}
-	
-	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
-		// we actually can't clear certain VPs, the renderer expects node size and location to remain consistent
-		java.util.HashMap<VisualProperty<?>,Object> valuesToRestore = new java.util.HashMap<>();
-		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPS) {
-			valuesToRestore.put(vp, get(map, suid, vp));
-		}
-		map = map.remove(suid);
-		for(VisualProperty<?> vp : NODE_GEOMETRIC_PROPS) {
-			map = put(map, suid, vp, valuesToRestore.get(vp));
-		}
-		return map;
+		
 	}
 	
 	
@@ -439,154 +421,31 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return list;
 	}
 	
-	protected <T, V extends T> void setVisualProperty(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
-		Long suid = view.getSUID();
-		synchronized (this) {
-			if(view == this && NETWORK_PROPS.contains(vp)) {
-				setNetworkProp(vp, value);
-				// don't set the dirty flag in this case
-				return;
-			}
-			
-			visualProperties = put(visualProperties, suid, vp, value);
-			// don't pass 'value' directly to updateSelectionAndVisibility(), it needs to check the locked values as well
-			updateSelection(view, vp);
-			setDirty();
-		}
-	}
-	
-	
-	private double getNetworkProp(VisualProperty<?> vp) {
-		if(vp == NETWORK_CENTER_X_LOCATION)
-			return networkCenterXLocation;
-		if(vp == NETWORK_CENTER_Y_LOCATION)
-			return networkCenterYLocation;
-		if(vp == NETWORK_SCALE_FACTOR)
-			return networkScaleFactor;
-		return 0; // should never happen
-	}
-	
-	private void setNetworkProp(VisualProperty<?> vp, Object value) {
-		if(vp == NETWORK_CENTER_X_LOCATION)
-			networkCenterXLocation = ((Number)value).doubleValue();
-		else if(vp == NETWORK_CENTER_Y_LOCATION)
-			networkCenterYLocation = ((Number)value).doubleValue();
-		if(vp == NETWORK_SCALE_FACTOR)
-			networkScaleFactor = ((Number)value).doubleValue();
-	}
-	
-	private <T> T getVisualPropertyStoredValue(Long suid, VisualProperty<T> vp) {
-		Object value = get(directLocks, suid, vp);
-		if(value != null)
-			return (T) value;
-		
-		value = get(allLocks, suid, vp);
-		if(value != null)
-			return (T) value;
-		
-		if(suid.equals(this.getSUID()) && NETWORK_PROPS.contains(vp))
-			return (T) Double.valueOf(getNetworkProp(vp));
-		
-		return (T) get(visualProperties, suid, vp);
-	}
-
-	public <T> T getVisualProperty(Long suid, VisualProperty<T> vp) {
-		Object value = getVisualPropertyStoredValue(suid, vp);
-		if(value != null)
-			return (T) value;
-		
-		return (T) defaultValues.getOrElse(vp, vp.getDefault());
-	}
-	
-
-	public boolean isSet(CyIdentifiable view, VisualProperty<?> vp) {
-		return getVisualPropertyStoredValue(view.getSUID(), vp) != null;
-	}
-
-	public <T, V extends T> void setLockedValue(CyIdentifiable view, VisualProperty<? extends T> vp, V value) {
-		Long suid = view.getSUID();
-		synchronized (this) {
-			directLocks = put(directLocks, suid, vp, value);
-			allLocks = put(allLocks, suid, vp, value);
-			
-			VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
-			propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
-			
-			updateSelection(view, vp);
-			setDirty();
-		}
-	}
-	
-	
-	private synchronized void updateSelection(CyIdentifiable view, VisualProperty<?> vp) {
-		Long suid = view.getSUID();
-		if(vp == NODE_SELECTED) {
-			Object value = getVisualProperty(suid, vp);
-			selectedNodes = Boolean.TRUE.equals(value) ? selectedNodes.add(suid) : selectedNodes.remove(suid);
-		} else if(vp == EDGE_SELECTED) {
-			Object value = getVisualProperty(suid, vp);
-			selectedEdges = Boolean.TRUE.equals(value) ? selectedEdges.add(suid) : selectedEdges.remove(suid);
-		} 
-	}
-	
-	
-	private synchronized void propagateLockedVisualProperty(Long suid, VisualProperty parent, Collection<VisualLexiconNode> roots, Object value) {
-		LinkedList<VisualLexiconNode> nodes = new LinkedList<>(roots);
-		
-		while (!nodes.isEmpty()) {
-			final VisualLexiconNode node = nodes.pop();
-			final VisualProperty vp = node.getVisualProperty();
-			
-			if (!isDirectlyLocked(vp)) {
-				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
-					allLocks = put(allLocks, suid, vp, value);
-				}
-				
-				nodes.addAll(node.getChildren());
-			}
-		}
-	}
-
-	public boolean isValueLocked(CyIdentifiable view, VisualProperty<?> vp) {
-		return get(allLocks, view.getSUID(), vp) != null;
-	}
-
-	public boolean isDirectlyLocked(CyIdentifiable view, VisualProperty<?> vp) {
-		return get(directLocks, view.getSUID(), vp) != null;
-	}
-	
-	public void clearValueLock(CyIdentifiable view, VisualProperty<?> vp) {
-		setLockedValue(view, vp, null);
-	}
 
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V value) {
 		if(vp.shouldIgnoreDefault())
 			return;
 		
-		synchronized (this) {
-			defaultValues = defaultValues.put(vp, value);
-			if(NODE_GEOMETRIC_PROPS.contains(vp)) {
-				for(CyNodeViewImpl node : dataSuidToNode.values()) {
-					updateNodeGeometry(node, vp);
+		if(vp.getTargetDataType().equals(CyNode.class)) {
+			synchronized(nodeLock) {
+				nodeVPs.setViewDefault(vp, value);
+				if(NODE_GEOMETRIC_PROPS.contains(vp)) {
+					for(CyNodeViewImpl node : dataSuidToNode.values()) {
+						updateNodeGeometry(node, vp);
+					}
 				}
 			}
-			setDirty();
+		} else if(vp.getTargetDataType().equals(CyEdge.class)) {
+			synchronized(edgeLock) {
+				edgeVPs.setViewDefault(vp, value);
+			}
+		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {
+			synchronized(netLock) {
+				netVPs.setViewDefault(vp, value);
+			}
 		}
-	}
-	
-	
-	public static <T> T get(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<? extends T> vp) {
-		return (T) map.getOrElse(suid, HashMap.empty()).getOrElse(vp, null);
-	}
-	
-	public static <T, V extends T> Map<Long,Map<VisualProperty<?>,Object>> put(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<? extends T> vp, V value) {
-		Map<VisualProperty<?>, Object> values = map.getOrElse(suid, HashMap.empty());
-		values = (value == null) ? values.remove(vp) : values.put(vp, value);
-		if(values.isEmpty())
-			return map.remove(suid);
-		else
-			return map.put(suid, values);
+		setDirty();
 	}
 	
 
