@@ -22,9 +22,6 @@ import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DSnapshotImp
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-import com.github.davidmoten.rtree.RTree;
-import com.github.davidmoten.rtree.geometry.Rectangle;
-
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
 import io.vavr.collection.Set;
@@ -67,8 +64,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			VPStore nodeVPs,
 			VPStore edgeVPs,
 			VPNetworkStore netVPs,
-			RTree<Long,Rectangle> rtree,
-			Map<Long,Rectangle> geometries
+			SpacialIndex2DSnapshotImpl spacialIndex
 	) {
 		super(networkView.getSUID());
 		this.networkView = networkView;
@@ -81,7 +77,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.nodeVPs = nodeVPs;
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
-		this.spacialIndex = new SpacialIndex2DSnapshotImpl(rtree, geometries);
+		this.spacialIndex = spacialIndex;
 	}
 	
 	@Override

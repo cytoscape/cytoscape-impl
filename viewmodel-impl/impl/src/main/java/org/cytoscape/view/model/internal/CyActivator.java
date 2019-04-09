@@ -32,7 +32,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.internal.debug.PrintSpacialIndexAction;
 import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
-import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;

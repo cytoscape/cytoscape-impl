@@ -31,11 +31,8 @@ import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
+import org.cytoscape.view.model.internal.model.spacial.SpacialIndexStore;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-
-import com.github.davidmoten.rtree.RTree;
-import com.github.davidmoten.rtree.geometry.Rectangle;
-import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
@@ -74,10 +71,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
-	// RTree
-	private Map<Long,Rectangle> geometries = HashMap.empty();
-	private RTree<Long,Rectangle> rtree = RTree.create();
-	
+	private final SpacialIndexStore spacialIndex = new SpacialIndexStore();
 
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, BasicVisualLexicon visualLexicon, String rendererId) {
 		super(network);
@@ -115,8 +109,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						rtree, 
-						geometries
+						spacialIndex.createSnapshot()
 					);
 				}
 			}
@@ -147,107 +140,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.dirty = true;
 	}
 	
-	protected <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
-		Long suid = node.getSUID();
-		Rectangle r = geometries.getOrElse(suid, null);
-		// need to look up the actual value because it might be locked
-		Object value = nodeVPs.getVisualProperty(node.getSUID(), vp);
-		
-		if(r != null) {
-			Rectangle newGeom = null;
-			if(vp == NODE_X_LOCATION) {
-				float x = ((Number)value).floatValue();
-				float wDiv2 = (float) (r.x2() - r.x1()) / 2.0f;
-				float xMin = x - wDiv2;
-				float xMax = x + wDiv2;
-				newGeom = RectangleFloat.create(xMin, (float)r.y1(), xMax, (float)r.y2());
-			} 
-			else if(vp == NODE_Y_LOCATION) {
-				float y = ((Number)value).floatValue();
-				float hDiv2 = (float) (r.y2() - r.y1()) / 2.0f;
-				float yMin = y - hDiv2;
-				float yMax = y + hDiv2;
-				newGeom = RectangleFloat.create((float)r.x1(), yMin, (float)r.x2(), yMax);
-			}
-			else if(vp == NODE_WIDTH) {
-				float w = ((Number)value).floatValue();
-				float xMid = (float) (r.x1() + r.x2()) / 2.0f;
-				float wDiv2 = w / 2.0f;
-				float xMin = xMid - wDiv2;
-				float xMax = xMid + wDiv2;
-				newGeom = RectangleFloat.create(xMin, (float)r.y1(), xMax, (float)r.y2());
-			}
-			else if(vp == NODE_HEIGHT) {
-				float h = ((Number)value).floatValue();
-				float yMid = (float) (r.y1() + r.y2()) / 2.0f;
-				float hDiv2 = h / 2.0f;
-				float yMin = yMid - hDiv2;
-				float yMax = yMid + hDiv2;
-				newGeom = RectangleFloat.create((float)r.x1(), yMin, (float)r.x2(), yMax);
-			} 
-			
-			if(newGeom != null) {
-				synchronized (nodeLock) {
-					rtree = rtree.delete(suid, r).add(suid, newGeom);
-					geometries = geometries.put(suid, newGeom);
-				}
-			}
-		}
-		if(vp == NODE_VISIBLE) {
-			if(Boolean.TRUE.equals(value)) {
-				if(r == null) {
-					float x = ((Number)nodeVPs.getVisualProperty(suid, NODE_X_LOCATION)).floatValue();
-					float y = ((Number)nodeVPs.getVisualProperty(suid, NODE_Y_LOCATION)).floatValue();
-					float w = ((Number)nodeVPs.getVisualProperty(suid, NODE_WIDTH)).floatValue();
-					float h = ((Number)nodeVPs.getVisualProperty(suid, NODE_HEIGHT)).floatValue();
-					r = vpToRTree(x, y, w, h);
-					synchronized (nodeLock) {
-						rtree = rtree.add(suid, r);
-						geometries = geometries.put(suid, r);
-					}
-				}
-			} else {
-				if(r != null) { // can be null if view is already hidden
-					synchronized (nodeLock) {
-						rtree = rtree.delete(suid, r);
-						geometries = geometries.remove(suid);
-					}
-				}
-			}
-		}
-	}
-	
-	private Rectangle getDefaultGeometry() {
-		float x = nodeVPs.getViewDefault(NODE_X_LOCATION).floatValue();
-		float y = nodeVPs.getViewDefault(NODE_Y_LOCATION).floatValue();
-		float w = nodeVPs.getViewDefault(NODE_WIDTH).floatValue();
-		float h = nodeVPs.getViewDefault(NODE_HEIGHT).floatValue();
-		return vpToRTree(x, y, w, h);
-	}
-	
-	/**
-	 * Rtree stores (x1, x2, y1, y2) visual properties store (centerX, centerY, w, h)
-	 */
-	private static Rectangle vpToRTree(float x, float y, float w, float h) {
-		float halfW = w / 2f;
-		float halfH = h / 2f;
-		return RectangleFloat.create(x - halfW, y - halfH, x + halfW, y + halfH);
-	}
-	
-	
-	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
-		Set<CyEdgeViewImpl> edges;
-		synchronized (edgeLock) {
-			edges = adjacentEdgeMap.getOrElse(edgeView.getSourceSuid(), HashSet.empty());
-			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
-			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getSourceSuid(), edges);
-			
-			edges = adjacentEdgeMap.getOrElse(edgeView.getTargetSuid(), HashSet.empty());
-			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
-			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getTargetSuid(), edges);
-		}
-	}
-	
 	
 	public View<CyNode> addNode(CyNode model) {
 		if(dataSuidToNode.containsKey(model.getSUID()))
@@ -257,9 +149,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
-			Rectangle r = getDefaultGeometry();
-			rtree = rtree.add(view.getSUID(), r);
-			geometries = geometries.put(view.getSUID(), r);
+			spacialIndex.addDefault(nodeVPs, view.getSUID());
 			setDirty();
 		}
 		
@@ -300,10 +190,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 					
 					nodeVPs.clear(nodeView.getSUID());
+					spacialIndex.remove(nodeView.getSUID());
 					
-					Rectangle r = geometries.getOrElse(nodeView.getSUID(), null);
-					rtree = rtree.delete(nodeView.getSUID(),r);
-					geometries = geometries.remove(nodeView.getSUID());
 					setDirty();
 				}
 				return nodeView;
@@ -428,6 +316,26 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 
+	protected <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
+		synchronized (nodeLock) {
+			spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
+		}
+	}
+	
+	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
+		Set<CyEdgeViewImpl> edges;
+		synchronized (edgeLock) {
+			edges = adjacentEdgeMap.getOrElse(edgeView.getSourceSuid(), HashSet.empty());
+			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
+			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getSourceSuid(), edges);
+			
+			edges = adjacentEdgeMap.getOrElse(edgeView.getTargetSuid(), HashSet.empty());
+			edges = add ? edges.add(edgeView) : edges.remove(edgeView);
+			adjacentEdgeMap = adjacentEdgeMap.put(edgeView.getTargetSuid(), edges);
+		}
+	}
+	
+	
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V value) {
 		if(vp.shouldIgnoreDefault())
@@ -438,7 +346,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				nodeVPs.setViewDefault(vp, value);
 				if(NODE_GEOMETRIC_PROPS.contains(vp)) {
 					for(CyNodeViewImpl node : dataSuidToNode.values()) {
-						updateNodeGeometry(node, vp);
+						spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
 					}
 				}
 			}

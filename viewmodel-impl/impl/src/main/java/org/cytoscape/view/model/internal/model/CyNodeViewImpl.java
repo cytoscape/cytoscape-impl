@@ -3,12 +3,20 @@ package org.cytoscape.view.model.internal.model;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.VisualProperty;
 
-public class CyNodeViewImpl extends CyViewImpl<CyNode> {
+public class CyNodeViewImpl extends CyViewBase<CyNode> {
 
+	private final CyNetworkViewImpl parent;
+	
 	public CyNodeViewImpl(CyNetworkViewImpl parent, CyNode model) {
-		super(parent, model);
+		super(model);
+		this.parent = parent;
 	}
 
+	@Override
+	public CyNetworkViewImpl getNetworkView() {
+		return parent;
+	}
+	
 	private static boolean isGeometric(VisualProperty<?> vp) {
 		return CyNetworkViewImpl.NODE_GEOMETRIC_PROPS.contains(vp);
 	}

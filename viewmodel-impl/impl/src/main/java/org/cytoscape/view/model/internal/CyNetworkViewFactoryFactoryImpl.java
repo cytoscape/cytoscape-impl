@@ -1,7 +1,8 @@
-package org.cytoscape.view.model.internal.model;
+package org.cytoscape.view.model.internal;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryImpl;
 import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
