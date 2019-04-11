@@ -3,6 +3,8 @@ package org.cytoscape.internal.util;
 import javax.swing.Icon;
 import javax.swing.JToggleButton;
 
+import org.cytoscape.internal.view.util.ViewUtil;
+
 /*
  * #%L
  * Cytoscape Swing Application Impl (swing-application-impl)

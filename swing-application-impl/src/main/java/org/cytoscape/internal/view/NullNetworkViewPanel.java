@@ -3,7 +3,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
+import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
@@ -23,7 +23,7 @@ import javax.swing.JSeparator;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;

@@ -36,7 +36,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;

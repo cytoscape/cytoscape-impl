@@ -1,6 +1,6 @@
 package org.cytoscape.internal;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.io.File;
 import java.util.ArrayList;

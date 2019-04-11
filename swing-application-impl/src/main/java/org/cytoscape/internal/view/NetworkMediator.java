@@ -1,6 +1,6 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

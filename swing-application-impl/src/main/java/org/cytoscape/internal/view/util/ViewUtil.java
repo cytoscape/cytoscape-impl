@@ -1,18 +1,23 @@
-package org.cytoscape.internal.util;
+package org.cytoscape.internal.view.util;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -73,9 +78,7 @@ public final class ViewUtil {
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
 	public static final Border DESELECTED_TOGLLE_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-	public static final Border SELECTED_TOGLLE_BORDER = BorderFactory.createCompoundBorder(
-			BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 1),
-			BorderFactory.createEmptyBorder(1, 1, 1, 1));
+	public static final Border SELECTED_TOGLLE_BORDER = DESELECTED_TOGLLE_BORDER;
 	
 	public static String getName(final CyNetwork network) {
 		String name = "";
@@ -223,6 +226,26 @@ public final class ViewUtil {
 		sep.setForeground(UIManager.getColor("Separator.foreground"));
 		
 		return sep;
+	}
+	
+	public static Icon resizeIcon(Icon icon, int maxHeight) {
+		final int height = icon.getIconHeight(), width = icon.getIconWidth();
+
+		if (height <= maxHeight)
+			return icon;
+
+		int newHeight = maxHeight;
+		int newWidth = (int) Math.round(width * (newHeight / (float) height));
+
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		icon.paintIcon(null, g, 0, 0);
+		g.dispose();
+
+		Image resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+		ImageIcon resizedIcon = new ImageIcon(resizedImage);
+		
+		return resizedIcon;
 	}
 	
 	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {

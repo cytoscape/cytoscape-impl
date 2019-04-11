@@ -141,11 +141,8 @@ public class StarterPanel extends JPanel {
 	
 	private void init() {
 		setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")),
-				BorderFactory.createCompoundBorder(
-						BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 4),
-						BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"))
-				)
+				BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 4),
+				BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"))
 		));
 		
 		setLayout(new BorderLayout());

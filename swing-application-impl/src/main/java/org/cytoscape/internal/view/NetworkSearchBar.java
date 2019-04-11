@@ -3,10 +3,10 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.internal.util.ViewUtil.DEFAULT_PROVIDER_PROP_KEY;
-import static org.cytoscape.internal.util.ViewUtil.getViewProperty;
-import static org.cytoscape.internal.util.ViewUtil.hasVisibleOwnedWindows;
-import static org.cytoscape.internal.util.ViewUtil.setViewProperty;
+import static org.cytoscape.internal.view.util.ViewUtil.DEFAULT_PROVIDER_PROP_KEY;
+import static org.cytoscape.internal.view.util.ViewUtil.getViewProperty;
+import static org.cytoscape.internal.view.util.ViewUtil.hasVisibleOwnedWindows;
+import static org.cytoscape.internal.view.util.ViewUtil.setViewProperty;
 
 import java.awt.BorderLayout;
 import java.awt.Color;

@@ -1,8 +1,8 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.internal.util.ViewUtil.createUniqueKey;
-import static org.cytoscape.internal.util.ViewUtil.getTitle;
-import static org.cytoscape.internal.util.ViewUtil.isScreenMenuBar;
+import static org.cytoscape.internal.view.util.ViewUtil.createUniqueKey;
+import static org.cytoscape.internal.view.util.ViewUtil.getTitle;
+import static org.cytoscape.internal.view.util.ViewUtil.isScreenMenuBar;
 
 import java.awt.AWTEvent;
 import java.awt.BorderLayout;

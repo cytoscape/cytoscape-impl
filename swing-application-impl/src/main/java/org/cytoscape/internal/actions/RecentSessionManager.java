@@ -1,6 +1,6 @@
 package org.cytoscape.internal.actions;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.event.ActionEvent;
 import java.io.File;

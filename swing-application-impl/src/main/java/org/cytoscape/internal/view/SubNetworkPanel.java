@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;

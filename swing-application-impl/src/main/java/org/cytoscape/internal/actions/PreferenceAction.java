@@ -15,7 +15,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.dialogs.PreferencesDialog;
 import org.cytoscape.internal.dialogs.PreferencesDialogFactory;
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.property.bookmark.Bookmarks;
 import org.cytoscape.util.swing.LookAndFeelUtil;

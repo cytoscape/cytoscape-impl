@@ -5,7 +5,7 @@ import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeTyp
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
@@ -84,7 +84,6 @@ import org.cytoscape.internal.tunable.CyPropertyConfirmationHandler;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
-import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.CyColumnPresentationManagerImpl;
 import org.cytoscape.internal.view.CyDesktopManager;
@@ -110,6 +109,7 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -634,7 +634,7 @@ public class CyActivator extends AbstractCyActivator {
 			Color disabledFg = originalDisabledFg;
 			
 			if (isWinLAF() || isAquaLAF())
-				disabledFg = disabledFg.brighter();
+				disabledFg = ColorUtil.setBrightness(disabledFg, 0.65f);
 			
 			UIManager.put("Label.disabledForeground", disabledFg);
 			UIManager.put("Button.disabledForeground", disabledFg);
@@ -761,7 +761,7 @@ public class CyActivator extends AbstractCyActivator {
 			
 			// Created for Cytoscape
 			UIManager.put("ToggleButton.unselectedBackground", UIManager.getColor("Button.background"));
-			UIManager.put("ToggleButton.unselectedForeground", UIManager.getColor("Button.foreground"));
+			UIManager.put("ToggleButton.unselectedForeground", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.25f));
 			
 //			if (isNimbusLAF()) {
 //				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
@@ -773,8 +773,17 @@ public class CyActivator extends AbstractCyActivator {
 //				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
 //				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
 //			}
-			UIManager.put("ToggleButton.selectedBackground", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.8f));
+			UIManager.put("ToggleButton.selectedBackground", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.75f));
 			UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Button.foreground"));
+			
+			// ScrollPane
+			UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
+			// SplitPane
+			UIManager.put("SplitPaneUI", "javax.swing.plaf.basic.BasicSplitPaneUI");
+			UIManager.put("SplitPane.dividerSize", 5);
+			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
+			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}

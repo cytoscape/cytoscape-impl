@@ -2,9 +2,9 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.QUERY_PROPERTY;
 import static org.cytoscape.application.swing.search.NetworkSearchTaskFactory.SEARCH_REQUESTED_PROPERTY;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.internal.util.ViewUtil.makeSmall;
-import static org.cytoscape.internal.util.ViewUtil.recursiveDo;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.makeSmall;
+import static org.cytoscape.internal.view.util.ViewUtil.recursiveDo;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
