@@ -90,13 +90,10 @@ public class GraphicsDetailAction extends AbstractCyAction {
 			serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator(view));
 	}
 
-	/**
-	 * This dynamically sets the title of the menu based on the state of the graphics detail.
-	 */
 	@Override
 	public void menuSelected(MenuEvent me) {
 		updateEnableState();
-		JCheckBoxMenuItem item = getThisItem(); 
+		JCheckBoxMenuItem item = getThisItem();
 
 		if (item != null) {
 			CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();

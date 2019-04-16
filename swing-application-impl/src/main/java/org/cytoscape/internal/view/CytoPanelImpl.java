@@ -81,9 +81,10 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 
 public class CytoPanelImpl implements CytoPanel {
 	
-	static final String TOOL_TIP_FLOAT = "Float";
-	static final String TOOL_TIP_DOCK = "Dock";
-	static final String TOOL_TIP_MINIMIZE = "Minimize";
+	public static final String TEXT_DOCK = "Dock";
+	public static final String TEXT_FLOAT = "Float";
+	public static final String TEXT_HIDE = "Minimize";
+	public static final String TEXT_REMOVE = "Remove";
 	
 	/* These are the minimum sizes for our CytoPanels. A CytoPanel can't exceed these values. */
 	private final int NOTIFICATION_STATE_CHANGE = 0;
@@ -102,6 +103,7 @@ public class CytoPanelImpl implements CytoPanel {
 	private final int trimBarIndex;
 	
 	private CytoPanelState cytoPanelState;
+	private boolean removed;
 
 	private final List<CytoPanelComponent> cytoPanelComponents = new ArrayList<>();
 	private final Map<String, CytoPanelComponent2> componentsById = new HashMap<>();
@@ -264,6 +266,17 @@ public class CytoPanelImpl implements CytoPanel {
 	public Component getThisComponent() {
 		return getMainPanel();
 	}
+	
+	public boolean isRemoved() {
+		return removed;
+	}
+	
+	public void setRemoved(boolean removed) {
+		if (removed != this.removed) {
+			this.removed = removed;
+			update();
+		}
+	}
 
 	/**
 	 * Checks to make sure the CytoPanel is within the appropriate dimensions
@@ -333,7 +346,7 @@ public class CytoPanelImpl implements CytoPanel {
 	JButton getFloatButton() {
 		if (floatButton == null) {
 			floatButton = new JButton(ICON_SQUARE_O);
-			floatButton.setToolTipText(TOOL_TIP_FLOAT);
+			floatButton.setToolTipText(TEXT_FLOAT);
 			CytoPanelUtil.styleButton(floatButton);
 			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12));
 		}
@@ -344,7 +357,7 @@ public class CytoPanelImpl implements CytoPanel {
 	JButton getMinimizeButton() {
 		if (minimizeButton == null) {
 			minimizeButton = new JButton(ICON_WINDOW_MINIMIZE);
-			minimizeButton.setToolTipText(TOOL_TIP_MINIMIZE);
+			minimizeButton.setToolTipText(TEXT_HIDE);
 			CytoPanelUtil.styleButton(minimizeButton);
 			minimizeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
 		}
@@ -403,9 +416,9 @@ public class CytoPanelImpl implements CytoPanel {
 	void update() {
 		updateTitleButton();
 		getFloatButton().setText(cytoPanelState == DOCK ? ICON_SQUARE_O : ICON_THUMB_TACK);
-		getFloatButton().setToolTipText(cytoPanelState == DOCK ? TOOL_TIP_FLOAT : TOOL_TIP_DOCK);
+		getFloatButton().setToolTipText(cytoPanelState == DOCK ? TEXT_FLOAT : TEXT_DOCK);
 		
-		getThisComponent().setVisible(getState() != HIDE);
+		getThisComponent().setVisible(!isRemoved() && getState() != HIDE);
 		getThisComponent().validate();
 	}
 	

@@ -532,11 +532,11 @@ public class CyActivator extends AbstractCyActivator {
 		bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 		
-		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, true, cytoscapeDesktop, 1.0f);
-		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, true, cytoscapeDesktop, 1.1f);
-		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, false, cytoscapeDesktop, 1.2f);
-		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
-		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, false, cytoscapeDesktop, 1.35f);
+		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, cytoscapeDesktop, 1.0f, serviceRegistrar);
+		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, cytoscapeDesktop, 1.1f, serviceRegistrar);
+		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, cytoscapeDesktop, 1.2f, serviceRegistrar);
+		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f, serviceRegistrar);
+		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f, serviceRegistrar);
 		
 		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
