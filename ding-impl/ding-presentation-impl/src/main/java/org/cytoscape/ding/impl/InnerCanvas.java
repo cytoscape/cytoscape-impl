@@ -55,6 +55,7 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
@@ -999,7 +1000,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		
 		if (re.isNodeSelectionEnabled()) {
 			// move nodes
-			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getSelectedNodes();
+			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 			for (View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
 				double yPos = re.getNodeDetails().getYPosition(node);
@@ -1083,8 +1084,8 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		       || !( ((chosenNode >= 0) && re.isNodeSelected(chosenNode))
 		             || (chosenAnchor != null) 
 		             || ((chosenEdge >= 0) && re.isEdgeSelected(chosenEdge)) ))) {
-				selectedNodes = re.getViewModelSnapshot().getSelectedNodes();
-				selectedEdges = re.getViewModelSnapshot().getSelectedEdges();
+				selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+				selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		}
 		
 		// Deselect
@@ -1503,7 +1504,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 						}
 					}
 	
-					Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getSelectedNodes();
+					Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 					
 					// MKTODO rename to 'handlesToMove'
 					Set<HandleKey> anchorsToMove = re.getBendStore().getSelectedHandles();

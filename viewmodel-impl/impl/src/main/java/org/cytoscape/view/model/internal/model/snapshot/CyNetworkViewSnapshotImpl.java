@@ -271,9 +271,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public Collection<View<CyNode>> getSelectedNodes() {
+	public Collection<View<CyNode>> getTrackedNodes(Object key) {
 		java.util.HashSet<View<CyNode>> nodes = new java.util.HashSet<>();
-		for(Long suid : nodeVPs.getSelected()) {
+		for(Long suid : nodeVPs.getTracked(key)) {
 			View<CyNode> nv = getNodeView(suid);
 			if(nv != null) {
 				nodes.add(nv);
@@ -281,17 +281,17 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		}
 		return nodes;
 	}
-
+	
 	@Override
-	public Collection<View<CyEdge>> getSelectedEdges() {
-		java.util.HashSet<View<CyEdge>> nodes = new java.util.HashSet<>();
-		for(Long suid : edgeVPs.getSelected()) {
+	public Collection<View<CyEdge>> getTrackedEdges(Object key) {
+		java.util.HashSet<View<CyEdge>> edges = new java.util.HashSet<>();
+		for(Long suid : edgeVPs.getTracked(key)) {
 			View<CyEdge> ev = getEdgeView(suid);
 			if(ev != null) {
-				nodes.add(ev);
+				edges.add(ev);
 			}
 		}
-		return nodes;
+		return edges;
 	}
 
 	@Override

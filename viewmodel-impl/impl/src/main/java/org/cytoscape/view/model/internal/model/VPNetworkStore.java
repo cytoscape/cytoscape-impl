@@ -4,8 +4,10 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWOR
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
 
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Set;
@@ -24,7 +26,7 @@ public class VPNetworkStore extends VPStore {
 	
 	
 	public VPNetworkStore(VisualLexicon visualLexicon) {
-		super(visualLexicon, null, null);
+		super(CyNetwork.class, visualLexicon, new CyNetworkViewConfigImpl());
 	}
 	
 	private VPNetworkStore(VPNetworkStore other) {

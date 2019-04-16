@@ -9,7 +9,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
-import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 

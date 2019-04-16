@@ -59,6 +59,7 @@ import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -158,10 +159,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 	
-//	// Animated edges
-//	Timer animationTimer;
-//	Set<View<CyEdge>> animatedEdges;
-
+	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
 	private final CoalesceTimer coalesceTimer;
 	
@@ -208,11 +206,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		if (!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
 			largeModel = true;
 
-		// Animation
-//		animatedEdges = Collections.newSetFromMap(new ConcurrentHashMap<>());
-//		animationTimer = new Timer(200, this);
-//		animationTimer.setRepeats(true);
-		
 		viewModelSnapshot = viewModel.createSnapshot();
 		
 		coalesceTimer = new CoalesceTimer();
@@ -249,13 +242,24 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
 		// Check for important changes between snapshots
-		
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		if(!backgroundPaint.equals(networkCanvas.getBackground())) {
 			setBackgroundPaint(backgroundPaint);
 		}
 		
-		bendStore.updateSelectedEdges(viewModelSnapshot.getSelectedEdges());
+		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
+		bendStore.updateSelectedEdges(selectedEdges);
+		
+		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
+		edgeDetails.updateAnimatedEdges(animatedEdges);
+		if(animatedEdges.isEmpty() && animationTimer != null) {
+			animationTimer.stop();
+			animationTimer = null;
+		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
+			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
+			animationTimer.setRepeats(true);
+			animationTimer.start();
+		}
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
@@ -274,6 +278,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		
 		updateView(true);
+	}
+	
+	
+	private void advanceAnimatedEdges() {
+		System.out.println("DRenderingEngine.advanceAnimatedEdges()");
+		edgeDetails.advanceAnimatedEdges();
+		// This is more lightweight than calling updateView(). And if the animation thread is faster 
+		// than the renderer the EDT will coalesce the extra paint events.
+		setContentChanged();
+		networkCanvas.repaint();
 	}
 	
 	
@@ -530,7 +544,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		synchronized (m_lock) {
 			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 			SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
-			Collection<View<CyNode>> selectedElms = netViewSnapshot.getSelectedNodes();
+			Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 			if(selectedElms.isEmpty())
 				return;
 			

@@ -41,6 +41,7 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 
@@ -104,7 +105,7 @@ public class ViewState {
 
 		if (whatToSave == SELECTED || whatToSave == SELECTED_NODES ) {
 			points = new WeakHashMap<>();
-			for (View<CyNode> n : view.getSelectedNodes()) {
+			for (View<CyNode> n : view.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES)) {
 				double x = nodeDetails.getXPosition(n);
 				double y = nodeDetails.getYPosition(n);
 				points.put(n, new Point2D.Double(x, y));

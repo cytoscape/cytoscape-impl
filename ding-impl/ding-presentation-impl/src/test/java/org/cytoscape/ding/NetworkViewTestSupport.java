@@ -4,9 +4,9 @@ package org.cytoscape.ding;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.NetworkViewFactoryTestSupport;
 import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
-import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 
 /*
  * #%L

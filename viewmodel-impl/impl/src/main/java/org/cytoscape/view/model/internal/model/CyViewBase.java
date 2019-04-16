@@ -80,7 +80,7 @@ public abstract class CyViewBase<M> implements View<M> {
 	@Override
 	public void clearVisualProperties() {
 		synchronized (getLock()) {
-			getVPStore().clear(suid);
+			getVPStore().clearVisualProperties(suid);
 		}
 	}
 	

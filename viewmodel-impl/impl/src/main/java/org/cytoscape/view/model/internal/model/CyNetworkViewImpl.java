@@ -1,8 +1,6 @@
 package org.cytoscape.view.model.internal.model;
 
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
@@ -30,10 +28,11 @@ import org.cytoscape.view.model.events.AboutToRemoveNodeViewsEvent;
 import org.cytoscape.view.model.events.AddedEdgeViewsEvent;
 import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
+import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndexStore;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
+import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
 import io.vavr.collection.Map;
@@ -49,7 +48,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
-	private final BasicVisualLexicon visualLexicon;
+	private final VisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	private boolean dirty = true;
@@ -73,14 +72,15 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private final SpacialIndexStore spacialIndex = new SpacialIndexStore();
 
-	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, BasicVisualLexicon visualLexicon, String rendererId) {
+	
+	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
 		super(network);
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
 		
-		this.edgeVPs = new VPStore(visualLexicon, null, EDGE_SELECTED);
-		this.nodeVPs = new VPStore(visualLexicon, NODE_GEOMETRIC_PROPS, NODE_SELECTED);
+		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
+		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon);
 		
 		for(CyNode node : network.getNodeList())
@@ -189,7 +189,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					}
 					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 					
-					nodeVPs.clear(nodeView.getSUID());
+					nodeVPs.remove(nodeView.getSUID());
 					spacialIndex.remove(nodeView.getSUID());
 					
 					setDirty();
@@ -209,7 +209,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				dataSuidToEdge = dataSuidToEdge.remove(model.getSUID());
 				viewSuidToEdge = viewSuidToEdge.remove(edgeView.getSUID());
 				updateAdjacentEdgeMap(edgeView, false);
-				edgeVPs.clear(edgeView.getSUID());
+				edgeVPs.remove(edgeView.getSUID());
 				setDirty();
 			}
 			return edgeView;
@@ -344,6 +344,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		if(vp.getTargetDataType().equals(CyNode.class)) {
 			synchronized(nodeLock) {
 				nodeVPs.setViewDefault(vp, value);
+				if(nodeVPs.getConfig().isTracked(vp)) {
+					netVPs.updateTrackedVP(getSUID(), vp);
+				}
 				if(NODE_GEOMETRIC_PROPS.contains(vp)) {
 					for(CyNodeViewImpl node : dataSuidToNode.values()) {
 						spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
@@ -353,10 +356,20 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		} else if(vp.getTargetDataType().equals(CyEdge.class)) {
 			synchronized(edgeLock) {
 				edgeVPs.setViewDefault(vp, value);
+				if(edgeVPs.getConfig().isTracked(vp)) {
+					for(Tuple2<Long,?> t : viewSuidToEdge) {
+						edgeVPs.updateTrackedVP(t._1, vp);
+					}
+				}
 			}
 		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {
 			synchronized(netLock) {
 				netVPs.setViewDefault(vp, value);
+				if(netVPs.getConfig().isTracked(vp)) {
+					for(Tuple2<Long,?> t : viewSuidToNode) {
+						nodeVPs.updateTrackedVP(t._1, vp);
+					}
+				}
 			}
 		}
 		setDirty();

@@ -34,9 +34,13 @@ import java.awt.Paint;
 import java.awt.Stroke;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.cytoscape.ding.impl.BendStore.HandleKey;
+import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.model.CyEdge;
@@ -57,6 +61,7 @@ import org.cytoscape.view.presentation.property.values.LineType;
 public final class DEdgeDetails implements EdgeDetails {
 
 	private final DRenderingEngine re;
+	private Map<View<CyEdge>,DAnimatedStroke> animatedStrokes = null;
 	
 	public DEdgeDetails(DRenderingEngine re) {
 		this.re = re;
@@ -145,25 +150,59 @@ public final class DEdgeDetails implements EdgeDetails {
 		return edgeView.getVisualProperty(EDGE_WIDTH).floatValue();
 	}
 
-	@Override
-	public Stroke getStroke(View<CyEdge> edgeView) {
+	
+	private Stroke getEdgeStroke(View<CyEdge> edgeView) {
 		LineType lineType = edgeView.getVisualProperty(EDGE_LINE_TYPE);
 		float width = (float) getWidth(edgeView);
-		Stroke stroke = DLineType.getDLineType(lineType).getStroke(width);
-		// MKTODO make animated edges work again. Code was in DGraphView.actionPerformed()
-		// if (stroke instanceof AnimatedStroke) {
-		// }
+		return DLineType.getDLineType(lineType).getStroke(width);
+	}
+	
+	@Override
+	public Stroke getStroke(View<CyEdge> edgeView) {
+		Stroke stroke = animatedStrokes == null ? null : animatedStrokes.get(edgeView);
+		if(stroke == null) {
+			stroke = getEdgeStroke(edgeView);
+		}
 		return stroke;
 	}
 	
 	@Override
-	public Paint getPaint(View<CyEdge> edgeView) {
-		if (isSelected(edgeView))
-			return getSelectedPaint(edgeView);
-		else
-			return getUnselectedPaint(edgeView);
+	public void updateAnimatedEdges(Collection<View<CyEdge>> edges) {
+		if(edges.isEmpty()) {
+			animatedStrokes = null;
+			return;
+		}
+		
+		if(animatedStrokes == null) {
+			animatedStrokes = new HashMap<>();
+		} else {
+			animatedStrokes.keySet().retainAll(edges);
+		}
+		
+		for(View<CyEdge> edge : edges) {
+			DAnimatedStroke animatedStroke = animatedStrokes.get(edge);
+			Stroke stroke = getEdgeStroke(edge);
+			if(animatedStroke == null || !sameStroke(animatedStroke, stroke)) {
+				animatedStrokes.put(edge, (DAnimatedStroke)stroke);
+			}
+		}
 	}
 
+	private static boolean sameStroke(DAnimatedStroke animatedStroke, Stroke stroke) {
+		return animatedStroke.getClass().equals(stroke.getClass())
+			&& animatedStroke.getWidth() == ((DAnimatedStroke)stroke).getWidth();
+	}
+	
+	@Override
+	public void advanceAnimatedEdges() {
+		animatedStrokes.replaceAll((edge,stroke) -> stroke.newInstanceForNextOffset());
+	}
+	
+	
+	@Override
+	public Paint getPaint(View<CyEdge> edgeView) {
+		return isSelected(edgeView) ? getSelectedPaint(edgeView) : getUnselectedPaint(edgeView);
+	}
 
 	@Override
 	public Paint getUnselectedPaint(View<CyEdge> edgeView) {

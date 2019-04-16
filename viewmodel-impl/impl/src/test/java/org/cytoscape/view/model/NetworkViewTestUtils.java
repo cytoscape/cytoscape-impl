@@ -18,6 +18,8 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
@@ -36,7 +38,8 @@ public class NetworkViewTestUtils {
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 		
-		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test");
+		CyNetworkViewConfigImpl config = new CyNetworkViewFactoryFactoryImpl(registrar).createConfig(lexicon);
+		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test", config);
 		return networkView;
 	}
 	

@@ -16,6 +16,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.Position;
 
@@ -78,12 +79,12 @@ public class CanvasMouseMotionListener implements MouseMotionListener {
 		} else if (a != null) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will want to move them also
-			if (!re.getViewModelSnapshot().getSelectedNodes().isEmpty()) //.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
+			if (!re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES).isEmpty()) //.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty())
 				networkCanvas.mouseDragged(e);
 		} else if (annotationSelection.isMoving()) {
 			annotationSelection.moveSelection(e.getX(), e.getY());
 			// If we're moving, we might have nodes or edges selected and will want to move them also
-			if (!re.getViewModelSnapshot().getSelectedNodes().isEmpty()) { //(!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
+			if (!re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES).isEmpty()) { //(!view.getSelectedNodes().isEmpty() || !view.getSelectedEdges().isEmpty()) {
 				networkCanvas.mouseDragged(e);
 			}
 		} else {

@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
@@ -24,7 +25,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
+import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
+import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
+import org.cytoscape.view.model.internal.model.VPStore;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Test;
@@ -33,7 +38,7 @@ public class NetworkViewImplTest {
 
 	private NetworkTestSupport networkSupport = new NetworkTestSupport();
 	
-	private CyNetworkViewImpl createSquareTestNetworkView() {
+	private CyNetwork createSquareTestNetwork() {
 		CyNetwork network = networkSupport.getNetwork();
 		CyNode n1 = network.addNode();
 		CyNode n2 = network.addNode();
@@ -43,18 +48,30 @@ public class NetworkViewImplTest {
 		network.addEdge(n2, n3, false);
 		network.addEdge(n3, n4, false);
 		network.addEdge(n4, n1, false);
-		return createNetworkView(network);
+		return network;
 	}
 	
 	private static CyNetworkViewImpl createNetworkView(CyNetwork network) {
+		return createNetworkView(network, null);
+	}
+			
+	private static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 		
-		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test");
+		CyNetworkViewConfigImpl config = new CyNetworkViewFactoryFactoryImpl(registrar).createConfig(lexicon);
+		if(configExtender != null) {
+			configExtender.accept(config);
+		}
+		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test", config);
 		return networkView;
+	}
+	
+	private CyNetworkViewImpl createSquareTestNetworkView() {
+		return createNetworkView(createSquareTestNetwork());
 	}
 	
 	
@@ -394,22 +411,140 @@ public class NetworkViewImplTest {
 //		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
 //		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
 		
-		assertTrue(netView.createSnapshot().getSelectedNodes().isEmpty());
+		assertTrue(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES).isEmpty());
 		
 		n0.setVisualProperty(NODE_SELECTED, true);
 		n1.setVisualProperty(NODE_SELECTED, true);
 		
-		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
+		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES));
 		assertEquals(2, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));
 		assertTrue(selectedNodes.contains(n1.getSUID()));
 		
 		n1.setVisualProperty(NODE_SELECTED, false);
 		
-		selectedNodes = asSuidSet(netView.createSnapshot().getSelectedNodes());
+		selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES));
 		
 		assertEquals(1, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));
+	}
+	
+	
+	@Test
+	public void testTrackedNodes() {
+		final String NODE_LABEL_STARTS_WITH_A = "nodeLabel.starta";
+		final String NODE_LABEL_IS_CCC = "nodeLabel.ccc";
+		
+		CyNetwork network = createSquareTestNetwork();
+		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+			config.addTrackedVisualProperty(NODE_LABEL_STARTS_WITH_A, NODE_LABEL, v -> v.startsWith("A"));
+			config.addTrackedVisualProperty(NODE_LABEL_IS_CCC, NODE_LABEL, "CCC");
+		});
+		
+		List<CyNode> nodes = network.getNodeList();
+		View<CyNode> n0 = netView.getNodeView(nodes.get(0));
+		View<CyNode> n1 = netView.getNodeView(nodes.get(1));
+		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
+		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
+		
+		assertTrue(netView.createSnapshot().getTrackedNodes("BLAH").isEmpty());
+		assertTrue(netView.createSnapshot().getTrackedNodes(NODE_LABEL_STARTS_WITH_A).isEmpty());
+		
+		n0.setVisualProperty(NODE_LABEL, "AAA");
+		n1.setVisualProperty(NODE_LABEL, "BBB");
+		n2.setVisualProperty(NODE_LABEL, "A_also");
+		n3.setVisualProperty(NODE_LABEL, "DDD");
+		
+		Set<Long> nodesStartingWithA = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_STARTS_WITH_A));
+		assertEquals(2, nodesStartingWithA.size());
+		assertTrue(nodesStartingWithA.contains(n0.getSUID()));
+		assertTrue(nodesStartingWithA.contains(n2.getSUID()));
+		
+		Set<Long> nodesNamedCCC = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_IS_CCC));
+		assertEquals(0, nodesNamedCCC.size());
+		
+		n2.setVisualProperty(NODE_LABEL, "CCC");
+		
+		nodesStartingWithA = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_STARTS_WITH_A));
+		assertEquals(1, nodesStartingWithA.size());
+		assertTrue(nodesStartingWithA.contains(n0.getSUID()));
+		
+		nodesNamedCCC = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_IS_CCC));
+		assertEquals(1, nodesNamedCCC.size());
+		assertTrue(nodesNamedCCC.contains(n2.getSUID()));
+		
+		
+	}
+	
+	
+	@Test
+	public void testRemovingANodeRemovesItsVPs() {
+		final String NODE_LABEL_STARTS_WITH_A = "nodeLabel.starta";
+		CyNetwork network = createSquareTestNetwork();
+		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+			config.addTrackedVisualProperty(NODE_LABEL_STARTS_WITH_A, NODE_LABEL, v -> v.startsWith("A"));
+		});
+		
+		List<CyNode> nodes = network.getNodeList();
+		CyNodeViewImpl n0 = (CyNodeViewImpl) netView.getNodeView(nodes.get(0));
+		
+		n0.setVisualProperty(NODE_LABEL, "AAA");
+		
+		VPStore vpStore = n0.getVPStore();
+		assertEquals("AAA", vpStore.getVisualProperty(n0.getSUID(), NODE_LABEL));
+		Set<Long> nodesStartingWithA = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_STARTS_WITH_A));
+		assertEquals(1, nodesStartingWithA.size());
+		assertTrue(nodesStartingWithA.contains(n0.getSUID()));
+		
+		netView.removeNode(n0.getModel());
+		assertEquals(NODE_LABEL.getDefault(), vpStore.getVisualProperty(n0.getSUID(), NODE_LABEL));
+		nodesStartingWithA = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_STARTS_WITH_A));
+		assertEquals(0, nodesStartingWithA.size());
+	}
+	
+	
+	@Test
+	public void testTrackedEdges() {
+		final String EDGE_LABEL_STARTS_WITH_A = "edgeLabel.starta";
+		final String EDGE_LABEL_IS_CCC = "edgeLabel.ccc";
+		
+		CyNetwork network = createSquareTestNetwork();
+		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+			config.addTrackedVisualProperty(EDGE_LABEL_STARTS_WITH_A, EDGE_LABEL, v -> v.startsWith("A"));
+			config.addTrackedVisualProperty(EDGE_LABEL_IS_CCC, EDGE_LABEL, "CCC");
+		});
+		
+		List<CyEdge> edges = network.getEdgeList();
+		View<CyEdge> e0 = netView.getEdgeView(edges.get(0));
+		View<CyEdge> e1 = netView.getEdgeView(edges.get(1));
+		View<CyEdge> e2 = netView.getEdgeView(edges.get(2));
+		View<CyEdge> e3 = netView.getEdgeView(edges.get(3));
+		
+		assertTrue(netView.createSnapshot().getTrackedEdges("BLAH").isEmpty());
+		assertTrue(netView.createSnapshot().getTrackedEdges(EDGE_LABEL_STARTS_WITH_A).isEmpty());
+		
+		e0.setVisualProperty(EDGE_LABEL, "AAA");
+		e1.setVisualProperty(EDGE_LABEL, "BBB");
+		e2.setVisualProperty(EDGE_LABEL, "A_also");
+		e3.setVisualProperty(EDGE_LABEL, "DDD");
+		
+		Set<Long> startingWithA = asSuidSet(netView.createSnapshot().getTrackedEdges(EDGE_LABEL_STARTS_WITH_A));
+		assertEquals(2, startingWithA.size());
+		assertTrue(startingWithA.contains(e0.getSUID()));
+		assertTrue(startingWithA.contains(e2.getSUID()));
+		
+		Set<Long> namedCCC = asSuidSet(netView.createSnapshot().getTrackedEdges(EDGE_LABEL_IS_CCC));
+		assertEquals(0, namedCCC.size());
+		
+		e2.setVisualProperty(EDGE_LABEL, "CCC");
+		
+		startingWithA = asSuidSet(netView.createSnapshot().getTrackedEdges(EDGE_LABEL_STARTS_WITH_A));
+		assertEquals(1, startingWithA.size());
+		assertTrue(startingWithA.contains(e0.getSUID()));
+		
+		namedCCC = asSuidSet(netView.createSnapshot().getTrackedEdges(EDGE_LABEL_IS_CCC));
+		assertEquals(1, namedCCC.size());
+		assertTrue(namedCCC.contains(e2.getSUID()));
 	}
 	
 	

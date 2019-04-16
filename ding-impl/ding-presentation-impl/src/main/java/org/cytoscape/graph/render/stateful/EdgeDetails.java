@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.util.Collection;
 
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.model.CyEdge;
@@ -342,5 +343,9 @@ public interface EdgeDetails {
 	Paint getUnselectedPaint(View<CyEdge> edgeView);
 
 	Paint getSelectedPaint(View<CyEdge> edgeView);
+	
+	public void advanceAnimatedEdges();
+	
+	public void updateAnimatedEdges(Collection<View<CyEdge>> animatedEdges);
 	
 }

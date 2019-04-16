@@ -8,13 +8,18 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
 
+	public static final Object ANIMATED_EDGES = new Object();
+	
+	
 	private final CyNetworkViewFactory delegateFactory;
 	private final Map<CyNetworkView, DRenderingEngine> mainRenderingEngines = new HashMap<>();
 
@@ -40,6 +45,12 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 		this.registrar = registrar;
 	}
 
+	public static CyNetworkViewConfig getNetworkViewConfig(CyNetworkViewFactoryFactory factoryFactory, DVisualLexicon dVisualLexicon) {
+		CyNetworkViewConfig config = factoryFactory.createConfig(dVisualLexicon);
+		config.addTrackedVisualProperty(ANIMATED_EDGES, DVisualLexicon.EDGE_LINE_TYPE, dVisualLexicon::isAnimated);
+		return config;
+	}
+	
 	@Override
 	public CyNetworkView createNetworkView(CyNetwork network) {
 		CyNetworkView netView = delegateFactory.createNetworkView(network);

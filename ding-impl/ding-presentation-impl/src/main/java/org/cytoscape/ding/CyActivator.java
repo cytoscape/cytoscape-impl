@@ -76,10 +76,11 @@ import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
-import org.cytoscape.view.presentation.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -162,7 +163,8 @@ public class CyActivator extends AbstractCyActivator {
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
 		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
-		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID);
+		CyNetworkViewConfig viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
+		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
 		DingNetworkViewFactory dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
 		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
 		

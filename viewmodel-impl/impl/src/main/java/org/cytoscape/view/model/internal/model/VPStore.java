@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 
 import io.vavr.collection.HashMap;
 import io.vavr.collection.HashSet;
@@ -22,30 +23,34 @@ public class VPStore {
 	private Map<Long,Map<VisualProperty<?>,Object>> directLocks = HashMap.empty();
 	private Map<VisualProperty<?>,Object> defaultValues = HashMap.empty();
 	
-	private Set<Long> selected = HashSet.empty();
-	private final VisualProperty<?> selectedVP;
-	private final Set<VisualProperty<?>> noClearVPs;
+	private final CyNetworkViewConfigImpl config;
+	private final Class<?> type;
+	private Map<Object,Set<Long>> tracked = HashMap.empty();
 	
 	
-	public VPStore(VisualLexicon visualLexicon, Set<VisualProperty<?>> noClearVPs, VisualProperty<?> selectedVP) {
+	public VPStore(Class<?> type, VisualLexicon visualLexicon, CyNetworkViewConfigImpl config) {
+		this.type = type;
 		this.visualLexicon = visualLexicon;
-		this.noClearVPs = noClearVPs == null ? HashSet.empty() : noClearVPs;
-		this.selectedVP = selectedVP;
+		this.config = config;
 	}
 	
 	protected VPStore(VPStore other) {
+		this.type = other.type;
 		this.visualLexicon = other.visualLexicon;
 		this.visualProperties = other.visualProperties;
 		this.allLocks = other.allLocks;
 		this.directLocks = other.directLocks;
 		this.defaultValues = other.defaultValues;
-		this.selected = other.selected;
-		this.selectedVP = other.selectedVP;
-		this.noClearVPs = other.noClearVPs;
+		this.tracked = other.tracked;
+		this.config = other.config;
 	}
 
 	public VPStore createSnapshot() {
 		return new VPStore(this);
+	}
+	
+	public CyNetworkViewConfigImpl getConfig() {
+		return config;
 	}
 	
 	public Map<VisualProperty<?>,Object> getVisualPropertiesMap(Long suid) {
@@ -83,20 +88,26 @@ public class VPStore {
 			return map.put(suid, values);
 	}
 	
-	
-	public void clear(Long suid) {
-		visualProperties = clear(visualProperties, suid);
+	public void remove(Long suid) {
+		visualProperties = visualProperties.remove(suid);
+		allLocks = allLocks.remove(suid);
+		directLocks = directLocks.remove(suid);
+		updateTrackedVPs(suid);
 	}
 	
+	public void clearVisualProperties(Long suid) {
+		visualProperties = clear(visualProperties, suid);
+		updateTrackedVPs(suid);
+	}
 	
 	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
 		// we actually can't clear certain VPs, the renderer expects node size and location to remain consistent
 		java.util.HashMap<VisualProperty<?>,Object> valuesToRestore = new java.util.HashMap<>();
-		for(VisualProperty<?> vp : noClearVPs) {
+		for(VisualProperty<?> vp : config.getNoClearVPs()) {
 			valuesToRestore.put(vp, map.getOrElse(suid, HashMap.empty()).getOrElse(vp,null));
 		}
 		map = map.remove(suid);
-		for(VisualProperty<?> vp : noClearVPs) {
+		for(VisualProperty<?> vp : config.getNoClearVPs()) {
 			map = put(map, suid, vp, valuesToRestore.get(vp));
 		}
 		return map;
@@ -106,7 +117,7 @@ public class VPStore {
 		if(setSpecialVisualProperty(suid, vp, value))
 			return;
 		visualProperties = put(visualProperties, suid, vp, value);
-		updateSelection(suid, vp);
+		updateTrackedVP(suid, vp);
 	}
 	
 	
@@ -149,18 +160,32 @@ public class VPStore {
 		VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
 		propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
 		
-		updateSelection(suid, vp);
+		updateTrackedVP(suid, vp);
 	}
 	
-	private <T, V extends T> void updateSelection(Long suid, VisualProperty<? extends T> vp) {
-		if(vp == selectedVP) {
-			Object s = getVisualProperty(suid, vp);
-			selected = Boolean.TRUE.equals(s) ? selected.add(suid) : selected.remove(suid);
+	public void updateTrackedVPs(Long suid) {
+		for(VisualProperty<?> vp : config.getTrackedVPs(type)) {
+			updateTrackedVP(suid, vp);
 		}
 	}
 	
-	public Set<Long> getSelected() {
-		return selected;
+	public void updateTrackedVP(Long suid, VisualProperty<?> vp) {
+		Collection<Object> keys = config.getKeys(vp);
+		if(keys.isEmpty())
+			return;
+		
+		// This VP is tracked
+		Object value = getVisualProperty(suid, vp);
+		for(Object key : keys) {
+			boolean test = config.getPredicate(key).test(value);
+			Set<Long> set = tracked.getOrElse(key, HashSet.empty());
+			set = test ? set.add(suid) : set.remove(suid);
+			tracked = tracked.put(key, set);
+		}
+	}
+	
+	public Set<Long> getTracked(Object key) {
+		return tracked.getOrElse(key, HashSet.empty());
 	}
 	
 	public boolean isValueLocked(Long suid, VisualProperty<?> vp) {
@@ -193,6 +218,7 @@ public class VPStore {
 			if (!isDirectlyLocked(suid, vp)) {
 				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
 					allLocks = put(allLocks, suid, vp, value);
+					updateTrackedVP(suid, vp);
 				}
 				
 				nodes.addAll(node.getChildren());
