@@ -10,33 +10,57 @@ import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 
 /*
- * @ 2003 Daniel C. Tofan
- * daniel@danieltofan.org
- * https://www.javaworld.com/article/2077509/java-tip-142--pushing-jbuttongroup.html
+ * #%L
+ * Cytoscape Swing Application Impl (swing-application-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
 
 /**
- * Extends <code>javax.swing.ButtonGroup</code> to provide methods that allow
- * working with button references instead of button models.
- * Also, you can't add a button to a group more than once, and provides some useful methods.
- * 
- * @author Daniel Tofan
- * @version 1.0 April 2003
- * @see ButtonGroup
+ * Modified ButtonGroup that allows a selected toggle button to be deselected when it's clicked again.<br><br>
+ * It also provides methods that allow working with button references instead of button models, 
+ * and you can't add a button to a group more than once, plus other useful methods
+ * (from <a href="https://www.javaworld.com/article/2077509/java-tip-142--pushing-jbuttongroup.html">this class</a>,
+ * by Daniel C. Tofan).<br><br>
  */
 @SuppressWarnings("serial")
-public class MyButtonGroup extends ButtonGroup {
+public class ToggleableButtonGroup extends ButtonGroup {
 	
 	/**
 	 * Stores a reference to the currently selected button in the group.
 	 */
 	private AbstractButton selectedButton;
+	/** Only used when toggleable is true. */
+	private ButtonModel lastModel;
+	private boolean toggleable;
 
 	/**
-	 * Creates an empty <code>MyButtonGroup</code>
+	 * Creates an empty <code>ToggleableButtonGroup</code>
 	 */
-	public MyButtonGroup() {
+	public ToggleableButtonGroup() {
+		this(false);
+	}
+	
+	public ToggleableButtonGroup(boolean toggleable) {
 		super();
+		this.toggleable = toggleable;
 	}
 
 	@Override
@@ -102,8 +126,16 @@ public class MyButtonGroup extends ButtonGroup {
 	public void setSelected(ButtonModel model, boolean selected) {
 		AbstractButton button = getButton(model);
 		
-		if (buttons.contains(button))
+		if (toggleable) {
+			if (model == lastModel)
+				clearSelection();
+			else if (buttons.contains(button) && selected != super.isSelected(model))
+				super.setSelected(model, selected);
+			
+			lastModel = getSelection();
+		} else if (buttons.contains(button)) {
 			super.setSelected(model, selected);
+		}
 	}
 
 	/**
