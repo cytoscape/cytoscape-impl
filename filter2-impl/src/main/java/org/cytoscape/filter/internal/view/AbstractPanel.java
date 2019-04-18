@@ -67,12 +67,6 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	
 	protected C controller;
 	protected JComboBox namedElementComboBox;
-	protected JPopupMenu menu;
-	protected JMenuItem createMenu;
-	protected JMenuItem renameMenu;
-	protected JMenuItem deleteMenu;
-	protected JMenuItem exportMenu;
-	protected JMenuItem importMenu;
 	protected JButton optionsButton;
 	protected Component editControlPanel;
 	protected JScrollPane scrollPane;
@@ -94,28 +88,6 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		namedElementComboBox.setRenderer(ViewUtil.createElipsisRenderer(50));
 		namedElementComboBox.addActionListener(e -> controller.handleElementSelected(AbstractPanel.this));
 		
-		createMenu = new JMenuItem(controller.getCreateMenuLabel());
-		createMenu.addActionListener(e -> controller.createNewElement(AbstractPanel.this));
-		
-		renameMenu = new JMenuItem(controller.getRenameMenuLabel());
-		renameMenu.addActionListener(e -> controller.handleRename(AbstractPanel.this));
-		
-		deleteMenu = new JMenuItem(controller.getDeleteMenuLabel());
-		deleteMenu.addActionListener(e -> controller.handleDelete());
-
-		exportMenu = new JMenuItem(controller.getExportLabel());
-		exportMenu.addActionListener(e -> controller.handleExport(AbstractPanel.this));
-
-		importMenu = new JMenuItem(controller.getImportLabel());
-		importMenu.addActionListener(e -> controller.handleImport(AbstractPanel.this));
-
-		menu = new JPopupMenu();
-		menu.add(renameMenu);
-		menu.add(deleteMenu);
-		menu.add(createMenu);
-		menu.add(exportMenu);
-		menu.add(importMenu);
-
 		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		optionsButton = new JButton(IconManager.ICON_BARS);
@@ -156,11 +128,39 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	}
 	
 	@SuppressWarnings("unchecked")
-	protected void handleShowMenu(ActionEvent event) {
+	private void handleShowMenu(ActionEvent event) {
+		JMenuItem createMenu = new JMenuItem(controller.getCreateMenuLabel());
+		createMenu.addActionListener(e -> controller.createNewElement(AbstractPanel.this));
+		
+		JMenuItem renameMenu = new JMenuItem(controller.getRenameMenuLabel());
+		renameMenu.addActionListener(e -> controller.handleRename());
+		
+		JMenuItem copyMenu = new JMenuItem(controller.getCopyMenuLabel());
+		copyMenu.addActionListener(e -> controller.handleCopy(AbstractPanel.this));
+		
+		JMenuItem deleteMenu = new JMenuItem(controller.getDeleteMenuLabel());
+		deleteMenu.addActionListener(e -> controller.handleDelete());
+
+		JMenuItem exportMenu = new JMenuItem(controller.getExportLabel());
+		exportMenu.addActionListener(e -> controller.handleExport());
+
+		JMenuItem importMenu = new JMenuItem(controller.getImportLabel());
+		importMenu.addActionListener(e -> controller.handleImport(AbstractPanel.this));
+		
+		JPopupMenu menu = new JPopupMenu();
+		menu.add(createMenu);
+		menu.add(renameMenu);
+		menu.add(copyMenu);
+		menu.add(deleteMenu);
+		menu.add(exportMenu);
+		menu.add(importMenu);
+		
 		ComboBoxModel model = controller.getElementComboBoxModel();
 		T selected = (T) model.getSelectedItem();
 		renameMenu.setEnabled(selected != null);
+		copyMenu.setEnabled(selected != null);
 		deleteMenu.setEnabled(model.getSize() > 1);
+		
 		Component c = (Component) event.getSource();
 		menu.show(c, 0, c.getHeight());
 	}

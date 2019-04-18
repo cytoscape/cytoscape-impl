@@ -4,6 +4,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -272,23 +275,30 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return matcher.group(1);
 	}
 	
-	@SuppressWarnings("unchecked")
-	void handleRename(V panel) {
-		T selected = (T) namedElementComboBoxModel.getSelectedItem();
-		String defaultName = selected.name;
+	
+	private String promptForName(String defaultName) {
 		String name;
 		String message = getPrompt();
 		while (true) {
 			name = (String) JOptionPane.showInputDialog(null, message, getRenameElementTitle(), JOptionPane.QUESTION_MESSAGE, null, null, defaultName);
 			if (name == null) {
-				return;
+				return null;
 			}
 			if (validateName(defaultName, name, namedElementComboBoxModel)) {
 				break;
 			}
 			message = "The name '" + name + "' is already being used by another filter.  Please provide a different name.";
 		}
-		selected.name = name;
+		return name;
+	}
+	
+	@SuppressWarnings("unchecked")
+	void handleRename() {
+		T selected = (T) namedElementComboBoxModel.getSelectedItem();
+		String name = promptForName(selected.name);
+		if(name != null) {
+			selected.name = name;
+		}
 	}
 
 	public DynamicComboBoxModel<T> getElementComboBoxModel() {
@@ -347,7 +357,7 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		return namedElementComboBoxModel.items.size();
 	}
 	
-	protected void handleExport(V view) {
+	protected void handleExport() {
 		Task task = new ExportNamedTransformersTask(filterIo, this);
 		serviceRegistrar.getService(TaskManager.class).execute(new TaskIterator(task));
 	}
@@ -358,6 +368,19 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		serviceRegistrar.getService(TaskManager.class).execute(new TaskIterator(task));
 	}
 
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	void handleCopy(V view) {
+		NamedTransformer<CyNetwork,CyIdentifiable> transformer = getSelectedNamedTransformer();
+		try {
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			filterIo.writeFilters(out, new NamedTransformer[] { transformer });
+			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+			filterIo.readTransformers(in, (AbstractPanel) view);
+		} catch (IOException e) {
+			logger.error("An unexpected error occurred", e);
+		}
+	}
+	
 	public JComponent getLastHoveredComponent() {
 		return lastHoveredComponent;
 	}
@@ -566,6 +589,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	
 	protected abstract String getCreateMenuLabel();
 	
+	protected abstract String getCopyMenuLabel();
+	
 	protected abstract String getRenameMenuLabel();
 	
 	protected abstract String getDeleteMenuLabel();
@@ -590,6 +615,8 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 	public abstract void addNamedTransformers(V view, @SuppressWarnings("unchecked") NamedTransformer<CyNetwork, CyIdentifiable>... transformers);
 	
 	public abstract NamedTransformer<CyNetwork, CyIdentifiable>[] getNamedTransformers();
+	
+	public abstract NamedTransformer<CyNetwork, CyIdentifiable> getSelectedNamedTransformer();
 	
 	public abstract void handleDrop(V view, JComponent source, List<Integer> sourcePath, JComponent target, List<Integer> targetPath);
 	

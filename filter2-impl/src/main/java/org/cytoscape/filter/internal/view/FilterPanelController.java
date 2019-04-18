@@ -180,7 +180,7 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	
 	@Override
 	protected String getCreateMenuLabel() {
-		return "Create new filter";
+		return "New filter";
 	}
 	
 	@Override
@@ -191,6 +191,11 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 	@Override
 	protected String getRenameMenuLabel() {
 		return "Rename current filter";
+	}
+	
+	@Override
+	protected String getCopyMenuLabel() {
+		return "Copy current filter";
 	}
 	
 	@Override
@@ -299,13 +304,24 @@ public class FilterPanelController extends AbstractPanelController<FilterElement
 			if (element.getFilter() == null) {
 				continue;
 			}
-			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.getFilter() };
-			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
+			namedTransformers[i] = toNamedController(element);
 			i++;
 		}
 		return namedTransformers;
 	}
+	
+	@SuppressWarnings("unchecked")
+	private NamedTransformer<CyNetwork, CyIdentifiable> toNamedController(FilterElement element) {
+		Transformer<CyNetwork, CyIdentifiable>[] transformers = new Transformer[] { element.getFilter() };
+		return (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
+	}
+	
+	@Override
+	public NamedTransformer<CyNetwork, CyIdentifiable> getSelectedNamedTransformer() {
+		DynamicComboBoxModel<FilterElement> model = getElementComboBoxModel();
+		return toNamedController(model.getSelectedItem());
+	}
+	
 	
 	@Override
 	public void unregisterView(JComponent elementView) {
