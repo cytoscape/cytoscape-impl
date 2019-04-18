@@ -732,6 +732,9 @@ public class CytoscapeDesktop extends JFrame
 		cytoPanel.setRemoved(true);
 		getTrimStackOf(cytoPanel).update();
 		getSideBarOf(cytoPanel).update();
+		
+		if (popup != null && popup.getCytoPanel().equals(cytoPanel))
+			popup.dispose();
 	}
 	
 	public void showCytoPanel(CytoPanelImpl cytoPanel) {
@@ -1192,6 +1195,9 @@ public class CytoscapeDesktop extends JFrame
 						SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
 						
 						for (SidebarToggleButton btn : trimStack.getAllButtons()) {
+							if (!btn.isShowing())
+								continue;
+							
 							Point buttonLoc = btn.getLocationOnScreen();
 							mouseLoc.x -= buttonLoc.x;
 							mouseLoc.y -= buttonLoc.y;
@@ -1698,16 +1704,16 @@ public class CytoscapeDesktop extends JFrame
 				
 				int maxWidth = desktopSize.width - borderInsets.left - borderInsets.right;
 				
-				if (getWestSideBar().getSize() != null)
+				if (getWestSideBar().isVisible() && getWestSideBar().getSize() != null)
 					maxWidth -= getWestSideBar().getSize().width;
-				if (getEastSideBar().getSize() != null)
+				if (getEastSideBar().isVisible() && getEastSideBar().getSize() != null)
 					maxWidth -= getEastSideBar().getSize().width;
 				
 				int maxHeight = desktopSize.height - borderInsets.top - borderInsets.bottom;
 				
-				if (getBottomPanel().getSize() != null)
+				if (getBottomPanel().isVisible() && getBottomPanel().getSize() != null)
 					maxHeight -= getBottomPanel().getSize().height;
-				if (getJToolBar().getSize() != null)
+				if (getJToolBar().isVisible() && getJToolBar().getSize() != null)
 					maxHeight -= getJToolBar().getSize().height;
 				
 				if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH
