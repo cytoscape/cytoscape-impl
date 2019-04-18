@@ -129,11 +129,11 @@ public class ToggleableButtonGroup extends ButtonGroup {
 		if (toggleable) {
 			if (model == lastModel)
 				clearSelection();
-			else if (buttons.contains(button) && selected != super.isSelected(model))
+			else if (buttons.contains(button) && selected != isSelected(model))
 				super.setSelected(model, selected);
 			
 			lastModel = getSelection();
-		} else if (buttons.contains(button)) {
+		} else if (buttons.contains(button) && selected != isSelected(model)) {
 			super.setSelected(model, selected);
 		}
 	}
