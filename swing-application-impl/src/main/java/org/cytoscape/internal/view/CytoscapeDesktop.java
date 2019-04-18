@@ -238,6 +238,8 @@ public class CytoscapeDesktop extends JFrame
 	private StatusBarPanelFactory taskStatusPanelFactory;
 	private StatusBarPanelFactory jobStatusPanelFactory;
 	
+	private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
+	
 	// These Control Panel components must respect this order
 	private List<String> controlComponentsOrder = Arrays.asList(
 			"org.cytoscape.Network",
@@ -323,13 +325,27 @@ public class CytoscapeDesktop extends JFrame
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
-			public void componentShown(ComponentEvent e) {
+			public void componentShown(ComponentEvent evt) {
 				// We need to do this later in the cycle to make sure everything is loaded
 				if (jobStatusPanelFactory == null || taskStatusPanelFactory == null) {
 					jobStatusPanelFactory = serviceRegistrar.getService(StatusBarPanelFactory.class, "(type=JobStatus)");
 					taskStatusPanelFactory = serviceRegistrar.getService(StatusBarPanelFactory.class, "(type=TaskStatus)");
 					statusToolBar = setupStatusPanel(jobStatusPanelFactory, taskStatusPanelFactory);
 				}
+			}
+			@Override
+			public void componentResized(ComponentEvent evt) {
+				if (isVisible())
+					resizeEventTimer.coalesce(() -> {
+						invokeOnEDT(() -> {
+							for (CytoPanelImpl cp : getAllCytoPanels()) {
+								SideBar.TrimStack ts = getTrimStackOf(cp);
+								
+								if (ts != null && !cp.isRemoved())
+									ts.update(); // TODO Probably too expensive to update everything here!!!
+							}
+						});
+					});
 			}
 		});
 
@@ -369,10 +385,17 @@ public class CytoscapeDesktop extends JFrame
 				cp.setState(FLOAT);
 		});
 		cp.getMinimizeButton().addActionListener(evt -> {
-			if (cp.getState() != HIDE) // Set the HIDE state, as expected
+			if (cp.getState() != HIDE) {
+				// Set the HIDE state, as expected
 				cp.setState(HIDE);
-			else // Force-hide it, because it already has the HIDE state, which means the event would not be fired
-				minimizeCytoPanel(cp);
+			} else {
+				// Force-hide it, because it already has the HIDE state, which means the event would not be fired
+				disposeComponentPopup();
+				
+				isAdjusting = true;
+				minimizedButtonGroup.clearSelection();
+				isAdjusting = false;
+			}
 		});
 	}
 
@@ -658,16 +681,11 @@ public class CytoscapeDesktop extends JFrame
 			if (ts != null) {
 				JToggleButton btn = ts.getButton(evt.getSelectedIndex());
 				
-				if (btn != null && !btn.isSelected()) {// TODO review
-					if (minimizedButtonGroup.contains(btn)) {
-						minimizedButtonGroup.clearSelection();
-					
-						isAdjusting = true;
+				if (btn != null && !btn.isSelected()) {
+					if (minimizedButtonGroup.contains(btn))
 						minimizedButtonGroup.setSelected(btn, true);
-						isAdjusting = false;
-					} else {
+					else
 						ts.getButtonGroup().setSelected(btn, true);
-					}
 				}
 			}
 		}
@@ -843,7 +861,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void addToMinimizedButtonGroup(CytoPanelImpl cytoPanel) {
-		List<SidebarToggleButton> buttons = getTrimButtons(cytoPanel);
+		List<SidebarToggleButton> buttons = getSidebarButtons(cytoPanel);
 		SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
 		
 		if (ts != null)
@@ -853,7 +871,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void addToCytoPanelButtonGroup(CytoPanelImpl cytoPanel) {
-		List<SidebarToggleButton> buttons = getTrimButtons(cytoPanel);
+		List<SidebarToggleButton> buttons = getSidebarButtons(cytoPanel);
 		minimizedButtonGroup.remove(buttons);
 		
 		SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
@@ -862,7 +880,7 @@ public class CytoscapeDesktop extends JFrame
 			ts.getButtonGroup().add(buttons);
 	}
 	
-	private List<SidebarToggleButton> getTrimButtons(CytoPanelImpl cytoPanel) {
+	private List<SidebarToggleButton> getSidebarButtons(CytoPanelImpl cytoPanel) {
 		SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
 		
 		return ts != null ? ts.getAllButtons() : Collections.emptyList();
@@ -1170,7 +1188,7 @@ public class CytoscapeDesktop extends JFrame
 						lastPopupTime = System.currentTimeMillis();
 						
 						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
-						boolean overTrimButton = false;
+						boolean overButton = false;
 						SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
 						
 						for (SidebarToggleButton btn : trimStack.getAllButtons()) {
@@ -1179,13 +1197,13 @@ public class CytoscapeDesktop extends JFrame
 							mouseLoc.y -= buttonLoc.y;
 							
 							if (btn.contains(mouseLoc)) {
-								overTrimButton = true;
+								overButton = true;
 								break;
 							}
 						}
 						
-						if (!overTrimButton) {
-							// No need to dispose right now, the next clicked sidebar button will do it
+						// No need to dispose when over a button, since the next click will do it
+						if (!overButton) {
 							disposeComponentPopup();
 							
 							isAdjusting = true;
@@ -1246,7 +1264,6 @@ public class CytoscapeDesktop extends JFrame
 		
 		private final Map<CytoPanelImpl, TrimStack> stacks = new LinkedHashMap<>();
 		private final int compassDirection;
-		private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
 		
 		public SideBar(int compassDirection, CytoPanelImpl... cytoPanels) {
 			this.compassDirection = compassDirection;
@@ -1288,16 +1305,6 @@ public class CytoscapeDesktop extends JFrame
 				add(Box.createHorizontalStrut(southPad));
 			
 			addMouseListener(new ContextMenuMouseListener());
-			
-			CytoscapeDesktop.this.addComponentListener(new ComponentAdapter() {
-				@Override
-				public void componentResized(ComponentEvent evt) {
-					resizeEventTimer.coalesce(() -> {
-						for (TrimStack ts : stacks.values())
-							ts.update(); // TODO Probably too expensive to update everything here!!!
-					});
-				}
-			});
 		}
 		
 		TrimStack getStack(CytoPanelImpl cytoPanel) {
@@ -1450,16 +1457,14 @@ public class CytoscapeDesktop extends JFrame
 					btn.addMouseListener(new ContextMenuMouseListener(cytoPanel));
 					ViewUtil.updateToolBarStyle(btn);
 					
-					if (cytoPanel.getState() != HIDE)
-						btn.setSelected(false);
-					
 					buttons.add(btn);
-					buttonGroup.add(btn);
 					
+					// Add all buttons to correct button group again
 					if (cytoPanel.getState() == HIDE) {
-						// Add all buttons to correct button group again
-						addToMinimizedButtonGroup(cytoPanel);
+						minimizedButtonGroup.add(btn);
 					} else {
+						buttonGroup.add(btn);
+						
 						// Restore button selection
 						JToggleButton selBtn = getButton(cytoPanel.getSelectedIndex());
 						

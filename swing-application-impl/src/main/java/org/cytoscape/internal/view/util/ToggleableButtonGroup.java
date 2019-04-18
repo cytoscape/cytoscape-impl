@@ -70,8 +70,12 @@ public class ToggleableButtonGroup extends ButtonGroup {
 		
 		super.add(button);
 		
-		if (getSelection() == button.getModel())
+		if (getSelection() == button.getModel()) {
 			selectedButton = button;
+			
+			if (toggleable)
+				lastModel = button.getModel();
+		}
 	}
 
 	/**
@@ -91,6 +95,9 @@ public class ToggleableButtonGroup extends ButtonGroup {
 		if (button != null) {
 			if (selectedButton == button)
 				selectedButton = null;
+			
+			if (toggleable && lastModel == button.getModel())
+				lastModel = null;
 			
 			super.remove(button);
 		}
