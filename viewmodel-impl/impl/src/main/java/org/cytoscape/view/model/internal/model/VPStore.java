@@ -31,7 +31,7 @@ public class VPStore {
 	public VPStore(Class<?> type, VisualLexicon visualLexicon, CyNetworkViewConfigImpl config) {
 		this.type = type;
 		this.visualLexicon = visualLexicon;
-		this.config = config;
+		this.config = config == null ? new CyNetworkViewConfigImpl() : config;
 	}
 	
 	protected VPStore(VPStore other) {

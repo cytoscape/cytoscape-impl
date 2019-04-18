@@ -48,7 +48,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 	private final CyEventHelper eventHelper;
 	private final String rendererId;
-	private final VisualLexicon visualLexicon;
 	
 	private CopyOnWriteArrayList<CyNetworkViewListener> listeners = new CopyOnWriteArrayList<>();
 	private boolean dirty = true;
@@ -77,7 +76,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		super(network);
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
-		this.visualLexicon = visualLexicon;
 		
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
@@ -379,10 +377,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	@Override
 	public String getRendererId() {
 		return rendererId;
-	}
-	
-	public VisualLexicon getVisualLexicon() {
-		return visualLexicon;
 	}
 	
 	@Override
