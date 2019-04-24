@@ -55,6 +55,10 @@ public class PaletteProviderManagerImpl implements PaletteProviderManager {
 		return new ArrayList<PaletteProvider>(providerMap.values());
 	}
 
+	public List<String> getPaletteProviderNames() {
+		return new ArrayList<String>(providerMap.keySet());
+	}
+
 	public List<PaletteProvider> getPaletteProviders(PaletteType type, boolean colorSafe) {
 		List<PaletteProvider> providers = new ArrayList<>();
 		for (PaletteProvider provider: providerMap.values()) {

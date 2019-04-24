@@ -33,15 +33,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteType;
 
 public abstract class AbstractPalette implements Palette {
+	protected PaletteProvider provider;
 	protected String name;
 	protected int size;
 	protected PaletteType type;
 	protected boolean colorBlindSafe;
 
-	AbstractPalette(String name, int size, PaletteType type, boolean cbs) {
+	AbstractPalette(PaletteProvider provider, String name, int size, PaletteType type, boolean cbs) {
+		this.provider = provider;
 		this.name = name;
 		this.size = size;
 		this.type = type;
@@ -62,6 +65,9 @@ public abstract class AbstractPalette implements Palette {
 
 	@Override
 	public int size() { return size; }
+
+	@Override
+	public PaletteProvider getPaletteProvider() { return provider; }
 
 	public abstract Color[] getColors();
 	public abstract Color[] getColors(int nColors);

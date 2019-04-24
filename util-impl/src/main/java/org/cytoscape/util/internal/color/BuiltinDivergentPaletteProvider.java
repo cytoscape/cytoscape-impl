@@ -77,7 +77,7 @@ public class BuiltinDivergentPaletteProvider implements PaletteProvider {
 	public BuiltinDivergentPaletteProvider() {
 		palettesMap = new HashMap<>();
 		for (DivPalette dp: DivPalette.values()) {
-			palettesMap.put(dp.getDescription(), new DivergentPalette(dp));
+			palettesMap.put(dp.getDescription(), new DivergentPalette(this, dp));
 		}
 	}
 
@@ -117,8 +117,8 @@ public class BuiltinDivergentPaletteProvider implements PaletteProvider {
 	}
 
 	class DivergentPalette extends AbstractDivergingPalette {
-		DivergentPalette(DivPalette dp) {
-			super(dp.getDescription(), dp.getColors(), dp.isColorBlindSafe());
+		DivergentPalette(PaletteProvider provider, DivPalette dp) {
+			super(provider, dp.getDescription(), dp.getColors(), dp.isColorBlindSafe());
 		}
 	}
 

@@ -62,7 +62,18 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	}
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
-		Map<String, ColorBrewer> palettes = paletteMap.get(type);
+		Map<String, ColorBrewer> palettes;
+		if (type.equals(BrewerType.ANY)) {
+			// Special processing for ANY
+			palettes = new HashMap<>();
+			for (Map<String, ColorBrewer> palette: paletteMap.values()) {
+				for (String name: palette.keySet()) {
+					palettes.put(name, palette.get(name));
+				}
+			}
+		} else {
+			palettes = paletteMap.get(type);
+		}
 		if (colorBlindSafe) {
 			List<String> names = new ArrayList<>();
 			for (String key: palettes.keySet()) {
@@ -76,7 +87,18 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 
 	@SuppressWarnings("unchecked")
 	public List<Object> listPaletteIdentifiers(PaletteType type, boolean colorBlindSafe) {
-		Map<String, ColorBrewer> palettes = paletteMap.get(type);
+		Map<String, ColorBrewer> palettes;
+		if (type.equals(BrewerType.ANY)) {
+			// Special processing for ANY
+			palettes = new HashMap<>();
+			for (Map<String, ColorBrewer> palette: paletteMap.values()) {
+				for (String name: palette.keySet()) {
+					palettes.put(name, palette.get(name));
+				}
+			}
+		} else {
+			palettes = paletteMap.get(type);
+		}
 		if (colorBlindSafe) {
 			List<Object> safePalettes = new ArrayList<>();
 			for (String key: palettes.keySet()) {
@@ -97,7 +119,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 			Map<String, ColorBrewer> palettes = paletteMap.get(type);
 			for (String name: palettes.keySet()) {
 				if (name.equalsIgnoreCase(paletteName))
-					return new BrewerPalette(palettes.get(name), size, type);
+					return new BrewerPalette(this, palettes.get(name), size, type);
 			}
 		}
 		return null;
@@ -112,7 +134,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 			Map<String, ColorBrewer> palettes = paletteMap.get(type);
 			for (ColorBrewer cb: palettes.values()) {
 				if (paletteIdentifier.equals(cb))
-					return new BrewerPalette(cb, size, type);
+					return new BrewerPalette(this, cb, size, type);
 			}
 		}
 		return null;
@@ -132,11 +154,13 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 	class BrewerPalette implements Palette {
 		ColorBrewer palette;
 		PaletteType type;
+		PaletteProvider provider;
 		int size;
-		public BrewerPalette(ColorBrewer cbPalette, int size, PaletteType type) {
+		public BrewerPalette(final PaletteProvider provider, ColorBrewer cbPalette, int size, PaletteType type) {
 			this.palette = cbPalette;
 			this.size = size;
 			this.type = type;
+			this.provider = provider;
 		}
 
 		public String getName() { return palette.getPaletteDescription(); }
@@ -160,5 +184,7 @@ public class ColorBrewerPaletteProvider implements PaletteProvider {
 		}
 
 		public String toString() { return "ColorBrewer "+getName(); }
+
+		public PaletteProvider getPaletteProvider() { return provider; }
 	}
 }

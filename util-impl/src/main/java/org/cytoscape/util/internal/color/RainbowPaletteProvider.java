@@ -47,8 +47,8 @@ public class RainbowPaletteProvider implements PaletteProvider {
 	public List<PaletteType> getPaletteTypes() { return Collections.singletonList(BrewerType.QUALITATIVE); }
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
-		if (type.equals(BrewerType.QUALITATIVE))
-			return Arrays.asList(" ");
+		if (type.equals(BrewerType.QUALITATIVE) || type.equals(BrewerType.ANY))
+			return Arrays.asList("Rainbow");
 		else return new ArrayList<String>();
 	}
 
@@ -62,8 +62,8 @@ public class RainbowPaletteProvider implements PaletteProvider {
 	}
 
 	public Palette getPalette(String paletteName, int size) {
-		if (paletteName.equalsIgnoreCase(" ")) {
-			return new RainbowPalette(size);
+		if (paletteName.equalsIgnoreCase("Rainbow") || paletteName.equalsIgnoreCase(" ")) {
+			return new RainbowPalette(this, size);
 		}
 		return null;
 	}
@@ -77,8 +77,8 @@ public class RainbowPaletteProvider implements PaletteProvider {
 	}
 
 	class RainbowPalette extends AbstractPalette {
-		RainbowPalette(int size) {
-			super(" ", size, BrewerType.QUALITATIVE, false);
+		RainbowPalette(PaletteProvider provider, int size) {
+			super(provider, "Rainbow", size, BrewerType.QUALITATIVE, false);
 		}
 
 		public Color[] getColors() {
