@@ -4,7 +4,12 @@ import java.util.Objects;
 
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+
+import io.vavr.collection.Set;
 
 public abstract class CyViewBase<M> implements View<M> {
 	
@@ -36,11 +41,24 @@ public abstract class CyViewBase<M> implements View<M> {
 		return model;
 	}
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private <T, V extends T> void fireViewChangedEvent(VisualProperty<? extends T> vp, V value, boolean lockedValue) {
+		CyNetworkViewImpl networkView = getNetworkView();
+		ViewChangeRecord record = new ViewChangeRecord<>(this, vp, value, lockedValue);
+		networkView.getEventHelper().addEventPayload(networkView, record, ViewChangedEvent.class);
+	}
+	
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
 		synchronized (getLock()) {
 			getVPStore().setVisualProperty(suid, vp, value);
 			getNetworkView().setDirty();
+			boolean locked = getVPStore().isValueLocked(suid, vp);
+			if(!locked) {
+				// If the value is overridden by a lock then the value returned 
+				// by getVisualProperty() won't visibly change by setting the VP here.
+				fireViewChangedEvent(vp, value, false);
+			}
 		}
 	}
 	
@@ -54,11 +72,29 @@ public abstract class CyViewBase<M> implements View<M> {
 		return getVPStore().isSet(suid, vp);
 	}
 
+	
+	/*
+	 * The behavior here is inconsistent with setVisualProperty()
+	 * When applying a visual style the ApplyToNetworkHandler.run() method takes care of applying child visual properties.
+	 * However when setting a bypass (ie a locked value) that same logic has to be done here.
+	 */
 	@Override
 	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
 		synchronized (getLock()) {
 			getVPStore().setLockedValue(suid, vp, value);
 			getNetworkView().setDirty();
+		
+			VisualLexiconNode visualLexiconNode = getNetworkView().getVisualLexicon().getVisualLexiconNode(vp);
+			if(visualLexiconNode.getChildren().isEmpty()) {
+				// much more common case, might as well optimize for it
+				fireViewChangedEvent(vp, value, true);
+			} else {
+				visualLexiconNode.visit(node -> {
+					VisualProperty<?> nodeVP = node.getVisualProperty();
+					Object nodeValue = getVPStore().getVisualProperty(suid, vp);
+					fireViewChangedEvent(nodeVP, nodeValue, true);
+				});
+			}
 		}
 	}
 
@@ -69,7 +105,7 @@ public abstract class CyViewBase<M> implements View<M> {
 
 	@Override
 	public void clearValueLock(VisualProperty<?> vp) {
-		getVPStore().clearValueLock(suid, vp);
+		setLockedValue(vp, null);
 	}
 
 	@Override
@@ -79,8 +115,11 @@ public abstract class CyViewBase<M> implements View<M> {
 
 	@Override
 	public void clearVisualProperties() {
+		Set<VisualProperty<?>> clearableVPs = getVPStore().getClearableVisualProperties(suid);
 		synchronized (getLock()) {
-			getVPStore().clearVisualProperties(suid);
+			for(VisualProperty<?> vp : clearableVPs) {
+				setVisualProperty(vp, null);
+			}
 		}
 	}
 	

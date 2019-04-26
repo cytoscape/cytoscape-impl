@@ -1,7 +1,6 @@
 package org.cytoscape.view.model.internal.model;
 
 import java.util.Collection;
-import java.util.LinkedList;
 
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -92,25 +91,12 @@ public class VPStore {
 		visualProperties = visualProperties.remove(suid);
 		allLocks = allLocks.remove(suid);
 		directLocks = directLocks.remove(suid);
-		updateTrackedVPs(suid);
+		removeTrackedVPs(suid);
 	}
 	
-	public void clearVisualProperties(Long suid) {
-		visualProperties = clear(visualProperties, suid);
-		updateTrackedVPs(suid);
-	}
 	
-	private Map<Long,Map<VisualProperty<?>,Object>> clear(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid) {
-		// we actually can't clear certain VPs, the renderer expects node size and location to remain consistent
-		java.util.HashMap<VisualProperty<?>,Object> valuesToRestore = new java.util.HashMap<>();
-		for(VisualProperty<?> vp : config.getNoClearVPs()) {
-			valuesToRestore.put(vp, map.getOrElse(suid, HashMap.empty()).getOrElse(vp,null));
-		}
-		map = map.remove(suid);
-		for(VisualProperty<?> vp : config.getNoClearVPs()) {
-			map = put(map, suid, vp, valuesToRestore.get(vp));
-		}
-		return map;
+	public Set<VisualProperty<?>> getClearableVisualProperties(Long suid) {
+		return visualProperties.getOrElse(suid,HashMap.empty()).keySet().removeAll(config.getNoClearVPs());
 	}
 	 
 	protected <T, V extends T> void setVisualProperty(Long suid, VisualProperty<? extends T> vp, V value) {
@@ -153,23 +139,33 @@ public class VPStore {
 		return false;
 	}
 	
-	public <T, V extends T> void setLockedValue(Long suid, VisualProperty<? extends T> vp, V value) {
-		directLocks = put(directLocks, suid, vp, value);
-		allLocks = put(allLocks, suid, vp, value);
+	public <T, V extends T> void setLockedValue(Long suid, VisualProperty<? extends T> parentVP, V value) {
+		directLocks = put(directLocks, suid, parentVP, value);
+		allLocks = put(allLocks, suid, parentVP, value);
+		updateTrackedVP(suid, parentVP);
 		
-		VisualLexiconNode node = visualLexicon.getVisualLexiconNode(vp);
-		propagateLockedVisualProperty(suid, vp, node.getChildren(), value);
-		
-		updateTrackedVP(suid, vp);
+		VisualLexiconNode node = visualLexicon.getVisualLexiconNode(parentVP);
+		node.visit(n -> {
+			VisualProperty vp = n.getVisualProperty();
+			if(!isDirectlyLocked(suid, vp) && parentVP.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
+				allLocks = put(allLocks, suid, vp, value);
+				updateTrackedVP(suid, vp);
+			}
+		});
 	}
 	
-	public void updateTrackedVPs(Long suid) {
+	private void removeTrackedVPs(Long suid) {
 		for(VisualProperty<?> vp : config.getTrackedVPs(type)) {
-			updateTrackedVP(suid, vp);
+			for(Object key : config.getKeys(vp)) {
+				Set<Long> set = tracked.getOrElse(key, HashSet.empty());
+				set = set.remove(suid);
+				tracked = tracked.put(key, set);
+			}
 		}
 	}
 	
-	public void updateTrackedVP(Long suid, VisualProperty<?> vp) {
+	
+	protected void updateTrackedVP(Long suid, VisualProperty<?> vp) {
 		Collection<Object> keys = config.getKeys(vp);
 		if(keys.isEmpty())
 			return;
@@ -196,10 +192,6 @@ public class VPStore {
 		return getDirectLocksMap(suid).containsKey(vp);
 	}
 	
-	public void clearValueLock(Long suid, VisualProperty<?> vp) {
-		setLockedValue(suid, vp, null);
-	}
-
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V value) {
 		defaultValues = defaultValues.put(vp, value);
 	}
@@ -208,21 +200,4 @@ public class VPStore {
 		return (T) defaultValues.getOrElse(vp, vp.getDefault());
 	}
 	
-	private synchronized void propagateLockedVisualProperty(Long suid, VisualProperty parent, Collection<VisualLexiconNode> roots, Object value) {
-		LinkedList<VisualLexiconNode> nodes = new LinkedList<>(roots);
-		
-		while (!nodes.isEmpty()) {
-			final VisualLexiconNode node = nodes.pop();
-			final VisualProperty vp = node.getVisualProperty();
-			
-			if (!isDirectlyLocked(suid, vp)) {
-				if (parent.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
-					allLocks = put(allLocks, suid, vp, value);
-					updateTrackedVP(suid, vp);
-				}
-				
-				nodes.addAll(node.getChildren());
-			}
-		}
-	}
 }

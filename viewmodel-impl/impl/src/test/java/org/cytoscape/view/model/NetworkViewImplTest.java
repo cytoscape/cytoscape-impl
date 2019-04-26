@@ -7,7 +7,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.awt.Color;
@@ -25,6 +30,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
@@ -72,6 +78,12 @@ public class NetworkViewImplTest {
 	
 	private CyNetworkViewImpl createSquareTestNetworkView() {
 		return createNetworkView(createSquareTestNetwork());
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static void assertEventCount(CyEventHelper eventHelper, int numEvents) {
+		verify(eventHelper, times(numEvents)).addEventPayload(any(), any(), eq(ViewChangedEvent.class));
+		reset(eventHelper);
 	}
 	
 	
@@ -222,6 +234,56 @@ public class NetworkViewImplTest {
 		assertTrue(n3.isValueLocked(NODE_SIZE));
 		assertFalse(n3.isDirectlyLocked(NODE_HEIGHT));
 		assertFalse(n3.isDirectlyLocked(NODE_WIDTH));
+		
+		// Test clearing VPs
+		for(View<CyNode> v : netView.getNodeViews())
+			v.clearVisualProperties();
+		
+		assertFalse(n0.isSet(NODE_PAINT));
+		assertFalse(n1.isSet(NODE_PAINT));
+		assertFalse(n2.isSet(NODE_PAINT));
+		assertFalse(n3.isSet(NODE_PAINT));
+		
+		assertTrue(n3.isValueLocked(NODE_SIZE));
+		assertTrue(n3.isValueLocked(NODE_HEIGHT));
+		assertTrue(n3.isValueLocked(NODE_WIDTH));
+		
+		assertTrue(n3.isValueLocked(NODE_SIZE));
+		assertFalse(n3.isDirectlyLocked(NODE_HEIGHT));
+		assertFalse(n3.isDirectlyLocked(NODE_WIDTH));
+	}
+	
+	
+	@Test
+	public void testVisualPropertyEvents() {
+		CyNetworkViewImpl netView = createSquareTestNetworkView();
+		CyNetwork network = netView.getModel();
+		List<CyNode> nodes = network.getNodeList();
+		View<CyNode> n0 = netView.getNodeView(nodes.get(0));
+		
+		// eventHelper is a mock
+		CyEventHelper eventHelper = netView.getEventHelper();
+		reset(eventHelper);
+		
+		n0.setVisualProperty(NODE_PAINT, Color.RED);
+		assertEventCount(eventHelper, 1);
+		
+		// NODE_SIZE has NODE_HEIGHT, NODE_WIDTH and NODE_DEPTH as child properties, 
+		// it should fire an event for all 4, but only when setting it as a bypass.
+		n0.setVisualProperty(NODE_SIZE, 999);
+		assertEventCount(eventHelper, 1);
+		n0.setLockedValue(NODE_SIZE, 888);
+		assertEventCount(eventHelper, 4);
+		n0.setVisualProperty(NODE_SIZE, 777); // this value is locked so it shouldn't change at this point
+		assertEventCount(eventHelper, 0);
+		n0.clearValueLock(NODE_SIZE);
+		assertEventCount(eventHelper, 4);
+		
+		n0.setVisualProperty(NODE_SIZE, 999);
+		n0.setLockedValue(NODE_SIZE, 888);
+		reset(eventHelper);
+		n0.clearVisualProperties();
+		assertEventCount(eventHelper, 1);
 	}
 	
 	
@@ -472,8 +534,6 @@ public class NetworkViewImplTest {
 		nodesNamedCCC = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_IS_CCC));
 		assertEquals(1, nodesNamedCCC.size());
 		assertTrue(nodesNamedCCC.contains(n2.getSUID()));
-		
-		
 	}
 	
 	
