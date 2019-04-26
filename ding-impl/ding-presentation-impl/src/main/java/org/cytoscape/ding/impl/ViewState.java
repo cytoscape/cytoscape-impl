@@ -203,10 +203,10 @@ public class ViewState {
 			for (View<CyNode> n: points.keySet()) {
 				Point2D.Double p = points.get(n);
 				
-				View<CyNode> mutableNode = mutableNetworkView.getNodeView(n.getModel());
+				View<CyNode> mutableNode = mutableNetworkView.getNodeView(n.getSUID());
 				if(mutableNode != null) {
 					mutableNode.setVisualProperty(DVisualLexicon.NODE_X_LOCATION, p.getX());
-					mutableNode.setVisualProperty(DVisualLexicon.NODE_Y_LOCATION, p.getX());
+					mutableNode.setVisualProperty(DVisualLexicon.NODE_Y_LOCATION, p.getY());
 				}
 			}
 		}
