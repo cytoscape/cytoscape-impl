@@ -67,7 +67,7 @@ public class ReorderAnnotationsTask extends AbstractTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Reorder Annotations");
 		
-		if (re != null)
+		if (re == null)
 			return;
 		if (annotations.isEmpty())
 			return;
