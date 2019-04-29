@@ -288,7 +288,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			nodeCountLabel.setToolTipText("Nodes");
 			nodeCountLabel.setFont(nodeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			nodeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			nodeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeCountLabel;
@@ -300,7 +300,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			edgeCountLabel.setToolTipText("Edges");
 			edgeCountLabel.setFont(edgeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			edgeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			edgeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeCountLabel;

@@ -1229,6 +1229,10 @@ public class CytoscapeDesktop extends JFrame
 		
 		// Adjust button selection
 		SideBar bar = getSideBarOf(cytoPanel);
+		
+		if (!bar.isShowing())
+			return;
+		
 		SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
 		JToggleButton btn = trimStack.getButton(index);
 		
@@ -1666,6 +1670,11 @@ public class CytoscapeDesktop extends JFrame
 		
 		public int getIndex() {
 			return index;
+		}
+		
+		@Override
+		public String toString() {
+			return getText();
 		}
 	}
 	

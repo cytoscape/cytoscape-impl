@@ -663,7 +663,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (selectionIconLabel == null) {
 			selectionIconLabel = new JLabel(ICON_CHECK_SQUARE);
 			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
-			selectionIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			selectionIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return selectionIconLabel;
@@ -673,7 +673,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (hiddenIconLabel == null) {
 			hiddenIconLabel = new JLabel(ICON_EYE_SLASH);
 			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			hiddenIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			hiddenIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return hiddenIconLabel;
@@ -684,7 +684,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeSelectionLabel = new JLabel();
 			nodeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeSelectionLabel.setFont(nodeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeSelectionLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeSelectionLabel;
@@ -695,7 +695,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeSelectionLabel = new JLabel();
 			edgeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeSelectionLabel.setFont(edgeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeSelectionLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeSelectionLabel;
@@ -706,7 +706,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeHiddenLabel = new JLabel();
 			nodeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeHiddenLabel.setFont(nodeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeHiddenLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeHiddenLabel;
@@ -717,7 +717,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeHiddenLabel = new JLabel();
 			edgeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeHiddenLabel.setFont(edgeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeHiddenLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeHiddenLabel;

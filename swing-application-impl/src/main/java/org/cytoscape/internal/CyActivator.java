@@ -634,7 +634,7 @@ public class CyActivator extends AbstractCyActivator {
 			Color disabledFg = originalDisabledFg;
 			
 			if (isWinLAF() || isAquaLAF())
-				disabledFg = ColorUtil.setBrightness(disabledFg, 0.65f);
+				disabledFg = ColorUtil.setBrightness(disabledFg, 0.75f);
 			
 			UIManager.put("Label.disabledForeground", disabledFg);
 			UIManager.put("Button.disabledForeground", disabledFg);
@@ -645,6 +645,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("Radio.disabledForeground", disabledFg);
 			UIManager.put("Menu.disabledForeground", disabledFg);
 			UIManager.put("MenuItem.disabledForeground", disabledFg);
+			UIManager.put("CheckBoxMenuItem.disabledForeground", disabledFg);
 			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledText", disabledFg);
@@ -784,6 +785,9 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("SplitPane.dividerSize", 5);
 			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
+			
+			// Others
+			UIManager.put("Label.infoForeground", ColorUtil.setBrightness(UIManager.getColor("Label.foreground"), 0.48f));
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}

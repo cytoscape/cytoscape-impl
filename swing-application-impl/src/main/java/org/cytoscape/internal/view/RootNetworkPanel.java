@@ -264,7 +264,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			networkCountLabel = new JLabel();
 			networkCountLabel.setFont(networkCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			networkCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			networkCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			networkCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return networkCountLabel;
