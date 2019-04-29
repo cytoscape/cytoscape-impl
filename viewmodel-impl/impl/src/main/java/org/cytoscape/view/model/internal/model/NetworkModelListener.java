@@ -1,7 +1,5 @@
 package org.cytoscape.view.model.internal.model;
 
-import java.util.Collection;
-
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -83,8 +81,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		if(networkView.getModel() != e.getSource())
 			return;
 		
-		Collection<CyNode> nodes = e.getPayloadCollection();
-		for(CyNode node : nodes) {
+		for(CyNode node : e.getPayloadCollection()) {
 			View<CyNode> view = networkView.addNode(node);
 			if(view != null) {
 				getEventHelper().addEventPayload(networkView, view, AddedNodeViewsEvent.class);
@@ -97,8 +94,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 		if(networkView.getModel() != e.getSource())
 			return;
 		
-		Collection<CyEdge> edges = e.getPayloadCollection();
-		for(CyEdge edge : edges) {
+		for(CyEdge edge : e.getPayloadCollection()) {
 			View<CyEdge> view = networkView.addEdge(edge);
 			if(view != null) {
 				getEventHelper().addEventPayload(networkView, view, AddedEdgeViewsEvent.class);

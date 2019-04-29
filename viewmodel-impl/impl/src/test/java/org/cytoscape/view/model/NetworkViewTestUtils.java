@@ -38,8 +38,10 @@ public class NetworkViewTestUtils {
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
 		
-		CyNetworkViewConfigImpl config = new CyNetworkViewFactoryFactoryImpl(registrar).createConfig(lexicon);
-		CyNetworkViewImpl networkView = new CyNetworkViewImpl(registrar, network, lexicon, "test", config);
+		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
+		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
+		CyNetworkViewFactory viewFactory = factoryFactory.createNetworkViewFactory(lexicon, "test", config);
+		CyNetworkViewImpl networkView = (CyNetworkViewImpl)viewFactory.createNetworkView(network);
 		return networkView;
 	}
 	

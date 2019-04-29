@@ -82,11 +82,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon);
-		
-		for(CyNode node : network.getNodeList())
-			addNode(node);
-		for(CyEdge edge : network.getEdgeList())
-			addEdge(edge);
 	}
 	
 	

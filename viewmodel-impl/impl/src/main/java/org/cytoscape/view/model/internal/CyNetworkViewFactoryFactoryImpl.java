@@ -1,8 +1,8 @@
 package org.cytoscape.view.model.internal;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryImpl;
@@ -23,6 +23,8 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 		if(lexicon instanceof BasicVisualLexicon) {
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_NODES, BasicVisualLexicon.NODE_SELECTED, Boolean.TRUE::equals);
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_EDGES, BasicVisualLexicon.EDGE_SELECTED, Boolean.TRUE::equals);
+			config.addNonClearableVisualProperty(BasicVisualLexicon.NODE_SELECTED);
+			config.addNonClearableVisualProperty(BasicVisualLexicon.EDGE_SELECTED);
 			CyNetworkViewImpl.NODE_GEOMETRIC_PROPS.forEach(config::addNonClearableVisualProperty);
 		}
 		return config;
