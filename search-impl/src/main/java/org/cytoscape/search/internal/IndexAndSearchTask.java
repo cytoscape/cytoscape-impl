@@ -4,9 +4,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
 import org.apache.lucene.store.RAMDirectory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -19,6 +16,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,12 +45,13 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class IndexAndSearchTask extends AbstractNetworkTask {
+public class IndexAndSearchTask extends AbstractNetworkTask implements ObservableTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final EnhancedSearch enhancedSearch;
 	private final String query;
+	private SearchResults results;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -92,12 +91,15 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 		taskMonitor.setStatusMessage("Executing query");
 		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx);
 		queryHandler.executeQuery(query);
-
+		results = queryHandler.getResults();
+		
 		if (cancelled)
 			return;
 		
-		showResults(queryHandler, taskMonitor);
-		updateView();
+		if(!results.isError()) {
+			showResults(results, taskMonitor);
+			updateView();
+		}
 	}
 
 	/**
@@ -123,41 +125,32 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 	}
 
 	// Display results
-	private void showResults(final EnhancedSearchQuery queryHandler, final TaskMonitor taskMonitor) {
+	private void showResults(SearchResults results, TaskMonitor taskMonitor) {
 		if (network == null || network.getNodeList().size() == 0)
 			return;
 
-		int nodeHitCount = queryHandler.getNodeHitCount();
-		int edgeHitCount = queryHandler.getEdgeHitCount();
+		int nodeHitCount = results.getNodeHitCount();
+		int edgeHitCount = results.getEdgeHitCount();
 		
 		if (nodeHitCount == 0 && edgeHitCount == 0) {
 			taskMonitor.setStatusMessage("Could not find any match.");
 			taskMonitor.setTitle("Search Finished");
 			taskMonitor.setProgress(1.0);
-
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(null, "Could not find any matches.", "No Match",
-						JOptionPane.WARNING_MESSAGE);
-				logger.warn("Could not find any matches.");
-			});
-			
 			return;
 		}
 
 		List<CyNode> nodeList = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
-		
 		for (CyNode n : nodeList)
 			network.getRow(n).set(CyNetwork.SELECTED,false);
 		
 		List<CyEdge> edgeList = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
-		
 		for (CyEdge e : edgeList)
 			network.getRow(e).set(CyNetwork.SELECTED, false);
 
 		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
 
-		List<String> nodeHits = queryHandler.getNodeHits();
-		List<String> edgeHits = queryHandler.getEdgeHits();
+		List<String> nodeHits = results.getNodeHits();
+		List<String> edgeHits = results.getEdgeHits();
 
 		final Iterator<String> nodeIt = nodeHits.iterator();
 		int numCompleted = 0;
@@ -188,5 +181,13 @@ public class IndexAndSearchTask extends AbstractNetworkTask {
 
 			taskMonitor.setProgress(++numCompleted / edgeHitCount);
 		}
+	}
+	
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(SearchResults.class.equals(type)) {
+			return type.cast(results);
+		}
+		return null;
 	}
 }

@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -16,18 +17,27 @@ import javax.swing.ActionMap;
 import javax.swing.GroupLayout;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.EnhancedSearch;
+import org.cytoscape.search.internal.IndexAndSearchTask;
+import org.cytoscape.search.internal.SearchResults;
+import org.cytoscape.search.internal.SearchResults.Status;
 import org.cytoscape.search.internal.SearchTaskFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.work.FinishStatus;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskObserver;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,12 +97,60 @@ public class EnhancedSearchPanel extends JPanel {
 			final SearchTaskFactory factory = new SearchTaskFactory(searchMgr, queryStr, serviceRegistrar);
 			
 			final DialogTaskManager taskMgr = serviceRegistrar.getService(DialogTaskManager.class);
-			taskMgr.execute(factory.createTaskIterator(currentNetwork));
+			taskMgr.execute(factory.createTaskIterator(currentNetwork), new TaskObserver() {
+				@Override
+				public void taskFinished(ObservableTask task) {
+					if(task instanceof IndexAndSearchTask) {
+						IndexAndSearchTask searchTask = (IndexAndSearchTask) task;
+						SearchResults result = searchTask.getResults(SearchResults.class);
+						showPopup(result);
+					}
+				}
+				@Override
+				public void allFinished(FinishStatus finishStatus) { }
+			});
 		} else {
 			logger.error("Could not find network for search");
 		}
+		
 	}
 
+	
+	private void showPopup(SearchResults results) {
+		JLabel label = new JLabel();
+		
+		if(results.getStatus() == Status.ERROR_SYNTAX) {
+			label.setForeground(Color.RED);
+			label.setText("   Cannot execute search query   ");
+		} else if(results.getStatus() == Status.ERROR_FATAL) {
+			label.setForeground(Color.RED);
+			label.setText("   Query execution error   ");
+		} else {
+			int edges = results.getEdgeHitCount();
+			int nodes = results.getNodeHitCount();
+			if(nodes == 1 && edges == 1) {
+				label.setText("   Selected 1 node and 1 edge   ");
+			} else if(nodes == 1 && edges != 1) {
+				label.setText("   Selected 1 node and " + edges + " edges   ");
+			} else if(nodes != 1 && edges == 1) {
+				label.setText("   Selected " + nodes + " nodes and 1 edge   ");
+			} else {
+				label.setText("   Selected " + nodes + " nodes and " + edges + " edges   ");
+			}
+		}
+		
+		LookAndFeelUtil.makeSmall(label);
+		JPopupMenu popup = new JPopupMenu();
+		popup.add(label);
+		
+		Timer timer = new Timer(3400, e -> popup.setVisible(false));
+		timer.setRepeats(false);
+		timer.start();
+		
+		popup.show(tfSearchText, 0, tfSearchText.getHeight());
+	}
+	
+	
 	private void initComponents() {
 		final String defText = "Enter search term...";
 		final Font defFont = UIManager.getFont("TextField.font") != null ?

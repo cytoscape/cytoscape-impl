@@ -21,7 +21,7 @@ public class DynamicComboBoxModel<T> extends AbstractComboBoxModel implements It
 	}
 	
 	@Override
-	public Object getElementAt(int index) {
+	public T getElementAt(int index) {
 		return items.get(index);
 	}
 
@@ -32,7 +32,7 @@ public class DynamicComboBoxModel<T> extends AbstractComboBoxModel implements It
 
 
 	@Override
-	public Object getSelectedItem() {
+	public T getSelectedItem() {
 		if (selectedIndex < 0 || selectedIndex >= items.size()) {
 			return null;
 		}

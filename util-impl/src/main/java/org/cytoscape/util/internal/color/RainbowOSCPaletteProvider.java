@@ -47,8 +47,8 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 	public List<PaletteType> getPaletteTypes() { return Collections.singletonList(BrewerType.QUALITATIVE); }
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
-		if (type.equals(BrewerType.QUALITATIVE))
-			return Arrays.asList(" ");
+		if (type.equals(BrewerType.QUALITATIVE) || type.equals(BrewerType.ANY))
+			return Arrays.asList("Rainbow OSC");
 		else return new ArrayList<String>();
 	}
 
@@ -62,8 +62,8 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 	}
 
 	public Palette getPalette(String paletteName, int size) {
-		if (paletteName.equalsIgnoreCase(" ")) {
-			return new RainbowOSCPalette(size);
+		if (paletteName.equalsIgnoreCase("Rainbow OSC") || paletteName.equalsIgnoreCase(" ")) {
+			return new RainbowOSCPalette(this, size);
 		}
 		return null;
 	}
@@ -77,8 +77,8 @@ public class RainbowOSCPaletteProvider implements PaletteProvider {
 	}
 
 	class RainbowOSCPalette extends AbstractPalette {
-		RainbowOSCPalette(int size) {
-			super(" ", size, BrewerType.QUALITATIVE, false);
+		RainbowOSCPalette(PaletteProvider provider, int size) {
+			super(provider, "Rainbow OSC", size, BrewerType.QUALITATIVE, false);
 		}
 
 		public Color[] getColors() {

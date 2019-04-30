@@ -24,8 +24,6 @@ package org.cytoscape.search.internal;
  * #L%
  */
 
-import java.util.Properties;
-
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.BundleContext;
@@ -36,10 +34,7 @@ public class CyActivator extends AbstractCyActivator {
 	@Override
 	public void start(BundleContext bc) {
 		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-
 		EnhancedSearchPlugin enhancedSearchPlugin = new EnhancedSearchPlugin(serviceRegistrar);
-
-		final Properties searchPluginProps = new Properties();
-		registerAllServices(bc, enhancedSearchPlugin, searchPluginProps);
+		registerAllServices(bc, enhancedSearchPlugin);
 	}
 }
