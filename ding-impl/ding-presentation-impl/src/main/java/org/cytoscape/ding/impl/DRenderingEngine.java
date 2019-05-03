@@ -164,6 +164,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final CoalesceTimer coalesceTimer;
 	
 	private final BendStore bendStore;
+	private InputHandlerGlassPane inputHandler = null;
 	
 	
 	public DRenderingEngine(
@@ -282,7 +283,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	private void advanceAnimatedEdges() {
-		System.out.println("DRenderingEngine.advanceAnimatedEdges()");
 		edgeDetails.advanceAnimatedEdges();
 		// This is more lightweight than calling updateView(). And if the animation thread is faster 
 		// than the renderer the EDT will coalesce the extra paint events.
@@ -293,6 +293,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public BendStore getBendStore() {
 		return bendStore;
+	}
+	
+	public synchronized InputHandlerGlassPane getInputHandlerGlassPane() {
+		if(inputHandler == null) {
+			inputHandler = new InputHandlerGlassPane(serviceRegistrar, this);
+		}
+		return inputHandler;
 	}
 
 	public boolean isNodeSelectionEnabled() {

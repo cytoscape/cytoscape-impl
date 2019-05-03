@@ -50,50 +50,32 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 	 * Render given view model by Ding rendering engine.
 	 */
 	@Override
-	public RenderingEngine<CyNetwork> createRenderingEngine(final Object presentationContainer, final View<CyNetwork> view) {
-		if (presentationContainer == null)
+	public RenderingEngine<CyNetwork> createRenderingEngine(Object container, View<CyNetwork> view) {
+		if (container == null)
 			throw new IllegalArgumentException("Container is null.");
 		if (view == null)
 			throw new IllegalArgumentException("Cannot create presentation for null view model.");
 		if (view instanceof CyNetworkView == false)
 			throw new IllegalArgumentException("Ding accepts CyNetworkView only.");
 
-		final CyNetworkView targetView = (CyNetworkView) view;
-		DRenderingEngine re = null;
+		DRenderingEngine re = viewFactory.getRenderingEngine((CyNetworkView) view);
 		
-		if (presentationContainer instanceof JComponent || presentationContainer instanceof RootPaneContainer) {
-			re = viewFactory.getRenderingEngine(targetView);
-			
-			if (presentationContainer instanceof RootPaneContainer) {
-				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
-				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), re);
-				container.setContentPane(ifComp);
-			} else {
-				final JComponent component = (JComponent) presentationContainer;
-				component.setLayout(new BorderLayout());
-				component.add(re.getCanvas(), BorderLayout.CENTER);
-			}
+		if (container instanceof RootPaneContainer) {
+			RootPaneContainer rootPane = (RootPaneContainer) container;
+			InputHandlerGlassPane glassPane = re.getInputHandlerGlassPane();
+			rootPane.setGlassPane(glassPane);
+			rootPane.setContentPane(new InternalFrameComponent(rootPane.getLayeredPane(), re));
+			glassPane.setVisible(true);
+		} else if (container instanceof JComponent){
+			JComponent component = (JComponent) container;
+			component.setLayout(new BorderLayout());
+			component.add(re.getCanvas(), BorderLayout.CENTER);
 		} else {
-			throw new IllegalArgumentException(
-					"frame object is not of type JComponent or RootPaneContainer, which is invalid for this implementation of PresentationFactory");
+			throw new IllegalArgumentException("visualizationContainer object must be of type JComponent or RootPaneContainer");
 		}
-
+		
 		return re;
 	}
-
-//	/**
-//	 * This method simply redraw the canvas, NOT updating the view model. To
-//	 * apply and draw the new view model, you need to call this after apply.
-//	 * 
-//	 */
-//	@Override
-//	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
-//		DGraphView gv = vtfListener.viewMap.get(nvce.getSource());
-//		logger.debug("NetworkViewChangedEvent listener got view update request: "
-//				+ nvce.getSource().getSUID());
-//		if (gv != null)
-//			gv.updateView();
-//	}
 
 	
 	@Override

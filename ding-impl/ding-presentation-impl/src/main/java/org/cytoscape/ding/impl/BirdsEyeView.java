@@ -397,7 +397,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final class InnerMouseWheelListener implements MouseWheelListener {
 		@Override 
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			re.getCanvas().mouseWheelMoved(e);
+			re.getInputHandlerGlassPane().processMouseWheelEvent(e);
 		}
 	}
 	

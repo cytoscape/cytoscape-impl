@@ -43,85 +43,31 @@ import javax.swing.JLayeredPane;
  * class which encapsulates the multiple canvases that are created
  * by the DGraphView class.
  */
+@SuppressWarnings("serial")
 public class InternalFrameComponent extends JComponent implements Printable {
-	private final static long serialVersionUID = 1213747102972998L;
-	
-	/**
-	 * z-order enumeration
-	 * 
-	 * TODO: this breaks resize-handle on Mac OS X.
-	 * 	Need to do some research on this layring order.
-	 * 
-	 */
-	private static enum ZOrder {
-		BACKGROUND_PANE,
-		NETWORK_PANE,
-		FOREGROUND_PANE;
-		int layer() {
-			if (this == BACKGROUND_PANE)
-				return 10;
 
-			if (this == NETWORK_PANE)
-				return 20;
+	private final DRenderingEngine re;
 
-			if (this == FOREGROUND_PANE)
-				return 30;
+	private final DingCanvas backgroundCanvas;
+	private final DingCanvas networkCanvas;
+	private final DingCanvas foregroundCanvas;
 
-			return 0;
-		}
-	}
 
-	/**
-	 * ref to the JInternalFrame's JLayeredPane
-	 */
-	private JLayeredPane layeredPane;
-
-	/**
-	 * ref to background canvas
-	 */
-	private DingCanvas backgroundCanvas;
-
-	/**
-	 * ref to network canvas
-	 */
-	private DingCanvas networkCanvas;
-
-	/**
-	 * ref to foreground canvas
-	 */
-	private DingCanvas foregroundCanvas;
-
-	/**
-	 * ref to the graph view
-	 */
-	private DRenderingEngine re;
-
-	/**
-	 * Constructor.
-	 *
-	 * @param layeredPane JLayedPane
-	 * @param dGraphView dGraphView
-	 */
 	public InternalFrameComponent(JLayeredPane layeredPane, DRenderingEngine re) {
-		// init members
-		this.layeredPane = layeredPane;
 		this.backgroundCanvas = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
 		this.networkCanvas = re.getCanvas(DRenderingEngine.Canvas.NETWORK_CANVAS);
 		this.foregroundCanvas = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
 		this.re = re;
 
-		// set default ordering
-		initLayeredPane();
+		// Must pass Integer object too call correct add() overload
+		layeredPane.add(backgroundCanvas, Integer.valueOf(10));
+		layeredPane.add(networkCanvas,    Integer.valueOf(20));
+		layeredPane.add(foregroundCanvas, Integer.valueOf(30));
 	}
 
 	/**
 	 * Our implementation of Component setBounds().  If we don't do this, the
 	 * individual canvas do not get rendered.
-	 *
-	 * @param x int
-	 * @param y int
-	 * @param width int
-	 * @param height int
 	 */
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
@@ -168,22 +114,7 @@ public class InternalFrameComponent extends JComponent implements Printable {
 	 */
 	public void print(Graphics g) {
 		backgroundCanvas.print(g);
-		
-		// This is a work-around, otherwise we lose backgroundCanvas color
-		// networkCanvas.setBackground(backgroundCanvas.getBackground());
-		
 		networkCanvas.print(g);
 		foregroundCanvas.print(g);
-	}
-
-	/**
-	 * Places the canvas on the layeredPane in the following manner:
-	 * top - bottom: foreground, network, background
-	 */
-	private void initLayeredPane() {
-		// foreground followed by network followed by background
-		layeredPane.add(backgroundCanvas, Integer.valueOf(ZOrder.BACKGROUND_PANE.layer()));
-		layeredPane.add(networkCanvas, Integer.valueOf(ZOrder.NETWORK_PANE.layer()));
-		layeredPane.add(foregroundCanvas, Integer.valueOf(ZOrder.FOREGROUND_PANE.layer()));
 	}
 }

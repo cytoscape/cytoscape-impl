@@ -21,7 +21,7 @@ public class CanvasMouseWheelListener implements MouseWheelListener{
 
 	//To handle zooming in and out
 	public void mouseWheelMoved(MouseWheelEvent e) {
-		networkCanvas.mouseWheelMoved(e);
+//		networkCanvas.mouseWheelMoved(e);
 		return;
 
 		/*

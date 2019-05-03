@@ -20,8 +20,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -95,7 +93,7 @@ import org.cytoscape.work.TaskManager;
  * Canvas to be used for drawing actual network visualization
  */
 @SuppressWarnings("serial")
-public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener {
+public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, KeyListener/*,MouseWheelListener*/ {
 
 	private static final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
 	private static final Color SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
@@ -164,7 +162,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 
 		addMouseListener(this);
 		addMouseMotionListener(this);
-		addMouseWheelListener(this);
+//		addMouseWheelListener(this);
 		addKeyListener(this);
 		setFocusable(true);
 
@@ -312,14 +310,14 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		super.processMouseEvent(e);
 	}
 
-	// TODO: set timer and setDrawEdges to false.  Set back to true when timer expires.
-	@Override
-	public void mouseWheelMoved(MouseWheelEvent e) {
-		if (!re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
-			setHideEdges();
-			adjustZoom(e.getWheelRotation());
-		}
-	}
+//	// TODO: set timer and setDrawEdges to false.  Set back to true when timer expires.
+//	@Override
+//	public void mouseWheelMoved(MouseWheelEvent e) {
+//		if (!re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+//			setHideEdges();
+//			adjustZoom(e.getWheelRotation());
+//		}
+//	}
 	
 	@Override
 	public void mouseDragged(MouseEvent e) {
@@ -839,41 +837,25 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
         }
     }
 
-	private void adjustZoom(int notches) {
-		final double factor;
+	public void adjustZoom(int ticks) {
+		if(re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
+			return;
 		
-		if (notches < 0)
+		double factor;
+		if (ticks < 0)
 			factor = 1.1; // scroll up, zoom in
-		else if (notches > 0)
+		else if (ticks > 0)
 			factor = 0.9; // scroll down, zoom out
 		else
 			return;
-
-		synchronized (dingLock) {
-			scaleFactor = scaleFactor * factor;
-		}
-
-		re.setViewportChanged();
 		
-		// Update view model.
+		synchronized(dingLock) {
+			scaleFactor *= factor;
+		}
+		
+		setHideEdges();
+		re.setViewportChanged();
 		re.getViewModel().setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
-
-        //This code updates the source point so that it is better related to the selected node.
-        //TODO: Center the source point on the selected node perfectly.
-        if (addEdgeMode.addingEdge()) {
-        	View<CyNode> nodeView = mousePressedDelegator.getPickedNodeView();
-
-            AddEdgeStateMonitor.setSourceNode(re.getViewModel(), nodeView);
-            double[] coords = new double[2];
-            coords[0] = re.getNodeDetails().getXPosition(nodeView);
-            coords[1] = re.getNodeDetails().getYPosition(nodeView);
-            ensureInitialized();
-            re.xformNodeToComponentCoords(coords);
-
-            Point sourceP = new Point();
-            sourceP.setLocation(coords[0], coords[1]);
-            AddEdgeStateMonitor.setSourcePoint(re.getViewModel(), sourceP);
-        }
 		repaint();
 	}
 
@@ -1062,7 +1044,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		}
 	}
 	
-	private void pan(double deltaX, double deltaY) {
+	public void pan(double deltaX, double deltaY) {
 		synchronized (dingLock) {
 			double newX = xCenter - (deltaX / scaleFactor);
 			double newY = yCenter - (deltaY / scaleFactor);
@@ -1609,7 +1591,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 	public void dispose() {
 		removeMouseListener(this);
 		removeMouseMotionListener(this);
-		removeMouseWheelListener(this);
+//		removeMouseWheelListener(this);
 		removeKeyListener(this);
 		undoableEdit = null;
 		addEdgeMode = null;
