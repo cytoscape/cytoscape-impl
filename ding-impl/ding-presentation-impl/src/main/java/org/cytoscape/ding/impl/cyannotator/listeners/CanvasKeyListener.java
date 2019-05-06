@@ -51,11 +51,12 @@ public class CanvasKeyListener implements KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
+		System.out.println("CanvasKeyListener.keyPressed()");
 		int code = e.getKeyCode();
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 
 		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
-			networkCanvas.keyPressed(e);
+//			networkCanvas.keyPressed(e);
 			return;
 		}
 
@@ -135,16 +136,17 @@ public class CanvasKeyListener implements KeyListener {
 			cyAnnotator.getForeGroundCanvas().repaint();
 		}
 		*/
-		networkCanvas.keyPressed(e);
+//		networkCanvas.keyPressed(e);
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) { 
+		System.out.println("CanvasKeyListener.keyReleased()");
 		int code = e.getKeyCode();
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 
 		if (!re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION)) {
-			networkCanvas.keyPressed(e);
+//			networkCanvas.keyPressed(e);
 			return;
 		}
 
@@ -157,7 +159,7 @@ public class CanvasKeyListener implements KeyListener {
 			}
 		}
 
-		networkCanvas.keyPressed(e);
+//		networkCanvas.keyPressed(e);
 	}
 
 	@Override

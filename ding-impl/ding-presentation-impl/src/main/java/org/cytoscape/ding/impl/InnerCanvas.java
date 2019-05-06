@@ -15,8 +15,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -49,8 +47,6 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.NetworkTaskFactory;
-import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkViewConfig;
@@ -63,7 +59,6 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
-import org.cytoscape.work.TaskManager;
 
 /*
  * #%L
@@ -93,7 +88,7 @@ import org.cytoscape.work.TaskManager;
  * Canvas to be used for drawing actual network visualization
  */
 @SuppressWarnings("serial")
-public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener, KeyListener/*,MouseWheelListener*/ {
+public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotionListener/*, KeyListener, MouseWheelListener*/ {
 
 	private static final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
 	private static final Color SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
@@ -163,7 +158,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		addMouseListener(this);
 		addMouseMotionListener(this);
 //		addMouseWheelListener(this);
-		addKeyListener(this);
+//		addKeyListener(this);
 		setFocusable(true);
 
 		// Timer to reset edge drawing
@@ -362,44 +357,44 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		requestFocusInWindow();
 	}
 
-	/**
-	 * Handles key press events. Currently used with the up/down, left/right arrow
-	 * keys. Pressing any of the listed keys will move the selected nodes one pixel
-	 * in that direction.
-	 * @param k The key event that we're listening for.
-	 */
-	@Override
-	public void keyPressed(KeyEvent k) {
-		final int code = k.getKeyCode();
-		if ( (code == KeyEvent.VK_UP) || (code == KeyEvent.VK_DOWN) || 
-		     (code == KeyEvent.VK_LEFT) || (code == KeyEvent.VK_RIGHT)) {
-			handleArrowKeys(k);
-		} else if ( code == KeyEvent.VK_ESCAPE ) {
-			handleEscapeKey();
-		}
-		else if ( code == KeyEvent.VK_BACK_SPACE ) 		//#1993
-			handleBackspaceKey();
-	}
-
-	private void handleBackspaceKey() {		//#1993
-		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
-		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-		taskManager.execute(taskFactory.createTaskIterator(re.getViewModel().getModel()));
-	}
-
-	/**
-	 * Currently not used.
-	 * @param k The key event that we're listening for.
-	 */
-	@Override
-	public void keyReleased(KeyEvent k) { }
-
-	/**
-	 * Currently not used.
-	 * @param k The key event that we're listening for.
-	 */
-	@Override
-	public void keyTyped(KeyEvent k) { }
+//	/**
+//	 * Handles key press events. Currently used with the up/down, left/right arrow
+//	 * keys. Pressing any of the listed keys will move the selected nodes one pixel
+//	 * in that direction.
+//	 * @param k The key event that we're listening for.
+//	 */
+//	@Override
+//	public void keyPressed(KeyEvent k) {
+//		final int code = k.getKeyCode();
+//		if ( (code == KeyEvent.VK_UP) || (code == KeyEvent.VK_DOWN) || 
+//		     (code == KeyEvent.VK_LEFT) || (code == KeyEvent.VK_RIGHT)) {
+//			handleArrowKeys(k);
+//		} else if ( code == KeyEvent.VK_ESCAPE ) {
+//			handleEscapeKey();
+//		}
+//		else if ( code == KeyEvent.VK_BACK_SPACE ) 		//#1993
+//			handleBackspaceKey();
+//	}
+//
+//	private void handleBackspaceKey() {		//#1993
+//		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
+//		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
+//		taskManager.execute(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+//	}
+//
+//	/**
+//	 * Currently not used.
+//	 * @param k The key event that we're listening for.
+//	 */
+//	@Override
+//	public void keyReleased(KeyEvent k) { }
+//
+//	/**
+//	 * Currently not used.
+//	 * @param k The key event that we're listening for.
+//	 */
+//	@Override
+//	public void keyTyped(KeyEvent k) { }
 
 	private long getChosenNode() {
 		double[] ptBuff = new double[2];
@@ -952,97 +947,97 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		repaint();
 	}
 
-	/**
-	 * Arrow key handler.
-	 * They are used to pan and mode nodes/edge bend handles.
-	 * @param k key event
-	 */
-	private void handleArrowKeys(KeyEvent k) {
-		final int code = k.getKeyCode();
-		float move = 1.0f;
-
-		// Adjust increment if Shift key is pressed
-		if (k.isShiftDown())
-			move = 15.0f;
-		
-		// Pan if CTR is pressed.
-		if (isControlOrMetaDown(k)) {
-			// Pan
-			if (code == KeyEvent.VK_UP) {
-				pan(0, move);
-			} else if (code == KeyEvent.VK_DOWN) {
-				pan(0, -move);
-			} else if (code == KeyEvent.VK_LEFT) {
-				pan(-move, 0);
-			} else if (code == KeyEvent.VK_RIGHT) {
-				pan(move, 0);
-			}
-			return;
-		}
-		
-		if (re.isNodeSelectionEnabled()) {
-			// move nodes
-			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			for (View<CyNode> node : selectedNodes) {
-				double xPos = re.getNodeDetails().getXPosition(node);
-				double yPos = re.getNodeDetails().getYPosition(node);
-
-				if (code == KeyEvent.VK_UP) {
-					yPos -= move;
-				} else if (code == KeyEvent.VK_DOWN) {
-					yPos += move;
-				} else if (code == KeyEvent.VK_LEFT) {
-					xPos -= move;
-				} else if (code == KeyEvent.VK_RIGHT) {
-					xPos += move;
-				}
-
-				// MKTODO better way of doing this???
-				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(node.getSUID());
-				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPos);
-				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
-			}
-
-			Set<HandleKey> handlesToMove = re.getBendStore().getSelectedHandles();
-			
-			for (HandleKey handleKey : handlesToMove) {
-				View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
-
-				// MKTODO this code is copy-pasted in a few places, clean it up
-				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-					Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-					View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
-					if(mutableEdgeView != null) {
-						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-						} else {
-							Bend bend = re.getEdgeDetails().getBend(ev, true);
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-						}
-					}
-				}
-				
-				Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-				Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
-				
-				float x = (float) newPoint.getX();
-				float y = (float) newPoint.getY();
-
-				if (code == KeyEvent.VK_UP) {
-					re.getBendStore().moveHandle(handleKey, x, y - move);
-				} else if (code == KeyEvent.VK_DOWN) {
-					re.getBendStore().moveHandle(handleKey, x, y + move);
-				} else if (code == KeyEvent.VK_LEFT) {
-					re.getBendStore().moveHandle(handleKey, x - move, y);
-				} else if (code == KeyEvent.VK_RIGHT) {
-					re.getBendStore().moveHandle(handleKey, x + move, y);
-				}
-
-			}
-			repaint();
-		}
-	}
+//	/**
+//	 * Arrow key handler.
+//	 * They are used to pan and mode nodes/edge bend handles.
+//	 * @param k key event
+//	 */
+//	private void handleArrowKeys(KeyEvent k) {
+//		final int code = k.getKeyCode();
+//		float move = 1.0f;
+//
+//		// Adjust increment if Shift key is pressed
+//		if (k.isShiftDown())
+//			move = 15.0f;
+//		
+//		// Pan if CTR is pressed.
+//		if (isControlOrMetaDown(k)) {
+//			// Pan
+//			if (code == KeyEvent.VK_UP) {
+//				pan(0, move);
+//			} else if (code == KeyEvent.VK_DOWN) {
+//				pan(0, -move);
+//			} else if (code == KeyEvent.VK_LEFT) {
+//				pan(-move, 0);
+//			} else if (code == KeyEvent.VK_RIGHT) {
+//				pan(move, 0);
+//			}
+//			return;
+//		}
+//		
+//		if (re.isNodeSelectionEnabled()) {
+//			// move nodes
+//			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+//			for (View<CyNode> node : selectedNodes) {
+//				double xPos = re.getNodeDetails().getXPosition(node);
+//				double yPos = re.getNodeDetails().getYPosition(node);
+//
+//				if (code == KeyEvent.VK_UP) {
+//					yPos -= move;
+//				} else if (code == KeyEvent.VK_DOWN) {
+//					yPos += move;
+//				} else if (code == KeyEvent.VK_LEFT) {
+//					xPos -= move;
+//				} else if (code == KeyEvent.VK_RIGHT) {
+//					xPos += move;
+//				}
+//
+//				// MKTODO better way of doing this???
+//				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(node.getSUID());
+//				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPos);
+//				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
+//			}
+//
+//			Set<HandleKey> handlesToMove = re.getBendStore().getSelectedHandles();
+//			
+//			for (HandleKey handleKey : handlesToMove) {
+//				View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
+//
+//				// MKTODO this code is copy-pasted in a few places, clean it up
+//				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
+//					Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
+//					View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
+//					if(mutableEdgeView != null) {
+//						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
+//							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
+//						} else {
+//							Bend bend = re.getEdgeDetails().getBend(ev, true);
+//							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
+//						}
+//					}
+//				}
+//				
+//				Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
+//				Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
+//				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
+//				
+//				float x = (float) newPoint.getX();
+//				float y = (float) newPoint.getY();
+//
+//				if (code == KeyEvent.VK_UP) {
+//					re.getBendStore().moveHandle(handleKey, x, y - move);
+//				} else if (code == KeyEvent.VK_DOWN) {
+//					re.getBendStore().moveHandle(handleKey, x, y + move);
+//				} else if (code == KeyEvent.VK_LEFT) {
+//					re.getBendStore().moveHandle(handleKey, x - move, y);
+//				} else if (code == KeyEvent.VK_RIGHT) {
+//					re.getBendStore().moveHandle(handleKey, x + move, y);
+//				}
+//
+//			}
+//			repaint();
+//		}
+//	}
 	
 	public void pan(double deltaX, double deltaY) {
 		synchronized (dingLock) {
@@ -1592,7 +1587,7 @@ public class InnerCanvas extends DingCanvas implements MouseListener, MouseMotio
 		removeMouseListener(this);
 		removeMouseMotionListener(this);
 //		removeMouseWheelListener(this);
-		removeKeyListener(this);
+//		removeKeyListener(this);
 		undoableEdit = null;
 		addEdgeMode = null;
 		popup.dispose();
