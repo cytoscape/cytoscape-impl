@@ -76,6 +76,11 @@ class PopupMenuHelper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PopupMenuHelper.class);
 
+	// MKTODO replace with an enum
+	public static final String ACTION_NEW  = "NEW";
+	public static final String ACTION_OPEN = "OPEN";
+	
+	
 	private DRenderingEngine re;
 
 	/** the component we should create the popup menu on */

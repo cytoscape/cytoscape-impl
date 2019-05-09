@@ -32,10 +32,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasKeyListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseMotionListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseWheelListener;
 import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.model.CyNetwork;
@@ -94,10 +90,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
 	
-	private CanvasMouseMotionListener mouseMotionListener;
-	private CanvasMouseListener mouseListener;
-	private CanvasKeyListener keyListener;
-	private CanvasMouseWheelListener mouseWheelListener;
+//	private CanvasMouseMotionListener mouseMotionListener;
+//	private CanvasMouseListener mouseListener;
+//	private CanvasKeyListener keyListener;
+//	private CanvasMouseWheelListener mouseWheelListener;
 	
 	private AnnotationEdit undoEdit;
 	
@@ -150,18 +146,18 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void initListeners() {
-		mouseListener = new CanvasMouseListener(this, re, registrar);
-		mouseMotionListener = new CanvasMouseMotionListener(this, re);
-		keyListener = new CanvasKeyListener(this, re);
-		mouseWheelListener = new CanvasMouseWheelListener(this, re);
-		
-		foreGroundCanvas.addMouseListener(mouseListener);
-		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
-		foreGroundCanvas.addKeyListener(keyListener);
-		foreGroundCanvas.setFocusable(true);
-
-		//The created annotations resize (Their font changes), if we zoom in and out
-		foreGroundCanvas.addMouseWheelListener(mouseWheelListener);
+//		mouseListener = new CanvasMouseListener(this, re, registrar);
+//		mouseMotionListener = new CanvasMouseMotionListener(this, re);
+//		keyListener = new CanvasKeyListener(this, re);
+//		mouseWheelListener = new CanvasMouseWheelListener(this, re);
+//		
+//		foreGroundCanvas.addMouseListener(mouseListener);
+//		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
+//		foreGroundCanvas.addKeyListener(keyListener);
+//		foreGroundCanvas.setFocusable(true);
+//
+//		//The created annotations resize (Their font changes), if we zoom in and out
+//		foreGroundCanvas.addMouseWheelListener(mouseWheelListener);
 
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
@@ -171,10 +167,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public void dispose() {
 		// Bug #1178: Swing's focus subsystem is leaking foreGroundCanvas.
 		// We need to remove all our listeners from that class to ensure we don't leak anything further.
-		foreGroundCanvas.removeMouseListener(mouseListener);
-		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
-		foreGroundCanvas.removeKeyListener(keyListener);
-		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
+//		foreGroundCanvas.removeMouseListener(mouseListener);
+//		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
+//		foreGroundCanvas.removeKeyListener(keyListener);
+//		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
 		
 		re.removeViewportChangeListener(myViewportChangeListener);
 		

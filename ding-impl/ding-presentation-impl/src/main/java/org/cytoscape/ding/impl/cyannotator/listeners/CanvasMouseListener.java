@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl.cyannotator.listeners;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
 
-import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -127,7 +126,7 @@ public class CanvasMouseListener implements MouseListener {
 			}
 
 			if (!annotationSelection.isEmpty()) {
-				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
+//				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
 				annotationSelection.setMoving(true);
 				
 				movingUndoEdit = new AnnotationEdit("Move Annotation", cyAnnotator, serviceRegistrar);
@@ -156,7 +155,7 @@ public class CanvasMouseListener implements MouseListener {
 	}
 
 	public void mouseReleased(MouseEvent e) {
-		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+//		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 		boolean resizing = annotationSelection.isResizing();
 		annotationSelection.setResizing(false);
@@ -270,32 +269,32 @@ public class CanvasMouseListener implements MouseListener {
 	}
 
 	public void setResizeCursor(Position anchor) {
-		switch(anchor) {
-			case NORTH_EAST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR));
-				break;
-			case NORTH:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
-				break;
-			case NORTH_WEST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR));
-				break;
-			case WEST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
-				break;
-			case SOUTH_WEST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR));
-				break;
-			case SOUTH:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
-				break;
-			case SOUTH_EAST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
-				break;
-			case EAST:
-				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
-				break;
-		}
-		return;
+//		switch(anchor) {
+//			case NORTH_EAST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.NE_RESIZE_CURSOR));
+//				break;
+//			case NORTH:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.N_RESIZE_CURSOR));
+//				break;
+//			case NORTH_WEST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR));
+//				break;
+//			case WEST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.W_RESIZE_CURSOR));
+//				break;
+//			case SOUTH_WEST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.SW_RESIZE_CURSOR));
+//				break;
+//			case SOUTH:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.S_RESIZE_CURSOR));
+//				break;
+//			case SOUTH_EAST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.SE_RESIZE_CURSOR));
+//				break;
+//			case EAST:
+//				networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR));
+//				break;
+//		}
+//		return;
 	}
 }

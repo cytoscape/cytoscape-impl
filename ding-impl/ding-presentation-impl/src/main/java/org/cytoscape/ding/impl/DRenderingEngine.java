@@ -39,6 +39,7 @@ import javax.swing.Timer;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
+import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
@@ -372,8 +373,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return nodeDetails.isSelected(getViewModelSnapshot().getNodeView(suid));
 	}
 	
+	public boolean isNodeSelected(View<CyNode> nodeView) {
+		return nodeDetails.isSelected(nodeView);
+	}
+	
 	public boolean isEdgeSelected(long suid) {
 		return edgeDetails.isSelected(getViewModelSnapshot().getEdgeView(suid));
+	}
+	
+	public boolean isEdgeSelected(View<CyEdge> edgeView) {
+		return edgeDetails.isSelected(edgeView);
 	}
 	
 	public NodeDetails getNodeDetails() {
@@ -518,7 +527,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// Fire this event on another thread so that it doesn't block the renderer
 		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
-
+	
+	public void pan(double deltaX, double deltaY) {
+		synchronized (dingLock) {
+			double x = networkCanvas.xCenter + deltaX;
+			double y = networkCanvas.yCenter + deltaY;
+			setCenter(x, y);
+		}
+		networkCanvas.setHideEdges();
+		networkCanvas.repaint();
+	}
 	
 	public void setCenter(double x, double y) {
 		synchronized (dingLock) {
@@ -1109,11 +1127,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * utility that returns the nodeView that is located at input point
 	 */
 	public View<CyNode> getPickedNodeView(Point2D pt) {
-		View<CyNode> nv = null;
-		double[] locn = new double[2];
-		locn[0] = pt.getX();
-		locn[1] = pt.getY();
-
+		double[] locn = {pt.getX(), pt.getY()};
 		xformComponentToNodeCoords(locn);
 		float x = (float) locn[0];
 		float y = (float) locn[1];
@@ -1123,7 +1137,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 		
+		
 		// return node with topmost Z
+		View<CyNode> nv = null;
 		for(Long suid : suids) {
 			View<CyNode> dnv = netViewSnapshot.getNodeView(suid);
 			if (nv == null || nodeDetails.getZPosition(dnv) > nodeDetails.getZPosition(nv)) {
@@ -1143,6 +1159,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			ev = netViewSnapshot.getEdgeView(chosenEdge);
 		}
 		return ev;
+	}
+	
+	public HandleKey getPickedEdgeHandle(Point2D pt) {
+		double[] ptBuff = {pt.getX(), pt.getY()};
+		xformComponentToNodeCoords(ptBuff);
+		HandleKey handleKey = getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
+		return handleKey;
 	}
 	
 
