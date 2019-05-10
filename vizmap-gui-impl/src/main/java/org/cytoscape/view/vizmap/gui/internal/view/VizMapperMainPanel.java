@@ -341,7 +341,7 @@ public class VizMapperMainPanel extends JPanel implements VizMapGUI, DefaultView
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)

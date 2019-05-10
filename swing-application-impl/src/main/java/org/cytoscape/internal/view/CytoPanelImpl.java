@@ -19,6 +19,7 @@ import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
 import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -53,7 +54,6 @@ import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.DropDownMenuButton;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -371,7 +371,7 @@ public class CytoPanelImpl implements CytoPanel {
 			titleButton.setHorizontalAlignment(SwingConstants.LEFT);
 			titleButton.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 			titleButton.setContentAreaFilled(false);
-			LookAndFeelUtil.makeSmall(titleButton);
+			makeSmall(titleButton);
 			titleButton.addActionListener(evt -> {
 				if (getCytoPanelComponentCount() > 0) {
 					JPopupMenu popupMenu = new JPopupMenu();

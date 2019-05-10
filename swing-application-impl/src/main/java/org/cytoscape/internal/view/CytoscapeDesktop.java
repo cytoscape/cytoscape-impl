@@ -22,7 +22,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.Insets;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -110,7 +109,6 @@ import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
 
@@ -691,13 +689,17 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	public void showStarterPanel() {
+		// TODO check removed and updatd preferred height
+		getCenterPanel().add(getStarterPanel(), StarterPanel.NAME);
 		getStarterPanel().update();
 		((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
 	}
 	
 	public void hideStarterPanel() {
-		if (isStarterPanelVisible())
+		if (isStarterPanelVisible()) {
+			getCenterPanel().remove(getStarterPanel());
 			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
+		}
 	}
 	
 	public boolean isStarterPanelVisible() {
@@ -1100,8 +1102,6 @@ public class CytoscapeDesktop extends JFrame
 			// Null check is just for unit tests, because it's very hard to mock up the UI
 			if (netViewMediator.getNetworkViewMainPanel() != null)
 				centerPanel.add(netViewMediator.getNetworkViewMainPanel(), NetworkViewMainPanel.NAME);
-			
-			centerPanel.add(getStarterPanel(), StarterPanel.NAME);
 		}
 		
 		return centerPanel;
@@ -1420,12 +1420,14 @@ public class CytoscapeDesktop extends JFrame
 					Icon buttonIcon = icon;
 					
 					if (buttonIcon == null) {
-						buttonIcon = new TextIcon(
-								"" + title.charAt(0),
-								UIManager.getFont("Button.font").deriveFont(Font.BOLD),
-								CytoPanelUtil.BUTTON_SIZE,
-								CytoPanelUtil.BUTTON_SIZE
-						);
+//						buttonIcon = new TextIcon(
+//								"" + title.charAt(0),
+//								UIManager.getFont("Button.font").deriveFont(Font.BOLD),
+//								CytoPanelUtil.BUTTON_SIZE,
+//								CytoPanelUtil.BUTTON_SIZE
+//						);
+						buttonIcon = ViewUtil.createDefaultIcon(title, CytoPanelUtil.BUTTON_SIZE,
+								serviceRegistrar.getService(IconManager.class));
 					} else if (buttonIcon instanceof ImageIcon) {
 						if (showLabels && buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
 							buttonIcon = ViewUtil.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);

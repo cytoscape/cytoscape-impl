@@ -4,6 +4,7 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -140,10 +141,7 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private void init() {
-		setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 4),
-				BorderFactory.createLineBorder(UIManager.getColor("Label.foreground"))
-		));
+		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		setLayout(new BorderLayout());
 		add(getTitlePanel(), BorderLayout.NORTH);
@@ -154,6 +152,7 @@ public class StarterPanel extends JPanel {
 	public JPanel getContentPane() {
 		if (contentPane == null) {
 			contentPane = new JPanel();
+			contentPane.setOpaque(false);
 			
 			final GroupLayout layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
@@ -176,10 +175,11 @@ public class StarterPanel extends JPanel {
 	private JPanel getTitlePanel() {
 		if (titlePanel == null) {
 			titlePanel = new JPanel();
+			titlePanel.setOpaque(false);
 			
 			JLabel titleLabel = new JLabel("Welcome to Cytoscape");
 			titleLabel.setHorizontalAlignment(JLabel.CENTER);
-			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
+			makeSmall(titleLabel);
 			
 			final GroupLayout layout = new GroupLayout(titlePanel);
 			titlePanel.setLayout(layout);
@@ -219,6 +219,7 @@ public class StarterPanel extends JPanel {
 	private JPanel getLinksPanel() {
 		if (linksPanel == null) {
 			linksPanel = new JPanel();
+			linksPanel.setOpaque(false);
 		
 			LookAndFeelUtil.equalizeSize(tutorialsLabel, newsLabel);
 			
@@ -261,6 +262,7 @@ public class StarterPanel extends JPanel {
 		label.setForeground(LINK_FONT_COLOR);
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+		makeSmall(label);
 		
 		label.addMouseListener(new MouseAdapter() {
 			@Override
@@ -384,9 +386,11 @@ public class StarterPanel extends JPanel {
 		private ScrollableListPanel listPanel;
 		
 		SessionListPanel(String title) {
+			setOpaque(false);
+			
 			JLabel titleLabel = new JLabel(title);
-			titleLabel.setFont(titleLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			titleLabel.setBorder(BorderFactory.createEmptyBorder(2, 16, 2, 16));
+			makeSmall(titleLabel);
 			
 			setLayout(new BorderLayout());
 			add(titleLabel, BorderLayout.NORTH);
@@ -420,7 +424,7 @@ public class StarterPanel extends JPanel {
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.getViewport().setBackground(getListPanel().getBackground());
-				scrollPane.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+				scrollPane.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 				
 				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
 				int minWidth = tmpSessionPanel.getPreferredSize().width + 60;
@@ -547,8 +551,8 @@ public class StarterPanel extends JPanel {
 		private JLabel getNameLabel() {
 			if (nameLabel == null) {
 				nameLabel = new JLabel(fileInfo.getName());
-				nameLabel.setFont(nameLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 				nameLabel.setForeground(LINK_FONT_COLOR);
+				makeSmall(nameLabel);
 				
 				if (fileInfo.getFile() != null)
 					nameLabel.setToolTipText(fileInfo.getFile().getPath());

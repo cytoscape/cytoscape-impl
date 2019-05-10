@@ -31,9 +31,9 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
+import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
@@ -94,7 +94,7 @@ public class CytoscapeToolBar extends JToolBar {
 		
 		setFloatable(false);
 		setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(0, 0, 1, 0, (new JSeparator()).getForeground()),
+				BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
 				BorderFactory.createEmptyBorder(0, 10, 0, 10)
 		));
 		buildPopup();
