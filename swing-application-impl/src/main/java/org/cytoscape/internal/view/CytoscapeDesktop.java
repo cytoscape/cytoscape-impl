@@ -22,7 +22,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -336,6 +335,7 @@ public class CytoscapeDesktop extends JFrame
 				if (isVisible())
 					resizeEventTimer.coalesce(() -> {
 						invokeOnEDT(() -> {
+							// Update the sidebars
 							for (CytoPanelImpl cp : getAllCytoPanels()) {
 								SideBar.TrimStack ts = getTrimStackOf(cp);
 								
@@ -1053,6 +1053,12 @@ public class CytoscapeDesktop extends JFrame
 					getRightPane()
 			);
 			topPane.setDividerLocation(400);
+			topPane.addComponentListener(new ComponentAdapter() {
+				@Override
+				public void componentResized(ComponentEvent evt) {
+					updateComponentPopupBounds();
+				}
+			});
 		}
 
 		return topPane;
@@ -1235,7 +1241,7 @@ public class CytoscapeDesktop extends JFrame
 		SideBar bar = getSideBarOf(cytoPanel);
 		
 		if (!bar.isShowing())
-			return;	
+			return;
 		
 		SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
 		JToggleButton btn = trimStack.getButton(index);
@@ -1247,23 +1253,7 @@ public class CytoscapeDesktop extends JFrame
 		}
 		
 		// Show it
-		Point p = bar.compassDirection == SwingConstants.SOUTH ? getBottomPanel().getLocation() : bar.getLocation();
-		Dimension dim = popup.getPreferredSize();
-		
-		if (bar.compassDirection == SwingConstants.WEST) {
-			p.x += bar.getWidth();
-		} else if (bar.compassDirection == SwingConstants.EAST) {
-			p.x -= dim.width;
-		} else if (bar.compassDirection == SwingConstants.SOUTH) {
-			p.x += getWestSideBar().getPreferredSize().width;
-			p.y -= dim.height;
-		}
-		
-		if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH_WEST) 
-			p.y += (bar.getHeight() - dim.height);
-
-		popup.setBounds(p.x, p.y, dim.width, dim.height);
-		
+		updateComponentPopupBounds();
 		((JComponent) getGlassPane()).add(popup);
 		
 		if (!getGlassPane().isVisible())
@@ -1271,6 +1261,61 @@ public class CytoscapeDesktop extends JFrame
 		
 		if (!popup.isVisible()) // To avoid flickering
 			popup.setVisible(true);
+	}
+	
+	private void updateComponentPopupBounds() {
+		if (popup == null)
+			return;
+		
+		CytoPanelImpl cytoPanel = popup.getCytoPanel();
+		
+		if (cytoPanel == null)
+			return;
+		
+		SideBar bar = getSideBarOf(cytoPanel);
+		
+		try {
+			Dimension dim = cytoPanel.getThisComponent().getPreferredSize();
+			Dimension parentDim = getTopPane().getSize();
+			
+			int maxWidth = parentDim.width;
+			int maxHeight = parentDim.height;
+			
+			if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH
+					|| cytoPanel.getCytoPanelNameInternal() == CytoPanelNameInternal.BOTTOM) {
+				dim.width = maxWidth;
+				dim.height = (int) (maxHeight * 0.5f);
+			} else {
+				if (dim.width <= 0)
+					dim.width = 200;
+				if (dim.height <= 0)
+					dim.height = maxHeight;
+				
+				dim.width = Math.min(dim.width, maxWidth);
+				dim.height = Math.min(dim.height, maxHeight);
+			}
+			
+			dim.width = Math.max(dim.width, 100);
+			dim.height = Math.max(dim.height, 100);
+			
+			Point p = bar.compassDirection == SwingConstants.SOUTH ? getBottomPanel().getLocation() : bar.getLocation();
+			
+			if (bar.compassDirection == SwingConstants.WEST) {
+				p.x += bar.getWidth();
+				
+				if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH_WEST) 
+					p.y += (bar.getHeight() - dim.height);
+			} else if (bar.compassDirection == SwingConstants.EAST) {
+				p.x -= dim.width;
+			} else if (bar.compassDirection == SwingConstants.SOUTH) {
+				p.x += getWestSideBar().getPreferredSize().width;
+				p.y -= dim.height;
+			}
+			
+			popup.setBounds(p.x, p.y, dim.width, dim.height);
+		} catch (Exception e) {
+			// Just ignore...
+		}
 	}
 	
 	private void disposeComponentPopup() {
@@ -1712,50 +1757,6 @@ public class CytoscapeDesktop extends JFrame
 			
 			Component c = cytoPanel.getThisComponent();
 			getContentPane().add(c, BorderLayout.CENTER);
-			
-			try {
-				Dimension dim = c.getPreferredSize();
-				Dimension desktopSize = CytoscapeDesktop.this.getContentPane().getSize();
-				Insets borderInsets = getRootPane().getBorder().getBorderInsets(getRootPane());
-				
-				int maxWidth = desktopSize.width - borderInsets.left - borderInsets.right;
-				
-				if (getWestSideBar().isVisible() && getWestSideBar().getSize() != null)
-					maxWidth -= getWestSideBar().getSize().width;
-				if (getEastSideBar().isVisible() && getEastSideBar().getSize() != null)
-					maxWidth -= getEastSideBar().getSize().width;
-				
-				int maxHeight = desktopSize.height - borderInsets.top - borderInsets.bottom;
-				
-				if (getBottomPanel().isVisible() && getBottomPanel().getSize() != null)
-					maxHeight -= getBottomPanel().getSize().height;
-				if (getJToolBar().isVisible() && getJToolBar().getSize() != null)
-					maxHeight -= getJToolBar().getSize().height;
-				
-				if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH
-						|| cytoPanel.getCytoPanelNameInternal() == CytoPanelNameInternal.BOTTOM) {
-					dim.width = maxWidth;
-					dim.height = (int) (maxHeight * 0.5f);
-				} else {
-					if (dim.width <= 0)
-						dim.width = 200;
-					if (dim.height <= 0)
-						dim.height = maxHeight;
-					
-					dim.width = Math.min(dim.width, maxWidth);
-					dim.height = Math.min(dim.height, maxHeight);
-				}
-				
-				dim.width = Math.max(dim.width, 100);
-				dim.height = Math.max(dim.height, 100);
-				
-				getContentPane().setPreferredSize(dim);
-				getContentPane().setMinimumSize(dim);
-				getContentPane().setMaximumSize(dim);
-				getContentPane().setSize(dim);
-			} catch (Exception e) {
-				// Just ignore...
-			}
 			
 			if (!c.isVisible())
 				c.setVisible(true);
