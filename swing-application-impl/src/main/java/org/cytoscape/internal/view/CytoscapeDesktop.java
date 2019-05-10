@@ -23,7 +23,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
-import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
@@ -52,13 +51,13 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRootPane;
 import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
@@ -274,6 +273,8 @@ public class CytoscapeDesktop extends JFrame
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
 		setJMenuBar(cyMenus.getJMenuBar());
+		
+		((JComponent) getGlassPane()).setLayout(null);
 		
 		minimizedButtonGroup = new ToggleableButtonGroup(true) {
 			@Override
@@ -734,8 +735,10 @@ public class CytoscapeDesktop extends JFrame
 		getTrimStackOf(cytoPanel).update();
 		getSideBarOf(cytoPanel).update();
 		
-		if (popup != null && popup.getCytoPanel().equals(cytoPanel))
-			popup.dispose();
+		if (popup != null && popup.getCytoPanel().equals(cytoPanel)) {
+			popup.getContentPane().removeAll();
+			popup.setVisible(false);
+		}
 	}
 	
 	public void showCytoPanel(CytoPanelImpl cytoPanel) {
@@ -827,7 +830,8 @@ public class CytoscapeDesktop extends JFrame
 		if (isFloating(cytoPanel)) {
 			disposeFloatingCytoPanel(cytoPanel);
 		} else if (popup != null && popup.getCytoPanel().equals(cytoPanel)) {
-			popup.dispose();
+			popup.getContentPane().removeAll();
+			popup.setVisible(false);
 			minimizedButtonGroup.clearSelection();
 		}
 		
@@ -1180,48 +1184,49 @@ public class CytoscapeDesktop extends JFrame
 		
 		if (popup == null) {
 			popup = new ComponentPopup(cytoPanel);
-			
-			popup.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowActivated(WindowEvent evt) {
-					popup.toFront();
-					popup.requestFocus();
-				}
-				@Override
-				public void windowDeactivated(WindowEvent evt) {
-					if (evt.getOppositeWindow() == CytoscapeDesktop.this && popup != null) {
-						lastCytoPanel = cytoPanel;
-						lastPopupIndex = index;
-						lastPopupTime = System.currentTimeMillis();
-						
-						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
-						boolean overButton = false;
-						SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
-						
-						for (SidebarToggleButton btn : trimStack.getAllButtons()) {
-							if (!btn.isShowing())
-								continue;
-							
-							if (mouseLoc.x >= btn.getLocationOnScreen().x
-									&& mouseLoc.x <= btn.getLocationOnScreen().x + btn.getWidth()
-									&& mouseLoc.y >= btn.getLocationOnScreen().y
-									&& mouseLoc.y <= btn.getLocationOnScreen().y + btn.getHeight()) {
-								overButton = true;
-								break;
-							}
-						}
-						
-						// No need to dispose when over a button, since the next click will do it
-						if (!overButton) {
-							disposeComponentPopup();
-							
-							isAdjusting = true;
-							minimizedButtonGroup.clearSelection();
-							isAdjusting = false;
-						}
-					}
-				}
-			});
+
+			// TODO			
+//			popup.addWindowListener(new WindowAdapter() {
+//				@Override
+//				public void windowActivated(WindowEvent evt) {
+//					popup.toFront();
+//					popup.requestFocus();
+//				}
+//				@Override
+//				public void windowDeactivated(WindowEvent evt) {
+//					if (evt.getOppositeWindow() == CytoscapeDesktop.this && popup != null) {
+//						lastCytoPanel = cytoPanel;
+//						lastPopupIndex = index;
+//						lastPopupTime = System.currentTimeMillis();
+//						
+//						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
+//						boolean overButton = false;
+//						SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
+//						
+//						for (SidebarToggleButton btn : trimStack.getAllButtons()) {
+//							if (!btn.isShowing())
+//								continue;
+//							
+//							if (mouseLoc.x >= btn.getLocationOnScreen().x
+//									&& mouseLoc.x <= btn.getLocationOnScreen().x + btn.getWidth()
+//									&& mouseLoc.y >= btn.getLocationOnScreen().y
+//									&& mouseLoc.y <= btn.getLocationOnScreen().y + btn.getHeight()) {
+//								overButton = true;
+//								break;
+//							}
+//						}
+//						
+//						// No need to dispose when over a button, since the next click will do it
+//						if (!overButton) {
+//							disposeComponentPopup();
+//							
+//							isAdjusting = true;
+//							minimizedButtonGroup.clearSelection();
+//							isAdjusting = false;
+//						}
+//					}
+//				}
+//			});
 		} else {
 			popup.setCytoPanel(cytoPanel);
 		}
@@ -1241,25 +1246,28 @@ public class CytoscapeDesktop extends JFrame
 			isAdjusting = false;
 		}
 		
-		// Show it -- get Absolute Location and Bounds, relative to Screen
-		Rectangle bounds = bar.getBounds();
-		bounds.setLocation(bar.getLocationOnScreen());
-		Point p = bounds.getLocation();
+		// Show it
+		Point p = bar.compassDirection == SwingConstants.SOUTH ? getBottomPanel().getLocation() : bar.getLocation();
+		Dimension dim = popup.getPreferredSize();
 		
 		if (bar.compassDirection == SwingConstants.WEST) {
 			p.x += bar.getWidth();
 		} else if (bar.compassDirection == SwingConstants.EAST) {
-			p.x -= popup.getSize().width;
+			p.x -= dim.width;
 		} else if (bar.compassDirection == SwingConstants.SOUTH) {
 			p.x += getWestSideBar().getPreferredSize().width;
-			p.y -= popup.getSize().height;
+			p.y -= dim.height;
 		}
 		
 		if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH_WEST) 
-			p.y += (bounds.height - popup.getSize().height);
+			p.y += (bar.getHeight() - dim.height);
 
-		if (!popup.isVisible() || !p.equals(popup.getLocation()))
-			popup.setLocation(p);
+		popup.setBounds(p.x, p.y, dim.width, dim.height);
+		
+		((JComponent) getGlassPane()).add(popup);
+		
+		if (!getGlassPane().isVisible())
+			getGlassPane().setVisible(true);
 		
 		if (!popup.isVisible()) // To avoid flickering
 			popup.setVisible(true);
@@ -1267,7 +1275,10 @@ public class CytoscapeDesktop extends JFrame
 	
 	private void disposeComponentPopup() {
 		if (popup != null) {
-			popup.dispose();
+			((JComponent) getGlassPane()).remove(popup);
+			getGlassPane().setVisible(false);
+			
+			popup.getContentPane().removeAll();
 			popup = null;
 		}
 	}
@@ -1682,17 +1693,14 @@ public class CytoscapeDesktop extends JFrame
 		}
 	}
 	
-	private class ComponentPopup extends JDialog {
+	private class ComponentPopup extends JRootPane {
 		
 		private CytoPanelImpl cytoPanel;
 
 		ComponentPopup(CytoPanelImpl cytoPanel) {
-			super(CytoscapeDesktop.this);
 			this.cytoPanel = cytoPanel;
 			
-			setUndecorated(true);
 			getRootPane().setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 2));
-			
 			update();
 		}
 
@@ -1754,7 +1762,6 @@ public class CytoscapeDesktop extends JFrame
 			
 			c.revalidate();
 			c.repaint();
-			pack();
 		}
 		
 		void setCytoPanel(CytoPanelImpl cytoPanel) {
