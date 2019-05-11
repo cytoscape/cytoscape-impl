@@ -1266,6 +1266,7 @@ public class CytoscapeDesktop extends JFrame
 			}
 			
 			popup.setBounds(p.x, p.y, dim.width, dim.height);
+			cytoPanel.getThisComponent().revalidate();
 		} catch (Exception e) {
 			// Just ignore...
 		}

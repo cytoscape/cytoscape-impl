@@ -768,7 +768,7 @@ public class NetworkSearchBar extends JPanel {
 					// If the a component in the Options popup opens another dialog, the Options one
 					// loses focus, but we don't want it to be disposed.
 					if (!hasVisibleOwnedWindows(OptionsDialog.this)) {
-						if (isShowing()) {
+						if (isShowing() && getOptionsButton().isShowing()) {
 							// If cursor is over the options button, set the toggle button to not-selected
 							// to prevent it from opening the dialog again right after its disposed
 							Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
