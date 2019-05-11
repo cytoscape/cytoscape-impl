@@ -17,15 +17,19 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 
+import java.awt.AWTEvent;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
+import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.Window;
+import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
@@ -61,6 +65,8 @@ import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.MenuElement;
+import javax.swing.MenuSelectionManager;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
@@ -206,10 +212,6 @@ public class CytoscapeDesktop extends JFrame
 	private ComponentPopup popup;
 	/** This button group is used with buttons from all CytoPanels in state HIDE. */
 	private final ToggleableButtonGroup minimizedButtonGroup;
-	
-	private CytoPanelImpl lastCytoPanel;
-	private int lastPopupIndex = -1;
-	private long lastPopupTime;
 	private boolean isAdjusting;
 	
 	private BiModalJSplitPane masterPane;
@@ -232,6 +234,8 @@ public class CytoscapeDesktop extends JFrame
 	private StarterPanel starterPanel;
 	private StatusBarPanelFactory taskStatusPanelFactory;
 	private StatusBarPanelFactory jobStatusPanelFactory;
+	
+	private final GlassPaneMouseListener glassPaneMouseListener = new GlassPaneMouseListener();
 	
 	private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
 	
@@ -1179,60 +1183,9 @@ public class CytoscapeDesktop extends JFrame
 		if (index < 0) // Should not happen!
 			return;
 		
-		// So clicking the same button again can actually dispose the popup,
-		// otherwise it would dispose and then show the popup again
-		if (lastCytoPanel == cytoPanel && index == lastPopupIndex && System.currentTimeMillis() - lastPopupTime < 100)
-			return;
-		
-		lastCytoPanel = null;
-		lastPopupIndex = -1;
-		lastPopupTime = 0;
-		
 		if (popup == null) {
 			popup = new ComponentPopup(cytoPanel);
-
-			// TODO			
-//			popup.addWindowListener(new WindowAdapter() {
-//				@Override
-//				public void windowActivated(WindowEvent evt) {
-//					popup.toFront();
-//					popup.requestFocus();
-//				}
-//				@Override
-//				public void windowDeactivated(WindowEvent evt) {
-//					if (evt.getOppositeWindow() == CytoscapeDesktop.this && popup != null) {
-//						lastCytoPanel = cytoPanel;
-//						lastPopupIndex = index;
-//						lastPopupTime = System.currentTimeMillis();
-//						
-//						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
-//						boolean overButton = false;
-//						SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
-//						
-//						for (SidebarToggleButton btn : trimStack.getAllButtons()) {
-//							if (!btn.isShowing())
-//								continue;
-//							
-//							if (mouseLoc.x >= btn.getLocationOnScreen().x
-//									&& mouseLoc.x <= btn.getLocationOnScreen().x + btn.getWidth()
-//									&& mouseLoc.y >= btn.getLocationOnScreen().y
-//									&& mouseLoc.y <= btn.getLocationOnScreen().y + btn.getHeight()) {
-//								overButton = true;
-//								break;
-//							}
-//						}
-//						
-//						// No need to dispose when over a button, since the next click will do it
-//						if (!overButton) {
-//							disposeComponentPopup();
-//							
-//							isAdjusting = true;
-//							minimizedButtonGroup.clearSelection();
-//							isAdjusting = false;
-//						}
-//					}
-//				}
-//			});
+			Toolkit.getDefaultToolkit().addAWTEventListener(glassPaneMouseListener, AWTEvent.MOUSE_EVENT_MASK);
 		} else {
 			popup.setCytoPanel(cytoPanel);
 		}
@@ -1320,6 +1273,8 @@ public class CytoscapeDesktop extends JFrame
 	
 	private void disposeComponentPopup() {
 		if (popup != null) {
+			Toolkit.getDefaultToolkit().removeAWTEventListener(glassPaneMouseListener);
+			
 			((JComponent) getGlassPane()).remove(popup);
 			getGlassPane().setVisible(false);
 			
@@ -1774,6 +1729,79 @@ public class CytoscapeDesktop extends JFrame
 
 		CytoPanelImpl getCytoPanel() {
 			return cytoPanel;
+		}
+	}
+	
+	private class GlassPaneMouseListener implements AWTEventListener {
+		
+		@Override
+		public void eventDispatched(AWTEvent ae) {
+			if (popup == null || !popup.isShowing())
+				return;
+			if (ae instanceof MouseEvent == false || ae.getID() != MouseEvent.MOUSE_PRESSED)
+				return;
+			
+			// Over a Window other than the CytoscapeDesktop?
+			KeyboardFocusManager keyboardFocusManager = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+			Window window = keyboardFocusManager.getActiveWindow();
+			
+			if (window instanceof CytoscapeDesktop == false)
+				return;
+			
+			// Over a JPopupMenu?
+			MenuSelectionManager msm = MenuSelectionManager.defaultManager();
+		    MenuElement[] path = msm.getSelectedPath();
+		    
+		    for (MenuElement me : path) {
+		        if (me instanceof JPopupMenu)
+		            return;
+		    }
+			
+			// Over the cytopanel popup?
+		    Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
+		    
+			if (mouseLoc.x >= popup.getLocationOnScreen().x
+					&& mouseLoc.x <= popup.getLocationOnScreen().x + popup.getWidth()
+					&& mouseLoc.y >= popup.getLocationOnScreen().y
+					&& mouseLoc.y <= popup.getLocationOnScreen().y + popup.getHeight())
+				return; // Mouse pressed on the popup, nothing to do here
+
+			// Over a sidebar button?
+			boolean overButton = false;
+			
+			PANELS_LOOP:
+			for (CytoPanelImpl cp : getAllCytoPanels()) {
+				if (cp.getState() != HIDE)
+					continue; 
+				
+				SideBar.TrimStack ts = getTrimStackOf(cp);
+				
+				if (!ts.isShowing())
+					continue;
+				
+				for (SidebarToggleButton btn : ts.getAllButtons()) {
+					if (!btn.isShowing())
+						continue;
+	
+					if (mouseLoc.x >= btn.getLocationOnScreen().x
+							&& mouseLoc.x <= btn.getLocationOnScreen().x + btn.getWidth()
+							&& mouseLoc.y >= btn.getLocationOnScreen().y
+							&& mouseLoc.y <= btn.getLocationOnScreen().y + btn.getHeight()) {
+						overButton = true;
+						break PANELS_LOOP;
+					}
+				}
+			}
+
+			// No need to dispose when over a sidebar button for a hidden panel,
+			// since the button click will do it
+			if (!overButton) {
+				disposeComponentPopup();
+
+				isAdjusting = true;
+				minimizedButtonGroup.clearSelection();
+				isAdjusting = false;
+			}
 		}
 	}
 }
