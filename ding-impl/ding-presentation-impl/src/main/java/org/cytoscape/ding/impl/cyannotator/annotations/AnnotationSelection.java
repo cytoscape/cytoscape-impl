@@ -149,7 +149,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		double[] nextLocn = new double[2];
 		nextLocn[0] = (double) x - getX();
 		nextLocn[1] = (double) y - getY();
-		
 		return overAnchor(nextLocn[0], nextLocn[1]);
 	}
 

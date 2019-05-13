@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -698,64 +699,109 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	public List<Long> getNodesIntersectingRectangle(double xMinimum, double yMinimum, double xMaximum,
 	                                          double yMaximum, boolean treatNodeShapesAsRectangle) {
-//		synchronized (m_lock) {
+	
+		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 		
-			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-			
-			final float xMin = (float) xMinimum;
-			final float yMin = (float) yMinimum;
-			final float xMax = (float) xMaximum;
-			final float yMax = (float) yMaximum;
-			
-			SpacialIndex2DEnumerator<Long> under = netViewSnapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
-			if(!under.hasNext())
-				return Collections.emptyList();
-			
-			List<Long> returnVal = new ArrayList<>(under.size());
-			
-			if (treatNodeShapesAsRectangle) {
-				while(under.hasNext()) {
-					returnVal.add(under.next());
-				}
-			} else {
-				final double x = xMin;
-				final double y = yMin;
-				final double w = ((double) xMax) - xMin;
-				final double h = ((double) yMax) - yMin;
+		final float xMin = (float) xMinimum;
+		final float yMin = (float) yMinimum;
+		final float xMax = (float) xMaximum;
+		final float yMax = (float) yMaximum;
+		
+		SpacialIndex2DEnumerator<Long> under = netViewSnapshot.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+		if(!under.hasNext())
+			return Collections.emptyList();
+		
+		List<Long> returnVal = new ArrayList<>(under.size());
+		
+		if (treatNodeShapesAsRectangle) {
+			while(under.hasNext()) {
+				returnVal.add(under.next());
+			}
+		} else {
+			final double x = xMin;
+			final double y = yMin;
+			final double w = ((double) xMax) - xMin;
+			final double h = ((double) yMax) - yMin;
 
-				float[] extentsBuff = new float[4];
-				
-				while (under.hasNext()) {
-					final long suid = under.nextExtents(extentsBuff);
-					View<CyNode> cyNode = netViewSnapshot.getNodeView(suid);
+			float[] extentsBuff = new float[4];
+			
+			while (under.hasNext()) {
+				final long suid = under.nextExtents(extentsBuff);
+				View<CyNode> cyNode = netViewSnapshot.getNodeView(suid);
 
-					// The only way that the node can miss the intersection
-					// query is
-					// if it intersects one of the four query rectangle's
-					// corners.
-					if (((extentsBuff[0] < xMin) && (extentsBuff[1] < yMin))
-					    || ((extentsBuff[0] < xMin) && (extentsBuff[3] > yMax))
-					    || ((extentsBuff[2] > xMax) && (extentsBuff[3] > yMax))
-					    || ((extentsBuff[2] > xMax) && (extentsBuff[1] < yMin))) {
-						
-						GeneralPath path = new GeneralPath();
-						networkCanvas.grafx.getNodeShape(nodeDetails.getShape(cyNode),
-								extentsBuff[0], extentsBuff[1],
-								extentsBuff[2], extentsBuff[3], path);
+				// The only way that the node can miss the intersection query is
+				// if it intersects one of the four query rectangle's corners.
+				if (((extentsBuff[0] < xMin) && (extentsBuff[1] < yMin))
+				    || ((extentsBuff[0] < xMin) && (extentsBuff[3] > yMax))
+				    || ((extentsBuff[2] > xMax) && (extentsBuff[3] > yMax))
+				    || ((extentsBuff[2] > xMax) && (extentsBuff[1] < yMin))) {
+					
+					GeneralPath path = new GeneralPath();
+					networkCanvas.grafx.getNodeShape(nodeDetails.getShape(cyNode),
+							extentsBuff[0], extentsBuff[1],
+							extentsBuff[2], extentsBuff[3], path);
 
-						if ((w > 0) && (h > 0)) {
-							if (path.intersects(x, y, w, h))
-								returnVal.add(suid);
-						} else {
-							if (path.contains(x, y))
-								returnVal.add(suid);
-						}
-					} else
-						returnVal.add(suid);
+					if ((w > 0) && (h > 0)) {
+						if (path.intersects(x, y, w, h))
+							returnVal.add(suid);
+					} else {
+						if (path.contains(x, y))
+							returnVal.add(suid);
+					}
+				} else {
+					returnVal.add(suid);
 				}
 			}
-			return returnVal;
-//		}
+		}
+		return returnVal;
+	}
+	
+	
+	public List<Long> getNodesIntersectingPath(GeneralPath path, boolean treatNodeShapesAsRectangle) {
+		Rectangle2D mbr = path.getBounds2D();
+		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		SpacialIndex2DEnumerator<Long> under = netViewSnapshot.getSpacialIndex2D()
+				.queryOverlap((float)mbr.getMinX(), (float)mbr.getMinY(), (float)mbr.getMaxX(), (float)mbr.getMaxY());
+		if(!under.hasNext())
+			return Collections.emptyList();
+		
+		List<Long> result = new ArrayList<>(under.size());
+		float[] extents = new float[4];
+		
+		if(treatNodeShapesAsRectangle) {
+			while(under.hasNext()) {
+				Long suid = under.nextExtents(extents);
+				float x = extents[0];
+				float y = extents[1];
+				float w = extents[2] - x;
+				float h = extents[3] - y;
+				if(path.intersects(x, y, w, h)) {
+					result.add(suid);
+				}
+			}
+		} else {
+			while(under.hasNext()) {
+				Long suid = under.nextExtents(extents);
+				View<CyNode> nodeView = netViewSnapshot.getNodeView(suid);
+				GeneralPath nodeShape = new GeneralPath();
+				networkCanvas.grafx.getNodeShape(nodeDetails.getShape(nodeView),
+						extents[0], extents[1],
+						extents[2], extents[3], nodeShape);
+				Area pathArea = new Area(path);
+				Area nodeArea = new Area(nodeShape);
+				pathArea.intersect(nodeArea);
+				if(!pathArea.isEmpty()) {
+					result.add(suid);
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	
+	public static Rectangle2D getMBRofPath(GeneralPath path) {
+		return path.getBounds2D();
 	}
 
 	public List<Long> queryDrawnEdges(int xMin, int yMin, int xMax, int yMax) {

@@ -1,6 +1,5 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
 import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
 
 import java.awt.Color;
@@ -15,10 +14,14 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -427,131 +430,170 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 //	}
 	
 	
-	public static enum Toggle {
-		SELECT, DESELECT, NOCHANGE
+//	public static enum Toggle {
+//		SELECT, DESELECT, NOCHANGE
+//	}
+//	
+//	
+//	public Toggle toggleSelectedNode(View<CyNode> nodeView, MouseEvent e) {
+//		final boolean wasSelected = re.getNodeDetails().isSelected(nodeView);
+//		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+//		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
+//			return Toggle.DESELECT;
+//		} else if (!wasSelected) {
+//			return Toggle.SELECT;
+//		}
+//		return Toggle.NOCHANGE;
+//	}
+//	
+//	public void toggleChosenAnchor(HandleKey chosenAnchor, MouseEvent e) {
+//		final long edge = chosenAnchor.getEdgeSuid();
+//		View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(edge);
+//		
+//		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
+//		if (e.isAltDown()) { // Remove handle
+//			int anchorInx = chosenAnchor.getHandleIndex();
+//			// Save remove handle
+//			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", serviceRegistrar);
+//
+//			Bend bend = null;
+//			if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
+//				Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
+//				if (re.getEdgeDetails().getBend(ev) == defaultBend) {
+//					bend = new BendImpl((BendImpl) defaultBend);
+//				} else {
+//					bend = new BendImpl((BendImpl) re.getEdgeDetails().getBend(ev));
+//				}
+//			}
+//			
+//			if(bend != null) {
+//				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getModel());
+//				if(mutableEdgeView != null) {
+//					mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bend);
+//				}
+//			}
+//			
+//			re.getBendStore().removeHandle(chosenAnchor);
+//			lod.setDrawEdges(true);
+//			// final GraphViewChangeListener listener = m_view.m_lis[0];
+//			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
+//		} else {
+//			final boolean wasSelected = re.getBendStore().isHandleSelected(chosenAnchor);
+//			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+//			if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
+//				re.getBendStore().unselectHandle(chosenAnchor);
+//			} else if (!wasSelected) {
+//				if (!e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
+//					re.getBendStore().unselectAllHandles();
+//				re.getBendStore().selectHandle(chosenAnchor);
+//			}
+//
+//		}
+//		re.setContentChanged();	
+//	}
+//	
+//	public Toggle toggleSelectedEdge(View<CyEdge> edgeView, MouseEvent e) {
+//		if(edgeView == null)
+//			return Toggle.NOCHANGE;
+//		
+//		boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
+//		
+//		// Add new Handle for Edge Bend.
+//		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
+//		if ((e.isAltDown()) && ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
+//			re.getBendStore().unselectAllHandles();
+//			double[] ptBuff = new double[2];
+//			ptBuff[0] = lastXMousePos;
+//			ptBuff[1] = lastYMousePos;
+//			re.xformComponentToNodeCoords(ptBuff);
+//			// Store current handle list
+//			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", serviceRegistrar);
+//			
+//			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
+//			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
+//			
+//			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
+//				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
+//				if(mutableEdgeView != null) {
+//					if (defaultBend instanceof BendImpl)
+//						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
+//					else
+//						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
+//				}
+//			}
+//			
+//			HandleKey handleKey = re.getBendStore().addHandle(edgeView, newHandlePoint);
+//			re.getBendStore().selectHandle(handleKey);
+//		}
+//
+//		Toggle toggle = Toggle.NOCHANGE;
+//		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+//		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
+//			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
+//			toggle = Toggle.DESELECT;
+//		} else if (!wasSelected) {
+//			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
+//			toggle = Toggle.SELECT;
+//
+//			if ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
+//				double[] ptBuff = new double[2];
+//				ptBuff[0] = lastXMousePos;
+//				ptBuff[1] = lastYMousePos;
+//				re.xformComponentToNodeCoords(ptBuff);
+//
+//				HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
+//
+//				if (hit != null) {
+//					re.getBendStore().selectHandle(hit);
+//				}
+//			}
+//		}
+//
+//		re.setContentChanged();
+//		return toggle;
+//	}
+//	
+	
+	
+	private List<View<CyNode>> suidsToNodes(List<Long> suids) {
+		NodeDetails nodeDetails = re.getNodeDetails();
+		List<View<CyNode>> selectedNodes = new ArrayList<>(suids.size());
+		for(Long suid : suids) {
+			View<CyNode> node = re.getViewModelSnapshot().getNodeView(suid);
+			if(!nodeDetails.isSelected(node)) { // MKTODO is this check necessary? so what if it re-selects a node
+				selectedNodes.add(node);
+			}
+		}
+		return selectedNodes;
 	}
 	
-	
-	public Toggle toggleSelectedNode(View<CyNode> nodeView, MouseEvent e) {
-		final boolean wasSelected = re.getNodeDetails().isSelected(nodeView);
-		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-			return Toggle.DESELECT;
-		} else if (!wasSelected) {
-			return Toggle.SELECT;
+	private List<View<CyEdge>> suidsToEdges(List<Long> suids) {
+		EdgeDetails details = re.getEdgeDetails();
+		List<View<CyEdge>> selectedEdges = new ArrayList<>(suids.size());
+		for(Long suid : suids) {
+			View<CyEdge> edge = re.getViewModelSnapshot().getEdgeView(suid);
+			if(!details.isSelected(edge)) { // MKTODO is this check necessary? so what if it re-selects a node
+				selectedEdges.add(edge);
+			}
 		}
-		return Toggle.NOCHANGE;
+		return selectedEdges;
 	}
 	
-	public void toggleChosenAnchor(HandleKey chosenAnchor, MouseEvent e) {
-		final long edge = chosenAnchor.getEdgeSuid();
-		View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(edge);
-		
-		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
-		if (e.isAltDown()) { // Remove handle
-			int anchorInx = chosenAnchor.getHandleIndex();
-			// Save remove handle
-			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", serviceRegistrar);
-
-			Bend bend = null;
-			if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-				Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-				if (re.getEdgeDetails().getBend(ev) == defaultBend) {
-					bend = new BendImpl((BendImpl) defaultBend);
-				} else {
-					bend = new BendImpl((BendImpl) re.getEdgeDetails().getBend(ev));
-				}
-			}
-			
-			if(bend != null) {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getModel());
-				if(mutableEdgeView != null) {
-					mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bend);
-				}
-			}
-			
-			re.getBendStore().removeHandle(chosenAnchor);
-			lod.setDrawEdges(true);
-			// final GraphViewChangeListener listener = m_view.m_lis[0];
-			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
-		} else {
-			final boolean wasSelected = re.getBendStore().isHandleSelected(chosenAnchor);
-			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-			if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-				re.getBendStore().unselectHandle(chosenAnchor);
-			} else if (!wasSelected) {
-				if (!e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
-					re.getBendStore().unselectAllHandles();
-				re.getBendStore().selectHandle(chosenAnchor);
-			}
-
+	private GeneralPath pathInNodeCoords(GeneralPath path) {
+		try {
+			GeneralPath transformedPath = new GeneralPath(path);
+			transformedPath.transform(getAffineTransform().createInverse());
+			return transformedPath;
+		} catch (NoninvertibleTransformException e) {
+			return null;
 		}
-		re.setContentChanged();	
 	}
 	
-	public Toggle toggleSelectedEdge(View<CyEdge> edgeView, MouseEvent e) {
-		if(edgeView == null)
-			return Toggle.NOCHANGE;
-		
-		boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
-		
-		// Add new Handle for Edge Bend.
-		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
-		if ((e.isAltDown()) && ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
-			re.getBendStore().unselectAllHandles();
-			double[] ptBuff = new double[2];
-			ptBuff[0] = lastXMousePos;
-			ptBuff[1] = lastYMousePos;
-			re.xformComponentToNodeCoords(ptBuff);
-			// Store current handle list
-			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", serviceRegistrar);
-			
-			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
-			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-			
-			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
-				if(mutableEdgeView != null) {
-					if (defaultBend instanceof BendImpl)
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
-					else
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-				}
-			}
-			
-			HandleKey handleKey = re.getBendStore().addHandle(edgeView, newHandlePoint);
-			re.getBendStore().selectHandle(handleKey);
-		}
-
-		Toggle toggle = Toggle.NOCHANGE;
-		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
-			toggle = Toggle.DESELECT;
-		} else if (!wasSelected) {
-			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
-			toggle = Toggle.SELECT;
-
-			if ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
-				double[] ptBuff = new double[2];
-				ptBuff[0] = lastXMousePos;
-				ptBuff[1] = lastYMousePos;
-				re.xformComponentToNodeCoords(ptBuff);
-
-				HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
-
-				if (hit != null) {
-					re.getBendStore().selectHandle(hit);
-				}
-			}
-		}
-
-		re.setContentChanged();
-		return toggle;
+	private boolean treatNodeShapesAsRectangle() {
+		return (lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0;
 	}
 	
-	
-	public List<View<CyNode>> getAndApplySelectedNodes(Rectangle r) {
+	public List<View<CyNode>> getNodesInRectangle(Rectangle r) {
 		double[] ptBuff = {r.x, r.y};
 		re.xformComponentToNodeCoords(ptBuff);
 		final float xMin = (float) ptBuff[0];
@@ -562,27 +604,20 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		final float xMax = (float) ptBuff[0];
 		final float yMax = (float) ptBuff[1];
 		
-		boolean treatNodeShapesAsRectangle = (lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0;
-		List<Long> nodesXSect = re.getNodesIntersectingRectangle(xMin, yMin, xMax, yMax, treatNodeShapesAsRectangle);
-
-		NodeDetails nodeDetails = re.getNodeDetails();
-		List<View<CyNode>> selectedNodes = new ArrayList<>(nodesXSect.size());
-		for(Long suid : nodesXSect) {
-			View<CyNode> node = re.getViewModelSnapshot().getNodeView(suid);
-			if(!nodeDetails.isSelected(node)) { // MKTODO is this check necessary? so what if it re-selects a node
-				selectedNodes.add(node);
-			}
-		}
-		
-		if(!selectedNodes.isEmpty()) {
-			re.setContentChanged();
-		}
-		return selectedNodes;
+		List<Long> nodesXSect = re.getNodesIntersectingRectangle(xMin, yMin, xMax, yMax, treatNodeShapesAsRectangle());
+		return suidsToNodes(nodesXSect);
 	}
 	
+	public List<View<CyNode>> getNodesInPath(GeneralPath path) {
+		path = pathInNodeCoords(path);
+		if(path == null)
+			return Collections.emptyList();
+		List<Long> nodesXSect = re.getNodesIntersectingPath(path, treatNodeShapesAsRectangle());
+		return suidsToNodes(nodesXSect);
+	}
 
-	public List<View<CyEdge>> getAndApplySelectedEdges(Rectangle r) {
-		if ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
+	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
+		if((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
 			double[] ptBuff = {r.x, r.y};
 			re.xformComponentToNodeCoords(ptBuff);
 			final float xMin = (float) ptBuff[0];
@@ -594,55 +629,155 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 			final float yMax = (float) ptBuff[1];
 
 			SpacialIndex2DEnumerator<HandleKey> handles = re.getBendStore().queryOverlap(xMin, yMin, xMax, yMax);
-			
-			if (handles.hasNext()) {
-				re.setContentChanged();
+			List<HandleKey> list = new ArrayList<>(handles.size());
+			while(handles.hasNext()) {
+				list.add(handles.next());
 			}
-			while (handles.hasNext()) {
-				HandleKey handle = handles.next();
-				re.getBendStore().selectHandle(handle);
-			}
+			return list;
 		}
-
-		List<Long> edges = computeEdgesIntersecting(r.x, r.y, r.x + r.width, r.y + r.height);
-
-		EdgeDetails edgeDetails = re.getEdgeDetails();
-		List<View<CyEdge>> selectedEdges = new ArrayList<>(edges.size());
-		for (Long edgeXSect : edges) {
-			View<CyEdge> edge = re.getViewModelSnapshot().getEdgeView(edgeXSect);
-			if (!edgeDetails.isSelected(edge)) {
-				selectedEdges.add(edge);
-			}
-		}
-
-		if (!selectedEdges.isEmpty())
-			re.setContentChanged();
-		
-		return selectedEdges;
+		return Collections.emptyList();
 	}
+	
+	public List<HandleKey> getHandlesInPath(GeneralPath path) {
+		path = pathInNodeCoords(path);
+		if(path == null)
+			return Collections.emptyList();
+	
+		Rectangle2D mbr = path.getBounds2D();
+		if(mbr == null)
+			return Collections.emptyList();
+		
+		SpacialIndex2DEnumerator<HandleKey> handles = re.getBendStore()
+				.queryOverlap((float)mbr.getMinX(), (float)mbr.getMinY(), (float)mbr.getMaxX(), (float)mbr.getMaxY());
+		
+		List<HandleKey> list = new ArrayList<>(handles.size());
+		float[] extents = new float[4];
+		
+		while(handles.hasNext()) {
+			HandleKey key = handles.nextExtents(extents);
+			float x = extents[0];
+			float y = extents[1];
+			float w = extents[2] - x;
+			float h = extents[3] - y;
+			if(path.intersects(x, y, w, h)) {
+				list.add(key);
+			}
+			list.add(handles.next());
+		}
+		return list;
+	}
+	
+	public List<View<CyEdge>> getEdgesInRectangle(Rectangle r) {
+		List<Long> suids = computeEdgesIntersecting(r.x, r.y, r.x + r.width, r.y + r.height);
+		return suidsToEdges(suids);
+	}
+
+	public List<View<CyEdge>> getEdgesInPath(GeneralPath path) {
+		List<Long> edges = computeEdgesIntersecting(path);
+		return suidsToEdges(edges);
+	}
+	
+	
+//	/**
+//	 * Returns the tool tip text for the specified location if any exists first
+//	 * checking nodes, then edges, and then returns null if it's empty space.
+//	 */
+//	private String getToolTipText(final Point p) {
+//		// display tips for nodes before edges
+//		final View<CyNode> nv = re.getPickedNodeView(p);
+//		if (nv != null)  {
+//			final String tooltip = re.getNodeDetails().getTooltipText(nv);
+//			return tooltip;
+//		}
+//		// only display edge tool tips if the LOD is sufficient
+//		if ((lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) != 0) {
+//			View<CyEdge> ev = re.getPickedEdgeView(p);
+//			if (ev != null) 
+//				return re.getEdgeDetails().getTooltipText(ev);
+//		}
+//
+//		return null;
+//	}
+	
+	
+	private static boolean intersectsLine(Line2D line, GeneralPath path) {
+		// This assumes the path is made up of straight line segments
+		Point2D p1 = null;
+		Point2D p2 = null;
+		float[] coords = new float[6];
+		
+		for(PathIterator iter = path.getPathIterator(null); !iter.isDone(); iter.next()) {
+			iter.currentSegment(coords);
+			p1 = p2;
+			p2 = new Point2D.Float(coords[0], coords[1]);
+			
+			if(p1 != null) {
+				Line2D seg = new Line2D.Float(p1, p2);
+				if(seg.intersectsLine(line)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
 
 	
-	/**
-	 * Returns the tool tip text for the specified location if any exists first
-	 * checking nodes, then edges, and then returns null if it's empty space.
-	 */
-	private String getToolTipText(final Point p) {
-		// display tips for nodes before edges
-		final View<CyNode> nv = re.getPickedNodeView(p);
-		if (nv != null)  {
-			final String tooltip = re.getNodeDetails().getTooltipText(nv);
-			return tooltip;
-		}
-		// only display edge tool tips if the LOD is sufficient
-		if ((lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) != 0) {
-			View<CyEdge> ev = re.getPickedEdgeView(p);
-			if (ev != null) 
-				return re.getEdgeDetails().getTooltipText(ev);
-		}
+	final List<Long> computeEdgesIntersecting(GeneralPath path) {
+		path = pathInNodeCoords(path);
+		if(path == null)
+			return Collections.emptyList();
+		
+		Line2D.Float line = new Line2D.Float();
+		float[] extentsBuff = new float[4];
+		
+		// MKTODO this code was copied from GraphRenderer.renderGraph()
+		// get viewport bounds
+		float image_xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
+		float image_yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
+		float image_xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null)) / scaleFactor)); 
+		float image_yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
 
-		return null;
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(image_xMin, image_yMin, image_xMax, image_yMax);
+		
+		Set<Long> processedNodes = new HashSet<>();
+		List<Long> resultEdges = new ArrayList<>();
+		
+		// AWT has no API for computing the intersection of two general paths, so we must default to treating
+		// edges as lines.
+		while(nodeHits.hasNext()) {
+			long node = nodeHits.nextExtents(extentsBuff);
+			
+			// MKTODO make this into a utility method
+			float nodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
+			float nodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
+			
+			Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
+			
+			for(View<CyEdge> e : touchingEdges) {
+				SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
+				long edge = e.getSUID();
+				long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+				
+				if(!processedNodes.contains(otherNode)) {
+					snapshot.getSpacialIndex2D().get(otherNode, extentsBuff);
+					float otherNodeX = (extentsBuff[0] + extentsBuff[2]) / 2;
+					float otherNodeY = (extentsBuff[1] + extentsBuff[3]) / 2;
+					line.setLine(nodeX, nodeY, otherNodeX, otherNodeY);
+					
+					if(intersectsLine(line, path)) {
+						resultEdges.add(edge);
+					}
+				}
+			}
+			processedNodes.add(node);
+		}
+		return resultEdges;
 	}
-
+	
+	
+	
 	// Puts [last drawn] edges intersecting onto stack; as RootGraph indices.
 	// Depends on the state of several member variables, such as m_hash.
 	// Clobbers m_stack and m_ptBuff.
@@ -792,6 +927,7 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		}
 		return resultEdges;
 	}
+
 
     /**
      * When the center is changed, this method ought to be called rather than modifying m_xCenter and m_yCenter

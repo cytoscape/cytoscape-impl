@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Component;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
@@ -26,6 +27,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingCanvas;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
@@ -243,19 +245,13 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	/**
  	 * Find all of our annotations that are at this point.  Return the top annotation
  	 * (the one with the lowest Z value) if there are more than one.
- 	 *
- 	 * @param cnvs the Canvas we're looking at
- 	 * @param x the x value of the point
- 	 * @param y the y value of the point
- 	 * @return the component
  	 */
-	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private DingAnnotation getComponentAt(DingCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		
 		for (DingAnnotation a : annotationSet) {
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
-				if ((top == null)
-						|| (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
+				if ((top == null) || (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
 					top = a;
 				}
 			}
@@ -264,15 +260,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	/**
- 	 * Find all of our annotations that are at this point.  Return the top annotation
- 	 * (the one with the lowest Z value) if there are more than one.
- 	 *
- 	 * @param cnvs the Canvas we're looking at
- 	 * @param x the x value of the point
- 	 * @param y the y value of the point
- 	 * @return the list of components
+ 	 * Find all of our annotations that are at this point. 
  	 */
-	public List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private List<DingAnnotation> getComponentsAt(DingCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
 
 		for (DingAnnotation a : annotationSet) {
@@ -292,26 +282,26 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return list;
 	}
 
+	// MKTODO should we do this???
 	public DingAnnotation getAnnotationAt(Point2D position) {
-		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (a != null) {
-			while (a.getGroupParent() != null) {
+		DingAnnotation a = getAnnotationAt(foreGroundCanvas, position);
+		if(a == null)
+			a = getAnnotationAt(backGroundCanvas, position);
+		return a;
+	}
+	
+	public DingAnnotation getAnnotationAt(DingCanvas canvas, Point2D position) {
+		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
+		if(a != null) {
+			while(a.getGroupParent() != null) {
 				a = (DingAnnotation)a.getGroupParent();
 			}
-			return a;
-		}
-
-		a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (a != null) {
-			while (a.getGroupParent() != null)
-				a = (DingAnnotation)a.getGroupParent();
 		}
 		return a;
 	}
 
 	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
 		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-
 		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
 		return a;
 	}
@@ -321,11 +311,23 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		for (Annotation ann: getAnnotations()) {
 			DingAnnotation d = (DingAnnotation)ann;
 			Rectangle2D bounds = d.getComponent().getBounds();
-			if (rect.contains(bounds) && d.getGroupParent() == null)
+			if (d.getGroupParent() == null && rect.contains(bounds))
 				anns.add(d);
 		}
 		return anns;
 	}
+	
+	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
+		List<DingAnnotation> anns = new ArrayList<>();
+		for (Annotation ann: getAnnotations()) {
+			DingAnnotation d = (DingAnnotation)ann;
+			Rectangle2D bounds = d.getComponent().getBounds();
+			if(d.getGroupParent() == null && path.intersects(bounds))
+				anns.add(d);
+		}
+		return anns;
+	}
+	
 
 	public InnerCanvas getNetworkCanvas() {
 		return networkCanvas;
@@ -792,9 +794,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	class ZComparator implements Comparator<DingAnnotation> {
 		
-		final ArbitraryGraphicsCanvas cnvs;
+		final DingCanvas cnvs;
 		
-		public ZComparator(final ArbitraryGraphicsCanvas c) {
+		public ZComparator(final DingCanvas c) {
 			this.cnvs = c;
 		}
 		
