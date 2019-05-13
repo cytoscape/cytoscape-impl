@@ -103,6 +103,7 @@ public class CytoPanelImpl implements CytoPanel {
 	private final int trimBarIndex;
 	
 	private CytoPanelState cytoPanelState;
+	private boolean maximized;
 	private boolean removed;
 
 	private final List<CytoPanelComponent> cytoPanelComponents = new ArrayList<>();
@@ -267,6 +268,14 @@ public class CytoPanelImpl implements CytoPanel {
 		return getMainPanel();
 	}
 	
+	public boolean isMaximized() {
+		return maximized;
+	}
+	
+	public void setMaximized(boolean maximized) {
+		this.maximized = maximized;
+	}
+	
 	public boolean isRemoved() {
 		return removed;
 	}
@@ -306,7 +315,7 @@ public class CytoPanelImpl implements CytoPanel {
 		return mainPanel;
 	}
 	
-	private JPanel getTitlePanel() {
+	JPanel getTitlePanel() {
 		if (titlePanel == null) {
 			titlePanel = new JPanel();
 			titlePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));

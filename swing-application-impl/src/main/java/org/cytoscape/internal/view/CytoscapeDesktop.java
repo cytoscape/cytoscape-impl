@@ -22,7 +22,9 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -34,6 +36,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.ArrayList;
@@ -113,6 +116,7 @@ import org.cytoscape.session.events.SessionSavedEvent;
 import org.cytoscape.session.events.SessionSavedListener;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
 
@@ -236,6 +240,9 @@ public class CytoscapeDesktop extends JFrame
 	private StatusBarPanelFactory jobStatusPanelFactory;
 	
 	private final GlassPaneMouseListener glassPaneMouseListener = new GlassPaneMouseListener();
+	
+	/** User preferred sizes for each cytopanel popup, to be set when the user manually resizes a popup. */
+	private final Map<CytoPanelNameInternal, Dimension> popupPreferredSizes = new HashMap<>();
 	
 	private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
 	
@@ -397,6 +404,13 @@ public class CytoscapeDesktop extends JFrame
 				isAdjusting = true;
 				minimizedButtonGroup.clearSelection();
 				isAdjusting = false;
+			}
+		});
+		cp.getTitlePanel().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent evt) {
+				if (evt.getClickCount() == 2)
+					toggleMaximizeCytoPanel(cp);
 			}
 		});
 	}
@@ -694,7 +708,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	public void showStarterPanel() {
-		// TODO check removed and updatd preferred height
+		// TODO check removed and updated preferred height
 		getCenterPanel().add(getStarterPanel(), StarterPanel.NAME);
 		getStarterPanel().update();
 		((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
@@ -739,12 +753,12 @@ public class CytoscapeDesktop extends JFrame
 		getTrimStackOf(cytoPanel).update();
 		getSideBarOf(cytoPanel).update();
 		
-		if (popup != null && popup.getCytoPanel().equals(cytoPanel)) {
+		if (popup != null && isUnpinned(cytoPanel)) {
 			popup.getContentPane().removeAll();
 			popup.setVisible(false);
 		}
 	}
-	
+
 	public void showCytoPanel(CytoPanelImpl cytoPanel) {
 		if (cytoPanel.getCytoPanelComponentCount() == 0)
 			return;
@@ -759,7 +773,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void floatCytoPanel(CytoPanelImpl cytoPanel) {
-		if (popup != null && popup.getCytoPanel().equals(cytoPanel)) {
+		if (popup != null && isUnpinned(cytoPanel)) {
 			disposeComponentPopup();
 			addToCytoPanelButtonGroup(cytoPanel);
 		}
@@ -804,7 +818,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	private void dockCytoPanel(CytoPanelImpl cytoPanel) {
-		if (popup != null && popup.getCytoPanel().equals(cytoPanel))
+		if (popup != null && isUnpinned(cytoPanel))
 			disposeComponentPopup();
 		
 		// Make sure the button selection is correct
@@ -829,11 +843,19 @@ public class CytoscapeDesktop extends JFrame
 		if (splitPane != null)
 			splitPane.update();
 	}
+	
+	private void toggleMaximizeCytoPanel(CytoPanelImpl cytoPanel) {
+		// For now, it can be maximized only when unpinned
+		if (popup != null && isUnpinned(cytoPanel)) {
+			cytoPanel.setMaximized(!cytoPanel.isMaximized());
+			updateComponentPopupBounds();
+		}
+	}
 
 	private void minimizeCytoPanel(CytoPanelImpl cytoPanel) {
 		if (isFloating(cytoPanel)) {
 			disposeFloatingCytoPanel(cytoPanel);
-		} else if (popup != null && popup.getCytoPanel().equals(cytoPanel)) {
+		} else if (popup != null && isUnpinned(cytoPanel)) {
 			popup.getContentPane().removeAll();
 			popup.setVisible(false);
 			minimizedButtonGroup.clearSelection();
@@ -870,6 +892,10 @@ public class CytoscapeDesktop extends JFrame
 		JFrame frame = floatingFrames.get(cytoPanel);
 		
 		return frame != null && frame == SwingUtilities.getWindowAncestor(cytoPanel.getThisComponent());
+	}
+	
+	private boolean isUnpinned(CytoPanelImpl cytoPanel) {
+		return popup != null && popup.getCytoPanel().equals(cytoPanel);
 	}
 	
 	private void addToMinimizedButtonGroup(CytoPanelImpl cytoPanel) {
@@ -1226,42 +1252,54 @@ public class CytoscapeDesktop extends JFrame
 			return;
 		
 		SideBar bar = getSideBarOf(cytoPanel);
+		CytoPanelNameInternal name = cytoPanel.getCytoPanelNameInternal();
 		
 		try {
-			Dimension dim = cytoPanel.getThisComponent().getPreferredSize();
-			Dimension parentDim = getTopPane().getSize();
+			Dimension maxDim = getTopPane().getSize();
+			int maxWidth = maxDim.width;
+			int maxHeight = maxDim.height;
 			
-			int maxWidth = parentDim.width;
-			int maxHeight = parentDim.height;
+			Dimension newDim = cytoPanel.isMaximized() ? maxDim : popupPreferredSizes.get(name);
+			Dimension dim = newDim != null ? newDim : cytoPanel.getThisComponent().getPreferredSize();
 			
-			if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH
-					|| cytoPanel.getCytoPanelNameInternal() == CytoPanelNameInternal.BOTTOM) {
-				dim.width = maxWidth;
-				dim.height = (int) (maxHeight * 0.5f);
-			} else {
-				if (dim.width <= 0)
-					dim.width = 200;
-				if (dim.height <= 0)
-					dim.height = maxHeight;
-				
-				dim.width = Math.min(dim.width, maxWidth);
-				dim.height = Math.min(dim.height, maxHeight);
+			if (newDim == null) {
+				if (name == SOUTH || name == BOTTOM) {
+					dim.width = maxWidth;
+					dim.height = (int) (maxHeight * 0.5f);
+				} else {
+					if (dim.width <= 0)
+						dim.width = 200;
+					if (dim.height <= 0)
+						dim.height = maxHeight;
+				}
 			}
 			
-			dim.width = Math.max(dim.width, 100);
-			dim.height = Math.max(dim.height, 100);
+			// Max size
+			dim.width = Math.min(dim.width, maxWidth);
+			dim.height = Math.min(dim.height, maxHeight);
+			// Min size
+			dim.width = Math.max(dim.width, ComponentPopup.MIN_SIZE);
+			dim.height = Math.max(dim.height, ComponentPopup.MIN_SIZE);
 			
 			Point p = bar.compassDirection == SwingConstants.SOUTH ? getBottomPanel().getLocation() : bar.getLocation();
 			
 			if (bar.compassDirection == SwingConstants.WEST) {
 				p.x += bar.getWidth();
 				
-				if (cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH_WEST) 
+				if (name == SOUTH_WEST) 
 					p.y += (bar.getHeight() - dim.height);
 			} else if (bar.compassDirection == SwingConstants.EAST) {
 				p.x -= dim.width;
 			} else if (bar.compassDirection == SwingConstants.SOUTH) {
-				p.x += getWestSideBar().getPreferredSize().width;
+				if (name == SOUTH) {
+					p.x += (bar.getWidth() - dim.width);
+					
+					if (getEastSideBar().isShowing())
+						p.x -= getEastSideBar().getPreferredSize().width;
+				} else { // BOTTOM
+					p.x += getWestSideBar().getPreferredSize().width;
+				}
+				
 				p.y -= dim.height;
 			}
 			
@@ -1432,14 +1470,12 @@ public class CytoscapeDesktop extends JFrame
 					Icon buttonIcon = icon;
 					
 					if (buttonIcon == null) {
-//						buttonIcon = new TextIcon(
-//								"" + title.charAt(0),
-//								UIManager.getFont("Button.font").deriveFont(Font.BOLD),
-//								CytoPanelUtil.BUTTON_SIZE,
-//								CytoPanelUtil.BUTTON_SIZE
-//						);
-						buttonIcon = ViewUtil.createDefaultIcon(title, CytoPanelUtil.BUTTON_SIZE,
-								serviceRegistrar.getService(IconManager.class));
+						buttonIcon = new TextIcon(
+								"" + title.charAt(0),
+								UIManager.getFont("Button.font").deriveFont(Font.BOLD),
+								CytoPanelUtil.BUTTON_SIZE,
+								CytoPanelUtil.BUTTON_SIZE
+						);
 					} else if (buttonIcon instanceof ImageIcon) {
 						if (showLabels && buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
 							buttonIcon = ViewUtil.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
@@ -1696,16 +1732,48 @@ public class CytoscapeDesktop extends JFrame
 	
 	private class ComponentPopup extends JRootPane {
 		
+		private static final int BORDER_WIDTH = 5;
+		private static final int MIN_SIZE = 100 + BORDER_WIDTH;
+		
+		// Border widths: Top, Left, Bottom. Right
+		private int tb, lb, bb, rb;
+		
+		private int[] locations = {
+				SwingConstants.NORTH,
+				SwingConstants.SOUTH,
+				SwingConstants.WEST,
+				SwingConstants.EAST,
+				SwingConstants.NORTH_WEST,
+				SwingConstants.NORTH_EAST,
+				SwingConstants.SOUTH_WEST,
+				SwingConstants.SOUTH_EAST
+		};
+
+		private int[] cursors = {
+				Cursor.N_RESIZE_CURSOR,
+				Cursor.S_RESIZE_CURSOR,
+				Cursor.W_RESIZE_CURSOR,
+				Cursor.E_RESIZE_CURSOR,
+				Cursor.NW_RESIZE_CURSOR,
+				Cursor.NE_RESIZE_CURSOR,
+				Cursor.SW_RESIZE_CURSOR,
+				Cursor.SE_RESIZE_CURSOR
+		};
+
 		private CytoPanelImpl cytoPanel;
+		
+		private Point dragPoint;
+		private int cursor = Cursor.DEFAULT_CURSOR;
 
 		ComponentPopup(CytoPanelImpl cytoPanel) {
 			this.cytoPanel = cytoPanel;
 			
-			getRootPane().setBorder(BorderFactory.createLineBorder(UIManager.getColor("Label.disabledForeground"), 2));
+			addListeners();
 			update();
 		}
-
+		
 		void update() {
+			updateBorder();
 			getContentPane().removeAll();
 			
 			if (cytoPanel == null || cytoPanel.getThisComponent() == null)
@@ -1721,6 +1789,22 @@ public class CytoscapeDesktop extends JFrame
 			c.repaint();
 		}
 		
+		void updateBorder() {
+			tb = lb = bb = rb = 0;
+			CytoPanelNameInternal name = cytoPanel.getCytoPanelNameInternal();
+			
+			switch (name) {
+				case WEST:       rb = bb = BORDER_WIDTH; break;
+				case SOUTH_WEST: rb = tb = BORDER_WIDTH; break;
+				case EAST:       lb = bb = BORDER_WIDTH; break;
+				case SOUTH:      lb = tb = BORDER_WIDTH; break;
+				case BOTTOM:     rb = tb = BORDER_WIDTH; break;
+			}
+			
+			getRootPane().setBorder(
+					BorderFactory.createMatteBorder(tb, lb, bb, rb, UIManager.getColor("Separator.foreground")));
+		}
+		
 		void setCytoPanel(CytoPanelImpl cytoPanel) {
 			if (this.cytoPanel != cytoPanel) {
 				this.cytoPanel = cytoPanel;
@@ -1730,6 +1814,225 @@ public class CytoscapeDesktop extends JFrame
 
 		CytoPanelImpl getCytoPanel() {
 			return cytoPanel;
+		}
+		
+		private void addListeners() {
+			getRootPane().addMouseListener(new MouseAdapter() {
+				@Override
+				public void mousePressed(MouseEvent evt) {
+		            cursor = getCursor(evt);
+		            dragPoint = evt.getPoint();
+		            requestFocus();
+		            repaint();
+				}
+				@Override
+				public void mouseReleased(MouseEvent evt) {
+					cursor = Cursor.DEFAULT_CURSOR;
+					dragPoint = null;
+					setCursor(Cursor.getDefaultCursor());
+					revalidate();
+				}
+				@Override
+				public void mouseExited(MouseEvent evt) {
+					setCursor(Cursor.getDefaultCursor());
+				}
+			});
+			getRootPane().addMouseMotionListener(new MouseMotionAdapter() {
+				@Override
+				public void mouseMoved(MouseEvent evt) {
+					setCursor(Cursor.getPredefinedCursor(getCursor(evt)));
+				}
+				@Override
+				public void mouseDragged(MouseEvent evt) {
+					if (dragPoint != null) {
+						setCursor(Cursor.getPredefinedCursor(cursor));
+						
+						int x = getX();
+						int y = getY();
+						int w = getWidth();
+						int h = getHeight();
+
+						int dx = evt.getX() - dragPoint.x;
+						int dy = evt.getY() - dragPoint.y;
+						
+						switch (cursor) {
+							case Cursor.N_RESIZE_CURSOR:
+								y += dy;
+								h -= dy;
+								break;
+	
+							case Cursor.S_RESIZE_CURSOR:
+								dragPoint = evt.getPoint();
+								h += dy;
+								break;
+	
+							case Cursor.W_RESIZE_CURSOR:
+								x += dx;
+								w -= dx;
+								break;
+	
+							case Cursor.E_RESIZE_CURSOR:
+								w += dx;
+								dragPoint = evt.getPoint();
+								break;
+	
+							case Cursor.NW_RESIZE_CURSOR:
+								x += dx;
+								y += dy;
+								w -= dx;
+								h -= dy;
+								break;
+	
+							case Cursor.NE_RESIZE_CURSOR:
+								y += dy;
+								w += dx;
+								h -= dy;
+								dragPoint = new Point(evt.getX(), dragPoint.y);
+								break;
+	
+							case Cursor.SW_RESIZE_CURSOR:
+								x += dx;
+								w -= dx;
+								h += dy;
+								dragPoint = new Point(dragPoint.x, evt.getY());
+								break;
+	
+							case Cursor.SE_RESIZE_CURSOR:
+								w += dx;
+								h += dy;
+								dragPoint = evt.getPoint();
+								break;
+						}
+
+						final int maxWidth = getTopPane().getWidth();
+						final int maxHeight = getTopPane().getHeight();
+						
+						w = Math.max(w, MIN_SIZE);
+						h = Math.max(h, MIN_SIZE);
+						w = Math.min(w, maxWidth);
+						h = Math.min(h, maxHeight);
+						
+						final int minX = getMasterPane().getX();
+						final int minY = getMasterPane().getY();
+						final int maxX = minX + getTopPane().getWidth();
+						final int maxY = minY + getTopPane().getHeight();
+						
+						switch (cursor) {
+							case Cursor.N_RESIZE_CURSOR:
+							case Cursor.NE_RESIZE_CURSOR:
+								y = Math.max(y, minY);
+								y = Math.min(y, maxY - h);
+								break;
+	
+							case Cursor.W_RESIZE_CURSOR:
+							case Cursor.SW_RESIZE_CURSOR:
+								x = Math.max(x, minX);
+								x = Math.min(x, maxX - w);
+								break;
+	
+							case Cursor.NW_RESIZE_CURSOR:
+								x = Math.max(x, minX);
+								x = Math.min(x, maxX - w);
+								y = Math.max(y, minY);
+								y = Math.min(y, maxY - h);
+								break;
+						}
+						
+						switch (cursor) {
+							case Cursor.S_RESIZE_CURSOR:
+								dragPoint = evt.getPoint();
+								break;
+	
+							case Cursor.E_RESIZE_CURSOR:
+								dragPoint = evt.getPoint();
+								break;
+	
+							case Cursor.NE_RESIZE_CURSOR:
+								dragPoint = new Point(evt.getX(), dragPoint.y);
+								break;
+	
+							case Cursor.SW_RESIZE_CURSOR:
+								dragPoint = new Point(dragPoint.x, evt.getY());
+								break;
+	
+							case Cursor.SE_RESIZE_CURSOR:
+								dragPoint = evt.getPoint();
+								break;
+						}
+						
+						setBounds(x, y, w, h);
+						cytoPanel.setMaximized(false);
+						
+						if (getParent() != null)
+							getParent().revalidate();
+						
+						if (cytoPanel != null)
+							popupPreferredSizes.put(cytoPanel.getCytoPanelNameInternal(), new Dimension(w, h));
+					}
+				}
+			});
+		}
+		
+		private Rectangle getRectangle(int x, int y, int w, int h, int location) {
+			CytoPanelNameInternal name = cytoPanel != null ? cytoPanel.getCytoPanelNameInternal() : null;
+			
+			switch (location) {
+				case SwingConstants.NORTH:
+					if (name == BOTTOM || name == SOUTH || name == SOUTH_WEST)
+						return new Rectangle(x + lb, y, w - rb, BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.SOUTH:
+					if (name == WEST || name == EAST)
+						return new Rectangle(x + lb, y + h - bb, w - BORDER_WIDTH, BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.WEST:
+					if (name == EAST || name == SOUTH)
+						return new Rectangle(x, y + tb, BORDER_WIDTH, h - BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.EAST:
+					if (name == WEST || name == SOUTH_WEST || name == BOTTOM)
+						return new Rectangle(x + w - rb, y + tb, BORDER_WIDTH, h - BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.NORTH_WEST:
+					if (name == SOUTH)
+						return new Rectangle(x, y, BORDER_WIDTH, BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.NORTH_EAST:
+					if (name == SOUTH_WEST || name == BOTTOM)
+						return new Rectangle(x + w - rb, y, BORDER_WIDTH, BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.SOUTH_WEST:
+					if (name == EAST)
+						return new Rectangle(x, y + h - bb, BORDER_WIDTH, BORDER_WIDTH);
+					
+					break;
+				case SwingConstants.SOUTH_EAST:
+					if (name == WEST)
+						return new Rectangle(x + w - rb, y + h - bb, BORDER_WIDTH, BORDER_WIDTH);
+			}
+			
+			return null;
+		}
+		
+		private int getCursor(MouseEvent evt) {
+			Component c = evt.getComponent();
+			int w = c.getWidth();
+			int h = c.getHeight();
+
+			for (int i = 0; i < locations.length; i++) {
+				Rectangle rect = getRectangle(0, 0, w, h, locations[i]);
+
+				if (rect != null && rect.contains(evt.getPoint()))
+					return cursors[i];
+			}
+
+			return Cursor.DEFAULT_CURSOR;
 		}
 	}
 	
