@@ -86,7 +86,6 @@ public class InputHandlerGlassPane extends JComponent {
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final PopupMenuHelper popupMenuHelper;
-	private final Cursor moveCursor;
 
 	private final DingCanvas  backgroundCanvas;
 	private final InnerCanvas networkCanvas;
@@ -95,8 +94,8 @@ public class InputHandlerGlassPane extends JComponent {
 	private GeneralPath selectionLasso;
 	private Rectangle selectionRect;
 	
-	private Point2D addingEdgeStartPoint;
-	private ViewChangeEdit undoableEdit;
+//	private Point2D addingEdgeStartPoint;
+//	private ViewChangeEdit undoableEdit;
 
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
@@ -109,7 +108,6 @@ public class InputHandlerGlassPane extends JComponent {
 		this.foregroundCanvas = re.getCanvas(FOREGROUND_CANVAS);
 
 		this.popupMenuHelper = new PopupMenuHelper(re, this, registrar);
-		this.moveCursor = createMoveCursor();
 		
 		setFocusable(true);
 		addKeyListener(new CanvasKeyListener());
@@ -117,8 +115,9 @@ public class InputHandlerGlassPane extends JComponent {
         
         OrderedMouseAdapter orderedMouseAdapter = new OrderedMouseAdapter(
         	new ContextMenuListener(),
-        	new SelectionLassoListener()
-//        	new SelectionRectangleListener()
+        	new SelectionLassoListener(),
+        	new SelectionRectangleListener(),
+        	new CanvasPanListener() // panning only happens if no node/edge/annotation/handle is selected, so it needs to go after
 //        	new CanvasMouseListener()
         );
         
@@ -417,16 +416,16 @@ public class InputHandlerGlassPane extends JComponent {
 			popupMenuHelper.createNetworkViewMenu(p, xformP, PopupMenuHelper.ACTION_NEW);
 		}
 	}
-	
+
 	
 	private class SelectionLassoListener extends MouseAdapter {
 		
-		
 		@Override
 		public void mousePressed(MouseEvent e) {
-			if(isDragSelectionKeyDown(e)) {
+			if(e.isShiftDown() && isControlOrMetaDown(e)) { // Temporary
 				selectionLasso = new GeneralPath();
 				selectionLasso.moveTo(e.getX(), e.getY());
+				e.consume();
 			}
 		}
 		
@@ -472,11 +471,10 @@ public class InputHandlerGlassPane extends JComponent {
 				
 			}
 			selectionLasso = null;
-			
 			repaint(); // repaint the glass pane
 		}
-		
 	}
+
 	
 	private class SelectionRectangleListener extends MouseAdapter {
 		
@@ -536,10 +534,86 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			selectionRect = null;
 			mousePressedPoint = null;
-			
 			repaint(); // repaint the glass pane
 		}
+	}
+	
+	
+	private class CanvasPanListener extends MouseAdapter {
 		
+		private final Cursor panCursor = createPanCursor();
+		private final double[] coords = new double[2];
+		
+		private Point mousePressedPoint;
+		private ViewChangeEdit undoPanEdit;
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			changeCursor(panCursor);
+			mousePressedPoint = e.getPoint();
+			e.consume();
+		}
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if(mousePressedPoint != null) {
+				if(undoPanEdit == null) {
+					// Save state on start of drag, that way we don't post an undo edit if the user just clicks.
+					// Pass null, don't save node state, just the center location of the canvas.
+					undoPanEdit = new ViewChangeEdit(re, null, "Pan", registrar); 
+				}
+				
+				// MKTODO does holding SHIFT matter??
+				coords[0] = mousePressedPoint.getX();
+				coords[1] = mousePressedPoint.getY();
+				re.xformComponentToNodeCoords(coords);
+				double oldX = coords[0];
+				double oldY = coords[1];
+				
+				coords[0] = e.getX();
+				coords[1] = e.getY();
+				re.xformComponentToNodeCoords(coords);
+				double newX = coords[0];
+				double newY = coords[1];
+				
+				mousePressedPoint = e.getPoint();
+				
+				double deltaX = oldX - newX;
+				double deltaY = oldY - newY;
+				re.pan(deltaX, deltaY);
+			}
+		}
+		
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if(undoPanEdit != null)
+				undoPanEdit.post();
+			
+			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			mousePressedPoint = null;
+			undoPanEdit = null;
+		}
+		
+		private Cursor createPanCursor() {
+			if (LookAndFeelUtil.isMac()) {
+				Dimension size = Toolkit.getDefaultToolkit().getBestCursorSize(24, 24);
+				Image image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
+				Graphics graphics = image.getGraphics();
+				String icon = IconManager.ICON_ARROWS;
+				JLabel label = new JLabel(icon);
+				label.setBounds(0, 0, size.width, size.height);
+				label.setFont(registrar.getService(IconManager.class).getIconFont(14));
+				label.paint(graphics);
+				graphics.dispose();
+				return Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "custom:" + (int) icon.charAt(0));
+			} else {
+				Cursor panCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
+				if(panCursor == null) {
+					panCursor = new Cursor(Cursor.MOVE_CURSOR);
+				}
+				return panCursor;
+			}
+		}
 	}
 	
 	
@@ -553,6 +627,7 @@ public class InputHandlerGlassPane extends JComponent {
 		private AnnotationEdit resizeUndoEdit;
 		private AnnotationEdit movingUndoEdit;
 		private Point mousePressedPoint;
+		private ViewChangeEdit undoableEdit;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -562,12 +637,6 @@ public class InputHandlerGlassPane extends JComponent {
 			if(!isSingleLeftClick(e)) {
 				return;
 			}
-			
-//			if(isDragSelectionKeyDown(e)) {
-//				selectionRect = new Rectangle(e.getX(), e.getY(), 0, 0);
-//				changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//				return;
-//			}
 			
 			if (1 == 1) return;
 			
@@ -634,7 +703,7 @@ public class InputHandlerGlassPane extends JComponent {
 
 			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 			if(!annotationSelection.isEmpty()) {
-				changeCursor(moveCursor);
+//				changeCursor(panCursor);
 				annotationSelection.setMoving(true);
 				movingUndoEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
 			} else {
@@ -681,7 +750,7 @@ public class InputHandlerGlassPane extends JComponent {
 				re.getBendStore().unselectAllHandles();
 			
 			if (node == null && edge == null && handle == null) {
-				changeCursor(moveCursor);
+//				changeCursor(panCursor);
 				// Save all node positions for panning
 				undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.NODES, "Move", registrar);
 				// MKTODO what???
@@ -944,15 +1013,15 @@ public class InputHandlerGlassPane extends JComponent {
 //				}
 //			}
 			
-			if(selectionRect != null) {
-				int x = Math.min(mousePressedPoint.x, e.getX());
-				int y = Math.min(mousePressedPoint.y, e.getY());
-				int w = Math.abs(mousePressedPoint.x - e.getX());
-				int h = Math.abs(mousePressedPoint.y - e.getY());
-				selectionRect.setBounds(x, y, w, h);
-				// repaint the glass pane
-				repaint(); // MKTODO is this needed?
-			}
+//			if(selectionRect != null) {
+//				int x = Math.min(mousePressedPoint.x, e.getX());
+//				int y = Math.min(mousePressedPoint.y, e.getY());
+//				int w = Math.abs(mousePressedPoint.x - e.getX());
+//				int h = Math.abs(mousePressedPoint.y - e.getY());
+//				selectionRect.setBounds(x, y, w, h);
+//				// repaint the glass pane
+//				repaint(); // MKTODO is this needed?
+//			}
 			
 //			if(!isDragSelectionKeyDown(e)) {
 //				double deltaX = e.getX() - mousePressedPoint.getX();
@@ -1235,29 +1304,6 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 	}
 	
-	private Cursor createMoveCursor() {
-		Cursor moveCursor;
-		if (LookAndFeelUtil.isMac()) {
-			Dimension size = Toolkit.getDefaultToolkit().getBestCursorSize(24, 24);
-			Image image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-			Graphics graphics = image.getGraphics();
-
-			String icon = IconManager.ICON_ARROWS;
-			JLabel label = new JLabel();
-			label.setBounds(0, 0, size.width, size.height);
-			label.setText(icon);
-			label.setFont(registrar.getService(IconManager.class).getIconFont(14));
-			label.paint(graphics);
-			graphics.dispose();
-			moveCursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0), "custom:" + (int) icon.charAt(0));
-		} else {
-			moveCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-			if(moveCursor == null) {
-				moveCursor = new Cursor(Cursor.MOVE_CURSOR);
-			}
-		}
-		return moveCursor;
-	}
 	
 	private static Cursor getResizeCursor(Position anchor) {
 		switch(anchor) {
