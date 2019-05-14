@@ -1913,8 +1913,10 @@ public class CytoscapeDesktop extends JFrame
 						w = Math.min(w, maxWidth);
 						h = Math.min(h, maxHeight);
 						
-						final int minX = getMasterPane().getX();
-						final int minY = getMasterPane().getY();
+						Point p = getMasterPane().getLocation();
+						p = SwingUtilities.convertPoint(getMainPanel(), p, CytoscapeDesktop.this.getGlassPane());
+						final int minX = p.x;
+						final int minY = p.y;
 						final int maxX = minX + getTopPane().getWidth();
 						final int maxY = minY + getTopPane().getHeight();
 						
