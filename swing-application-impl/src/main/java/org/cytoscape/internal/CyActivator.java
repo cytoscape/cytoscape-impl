@@ -785,6 +785,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("SplitPane.dividerSize", 5);
 			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
+			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
 			
 			// Others
 			UIManager.put("Label.infoForeground", ColorUtil.setBrightness(UIManager.getColor("Label.foreground"), 0.48f));
