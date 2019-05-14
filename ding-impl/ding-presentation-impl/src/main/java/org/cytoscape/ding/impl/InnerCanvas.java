@@ -123,7 +123,7 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 	private final MouseDraggedDelegator mouseDraggedDelegator;
 	private final AddEdgeMousePressedDelegator addEdgeMousePressedDelegator;
 
-	private AddEdgeStateMonitor addEdgeMode;
+//	private AddEdgeStateMonitor addEdgeMode;
 	private Timer hideEdgesTimer;
 	private Cursor moveCursor;
 	
@@ -139,7 +139,7 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		this.yCenter = 0.0d;
 		this.scaleFactor = 1.0d;
 
-		addEdgeMode = new AddEdgeStateMonitor(this, re);
+//		addEdgeMode = new AddEdgeStateMonitor(this, re);
 		popup = new PopupMenuHelper(re, this, serviceRegistrar);
 		
 		mousePressedDelegator = new MousePressedDelegator();
@@ -938,14 +938,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
         double changeY = y - yCenter;
         xCenter = x;
         yCenter = y;
-
-        if(addEdgeMode != null && addEdgeMode.addingEdge()) {
-            Point2D sourcePoint = AddEdgeStateMonitor.getSourcePoint(re.getViewModel());
-            double newX = sourcePoint.getX() - changeX;
-            double newY = sourcePoint.getY() - changeY;
-            sourcePoint.setLocation(newX, newY);
-            AddEdgeStateMonitor.setSourcePoint(re.getViewModel(), sourcePoint);
-        }
     }
 
 	public void adjustZoom(int ticks) {
@@ -1058,10 +1050,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		// repaint();
 	}
 
-	private void handleEscapeKey() {
-		AddEdgeStateMonitor.reset(re.getViewModelSnapshot());
-		repaint();
-	}
 
 //	/**
 //	 * Arrow key handler.
@@ -1705,7 +1693,7 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 //		removeMouseWheelListener(this);
 //		removeKeyListener(this);
 		undoableEdit = null;
-		addEdgeMode = null;
+//		addEdgeMode = null;
 		popup.dispose();
 	}
 	

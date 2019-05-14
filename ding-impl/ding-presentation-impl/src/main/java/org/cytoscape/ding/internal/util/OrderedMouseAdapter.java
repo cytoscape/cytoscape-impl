@@ -33,6 +33,15 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
 		listeners.add(mouseAdapter);
 	}
 	
+	public <T> T get(Class<T> type) {
+		for(MouseAdapter a : listeners) {
+			if(type.isAssignableFrom(a.getClass())) {
+				return type.cast(a);
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		fire(e, MouseAdapter::mouseDragged);

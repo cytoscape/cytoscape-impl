@@ -1183,7 +1183,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 		
-		
 		// return node with topmost Z
 		View<CyNode> nv = null;
 		for(Long suid : suids) {

@@ -41,7 +41,7 @@ public class AddEdgeNodeViewTaskFactoryImpl implements NodeViewTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(View<CyNode> nodeView, CyNetworkView networkView) {
-		return new TaskIterator(new AddEdgeTask(nodeView, networkView, serviceRegistrar));
+		return new TaskIterator(new AddEdgeBeginTask(nodeView, networkView, serviceRegistrar));
 	}
 
 	@Override

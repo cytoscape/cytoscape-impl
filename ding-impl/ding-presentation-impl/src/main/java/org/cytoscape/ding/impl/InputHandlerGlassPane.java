@@ -56,47 +56,48 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.Position;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.Task;
+import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 @SuppressWarnings("serial")
 public class InputHandlerGlassPane extends JComponent {
 	
-	private static final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
-	private static final Color SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
-	
-	
 	private final CyServiceRegistrar registrar;
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
-	private final PopupMenuHelper popupMenuHelper;
+	private final OrderedMouseAdapter orderedMouseAdapter;
 
 	private final DingCanvas  backgroundCanvas;
 	private final InnerCanvas networkCanvas;
 	private final DingCanvas  foregroundCanvas;
 	
-	private GeneralPath selectionLasso;
-	private Rectangle selectionRect;
-	
-//	private Point2D addingEdgeStartPoint;
-//	private ViewChangeEdit undoableEdit;
-
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		this.registrar = registrar;
@@ -106,15 +107,11 @@ public class InputHandlerGlassPane extends JComponent {
 		this.backgroundCanvas = re.getCanvas(BACKGROUND_CANVAS);
 		this.networkCanvas    = re.getCanvas();
 		this.foregroundCanvas = re.getCanvas(FOREGROUND_CANVAS);
-
-		this.popupMenuHelper = new PopupMenuHelper(re, this, registrar);
 		
-		setFocusable(true);
-		addKeyListener(new CanvasKeyListener());
-        addMouseWheelListener(new CanvasMouseWheelListener());
-        
-        OrderedMouseAdapter orderedMouseAdapter = new OrderedMouseAdapter(
-        	new ContextMenuListener(),
+		this.orderedMouseAdapter = new OrderedMouseAdapter(
+        	new CanvasFocusRequestListener(),
+        	new CanvasContextMenuListener(),
+        	new CanvasAddEdgeListener(),
         	new SelectionLassoListener(),
         	new SelectionRectangleListener(),
         	new CanvasPanListener() // panning only happens if no node/edge/annotation/handle is selected, so it needs to go after
@@ -123,69 +120,24 @@ public class InputHandlerGlassPane extends JComponent {
         
 		addMouseListener(orderedMouseAdapter);
 		addMouseMotionListener(orderedMouseAdapter);
+		addKeyListener(new CanvasKeyListener());
+        addMouseWheelListener(new CanvasMouseWheelListener());
+        setFocusable(true);
 	}
 	
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		drawSelectionRectangle(g);
-		drawSelectionLasso(g);
-		// drawAddingEdge(g);
+		orderedMouseAdapter.get(CanvasAddEdgeListener.class).drawAddingEdge(g);
+		orderedMouseAdapter.get(SelectionRectangleListener.class).drawSelectionRectangle(g);
+		orderedMouseAdapter.get(SelectionLassoListener.class).drawSelectionLasso(g);
 	}
 	
-	private void drawSelectionRectangle(Graphics graphics) {
-		// Draw selection rectangle
-		if(selectionRect != null) {
-			Graphics2D g = (Graphics2D) graphics.create();
-			// External border
-			g.setColor(SELECTION_RECT_BORDER_COLOR_1);
-			g.draw(selectionRect);
-			// Internal border
-			if (selectionRect.width > 4 && selectionRect.height > 4) {
-				g.setColor(SELECTION_RECT_BORDER_COLOR_2);
-				g.drawRect(
-						selectionRect.x + 1,
-						selectionRect.y + 1,
-						selectionRect.width - 2,
-						selectionRect.height - 2
-				);
-			}
-		}
+	public void beginAddingEdge(View<CyNode> nodeView) {
+		// x and y are in node coordinates
+		CanvasAddEdgeListener addEdgeListener = orderedMouseAdapter.get(CanvasAddEdgeListener.class);
+		addEdgeListener.beginAddingEdge(nodeView);
 	}
-	
-	private void drawSelectionLasso(Graphics graphics) {
-		if(selectionLasso != null) {
-			Graphics2D g = (Graphics2D) graphics.create();
-			g.setColor(SELECTION_RECT_BORDER_COLOR_1);
-			GeneralPath path = new GeneralPath(selectionLasso);
-			path.closePath();
-			g.draw(path);
-		}
-	}
-	
-	private static void drawAddingEdge(Graphics2D g, Point2D startPoint, Point2D endPoint) {
-		if(startPoint == null || endPoint == null)
-			return;
-
-        double x1 = startPoint.getX();
-        double y1 = startPoint.getY();
-        double x2 = endPoint.getX();
-        double y2 = endPoint.getY();
-        double offset = 5;
-        
-        double lineLen = Math.sqrt((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
-        if(lineLen == 0)
-            lineLen = 1;
-
-        y2 += ((y1 - y2) / lineLen) * offset;
-        x2 += ((x1 - x2) / lineLen) * offset;
-
-        Color saveColor = g.getColor();
-        g.setColor(Color.BLACK);
-        g.drawLine(((int) x1) - 1, ((int) y1) - 1, ((int) x2) + 1, ((int) y2) + 1);
-        g.setColor(saveColor);
-	}
-	
 	
 	
 	private class CanvasKeyListener extends KeyAdapter {
@@ -364,7 +316,7 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private void cancelAddingEdge() {
-			AddEdgeStateMonitor.reset(re.getViewModelSnapshot());
+			orderedMouseAdapter.get(CanvasAddEdgeListener.class).reset();
 		}
 		
 		private void deleteSelectedNodesAndEdges() {
@@ -385,11 +337,22 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 
 	
-	private class ContextMenuListener extends MouseAdapter {
+	private class CanvasFocusRequestListener extends MouseAdapter {
+		
+		@Override
+		public void mousePressed(MouseEvent e) {
+			requestFocusInWindow(); // need to do this to receive key events
+		}
+	}
+	
+	
+	private class CanvasContextMenuListener extends MouseAdapter {
+		
+		private final PopupMenuHelper popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
+		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(isSingleRightClick(e)) {
-				// MKTODO what about the annotation specific menu???
 				showContextMenu(e.getPoint());
 				e.consume();
 			}
@@ -418,11 +381,141 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 
 	
+	private class CanvasAddEdgeListener extends MouseAdapter {
+		
+		private final double[] coords = new double[2];
+		
+		// Store the start and end points in node coordinates because they
+		// don't need to be adjusted when the user zooms or pans the canvas.
+		private View<CyNode> sourceNode;
+		private Point2D startPoint;
+		private Point2D endPoint;
+		
+		// Called by the context menu Task
+		public void beginAddingEdge(View<CyNode> nodeView) {
+			this.sourceNode = nodeView;
+			double x = nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
+			double y = nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
+			this.startPoint = new Point2D.Double(x, y);
+			this.endPoint   = new Point2D.Double(x, y);
+		}
+		
+		// Called by the key listener when user hits escape
+		public void reset() {
+			this.sourceNode = null;
+			this.startPoint = null;
+			this.endPoint = null;
+		}
+		
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			if(endPoint != null) {
+				Point2D mousePoint = e.getPoint();
+				coords[0] = mousePoint.getX();
+				coords[1] = mousePoint.getY();
+				re.xformComponentToNodeCoords(coords);
+				endPoint.setLocation(coords[0], coords[1]);
+				repaint();
+			}
+		}
+		
+		@Override
+		public void mouseClicked(MouseEvent e) {
+			if(startPoint == null || endPoint == null)
+				return;
+			coords[0] = endPoint.getX();
+			coords[1] = endPoint.getY();
+			re.xformNodeToComponentCoords(coords);
+			Point2D ep = new Point2D.Double(coords[0], coords[1]);
+
+			View<CyNode> targetNode = re.getPickedNodeView(ep);
+			if(targetNode != null) {
+				createEdge(sourceNode, targetNode);
+				reset();
+				e.consume();
+			}
+		}
+		
+		public void drawAddingEdge(Graphics graphics) {
+			if(startPoint == null || endPoint == null)
+				return;
+
+			coords[0] = startPoint.getX();
+			coords[1] = startPoint.getY();
+			re.xformNodeToComponentCoords(coords);
+	        double x1 = coords[0];
+	        double y1 = coords[1];
+	        
+	        coords[0] = endPoint.getX();
+			coords[1] = endPoint.getY();
+			re.xformNodeToComponentCoords(coords);
+	        double x2 = coords[0];
+	        double y2 = coords[1];
+	        
+	        double offset = 5;
+	        
+	        double lineLen = Math.sqrt((x2 - x1) * (x2 - x1)) + ((y2 - y1) * (y2 - y1));
+	        if(lineLen == 0)
+	            lineLen = 1;
+
+	        y2 += ((y1 - y2) / lineLen) * offset;
+	        x2 += ((x1 - x2) / lineLen) * offset;
+
+	        Graphics2D g = (Graphics2D) graphics.create();
+	        g.setColor(Color.BLACK);
+	        g.drawLine(((int) x1) - 1, ((int) y1) - 1, ((int) x2) + 1, ((int) y2) + 1);
+		}
+		
+		private void createEdge(View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
+			Task createEdgeTask = new AbstractTask() {
+				@Override
+				public void run(TaskMonitor taskMonitor) {
+					CyNetworkView netView = re.getViewModel();
+					CyNetwork net = netView.getModel();
+					View<CyNode> mutableSourceNodeView = netView.getNodeView(sourceNodeView.getSUID());
+					View<CyNode> mutableTargetNodeView = netView.getNodeView(targetNodeView.getSUID());
+					if(mutableSourceNodeView == null || mutableTargetNodeView == null)
+						return;
+					
+					CyNode sourceNode = mutableSourceNodeView.getModel();
+					CyNode targetNode = mutableTargetNodeView.getModel();
+					
+					final CyEdge newEdge = net.addEdge(sourceNode, targetNode, true);
+					final String interaction = "interacts with";
+					String sourceName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
+					String targetName = net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
+					String edgeName = sourceName + " (" + interaction + ") " + targetName;
+					
+					CyRow edgeRow = net.getRow(newEdge, CyNetwork.DEFAULT_ATTRS);
+					edgeRow.set(CyNetwork.NAME, edgeName);
+					edgeRow.set(CyEdge.INTERACTION, interaction);
+
+					// Apply visual style
+					// To make sure the edge view is created before applying the style
+					registrar.getService(CyEventHelper.class).flushPayloadEvents();
+					
+					VisualStyle vs = registrar.getService(VisualMappingManager.class).getVisualStyle(netView);
+					View<CyEdge> edgeView = netView.getEdgeView(newEdge);
+					if (edgeView != null)
+						vs.apply(edgeRow, edgeView);
+				}
+			};
+			DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);
+			taskManager.execute(new TaskIterator(createEdgeTask));
+		}
+	}
+
+
 	private class SelectionLassoListener extends MouseAdapter {
+		
+		private final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
+
+		private GeneralPath selectionLasso;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(e.isShiftDown() && isControlOrMetaDown(e)) { // Temporary
+				orderedMouseAdapter.get(CanvasAddEdgeListener.class).reset();
 				selectionLasso = new GeneralPath();
 				selectionLasso.moveTo(e.getX(), e.getY());
 				e.consume();
@@ -473,16 +566,31 @@ public class InputHandlerGlassPane extends JComponent {
 			selectionLasso = null;
 			repaint(); // repaint the glass pane
 		}
+		
+		public void drawSelectionLasso(Graphics graphics) {
+			if(selectionLasso != null) {
+				Graphics2D g = (Graphics2D) graphics.create();
+				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
+				GeneralPath path = new GeneralPath(selectionLasso);
+				path.closePath();
+				g.draw(path);
+			}
+		}
 	}
 
 	
 	private class SelectionRectangleListener extends MouseAdapter {
 		
-		private Point mousePressedPoint = null;
+		private final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
+		private final Color SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
+
+		private Rectangle selectionRect;
+		private Point mousePressedPoint;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(isDragSelectionKeyDown(e)) {
+				orderedMouseAdapter.get(CanvasAddEdgeListener.class).reset();
 				mousePressedPoint = e.getPoint();
 				selectionRect = new Rectangle(e.getX(), e.getY(), 0, 0);
 				changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -535,6 +643,26 @@ public class InputHandlerGlassPane extends JComponent {
 			selectionRect = null;
 			mousePressedPoint = null;
 			repaint(); // repaint the glass pane
+		}
+		
+		public void drawSelectionRectangle(Graphics graphics) {
+			// Draw selection rectangle
+			if(selectionRect != null) {
+				Graphics2D g = (Graphics2D) graphics.create();
+				// External border
+				g.setColor(SELECTION_RECT_BORDER_COLOR_1);
+				g.draw(selectionRect);
+				// Internal border
+				if (selectionRect.width > 4 && selectionRect.height > 4) {
+					g.setColor(SELECTION_RECT_BORDER_COLOR_2);
+					g.drawRect(
+							selectionRect.x + 1,
+							selectionRect.y + 1,
+							selectionRect.width - 2,
+							selectionRect.height - 2
+					);
+				}
+			}
 		}
 	}
 	
