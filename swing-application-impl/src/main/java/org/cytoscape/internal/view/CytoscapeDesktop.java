@@ -1282,6 +1282,7 @@ public class CytoscapeDesktop extends JFrame
 			dim.height = Math.max(dim.height, ComponentPopup.MIN_SIZE);
 			
 			Point p = bar.compassDirection == SwingConstants.SOUTH ? getBottomPanel().getLocation() : bar.getLocation();
+			p = SwingUtilities.convertPoint(getMainPanel(), p, getGlassPane());
 			
 			if (bar.compassDirection == SwingConstants.WEST) {
 				p.x += bar.getWidth();
