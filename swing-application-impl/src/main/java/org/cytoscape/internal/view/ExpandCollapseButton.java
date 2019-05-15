@@ -5,9 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.IconManager;
+import javax.swing.UIManager;
 
 /*
  * #%L
@@ -39,18 +37,14 @@ public class ExpandCollapseButton extends JButton {
 	
 	static final int WIDTH = 32;
 	static final int HEIGHT = 24;
-	private static final float FONT_SIZE = 17.0f;
 	
-	public ExpandCollapseButton(final boolean selected, final ActionListener al,
-    		final CyServiceRegistrar serviceRegistrar) {
+	public ExpandCollapseButton(boolean selected, ActionListener al) {
         setRequestFocusEnabled(true);
         setBorderPainted(false);
 		setContentAreaFilled(false);
 		setOpaque(false);
 		setFocusPainted(false);
-		
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
-		setFont(iconManager.getIconFont(FONT_SIZE));
+		setForeground(UIManager.getColor("Label.infoForeground"));
 		
 		final Dimension d = new Dimension(WIDTH, HEIGHT);
 		setMinimumSize(d);
@@ -64,7 +58,7 @@ public class ExpandCollapseButton extends JButton {
     
     @Override
     public void setSelected(final boolean b) {
-    	setText(b ? IconManager.ICON_CARET_DOWN : IconManager.ICON_CARET_RIGHT);
+		setIcon(UIManager.getIcon(b ? "Tree.expandedIcon" : "Tree.collapsedIcon"));
     	super.setSelected(b);
     }
 }

@@ -253,7 +253,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 					else
 						expand();
 				}
-			}, serviceRegistrar);
+			});
 		}
 		
 		return expandCollapseBtn;

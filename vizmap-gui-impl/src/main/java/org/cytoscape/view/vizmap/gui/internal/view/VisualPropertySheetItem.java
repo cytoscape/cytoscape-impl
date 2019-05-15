@@ -128,7 +128,7 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	private JPanel topPnl;
 	private JPanel mappingPnl;
 	private PropertySheetPanel propSheetPnl;
-	private ExpandCollapseButton expandCollapseBtn;
+	private ExpandCollapseButton showMappingBtn;
 	private JButton defaultBtn;
 	private JToggleButton mappingBtn;
 	private JButton bypassBtn;
@@ -544,36 +544,28 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	}
 	
 	protected ExpandCollapseButton getShowMappingBtn() {
-		if (expandCollapseBtn == null) {
-			expandCollapseBtn = new ExpandCollapseButton(false, evt -> {
+		if (showMappingBtn == null) {
+			showMappingBtn = new ExpandCollapseButton(false, evt -> {
 				if (getMappingPnl().isShowing())
 					collapse();
 				else
 					expand();
 			});
-			
-			final Dimension d = new Dimension(VALUE_ICON_WIDTH, VALUE_ICON_HEIGHT);
-			expandCollapseBtn.setMinimumSize(d);
-			expandCollapseBtn.setPreferredSize(d);
-			expandCollapseBtn.setMaximumSize(d);
-			expandCollapseBtn.setBorder(
-					BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD));
-			
 			getMappingPnl().addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentShown(final ComponentEvent ce) {
-					if (expandCollapseBtn != null && !expandCollapseBtn.isSelected())
-						expandCollapseBtn.setSelected(true);
+					if (showMappingBtn != null && !showMappingBtn.isSelected())
+						showMappingBtn.setSelected(true);
 				}
 				@Override
 				public void componentHidden(final ComponentEvent ce) {
-					if (expandCollapseBtn != null && expandCollapseBtn.isSelected())
-						expandCollapseBtn.setSelected(false);
+					if (showMappingBtn != null && showMappingBtn.isSelected())
+						showMappingBtn.setSelected(false);
 				}
 			});
 		}
 		
-		return expandCollapseBtn;
+		return showMappingBtn;
 	}
 	
 	protected JButton getDefaultBtn() {
@@ -929,15 +921,32 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	
 	private class ExpandCollapseButton extends JButton {
 		
+		private Icon expandedIcon;
+		private Icon collapsedIcon;
+		
 	    public ExpandCollapseButton(final boolean selected, final ActionListener al) {
+	    	expandedIcon = UIManager.getIcon("Tree.expandedIcon");
+	    	collapsedIcon = UIManager.getIcon("Tree.rightToLeftCollapsedIcon");
+    		
+    		if (collapsedIcon == null) {
+    			collapsedIcon = new MirrorIcon(UIManager.getIcon("Tree.collapsedIcon"));
+    			expandedIcon = new MirrorIcon(expandedIcon); // Mirror this one as well, so they can better align
+    		}
+	    	
 	        setRequestFocusEnabled(true);
-	        setBorderPainted(false);
 			setContentAreaFilled(false);
 			setOpaque(false);
 			setFocusPainted(false);
+			setHorizontalAlignment(RIGHT);
 			
-			final IconManager iconManager = servicesUtil.get(IconManager.class);
-			setFont(iconManager.getIconFont(17.0f));
+			Dimension d = new Dimension(
+					expandedIcon.getIconWidth() + 2 * BUTTON_H_PAD,
+					expandedIcon.getIconHeight() + 2 * BUTTON_V_PAD
+			);
+			setMinimumSize(d);
+			setPreferredSize(d);
+			setMaximumSize(d);
+			setBorder(BorderFactory.createEmptyBorder(BUTTON_V_PAD, BUTTON_H_PAD, BUTTON_V_PAD, BUTTON_H_PAD));
 			
 			addActionListener(al);
 			setSelected(selected);
@@ -945,9 +954,22 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 	    
 	    @Override
 	    public void setSelected(final boolean b) {
-	    	setText(b ? IconManager.ICON_CARET_DOWN : IconManager.ICON_CARET_LEFT);
 	    	super.setSelected(b);
+	    	updateIcon();
 	    }
+	    
+	    @Override
+	    public void setEnabled(boolean b) {
+	    	super.setEnabled(b);
+	    	updateIcon();
+	    }
+	    
+	    private void updateIcon() {
+			if (isEnabled())
+				setIcon(isSelected() ? expandedIcon : collapsedIcon);
+			else
+				setIcon(null);
+		}
 	}
 
 	static class VizMapperButton extends JButton {
@@ -1154,6 +1176,34 @@ public class VisualPropertySheetItem<T> extends JPanel implements Comparable<Vis
 					e.getWhen(), e.getModifiers(), 1, 1,
 					e.getClickCount(), false, e.getScrollType(),
 					e.getScrollAmount(), e.getWheelRotation());
+		}
+	}
+	
+	private class MirrorIcon implements Icon {
+
+		private final Icon originalIcon;
+		
+	    public MirrorIcon(Icon originalIcon) {
+	        this.originalIcon = originalIcon;
+	    }
+
+	    @Override
+	    public synchronized void paintIcon(Component c, Graphics g, int x, int y) {
+	        Graphics2D g2 = (Graphics2D) g.create();
+	        g2.translate(getIconWidth(), 0);
+	        g2.scale(-1, 1);
+	        originalIcon.paintIcon(c, g2, x, y);
+	        g2.dispose();
+	    }
+
+		@Override
+		public int getIconWidth() {
+			return originalIcon.getIconWidth();
+		}
+
+		@Override
+		public int getIconHeight() {
+			return originalIcon.getIconHeight();
 		}
 	}
 }
