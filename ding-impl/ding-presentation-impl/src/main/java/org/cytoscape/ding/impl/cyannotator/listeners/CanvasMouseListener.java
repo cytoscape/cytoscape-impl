@@ -97,7 +97,7 @@ public class CanvasMouseListener implements MouseListener {
 			double offsetY = e.getY() - annotationSelection.getY() - anchor.getY();
 			
 			setResizeCursor(anchor.getPosition());
-			annotationSelection.setResizing(true);
+//			annotationSelection.setResizing(true);
 			annotationSelection.saveAnchor(anchor.getPosition(), offsetX, offsetY);
 			annotationSelection.saveBounds();
 			
@@ -127,12 +127,12 @@ public class CanvasMouseListener implements MouseListener {
 
 			if (!annotationSelection.isEmpty()) {
 //				networkCanvas.changeCursor(networkCanvas.getMoveCursor());
-				annotationSelection.setMoving(true);
+//				annotationSelection.setMoving(true);
 				
 				movingUndoEdit = new AnnotationEdit("Move Annotation", cyAnnotator, serviceRegistrar);
 				
 			} else {
-				annotationSelection.setMoving(false);
+//				annotationSelection.setMoving(false);
 			}
 
 			//We request focus in this window, so that we can move these selected Annotations around using arrow keys
@@ -157,9 +157,9 @@ public class CanvasMouseListener implements MouseListener {
 	public void mouseReleased(MouseEvent e) {
 //		networkCanvas.changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
-		boolean resizing = annotationSelection.isResizing();
-		annotationSelection.setResizing(false);
-		annotationSelection.setMoving(false);
+//		boolean resizing = annotationSelection.isResizing();
+//		annotationSelection.setResizing(false);
+//		annotationSelection.setMoving(false);
 
 		if(resizeUndoEdit != null) 
 			resizeUndoEdit.post();
@@ -194,9 +194,9 @@ public class CanvasMouseListener implements MouseListener {
 				a.setOffset(null);
 			}
 		} else if (!annotationSelection.isEmpty()) {
-			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-			if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()) && !resizing)
-				cyAnnotator.clearSelectedAnnotations();
+//			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
+//			if (!e.isPopupTrigger() && !e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()) && !resizing)
+//				cyAnnotator.clearSelectedAnnotations();
 			
 			networkCanvas.processMouseEvent(e);
 		} else {
