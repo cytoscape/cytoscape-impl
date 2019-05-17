@@ -63,6 +63,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.internal.util.CompositeCyEdit;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -563,18 +564,14 @@ public class InputHandlerGlassPane extends JComponent {
 		private boolean deselectAllOnRelease;
 		private boolean hit;
 		
-//		private AnnotationEdit resizeUndoEdit;
-//		private AnnotationEdit movingUndoEdit;
-//		private ViewChangeEdit undoableEdit;
+		private CompositeCyEdit undoEdit;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(!isSingleLeftClick(e))
 				return;
 			
-//			resizeUndoEdit = null;
-//			movingUndoEdit = null;
-//			undoableEdit = null;
+			undoEdit = null;
 			deselectAllOnRelease = false;
 			mousePressedPoint = e.getPoint();
 			
@@ -822,7 +819,9 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if(!hit || !isSingleLeftClick(e) || isDragSelectionKeyDown(e))
+			if(!hit || !isSingleLeftClick(e))
+				return;
+			if(get(SelectionLassoListener.class).isDragging() || get(SelectionRectangleListener.class).isDragging())
 				return;
 			
 			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
@@ -1093,6 +1092,10 @@ public class InputHandlerGlassPane extends JComponent {
 			repaint(); // repaint the glass pane
 		}
 		
+		public boolean isDragging() {
+			return selectionLasso != null;
+		}
+		
 		public void drawSelectionLasso(Graphics graphics) {
 			if(selectionLasso != null) {
 				Graphics2D g = (Graphics2D) graphics.create();
@@ -1169,6 +1172,10 @@ public class InputHandlerGlassPane extends JComponent {
 			selectionRect = null;
 			mousePressedPoint = null;
 			repaint(); // repaint the glass pane
+		}
+		
+		public boolean isDragging() {
+			return selectionRect != null;
 		}
 		
 		public void drawSelectionRectangle(Graphics graphics) {
