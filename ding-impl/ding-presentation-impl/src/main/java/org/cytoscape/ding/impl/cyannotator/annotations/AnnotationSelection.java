@@ -62,9 +62,7 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 	Position anchor;
 	double anchorOffsetX;
 	double anchorOffsetY;
-	
 	boolean resizing;
-	boolean moving;
 
 	private Set<DingAnnotation> selectedAnnotations;
 
@@ -139,6 +137,12 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 			da.saveBounds();
 		}
 	}
+	
+	public void setOffset(Point2D offset) {
+		for(DingAnnotation a : selectedAnnotations) {
+			a.setOffset(offset);
+		}
+	}
 
 	public Rectangle2D getInitialBounds() {
 		return initialBounds;
@@ -163,14 +167,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 		}
 		
 		return null;
-	}
-
-	public void setMoving(boolean moving) {
-		this.moving = moving;
-	}
-
-	public boolean isMoving() {
-		return moving;
 	}
 
 	public void setResizing(boolean resizing) {

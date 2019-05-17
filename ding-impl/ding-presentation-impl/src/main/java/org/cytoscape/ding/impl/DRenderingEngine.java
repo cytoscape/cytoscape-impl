@@ -13,9 +13,6 @@ import java.awt.Paint;
 import java.awt.TexturePaint;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -1264,30 +1261,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	public void setSize(Dimension d) {
 		networkCanvas.setSize(d);
-	}
-
-	public void addMouseListener(MouseListener m) {
-		networkCanvas.addMouseListener(m);
-	}
-
-	public void addMouseMotionListener(MouseMotionListener m) {
-		networkCanvas.addMouseMotionListener(m);
-	}
-
-	public void addKeyListener(KeyListener k) {
-		networkCanvas.addKeyListener(k);
-	}
-
-	public void removeMouseListener(MouseListener m) {
-		networkCanvas.removeMouseListener(m);
-	}
-
-	public void removeMouseMotionListener(MouseMotionListener m) {
-		networkCanvas.removeMouseMotionListener(m);
-	}
-
-	public void removeKeyListener(KeyListener k) {
-		networkCanvas.removeKeyListener(k);
 	}
 
 	static <X> List<X> makeList(X nodeOrEdge) {

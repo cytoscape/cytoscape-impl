@@ -24,7 +24,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JTree;
-import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -46,7 +45,6 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
-import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.GroupAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReorderAnnotationsTask;
@@ -109,7 +107,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	private boolean loadingSession;
 	private boolean ignoreSelectedPropChangeEvents;
 	
-	private ClickToAddAnnotationListener clickToAddAnnotationListener;
+//	private ClickToAddAnnotationListener clickToAddAnnotationListener;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
@@ -318,28 +316,18 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		}
 	}
 	
-	private void addAnnotationButton(AnnotationFactory<? extends Annotation> f) {
-		final JToggleButton btn = mainPanel.addAnnotationButton(f);
+	private void addAnnotationButton(AnnotationFactory<? extends Annotation> annotationFactory) {
+		final JToggleButton btn = mainPanel.addAnnotationButton(annotationFactory);
 		btn.addItemListener(evt -> {
-			disposeClickToAddAnnotationListener();
 			int state = evt.getStateChange();
-			
 			if (state == ItemEvent.SELECTED) {
 				DRenderingEngine re = getCurrentDRenderingEngine();
-				
-				if (re != null) {
-					clickToAddAnnotationListener = new ClickToAddAnnotationListener(re, f);
-					re.addMouseListener(clickToAddAnnotationListener);
+				if(re != null) {
+					Runnable mousePressedCallback = () -> mainPanel.clearAnnotationButtonSelection();
+					re.getInputHandlerGlassPane().beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
 				}
 			}
 		});
-	}
-
-	private void createAnnotation(DRenderingEngine re, AnnotationFactory<? extends Annotation> f, Point point) {
-		if (re == null || f instanceof AbstractDingAnnotationFactory == false)
-			return; // For now, only DING annotations are supported!
-		TaskIterator iterator = new TaskIterator(new AddAnnotationTask(re, point, f));
-		serviceRegistrar.getService(DialogTaskManager.class).execute(iterator);
 	}
 
 	private DRenderingEngine getCurrentDRenderingEngine() {
@@ -467,15 +455,6 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			});
 	}
 	
-	private void disposeClickToAddAnnotationListener() {
-		invokeOnEDT(() -> {
-			if (clickToAddAnnotationListener != null) {
-				clickToAddAnnotationListener.getRenderingEngine().removeMouseListener(clickToAddAnnotationListener);
-				clickToAddAnnotationListener = null;
-			}
-		});
-	}
-	
 	private void maybeShowPopupMenu(JTree tree, MouseEvent e) {
 		// Ignore if not valid trigger.
 		if (!e.isPopupTrigger())
@@ -551,30 +530,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 	
 	private AnnotationNode getNodeAt(JTree tree, Point point) {
 		TreePath path = tree.getPathForLocation(point.x, point.y);
-        
 		return path == null ? null : (AnnotationNode) path.getLastPathComponent();
 	}
 	
-	private class ClickToAddAnnotationListener extends MouseAdapter {
-		
-		private final DRenderingEngine re;
-		private final AnnotationFactory<? extends Annotation> factory;
-
-		public ClickToAddAnnotationListener(DRenderingEngine re, AnnotationFactory<? extends Annotation> f) {
-			this.re = re;
-			this.factory = f;
-		}
-		
-		@Override
-		public void mousePressed(MouseEvent e) {
-			if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 1) {
-				mainPanel.clearAnnotationButtonSelection();
-				createAnnotation(re, factory, e.getPoint());
-			}
-		}
-		
-		DRenderingEngine getRenderingEngine() {
-			return re;
-		}
-	}
 }
