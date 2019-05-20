@@ -197,9 +197,10 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		if (icon == null)
-			icon = new TextIcon(IconManager.ICON_STICKY_NOTE,
-					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		if (icon == null) {
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			icon = new TextIcon(IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_2, font, 16, 16);
+		}
 		
 		return icon;
 	}
