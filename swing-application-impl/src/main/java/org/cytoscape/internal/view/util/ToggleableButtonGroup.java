@@ -92,15 +92,16 @@ public class ToggleableButtonGroup extends ButtonGroup {
 
 	@Override
 	public void remove(AbstractButton button) {
-		if (button != null) {
-			if (selectedButton == button)
-				selectedButton = null;
-			
-			if (toggleable && lastModel == button.getModel())
-				lastModel = null;
-			
-			super.remove(button);
-		}
+		if (button == null || !buttons.contains(button))
+			return;
+		
+		if (selectedButton == button)
+			selectedButton = null;
+
+		if (toggleable && lastModel == button.getModel())
+			lastModel = null;
+
+		super.remove(button);
 	}
 
 	/**
