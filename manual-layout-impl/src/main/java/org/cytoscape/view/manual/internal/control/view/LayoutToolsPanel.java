@@ -71,7 +71,7 @@ import org.cytoscape.view.model.View;
 public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
-	private static final String TITLE = "Node Layout Tools";
+	private static final String TITLE = "Layout Tools";
 	private static final String ID = "org.cytoscape.NodeLayoutTools";
 	
 	private ScalePanel scalePanel;
