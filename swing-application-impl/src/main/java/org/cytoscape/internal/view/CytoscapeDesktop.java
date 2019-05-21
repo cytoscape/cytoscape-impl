@@ -844,6 +844,9 @@ public class CytoscapeDesktop extends JFrame
 		if (cytoPanel.getStateInternal() == HIDE)
 			return;
 		
+		if (isFloating(cytoPanel))
+			disposeFloatingCytoPanel(cytoPanel);
+		
 		cytoPanel.getThisComponent().setVisible(true);
 		
 		if (popup == null) {
