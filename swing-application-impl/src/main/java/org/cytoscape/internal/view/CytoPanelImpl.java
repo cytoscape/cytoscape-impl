@@ -2,12 +2,14 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.application.swing.CytoPanelState.DOCK;
-import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
@@ -16,8 +18,8 @@ import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
 import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MAXIMIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
@@ -25,6 +27,7 @@ import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,6 +44,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -82,11 +86,11 @@ import org.cytoscape.util.swing.IconManager;
 public class CytoPanelImpl implements CytoPanel {
 	
 	public static final String TEXT_DOCK = "Dock";
+	public static final String TEXT_UNDOCK = "Undock";
 	public static final String TEXT_FLOAT = "Float";
-	public static final String TEXT_HIDE = "Minimize";
+	public static final String TEXT_MINIMIZE = "Minimize";
 	public static final String TEXT_REMOVE = "Remove";
 	
-	/* These are the minimum sizes for our CytoPanels. A CytoPanel can't exceed these values. */
 	private final int NOTIFICATION_STATE_CHANGE = 0;
 	private final int NOTIFICATION_COMPONENT_SELECTED = 1;
 
@@ -94,6 +98,7 @@ public class CytoPanelImpl implements CytoPanel {
 	private JPanel titlePanel;
 	private DropDownMenuButton titleButton;
 	private JButton floatButton;
+	private JButton dockButton;
 	private JButton minimizeButton;
 	
 	private JPanel cardsPanel;
@@ -102,19 +107,20 @@ public class CytoPanelImpl implements CytoPanel {
 	private final CytoPanelNameInternal compassDirection;
 	private final int trimBarIndex;
 	
-	private CytoPanelState cytoPanelState;
+	private CytoPanelStateInternal state;
 	private boolean maximized;
-	private boolean removed;
-
+	
 	private final List<CytoPanelComponent> cytoPanelComponents = new ArrayList<>();
 	private final Map<String, CytoPanelComponent2> componentsById = new HashMap<>();
+	
+	private final SwingPropertyChangeSupport pcs = new SwingPropertyChangeSupport(this, true);
 
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public CytoPanelImpl(
 			final CytoPanelNameInternal compassDirection,
 			final int trimBarIndex,
-			final CytoPanelState cytoPanelState,
+			final CytoPanelStateInternal state,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.compassDirection = compassDirection;
@@ -122,7 +128,7 @@ public class CytoPanelImpl implements CytoPanel {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		update();
-		setState(cytoPanelState);
+		setStateInternal(state);
 	}
 	
 	String getTitle() {
@@ -138,6 +144,41 @@ public class CytoPanelImpl implements CytoPanel {
 		return compassDirection;
 	}
 	
+	@Override
+	public CytoPanelState getState() {
+		return getCytoPanelComponentCount() > 0 ? state.toCytoPanelState() : CytoPanelState.HIDE;
+	}
+
+	@Override
+	public void setState(CytoPanelState newState) {
+		if (newState == null)
+			throw new IllegalArgumentException("CytoPanelState must not be null.");
+		
+		setStateInternal(CytoPanelStateInternal.valueOf(newState));
+	}
+	
+	public CytoPanelStateInternal getStateInternal() {
+		return state;
+	}
+	
+	public void setStateInternal(CytoPanelStateInternal newState) {
+		if (newState == null)
+			throw new IllegalArgumentException("'newState' must not be null.");
+		
+		if (newState != state) {
+			CytoPanelState oldApiState = getState();
+			CytoPanelStateInternal oldState = state;
+			state = newState;
+			update();
+			
+			if (pcs.hasListeners("stateInternal"))
+				pcs.firePropertyChange("stateInternal", oldState, newState);
+			
+			if (oldApiState != getState()) // Not all internal states will change the API state!
+				notifyListeners(NOTIFICATION_STATE_CHANGE);
+		}
+	}
+	
 	public int getTrimBarIndex() {
 		return trimBarIndex;
 	}
@@ -146,6 +187,7 @@ public class CytoPanelImpl implements CytoPanel {
 		if (indexOfComponent(cpc.getComponent()) >= 0)
 			return;
 		
+		CytoPanelState oldState = getState();
 		cytoPanelComponents.add(index, cpc);
 		
 		if (cpc instanceof CytoPanelComponent2) {
@@ -161,7 +203,11 @@ public class CytoPanelImpl implements CytoPanel {
 		checkSizes(cpc.getComponent()); // Check our sizes, and override, if necessary
 		getCardsPanel().add(cpc.getComponent(), getIdentifier(cpc));
 		
-		updateTitleButton();
+		update();
+		
+		// For backwards compatibility
+		if (oldState != getState())
+			notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed from HIDE
 	}
 	
 	@Override
@@ -214,14 +260,20 @@ public class CytoPanelImpl implements CytoPanel {
 	}
 
 	public void remove(CytoPanelComponent comp) {
+		CytoPanelState oldState = getState();
 		boolean changed = cytoPanelComponents.remove(comp);
 		getCardsPanel().remove(comp.getComponent());
 		
 		if (comp instanceof CytoPanelComponent2)
 			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
 		
-		if (changed)
-			updateTitleButton();
+		if (changed) {
+			update();
+			
+			// For backwards compatibility
+			if (oldState != getState())
+				notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed to HIDE
+		}
 	}
 	
 	public List<CytoPanelComponent> getCytoPanelComponents() {
@@ -247,23 +299,6 @@ public class CytoPanelImpl implements CytoPanel {
 	}
 
 	@Override
-	public void setState(CytoPanelState newState) {
-		if (newState == null)
-			throw new IllegalArgumentException("CytoPanelState must not be null.");
-		
-		if (newState != cytoPanelState) {
-			cytoPanelState = newState;
-			update();
-			notifyListeners(NOTIFICATION_STATE_CHANGE);
-		}
-	}
-
-	@Override
-	public CytoPanelState getState() {
-		return cytoPanelState;
-	}
-	
-	@Override
 	public Component getThisComponent() {
 		return getMainPanel();
 	}
@@ -276,17 +311,14 @@ public class CytoPanelImpl implements CytoPanel {
 		this.maximized = maximized;
 	}
 	
-	public boolean isRemoved() {
-		return removed;
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
 	}
 	
-	public void setRemoved(boolean removed) {
-		if (removed != this.removed) {
-			this.removed = removed;
-			update();
-		}
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
 	}
-
+	
 	/**
 	 * Checks to make sure the CytoPanel is within the appropriate dimensions
 	 * by overriding the sizes, if necessary
@@ -331,12 +363,14 @@ public class CytoPanelImpl implements CytoPanel {
 					.addGap(20, 20, Short.MAX_VALUE)
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
 			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addComponent(getTitleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -354,19 +388,30 @@ public class CytoPanelImpl implements CytoPanel {
 	
 	JButton getFloatButton() {
 		if (floatButton == null) {
-			floatButton = new JButton(ICON_SQUARE_O);
+			floatButton = new JButton(ICON_WINDOW_MAXIMIZE);
 			floatButton.setToolTipText(TEXT_FLOAT);
 			CytoPanelUtil.styleButton(floatButton);
-			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12));
+			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
 		}
 		
 		return floatButton;
 	}
 	
+	JButton getDockButton() {
+		if (dockButton == null) {
+			dockButton = new JButton(ICON_THUMB_TACK);
+			dockButton.setToolTipText(TEXT_DOCK);
+			CytoPanelUtil.styleButton(dockButton);
+			dockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12));
+		}
+		
+		return dockButton;
+	}
+	
 	JButton getMinimizeButton() {
 		if (minimizeButton == null) {
 			minimizeButton = new JButton(ICON_WINDOW_MINIMIZE);
-			minimizeButton.setToolTipText(TEXT_HIDE);
+			minimizeButton.setToolTipText(TEXT_MINIMIZE);
 			CytoPanelUtil.styleButton(minimizeButton);
 			minimizeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
 		}
@@ -410,10 +455,9 @@ public class CytoPanelImpl implements CytoPanel {
 	private void notifyListeners(int notificationType) {
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-		// determine what event to fire
 		switch (notificationType) {
 			case NOTIFICATION_STATE_CHANGE:
-				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
+				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, getState()));
 				break;
 			case NOTIFICATION_COMPONENT_SELECTED:
 				int selectedIndex = getSelectedIndex();
@@ -424,13 +468,14 @@ public class CytoPanelImpl implements CytoPanel {
 	
 	void update() {
 		updateTitleButton();
-		getFloatButton().setText(cytoPanelState == DOCK ? ICON_SQUARE_O : ICON_THUMB_TACK);
-		getFloatButton().setToolTipText(cytoPanelState == DOCK ? TEXT_FLOAT : TEXT_DOCK);
 		
-		getThisComponent().setVisible(!isRemoved() && getState() != HIDE);
+		getFloatButton().setVisible(state != FLOAT);
+		getDockButton().setVisible(state != DOCK);
+		
+		getThisComponent().setVisible(getCytoPanelComponentCount() > 0 && state != HIDE && state != MINIMIZE);
 		getThisComponent().validate();
 	}
-	
+
 	private void updateTitleButton() {
 		int index = getSelectedIndex();
 		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
@@ -457,5 +502,10 @@ public class CytoPanelImpl implements CytoPanel {
 			return ((CytoPanelComponent2) cpc).getIdentifier();
 		
 		return cpc.getTitle() + "__" + cpc.getClass().getName();
+	}
+	
+	@Override
+	public String toString() {
+		return compassDirection.getTitle();
 	}
 }

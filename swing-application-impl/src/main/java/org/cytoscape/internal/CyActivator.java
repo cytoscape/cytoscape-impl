@@ -803,7 +803,7 @@ public class CyActivator extends AbstractCyActivator {
 			
 			// SplitPane
 			UIManager.put("SplitPaneUI", "javax.swing.plaf.basic.BasicSplitPaneUI");
-			UIManager.put("SplitPane.dividerSize", 5);
+			UIManager.put("SplitPane.dividerSize", ViewUtil.DIVIDER_SIZE);
 			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());

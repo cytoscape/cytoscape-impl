@@ -70,6 +70,8 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	public static final int DIVIDER_SIZE = 5;
+	
 	public static final String CY_PROPERTY_NAME = "(cyPropertyName=cytoscape3.props)";
 	public static final String SHOW_NODE_EDGE_COUNT_KEY = "showNodeEdgeCount";
 	public static final String SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY = "showNetworkProvenanceHierarchy";

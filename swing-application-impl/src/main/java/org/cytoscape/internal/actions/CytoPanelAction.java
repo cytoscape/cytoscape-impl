@@ -1,5 +1,8 @@
 package org.cytoscape.internal.actions;
 
+import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+
 import java.awt.event.ActionEvent;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -12,6 +15,7 @@ import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.internal.view.CytoPanelImpl;
 import org.cytoscape.internal.view.CytoPanelNameInternal;
+import org.cytoscape.internal.view.CytoPanelStateInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -57,7 +61,7 @@ public class CytoPanelAction extends AbstractCyAction {
 		this.position = position;
 		this.desktop = desktop;
 		this.serviceRegistrar = serviceRegistrar;
-
+		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
 		useCheckBoxMenuItem = true;
@@ -67,23 +71,21 @@ public class CytoPanelAction extends AbstractCyAction {
 	 * Toggles the cytopanel state.  
 	 */
 	@Override
-	public void actionPerformed(ActionEvent ev) {
+	public void actionPerformed(ActionEvent evt) {
 		CytoPanelImpl cytoPanel = (CytoPanelImpl) desktop.getCytoPanel(position);
-
-		if (cytoPanel.isRemoved())
-			desktop.showCytoPanel(cytoPanel);
-		else
-			desktop.removeCytoPanel(cytoPanel);
+		CytoPanelStateInternal state = cytoPanel.getStateInternal();
+		cytoPanel.setStateInternal(state == HIDE ? DOCK : HIDE);
 	} 
 
 	@Override
-	public void menuSelected(MenuEvent me) {
+	public void menuSelected(MenuEvent evt) {
 		updateEnableState();
 		JCheckBoxMenuItem item = getThisItem();
 		CytoPanel cytoPanel = desktop.getCytoPanel(position);
 
 		if (item != null && cytoPanel instanceof CytoPanelImpl)
-			item.setSelected(cytoPanel.getCytoPanelComponentCount() > 0 && !((CytoPanelImpl) cytoPanel).isRemoved());
+			item.setSelected(cytoPanel.getCytoPanelComponentCount() > 0
+					&& ((CytoPanelImpl) cytoPanel).getStateInternal() != HIDE);
 	}
 	
 	@Override

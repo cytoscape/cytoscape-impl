@@ -2,14 +2,16 @@ package org.cytoscape.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.application.swing.CytoPanelState.DOCK;
-import static org.cytoscape.application.swing.CytoPanelState.FLOAT;
-import static org.cytoscape.application.swing.CytoPanelState.HIDE;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH_WEST;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.internal.view.util.ViewUtil.isScreenMenuBar;
@@ -47,6 +49,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -92,12 +95,9 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
-import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
-import org.cytoscape.application.swing.events.CytoPanelStateChangedListener;
 import org.cytoscape.internal.command.CommandToolPanel;
 import org.cytoscape.internal.util.CoalesceTimer;
 import org.cytoscape.internal.view.util.ToggleableButtonGroup;
@@ -188,7 +188,7 @@ import org.cytoscape.work.swing.StatusBarPanelFactory;
 public class CytoscapeDesktop extends JFrame
 		implements CySwingApplication, CyStartListener, AppsFinishedStartingListener, SessionLoadedListener,
 		SessionSavedListener, SetCurrentNetworkListener, SetCurrentNetworkViewListener, TableAddedListener,
-		CytoPanelStateChangedListener, CytoPanelComponentSelectedListener {
+		CytoPanelComponentSelectedListener {
 
 	private static final String TITLE_PREFIX_STRING = "Session: ";
 	private static final String NEW_SESSION_NAME = "New Session";
@@ -214,9 +214,10 @@ public class CytoscapeDesktop extends JFrame
 	private SideBar eastSideBar;
 	private SideBar southSideBar;
 	private ComponentPopup popup;
-	/** This button group is used with buttons from all CytoPanels in state HIDE. */
+	/** This button group is used with buttons from all CytoPanels in state TEMP_HIDE. */
 	private final ToggleableButtonGroup minimizedButtonGroup;
 	private boolean isAdjusting;
+	private boolean updatingTrimStack;
 	
 	private BiModalJSplitPane masterPane;
 	private BiModalJSplitPane topPane;
@@ -350,7 +351,7 @@ public class CytoscapeDesktop extends JFrame
 							for (CytoPanelImpl cp : getAllCytoPanels()) {
 								SideBar.TrimStack ts = getTrimStackOf(cp);
 								
-								if (ts != null && !cp.isRemoved())
+								if (ts != null && cp.getStateInternal() != HIDE)
 									ts.update(); // TODO Probably too expensive to update everything here!!!
 							}
 						});
@@ -362,11 +363,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		// Prepare to show the desktop...
 		for (CytoPanelImpl cp : getAllCytoPanels()) {
-			if (cp.getState() == HIDE)
-				minimizeCytoPanel(cp);
-			else
-				addToCytoPanelButtonGroup(cp);
-			
+			handleStateInternalChanged(cp, cp.getStateInternal());
 			addListeners(cp);
 		}
 		
@@ -387,25 +384,12 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void addListeners(CytoPanelImpl cp) {
-		cp.getFloatButton().addActionListener(evt -> {
-			if (cp.getState() == FLOAT || cp.getState() == HIDE)
-				cp.setState(DOCK);
-			else
-				cp.setState(FLOAT);
-		});
-		cp.getMinimizeButton().addActionListener(evt -> {
-			if (cp.getState() != HIDE) {
-				// Set the HIDE state, as expected
-				cp.setState(HIDE);
-			} else {
-				// Force-hide it, because it already has the HIDE state, which means the event would not be fired
-				disposeComponentPopup();
-				
-				isAdjusting = true;
-				minimizedButtonGroup.clearSelection();
-				isAdjusting = false;
-			}
-		});
+		cp.addPropertyChangeListener("stateInternal",
+				evt -> handleStateInternalChanged(cp, (CytoPanelStateInternal) evt.getNewValue()));
+		
+		cp.getFloatButton().addActionListener(evt -> cp.setStateInternal(FLOAT));
+		cp.getDockButton().addActionListener(evt -> cp.setStateInternal(DOCK));
+		cp.getMinimizeButton().addActionListener(evt -> cp.setStateInternal(MINIMIZE));
 		cp.getTitlePanel().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent evt) {
@@ -413,6 +397,26 @@ public class CytoscapeDesktop extends JFrame
 					toggleMaximizeCytoPanel(cp);
 			}
 		});
+	}
+
+	private void handleStateInternalChanged(CytoPanelImpl cp, CytoPanelStateInternal state) {
+		switch (state) {
+			case HIDE:
+				invokeOnEDT(() -> removeCytoPanel(cp));
+				break;
+			case MINIMIZE:
+				invokeOnEDT(() -> minimizeCytoPanel(cp));
+				break;
+			case DOCK:
+				invokeOnEDT(() -> dockCytoPanel(cp));
+				break;
+			case UNDOCK:
+				invokeOnEDT(() -> undockCytoPanel(cp));
+				break;
+			case FLOAT:
+				invokeOnEDT(() -> floatCytoPanel(cp));
+				break;
+		}
 	}
 
 	private JToolBar setupStatusPanel(StatusBarPanelFactory jobStatusPanelFactory,
@@ -544,6 +548,17 @@ public class CytoscapeDesktop extends JFrame
 			int index = getInsertIndex(cpc, cytoPanel);
 			cytoPanel.insert(cpc, index);
 			getTrimStackOf(cytoPanel).update();
+			
+			// Automatically show the cytopanel again when it was empty and the first component is added
+			if (cytoPanel.getCytoPanelComponentCount() == 1) {
+				if (cytoPanel.getStateInternal() == DOCK) {
+					getSplitPaneOf(cytoPanel).update();
+					getTrimStackOf(cytoPanel).update();
+					getSideBarOf(cytoPanel).update();
+				} else if (cytoPanel.getStateInternal() == FLOAT) {
+					floatCytoPanel(cytoPanel);
+				}
+			}
 		});
 	}
 
@@ -557,11 +572,18 @@ public class CytoscapeDesktop extends JFrame
 				cytoPanel = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cpc.getCytoPanelName()));
 			
 			cytoPanel.remove(cpc);
+			
+			if (cytoPanel.getCytoPanelComponentCount() == 0)
+				hideCytoPanel(cytoPanel);
+			
 			getTrimStackOf(cytoPanel).update();
 			getSideBarOf(cytoPanel).update();
 			
-			if (cytoPanel.getCytoPanelComponentCount() == 0)
-				cytoPanel.setState(HIDE);
+			// Automatically hide the cytopanel when the last component is removed
+			if (cytoPanel.getCytoPanelComponentCount() == 0 && cytoPanel.getStateInternal() == DOCK) {
+				getSplitPaneOf(cytoPanel).update();
+				getSideBarOf(cytoPanel).update();
+			}
 		});
 	}
 
@@ -667,27 +689,6 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	@Override
-	public void handleEvent(CytoPanelStateChangedEvent e) {
-		if (e.getCytoPanel() instanceof CytoPanelImpl == false)
-			return;
-		
-		CytoPanelImpl cytoPanel = (CytoPanelImpl) e.getCytoPanel();
-		CytoPanelState state = e.getNewState();
-
-		switch (state) {
-			case HIDE:
-				minimizeCytoPanel(cytoPanel);
-				break;
-			case FLOAT:
-				floatCytoPanel(cytoPanel);
-				break;
-			case DOCK:
-				dockCytoPanel(cytoPanel);
-				break;
-		}
-	}
-	
-	@Override
 	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
 		CytoPanel cp = evt.getCytoPanel();
 		
@@ -696,8 +697,9 @@ public class CytoscapeDesktop extends JFrame
 			
 			if (ts != null) {
 				JToggleButton btn = ts.getButton(evt.getSelectedIndex());
+				CytoPanelStateInternal state = ((CytoPanelImpl) cp).getStateInternal();
 				
-				if (btn != null && !btn.isSelected()) {
+				if (btn != null && !btn.isSelected() && state != HIDE) {
 					if (minimizedButtonGroup.contains(btn))
 						minimizedButtonGroup.setSelected(btn, true);
 					else
@@ -744,36 +746,34 @@ public class CytoscapeDesktop extends JFrame
 	 * Only invoke this method when the CytoPanel is removed by a user action,
 	 * because this also updates a CyProperty.
 	 */
-	public void removeCytoPanel(CytoPanelImpl cytoPanel) {
-		// We have to set it to HIDE first, for backwards compatibility--apps expect
-		// invisible cytopanels to have the HIDE state, no matter whether it's
-		// minimized or removed from the desktop
-		cytoPanel.setState(HIDE);
-		cytoPanel.setRemoved(true);
+	private void removeCytoPanel(CytoPanelImpl cytoPanel) {
+		cytoPanel.setStateInternal(HIDE);
 		getTrimStackOf(cytoPanel).update();
 		getSideBarOf(cytoPanel).update();
 		
-		if (popup != null && isUnpinned(cytoPanel)) {
+		if (isPopupShowingFor(cytoPanel)) {
 			popup.getContentPane().removeAll();
 			popup.setVisible(false);
+		} else {
+			getSplitPaneOf(cytoPanel).update();
 		}
 	}
 
-	public void showCytoPanel(CytoPanelImpl cytoPanel) {
+	private void showCytoPanel(CytoPanelImpl cytoPanel) {
 		if (cytoPanel.getCytoPanelComponentCount() == 0)
 			return;
 		
-		if (cytoPanel.isRemoved()) {
-			cytoPanel.setRemoved(false);
-			cytoPanel.setState(DOCK);
-		}
+		CytoPanelStateInternal state = cytoPanel.getStateInternal();
+		
+		if (state == HIDE)
+			cytoPanel.setStateInternal(DOCK);
 		
 		getTrimStackOf(cytoPanel).update();
 		getSideBarOf(cytoPanel).update();
 	}
 	
 	private void floatCytoPanel(CytoPanelImpl cytoPanel) {
-		if (popup != null && isUnpinned(cytoPanel)) {
+		if (isPopupShowingFor(cytoPanel)) {
 			disposeComponentPopup();
 			addToCytoPanelButtonGroup(cytoPanel);
 		}
@@ -795,7 +795,7 @@ public class CytoscapeDesktop extends JFrame
 				@Override
 				public void windowClosing(WindowEvent e) {
 					if (!ignoreFloatingFrameCloseEvents)
-						cytoPanel.setState(DOCK);
+						cytoPanel.setStateInternal(DOCK);
 				}
 			});
 
@@ -818,7 +818,7 @@ public class CytoscapeDesktop extends JFrame
 	}
 
 	private void dockCytoPanel(CytoPanelImpl cytoPanel) {
-		if (popup != null && isUnpinned(cytoPanel))
+		if (isPopupShowingFor(cytoPanel))
 			disposeComponentPopup();
 		
 		// Make sure the button selection is correct
@@ -830,47 +830,90 @@ public class CytoscapeDesktop extends JFrame
 		if (selBtn != null)
 			selBtn.setSelected(true);
 		
-		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
-		
 		if (isFloating(cytoPanel))
 			disposeFloatingCytoPanel(cytoPanel);
 
 		showCytoPanel(cytoPanel);
 		
-		if (splitPane != null)
-			splitPane.addCytoPanel(cytoPanel);
-
-		if (splitPane != null)
-			splitPane.update();
+		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+		splitPane.addCytoPanel(cytoPanel);
+		splitPane.update();
 	}
 	
-	private void toggleMaximizeCytoPanel(CytoPanelImpl cytoPanel) {
-		// For now, it can be maximized only when unpinned
-		if (popup != null && isUnpinned(cytoPanel)) {
-			cytoPanel.setMaximized(!cytoPanel.isMaximized());
-			updateComponentPopupBounds();
+	private void undockCytoPanel(CytoPanelImpl cytoPanel) {
+		if (cytoPanel.getStateInternal() == HIDE)
+			return;
+		
+		cytoPanel.getThisComponent().setVisible(true);
+		
+		if (popup == null) {
+			popup = new ComponentPopup(cytoPanel);
+			Toolkit.getDefaultToolkit().addAWTEventListener(glassPaneMouseListener, AWTEvent.MOUSE_EVENT_MASK);
+		} else {
+			CytoPanelImpl oldCytoPanel = popup.getCytoPanel();
+			popup.setCytoPanel(cytoPanel);
+			
+			if (oldCytoPanel != null && !oldCytoPanel.equals(cytoPanel) && oldCytoPanel.getStateInternal() != MINIMIZE)
+				oldCytoPanel.setStateInternal(MINIMIZE);
 		}
+		
+		getSplitPaneOf(cytoPanel).update();
+		
+		SideBar bar = getSideBarOf(cytoPanel);
+		bar.update();
+		
+		if (!bar.isShowing())
+			return;
+		
+		SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
+		SidebarToggleButton btn = trimStack.getButton(cytoPanel.getSelectedIndex());
+		
+		if (btn != null && !btn.isSelected()) {
+			isAdjusting = true;
+			btn.setSelected(true);
+			isAdjusting = false;
+		}
+		
+		// Show it
+		updateComponentPopupBounds();
+		((JComponent) getGlassPane()).add(popup);
+		
+		if (!getGlassPane().isVisible())
+			getGlassPane().setVisible(true);
+		
+		if (!popup.isVisible()) // To avoid flickering
+			popup.setVisible(true);
 	}
-
-	private void minimizeCytoPanel(CytoPanelImpl cytoPanel) {
+	
+	private void hideCytoPanel(CytoPanelImpl cytoPanel) {
 		if (isFloating(cytoPanel)) {
 			disposeFloatingCytoPanel(cytoPanel);
-		} else if (popup != null && isUnpinned(cytoPanel)) {
-			popup.getContentPane().removeAll();
-			popup.setVisible(false);
+		} else if (isPopupShowingFor(cytoPanel)) {
+			disposeComponentPopup();
+			
+			AbstractButton btn = minimizedButtonGroup.getSelectedButton();
+			
+			if (btn != null)
+				btn.setSelected(false);
+			
+			isAdjusting = true;
 			minimizedButtonGroup.clearSelection();
+			isAdjusting = false;
+		} else {
+			getSplitPaneOf(cytoPanel).update();
 		}
+	}
+	
+	private void minimizeCytoPanel(CytoPanelImpl cytoPanel) {
+		hideCytoPanel(cytoPanel);
 		
-		// Adjust button selection
-		SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
-		ts.getButtonGroup().clearSelection();
-		
-		addToMinimizedButtonGroup(cytoPanel);
-		
-		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
-		
-		if (splitPane != null)
-			splitPane.update();
+		if (!isPopupShowingFor(cytoPanel)) {
+			// Adjust button selection
+			SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
+			ts.getButtonGroup().clearSelection();
+			
+			addToMinimizedButtonGroup(cytoPanel);
+		}
 	}
 	
 	private void disposeFloatingCytoPanel(CytoPanelImpl cytoPanel) {
@@ -894,8 +937,16 @@ public class CytoscapeDesktop extends JFrame
 		return frame != null && frame == SwingUtilities.getWindowAncestor(cytoPanel.getThisComponent());
 	}
 	
-	private boolean isUnpinned(CytoPanelImpl cytoPanel) {
+	private boolean isPopupShowingFor(CytoPanelImpl cytoPanel) {
 		return popup != null && popup.getCytoPanel().equals(cytoPanel);
+	}
+	
+	private void toggleMaximizeCytoPanel(CytoPanelImpl cytoPanel) {
+		// For now, it can be maximized only when unpinned
+		if (isPopupShowingFor(cytoPanel)) {
+			cytoPanel.setMaximized(!cytoPanel.isMaximized());
+			updateComponentPopupBounds();
+		}
 	}
 	
 	private void addToMinimizedButtonGroup(CytoPanelImpl cytoPanel) {
@@ -970,21 +1021,31 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void onSidebarButtonSelected(SidebarToggleButton btn, boolean selected) {
+		if (updatingTrimStack)
+			return;
+		
 		CytoPanelImpl cytoPanel = btn.getCytoPanel();
+		CytoPanelStateInternal state = cytoPanel.getStateInternal();
+		
+		if (state == HIDE)
+			return;
 		
 		if (selected) {
 			cytoPanel.setSelectedIndex(btn.getIndex());
 			
-			if (cytoPanel.getState() == HIDE) {
-				showComponentPopup(cytoPanel, btn.getIndex());
-			} else if (cytoPanel.getState() == FLOAT) {
+			if (state == MINIMIZE) {
+				cytoPanel.setStateInternal(UNDOCK);
+			} else if (state == FLOAT) {
 				JFrame frame = floatingFrames.get(cytoPanel);
 				
 				if (frame != null)
 					frame.toFront();
 			}
-		} else if (cytoPanel.getState() == HIDE) {
-			disposeComponentPopup();
+		} else {
+			if (state == UNDOCK)
+				cytoPanel.setStateInternal(MINIMIZE);
+			else if (state == MINIMIZE) // TODO is this necessary???
+				disposeComponentPopup();
 		}
 	}
 	
@@ -1175,7 +1236,7 @@ public class CytoscapeDesktop extends JFrame
 	
 	private CytoPanelImpl getSouthWestPanel() {
 		if (southWestPanel == null) {
-			southWestPanel = new CytoPanelImpl(SOUTH_WEST, 1, HIDE, serviceRegistrar);
+			southWestPanel = new CytoPanelImpl(SOUTH_WEST, 1, MINIMIZE, serviceRegistrar);
 		}
 		
 		return southWestPanel;
@@ -1183,7 +1244,7 @@ public class CytoscapeDesktop extends JFrame
 
 	private CytoPanelImpl getEastPanel() {
 		if (eastPanel == null) {
-			eastPanel = new CytoPanelImpl(EAST, 2, HIDE, serviceRegistrar);
+			eastPanel = new CytoPanelImpl(EAST, 2, DOCK, serviceRegistrar);
 		}
 
 		return eastPanel;
@@ -1199,47 +1260,10 @@ public class CytoscapeDesktop extends JFrame
 
 	private CytoPanelImpl getAutomationPanel() {
 		if (automationPanel == null) {
-			automationPanel = new CytoPanelImpl(BOTTOM, 4, HIDE, serviceRegistrar);
+			automationPanel = new CytoPanelImpl(BOTTOM, 4, MINIMIZE, serviceRegistrar);
 		}
 		
 		return automationPanel;
-	}
-	
-	private void showComponentPopup(CytoPanelImpl cytoPanel, int index) {
-		if (index < 0) // Should not happen!
-			return;
-		
-		if (popup == null) {
-			popup = new ComponentPopup(cytoPanel);
-			Toolkit.getDefaultToolkit().addAWTEventListener(glassPaneMouseListener, AWTEvent.MOUSE_EVENT_MASK);
-		} else {
-			popup.setCytoPanel(cytoPanel);
-		}
-		
-		// Adjust button selection
-		SideBar bar = getSideBarOf(cytoPanel);
-		
-		if (!bar.isShowing())
-			return;
-		
-		SideBar.TrimStack trimStack = getTrimStackOf(cytoPanel);
-		JToggleButton btn = trimStack.getButton(index);
-		
-		if (btn != null && !btn.isSelected()) {
-			isAdjusting = true;
-			btn.setSelected(true);
-			isAdjusting = false;
-		}
-		
-		// Show it
-		updateComponentPopupBounds();
-		((JComponent) getGlassPane()).add(popup);
-		
-		if (!getGlassPane().isVisible())
-			getGlassPane().setVisible(true);
-		
-		if (!popup.isVisible()) // To avoid flickering
-			popup.setVisible(true);
 	}
 	
 	private void updateComponentPopupBounds() {
@@ -1384,7 +1408,8 @@ public class CytoscapeDesktop extends JFrame
 				}
 			}
 			
-			setVisible(visible);
+			if (visible != isVisible())
+				setVisible(visible);
 			
 			if (isVisible())
 				updateUI();
@@ -1440,157 +1465,167 @@ public class CytoscapeDesktop extends JFrame
 				return buttonGroup;
 			}
 			
+			CytoPanelImpl getCytoPanel() {
+				return cytoPanel;
+			}
+			
 			void update() {
-				minimizedButtonGroup.remove(buttons);
-				buttonGroup.remove(buttons);
+				updatingTrimStack = true;
 				
-				if (cytoPanel.isRemoved()) {
-					setVisible(false);
-					return;
-				}
-				
-				// Remove all buttons
-				removeAll();
-				buttons.clear();
-				
-				// Create new buttons
-				JPanel panel = null;
-				final boolean showLabels = isShowSideBarLabels();
-				int totalEdge = 0; // Total width or height of added buttons
-				List<CytoPanelComponent> cpComponents = cytoPanel.getCytoPanelComponents();
-				int i = 0;
-				
-				for (CytoPanelComponent cpc : cpComponents) {
-					final int index = i++;
-					String title = cpc.getTitle();
-					Icon icon = cpc.getIcon();
+				try {
+					minimizedButtonGroup.remove(buttons);
+					buttonGroup.remove(buttons);
 					
-					if ((title == null || title.trim().isEmpty()) && icon == null)
-						continue;
-					
-					Icon buttonIcon = icon;
-					
-					if (buttonIcon == null) {
-						buttonIcon = new TextIcon(
-								"" + title.charAt(0),
-								UIManager.getFont("Button.font").deriveFont(Font.BOLD),
-								CytoPanelUtil.BUTTON_SIZE,
-								CytoPanelUtil.BUTTON_SIZE
-						);
-					} else if (buttonIcon instanceof ImageIcon) {
-						if (showLabels && buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
-							buttonIcon = ViewUtil.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
-						else if (!showLabels && (buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE
-								|| buttonIcon.getIconWidth() > CytoPanelUtil.BUTTON_SIZE))
-							buttonIcon = IconManager.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
-					}
-
-					SidebarToggleButton btn = new SidebarToggleButton(cytoPanel, index);
-					btn.setIcon(buttonIcon);
-					
-					if (showLabels) {
-						if (orientation == SwingConstants.VERTICAL)
-							btn.setUI(new VerticalButtonUI(compassDirection == SwingConstants.EAST));
-						else
-							btn.setUI(new BasicButtonUI());
+					if (cytoPanel.getStateInternal() == HIDE) {
+						setVisible(false);
+						return;
 					}
 					
-					btn.setToolTipText(title);
-					btn.setAlignmentX(CENTER_ALIGNMENT);
+					// Remove all buttons
+					removeAll();
+					buttons.clear();
 					
-					Dimension d = btn.getPreferredSize();
+					// Create new buttons
+					JPanel panel = null;
+					final boolean showLabels = isShowSideBarLabels();
+					int totalEdge = 0; // Total width or height of added buttons
+					List<CytoPanelComponent> cpComponents = cytoPanel.getCytoPanelComponents();
+					int i = 0;
 					
-					if (showLabels) {
-						btn.setText(title);
-						btn.setHorizontalAlignment(SwingConstants.CENTER);
-						btn.setVerticalAlignment(SwingConstants.CENTER);
-						d = btn.getPreferredSize();
-					}
-					
-					if (orientation == SwingConstants.VERTICAL)
-						d = new Dimension(d.width + 2 * BTN_VPAD, d.height + 2 * BTN_HPAD);
-					else
-						d = new Dimension(d.width + 2 * BTN_HPAD, d.height + 2 * BTN_VPAD);
-					
-					btn.setPreferredSize(d);
-					btn.setMinimumSize(d);
-					btn.setMaximumSize(d);
-					btn.setSize(d);
-					btn.addItemListener(evt -> ViewUtil.updateToolBarStyle(btn));
-					btn.addMouseListener(new ContextMenuMouseListener(cytoPanel));
-					ViewUtil.updateToolBarStyle(btn);
-					
-					buttons.add(btn);
-					
-					// Add all buttons to correct button group again
-					if (cytoPanel.getState() == HIDE) {
-						minimizedButtonGroup.add(btn);
-					} else {
-						buttonGroup.add(btn);
+					for (CytoPanelComponent cpc : cpComponents) {
+						final int index = i++;
+						String title = cpc.getTitle();
+						Icon icon = cpc.getIcon();
 						
-						// Restore button selection
-						JToggleButton selBtn = getButton(cytoPanel.getSelectedIndex());
+						if ((title == null || title.trim().isEmpty()) && icon == null)
+							continue;
 						
-						if (selBtn != null)
-							buttonGroup.setSelected(selBtn, true);
-					}
-					
-					int buttonEdge = orientation == SwingConstants.VERTICAL ? d.height : d.width;
-					
-					if (panel != null && SideBar.this.getSize() != null) {
-						int barEdge = orientation == SwingConstants.VERTICAL ?
-								SideBar.this.getSize().height : SideBar.this.getSize().width;
+						Icon buttonIcon = icon;
 						
-						for (TrimStack ts : stacks.values()) {
-							if (ts != this && ts.getSize() != null)
-								barEdge -= orientation == SwingConstants.VERTICAL ?
-										ts.getSize().height : ts.getSize().width;
+						if (buttonIcon == null) {
+							buttonIcon = new TextIcon(
+									"" + title.charAt(0),
+									UIManager.getFont("Button.font").deriveFont(Font.BOLD),
+									CytoPanelUtil.BUTTON_SIZE,
+									CytoPanelUtil.BUTTON_SIZE
+							);
+						} else if (buttonIcon instanceof ImageIcon) {
+							if (showLabels && buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
+								buttonIcon = ViewUtil.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
+							else if (!showLabels && (buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE
+									|| buttonIcon.getIconWidth() > CytoPanelUtil.BUTTON_SIZE))
+								buttonIcon = IconManager.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
 						}
-								
-						if (totalEdge + buttonEdge > barEdge)
-							panel = null;
-					}
-					
-					if (panel == null) {
-						panel = new JPanel();
-						panel.setAlignmentX(cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH ?
-								RIGHT_ALIGNMENT : LEFT_ALIGNMENT);
-						panel.setAlignmentY(TOP_ALIGNMENT);
+	
+						SidebarToggleButton btn = new SidebarToggleButton(cytoPanel, index);
+						btn.setIcon(buttonIcon);
 						
-						BoxLayout layout = new BoxLayout(panel,
-								orientation == SwingConstants.VERTICAL ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS);
-						panel.setLayout(layout);
+						if (showLabels) {
+							if (orientation == SwingConstants.VERTICAL)
+								btn.setUI(new VerticalButtonUI(compassDirection == SwingConstants.EAST));
+							else
+								btn.setUI(new BasicButtonUI());
+						}
 						
-						// When adding more columns/rows of buttons, the first buttons
-						// should be closer to the CytoPanel, which is why the WEST SideBar
-						// adds new columns to the left
-						if (compassDirection == SwingConstants.WEST)
-							add(panel, 0);
+						btn.setToolTipText(title);
+						btn.setAlignmentX(CENTER_ALIGNMENT);
+						
+						Dimension d = btn.getPreferredSize();
+						
+						if (showLabels) {
+							btn.setText(title);
+							btn.setHorizontalAlignment(SwingConstants.CENTER);
+							btn.setVerticalAlignment(SwingConstants.CENTER);
+							d = btn.getPreferredSize();
+						}
+						
+						if (orientation == SwingConstants.VERTICAL)
+							d = new Dimension(d.width + 2 * BTN_VPAD, d.height + 2 * BTN_HPAD);
 						else
-							add(panel);
+							d = new Dimension(d.width + 2 * BTN_HPAD, d.height + 2 * BTN_VPAD);
 						
-						totalEdge = 0;
+						btn.setPreferredSize(d);
+						btn.setMinimumSize(d);
+						btn.setMaximumSize(d);
+						btn.setSize(d);
+						btn.addItemListener(evt -> ViewUtil.updateToolBarStyle(btn));
+						btn.addMouseListener(new ContextMenuMouseListener(cytoPanel));
+						ViewUtil.updateToolBarStyle(btn);
+						
+						buttons.add(btn);
+						
+						// Add all buttons to correct button group again
+						if (cytoPanel.getStateInternal() == MINIMIZE) {
+							minimizedButtonGroup.add(btn);
+						} else {
+							buttonGroup.add(btn);
+							
+							// Restore button selection
+							JToggleButton selBtn = getButton(cytoPanel.getSelectedIndex());
+							
+							if (selBtn != null)
+								buttonGroup.setSelected(selBtn, true);
+						}
+						
+						int buttonEdge = orientation == SwingConstants.VERTICAL ? d.height : d.width;
+						
+						if (panel != null && SideBar.this.getSize() != null) {
+							int barEdge = orientation == SwingConstants.VERTICAL ?
+									SideBar.this.getSize().height : SideBar.this.getSize().width;
+							
+							for (TrimStack ts : stacks.values()) {
+								if (ts != this && ts.getSize() != null)
+									barEdge -= orientation == SwingConstants.VERTICAL ?
+											ts.getSize().height : ts.getSize().width;
+							}
+									
+							if (totalEdge + buttonEdge > barEdge)
+								panel = null;
+						}
+						
+						if (panel == null) {
+							panel = new JPanel();
+							panel.setAlignmentX(cytoPanel.getCytoPanelName() == CytoPanelName.SOUTH ?
+									RIGHT_ALIGNMENT : LEFT_ALIGNMENT);
+							panel.setAlignmentY(TOP_ALIGNMENT);
+							
+							BoxLayout layout = new BoxLayout(panel,
+									orientation == SwingConstants.VERTICAL ? BoxLayout.Y_AXIS : BoxLayout.X_AXIS);
+							panel.setLayout(layout);
+							
+							// When adding more columns/rows of buttons, the first buttons
+							// should be closer to the CytoPanel, which is why the WEST SideBar
+							// adds new columns to the left
+							if (compassDirection == SwingConstants.WEST)
+								add(panel, 0);
+							else
+								add(panel);
+							
+							totalEdge = 0;
+						}
+						
+						totalEdge += buttonEdge;
+						panel.add(btn);
 					}
 					
-					totalEdge += buttonEdge;
-					panel.add(btn);
-				}
-				
-				setVisible(!buttons.isEmpty());
-				
-				if (isVisible()) {
-					if (!showLabels)
-						LookAndFeelUtil.equalizeSize(buttons.toArray(new JComponent[buttons.size()]));
+					setVisible(!buttons.isEmpty());
 					
-					// Align columns/rows of buttons accordingly
-					if (compassDirection == SwingConstants.WEST)
-						add(Box.createHorizontalGlue(), 0);
-					else if (compassDirection == SwingConstants.SOUTH)
-						add(Box.createVerticalGlue());
-					else
-						add(Box.createHorizontalGlue());
-					
-					updateUI();
+					if (isVisible()) {
+						if (!showLabels)
+							LookAndFeelUtil.equalizeSize(buttons.toArray(new JComponent[buttons.size()]));
+						
+						// Align columns/rows of buttons accordingly
+						if (compassDirection == SwingConstants.WEST)
+							add(Box.createHorizontalGlue(), 0);
+						else if (compassDirection == SwingConstants.SOUTH)
+							add(Box.createVerticalGlue());
+						else
+							add(Box.createHorizontalGlue());
+						
+						updateUI();
+					}
+				} finally {
+					updatingTrimStack = false;
 				}
 			}
 			
@@ -1661,31 +1696,48 @@ public class CytoscapeDesktop extends JFrame
 						final String title = cytoPanel.getTitle();
 						{
 							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_DOCK + " " + title);
-							mi.addActionListener(e -> cytoPanel.setState(DOCK));
-							mi.setEnabled(cytoPanel.getState() != DOCK);
+							mi.addActionListener(e -> cytoPanel.setStateInternal(DOCK));
+							mi.setEnabled(cytoPanel.getStateInternal() != DOCK);
+							menu.add(mi);
+						}
+						{
+							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_UNDOCK + " " + title);
+							mi.addActionListener(e -> cytoPanel.setStateInternal(UNDOCK));
+							mi.setEnabled(cytoPanel.getStateInternal() != UNDOCK);
 							menu.add(mi);
 						}
 						{
 							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_FLOAT + " " + title);
-							mi.addActionListener(e -> cytoPanel.setState(FLOAT));
-							mi.setEnabled(cytoPanel.getState() != FLOAT);
+							mi.addActionListener(e -> cytoPanel.setStateInternal(FLOAT));
+							mi.setEnabled(cytoPanel.getStateInternal() != FLOAT);
 							menu.add(mi);
 						}
 						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_HIDE + " " + title);
-							mi.addActionListener(e -> cytoPanel.setState(HIDE));
-							mi.setEnabled(cytoPanel.getState() != HIDE);
+							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_MINIMIZE + " " + title);
+							mi.addActionListener(e -> cytoPanel.setStateInternal(MINIMIZE));
+							mi.setEnabled(cytoPanel.getStateInternal() != MINIMIZE);
 							menu.add(mi);
 						}
+						menu.addSeparator();
 						{
 							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_REMOVE + " " + title);
 							mi.addActionListener(e -> removeCytoPanel(cytoPanel));
-							mi.setEnabled(!cytoPanel.isRemoved());
+							mi.setEnabled(cytoPanel.getStateInternal() != HIDE);
 							menu.add(mi);
 						}
-						
-						menu.addSeparator();
+					} else {
+						for (CytoPanelImpl cp : getAllCytoPanels()) {
+							CytoPanelStateInternal state = cp.getStateInternal();
+							
+							JMenuItem mi = new JCheckBoxMenuItem("Show " + cp.getTitle());
+							mi.addActionListener(e -> cp.setStateInternal(state == HIDE ? DOCK : HIDE));
+							mi.setSelected(state != HIDE);
+							mi.setEnabled(cp.getThisComponent() != null && cp.getCytoPanelComponentCount() > 0);
+							menu.add(mi);
+						}
 					}
+					
+					menu.addSeparator();
 					{
 						JMenuItem mi = new JCheckBoxMenuItem("Show Labels");
 						mi.addActionListener(e -> setShowSideBarLabels(mi.isSelected()));
@@ -1727,13 +1779,13 @@ public class CytoscapeDesktop extends JFrame
 		
 		@Override
 		public String toString() {
-			return getText();
+			return index +  ": '" + getText() + "'";
 		}
 	}
 	
 	private class ComponentPopup extends JRootPane {
 		
-		private static final int BORDER_WIDTH = 5;
+		private static final int BORDER_WIDTH = ViewUtil.DIVIDER_SIZE;
 		private static final int MIN_SIZE = 100 + BORDER_WIDTH;
 		
 		// Border widths: Top, Left, Bottom. Right
@@ -1782,9 +1834,6 @@ public class CytoscapeDesktop extends JFrame
 			
 			Component c = cytoPanel.getThisComponent();
 			getContentPane().add(c, BorderLayout.CENTER);
-			
-			if (!c.isVisible())
-				c.setVisible(true);
 			
 			c.revalidate();
 			c.repaint();
@@ -2078,8 +2127,8 @@ public class CytoscapeDesktop extends JFrame
 			
 			PANELS_LOOP:
 			for (CytoPanelImpl cp : getAllCytoPanels()) {
-				if (cp.getState() != HIDE)
-					continue; 
+				if (cp.getStateInternal() != MINIMIZE && cp.getStateInternal() != UNDOCK)
+					continue;
 				
 				SideBar.TrimStack ts = getTrimStackOf(cp);
 				
@@ -2102,12 +2151,21 @@ public class CytoscapeDesktop extends JFrame
 
 			// No need to dispose when over a sidebar button for a hidden panel,
 			// since the button click will do it
-			if (!overButton) {
-				disposeComponentPopup();
-
-				isAdjusting = true;
-				minimizedButtonGroup.clearSelection();
-				isAdjusting = false;
+			if (!overButton && popup != null) {
+				if (popup.getCytoPanel() != null && popup.getCytoPanel().getStateInternal() != MINIMIZE) {
+					popup.getCytoPanel().setStateInternal(MINIMIZE);
+				} else {
+					// This should not happen, but just in case we need to force-dispose the popup...
+					disposeComponentPopup();
+					AbstractButton btn = minimizedButtonGroup.getSelectedButton();
+					
+					if (btn != null)
+						btn.setSelected(false);
+					
+					isAdjusting = true;
+					minimizedButtonGroup.clearSelection();
+					isAdjusting = false;
+				}
 			}
 		}
 	}
