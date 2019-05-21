@@ -43,10 +43,6 @@ import javax.swing.ButtonModel;
 @SuppressWarnings("serial")
 public class ToggleableButtonGroup extends ButtonGroup {
 	
-	/**
-	 * Stores a reference to the currently selected button in the group.
-	 */
-	private AbstractButton selectedButton;
 	/** Only used when toggleable is true. */
 	private ButtonModel lastModel;
 	private boolean toggleable;
@@ -70,12 +66,8 @@ public class ToggleableButtonGroup extends ButtonGroup {
 		
 		super.add(button);
 		
-		if (getSelection() == button.getModel()) {
-			selectedButton = button;
-			
-			if (toggleable)
-				lastModel = button.getModel();
-		}
+		if (getSelection() == button.getModel() && toggleable)
+			lastModel = button.getModel();
 	}
 
 	/**
@@ -95,9 +87,6 @@ public class ToggleableButtonGroup extends ButtonGroup {
 		if (button == null || !buttons.contains(button))
 			return;
 		
-		if (selectedButton == button)
-			selectedButton = null;
-
 		if (toggleable && lastModel == button.getModel())
 			lastModel = null;
 
@@ -122,12 +111,8 @@ public class ToggleableButtonGroup extends ButtonGroup {
 	 * @param selected an <code>boolean</code> representing the selection state of the button
 	 */
 	public void setSelected(AbstractButton button, boolean selected) {
-		if (button != null && buttons.contains(button)) {
+		if (button != null && buttons.contains(button))
 			setSelected(button.getModel(), selected);
-			
-			if (getSelection() == button.getModel())
-				selectedButton = button;
-		}
 	}
 
 	@Override
@@ -171,8 +156,8 @@ public class ToggleableButtonGroup extends ButtonGroup {
 	 * @return a reference to the currently selected button in the group or
 	 *         <code>null</code> if no button is selected
 	 */
-	public AbstractButton getSelected() {
-		return selectedButton;
+	public AbstractButton getSelectedButton() {
+		return getSelection() != null ? getButton(getSelection()) : null;
 	}
 
 	/**
@@ -181,7 +166,7 @@ public class ToggleableButtonGroup extends ButtonGroup {
 	 * @return <code>true</code> if the button is selected, <code>false</code>otherwise
 	 */
 	public boolean isSelected(AbstractButton button) {
-		return button == selectedButton;
+		return button.getModel() == getSelection();
 	}
 
 	/**
