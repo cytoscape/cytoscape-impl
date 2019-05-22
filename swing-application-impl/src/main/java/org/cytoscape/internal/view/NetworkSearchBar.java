@@ -3,10 +3,10 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.internal.util.ViewUtil.DEFAULT_PROVIDER_PROP_KEY;
-import static org.cytoscape.internal.util.ViewUtil.getViewProperty;
-import static org.cytoscape.internal.util.ViewUtil.hasVisibleOwnedWindows;
-import static org.cytoscape.internal.util.ViewUtil.setViewProperty;
+import static org.cytoscape.internal.view.util.ViewUtil.DEFAULT_PROVIDER_PROP_KEY;
+import static org.cytoscape.internal.view.util.ViewUtil.getViewProperty;
+import static org.cytoscape.internal.view.util.ViewUtil.hasVisibleOwnedWindows;
+import static org.cytoscape.internal.view.util.ViewUtil.setViewProperty;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -768,15 +768,17 @@ public class NetworkSearchBar extends JPanel {
 					// If the a component in the Options popup opens another dialog, the Options one
 					// loses focus, but we don't want it to be disposed.
 					if (!hasVisibleOwnedWindows(OptionsDialog.this)) {
-						// If cursor is over the options button, set the toggle button to not-selected
-						// to prevent it from opening the dialog again right after its disposed
-						Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
-						Point buttonLoc = getOptionsButton().getLocationOnScreen();
-						mouseLoc.x -= buttonLoc.x;
-						mouseLoc.y -= buttonLoc.y;
-						
-						if (!getOptionsButton().contains(mouseLoc))
-							getOptionsButton().setSelected(false);
+						if (isShowing() && getOptionsButton().isShowing()) {
+							// If cursor is over the options button, set the toggle button to not-selected
+							// to prevent it from opening the dialog again right after its disposed
+							Point mouseLoc = MouseInfo.getPointerInfo().getLocation();
+							Point buttonLoc = getOptionsButton().getLocationOnScreen();
+							mouseLoc.x -= buttonLoc.x;
+							mouseLoc.y -= buttonLoc.y;
+							
+							if (!getOptionsButton().contains(mouseLoc))
+								getOptionsButton().setSelected(false);
+						}
 						
 						// Dispose
 						disposeOptionsDialog();

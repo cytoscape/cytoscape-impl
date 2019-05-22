@@ -1,6 +1,6 @@
 package org.cytoscape.internal.layout.ui;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -14,7 +14,7 @@ import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.ActionEnableSupport;
 import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkViewManager;

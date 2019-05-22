@@ -4,7 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static org.cytoscape.util.swing.LookAndFeelUtil.createPanelBorder;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
@@ -143,6 +142,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** GroupAnnotation icon when expanded */
 	private Icon openAnnotationIcon;
 	
+	/** Tab icon */
+	private TextIcon icon;
+	
 	private DGraphView view;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -195,7 +197,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null) {
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			icon = new TextIcon(IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_2, font, 16, 16);
+		}
+		
+		return icon;
 	}
 	
 	@Override
@@ -522,7 +529,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -541,7 +547,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
-			buttonPanel.setBorder(createPanelBorder());
+			buttonPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			
 			if (isAquaLAF())
 				buttonPanel.setOpaque(false);

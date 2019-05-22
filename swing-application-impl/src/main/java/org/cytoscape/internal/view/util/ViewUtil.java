@@ -1,18 +1,23 @@
-package org.cytoscape.internal.util;
+package org.cytoscape.internal.view.util;
 
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.awt.image.BufferedImage;
 import java.util.Properties;
 import java.util.function.Consumer;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -21,6 +26,7 @@ import javax.swing.JToggleButton;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyEdge;
@@ -44,7 +50,7 @@ import org.slf4j.Logger;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -64,12 +70,17 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	public static final int DIVIDER_SIZE = 5;
+	
 	public static final String CY_PROPERTY_NAME = "(cyPropertyName=cytoscape3.props)";
 	public static final String SHOW_NODE_EDGE_COUNT_KEY = "showNodeEdgeCount";
 	public static final String SHOW_NETWORK_PROVENANCE_HIERARCHY_KEY = "showNetworkProvenanceHierarchy";
 	public static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
+	public static final Border DESELECTED_TOGLLE_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+	public static final Border SELECTED_TOGLLE_BORDER = DESELECTED_TOGLLE_BORDER;
 	
 	public static String getName(final CyNetwork network) {
 		String name = "";
@@ -165,6 +176,12 @@ public final class ViewUtil {
 		if (font != null)
 			btn.setFont(font);
 		
+		// Decrease the padding, because it will have a border
+//		if (btn instanceof JToggleButton) {
+//			hPad = Math.max(0, hPad - 4);
+//			vPad = Math.max(0, vPad - 4);
+//		}
+		
 		btn.setFocusPainted(false);
 		btn.setFocusable(false);
 		btn.setBorder(BorderFactory.createEmptyBorder());
@@ -174,16 +191,23 @@ public final class ViewUtil {
 		btn.setVerticalTextPosition(SwingConstants.TOP);
 		
 		if (hPad > 0 || vPad > 0) {
-			final Dimension d = btn.getPreferredSize();
-			btn.setPreferredSize(new Dimension(d.width + 2 * hPad, d.height + 2 * vPad));
+			Dimension d = btn.getPreferredSize();
+			d = new Dimension(d.width + 2 * hPad, d.height + 2 * vPad);
+			btn.setPreferredSize(d);
+			btn.setMinimumSize(d);
+			btn.setMaximumSize(d);
+			btn.setSize(d);
 		}
 		
-		if (btn instanceof JToggleButton)
+		if (btn instanceof JToggleButton) {
+			btn.addItemListener(evt -> updateToolBarStyle((JToggleButton) btn));
 			updateToolBarStyle((JToggleButton) btn);
+		}
 	}
 	
 	public static void updateToolBarStyle(final JToggleButton btn) {
 		if (btn.isEnabled()) {
+			btn.setBorder(btn.isSelected() ? SELECTED_TOGLLE_BORDER : DESELECTED_TOGLLE_BORDER);
 			btn.setBackground(
 					btn.isSelected() ?
 					UIManager.getColor("ToggleButton.selectedBackground") :
@@ -193,7 +217,9 @@ public final class ViewUtil {
 					UIManager.getColor("ToggleButton.selectedForeground") :
 					UIManager.getColor("ToggleButton.unselectedForeground"));
 		} else {
+			btn.setBorder(DESELECTED_TOGLLE_BORDER);
 			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
+			btn.setBackground(UIManager.getColor("ToggleButton.unselectedBackground"));
 		}
 	}
 	
@@ -202,6 +228,26 @@ public final class ViewUtil {
 		sep.setForeground(UIManager.getColor("Separator.foreground"));
 		
 		return sep;
+	}
+	
+	public static Icon resizeIcon(Icon icon, int maxHeight) {
+		final int height = icon.getIconHeight(), width = icon.getIconWidth();
+
+		if (height <= maxHeight)
+			return icon;
+
+		int newHeight = maxHeight;
+		int newWidth = (int) Math.round(width * (newHeight / (float) height));
+
+		BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Graphics2D g = img.createGraphics();
+		icon.paintIcon(null, g, 0, 0);
+		g.dispose();
+
+		Image resizedImage = img.getScaledInstance(newWidth, newHeight, Image.SCALE_SMOOTH);
+		ImageIcon resizedIcon = new ImageIcon(resizedImage);
+		
+		return resizedIcon;
 	}
 	
 	public static String getViewProperty(final String key, final CyServiceRegistrar serviceRegistrar) {

@@ -17,6 +17,7 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.io.util.RecentlyOpenedTracker;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -39,6 +40,7 @@ public class CytoscapeDesktopTest {
 	@Mock DialogTaskManager taskMgr;
 	@Mock StatusBarPanelFactory taskStatusPanelFactory;
 	@Mock RecentlyOpenedTracker fileTracker;
+	@Mock CyProperty<Properties> cyProps;
 	@Mock IconManager icoMgr;
 	
 	@Before
@@ -49,6 +51,10 @@ public class CytoscapeDesktopTest {
 		when(registrar.getService(DialogTaskManager.class)).thenReturn(taskMgr);
 		when(registrar.getService(RecentlyOpenedTracker.class)).thenReturn(fileTracker);
 		when(registrar.getService(IconManager.class)).thenReturn(icoMgr);
+		when(registrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)")).thenReturn(cyProps);
+		
+		final Properties props = new Properties();
+		when(cyProps.getProperties()).thenReturn(props);
 		
 		final JPanel panel = new JPanel();
 		when(taskStatusPanelFactory.createTaskStatusPanel()).thenReturn(panel);

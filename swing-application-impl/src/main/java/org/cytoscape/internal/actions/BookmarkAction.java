@@ -7,7 +7,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.dialogs.BookmarkDialog;
 import org.cytoscape.internal.dialogs.BookmarkDialogFactory;
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 
 /*
  * #%L
