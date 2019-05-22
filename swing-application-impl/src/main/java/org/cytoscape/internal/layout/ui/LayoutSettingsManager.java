@@ -11,6 +11,7 @@ import org.cytoscape.property.AbstractConfigDirPropsReader;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
+import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.work.properties.TunablePropertySerializer;
 import org.cytoscape.work.properties.TunablePropertySerializerFactory;
 import org.cytoscape.work.swing.PanelTaskManager;
@@ -44,6 +45,7 @@ import org.slf4j.LoggerFactory;
 public class LayoutSettingsManager {
 
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	private static final String LAYOUT_ATTRIBUTE_PROP = "cy.layoutAttribute";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -57,9 +59,7 @@ public class LayoutSettingsManager {
 	}
 	
 	public void addLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {
-		executorService.execute(() -> {
-			restoreLayoutContext(layout);
-		}); 
+		executorService.execute(() -> restoreLayoutContext(layout)); 
     }
     
     public void removeLayout(final CyLayoutAlgorithm layout, Map<?,?> props) {
@@ -74,11 +74,15 @@ public class LayoutSettingsManager {
 	        
 			if (!propsBefore.isEmpty()) {
 	            // use the Properties to restore the values of the Tunable fields
-	        	final TunablePropertySerializerFactory serializerFactory =
-	        			serviceRegistrar.getService(TunablePropertySerializerFactory.class);
-	        	final TunablePropertySerializer serializer = serializerFactory.createSerializer();
+				TunablePropertySerializerFactory serializerFactory = serviceRegistrar.getService(TunablePropertySerializerFactory.class);
+				TunablePropertySerializer serializer = serializerFactory.createSerializer();
 	            serializer.setTunables(layoutContext, propsBefore);
 	        }
+			
+			CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+			String layoutAttribute = propsBefore.getProperty(LAYOUT_ATTRIBUTE_PROP);
+	    	layoutManager.setLayoutAttribute(layout, layoutAttribute);
+	    	
     	} catch (Exception e) {
     		logger.error("Error restoring layout settings for '" + layout.getName() + "'", e);
     	}
@@ -89,10 +93,14 @@ public class LayoutSettingsManager {
 	    	Object layoutContext = layout.getDefaultLayoutContext();
 	    	taskMgr.validateAndApplyTunables(layoutContext);
 	    	
-	    	final TunablePropertySerializerFactory serializerFactory =
-        			serviceRegistrar.getService(TunablePropertySerializerFactory.class);
-	    	final TunablePropertySerializer serializer = serializerFactory.createSerializer();
-	    	final Properties layoutProps = serializer.toProperties(layoutContext);
+	    	CyLayoutAlgorithmManager layoutManager = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+	    	String layoutAttribute = layoutManager.getLayoutAttribute(layout, null);
+	    	
+	    	TunablePropertySerializerFactory serializerFactory = serviceRegistrar.getService(TunablePropertySerializerFactory.class);
+	    	TunablePropertySerializer serializer = serializerFactory.createSerializer();
+	    	Properties layoutProps = serializer.toProperties(layoutContext);
+	    	if(layoutAttribute != null)
+	    		layoutProps.put(LAYOUT_ATTRIBUTE_PROP, layoutAttribute);
 	    	
 	    	// No need to save empty props
 	    	if(!layoutProps.isEmpty()) {

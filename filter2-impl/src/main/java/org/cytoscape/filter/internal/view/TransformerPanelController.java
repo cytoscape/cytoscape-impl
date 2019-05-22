@@ -143,7 +143,7 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 
 	@Override
 	protected String getCreateMenuLabel() {
-		return "Create new filter chain";
+		return "New filter chain";
 	}
 	
 	@Override
@@ -154,6 +154,11 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 	@Override
 	protected String getRenameMenuLabel() {
 		return "Rename current filter chain";
+	}
+	
+	@Override
+	protected String getCopyMenuLabel() {
+		return "Copy current filter chain";
 	}
 	
 	@Override
@@ -286,12 +291,22 @@ public class TransformerPanelController extends AbstractPanelController<Transfor
 			if (element.getChain() == null) {
 				continue;
 			}
-			
-			Transformer<CyNetwork, CyIdentifiable>[] transformers = element.getChain().toArray(new Transformer[element.getChain().size()]);
-			namedTransformers[i] = (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
+			namedTransformers[i] = toNamedController(element);
 			i++;
 		}
 		return namedTransformers;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private NamedTransformer<CyNetwork, CyIdentifiable> toNamedController(TransformerElement element) {
+		Transformer<CyNetwork, CyIdentifiable>[] transformers = element.getChain().toArray(new Transformer[element.getChain().size()]);
+		return (NamedTransformer<CyNetwork, CyIdentifiable>) ModelUtil.createNamedTransformer(element.name, transformers);
+	}
+	
+	@Override
+	public NamedTransformer<CyNetwork, CyIdentifiable> getSelectedNamedTransformer() {
+		DynamicComboBoxModel<TransformerElement> model = getElementComboBoxModel();
+		return toNamedController(model.getSelectedItem());
 	}
 	
 	@Override

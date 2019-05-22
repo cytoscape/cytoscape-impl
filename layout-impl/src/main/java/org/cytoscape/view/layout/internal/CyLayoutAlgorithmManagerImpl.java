@@ -2,22 +2,25 @@ package org.cytoscape.view.layout.internal;
 
 import static org.cytoscape.work.ServiceProperties.COMMAND;
 import static org.cytoscape.work.ServiceProperties.COMMAND_DESCRIPTION;
+import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 import static org.cytoscape.work.ServiceProperties.COMMAND_NAMESPACE;
 import static org.cytoscape.work.ServiceProperties.COMMAND_SUPPORTS_JSON;
-import static org.cytoscape.work.ServiceProperties.COMMAND_EXAMPLE_JSON;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.layout.internal.task.LayoutTaskFactoryWrapper;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
 
@@ -52,15 +55,16 @@ import org.cytoscape.work.TaskFactory;
 public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 
 	private final Map<String, CyLayoutAlgorithm> layoutMap;
+	private final Map<String, String> layoutAttributeMap;
 	private final Map<String, TaskFactory> serviceMap;
 	private final CyServiceRegistrar serviceRegistrar;
 	private CyApplicationManager appManager;
 	private CyNetworkViewManager viewManager;
 
-	public CyLayoutAlgorithmManagerImpl(final CyLayoutAlgorithm defaultLayout,
-			final CyServiceRegistrar serviceRegistrar) {
+	public CyLayoutAlgorithmManagerImpl(final CyLayoutAlgorithm defaultLayout, final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		layoutMap = new ConcurrentHashMap<>(16, 0.75f, 2);
+		layoutAttributeMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 		serviceMap = new ConcurrentHashMap<>(16, 0.75f, 2);
 
 		// Get some services that we'll need.  
@@ -174,5 +178,37 @@ public class CyLayoutAlgorithmManagerImpl implements CyLayoutAlgorithmManager {
 	@SuppressWarnings("unchecked")
 	private CyProperty<Properties> getCoreCyProperty() {
 		return serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+	}
+	
+	@Override
+	public String getLayoutAttribute(CyLayoutAlgorithm layout, CyNetworkView view) {
+		String attribute = layoutAttributeMap.get(layout.getName());
+		if(attribute == null || attribute.isEmpty())
+			return "";
+		if(view == null)
+			return attribute;
+		
+		Set<Class<?>> edgeTypes = layout.getSupportedEdgeAttributeTypes();
+		Set<Class<?>> nodeTypes = layout.getSupportedNodeAttributeTypes();
+		
+		// If there are edge types then that overrides any node types.
+		CyTable tableToCheck = null;
+		if(edgeTypes != null && !edgeTypes.isEmpty())
+			tableToCheck = view.getModel().getDefaultEdgeTable();
+		else if(nodeTypes != null && !nodeTypes.isEmpty())
+			tableToCheck = view.getModel().getDefaultNodeTable();
+		
+		if(tableToCheck == null || tableToCheck.getColumn(attribute) == null)
+			return "";
+		
+		return attribute;
+	}
+	
+	@Override
+	public void setLayoutAttribute(CyLayoutAlgorithm layout, String layoutAttribute) {
+		if(layoutAttribute == null)
+			layoutAttributeMap.remove(layout.getName());
+		else
+			layoutAttributeMap.put(layout.getName(), layoutAttribute);
 	}
 }

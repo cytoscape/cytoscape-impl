@@ -34,13 +34,14 @@ import java.util.Map;
 
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteProvider;
 import org.cytoscape.util.color.PaletteType;
 
 public class AbstractDivergingPalette extends AbstractPalette {
 	protected Color[] colors;
 
-	AbstractDivergingPalette(String name, Color[] colors, boolean cbs) {
-		super(name, colors.length, (PaletteType)BrewerType.DIVERGING, cbs);
+	AbstractDivergingPalette(PaletteProvider provider, String name, Color[] colors, boolean cbs) {
+		super(provider, name, colors.length, (PaletteType)BrewerType.DIVERGING, cbs);
 		this.colors = colors;
 	}
 

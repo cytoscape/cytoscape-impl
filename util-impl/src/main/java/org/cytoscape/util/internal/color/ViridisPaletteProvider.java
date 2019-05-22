@@ -79,7 +79,7 @@ public class ViridisPaletteProvider implements PaletteProvider {
 	public Palette getPalette(String paletteName, int size) {
 		for (String name: paletteMap.keySet()) {
 			if (name.equalsIgnoreCase(paletteName))
-				return new PaletteWrapper(paletteMap.get(name), size);
+				return new PaletteWrapper(this, paletteMap.get(name), size);
 		}
 		return null;
 	}
@@ -91,7 +91,7 @@ public class ViridisPaletteProvider implements PaletteProvider {
 	public Palette getPalette(Object paletteIdentifier, int size) {
 		for (Viridis cb: paletteMap.values()) {
 			if (paletteIdentifier.equals(cb))
-				return new PaletteWrapper(cb, size);
+				return new PaletteWrapper(this, cb, size);
 		}
 		return null;
 	}
@@ -103,11 +103,13 @@ public class ViridisPaletteProvider implements PaletteProvider {
 		Viridis palette;
 		PaletteType type;
 		int size;
-		public PaletteWrapper(Viridis cbPalette, int size) {
+		PaletteProvider provider;
+		public PaletteWrapper(final PaletteProvider provider, Viridis cbPalette, int size) {
 			this.palette = cbPalette;
 			if (size < 0) size = cbPalette.getColors().length;
 			this.size = size;
 			this.type = BrewerType.SEQUENTIAL;
+			this.provider = provider;
 		}
 
 		public String getName() { return palette.getDescription(); }
@@ -131,5 +133,7 @@ public class ViridisPaletteProvider implements PaletteProvider {
 		}
 
 		public String toString() { return "Viridis "+getName(); }
+
+		public PaletteProvider getPaletteProvider() { return provider; }
 	}
 }

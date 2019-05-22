@@ -86,14 +86,17 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 	private PaletteType paletteType;
 	private List<Palette> palettes;
 	private boolean paletteOnly;
+	private int paletteSize;
 
-	public ColorPaletteProviderPanel(PaletteProvider provider, PaletteType type, boolean paletteOnly) {
+	public ColorPaletteProviderPanel(PaletteProvider provider, PaletteType type, 
+	                                 int size, boolean paletteOnly) {
 		this.provider = provider;
 		this.paletteType = type;
 		this.paletteOnly = paletteOnly;
+		this.paletteSize = size;
 		palettes = new ArrayList<>();
 		for (Object paletteId: provider.listPaletteIdentifiers(type, false)) {
-			palettes.add(provider.getPalette(paletteId));
+			palettes.add(provider.getPalette(paletteId, size));
 		}
 	}
 
@@ -102,8 +105,8 @@ public class ColorPaletteProviderPanel extends ColorBlindAwareColorChooserPanel
 		JPanel panel = new JPanel();
 		BoxLayout layout = new BoxLayout(panel, BoxLayout.Y_AXIS);
 		panel.setLayout(layout);
-		Color colors[] = palette.getColors(9);
-		for (int colorIndex = 0; colorIndex < 9; colorIndex++) {
+		Color colors[] = palette.getColors(paletteSize);
+		for (int colorIndex = 0; colorIndex < paletteSize; colorIndex++) {
 			JButton colorButton = new JButton();
 			colorButton.setActionCommand(palette.getName()+":"+String.valueOf(colors[colorIndex].getRGB()));
 			colorButton.addActionListener(this);

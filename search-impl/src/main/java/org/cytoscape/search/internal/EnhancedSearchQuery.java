@@ -2,25 +2,22 @@ package org.cytoscape.search.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.queryParser.QueryParser;
 import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.search.internal.util.AttributeFields;
+import org.cytoscape.search.internal.util.CaseInsensitiveWhitespaceAnalyzer;
 import org.cytoscape.search.internal.util.CustomMultiFieldQueryParser;
 import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.slf4j.Logger;
@@ -56,7 +53,7 @@ public class EnhancedSearchQuery {
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;
-	private IdentifiersCollector hitCollector;
+	private SearchResults results;
 	private Searcher searcher;
 
 	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index) {
@@ -89,65 +86,30 @@ public class EnhancedSearchQuery {
 	 * attributeName), search is carried out on all attribute fields. This
 	 * functionality is enabled with the use of MultiFieldQueryParser.
 	 */
-	private void search(final String queryString, final AttributeFields attFields) throws IOException {
+	private void search(String queryString, AttributeFields attFields) {
 		// Build a Query object.
 		// CustomMultiFieldQueryParser is used to support range queries on numerical attribute fields.
-		final CustomMultiFieldQueryParser queryParser =
-			new CustomMultiFieldQueryParser(attFields, new StandardAnalyzer(Version.LUCENE_30, Collections.emptySet()));
+		QueryParser queryParser = new CustomMultiFieldQueryParser(attFields, new CaseInsensitiveWhitespaceAnalyzer());
 
+		SearchResults results;
 		try {
 			// Execute query
 			Query query = queryParser.parse(queryString);
-			hitCollector = new IdentifiersCollector(searcher);
+			IdentifiersCollector hitCollector = new IdentifiersCollector(searcher);
 			searcher.search(query, hitCollector);		    
-		} catch (final ParseException pe) {
-			// Parse exceptions occur when colon appear in the query in an
-			// unexpected location, e.g. when attribute or value are
-			// missing in the query. In such case, the hitCollector variable will be null.
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(null, pe.getMessage(), "Invalid query.", JOptionPane.ERROR_MESSAGE);
-			});
-		} catch (final Exception e) {
-			// Other types of exception may occur
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(null, e.getMessage(), "Query execution error.",
-						JOptionPane.ERROR_MESSAGE);
-			});
-		}			
-	}
-
-	// hitCollector object may be null if this method is called before
-	// executeQuery
-	public int getNodeHitCount() {
-		if (hitCollector != null) {
-			return hitCollector.getNodeHitCount();
-		} else {
-			return 0;
+			results = SearchResults.results(hitCollector.getNodeHits(), hitCollector.getEdgeHits());
+		} catch (ParseException pe) {
+			//int column = pe.currentToken.next.beginColumn;
+			results = SearchResults.syntaxError();
+		} catch (Exception e) {
+			results = SearchResults.fatalError();
+			logger.error(e.getMessage(), e);
 		}
-	}
-	public int getEdgeHitCount() {
-		if (hitCollector != null) {
-			return hitCollector.getEdgeHitCount();
-		} else {
-			return 0;
-		}
-	}
-
-	// hitCollector object may be null if this method is called before ExecuteQuery
-	public ArrayList<String> getNodeHits() {
-		if (hitCollector != null) {
-			return hitCollector.getNodeHits();
-		} else {
-			return null;
-		}
+		this.results = results;
 	}
 	
-	public ArrayList<String> getEdgeHits() {
-		if (hitCollector != null) {
-			return hitCollector.getEdgeHits();
-		} else {
-			return null;
-		}
+	public SearchResults getResults() {
+		return results;
 	}
 }
 
@@ -155,8 +117,8 @@ class IdentifiersCollector extends Collector {
 
 	private Searcher searcher;
 
-	public ArrayList<String> nodeHitsIdentifiers = new ArrayList<>();
-	public ArrayList<String> edgeHitsIdentifiers = new ArrayList<>();
+	public List<String> nodeHitsIdentifiers = new ArrayList<>();
+	public List<String> edgeHitsIdentifiers = new ArrayList<>();
 
 	public IdentifiersCollector(Searcher searcher) {
 		this.searcher = searcher;
@@ -169,10 +131,10 @@ class IdentifiersCollector extends Collector {
 		return edgeHitsIdentifiers.size();
 	}
 
-	public ArrayList<String> getNodeHits() {
+	public List<String> getNodeHits() {
 		return nodeHitsIdentifiers;
 	}
-	public ArrayList<String> getEdgeHits() {
+	public List<String> getEdgeHits() {
 		return edgeHitsIdentifiers;
 	}
 

@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.cytoscape.filter.internal.view.AbstractPanel;
 import org.cytoscape.filter.internal.view.AbstractPanelController;
@@ -48,23 +50,29 @@ public class FilterIO {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	public void readTransformers(File file, AbstractPanel<?,?> panel) throws IOException {
+		readTransformers(new FileInputStream(file), panel);
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void readTransformers(File file, AbstractPanel panel) throws IOException {
-		try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))) {
+	public void readTransformers(InputStream in, AbstractPanel panel) throws IOException {
+		NamedTransformer<CyNetwork, CyIdentifiable>[] transformers;
+		try(BufferedInputStream stream = new BufferedInputStream(in)) {
 			CyTransformerReader reader = serviceRegistrar.getService(CyTransformerReader.class);
-			NamedTransformer<CyNetwork, CyIdentifiable>[] transformers = 
-					(NamedTransformer<CyNetwork, CyIdentifiable>[]) reader.read(stream);
-			
-			AbstractPanelController controller = panel.getController();
-			controller.addNamedTransformers(panel, transformers);
+			transformers = (NamedTransformer<CyNetwork, CyIdentifiable>[]) reader.read(stream);
 		}
+		AbstractPanelController controller = panel.getController();
+		controller.addNamedTransformers(panel, transformers);
 	}
 
-	public void writeFilters(File file, NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers)
-			throws IOException {
-		BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(file));
-		CyTransformerWriter writer = serviceRegistrar.getService(CyTransformerWriter.class);
-		writer.write(stream, namedTransformers);
-		stream.close();
+	public void writeFilters(File file, NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers) throws IOException {
+		writeFilters(new FileOutputStream(file), namedTransformers);
+	}
+	
+	public void writeFilters(OutputStream out, NamedTransformer<CyNetwork, CyIdentifiable>[] namedTransformers) throws IOException {
+		try(BufferedOutputStream stream = new BufferedOutputStream(out)) {
+			CyTransformerWriter writer = serviceRegistrar.getService(CyTransformerWriter.class);
+			writer.write(stream, namedTransformers);
+		}
 	}
 }

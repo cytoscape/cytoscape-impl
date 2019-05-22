@@ -54,8 +54,7 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 	}
 
 	public ApplyPreferredLayoutTask(CyServiceRegistrar serviceRegistrar) {
-		this(Collections.singletonList(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()),
-				serviceRegistrar);
+		this(Collections.singletonList(serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView()), serviceRegistrar);
 	}
 
 	@Override
@@ -79,9 +78,9 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		for (final CyNetworkView view : views) {
 			if (layout != null) {
 				//clearEdgeBends(view);
-				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
-						CyLayoutAlgorithm.ALL_NODE_VIEWS, "");
-				
+				String layoutAttribute = layoutMgr.getLayoutAttribute(layout, view);
+				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), 
+						CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute);
 				if (itr != null) // For unit tests...
 					insertTasksAfterCurrentTask(itr);
 			} else {
@@ -94,6 +93,8 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 
 		tm.setProgress(1.0);
 	}
+	
+	
 	
 	@SuppressWarnings({"rawtypes"})
 	public Object getResults(Class type) {

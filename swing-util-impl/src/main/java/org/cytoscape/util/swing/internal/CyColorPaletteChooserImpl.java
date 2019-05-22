@@ -112,6 +112,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
                           final Palette initialPalette, final Color initialColor, int colorCount) {
 
 		paletteOnly = false;
+		if (colorCount < 1) colorCount = 9;
 		init(parent, title, initialPalette, initialColor, colorCount);
 		if (showDialog())
 			return getSelectedColor();
@@ -124,6 +125,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
                             final Palette initialPalette, int colorCount) {
 
 		paletteOnly = true;
+		if (colorCount < 1) colorCount = 9;
 		init(parent, title, initialPalette, null, colorCount);
 		if (showDialog())
 			return getSelectedPalette();
@@ -183,7 +185,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 		// Get the list of palettes
 		List<PaletteProvider> providers = getPaletteProviders(false);
-		palettePanels = getPanels(providers);
+		palettePanels = getPanels(providers, colorCount);
 
 		// overwrite the color chooser panels
 		if (paletteOnly) {
@@ -390,11 +392,11 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		return paletteManager.getPaletteProviders(paletteType, colorBlindOnly);
 	}
 
-	private ColorPaletteProviderPanel[] getPanels(List<PaletteProvider> providers) {
+	private ColorPaletteProviderPanel[] getPanels(List<PaletteProvider> providers, int size) {
 		ColorPaletteProviderPanel[] panels = new ColorPaletteProviderPanel[providers.size()];
 		int i = 0;
 		for (PaletteProvider provider: providers) {
-			panels[i++] = new ColorPaletteProviderPanel(provider, paletteType, paletteOnly);
+			panels[i++] = new ColorPaletteProviderPanel(provider, paletteType, size, paletteOnly);
 		}
 		return panels;
 	}

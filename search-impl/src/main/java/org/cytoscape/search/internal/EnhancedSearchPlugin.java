@@ -32,6 +32,8 @@ import org.cytoscape.application.swing.AbstractToolBarComponent;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.events.ColumnDeletedEvent;
 import org.cytoscape.model.events.ColumnDeletedListener;
+import org.cytoscape.model.events.ColumnNameChangedEvent;
+import org.cytoscape.model.events.ColumnNameChangedListener;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedEvent;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RemovedEdgesEvent;
@@ -49,7 +51,7 @@ import org.cytoscape.session.events.SessionLoadedListener;
 public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	implements SetCurrentNetworkViewListener, NetworkAboutToBeDestroyedListener,
 	           SessionLoadedListener,RowsSetListener, ColumnDeletedListener, RemovedNodesListener,
-	           RemovedEdgesListener {
+	           RemovedEdgesListener, ColumnNameChangedListener {
 	
 	private final EnhancedSearchManager searchMgr;
 	private final EnhancedSearchPanel searchPnl; 
@@ -97,8 +99,13 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	}
 	
 	@Override
+	public void handleEvent(ColumnNameChangedEvent e) {
+		attributeChanged = true;
+	}
+	
+	@Override
 	public void handleEvent(RowsSetEvent e) {
-		if(e.containsColumn(CyNetwork.SELECTED)) {
+		if(!e.containsColumn(CyNetwork.SELECTED)) {
 			attributeChanged = true;
 		}
 	}
@@ -112,4 +119,5 @@ public class EnhancedSearchPlugin extends AbstractToolBarComponent
 	public void handleEvent(RemovedEdgesEvent e) {
 		attributeChanged = true;
 	}
+
 }

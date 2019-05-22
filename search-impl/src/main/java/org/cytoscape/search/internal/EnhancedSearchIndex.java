@@ -27,58 +27,49 @@ package org.cytoscape.search.internal;
 
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.NumericField;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.store.RAMDirectory;
-import org.apache.lucene.util.Version;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.search.internal.util.CaseInsensitiveWhitespaceAnalyzer;
 import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.cytoscape.work.TaskMonitor;
 
 
 public class EnhancedSearchIndex {
-	RAMDirectory idx;
-	final TaskMonitor taskMonitor;
-	// Index the given network
-	public EnhancedSearchIndex(final CyNetwork network, final TaskMonitor taskMonitor) {
+	
+	private EnhancedSearchIndex() { }
+	
+
+	public static RAMDirectory buildIndex(CyNetwork network, TaskMonitor taskMonitor) {
 		if(network == null)
 			throw new NullPointerException("Network is null.");
-		this.taskMonitor = taskMonitor;
-		// Construct a RAMDirectory to hold the in-memory representation of the index.		
-		idx = new RAMDirectory();
-		BuildIndex(idx, network);
-	}
-
-	private void BuildIndex(RAMDirectory idx, CyNetwork network) {
-
 		try {
-			// Make a writer to create the index, empty set of stop words (redmine #3808)
-			StandardAnalyzer analyzer = new StandardAnalyzer(Version.LUCENE_30, Collections.emptySet());
-			analyzer.setMaxTokenLength(1024*10);
+			RAMDirectory idx = new RAMDirectory();
+			// Make a writer to create the index
+			Analyzer analyzer = new CaseInsensitiveWhitespaceAnalyzer();
 			IndexWriter writer = new IndexWriter(idx, analyzer, IndexWriter.MaxFieldLength.UNLIMITED);
 
 			// Add a document for each graph object - node and edge
 			List<CyNode> nodeList = network.getNodeList();
 			
-			this.taskMonitor.setProgress(0.1);
+			taskMonitor.setProgress(0.1);
 			for (CyNode cyNode : nodeList) {
 				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getSUID()));
-				
 			}
-			this.taskMonitor.setProgress(0.6);
+			taskMonitor.setProgress(0.6);
 		
 			List<CyEdge> edgeList = network.getEdgeList();
 			for (CyEdge cyEdge : edgeList) {
@@ -89,11 +80,13 @@ public class EnhancedSearchIndex {
 			writer.optimize();
 			writer.close();
 
+			return idx;
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
+			return null;
+		} finally {
+			taskMonitor.setProgress(0.95);
 		}
-		this.taskMonitor.setProgress(0.95);
-
 	}
 
 	/**
@@ -151,13 +144,11 @@ public class EnhancedSearchIndex {
 					doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));					
 				}
 			} else if (valueType == List.class) {
-				List attrValueList = network.getRow(graphObject).get(attrName, List.class);
+				List<?> attrValueList = network.getRow(graphObject).get(attrName, List.class);
 				if (attrValueList != null) {
 					for (int j = 0; j < attrValueList.size(); j++) {
 						String attrValue = attrValueList.get(j).toString();
-						doc.add(new Field(attrIndexingName, attrValue,
-								  Field.Store.YES,
-								  Field.Index.ANALYZED));
+						doc.add(new Field(attrIndexingName, attrValue, Field.Store.YES, Field.Index.ANALYZED));
 					}
 				}
 			}
@@ -166,7 +157,4 @@ public class EnhancedSearchIndex {
 		return doc;
 	}
 
-	public RAMDirectory getIndex() {
-		return idx;
-	}
 }

@@ -48,8 +48,8 @@ public class RandomPaletteProvider implements PaletteProvider {
 	public List<PaletteType> getPaletteTypes() { return Collections.singletonList(BrewerType.QUALITATIVE); }
 
 	public List<String> listPaletteNames(PaletteType type, boolean colorBlindSafe) {
-		if (type.equals(BrewerType.QUALITATIVE))
-			return Arrays.asList(" ");
+		if (type.equals(BrewerType.QUALITATIVE) || type.equals(BrewerType.ANY))
+			return Arrays.asList("Random");
 		else return new ArrayList<String>();
 	}
 
@@ -63,8 +63,8 @@ public class RandomPaletteProvider implements PaletteProvider {
 	}
 
 	public Palette getPalette(String paletteName, int size) {
-		if (paletteName.equalsIgnoreCase(" ")) {
-			return new RandomPalette(size);
+		if (paletteName.equalsIgnoreCase("Random") || paletteName.equalsIgnoreCase(" ")) {
+			return new RandomPalette(this, size);
 		}
 		return null;
 	}
@@ -83,8 +83,8 @@ public class RandomPaletteProvider implements PaletteProvider {
 
 	class RandomPalette extends AbstractPalette {
 		Color[] colors;
-		RandomPalette(int size) {
-			super(" ", size, BrewerType.QUALITATIVE, false);
+		RandomPalette(PaletteProvider provider, int size) {
+			super(provider, "Random", size, BrewerType.QUALITATIVE, false);
 			getColors(size);
 		}
 
