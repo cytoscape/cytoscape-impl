@@ -103,10 +103,11 @@ public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, Ses
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(false);
 		
+		int gap = 10;
 		int w = 320;
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(gap, gap, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 						.addComponent(scalePanel, DEFAULT_SIZE, w, w)
 						.addComponent(alignPanel, DEFAULT_SIZE, w, w)
@@ -114,7 +115,7 @@ public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, Ses
 						.addComponent(stackPanel, DEFAULT_SIZE, w, w)
 						.addComponent(rotatePanel, DEFAULT_SIZE, w, w)
 				)
-				.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(gap, gap, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(scalePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
