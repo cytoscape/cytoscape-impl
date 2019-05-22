@@ -28,6 +28,8 @@ import org.cytoscape.internal.io.networklist.NetworkList;
 import org.cytoscape.internal.io.sessionstate.Cytopanel;
 import org.cytoscape.internal.io.sessionstate.Cytopanels;
 import org.cytoscape.internal.io.sessionstate.SessionState;
+import org.cytoscape.internal.view.CytoPanelImpl;
+import org.cytoscape.internal.view.CytoPanelStateInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkViewMediator;
@@ -77,6 +79,8 @@ import org.slf4j.LoggerFactory;
 
 public class SessionHandler implements CyShutdownListener, SessionLoadedListener, SessionAboutToBeSavedListener {
 
+	private static final String SESSION_STATE_DOC_VERSION = "1.1";
+	
 	private static final String APP_NAME = "org.cytoscape.swing-application";
 	private static final String SESSION_STATE_FILENAME = "session_state.xml";
 	private static final String NETWORK_LIST_FILENAME = "network_list.xml";
@@ -135,7 +139,7 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			
 			if (sessionFileName == null || sessionFileName.isEmpty()) {
 				FileChooserFilter filter = new FileChooserFilter("Session File", "cys");
-				List<FileChooserFilter> filterCollection = new ArrayList<FileChooserFilter>(1);
+				List<FileChooserFilter> filterCollection = new ArrayList<>(1);
 				filterCollection.add(filter);
 				
 				final FileUtil fileUtil = serviceRegistrar.getService(FileUtil.class);
@@ -185,16 +189,13 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 	public void handleEvent(final SessionLoadedEvent e) {
 		final CySession sess = e.getLoadedSession();
 
-		if (sess == null)
-			return;
-		
-		invokeOnEDT(() -> {
-			postLoading(sess);
-		});
+		if (sess != null)
+			invokeOnEDT(() -> postLoading(sess));
 	}
 	
 	private File saveSessionState(final SessionAboutToBeSavedEvent e) {
 		final SessionState sessState = new SessionState();
+		sessState.setDocumentVersion(SESSION_STATE_DOC_VERSION);
 
 		// CytoPanels States
 		final Cytopanels cytopanels = new Cytopanels();
@@ -207,6 +208,9 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 			cytopanel.setId(entry.getKey());
 			cytopanel.setPanelState(p.getState().toString());
 			cytopanel.setSelectedPanel(Integer.toString(p.getSelectedIndex()));
+			
+			if (p instanceof CytoPanelImpl)
+				cytopanel.setPanelStateInternal(((CytoPanelImpl) p).getStateInternal().toString());
 
 			cytopanels.getCytopanel().add(cytopanel);
 		}
@@ -303,10 +307,19 @@ public class SessionHandler implements CyShutdownListener, SessionLoadedListener
 				if (panelName != null) {
 					final CytoPanel p = desktop.getCytoPanel(panelName);
 
-					try {
-						p.setState(CytoPanelState.valueOf(cytopanel.getPanelState().toUpperCase().trim()));
-					} catch (Exception ex) {
-						logger.error("Cannot restore the state of panel \"" + panelName.getTitle() + "\"", ex);
+					if (p instanceof CytoPanelImpl && cytopanel.getPanelStateInternal() != null) {
+						try {
+							CytoPanelImpl impl = (CytoPanelImpl) p;
+							impl.setStateInternal(CytoPanelStateInternal.valueOf(cytopanel.getPanelStateInternal().toUpperCase().trim()));
+						} catch (Exception ex) {
+							logger.error("Cannot restore the internal state of panel \"" + panelName.getTitle() + "\"", ex);
+						}
+					} else {
+						try {
+							p.setState(CytoPanelState.valueOf(cytopanel.getPanelState().toUpperCase().trim()));
+						} catch (Exception ex) {
+							logger.error("Cannot restore the state of panel \"" + panelName.getTitle() + "\"", ex);
+						}
 					}
 
 					try {
