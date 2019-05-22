@@ -37,6 +37,9 @@ public abstract class IconUtil {
 	public static final String GD = "$";
 	public static final String TERMINAL = "%";
 	
+	public static final String PIN = "'";
+	public static final String UNPIN = "(";
+	
 	private IconUtil() {
 		// ...
 	}

@@ -58,6 +58,7 @@ import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
@@ -389,6 +390,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		cp.getFloatButton().addActionListener(evt -> cp.setStateInternal(FLOAT));
 		cp.getDockButton().addActionListener(evt -> cp.setStateInternal(DOCK));
+		cp.getUndockButton().addActionListener(evt -> cp.setStateInternal(UNDOCK));
 		cp.getMinimizeButton().addActionListener(evt -> cp.setStateInternal(MINIMIZE));
 		cp.getTitlePanel().addMouseListener(new MouseAdapter() {
 			@Override
@@ -1693,37 +1695,18 @@ public class CytoscapeDesktop extends JFrame
 					return;
 				
 				invokeOnEDT(() -> {
-					final JPopupMenu menu = new JPopupMenu();
+					JPopupMenu menu = new JPopupMenu();
 					
 					if (cytoPanel != null) {
-						final String title = cytoPanel.getTitle();
-						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_DOCK + " " + title);
-							mi.addActionListener(e -> cytoPanel.setStateInternal(DOCK));
-							mi.setEnabled(cytoPanel.getStateInternal() != DOCK);
-							menu.add(mi);
-						}
-						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_UNDOCK + " " + title);
-							mi.addActionListener(e -> cytoPanel.setStateInternal(UNDOCK));
-							mi.setEnabled(cytoPanel.getStateInternal() != UNDOCK);
-							menu.add(mi);
-						}
-						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_FLOAT + " " + title);
-							mi.addActionListener(e -> cytoPanel.setStateInternal(FLOAT));
-							mi.setEnabled(cytoPanel.getStateInternal() != FLOAT);
-							menu.add(mi);
-						}
-						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_MINIMIZE + " " + title);
-							mi.addActionListener(e -> cytoPanel.setStateInternal(MINIMIZE));
-							mi.setEnabled(cytoPanel.getStateInternal() != MINIMIZE);
-							menu.add(mi);
-						}
+						String title = cytoPanel.getTitle();
+						
+						menu.add(createMenuItemFromButton(cytoPanel.getFloatButton()));
+						menu.add(createMenuItemFromButton(cytoPanel.getDockButton()));
+						menu.add(createMenuItemFromButton(cytoPanel.getUndockButton()));
+						menu.add(createMenuItemFromButton(cytoPanel.getMinimizeButton()));
 						menu.addSeparator();
 						{
-							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_REMOVE + " " + title);
+							JMenuItem mi = new JMenuItem(CytoPanelImpl.TEXT_HIDE + " " + title);
 							mi.addActionListener(e -> removeCytoPanel(cytoPanel));
 							mi.setEnabled(cytoPanel.getStateInternal() != HIDE);
 							menu.add(mi);
@@ -1752,6 +1735,17 @@ public class CytoscapeDesktop extends JFrame
 					menu.show(parent, evt.getX(), evt.getY());
 				});
 			}
+		}
+
+		public JMenuItem createMenuItemFromButton(JButton btn) {
+			int iconSize = 16;
+			
+			JMenuItem mi = new JMenuItem(btn.getToolTipText());
+			mi.setIcon(new TextIcon(btn.getText(), btn.getFont(), iconSize, iconSize));
+			mi.addActionListener(e -> btn.doClick());
+			mi.setEnabled(btn.isVisible() && btn.isEnabled());
+			
+			return mi;
 		}
 	}
 	

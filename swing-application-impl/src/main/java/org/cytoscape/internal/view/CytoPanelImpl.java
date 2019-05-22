@@ -10,6 +10,7 @@ import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
 import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
 import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
 import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
@@ -18,7 +19,6 @@ import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MAXIMIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
@@ -54,6 +54,7 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.DropDownMenuButton;
@@ -89,7 +90,9 @@ public class CytoPanelImpl implements CytoPanel {
 	public static final String TEXT_UNDOCK = "Undock";
 	public static final String TEXT_FLOAT = "Float";
 	public static final String TEXT_MINIMIZE = "Minimize";
-	public static final String TEXT_REMOVE = "Remove";
+	public static final String TEXT_HIDE = "Hide";
+	
+	public static final float STATE_ICON_FONT_SIZE = 11.0f;
 	
 	private final int NOTIFICATION_STATE_CHANGE = 0;
 	private final int NOTIFICATION_COMPONENT_SELECTED = 1;
@@ -99,6 +102,7 @@ public class CytoPanelImpl implements CytoPanel {
 	private DropDownMenuButton titleButton;
 	private JButton floatButton;
 	private JButton dockButton;
+	private JButton undockButton;
 	private JButton minimizeButton;
 	
 	private JPanel cardsPanel;
@@ -198,7 +202,6 @@ public class CytoPanelImpl implements CytoPanel {
 			
 			componentsById.put(comp2.getIdentifier(), comp2);
 		}
-		
 		
 		checkSizes(cpc.getComponent()); // Check our sizes, and override, if necessary
 		getCardsPanel().add(cpc.getComponent(), getIdentifier(cpc));
@@ -364,6 +367,7 @@ public class CytoPanelImpl implements CytoPanel {
 					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getUndockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
@@ -371,6 +375,7 @@ public class CytoPanelImpl implements CytoPanel {
 					.addComponent(getTitleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getUndockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 			);
 		}
@@ -391,18 +396,29 @@ public class CytoPanelImpl implements CytoPanel {
 			floatButton = new JButton(ICON_WINDOW_MAXIMIZE);
 			floatButton.setToolTipText(TEXT_FLOAT);
 			CytoPanelUtil.styleButton(floatButton);
-			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
+			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(STATE_ICON_FONT_SIZE));
 		}
 		
 		return floatButton;
 	}
 	
+	JButton getUndockButton() {
+		if (undockButton == null) {
+			undockButton = new JButton(IconUtil.UNPIN);
+			undockButton.setToolTipText(TEXT_UNDOCK);
+			CytoPanelUtil.styleButton(undockButton);
+			undockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, STATE_ICON_FONT_SIZE));
+		}
+		
+		return undockButton;
+	}
+	
 	JButton getDockButton() {
 		if (dockButton == null) {
-			dockButton = new JButton(ICON_THUMB_TACK);
+			dockButton = new JButton(IconUtil.PIN);
 			dockButton.setToolTipText(TEXT_DOCK);
 			CytoPanelUtil.styleButton(dockButton);
-			dockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12));
+			dockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, STATE_ICON_FONT_SIZE));
 		}
 		
 		return dockButton;
@@ -413,7 +429,7 @@ public class CytoPanelImpl implements CytoPanel {
 			minimizeButton = new JButton(ICON_WINDOW_MINIMIZE);
 			minimizeButton.setToolTipText(TEXT_MINIMIZE);
 			CytoPanelUtil.styleButton(minimizeButton);
-			minimizeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(11));
+			minimizeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(STATE_ICON_FONT_SIZE));
 		}
 		
 		return minimizeButton;
@@ -471,6 +487,8 @@ public class CytoPanelImpl implements CytoPanel {
 		
 		getFloatButton().setVisible(state != FLOAT);
 		getDockButton().setVisible(state != DOCK);
+		getUndockButton().setVisible(state != UNDOCK);
+		getMinimizeButton().setVisible(state != MINIMIZE);
 		
 		getThisComponent().setVisible(getCytoPanelComponentCount() > 0 && state != HIDE && state != MINIMIZE);
 		getThisComponent().validate();
