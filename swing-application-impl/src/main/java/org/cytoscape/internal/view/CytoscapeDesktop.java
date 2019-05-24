@@ -16,6 +16,7 @@ import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.internal.view.util.ViewUtil.isScreenMenuBar;
 import static org.cytoscape.util.swing.LookAndFeelUtil.getSmallFontSize;
+import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isWinLAF;
 
@@ -78,6 +79,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicButtonUI;
 
 import org.cytoscape.app.event.AppsFinishedStartingEvent;
@@ -120,6 +122,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.swing.DialogTaskManager;
 import org.cytoscape.work.swing.StatusBarPanelFactory;
+import org.jdesktop.swingx.border.DropShadowBorder;
 
 /*
  * #%L
@@ -1284,28 +1287,24 @@ public class CytoscapeDesktop extends JFrame
 		CytoPanelNameInternal name = cytoPanel.getCytoPanelNameInternal();
 		
 		try {
-			Dimension maxDim = getTopPane().getSize();
-			int maxWidth = maxDim.width;
-			int maxHeight = maxDim.height;
-			
+			Dimension maxDim = popup.getMaximumSize();
 			Dimension newDim = cytoPanel.isMaximized() ? maxDim : popupPreferredSizes.get(name);
 			Dimension dim = newDim != null ? newDim : cytoPanel.getThisComponent().getPreferredSize();
 			
 			if (newDim == null) {
 				if (name == SOUTH || name == BOTTOM) {
-					dim.width = maxWidth;
-					dim.height = (int) (maxHeight * 0.5f);
+					dim.width = maxDim.width;
+					dim.height = (int) (maxDim.height * 0.5f);
 				} else {
 					if (dim.width <= 0)
 						dim.width = 200;
 					if (dim.height <= 0)
-						dim.height = maxHeight;
+						dim.height = maxDim.height;
 				}
 			}
 			
 			// Max size
-			dim.width = Math.min(dim.width, maxWidth);
-			dim.height = Math.min(dim.height, maxHeight);
+			dim.height = Math.min(dim.height, maxDim.height);
 			// Min size
 			dim.width = Math.max(dim.width, ComponentPopup.MIN_SIZE);
 			dim.height = Math.max(dim.height, ComponentPopup.MIN_SIZE);
@@ -1468,10 +1467,6 @@ public class CytoscapeDesktop extends JFrame
 			
 			ToggleableButtonGroup getButtonGroup() {
 				return buttonGroup;
-			}
-			
-			CytoPanelImpl getCytoPanel() {
-				return cytoPanel;
 			}
 			
 			void update() {
@@ -1782,7 +1777,9 @@ public class CytoscapeDesktop extends JFrame
 	
 	private class ComponentPopup extends JRootPane {
 		
-		private static final int BORDER_WIDTH = ViewUtil.DIVIDER_SIZE;
+		private static final int IN_BORDER_WIDTH = 1;
+		private static final int OUT_BORDER_WIDTH = ViewUtil.DIVIDER_SIZE;
+		private static final int BORDER_WIDTH = IN_BORDER_WIDTH + OUT_BORDER_WIDTH;
 		private static final int MIN_SIZE = 100 + BORDER_WIDTH;
 		
 		// Border widths: Top, Left, Bottom. Right
@@ -1818,8 +1815,22 @@ public class CytoscapeDesktop extends JFrame
 		ComponentPopup(CytoPanelImpl cytoPanel) {
 			this.cytoPanel = cytoPanel;
 			
+			if (isNimbusLAF())
+				setOpaque(false); // So the drag-border is also transparent
+			
 			addListeners();
 			update();
+		}
+		
+		@Override
+		public Dimension getMaximumSize() {
+			Dimension dim = getTopPane().getSize();
+			// Adds the shadow width to max width/height
+			// so the alignment with the other components feels natural
+			dim.width += OUT_BORDER_WIDTH;
+			dim.height += OUT_BORDER_WIDTH;
+			
+			return dim;
 		}
 		
 		void update() {
@@ -1848,8 +1859,40 @@ public class CytoscapeDesktop extends JFrame
 				case BOTTOM:     rb = tb = BORDER_WIDTH; break;
 			}
 			
-			getRootPane().setBorder(
-					BorderFactory.createMatteBorder(tb, lb, bb, rb, UIManager.getColor("Separator.foreground")));
+			final Border outBorder;
+			
+			if (isWinLAF() || isAquaLAF()) {
+				// This shadow border does not work on Nimbus and causes NullPointerExceptions!
+				DropShadowBorder shadow = new DropShadowBorder();
+		        shadow.setShadowColor(UIManager.getColor("Label.foreground"));
+		        shadow.setShadowOpacity(0.1f);
+		        shadow.setShadowSize(OUT_BORDER_WIDTH);
+		        shadow.setShowLeftShadow(lb > 0);
+		        shadow.setShowRightShadow(rb > 0);
+		        shadow.setShowBottomShadow(bb > 0);
+		        shadow.setShowTopShadow(tb > 0);
+		        outBorder = shadow;
+			} else {
+				// Add a transparent border to make the drag-resize action easier
+				// and to keep the border width consistent no matter the look-and-feel.
+				outBorder = BorderFactory.createMatteBorder(
+						Math.max(0, tb - IN_BORDER_WIDTH),
+						Math.max(0, lb - IN_BORDER_WIDTH),
+						Math.max(0, bb - IN_BORDER_WIDTH),
+						Math.max(0, rb - IN_BORDER_WIDTH),
+						new Color(0 , 0, 0, 0)
+				);
+			}
+			
+			getRootPane().setBorder(BorderFactory.createCompoundBorder(
+					outBorder,
+					BorderFactory.createMatteBorder(
+							Math.max(0, tb - OUT_BORDER_WIDTH),
+							Math.max(0, lb - OUT_BORDER_WIDTH),
+							Math.max(0, bb - OUT_BORDER_WIDTH),
+							Math.max(0, rb - OUT_BORDER_WIDTH),
+							UIManager.getColor("Separator.foreground"))
+			));
 		}
 		
 		void setCytoPanel(CytoPanelImpl cytoPanel) {
@@ -1951,8 +1994,8 @@ public class CytoscapeDesktop extends JFrame
 								break;
 						}
 
-						final int maxWidth = getTopPane().getWidth();
-						final int maxHeight = getTopPane().getHeight();
+						final int maxWidth = getTopPane().getWidth() + OUT_BORDER_WIDTH;
+						final int maxHeight = getTopPane().getHeight() + OUT_BORDER_WIDTH;
 						
 						w = Math.max(w, MIN_SIZE);
 						h = Math.max(h, MIN_SIZE);
