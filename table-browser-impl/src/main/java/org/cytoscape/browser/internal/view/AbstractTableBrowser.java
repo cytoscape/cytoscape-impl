@@ -139,6 +139,8 @@ public abstract class AbstractTableBrowser extends JPanel
 		setPreferredSize(PANEL_SIZE);
 		setSize(PANEL_SIZE);
 		
+		scrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
+		
 		add(scrollPane, BorderLayout.CENTER);
 		showDropPanel();
 		

@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenuBar;
@@ -44,7 +43,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
@@ -807,8 +805,6 @@ public class NetworkViewMainPanel extends JPanel {
 	}
 	
 	private void init() {
-		setBorder(BorderFactory.createMatteBorder(0, 1, 1, 1, UIManager.getColor("Separator.foreground")));
-		
 		setLayout(new BorderLayout());
 		add(getContentPane(), BorderLayout.CENTER);
 		
