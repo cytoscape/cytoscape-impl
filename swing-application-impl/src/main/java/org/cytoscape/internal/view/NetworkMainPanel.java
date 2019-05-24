@@ -222,6 +222,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	JScrollPane getRootNetworkScroll() {
 		if (rootNetworkScroll == null) {
 			rootNetworkScroll = new JScrollPane(getRootNetworkListPanel());
+			rootNetworkScroll.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			rootNetworkScroll.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent e) {

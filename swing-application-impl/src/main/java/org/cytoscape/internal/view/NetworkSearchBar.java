@@ -349,7 +349,7 @@ public class NetworkSearchBar extends JPanel {
 	private void init() {
 		setBackground(UIManager.getColor("Table.background"));
 		setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")),
+				BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")),
 				BorderFactory.createEmptyBorder(2, 1, 2, 1)
 		));
 		

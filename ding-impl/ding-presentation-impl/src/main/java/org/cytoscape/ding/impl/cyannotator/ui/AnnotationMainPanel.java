@@ -812,7 +812,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		public LayerPanel(String canvasName) {
 			this.canvasName = canvasName;
 			init();
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			
 			getTree().getSelectionModel().addTreeSelectionListener(e -> {
 				stopTreeCellEditing();
