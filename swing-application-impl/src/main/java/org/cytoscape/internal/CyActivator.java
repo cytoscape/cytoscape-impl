@@ -35,6 +35,7 @@ import java.util.Properties;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -839,6 +840,15 @@ public class CyActivator extends AbstractCyActivator {
 		UIManager.put("CyColor.complement",     new Color(29, 105, 149));
 		UIManager.put("CyColor.complement(+1)", new Color(56, 120, 158));
 		UIManager.put("CyColor.complement(+2)", new Color(92, 149, 183));
+		
+		// A JPopupMenu that is completely contained inside the frame bounds is called lightweight and
+		// lives in the Popup layer of the layered pane, which means popups created when a CytoPanel is in
+		// the UNDOCK state may be covered by the undocked CytoPanel component. That happens because the
+		// CytoPanel component is rendered on the Glass Pane, which resides on top of the Popup layer.
+		// To avoid this issue, let's just disable lightweight popup menus
+		// (NOTE: This must be done before showing the application frame).
+		// See: https://www.pushing-pixels.org/category/swing/page/72
+		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 	}
 	
 	@SuppressWarnings("unchecked")
