@@ -754,7 +754,7 @@ public class NetworkSearchBar extends JPanel {
 			super(SwingUtilities.getWindowAncestor(NetworkSearchBar.this), ModalityType.MODELESS);
 			setBackground(getBackground());
 			setUndecorated(true);
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			getRootPane().setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 			
 			addWindowListener(new WindowAdapter() {
 				@Override
