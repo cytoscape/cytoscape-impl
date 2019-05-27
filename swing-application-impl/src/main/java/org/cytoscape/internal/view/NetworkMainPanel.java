@@ -3,7 +3,7 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_DOWN;
 import static org.cytoscape.util.swing.IconManager.ICON_ANGLE_DOUBLE_UP;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
@@ -82,7 +82,7 @@ import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.internal.task.LoadFileListTask;
 import org.cytoscape.internal.util.Util;
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
@@ -90,6 +90,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.swing.DialogTaskManager;
@@ -150,6 +151,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	private boolean doNotUpdateCollapseExpandButtons;
 	
 	private NetworkViewPreviewDialog viewDialog;
+	private TextIcon icon;
 
 	private final NetworkSearchBar networkSearchBar;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -185,7 +187,11 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_SHARE_ALT,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	private void init() {
@@ -216,6 +222,7 @@ public class NetworkMainPanel extends JPanel implements CytoPanelComponent2 {
 	JScrollPane getRootNetworkScroll() {
 		if (rootNetworkScroll == null) {
 			rootNetworkScroll = new JScrollPane(getRootNetworkListPanel());
+			rootNetworkScroll.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 			rootNetworkScroll.addComponentListener(new ComponentAdapter() {
 				@Override
 				public void componentResized(ComponentEvent e) {

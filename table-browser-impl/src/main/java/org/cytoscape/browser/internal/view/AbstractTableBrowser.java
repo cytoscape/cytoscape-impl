@@ -58,6 +58,8 @@ import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.util.swing.ColumnResizer;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.work.FinishStatus;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskObserver;
@@ -115,9 +117,11 @@ public abstract class AbstractTableBrowser extends JPanel
 	protected final String appFileName;
 	protected Class<? extends CyIdentifiable> currentTableType;
 
+	protected TextIcon icon;
+	
 	protected final CyServiceRegistrar serviceRegistrar;
 	private final Object lock = new Object();
-	
+
 	AbstractTableBrowser(
 			final String tabTitle,
 			final CyServiceRegistrar serviceRegistrar,
@@ -134,6 +138,8 @@ public abstract class AbstractTableBrowser extends JPanel
 		setOpaque(!isAquaLAF());
 		setPreferredSize(PANEL_SIZE);
 		setSize(PANEL_SIZE);
+		
+		scrollPane.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("Separator.foreground")));
 		
 		add(scrollPane, BorderLayout.CENTER);
 		showDropPanel();
@@ -162,7 +168,11 @@ public abstract class AbstractTableBrowser extends JPanel
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconManager.ICON_TABLE,
+					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	/**

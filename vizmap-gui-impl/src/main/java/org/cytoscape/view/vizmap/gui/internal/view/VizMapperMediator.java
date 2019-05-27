@@ -566,9 +566,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 	private void addViewListeners() {
 		// Switching the current Visual Style
 		final VisualStyleDropDownButton stylesBtn = vizMapperMainPanel.getStylesBtn();
-		stylesBtn.addPropertyChangeListener("selectedItem", evt -> {
-			onSelectedVisualStyleChanged(evt);
-		});
+		stylesBtn.addPropertyChangeListener("selectedItem", evt -> onSelectedVisualStyleChanged(evt));
 	}
 	
 	private void addViewListeners(final VisualPropertySheet vpSheet) {
@@ -581,9 +579,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			// It's a regular VisualProperty Editor...
 			
 			// Default value button clicked
-			vpSheetItem.getDefaultBtn().addActionListener(evt -> {
-				openDefaultValueEditor(evt, vpSheetItem);
-			});
+			vpSheetItem.getDefaultBtn().addActionListener(evt -> openDefaultValueEditor(evt, vpSheetItem));
 			
 			// Default value button right-clicked
 			vpSheetItem.getDefaultBtn().addMouseListener(new MouseAdapter() {
@@ -668,11 +664,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			
 			if (vpSheetItem.getModel().isVisualMappingAllowed()) {
 				vpSheetItem.getPropSheetPnl().getTable().addMouseListener(cmMouseListener);
-				
-				vpSheetItem.getRemoveMappingBtn().addActionListener(evt -> {
-					removeVisualMapping(vpSheetItem);
-				});
-				
+				vpSheetItem.getRemoveMappingBtn().addActionListener(evt -> removeVisualMapping(vpSheetItem));
 				vpSheetItem.getPropSheetTbl().addPropertyChangeListener("editingVizMapperProperty", evt -> {
 					curVpSheetItem = vpSheetItem; // Save the current editor (the one the user is interacting with)
 					curVizMapperProperty = (VizMapperProperty<?, ?, ?>) evt.getNewValue();
@@ -691,9 +683,7 @@ public class VizMapperMediator extends Mediator implements LexiconStateChangedLi
 			}
 		} else {
 			// It's a Dependency Editor...
-			vpSheetItem.getDependencyCkb().addItemListener(evt -> {
-				onDependencySelectionChanged(evt, vpSheetItem);
-			});
+			vpSheetItem.getDependencyCkb().addItemListener(evt -> onDependencySelectionChanged(evt, vpSheetItem));
 		}
 		
 		// Save sheet items that were explicitly shown/hidden by the user,

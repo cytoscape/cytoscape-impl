@@ -1,16 +1,23 @@
 package org.cytoscape.internal.actions;
 
+import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+
 import java.awt.event.ActionEvent;
 
-import javax.swing.Action;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.internal.view.CytoPanelImpl;
 import org.cytoscape.internal.view.CytoPanelNameInternal;
+import org.cytoscape.internal.view.CytoPanelStateInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -18,7 +25,7 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -39,61 +46,65 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
 @SuppressWarnings("serial")
 public class CytoPanelAction extends AbstractCyAction {
 	
-	protected static String SHOW = "Show ";
-	protected static String HIDE = "Hide ";
+	private final CytoPanelNameInternal position;
+	private final CytoscapeDesktop desktop;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	private CytoPanelNameInternal position;
-	private CytoscapeDesktop desktop;
-
-	public CytoPanelAction(CytoPanelNameInternal position, boolean show, CytoscapeDesktop desktop, float menuGravity) {
-		super(show ? HIDE + position.getTitle() : SHOW + position.getTitle());
+	public CytoPanelAction(
+			CytoPanelNameInternal position,
+			CytoscapeDesktop desktop,
+			float menuGravity,
+			CyServiceRegistrar serviceRegistrar
+	) {
+		super("Show " + position.getTitle());
 
 		this.position = position;
 		this.desktop = desktop;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
+		useCheckBoxMenuItem = true;
 	}
 
 	/**
 	 * Toggles the cytopanel state.  
 	 */
 	@Override
-	public void actionPerformed(ActionEvent ev) {
-		CytoPanelState curState = desktop.getCytoPanel(position).getState();
-
-		// #4100 if west is hidden show southwest must show west
-		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.HIDE)		
-		{
-			CytoPanel west = desktop.getCytoPanel(CytoPanelName.WEST);
-			CytoPanelState westState = west.getState();
-			if (westState == CytoPanelState.HIDE)
-				west.setState(CytoPanelState.DOCK);
-		}
-		if (curState == CytoPanelState.HIDE)
-			desktop.getCytoPanel(position).setState(CytoPanelState.DOCK);
-		else
-			desktop.getCytoPanel(position).setState(CytoPanelState.HIDE);
+	public void actionPerformed(ActionEvent evt) {
+		CytoPanelImpl cytoPanel = (CytoPanelImpl) desktop.getCytoPanel(position);
+		CytoPanelStateInternal state = cytoPanel.getStateInternal();
+		cytoPanel.setStateInternal(state == HIDE ? DOCK : HIDE);
 	} 
 
-	/**
-	 * This dynamically sets the title of the menu based on the state of the CytoPanel.
-	 */
 	@Override
-	public void menuSelected(MenuEvent me) {
-		CytoPanelState curState = desktop.getCytoPanel(position).getState();
+	public void menuSelected(MenuEvent evt) {
+		updateEnableState();
+		JCheckBoxMenuItem item = getThisItem();
+		CytoPanel cytoPanel = desktop.getCytoPanel(position);
+
+		if (item != null && cytoPanel instanceof CytoPanelImpl)
+			item.setSelected(cytoPanel.getCytoPanelComponentCount() > 0
+					&& ((CytoPanelImpl) cytoPanel).getStateInternal() != HIDE);
+	}
+	
+	@Override
+	public void updateEnableState() {
+		CytoPanel cytoPanel = desktop.getCytoPanel(position);
+		setEnabled(cytoPanel instanceof CytoPanelImpl && cytoPanel.getThisComponent() != null
+				&& cytoPanel.getCytoPanelComponentCount() > 0);
+	}
+
+	private JCheckBoxMenuItem getThisItem() {
+		JMenu menu = serviceRegistrar.getService(CySwingApplication.class).getJMenu(preferredMenu);
 		
-		// #4100 if west is hidden, southwest must be hidden
-		if (position == CytoPanelNameInternal.SOUTH_WEST && curState == CytoPanelState.DOCK)		
-		{
-			CytoPanelState westState = desktop.getCytoPanel(CytoPanelNameInternal.WEST).getState();
-			if (westState == CytoPanelState.HIDE)
-				curState = CytoPanelState.HIDE;
-		}
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
 			
-		if (curState == CytoPanelState.HIDE)
-			putValue(Action.NAME, SHOW + position.getTitle());
-		else
-			putValue(Action.NAME, HIDE + position.getTitle());
+			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
+				return (JCheckBoxMenuItem) item;
+		}
+		
+		return null;
 	}
 }

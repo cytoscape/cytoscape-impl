@@ -92,12 +92,12 @@ public class CytoscapeMenuBar extends JMenuBar {
 		if (configgedAction == null)    		return false;
 		if (!configgedAction.isInMenuBar())    	return false;
 
-//		System.out.println("addAction in CytoscapeMenuBar");
 		boolean insertSepBefore = configgedAction.insertSeparatorBefore();;
 		boolean insertSepAfter = configgedAction.insertSeparatorAfter();
 
 		// We allow an Action to be in this menu bar only once.
-		if ( actionMenuItemMap.containsKey(configgedAction) ) 		return false;
+		if (actionMenuItemMap.containsKey(configgedAction))
+			return false;
 
 		// Actions with no preferredMenu don't show up in any menu.
 		String menu_name = configgedAction.getPreferredMenu();
@@ -132,7 +132,6 @@ public class CytoscapeMenuBar extends JMenuBar {
 		
 		logger.debug("Inserted action for menu: " + menu_name + " with gravity: " + configgedAction.getMenuGravity());
 		actionMenuItemMap.put(configgedAction, menu_item);
-//		System.err.println("Inserted action " + configgedAction.getName() + " for menu: " + menu_name + " with gravity: " + configgedAction.getMenuGravity());
 
 		revalidate();
 		repaint();
@@ -352,10 +351,12 @@ public class CytoscapeMenuBar extends JMenuBar {
 			addCustomizerRow(line.trim());
 		}
 	}
+	
 	//------------------------
-static private String TABSTR = "\t";
+	static private String TABSTR = "\t";
+
 	private void addCustomizerRow(String trimmed) {
-		String[] tokens = 	trimmed.split(TABSTR);
+		String[] tokens = trimmed.split(TABSTR);
 		assert tokens.length == 8;
 		String name = tokens[0];
 //		String accelerator = tokens[1];
@@ -366,9 +367,6 @@ static private String TABSTR = "\t";
 //		String enabled = tokens[6];
 //		String classname = tokens[7];
 //		
-		
 		actionOverrideMap.put(name, trimmed);
-		
 	}
-
 }

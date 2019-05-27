@@ -2160,7 +2160,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TOOL_BAR_GRAVITY, "2.0");
 			props.setProperty(LARGE_ICON_ID, iconId);
 			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(TOOLTIP, "Import Network from File System.");
+			props.setProperty(TOOLTIP, "Import Network from File System");
 			props.setProperty(TOOLTIP_LONG_DESCRIPTION,
 					"Opens a network from a file and adds it to the current session.");
 			registerService(bc, factory, TaskFactory.class, props);

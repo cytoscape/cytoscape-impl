@@ -37,12 +37,14 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element ref="panelState"/>
+        <xs:element ref="panelStateInternal"/><!-- Added in version 1.1 (Cytoscape 3.8) -->
         <xs:element ref="selectedPanel"/>
       </xs:sequence>
       <xs:attribute name="id" use="required" type="xs:NCName"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="panelState" type="xs:NCName"/>
+  <xs:element name="panelStateInternal" type="xs:NCName"/><!-- Added in version 1.1 (Cytoscape 3.8) -->
   <xs:element name="selectedPanel" type="xs:NCName"/>
   
 </xs:schema>

@@ -1,6 +1,6 @@
 package org.cytoscape.internal.dialogs;
 
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Window;
 import java.awt.event.WindowAdapter;

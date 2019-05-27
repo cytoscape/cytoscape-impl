@@ -46,6 +46,7 @@ import org.cytoscape.view.manual.internal.util.Util;
 @SuppressWarnings("serial")
 public class StackPanel extends JPanel {
 	
+	private JLabel label;
 	private JButton valButton;
 	private JButton vacButton;
 	private JButton varButton;
@@ -69,7 +70,7 @@ public class StackPanel extends JPanel {
 		HStackCenter hac = new HStackCenter(haci,app);
 		HStackBottom hab = new HStackBottom(habi,app);
 
-		JLabel label = new JLabel("Stack:");
+		label = new JLabel("Stack:");
 		makeSmall(label);
 		
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
@@ -88,6 +89,7 @@ public class StackPanel extends JPanel {
 	
 	@Override
 	public void setEnabled(final boolean enabled) {
+		label.setEnabled(enabled);
 		valButton.setEnabled(enabled);
 		vacButton.setEnabled(enabled);
 		varButton.setEnabled(enabled);

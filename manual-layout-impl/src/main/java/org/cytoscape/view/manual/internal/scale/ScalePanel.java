@@ -59,6 +59,7 @@ import org.cytoscape.view.model.CyNetworkView;
 @SuppressWarnings("serial")
 public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSlider {
 	
+	private JLabel label;
 	private JCheckBox checkBox;
 	private JSlider slider;
 	private JCheckBox alongXAxis;
@@ -76,10 +77,10 @@ public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSli
 
 		prevValue = getSlider().getValue();
 
-		JLabel label = new JLabel("Scale:");
+		label = new JLabel("Scale:");
 		
 		checkBox = new JCheckBox("Selected Only", /* selected = */true);
-		new CheckBoxTracker( checkBox );
+		new CheckBoxTracker(checkBox);
 
 		alongXAxis = new JCheckBox("Width");
 		alongYAxis = new JCheckBox("Height");
@@ -197,6 +198,7 @@ public class ScalePanel extends JPanel implements ChangeListener, PolymorphicSli
 
 	@Override
 	public void setEnabled(final boolean enabled) {
+		label.setEnabled(enabled);
 		checkBox.setEnabled(enabled);
 		getSlider().setEnabled(enabled);
 		alongXAxis.setEnabled(enabled);

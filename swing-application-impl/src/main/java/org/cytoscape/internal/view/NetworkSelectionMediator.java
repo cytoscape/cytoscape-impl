@@ -4,7 +4,7 @@ import static org.cytoscape.internal.util.Util.equalSets;
 import static org.cytoscape.internal.util.Util.getNetworkViews;
 import static org.cytoscape.internal.util.Util.getNetworks;
 import static org.cytoscape.internal.util.Util.same;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

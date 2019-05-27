@@ -33,8 +33,10 @@ import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.manual.internal.rotate.RotatePanel;
 import org.cytoscape.view.manual.internal.scale.ScalePanel;
+import org.cytoscape.view.manual.internal.util.IconUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 
@@ -66,10 +68,10 @@ import org.cytoscape.view.model.View;
  * GUI for Align and Distribute of manualLayout
  */
 @SuppressWarnings("serial")
-public class ControlPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
+public class LayoutToolsPanel extends JPanel implements CytoPanelComponent2, SessionAboutToBeLoadedListener,
 		SessionLoadedListener, SetCurrentNetworkViewListener, RowsSetListener {
 	
-	private static final String TITLE = "Node Layout Tools";
+	private static final String TITLE = "Layout Tools";
 	private static final String ID = "org.cytoscape.NodeLayoutTools";
 	
 	private ScalePanel scalePanel;
@@ -78,11 +80,13 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 	private StackPanel stackPanel;
 	private RotatePanel rotatePanel;
 	
+	private TextIcon icon;
+	
 	private boolean loadingSession;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
-	public ControlPanel(final CyServiceRegistrar serviceRegistrar) {
+	public LayoutToolsPanel(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 		
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
@@ -99,10 +103,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 		layout.setAutoCreateContainerGaps(true);
 		layout.setAutoCreateGaps(false);
 		
+		int gap = 10;
 		int w = 320;
 		
 		layout.setHorizontalGroup(layout.createSequentialGroup()
-				.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(gap, gap, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, true)
 						.addComponent(scalePanel, DEFAULT_SIZE, w, w)
 						.addComponent(alignPanel, DEFAULT_SIZE, w, w)
@@ -110,7 +115,7 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 						.addComponent(stackPanel, DEFAULT_SIZE, w, w)
 						.addComponent(rotatePanel, DEFAULT_SIZE, w, w)
 				)
-				.addGap(0, 0, Short.MAX_VALUE)
+				.addGap(gap, gap, Short.MAX_VALUE)
 		);
 		layout.setVerticalGroup(layout.createSequentialGroup()
 				.addComponent(scalePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -145,7 +150,11 @@ public class ControlPanel extends JPanel implements CytoPanelComponent2, Session
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null)
+			icon = new TextIcon(IconUtil.RULER_COMBINED_SOLID,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14.0f), 16, 16);
+		
+		return icon;
 	}
 	
 	@Override

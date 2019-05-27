@@ -52,6 +52,7 @@ import org.cytoscape.view.model.CyNetworkView;
 @SuppressWarnings("serial")
 public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSlider {
 	
+	private JLabel label;
 	private JCheckBox checkBox;
 	private JSlider slider;
 	
@@ -66,7 +67,7 @@ public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSl
 		prevValue = getSlider().getValue();
 		
 		// set up the user interface
-		JLabel label = new JLabel("Rotate:");
+		label = new JLabel("Rotate:");
 
 		checkBox = new JCheckBox("Selected Only", true);
 		new CheckBoxTracker(checkBox);
@@ -143,6 +144,7 @@ public class RotatePanel extends JPanel implements ChangeListener, PolymorphicSl
 	
 	@Override
 	public void setEnabled(final boolean enabled) {
+		label.setEnabled(enabled);
 		checkBox.setEnabled(enabled);
 		getSlider().setEnabled(enabled);
 		

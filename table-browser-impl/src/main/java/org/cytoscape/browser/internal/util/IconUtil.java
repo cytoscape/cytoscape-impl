@@ -1,12 +1,12 @@
-package org.cytoscape.internal.util;
+package org.cytoscape.browser.internal.util;
 
 /*
  * #%L
- * Cytoscape Swing Application Impl (swing-application-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -28,17 +28,9 @@ public abstract class IconUtil {
 	
 	public static final String CY_FONT_NAME = "cytoscape-3";
 	
-	public static final String CYTOSCAPE_LOGO = "b";
-	
-	public static final String SELECTION_MODE_ANNOTATIONS = "7";
-	public static final String SELECTION_MODE_EDGES = "8";
-	public static final String SELECTION_MODE_NODES = "9";
-	
-	public static final String GD = "$";
-	public static final String TERMINAL = "%";
-	
-	public static final String PIN = "'";
-	public static final String UNPIN = "(";
+	public static final String EDGE_TABLE = "!";
+	public static final String NETWORK_TABLE = "\"";
+	public static final String NODE_TABLE = "#";
 	
 	private IconUtil() {
 		// ...

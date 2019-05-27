@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JPopupMenu;
@@ -21,6 +22,7 @@ import javax.swing.event.ListDataListener;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.browser.internal.view.BrowserTableModel.ViewMode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -39,6 +41,8 @@ import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 import org.cytoscape.model.events.TableAddedEvent;
 import org.cytoscape.model.events.TableAddedListener;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 
 /*
  * #%L
@@ -46,7 +50,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -75,7 +79,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 
 	private BrowserTableModel.ViewMode rowSelectionMode = BrowserTableModel.ViewMode.AUTO;
 	private boolean ignoreSetCurrentTable = true;
-
+	
 	public DefaultTableBrowser(
 			final String tabTitle,
 			final Class<? extends CyIdentifiable> objType,
@@ -94,6 +98,28 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			DefaultTableBrowser.this.actionPerformed(e);
 			displayMode.show(toolBar.getSelectionModeButton(), 0, toolBar.getSelectionModeButton().getHeight());
 		});
+	}
+	
+	@Override
+	public Icon getIcon() {
+		if (icon == null) {
+			String text = null;
+			
+			if (objType == CyNode.class)
+				text = IconUtil.NODE_TABLE;
+			else if (objType == CyEdge.class)
+				text = IconUtil.EDGE_TABLE;
+			else if (objType == CyNetwork.class)
+				text = IconUtil.NETWORK_TABLE;
+			
+			if (text != null)
+				icon = new TextIcon(text,
+						serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 14.0f), 16, 16);
+			else
+				return super.getIcon();
+		}
+		
+		return icon;
 	}
 	
 	private void createPopupMenu() {

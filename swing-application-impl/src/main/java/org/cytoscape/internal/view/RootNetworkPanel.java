@@ -22,7 +22,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -253,7 +253,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 					else
 						expand();
 				}
-			}, serviceRegistrar);
+			});
 		}
 		
 		return expandCollapseBtn;
@@ -264,7 +264,7 @@ public class RootNetworkPanel extends AbstractNetworkPanel<CyRootNetwork> {
 			networkCountLabel = new JLabel();
 			networkCountLabel.setFont(networkCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			networkCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			networkCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			networkCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return networkCountLabel;
