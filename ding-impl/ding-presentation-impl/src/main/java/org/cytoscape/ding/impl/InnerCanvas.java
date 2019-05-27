@@ -1,13 +1,9 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
-
 import java.awt.Color;
-import java.awt.Cursor;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -20,16 +16,13 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.swing.Timer;
-import javax.swing.UIManager;
 
-import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -41,7 +34,6 @@ import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
@@ -49,8 +41,6 @@ import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
-import org.cytoscape.view.presentation.property.values.Bend;
-import org.cytoscape.view.presentation.property.values.Handle;
 
 /*
  * #%L
@@ -80,11 +70,8 @@ import org.cytoscape.view.presentation.property.values.Handle;
  * Canvas to be used for drawing actual network visualization
  */
 @SuppressWarnings("serial")
-public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMotionListener, KeyListener, MouseWheelListener*/ {
+public class InnerCanvas extends DingCanvas {
 
-	private static final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
-	private static final Color SELECTION_RECT_BORDER_COLOR_2 = new Color(255, 255, 255, 160);
-	
 	public GraphGraphics grafx;
 	private final DRenderingEngine re;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -98,34 +85,10 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 	double scaleFactor;
 	
 	private int lastRenderDetail;
-//	private Rectangle selectionRect;
-	private ViewChangeEdit undoableEdit;
 	private boolean isPrinting;
-	private PopupMenuHelper popup;
 	private FontMetrics fontMetrics;
 	
-	private boolean NodeMovement = true;
-
-	/** for turning selection rectangle on and off */
-	private boolean selecting = true;
-	/** for turning camera panning on and off */
-	private boolean draggingCanvas;
-
-	private boolean enablePopupMenu = true;
-
-	private int currMouseButton;
-	private int lastXMousePos;
-	private int lastYMousePos;
-	private boolean button1NodeDrag;
-	
-	private final MousePressedDelegator mousePressedDelegator;
-	private final MouseReleasedDelegator mouseReleasedDelegator;
-	private final MouseDraggedDelegator mouseDraggedDelegator;
-	private final AddEdgeMousePressedDelegator addEdgeMousePressedDelegator;
-
-//	private AddEdgeStateMonitor addEdgeMode;
 	private Timer hideEdgesTimer;
-	private Cursor moveCursor;
 	
 	InnerCanvas(DingLock lock, DRenderingEngine re, CyServiceRegistrar serviceRegistrar) {
 		super(DRenderingEngine.Canvas.NETWORK_CANVAS);
@@ -138,20 +101,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		this.xCenter = 0.0d;
 		this.yCenter = 0.0d;
 		this.scaleFactor = 1.0d;
-
-//		addEdgeMode = new AddEdgeStateMonitor(this, re);
-		popup = new PopupMenuHelper(re, this, serviceRegistrar);
-		
-		mousePressedDelegator = new MousePressedDelegator();
-		mouseReleasedDelegator = new MouseReleasedDelegator();
-		mouseDraggedDelegator = new MouseDraggedDelegator();
-		addEdgeMousePressedDelegator = new AddEdgeMousePressedDelegator();
-
-//		addMouseListener(this);
-//		addMouseMotionListener(this);
-//		addMouseWheelListener(this);
-//		addKeyListener(this);
-//		setFocusable(true);
 
 		// Timer to reset edge drawing
 		ActionListener taskPerformer = evt -> {
@@ -220,24 +169,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 			g.drawImage(grafx.image, 0, 0, null);
 		}
 
-//		if ((selectionRect != null) && (this.isSelecting())) {
-//			final Graphics2D g2 = (Graphics2D) g;
-//			// External border
-//			g2.setColor(SELECTION_RECT_BORDER_COLOR_1);
-//			g2.draw(selectionRect);
-//			
-//			// Internal border
-//			if (selectionRect.width > 4 && selectionRect.height > 4) {
-//				g2.setColor(SELECTION_RECT_BORDER_COLOR_2);
-//				g2.drawRect(
-//						selectionRect.x + 1,
-//						selectionRect.y + 1,
-//						selectionRect.width - 2,
-//						selectionRect.height - 2
-//				);
-//			}
-//		}
-
 		if (contentChanged && re != null) {
 			re.fireContentChanged();
 		}
@@ -297,263 +228,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		super.processMouseEvent(e);
 	}
 
-//	// TODO: set timer and setDrawEdges to false.  Set back to true when timer expires.
-//	@Override
-//	public void mouseWheelMoved(MouseWheelEvent e) {
-//		if (!re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
-//			setHideEdges();
-//			adjustZoom(e.getWheelRotation());
-//		}
-//	}
-//	
-//	@Override
-//	public void mouseDragged(MouseEvent e) {
-//		mouseDraggedDelegator.delegateMouseEvent(e);
-//	}
-//
-//	@Override
-//	public void mouseMoved(MouseEvent e) {
-//		if (addEdgeMode.addingEdge())
-//			addEdgeMode.drawRubberBand(e);
-//		else {
-//			// MKTODO this results in the RTree being constantly queried, is there a better way???
-////			final String tooltipText = getToolTipText(e.getPoint());
-////			final Component[] components = this.getParent().getComponents();
-////			for (Component comp : components) {
-////				if (comp instanceof JComponent)
-////					((JComponent) comp).setToolTipText(tooltipText);
-////			}
-//		}
-//	}
-//
-//	@Override
-//	public void mouseClicked(MouseEvent e) { }
-//	
-//	@Override
-//	public void mouseEntered(MouseEvent e) { }
-//	
-//	@Override
-//	public void mouseExited(MouseEvent e) { }
-//
-//	@Override
-//	public void mouseReleased(MouseEvent e) {
-//		mouseReleasedDelegator.delegateMouseEvent(e);
-//	}
-//
-//	@Override
-//	public void mousePressed(MouseEvent e) {
-//		if ( addEdgeMode.addingEdge() )
-//			addEdgeMousePressedDelegator.delegateMouseEvent(e);
-//		else
-//			mousePressedDelegator.delegateMouseEvent(e);
-//		requestFocusInWindow();
-//	}
-
-//	/**
-//	 * Handles key press events. Currently used with the up/down, left/right arrow
-//	 * keys. Pressing any of the listed keys will move the selected nodes one pixel
-//	 * in that direction.
-//	 * @param k The key event that we're listening for.
-//	 */
-//	@Override
-//	public void keyPressed(KeyEvent k) {
-//		final int code = k.getKeyCode();
-//		if ( (code == KeyEvent.VK_UP) || (code == KeyEvent.VK_DOWN) || 
-//		     (code == KeyEvent.VK_LEFT) || (code == KeyEvent.VK_RIGHT)) {
-//			handleArrowKeys(k);
-//		} else if ( code == KeyEvent.VK_ESCAPE ) {
-//			handleEscapeKey();
-//		}
-//		else if ( code == KeyEvent.VK_BACK_SPACE ) 		//#1993
-//			handleBackspaceKey();
-//	}
-//
-//	private void handleBackspaceKey() {		//#1993
-//		final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
-//		NetworkTaskFactory taskFactory = serviceRegistrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-//		taskManager.execute(taskFactory.createTaskIterator(re.getViewModel().getModel()));
-//	}
-//
-//	/**
-//	 * Currently not used.
-//	 * @param k The key event that we're listening for.
-//	 */
-//	@Override
-//	public void keyReleased(KeyEvent k) { }
-//
-//	/**
-//	 * Currently not used.
-//	 * @param k The key event that we're listening for.
-//	 */
-//	@Override
-//	public void keyTyped(KeyEvent k) { }
-//
-//	private long getChosenNode() {
-//		double[] ptBuff = new double[2];
-//		ptBuff[0] = lastXMousePos;
-//		ptBuff[1] = lastYMousePos;
-//		re.xformComponentToNodeCoords(ptBuff);
-//		
-//		List<Long> nodes = re.getNodesIntersectingRectangle((float) ptBuff[0], (float) ptBuff[1], 
-//											(float) ptBuff[0], (float) ptBuff[1],
-//											(lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) == 0);
-//		// Need to Z-sort this
-//		long chosenNode = -1;
-//		if (!nodes.isEmpty()) {
-//			View<CyNode> nv = null;
-//			
-//			for(Long thisNode : nodes) {
-//				View<CyNode> dnv = re.getViewModelSnapshot().getNodeView(thisNode);
-//				if (nv == null || re.getNodeDetails().getZPosition(dnv) > re.getNodeDetails().getZPosition(nv)) {
-//					nv = dnv;
-//					chosenNode = thisNode;
-//				}
-//			}
-//		}
-//		return chosenNode;
-//	}
-
-//	private HandleKey getChosenAnchor() {
-//		double[] ptBuff = new double[2];
-//		ptBuff[0] = lastXMousePos;
-//		ptBuff[1] = lastYMousePos;
-//		re.xformComponentToNodeCoords(ptBuff);
-//		
-//		HandleKey handleKey = re.getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
-//		return handleKey;
-//	}
-//	
-//	private long getChosenEdge() {
-//		List<Long> edges = computeEdgesIntersecting(lastXMousePos - 1, lastYMousePos - 1, lastXMousePos + 1, lastYMousePos + 1);
-//		// MKTODO should I return first element or last element???, I think probably the last
-//		return edges.isEmpty() ? -1 : edges.get(edges.size()-1);
-//	}
-	
-	
-//	public static enum Toggle {
-//		SELECT, DESELECT, NOCHANGE
-//	}
-//	
-//	
-//	public Toggle toggleSelectedNode(View<CyNode> nodeView, MouseEvent e) {
-//		final boolean wasSelected = re.getNodeDetails().isSelected(nodeView);
-//		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-//		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-//			return Toggle.DESELECT;
-//		} else if (!wasSelected) {
-//			return Toggle.SELECT;
-//		}
-//		return Toggle.NOCHANGE;
-//	}
-//	
-//	public void toggleChosenAnchor(HandleKey chosenAnchor, MouseEvent e) {
-//		final long edge = chosenAnchor.getEdgeSuid();
-//		View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(edge);
-//		
-//		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
-//		if (e.isAltDown()) { // Remove handle
-//			int anchorInx = chosenAnchor.getHandleIndex();
-//			// Save remove handle
-//			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", serviceRegistrar);
-//
-//			Bend bend = null;
-//			if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-//				Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-//				if (re.getEdgeDetails().getBend(ev) == defaultBend) {
-//					bend = new BendImpl((BendImpl) defaultBend);
-//				} else {
-//					bend = new BendImpl((BendImpl) re.getEdgeDetails().getBend(ev));
-//				}
-//			}
-//			
-//			if(bend != null) {
-//				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getModel());
-//				if(mutableEdgeView != null) {
-//					mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bend);
-//				}
-//			}
-//			
-//			re.getBendStore().removeHandle(chosenAnchor);
-//			lod.setDrawEdges(true);
-//			// final GraphViewChangeListener listener = m_view.m_lis[0];
-//			// listener.graphViewChanged(new GraphViewEdgesSelectedEvent(m_view, DGraphView.makeList(ev.getCyEdge())));
-//		} else {
-//			final boolean wasSelected = re.getBendStore().isHandleSelected(chosenAnchor);
-//			// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-//			if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-//				re.getBendStore().unselectHandle(chosenAnchor);
-//			} else if (!wasSelected) {
-//				if (!e.isShiftDown() && !(isControlOrMetaDown(e) && !e.isAltDown()))
-//					re.getBendStore().unselectAllHandles();
-//				re.getBendStore().selectHandle(chosenAnchor);
-//			}
-//
-//		}
-//		re.setContentChanged();	
-//	}
-//	
-//	public Toggle toggleSelectedEdge(View<CyEdge> edgeView, MouseEvent e) {
-//		if(edgeView == null)
-//			return Toggle.NOCHANGE;
-//		
-//		boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
-//		
-//		// Add new Handle for Edge Bend.
-//		// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
-//		if ((e.isAltDown()) && ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0)) {
-//			re.getBendStore().unselectAllHandles();
-//			double[] ptBuff = new double[2];
-//			ptBuff[0] = lastXMousePos;
-//			ptBuff[1] = lastYMousePos;
-//			re.xformComponentToNodeCoords(ptBuff);
-//			// Store current handle list
-//			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", serviceRegistrar);
-//			
-//			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
-//			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-//			
-//			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-//				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
-//				if(mutableEdgeView != null) {
-//					if (defaultBend instanceof BendImpl)
-//						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
-//					else
-//						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-//				}
-//			}
-//			
-//			HandleKey handleKey = re.getBendStore().addHandle(edgeView, newHandlePoint);
-//			re.getBendStore().selectHandle(handleKey);
-//		}
-//
-//		Toggle toggle = Toggle.NOCHANGE;
-//		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-//		if (wasSelected && (e.isShiftDown() || (isControlOrMetaDown(e) && !e.isAltDown()))) {
-//			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).unselectInternal();
-//			toggle = Toggle.DESELECT;
-//		} else if (!wasSelected) {
-//			// ((DEdgeView) m_view.getDEdgeView(chosenEdge)).selectInternal(false);
-//			toggle = Toggle.SELECT;
-//
-//			if ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
-//				double[] ptBuff = new double[2];
-//				ptBuff[0] = lastXMousePos;
-//				ptBuff[1] = lastYMousePos;
-//				re.xformComponentToNodeCoords(ptBuff);
-//
-//				HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
-//
-//				if (hit != null) {
-//					re.getBendStore().selectHandle(hit);
-//				}
-//			}
-//		}
-//
-//		re.setContentChanged();
-//		return toggle;
-//	}
-//	
-	
 	
 	private List<View<CyNode>> suidsToNodes(List<Long> suids) {
 		NodeDetails nodeDetails = re.getNodeDetails();
@@ -676,28 +350,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		List<Long> edges = computeEdgesIntersecting(path);
 		return suidsToEdges(edges);
 	}
-	
-	
-//	/**
-//	 * Returns the tool tip text for the specified location if any exists first
-//	 * checking nodes, then edges, and then returns null if it's empty space.
-//	 */
-//	private String getToolTipText(final Point p) {
-//		// display tips for nodes before edges
-//		final View<CyNode> nv = re.getPickedNodeView(p);
-//		if (nv != null)  {
-//			final String tooltip = re.getNodeDetails().getTooltipText(nv);
-//			return tooltip;
-//		}
-//		// only display edge tool tips if the LOD is sufficient
-//		if ((lastRenderDetail & GraphRenderer.LOD_HIGH_DETAIL) != 0) {
-//			View<CyEdge> ev = re.getPickedEdgeView(p);
-//			if (ev != null) 
-//				return re.getEdgeDetails().getTooltipText(ev);
-//		}
-//
-//		return null;
-//	}
 	
 	
 	private static boolean intersectsLine(Line2D line, GeneralPath path) {
@@ -934,8 +586,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
      * directly so that edges maintain appropriate starting points at the center of whatever node they are associated with.
      */
     void setCenter(double x, double y)  {
-        double changeX = x - xCenter;
-        double changeY = y - yCenter;
         xCenter = x;
         yCenter = y;
     }
@@ -967,14 +617,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 		return lastRenderDetail;
 	}
 
-	public void setSelecting(boolean s) {
-		selecting = s;
-	}
-
-	public boolean isSelecting() {
-		return selecting;
-	}
-
 	public FontMetrics getFontMetrics() {
 		return fontMetrics;
 	}
@@ -985,30 +627,6 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 	 */
 	public AffineTransform getAffineTransform() {
 		return (grafx != null) ? grafx.getTransform() : null;
-	}
-
-	public void enableNodeMovement(){
-		this.NodeMovement = true;
-	}
-	
-	public void disableNodeMovement(){
-		this.NodeMovement = false;
-	}
-	
-	public boolean isNodeMovementDisabled(){
-		return !(this.NodeMovement);
-	}
-
-	public void enablePopupMenu(){
-		this.enablePopupMenu = true;
-	}
-	
-	public void disablePopupMenu(){
-		this.enablePopupMenu = false;
-	}
-	
-	public boolean isPopupMenuDisabled(){
-		return !(this.enablePopupMenu);
 	}
 
 	public void updateSubgraph(List<View<CyNode>> nodes, List<View<CyEdge>> edges) {
@@ -1051,650 +669,12 @@ public class InnerCanvas extends DingCanvas /*implements MouseListener, MouseMot
 	}
 
 
-//	/**
-//	 * Arrow key handler.
-//	 * They are used to pan and mode nodes/edge bend handles.
-//	 * @param k key event
-//	 */
-//	private void handleArrowKeys(KeyEvent k) {
-//		final int code = k.getKeyCode();
-//		float move = 1.0f;
-//
-//		// Adjust increment if Shift key is pressed
-//		if (k.isShiftDown())
-//			move = 15.0f;
-//		
-//		// Pan if CTR is pressed.
-//		if (isControlOrMetaDown(k)) {
-//			// Pan
-//			if (code == KeyEvent.VK_UP) {
-//				pan(0, move);
-//			} else if (code == KeyEvent.VK_DOWN) {
-//				pan(0, -move);
-//			} else if (code == KeyEvent.VK_LEFT) {
-//				pan(-move, 0);
-//			} else if (code == KeyEvent.VK_RIGHT) {
-//				pan(move, 0);
-//			}
-//			return;
-//		}
-//		
-//		if (re.isNodeSelectionEnabled()) {
-//			// move nodes
-//			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-//			for (View<CyNode> node : selectedNodes) {
-//				double xPos = re.getNodeDetails().getXPosition(node);
-//				double yPos = re.getNodeDetails().getYPosition(node);
-//
-//				if (code == KeyEvent.VK_UP) {
-//					yPos -= move;
-//				} else if (code == KeyEvent.VK_DOWN) {
-//					yPos += move;
-//				} else if (code == KeyEvent.VK_LEFT) {
-//					xPos -= move;
-//				} else if (code == KeyEvent.VK_RIGHT) {
-//					xPos += move;
-//				}
-//
-//				// MKTODO better way of doing this???
-//				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(node.getSUID());
-//				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPos);
-//				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
-//			}
-//
-//			Set<HandleKey> handlesToMove = re.getBendStore().getSelectedHandles();
-//			
-//			for (HandleKey handleKey : handlesToMove) {
-//				View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
-//
-//				// MKTODO this code is copy-pasted in a few places, clean it up
-//				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-//					Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-//					View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
-//					if(mutableEdgeView != null) {
-//						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-//							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-//						} else {
-//							Bend bend = re.getEdgeDetails().getBend(ev, true);
-//							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-//						}
-//					}
-//				}
-//				
-//				Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-//				Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-//				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
-//				
-//				float x = (float) newPoint.getX();
-//				float y = (float) newPoint.getY();
-//
-//				if (code == KeyEvent.VK_UP) {
-//					re.getBendStore().moveHandle(handleKey, x, y - move);
-//				} else if (code == KeyEvent.VK_DOWN) {
-//					re.getBendStore().moveHandle(handleKey, x, y + move);
-//				} else if (code == KeyEvent.VK_LEFT) {
-//					re.getBendStore().moveHandle(handleKey, x - move, y);
-//				} else if (code == KeyEvent.VK_RIGHT) {
-//					re.getBendStore().moveHandle(handleKey, x + move, y);
-//				}
-//
-//			}
-//			repaint();
-//		}
-//	}
-//	
-//	public void pan(double deltaX, double deltaY) {
-//		synchronized (dingLock) {
-//			double newX = xCenter - (deltaX / scaleFactor);
-//			double newY = yCenter - (deltaY / scaleFactor);
-//            setCenter(newX, newY);
-//		}
-//		re.setViewportChanged();
-//		setHideEdges();
-//		repaint();
-//	}
-//	
-//	private void maybeDeselectAll(final MouseEvent e, long chosenNode, long chosenEdge, HandleKey chosenAnchor) {
-//		Collection<View<CyNode>> selectedNodes = null;
-//		Collection<View<CyEdge>> selectedEdges = null;
-//		
-//		// Ignore Ctrl if Alt is down so that Ctrl-Alt can be used for edge bends without side effects
-//		if ((!e.isShiftDown() && !(e.isControlDown() && !e.isAltDown()) && !e.isMetaDown()) // If shift is down never unselect.
-//		    && (((chosenNode < 0) && (chosenEdge < 0) && (chosenAnchor == null)) // Mouse missed all.
-//		       // Not [we hit something but it was already selected].
-//		       || !( ((chosenNode >= 0) && re.isNodeSelected(chosenNode))
-//		             || (chosenAnchor != null) 
-//		             || ((chosenEdge >= 0) && re.isEdgeSelected(chosenEdge)) ))) {
-//				selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-//				selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-//		}
-//		
-//		// Deselect
-//		re.select(selectedNodes, CyNode.class, false);
-//		re.select(selectedEdges, CyEdge.class, false);
-//	}
-	
-	private class AddEdgeMousePressedDelegator extends ButtonDelegator {
-
-		@Override
-		void singleLeftClick(MouseEvent e) {
-			Point rawPt = e.getPoint();
-			double[] loc = new double[2];
-			loc[0] = rawPt.getX();
-			loc[1] = rawPt.getY();
-			re.xformComponentToNodeCoords(loc);
-			Point xformPt = new Point();
-			xformPt.setLocation(loc[0],loc[1]); 
-			View<CyNode> nodeView = re.getPickedNodeView(rawPt);
-			
-			if (nodeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-				popup.createNodeViewMenu(nodeView, e.getX(), e.getY(), "Edge");
-			}
-		}
-	}
-
-	private final class MousePressedDelegator extends ButtonDelegator {
-
-		@Override
-		void singleLeftClick(MouseEvent e) {
-//			// System.out.println("MousePressed ----> singleLeftClick");
-//			undoableEdit = null;
-//		
-//			currMouseButton = 1;
-//			lastXMousePos = e.getX();
-//			lastYMousePos = e.getY();
-//		
-//			long chosenNode = -1;
-//			long chosenEdge = -1;
-//			HandleKey chosenAnchor = null;
-//			long chosenNodeSelected = 0;
-//			long chosenEdgeSelected = 0;
-//	
-//			synchronized (dingLock) {
-//				if (re.isNodeSelectionEnabled())
-//					chosenNode = getChosenNode();
-//	
-//				if (re.isEdgeSelectionEnabled() && (chosenNode < 0) && ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0))
-//					chosenAnchor = getChosenAnchor();
-//	
-//				if (re.isEdgeSelectionEnabled() && (chosenNode < 0) && (chosenAnchor == null))
-//					chosenEdge = getChosenEdge();
-//	
-//				if (chosenNode >= 0)
-//				    chosenNodeSelected = toggleSelectedNode(chosenNode, e);
-//	
-//				if (chosenAnchor != null)
-//					toggleChosenAnchor(chosenAnchor, e);
-//	
-//				if (chosenEdge >= 0)
-//					chosenEdgeSelected = toggleSelectedEdge(chosenEdge, e);
-//	
-//				if ((chosenNode >= 0 || chosenEdge >= 0) && !(e.isShiftDown() || isControlOrMetaDown(e)))
-//					re.getBendStore().unselectAllHandles();
-//				
-//				if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor == null 
-//						&& (re.getCyAnnotator().getAnnotationSelection().isEmpty() || !re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION))) {
-//					
-//					button1NodeDrag = false;
-//					
-//					if (isDragSelectionKeyDown(e)) {
-//						selectionRect = new Rectangle(lastXMousePos, lastYMousePos, 0, 0);
-//						changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-//					} else {
-//						changeCursor(getMoveCursor());
-//					}
-//				} else {
-//					button1NodeDrag = true;
-//				}
-//			}
-//	
-//			if (chosenNode < 0 && chosenEdge < 0 && chosenAnchor == null) {
-//				// Save all node positions for panning
-//				undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.NODES, "Move", serviceRegistrar);
-//				lastXMousePos = e.getX();
-//				lastYMousePos = e.getY();
-//				lod.setDrawEdges(false);
-//			} else {
-//				maybeDeselectAll(e, chosenNode, chosenEdge, chosenAnchor);
-//				
-//				if (chosenNode >= 0) {
-//					View<CyNode> node = re.getViewModelSnapshot().getNodeView(chosenNode);
-//					if (chosenNodeSelected > 0) {
-//						re.select(Collections.singletonList(node), CyNode.class, true);
-//					}
-//					else if (chosenNodeSelected < 0)
-//						re.select(Collections.singletonList(node), CyNode.class, false);
-//				}
-//				if (chosenEdge >= 0) {
-//					View<CyEdge> edge = re.getViewModelSnapshot().getEdgeView(chosenEdge);
-//					if (chosenEdgeSelected > 0)
-//						re.select(Collections.singletonList(edge), CyEdge.class, true);
-//					else if (chosenEdgeSelected < 0)
-//						re.select(Collections.singletonList(edge), CyEdge.class, false);
-//				}
-//			}
-//
-//			repaint();
-		}
-
-		@Override
-		void singleMiddleClick(MouseEvent e) {
-			// Nothing to do here...
-		}
-
-        private View<CyNode> pickedNodeView = null;
-        private double pickedNodeWidth = 0.0;
-        private double pickedNodeHeight = 0.0;
-
-		private View<CyNode> getPickedNodeView() {
-			return pickedNodeView;
-		}
-
-		private double getPickedNodeWidth() {
-			return pickedNodeWidth;
-		}
-
-		private double getPickedNodeHeight() {
-			return pickedNodeHeight;
-		}
-	
-		@Override
-		void singleRightClick(MouseEvent e) {
-			// System.out.println("MousePressed ----> singleRightClick");
-			// Save all node positions
-			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.NODES, "Move", serviceRegistrar);
-			currMouseButton = 3;
-			lastXMousePos = e.getX();
-			lastYMousePos = e.getY();
-		
-			View<CyNode> nview = re.getPickedNodeView(e.getPoint());
-			if (nview != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-                pickedNodeView = nview;
-                pickedNodeHeight = re.getNodeDetails().getHeight(pickedNodeView);
-                pickedNodeWidth  = re.getNodeDetails().getWidth(pickedNodeView);
-				popup.createNodeViewMenu(nview,e.getX(),e.getY(),"NEW");
-			} else {
-				View<CyEdge> edgeView = re.getPickedEdgeView(e.getPoint());
-				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-					popup.createEdgeViewMenu(edgeView, e.getX(), e.getY(), "NEW");
-				} else {
-					// Clicked on empty space...
-					Point rawPt = e.getPoint();
-					double[] loc = new double[2];
-					loc[0] = rawPt.getX();
-					loc[1] = rawPt.getY();
-					re.xformComponentToNodeCoords(loc);
-					Point xformPt = new Point();
-					xformPt.setLocation(loc[0],loc[1]); 
-					if (!InnerCanvas.this.isPopupMenuDisabled()){
-						popup.createNetworkViewMenu(rawPt, xformPt, "NEW");						
-					}
-				}
-			}
-		}
-	
-		@Override
-		void doubleLeftClick(MouseEvent e) {
-			// System.out.println("MousePressed ----> doubleLeftClick");
-			View<CyNode> nview = re.getPickedNodeView(e.getPoint());
-			if ( nview != null && !InnerCanvas.this.isPopupMenuDisabled())
-				popup.createNodeViewMenu(nview,e.getX(), e.getY(), "OPEN");
-			else {
-				View<CyEdge> edgeView = re.getPickedEdgeView(e.getPoint());
-				if (edgeView != null && !InnerCanvas.this.isPopupMenuDisabled()) {
-					popup.createEdgeViewMenu(edgeView,e.getX(),e.getY(),"OPEN");
-				} else {
-					Point rawPt = e.getPoint();
-					double[] loc = new double[2];
-					loc[0] = rawPt.getX();
-					loc[1] = rawPt.getY();
-					re.xformComponentToNodeCoords(loc);
-					Point xformPt = new Point();
-					xformPt.setLocation(loc[0],loc[1]); 
-					if (!InnerCanvas.this.isPopupMenuDisabled()){
-						popup.createNetworkViewMenu(rawPt, xformPt, "OPEN");
-					}
-				}
-			}
-		}
-	}
-
-	private final class MouseReleasedDelegator extends ButtonDelegator {
-		@Override
-		// delegate based on the originally-pressed button so as not to change actions mid-click
-		public void delegateMouseEvent(MouseEvent e) {
-			switch(currMouseButton) {
-				case 1:
-					singleLeftClick(e);
-					break;
-				case 2:
-					singleMiddleClick(e);
-					break;
-				case 3:
-					singleRightClick(e);
-					break;
-			}
-			
-//			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		}
-
-		@Override
-		void singleLeftClick(MouseEvent e) {
-//			// System.out.println("1. MouseReleased ----> singleLeftClick");
-//			if (currMouseButton == 1) {
-//				currMouseButton = 0;
-//	
-//				if (selectionRect != null) {
-//					List<View<CyNode>> selectedNodes = null;
-//					List<View<CyEdge>> selectedEdges = null;
-//	
-//					synchronized (dingLock) {
-//						if (re.isNodeSelectionEnabled())
-//							selectedNodes = getAndApplySelectedNodes();	
-//						if (re.isEdgeSelectionEnabled())
-//							selectedEdges = getAndApplySelectedEdges();
-//					}
-//					
-//					selectionRect = null;
-//
-//					// Update visual property value (x/y)
-//					// MKTODO why is it doing this? it seems to just be setting the X/Y VPs to the value they already have??!?!
-////					if (selectedNodes != null){
-////						for (long node : selectedNodes) {
-////							View<CyNode> mutableNodeView = m_re.getViewModel().getNodeView(node);
-////							if(mutableNodeView != null) {
-////								mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, dNodeView.getXPosition());
-////								mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, dNodeView.getYPosition());
-////							}
-////						}						
-////					}
-//					
-//					if (!lod.getDrawEdges()) {
-//						lod.setDrawEdges(true);
-//						re.setViewportChanged();
-//					}
-//	
-//					if (selectedNodes != null && !selectedNodes.isEmpty())
-//						re.select(selectedNodes, CyNode.class, true);
-//					if (selectedEdges != null && !selectedEdges.isEmpty())
-//						re.select(selectedEdges, CyEdge.class, true);
-//					
-//					repaint();
-//				} else if (draggingCanvas) {
-//					setDraggingCanvas(false);
-//					
-//					if (undoableEdit != null)
-//						undoableEdit.post();
-//
-//					lod.setDrawEdges(true);
-//					re.setViewportChanged();
-//					repaint();
-//				} else {
-//					long chosenNode = -1;
-//					long chosenEdge = -1;
-//					HandleKey chosenAnchor = null;
-//					
-//					if (re.isNodeSelectionEnabled())
-//						chosenNode = getChosenNode();
-//		
-//					if (re.isEdgeSelectionEnabled() && (chosenNode < 0) && ((lastRenderDetail & GraphRenderer.LOD_EDGE_ANCHORS) != 0))
-//						chosenAnchor = getChosenAnchor();
-//		
-//					if (re.isEdgeSelectionEnabled() && (chosenNode < 0) && (chosenAnchor == null))
-//						chosenEdge = getChosenEdge();
-//					
-//					maybeDeselectAll(e, chosenNode, chosenEdge, chosenAnchor);
-//					
-//					re.setContentChanged();
-//					repaint();
-//				}
-//			}
-//	
-//			if (undoableEdit != null)
-//				undoableEdit.post();
-		}
-	
-		@Override
-		void singleMiddleClick(MouseEvent e) {
-			// Nothing to do here...
-		}
-	
-		@Override
-		void singleRightClick(MouseEvent e) {
-			// System.out.println("MouseReleased ----> singleRightClick");
-			if (currMouseButton == 3)
-				currMouseButton = 0;
-	
-			if (undoableEdit != null)
-				undoableEdit.post();
-		}
-	}
-	
-	int numFrames = 10;
-	
-	
-	private void setDraggingCanvas(boolean draggingCanvas) {
-		if(this.draggingCanvas != draggingCanvas) {
-			this.draggingCanvas = draggingCanvas;
-//			Cursor cursor = draggingCanvas ? getMoveCursor() : Cursor.getDefaultCursor();
-//			changeCursor(cursor);
-		}
-	}
-
-//	public void changeCursor(Cursor cursor) {
-//		String componentName = "__CyNetworkView_" + re.getViewModel().getSUID(); // see ViewUtil.createUniqueKey(CyNetworkView)
-//		Container parent = this;
-//		while(parent != null) {
-//			if(componentName.equals(parent.getName())) {
-//				parent.setCursor(cursor);
-//				break;
-//			}
-//			parent = parent.getParent();
-//		}
-//	}
-//	
-//	public Cursor getMoveCursor() {
-//		if (moveCursor == null) {
-//			Cursor cursor = null;
-//			
-//			if (LookAndFeelUtil.isMac()) {
-//				Dimension size = Toolkit.getDefaultToolkit().getBestCursorSize(24, 24);
-//				Image image = new BufferedImage(size.width, size.height, BufferedImage.TYPE_INT_ARGB);
-//				Graphics graphics = image.getGraphics();
-//
-//				String icon = IconManager.ICON_ARROWS;
-//				JLabel label = new JLabel();
-//				label.setBounds(0, 0, size.width, size.height);
-//				label.setText(icon);
-//				label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14));
-//				label.paint(graphics);
-//				graphics.dispose();
-//
-//				cursor = Toolkit.getDefaultToolkit().createCustomCursor(image, new Point(0, 0),
-//						"custom:" + (int) icon.charAt(0));
-//			} else {
-//				cursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
-//				
-//				if (cursor == null)
-//					cursor = new Cursor(Cursor.MOVE_CURSOR);
-//			}
-//			
-//			moveCursor = cursor;
-//		}
-//		
-//		return moveCursor;
-//	}
-	
-	
-	private final class MouseDraggedDelegator extends ButtonDelegator {
-		
-		// delegate based on the originally-pressed button so as not to change actions mid-click
-		@Override
-		public void delegateMouseEvent(MouseEvent e) {
-			switch(currMouseButton) {
-				case 1:
-					singleLeftClick(e);
-					break;
-				case 2:
-					singleMiddleClick(e);
-					break;
-			}
-		}
-		
-		@Override
-		void singleLeftClick(MouseEvent e) {
-			// System.out.println("MouseDragged ----> singleLeftClick: " + m_button1NodeDrag);
-			if (button1NodeDrag) {
-				// save selected node and edge positions
-				if (undoableEdit == null)
-					undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", serviceRegistrar);
-				
-				synchronized (dingLock) {
-					double[] ptBuff = new double[2];
-					ptBuff[0] = lastXMousePos;
-					ptBuff[1] = lastYMousePos;
-					re.xformComponentToNodeCoords(ptBuff);
-	
-					final double oldX = ptBuff[0];
-					final double oldY = ptBuff[1];
-					lastXMousePos = e.getX();
-					lastYMousePos = e.getY();
-					ptBuff[0] = lastXMousePos;
-					ptBuff[1] = lastYMousePos;
-					re.xformComponentToNodeCoords(ptBuff);
-	
-					final double newX = ptBuff[0];
-					final double newY = ptBuff[1];
-					double deltaX = newX - oldX;
-					double deltaY = newY - oldY;
-	
-					// If the shift key is down, then only move horizontally, vertically, or diagonally, depending on the slope.
-					if (e.isShiftDown()) {
-						final double slope = deltaY / deltaX;
-	
-						// slope of 2.41 ~ 67.5 degrees (halfway between 45 and 90)
-						// slope of 0.41 ~ 22.5 degrees (halfway between 0 and 45)
-						if ((slope > 2.41) || (slope < -2.41)) {
-							deltaX = 0.0; // just move vertical
-						} else if ((slope < 0.41) && (slope > -0.41)) {
-							deltaY = 0.0; // just move horizontal
-						} else {
-							final double avg = (Math.abs(deltaX) + Math.abs(deltaY)) / 2.0;
-							deltaX = (deltaX < 0) ? (-avg) : avg;
-							deltaY = (deltaY < 0) ? (-avg) : avg;
-						}
-					}
-	
-					Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-					
-					// MKTODO rename to 'handlesToMove'
-					Set<HandleKey> anchorsToMove = re.getBendStore().getSelectedHandles();
-					
-					if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
-						for (View<CyNode> node : selectedNodes) {
-							View<CyNode> mutableNode = re.getViewModel().getNodeView(node.getSUID());
-							if(mutableNode != null) {
-								NodeDetails nodeDetails = re.getNodeDetails();
-								double oldXPos = nodeDetails.getXPosition(mutableNode);
-								double oldYPos = nodeDetails.getYPosition(mutableNode);
-								// MKTODO Should setting VPs be done using NodeDetails as well??
-								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, oldXPos + deltaX);
-								mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
-							}
-					    }
-					} else {
-						for (HandleKey handleKey : anchorsToMove) {
-							View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
-	
-							if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-								Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-								View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
-								if(mutableEdgeView != null) {
-									if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
-										if( defaultBend instanceof BendImpl )
-											mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-										else
-											mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-									} else {
-										Bend bend = re.getEdgeDetails().getBend(ev, true);
-										mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-									}
-								}
-							}
-							final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-							//TODO: Refactor to fix this ordering problem.
-							//This test is necessary because in some instances, an anchor can still be present in the selected
-							//anchor list, even though the anchor has been removed. A better fix would be to remove the
-							//anchor from that list before this code is ever reached. However, this is not currently possible
-							//under the present API, so for now we just detect this situation and continue.
-							if( bend.getAllHandles().isEmpty() )
-								continue;
-							final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-							final Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), ev);
-							
-							float x = (float) newPoint.getX();
-							float y = (float) newPoint.getY();
-							
-							re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
-						}
-					}
-					
-					if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
-						re.setContentChanged();
-					}
-					if (!selectedNodes.isEmpty() && re.getBendStore().getSelectedHandles().isEmpty()) {
-						setHideEdges();
-					}
-				}
-			} else if (!isDragSelectionKeyDown(e)) {
-				setDraggingCanvas(true);
-				double deltaX = e.getX() - lastXMousePos;
-				double deltaY = e.getY() - lastYMousePos;
-				lastXMousePos = e.getX();
-				lastYMousePos = e.getY();
-		
-				synchronized (dingLock) {
-					double newX = xCenter - (deltaX / scaleFactor);
-					double newY = yCenter - (deltaY / scaleFactor);
-	                setCenter(newX, newY);
-				}
-		
-				re.setViewportChanged();
-				re.getViewModel().setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
-				re.getViewModel().setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
-				
-				repaint();
-			}
-	
-//			if (selectionRect != null) {
-//				final int x = Math.min(lastXMousePos, e.getX());
-//				final int y = Math.min(lastYMousePos, e.getY());
-//				final int w = Math.abs(lastXMousePos - e.getX());
-//				final int h = Math.abs(lastYMousePos - e.getY());
-//				selectionRect.setBounds(x, y, w, h);
-//			}
-
-			repaint();
-		}
-
-		@Override
-		void singleMiddleClick(MouseEvent e) {
-			// Nothing to do here...
-		}
-	}
 
 	public double getScaleFactor(){
 		return scaleFactor;
 	}
 
 	public void dispose() {
-//		removeMouseListener(this);
-//		removeMouseMotionListener(this);
-//		removeMouseWheelListener(this);
-//		removeKeyListener(this);
-		undoableEdit = null;
-//		addEdgeMode = null;
-		popup.dispose();
 	}
 	
 	public void ensureInitialized() {

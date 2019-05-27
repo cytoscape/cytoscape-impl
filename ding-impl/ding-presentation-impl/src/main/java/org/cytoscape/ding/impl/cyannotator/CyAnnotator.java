@@ -92,11 +92,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
 	
-//	private CanvasMouseMotionListener mouseMotionListener;
-//	private CanvasMouseListener mouseListener;
-//	private CanvasKeyListener keyListener;
-//	private CanvasMouseWheelListener mouseWheelListener;
-	
 	private AnnotationEdit undoEdit;
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
@@ -148,34 +143,13 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void initListeners() {
-//		mouseListener = new CanvasMouseListener(this, re, registrar);
-//		mouseMotionListener = new CanvasMouseMotionListener(this, re);
-//		keyListener = new CanvasKeyListener(this, re);
-//		mouseWheelListener = new CanvasMouseWheelListener(this, re);
-//		
-//		foreGroundCanvas.addMouseListener(mouseListener);
-//		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
-//		foreGroundCanvas.addKeyListener(keyListener);
-//		foreGroundCanvas.setFocusable(true);
-//
-//		//The created annotations resize (Their font changes), if we zoom in and out
-//		foreGroundCanvas.addMouseWheelListener(mouseWheelListener);
-
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
 		re.addViewportChangeListener(myViewportChangeListener);
 	}
 	
 	public void dispose() {
-		// Bug #1178: Swing's focus subsystem is leaking foreGroundCanvas.
-		// We need to remove all our listeners from that class to ensure we don't leak anything further.
-//		foreGroundCanvas.removeMouseListener(mouseListener);
-//		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
-//		foreGroundCanvas.removeKeyListener(keyListener);
-//		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
-		
 		re.removeViewportChangeListener(myViewportChangeListener);
-		
 		foreGroundCanvas.dispose();
 		backGroundCanvas.dispose();
 	}

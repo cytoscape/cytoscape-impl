@@ -25,7 +25,6 @@ import javax.swing.UIManager;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DingNetworkViewFactory;
-import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -247,8 +246,8 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		presentationFactory.createRenderingEngine(innerPanel, dummyView);
 //		dummyView.fitContent();
 		
-		InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
-		innerCanvas.disablePopupMenu();
+//		InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
+//		innerCanvas.disablePopupMenu();
 	}
 
 	@Override
