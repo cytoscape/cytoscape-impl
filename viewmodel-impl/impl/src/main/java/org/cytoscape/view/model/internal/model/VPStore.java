@@ -144,6 +144,7 @@ public class VPStore {
 		allLocks = put(allLocks, suid, parentVP, value);
 		updateTrackedVP(suid, parentVP);
 		
+		// this used to be propagateLockedVisualProperty() in ding
 		VisualLexiconNode node = visualLexicon.getVisualLexiconNode(parentVP);
 		node.visit(n -> {
 			VisualProperty vp = n.getVisualProperty();

@@ -31,6 +31,7 @@ import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
 import org.cytoscape.view.model.internal.model.spacial.SpacialIndexStore;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.Tuple2;
 import io.vavr.collection.HashMap;
@@ -81,7 +82,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
-		this.netVPs  = new VPNetworkStore(visualLexicon);
+		this.netVPs  = new VPNetworkStore(visualLexicon, config);
 	}
 	
 	
@@ -362,6 +363,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					for(Tuple2<Long,?> t : viewSuidToEdge) {
 						edgeVPs.updateTrackedVP(t._1, vp);
 					}
+				}
+				// This is hard-coded to mimic legacy Ding behaviour to prevent some build tests from failing.
+				if(vp == BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT) {
+					setViewDefault(BasicVisualLexicon.EDGE_SELECTED_PAINT, value);
+				}
+				else if(vp == BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT) {
+					setViewDefault(BasicVisualLexicon.EDGE_UNSELECTED_PAINT, value);
 				}
 			}
 		} else if(vp.getTargetDataType().equals(CyNetwork.class)) {

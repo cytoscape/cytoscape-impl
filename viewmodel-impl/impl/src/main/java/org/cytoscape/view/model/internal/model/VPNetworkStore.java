@@ -25,8 +25,8 @@ public class VPNetworkStore extends VPStore {
 	private double networkScaleFactor     = NETWORK_SCALE_FACTOR.getDefault();
 	
 	
-	public VPNetworkStore(VisualLexicon visualLexicon) {
-		super(CyNetwork.class, visualLexicon, new CyNetworkViewConfigImpl());
+	public VPNetworkStore(VisualLexicon visualLexicon, CyNetworkViewConfigImpl config) {
+		super(CyNetwork.class, visualLexicon, config);
 	}
 	
 	private VPNetworkStore(VPNetworkStore other) {

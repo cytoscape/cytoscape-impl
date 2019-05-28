@@ -42,10 +42,7 @@ public class NetworkModelListener implements AddedNodesListener, AddedEdgesListe
 	}
 	
 	/**
-	 * Note, we are NOT relying on SelectEdgeViewUpdater and SelectNodeViewUpdater to forward
-	 * selection events.
-	 * 
-	 * 
+	 * Note, we are NOT relying on SelectEdgeViewUpdater and SelectNodeViewUpdater to forward selection events.
 	 */
 	public void handleEvent(RowsSetEvent e) {
 		if(!e.containsColumn(CyNetwork.SELECTED))
