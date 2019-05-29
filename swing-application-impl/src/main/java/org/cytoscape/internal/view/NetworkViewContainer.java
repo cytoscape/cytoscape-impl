@@ -264,8 +264,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	private void updateHighDetailButton() {
-		getGraphicsDetailButton().setSelected(Boolean.TRUE.equals(
-				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar)));
+		boolean hd = Boolean.TRUE.equals(
+				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar));
+		getGraphicsDetailButton().setSelected(hd);
 	}
 	
 	private void updateSelectionModePanel() {
@@ -728,7 +729,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JToggleButton getGraphicsDetailButton() {
 		if (graphicsDetailButton == null) {
-			graphicsDetailButton = new SimpleToolBarToggleButton(IconUtil.GD);
+			graphicsDetailButton = new SimpleToolBarToggleButton(IconUtil.GD_LOW);
 			graphicsDetailButton.setToolTipText("Always Show Graphics Details");
 			styleToolBarButton(graphicsDetailButton,
 					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
@@ -736,6 +737,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			graphicsDetailButton.addActionListener(evt -> {
 				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, graphicsDetailButton.isSelected(),
 						networkView, serviceRegistrar);
+			});
+			graphicsDetailButton.addItemListener(evt -> {
+				getGraphicsDetailButton().setText(graphicsDetailButton.isSelected() ? IconUtil.GD_HIGH : IconUtil.GD_LOW);
 			});
 		}
 		
