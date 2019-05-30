@@ -11,8 +11,6 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
 import java.awt.TexturePaint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
@@ -97,7 +95,7 @@ import org.slf4j.LoggerFactory;
  */
 
 
-public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, ActionListener, CyNetworkViewListener {
+public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, CyNetworkViewListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	
@@ -1262,12 +1260,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		networkCanvas.setSize(d);
 	}
 
-	static <X> List<X> makeList(X nodeOrEdge) {
-		List<X> nl = new ArrayList<>(1);
-		nl.add(nodeOrEdge);
-		return nl;
-	}
-
 	@Override
 	public Printable createPrintable() {
 		return this;
@@ -1383,68 +1375,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public String getRendererId() {
 		return DingRenderer.ID;
 	}
-	
-	/******************************************************
-	 * Animation handling.  Currently, this only supports *
-	 * edge marquee, but could be extended in the future  *
-	 * to support other kinds of animations.              *
-	 *****************************************************/
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// If we're not even drawing dashed edges, no sense in trying to do marquee
-		if ((networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_DASHED_EDGES) == 0) {
-			return;
-		}
-		
-		// MKTODO make this work again
-//
-//		List<DEdgeView> removeMe = new ArrayList<>();
-//		for (DEdgeView edgeView: animatedEdges) {
-//			CyEdge edge = edgeView.getModel();
-//			Stroke s = m_edgeDetails.getStroke(edge);
-//			
-//			if (s != null && s instanceof AnimatedStroke) { 
-//				Stroke as = ((AnimatedStroke)s).newInstanceForNextOffset();
-//				
-//				synchronized (m_lock) {
-//					m_edgeDetails.overrideStroke(edge, as);
-//					setContentChanged();
-//				}
-//			} else if (s == null) {
-//				removeMe.add(edgeView);
-//			}
-//		}
-//
-//		// We do this this way to avoid the overhead of concurrent maps since this should be relatively rare
-//		if (removeMe.size() != 0) {
-//			for (DEdgeView edgeView: removeMe)
-//				animatedEdges.remove(edgeView);
-//		}
-
-		// Redraw?
-		networkCanvas.repaint();
-		//updateView();
-	}
-//
-//	public void removeAnimatedEdge(DEdgeView edgeView) {
-//		if (animatedEdges.contains(edgeView)) {
-//			animatedEdges.remove(edgeView);
-//
-//			if (animatedEdges.size() == 0 && animationTimer.isRunning()) {
-//				animationTimer.stop();
-//			}
-//		}
-//	}
-//
-//	public void addAnimatedEdge(DEdgeView edgeView) {
-//		if (!animatedEdges.contains(edgeView)) {
-//			animatedEdges.add(edgeView);
-//
-//			if (!animationTimer.isRunning()) {
-//				animationTimer.start();
-//			}
-//		}
-//	}
 	
 	
 	public <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
