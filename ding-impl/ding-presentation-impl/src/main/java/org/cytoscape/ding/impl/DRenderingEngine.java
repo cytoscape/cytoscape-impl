@@ -1451,21 +1451,28 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
 			return;
 		
+		boolean isNodes = type.equals(CyNode.class);
+		Boolean selectedBoxed = Boolean.valueOf(selected);
+		
 		CyNetwork model = getViewModel().getModel();
-		CyTable table = type.equals(CyNode.class) ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
+		CyTable table = isNodes ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
 		
 		// MKTODO is this right? what if the row doesn't exist?
 		CyNetworkViewSnapshot snapshot = getViewModelSnapshot();
 		for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
-			Long suid;
-			if(type.equals(CyNode.class)) {
-				suid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
+			if(isNodes) {
+				View<CyNode> mutableNodeView = getViewModel().getNodeView(nodeOrEdgeView.getSUID());
+				Long modelSuid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
+				CyRow row = table.getRow(modelSuid);
+				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, selectedBoxed);
+				row.set(CyNetwork.SELECTED, selectedBoxed);	
 			} else {
-				suid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
+				View<CyEdge> mutableEdgeView = getViewModel().getEdgeView(nodeOrEdgeView.getSUID());
+				Long modelSuid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
+				CyRow row = table.getRow(modelSuid);
+				mutableEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_SELECTED, selectedBoxed);
+				row.set(CyNetwork.SELECTED, selectedBoxed);	
 			}
-			
-			CyRow row = table.getRow(suid);
-			row.set(CyNetwork.SELECTED, selected);		
 		}
 	}
 	

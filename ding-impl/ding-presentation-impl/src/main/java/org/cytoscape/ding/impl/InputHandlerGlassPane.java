@@ -1356,6 +1356,6 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			parent = parent.getParent();
 		}
-	}
+	} 
 	
 }
