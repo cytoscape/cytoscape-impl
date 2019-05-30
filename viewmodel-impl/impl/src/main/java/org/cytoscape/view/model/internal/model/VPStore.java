@@ -176,8 +176,11 @@ public class VPStore {
 		for(Object key : keys) {
 			boolean test = config.getPredicate(key).test(value);
 			Set<Long> set = tracked.getOrElse(key, HashSet.empty());
-			set = test ? set.add(suid) : set.remove(suid);
-			tracked = tracked.put(key, set);
+			if(test) {
+				tracked = tracked.put(key, set.add(suid));
+			} else if(!set.isEmpty()) {
+				tracked = tracked.put(key, set.remove(suid));
+			}
 		}
 	}
 	

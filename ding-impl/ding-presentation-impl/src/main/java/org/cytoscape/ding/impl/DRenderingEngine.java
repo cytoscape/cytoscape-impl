@@ -31,7 +31,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -53,8 +52,6 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.model.events.RowSetRecord;
-import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -504,6 +501,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void updateView(final boolean forceRedraw) {
 		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		if(eventHelper == null)
+			return; // shutting down
 		eventHelper.flushPayloadEvents();
 		
 		invokeOnEDTAndWait(() -> {
@@ -1448,53 +1447,25 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //	}
 	
 	
-	
 	public <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
 		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
 			return;
 		
-		List<RowSetRecord> records = new ArrayList<>();
 		CyNetwork model = getViewModel().getModel();
 		CyTable table = type.equals(CyNode.class) ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
 		
-		// Disable events
-		// MKTODO With the new event coalesce logic in the event helper this shouldn't be necessary, but I'll leave it in for now.
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		eventHelper.silenceEventSource(table);
-
-		try {
-			// MKTODO is this right? what if the row doesn't exist?
-			CyNetworkViewSnapshot snapshot = getViewModelSnapshot();
-			for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
-				Long suid;
-				if(type.equals(CyNode.class)) {
-					suid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
-				} else {
-					suid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
-				}
-				
-				CyRow row = table.getRow(suid);
-				row.set(CyNetwork.SELECTED, selected);		
-				
-				records.add(new RowSetRecord(row, CyNetwork.SELECTED, selected, selected));
+		// MKTODO is this right? what if the row doesn't exist?
+		CyNetworkViewSnapshot snapshot = getViewModelSnapshot();
+		for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
+			Long suid;
+			if(type.equals(CyNode.class)) {
+				suid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
+			} else {
+				suid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
 			}
-		} finally {
-			eventHelper.unsilenceEventSource(table);
-		}
-		
-		// Only now it can fire the RowsSetEvent
-		fireRowsSetEvent(table, records, eventHelper);
-	}
-
-	private void fireRowsSetEvent(CyTable table, List<RowSetRecord> records, CyEventHelper eventHelper) {
-		// Make sure the event is not fired on the EDT,
-		// otherwise selecting many nodes and edges may lock up the UI momentarily
-		if (SwingUtilities.isEventDispatchThread()) {
-			new Thread(() -> {
-				fireRowsSetEvent(table, records, eventHelper);
-			}).start();
-		} else {
-			eventHelper.fireEvent(new RowsSetEvent(table, records));
+			
+			CyRow row = table.getRow(suid);
+			row.set(CyNetwork.SELECTED, selected);		
 		}
 	}
 	
