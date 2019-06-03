@@ -26,11 +26,10 @@ package org.cytoscape.ding.impl.strokes;
 
 import java.awt.BasicStroke;
 
-public class AnimatedDashDotStroke extends BasicStroke implements WidthStroke, AnimatedStroke {
+public class AnimatedDashDotStroke extends BasicStroke implements DAnimatedStroke {
 
-	static float nsteps = 4.0f;
-	private float width;
-	private float offset;
+	private final float width;
+	private final float offset;
 
 	public AnimatedDashDotStroke(float width) {
 		super(width, BasicStroke.CAP_ROUND, BasicStroke.JOIN_MITER, 10.0f,
@@ -55,8 +54,8 @@ public class AnimatedDashDotStroke extends BasicStroke implements WidthStroke, A
 			return new AnimatedDashDotStroke(w);
 	}
 
-	public AnimatedStroke newInstanceForNextOffset() {
-		float stepSize = 1.0f/nsteps;
+	public DAnimatedStroke newInstanceForNextOffset() {
+		float stepSize = 1.0f/N_STEPS;
 		float newOffset = offset - stepSize;
 		if (newOffset < 0)
 			newOffset = 1.0f-stepSize;
@@ -65,6 +64,8 @@ public class AnimatedDashDotStroke extends BasicStroke implements WidthStroke, A
 	}
 
 	public float getOffset() { return offset; }
+	
+	public float getWidth() { return width; }
 
 	public String toString() {
 		return this.getClass().getSimpleName() + " " + Float.toString(width);

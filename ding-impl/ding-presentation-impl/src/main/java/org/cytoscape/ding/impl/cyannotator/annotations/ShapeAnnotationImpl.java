@@ -12,7 +12,7 @@ import java.util.Map;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ShapeAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -57,8 +57,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	protected double shapeHeight;
 	protected double factor = 1.0;
 
-	public ShapeAnnotationImpl(DGraphView view, double width, double height, boolean usedForPreviews) {
-		super(view, usedForPreviews);
+	public ShapeAnnotationImpl(DRenderingEngine re, double width, double height, boolean usedForPreviews) {
+		super(re, usedForPreviews);
 		
 		shapeWidth = width;
 		shapeHeight = height;
@@ -84,7 +84,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	public ShapeAnnotationImpl(
-			DGraphView view,
+			DRenderingEngine re,
 			double x,
 			double y,
 			ShapeType shapeType,
@@ -94,7 +94,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 			Paint edgeColor,
 			float edgeThickness
 	) {
-		super(view, x, y, view.getZoom());
+		super(re, x, y, re.getZoom());
 
 		this.shapeType = shapeType;
 		this.fillColor = fillColor;
@@ -107,8 +107,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		updateSize();
 	}
 
-	public ShapeAnnotationImpl(DGraphView view, Map<String, String> argMap) {
-		super(view, argMap);
+	public ShapeAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+		super(re, argMap);
 
 		this.fillColor = ViewUtils.getColor(argMap, FILLCOLOR, null);
 		this.fillOpacity = ViewUtils.getDouble(argMap, FILLOPACITY, 100.0);
@@ -374,7 +374,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ShapeAnnotationDialog(this, ViewUtil.getActiveWindow(view));
+		return new ShapeAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
 	private ShapeType getShapeFromString(String shapeName) {

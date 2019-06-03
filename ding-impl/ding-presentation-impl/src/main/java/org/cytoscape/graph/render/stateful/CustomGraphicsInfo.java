@@ -58,8 +58,7 @@ public class CustomGraphicsInfo {
 		this.size = size;
 	}
 	
-	public List<CustomGraphicLayer> createLayers(final CyNetworkView netView, final View<CyNode> nodeView,
-			final NodeDetails details, final Set<VisualPropertyDependency<?>> dependencies) {
+	public List<CustomGraphicLayer> createLayers(final CyNetworkView netView, final View<CyNode> nodeView, final NodeDetails details, final Set<VisualPropertyDependency<?>> dependencies) {
 		final List<CustomGraphicLayer> transformedLayers = new ArrayList<>();
 		
 		if (customGraphics == null)
@@ -70,15 +69,14 @@ public class CustomGraphicsInfo {
 		if (originalLayers == null || originalLayers.isEmpty())
 			return transformedLayers;
 
-		final CyNode node = nodeView.getModel();
 		final float fitRatio = customGraphics.getFitRatio();
 		
 		// Check dependency. Sync size or not.
 		boolean sync = syncToNode(dependencies);
 		Double cgSize = size;
 		ObjectPosition cgPos = position;
-		final double nw = details.getWidth(node);
-		final double nh = details.getHeight(node);
+		final double nw = details.getWidth(nodeView);
+		final double nh = details.getHeight(nodeView);
 		
 		for (CustomGraphicLayer layer : originalLayers) {
 			// Assume it's a Ding layer
@@ -90,7 +88,7 @@ public class CustomGraphicsInfo {
 			
 			if (sync) {
 				// Size is locked to node size.
-				final float bw = details.getBorderWidth(node);
+				final float bw = details.getBorderWidth(nodeView);
 				cgw = nw - bw;
 				cgh = nh - bw;
 			} else {

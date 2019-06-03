@@ -210,7 +210,14 @@ class MemStatusPanel extends JPanel {
 		final float memUsed = getMemUsed();
 		final MemState memState = MemState.which(memUsed);
 		
-		memStatusBtn.setIcon(memState.getIcon(serviceRegistrar.getService(IconManager.class)));
+		try {
+			memStatusBtn.setIcon(memState.getIcon(serviceRegistrar.getService(IconManager.class)));
+		} catch (RuntimeException ex) {
+			// Ignore...
+			// When starting up Cytoscape, the IconManager service may not have been registered yet,
+			// but it should be available on the next update call.
+		}
+		
 		memStatusBtn.setHorizontalTextPosition(JButton.RIGHT);
 		memStatusBtn.setToolTipText("Memory " + memState.getName());
 		

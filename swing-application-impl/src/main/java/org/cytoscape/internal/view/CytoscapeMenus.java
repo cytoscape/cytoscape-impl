@@ -2,7 +2,7 @@ package org.cytoscape.internal.view;
 
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_NETWORK_AND_VIEW;
 import static org.cytoscape.application.swing.ActionEnableSupport.ENABLE_FOR_SELECTED_NODES_OR_EDGES;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDT;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.work.ServiceProperties.ENABLE_FOR;
 import static org.cytoscape.work.ServiceProperties.IN_TOOL_BAR;
 
@@ -54,7 +54,6 @@ public class CytoscapeMenus {
 		this.toolBar = toolBar;
 		
 		viewFrameActions = new LinkedHashSet<>();
-
 		
 		menuBar.addMenu("File.New Network", 3.0);
 		menuBar.addSeparator("File",3.1);

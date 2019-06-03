@@ -4,8 +4,8 @@ import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 
@@ -46,7 +46,7 @@ public abstract class AbstractDingAnnotationFactory<T extends Annotation> implem
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
-	public abstract JDialog createAnnotationDialog(DGraphView view, Point2D location); 
+	public abstract JDialog createAnnotationDialog(CyNetworkView view, Point2D location); 
 	
 	@Override
 	public Class<T> getType() {

@@ -8,7 +8,8 @@ import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -51,17 +52,18 @@ public class GroupAnnotationFactory extends AbstractDingAnnotationFactory<GroupA
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
+	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		return null;
 	}
 
 	@Override
-	public GroupAnnotation createAnnotation(Class<? extends GroupAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView) || !this.type.equals(type))
+	public GroupAnnotation createAnnotation(Class<? extends GroupAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+		if (!this.type.equals(type))
 			return null;
-
-		return new GroupAnnotationImpl((DGraphView) view, argMap);
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if(re == null)
+			return null;
+		return new GroupAnnotationImpl(re, argMap);
 	}
 	
 	@Override

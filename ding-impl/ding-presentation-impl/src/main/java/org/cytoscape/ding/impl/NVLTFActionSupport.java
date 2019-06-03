@@ -80,15 +80,11 @@ public class NVLTFActionSupport {
         @Override
         public void actionPerformed(ActionEvent a) {
 			CyNetworkView view = registrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-
-			if (!(view instanceof DGraphView))
-				return;
-
-			DGraphView dgview = (DGraphView) view;
+			DRenderingEngine re = registrar.getService(DingRenderer.class).getRenderingEngine(view);
 
 			// Get the canvas component. We need to use the foreground canvas because its
 			// on top and it's the only one that provides the mouse position
-			Component foregroundCanvas = dgview.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
+			Component foregroundCanvas = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
 
 			// Now get the current mouse position
 			Point2D javaPt = foregroundCanvas.getMousePosition();
@@ -100,7 +96,7 @@ public class NVLTFActionSupport {
 			double[] coords = new double[2];
 			coords[0] = javaPt.getX();
 			coords[1] = javaPt.getY();
-			dgview.xformComponentToNodeCoords(coords);
+			re.xformComponentToNodeCoords(coords);
 			Point2D xformPt = new Point2D.Double(coords[0], coords[1]);
 
 			registrar.getService(DialogTaskManager.class).execute(nvltf.createTaskIterator(view, javaPt, xformPt));

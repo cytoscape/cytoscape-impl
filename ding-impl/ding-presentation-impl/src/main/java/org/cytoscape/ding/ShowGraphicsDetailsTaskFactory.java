@@ -1,6 +1,6 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
@@ -38,6 +38,6 @@ public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 	
 	@Override
 	public boolean isReady(CyNetworkView view) {
-		return view instanceof DGraphView;
+		return DingRenderer.ID.equals(view.getRendererId());
 	}
 }

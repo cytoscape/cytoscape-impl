@@ -6,15 +6,13 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
-import static org.cytoscape.internal.util.ViewUtil.styleToolBarButton;
+import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -28,6 +26,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.net.URL;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -59,7 +58,7 @@ import org.cytoscape.internal.model.SelectionMode;
 import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.internal.util.SimpleToolBarToggleButton;
 import org.cytoscape.internal.util.Util;
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
@@ -124,7 +123,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel edgeSelectionLabel;
 	private JLabel nodeHiddenLabel;
 	private JLabel edgeHiddenLabel;
-	private JToggleButton highDetailButton;
+	private JToggleButton graphicsDetailButton;
 	private JToggleButton birdsEyeViewButton;
 	private BirdsEyeViewPanel birdsEyeViewPanel;
 	private final GridViewTogglePanel gridViewTogglePanel;
@@ -228,7 +227,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getDetachViewButton().setVisible(!isDetached() && !isComparing());
 		getReattachViewButton().setVisible(isDetached());
 		getExportButton().setVisible(!isComparing());
-		getHighDetailButton().setVisible(
+		getGraphicsDetailButton().setVisible(
 				!isComparing() && 
 						Util.isVisualPropertySupported("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView,
 								serviceRegistrar)
@@ -241,7 +240,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		getViewTitleLabel().setText(view != null ? ViewUtil.getTitle(view) : "");
 		getViewTitleLabel().setToolTipText(view != null ? ViewUtil.getTitle(view) : null);
 		
-		ViewUtil.updateToolBarStyle(getHighDetailButton());
+		ViewUtil.updateToolBarStyle(getGraphicsDetailButton());
 		
 		if (getSelectionModePanel().isVisible())
 			updateSelectionModePanel();
@@ -254,7 +253,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		if (isComparing())
 			updateCurrentLabel();
 		
-		if (getHighDetailButton().isVisible())
+		if (getGraphicsDetailButton().isVisible())
 			updateHighDetailButton();
 		
 		sanitizeToolBar();
@@ -265,8 +264,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	private void updateHighDetailButton() {
-		getHighDetailButton().setSelected(Boolean.TRUE.equals(
-				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar)));
+		boolean hd = Boolean.TRUE.equals(
+				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar));
+		getGraphicsDetailButton().setSelected(hd);
 	}
 	
 	private void updateSelectionModePanel() {
@@ -440,7 +440,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(UNRELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(getViewTitleLabel())
@@ -452,7 +452,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addPreferredGap(RELATED)
 					.addComponent(sep4, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
-					.addComponent(getHighDetailButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getGraphicsDetailButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
@@ -465,25 +465,37 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
-					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getHighDetailButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(1)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getGraphicsDetailButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(1)
 			);
+			
+			Set<JComponent> allButtons = new HashSet<>(selectionModeButtons);
+			allButtons.add(getDetachViewButton());
+			allButtons.add(getReattachViewButton());
+			allButtons.add(getExportButton());
+			allButtons.add(getGraphicsDetailButton());
+			allButtons.add(getBirdsEyeViewButton());
+			LookAndFeelUtil.equalizeSize(allButtons.toArray(new JComponent[allButtons.size()]));
 		}
 		
 		return toolBar;
@@ -501,9 +513,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
-			reattachViewButton = new JButton(" " + ICON_THUMB_TACK + " ");
+			reattachViewButton = new JButton(IconUtil.PIN);
 			reattachViewButton.setToolTipText("Reattach View");
-			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			styleToolBarButton(reattachViewButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16.0f));
 		}
 		
 		return reattachViewButton;
@@ -653,8 +666,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel getSelectionIconLabel() {
 		if (selectionIconLabel == null) {
 			selectionIconLabel = new JLabel(ICON_CHECK_SQUARE);
-			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
-			selectionIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
+			selectionIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return selectionIconLabel;
@@ -663,8 +676,8 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel getHiddenIconLabel() {
 		if (hiddenIconLabel == null) {
 			hiddenIconLabel = new JLabel(ICON_EYE_SLASH);
-			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
-			hiddenIconLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
+			hiddenIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return hiddenIconLabel;
@@ -675,7 +688,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeSelectionLabel = new JLabel();
 			nodeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeSelectionLabel.setFont(nodeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeSelectionLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeSelectionLabel;
@@ -686,7 +699,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeSelectionLabel = new JLabel();
 			edgeSelectionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeSelectionLabel.setFont(edgeSelectionLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeSelectionLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeSelectionLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeSelectionLabel;
@@ -697,7 +710,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			nodeHiddenLabel = new JLabel();
 			nodeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			nodeHiddenLabel.setFont(nodeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			nodeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeHiddenLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeHiddenLabel;
@@ -708,33 +721,36 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			edgeHiddenLabel = new JLabel();
 			edgeHiddenLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 			edgeHiddenLabel.setFont(edgeHiddenLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			edgeHiddenLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeHiddenLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeHiddenLabel;
 	}
 	
-	JToggleButton getHighDetailButton() {
-		if (highDetailButton == null) {
-			highDetailButton = new SimpleToolBarToggleButton(IconUtil.HD);
+	JToggleButton getGraphicsDetailButton() {
+		if (graphicsDetailButton == null) {
+			graphicsDetailButton = new SimpleToolBarToggleButton(IconUtil.GD_LOW);
+			graphicsDetailButton.setToolTipText("Always Show Graphics Details");
+			styleToolBarButton(graphicsDetailButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
 			
-			highDetailButton.addActionListener(evt -> {
-				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, highDetailButton.isSelected(),
+			graphicsDetailButton.addActionListener(evt -> {
+				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, graphicsDetailButton.isSelected(),
 						networkView, serviceRegistrar);
 			});
-			
-			styleToolBarButton(highDetailButton,
-					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
+			graphicsDetailButton.addItemListener(evt -> {
+				getGraphicsDetailButton().setText(graphicsDetailButton.isSelected() ? IconUtil.GD_HIGH : IconUtil.GD_LOW);
+			});
 		}
 		
-		return highDetailButton;
+		return graphicsDetailButton;
 	}
 	
 	JToggleButton getBirdsEyeViewButton() {
 		if (birdsEyeViewButton == null) {
 			birdsEyeViewButton = new JToggleButton(ICON_CROSSHAIRS, getBirdsEyeViewPanel().isVisible());
 			
-			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			styleToolBarButton(birdsEyeViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(20.0f));
 			
 			birdsEyeViewButton.addActionListener(evt -> {
 				getBirdsEyeViewPanel().setVisible(!getBirdsEyeViewPanel().isVisible());
@@ -923,7 +939,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	@SuppressWarnings("unused")
 	private final class SelectionModeButton extends SimpleToolBarToggleButton {
 
-		private static final int ICON_SIZE = 22;
+		private static final int ICON_SIZE = 18;
 		
 		private final ImageIcon tipIcon;
 		private final SelectionMode mode;

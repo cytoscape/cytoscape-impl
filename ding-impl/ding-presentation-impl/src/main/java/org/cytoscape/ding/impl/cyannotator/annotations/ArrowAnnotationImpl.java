@@ -17,12 +17,13 @@ import java.util.UUID;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
-import org.cytoscape.ding.impl.DNodeView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 
@@ -119,8 +120,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	public ArrowAnnotationImpl(DGraphView view, boolean usedForPreviews) {
-		super(view, usedForPreviews);
+	public ArrowAnnotationImpl(DRenderingEngine re, boolean usedForPreviews) {
+		super(re, usedForPreviews);
 	}
 
 	public ArrowAnnotationImpl(ArrowAnnotationImpl c, boolean usedForPreviews) {
@@ -146,7 +147,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	public ArrowAnnotationImpl(
-			DGraphView view,
+			DRenderingEngine re,
 			DingAnnotation source,
 			Object target,
 			float lineWidth,
@@ -158,7 +159,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			Paint targetColor,
 			float targetSize
 	) {
-		super(view, source.getComponent().getX(), source.getComponent().getY(), view.getZoom());
+		super(re, source.getComponent().getX(), source.getComponent().getY(), re.getZoom());
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -179,8 +180,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		updateBounds();
 	}
 
-	public ArrowAnnotationImpl(DGraphView view, Map<String, String> argMap) {
-		super(view, argMap);
+	public ArrowAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+		super(re, argMap);
 
 		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
 		this.lineWidth = ViewUtils.getFloat(argMap, ARROWTHICKNESS, 1.0f);
@@ -208,7 +209,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			double[] nextLocn = new double[2];
 			nextLocn[0] = Double.parseDouble(xy[0]);
 			nextLocn[1] = Double.parseDouble(xy[1]);
-			view.xformNodeToComponentCoords(nextLocn);
+			re.xformNodeToComponentCoords(nextLocn);
 			target = new Point2D.Double(nextLocn[0], nextLocn[1]);
 		} else if (argMap.containsKey(TARGETANN)) {
 			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
@@ -218,7 +219,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			String[] xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
-			DNodeView nv = (DNodeView) view.getPickedNodeView(new Point2D.Double(x, y));
+			View<CyNode> nv = re.getPickedNodeView(new Point2D.Double(x, y));
 			target = nv.getModel();
 		}
 		
@@ -255,11 +256,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		} else if (target != null && target instanceof Annotation) {
 			argMap.put(TARGETANN, ((DingAnnotation) target).getUUID().toString());
 		} else if (target != null && target instanceof CyNode) {
-			DNodeView nv = (DNodeView) view.getNodeView((CyNode) target);
+			// MKTODO Is this correct? How can target be an instance of CyNode???
+			View<CyNode> nv = re.getViewModelSnapshot().getNodeView((CyNode) target);
 
 			if (nv != null) {
-				double xCenter = nv.getXPosition();
-				double yCenter = nv.getYPosition();
+				double xCenter = re.getNodeDetails().getXPosition(nv);
+				double yCenter = re.getNodeDetails().getYPosition(nv);
 				argMap.put(TARGETNODE, Double.toString(xCenter) + "," + Double.toString(yCenter));
 			}
 		}
@@ -307,7 +309,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
-		this.target = ViewUtils.getNodeCoordinates(view, target.getX(), target.getY()); 
+		this.target = ViewUtils.getNodeCoordinates(re, target.getX(), target.getY()); 
 		// updateBounds();
 		update();
 	}
@@ -565,7 +567,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public JDialog getModifyDialog() {
-		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(view));
+		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
 	private Line2D getRelativeLine(Line2D line, double x, double y, 
@@ -634,7 +636,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
 		
 		if (target instanceof Point2D) {
-			targetPoint = ViewUtils.getComponentCoordinates(view, ((Point2D)target).getX(), ((Point2D)target).getY());
+			targetPoint = ViewUtils.getComponentCoordinates(re, ((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {
 			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds
@@ -643,7 +645,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
 		} else if (target instanceof CyNode) {
 			// get the target point from ding
-			DNodeView nv = (DNodeView)view.getNodeView((CyNode)target);
+			View<CyNode> nv = re.getViewModelSnapshot().getNodeView((CyNode)target);
 			Rectangle2D nodeBounds = getNodeBounds(nv);
 			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
 		}
@@ -719,18 +721,20 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		}
 	}
 
-	private Rectangle2D getNodeBounds(DNodeView nv) {
+	private Rectangle2D getNodeBounds(View<CyNode> nv) {
 		if (nv == null)
 			return null;
 		
 		double[] nextLocn = new double[2];
 
+		NodeDetails nodeDetails = re.getNodeDetails();
+		
 		// First, get our starting and ending points in node coordinates
-		double xCenter = nv.getXPosition();
-		double yCenter = nv.getYPosition();
+		double xCenter = nodeDetails.getXPosition(nv);
+		double yCenter = nodeDetails.getYPosition(nv);
 
-		double width = nv.getWidth();
-		double height = nv.getHeight();
+		double width  = nodeDetails.getWidth(nv);
+		double height = nodeDetails.getHeight(nv);
 
 		double xStart = xCenter-width/2.0;
 		double yStart = yCenter-height/2.0;
@@ -741,14 +745,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		// Now convert to component coordinates
 		nextLocn[0] = xStart;
 		nextLocn[1] = yStart;
-		view.xformNodeToComponentCoords(nextLocn);
+		re.xformNodeToComponentCoords(nextLocn);
 
 		double x = nextLocn[0];
 		double y = nextLocn[1];
 
 		nextLocn[0] = xEnd;
 		nextLocn[1] = yEnd;
-		view.xformNodeToComponentCoords(nextLocn);
+		re.xformNodeToComponentCoords(nextLocn);
 
 		width = nextLocn[0]-x;
 		height = nextLocn[1]-y;

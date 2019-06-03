@@ -7,22 +7,30 @@ import static org.mockito.Mockito.when;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.NetworkViewTestSupport;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingGraphLOD;
+import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.cyannotator.create.GroupAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.junit.Before;
 
 public class AbstractAnnotationTest {
 
 	private NetworkViewTestSupport nvTest = new NetworkViewTestSupport();
-	protected DGraphView graphView;
+	protected CyNetworkView graphView;
 	protected AnnotationManager annotationManager;
 	
 	protected ShapeAnnotationFactory shapeFactory;
@@ -32,9 +40,22 @@ public class AbstractAnnotationTest {
 	@Before
 	public void before() {
 		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
-		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
+		DingRenderer dingRenderer = mock(DingRenderer.class);
 		
-		graphView = (DGraphView) nvTest.getNetworkView();
+		when(registrar.getService(DingRenderer.class)).thenReturn(dingRenderer);
+		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
+		when(registrar.getService(SpacialIndex2DFactory.class)).thenReturn(nvTest.getSpacialIndex2DFactory());
+		
+		graphView = nvTest.getNetworkView();
+		
+		DVisualLexicon dingLexicon = new DVisualLexicon(mock(CustomGraphicsManager.class));
+		AnnotationFactoryManager annMgr = mock(AnnotationFactoryManager.class);
+		DingGraphLOD dingGraphLOD = mock(DingGraphLOD.class);
+		HandleFactory handleFactory = new HandleFactoryImpl();
+		DRenderingEngine re = new DRenderingEngine(graphView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);
+		
+		when(dingRenderer.getRenderingEngine(graphView)).thenReturn(re);
+		
 		annotationManager = new AnnotationManagerImpl(registrar);
 		
 		shapeFactory = new ShapeAnnotationFactory(registrar);

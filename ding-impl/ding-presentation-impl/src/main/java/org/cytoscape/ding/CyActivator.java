@@ -1,20 +1,6 @@
 package org.cytoscape.ding;
 
-import static org.cytoscape.work.ServiceProperties.ACCELERATOR;
-import static org.cytoscape.work.ServiceProperties.ID;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.IN_CONTEXT_MENU;
-import static org.cytoscape.work.ServiceProperties.IN_MENU_BAR;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.net.URL;
 import java.util.Enumeration;
@@ -45,12 +31,8 @@ import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
 import org.cytoscape.ding.impl.AddEdgeNodeViewTaskFactoryImpl;
 import org.cytoscape.ding.impl.BendFactoryImpl;
 import org.cytoscape.ding.impl.DingGraphLOD;
-import org.cytoscape.ding.impl.DingNavigationRenderingEngineFactory;
+import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.DingRenderingEngineFactory;
-import org.cytoscape.ding.impl.DingThumbnailRenderingEngineFactory;
-import org.cytoscape.ding.impl.DingViewModelFactory;
-import org.cytoscape.ding.impl.DingVisualStyleRenderingEngineFactory;
 import org.cytoscape.ding.impl.HandleFactoryImpl;
 import org.cytoscape.ding.impl.NVLTFActionSupport;
 import org.cytoscape.ding.impl.ViewTaskFactoryListener;
@@ -86,17 +68,20 @@ import org.cytoscape.ding.internal.charts.pie.PieChartFactory;
 import org.cytoscape.ding.internal.charts.ring.RingChartFactory;
 import org.cytoscape.ding.internal.gradients.linear.LinearGradientFactory;
 import org.cytoscape.ding.internal.gradients.radial.RadialGradientFactory;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.PropertyUpdatedListener;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
@@ -146,7 +131,6 @@ public class CyActivator extends AbstractCyActivator {
 	public void start(BundleContext bc) {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
-		startSpacial(bc, serviceRegistrar); 
 		startCustomGraphicsMgr(bc, serviceRegistrar);
 		startCharts(bc, serviceRegistrar);
 		startGradients(bc, serviceRegistrar);
@@ -158,6 +142,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		NVLTFActionSupport nvltfActionSupport = new NVLTFActionSupport(serviceRegistrar);
 		ViewTaskFactoryListener vtfListener = new ViewTaskFactoryListener(nvltfActionSupport);
+		registerService(bc, vtfListener, ViewTaskFactoryListener.class);
 
 		AnnotationFactoryManager annotationFactoryManager = new AnnotationFactoryManager();
 		AnnotationManager annotationManager = new AnnotationManagerImpl(serviceRegistrar);
@@ -167,18 +152,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		HandleFactory handleFactory = new HandleFactoryImpl();
 		registerService(bc, handleFactory, HandleFactory.class);
-		
-		DingRenderingEngineFactory dingRenderingEngineFactory =
-				new DingRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager, dingGraphLOD,
-						handleFactory, serviceRegistrar);
-		DingNavigationRenderingEngineFactory dingNavigationRenderingEngineFactory =
-				new DingNavigationRenderingEngineFactory(serviceRegistrar, dVisualLexicon);
-		DingRenderingEngineFactory dingVisualStyleRenderingEngineFactory =
-				new DingVisualStyleRenderingEngineFactory(dVisualLexicon, vtfListener, annotationFactoryManager,
-						dingGraphLOD, handleFactory, serviceRegistrar);
-		DingThumbnailRenderingEngineFactory dingThumbnailRenderingEngineFactory =
-				new DingThumbnailRenderingEngineFactory(dVisualLexicon, serviceRegistrar);
-		
+
 		AddEdgeNodeViewTaskFactoryImpl addEdgeNodeViewTaskFactory = new AddEdgeNodeViewTaskFactoryImpl(serviceRegistrar);
 
 		ContinuousMappingCellRendererFactory continuousMappingCellRendererFactory = getService(bc, ContinuousMappingCellRendererFactory.class);
@@ -188,31 +162,28 @@ public class CyActivator extends AbstractCyActivator {
 		ObjectPositionEditor objectPositionEditor =
 				new ObjectPositionEditor(objectPositionValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		DingViewModelFactory dingNetworkViewFactory = new DingViewModelFactory(dVisualLexicon, vtfListener,
-				annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
-
-		DingRenderer renderer = DingRenderer.getInstance();
-		renderer.registerNetworkViewFactory(dingNetworkViewFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT, dingRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.BIRDS_EYE_CONTEXT, dingNavigationRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.VISUAL_STYLE_PREVIEW_CONTEXT, dingVisualStyleRenderingEngineFactory);
-		renderer.registerRenderingEngineFactory(NetworkViewRenderer.THUMBNAIL_CONTEXT, dingThumbnailRenderingEngineFactory);
+		CyNetworkViewFactoryFactory netViewFactoryFactory = getService(bc, CyNetworkViewFactoryFactory.class);
+		CyNetworkViewConfig viewFactoryConfig = DingNetworkViewFactory.getNetworkViewConfig(netViewFactoryFactory, dVisualLexicon);
+		CyNetworkViewFactory netViewFactory = netViewFactoryFactory.createNetworkViewFactory(dVisualLexicon, DingRenderer.ID, viewFactoryConfig);
+		DingNetworkViewFactory dingNetViewFactory = new DingNetworkViewFactory(netViewFactory, dVisualLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		registerService(bc, dingNetViewFactory, NetworkViewAboutToBeDestroyedListener.class);
+		
+		DingRenderer renderer = new DingRenderer(dingNetViewFactory, dVisualLexicon, serviceRegistrar);
 		registerService(bc, renderer, NetworkViewRenderer.class);
+		registerService(bc, renderer, DingRenderer.class);
+		RenderingEngineFactory<CyNetwork> dingRenderingEngineFactory = renderer.getRenderingEngineFactory(DingRenderer.DEFAULT_CONTEXT);
 		
 		// Edge Bend editor
-		EdgeBendValueEditor edgeBendValueEditor =
-				new EdgeBendValueEditor(dingNetworkViewFactory, dingRenderingEngineFactory, serviceRegistrar);
-		EdgeBendEditor edgeBendEditor =
-				new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
+		EdgeBendValueEditor edgeBendValueEditor = new EdgeBendValueEditor(dingNetViewFactory, dingRenderingEngineFactory, serviceRegistrar);
+		EdgeBendEditor edgeBendEditor = new EdgeBendEditor(edgeBendValueEditor, continuousMappingCellRendererFactory, serviceRegistrar);
 
-		
 		Properties dingRenderingEngineFactoryProps = new Properties();
 		dingRenderingEngineFactoryProps.setProperty(ID, "ding");
 		registerAllServices(bc, dingRenderingEngineFactory, dingRenderingEngineFactoryProps);
 
-		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
-		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
-		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
+//		Properties dingNavigationRenderingEngineFactoryProps = new Properties();
+//		dingNavigationRenderingEngineFactoryProps.setProperty(ID, "dingNavigation");
+//		registerAllServices(bc, dingNavigationRenderingEngineFactory, dingNavigationRenderingEngineFactoryProps);
 
 		Properties addEdgeNodeViewTaskFactoryProps = new Properties();
 		addEdgeNodeViewTaskFactoryProps.setProperty(PREFERRED_ACTION, "Edge");
@@ -235,9 +206,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		registerAllServices(bc, edgeBendValueEditor);
 		registerService(bc, edgeBendEditor, VisualPropertyEditor.class);
-
-		Properties dingNetworkViewFactoryServiceProps = new Properties();
-		registerService(bc, dingNetworkViewFactory, CyNetworkViewFactory.class, dingNetworkViewFactoryServiceProps);
 
 		// Annotation Manager
 		registerServiceListener(bc, annotationFactoryManager::addAnnotationFactory, annotationFactoryManager::removeAnnotationFactory, AnnotationFactory.class);
@@ -280,7 +248,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, groupAnnotationFactory, AnnotationFactory.class, groupFactory);
 		
 		// Annotation Task Factories
-		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory);
+		AddArrowTaskFactory addArrowTaskFactory = new AddArrowTaskFactory(arrowAnnotationFactory, renderer);
 		Properties addArrowTaskFactoryProps = new Properties();
 		addArrowTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addArrowTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -288,7 +256,7 @@ public class CyActivator extends AbstractCyActivator {
 		addArrowTaskFactoryProps.setProperty(TITLE, "Arrow Annotation...");
 		registerService(bc, addArrowTaskFactory, NetworkViewLocationTaskFactory.class, addArrowTaskFactoryProps);
 
-		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory);
+		AddAnnotationTaskFactory addImageTaskFactory = new AddAnnotationTaskFactory(imageAnnotationFactory, renderer);
 		Properties addImageTaskFactoryProps = new Properties();
 		addImageTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addImageTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -296,7 +264,7 @@ public class CyActivator extends AbstractCyActivator {
 		addImageTaskFactoryProps.setProperty(TITLE, "Image Annotation...");
 		registerService(bc, addImageTaskFactory, NetworkViewLocationTaskFactory.class, addImageTaskFactoryProps);
 
-		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory);
+		AddAnnotationTaskFactory addShapeTaskFactory = new AddAnnotationTaskFactory(shapeAnnotationFactory, renderer);
 		Properties addShapeTaskFactoryProps = new Properties();
 		addShapeTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addShapeTaskFactoryProps.setProperty(PREFERRED_MENU, NETWORK_ADD_MENU);
@@ -304,7 +272,7 @@ public class CyActivator extends AbstractCyActivator {
 		addShapeTaskFactoryProps.setProperty(TITLE, "Shape Annotation...");
 		registerService(bc, addShapeTaskFactory, NetworkViewLocationTaskFactory.class, addShapeTaskFactoryProps);
 
-		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory);
+		AddAnnotationTaskFactory addTextTaskFactory = new AddAnnotationTaskFactory(textAnnotationFactory, renderer);
 		Properties addTextTaskFactoryProps = new Properties();
 		addTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.5");
@@ -312,7 +280,7 @@ public class CyActivator extends AbstractCyActivator {
 		addTextTaskFactoryProps.setProperty(TITLE, "Text Annotation...");
 		registerService(bc, addTextTaskFactory, NetworkViewLocationTaskFactory.class, addTextTaskFactoryProps);
 
-		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory);
+		AddAnnotationTaskFactory addBoundedTextTaskFactory =  new AddAnnotationTaskFactory(boundedAnnotationFactory, renderer);
 		Properties addBoundedTextTaskFactoryProps = new Properties();
 		addBoundedTextTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		addBoundedTextTaskFactoryProps.setProperty(MENU_GRAVITY, "1.6");
@@ -322,7 +290,7 @@ public class CyActivator extends AbstractCyActivator {
 		                addBoundedTextTaskFactoryProps);
 
 		// Annotation edit
-		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory();
+		EditAnnotationTaskFactory editAnnotationTaskFactory = new EditAnnotationTaskFactory(renderer);
 		Properties editAnnotationTaskFactoryProps = new Properties();
 		editAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		editAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "2.0");
@@ -345,7 +313,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Reorder Selected Annotations - Edit Menu
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_FRONT);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_FRONT);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations to Front");
@@ -355,7 +323,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.UP_ONE);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.UP_ONE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Bring Annotations Forward");
@@ -364,7 +332,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.DOWN_ONE);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.DOWN_ONE);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations Backward");
@@ -373,7 +341,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Shift.TO_BACK);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Shift.TO_BACK);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Send Annotations to Back");
@@ -383,7 +351,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Annotation.FOREGROUND);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.FOREGROUND);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(MENU_GRAVITY, "6.5");
@@ -391,7 +359,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NetworkViewTaskFactory.class, props);
 		}
 		{
-			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(Annotation.BACKGROUND);
+			ReorderSelectedAnnotationsTaskFactory factory = new ReorderSelectedAnnotationsTaskFactory(renderer, Annotation.BACKGROUND);
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, NETWORK_EDIT_MENU);
 			props.setProperty(TITLE, "Push Annotations to Background Layer");
@@ -412,7 +380,7 @@ public class CyActivator extends AbstractCyActivator {
 		*/
 
 		// Annotation delete
-		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory();
+		RemoveAnnotationTaskFactory removeAnnotationTaskFactory = new RemoveAnnotationTaskFactory(renderer);
 		Properties removeAnnotationTaskFactoryProps = new Properties();
 		removeAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		removeAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "1.1");
@@ -434,7 +402,7 @@ public class CyActivator extends AbstractCyActivator {
 		*/
 
 		// Annotation group
-		GroupAnnotationsTaskFactory groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory();
+		GroupAnnotationsTaskFactory groupAnnotationTaskFactory = new GroupAnnotationsTaskFactory(renderer);
 		Properties groupAnnotationTaskFactoryProps = new Properties();
 		groupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		groupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
@@ -446,7 +414,7 @@ public class CyActivator extends AbstractCyActivator {
 		                groupAnnotationTaskFactoryProps);
 
 		// Annotation ungroup
-		UngroupAnnotationsTaskFactory ungroupAnnotationTaskFactory = new UngroupAnnotationsTaskFactory();
+		UngroupAnnotationsTaskFactory ungroupAnnotationTaskFactory = new UngroupAnnotationsTaskFactory(renderer);
 		Properties ungroupAnnotationTaskFactoryProps = new Properties();
 		ungroupAnnotationTaskFactoryProps.setProperty(PREFERRED_ACTION, "NEW");
 		ungroupAnnotationTaskFactoryProps.setProperty(MENU_GRAVITY, "100");
@@ -619,8 +587,4 @@ public class CyActivator extends AbstractCyActivator {
 		return defaultImageUrls;
 	}
 
-	private void startSpacial(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
-		RTreeFactory rtreeFactory = new RTreeFactory();
-		registerService(bc, rtreeFactory, SpacialIndex2DFactory.class);
-	}
 }

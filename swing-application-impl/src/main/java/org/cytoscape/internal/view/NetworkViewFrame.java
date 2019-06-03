@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 import javax.swing.JRootPane;
 import javax.swing.JToolBar;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;

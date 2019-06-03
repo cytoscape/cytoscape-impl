@@ -1,24 +1,7 @@
 package org.cytoscape.ding.impl.editor;
 
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_TARGET_ARROW_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_BACKGROUND_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_BORDER_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_FILL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_HEIGHT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_COLOR;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_LABEL_FONT_SIZE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED_PAINT;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SHAPE;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_WIDTH;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
-import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.*;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -41,8 +24,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendImpl;
-import org.cytoscape.ding.impl.DEdgeView;
-import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
@@ -51,7 +33,6 @@ import org.cytoscape.model.SavePolicy;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -92,7 +73,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private CyNetworkView dummyView;
 	private View<CyEdge> edgeView;
 
-	private final CyNetworkViewFactory cyNetworkViewFactory;
+	private final DingNetworkViewFactory cyNetworkViewFactory;
 	private final RenderingEngineFactory<CyNetwork> presentationFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -101,7 +82,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private boolean bendRemoved;
 
 	public EdgeBendValueEditor(
-			final CyNetworkViewFactory cyNetworkViewFactory,
+			final DingNetworkViewFactory cyNetworkViewFactory,
 			final RenderingEngineFactory<CyNetwork> presentationFactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
@@ -263,9 +244,10 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 
 		// Render it in this panel.  It is not necessary to register this engine to manager.
 		presentationFactory.createRenderingEngine(innerPanel, dummyView);
+//		dummyView.fitContent();
 		
-		final InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
-		innerCanvas.disablePopupMenu();
+//		InnerCanvas innerCanvas = (InnerCanvas) innerPanel.getComponent(0);
+//		innerCanvas.disablePopupMenu();
 	}
 
 	@Override
@@ -292,11 +274,13 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		
 		EditMode.setMode(false);
 		
+		cyNetworkViewFactory.removeRenderingEngine(dummyView);
+		
 		if (bendRemoved)
 			return EDGE_BEND.getDefault();
 		
-		if (!editCancelled && edgeView instanceof DEdgeView)
-			return ((DEdgeView)edgeView).getBend();
+		if (!editCancelled)
+			return edgeView.getVisualProperty(EDGE_BEND);
 		
 		return null;
 	}

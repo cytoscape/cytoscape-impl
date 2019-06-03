@@ -9,7 +9,8 @@ import javax.swing.Icon;
 import javax.swing.JDialog;
 import javax.swing.UIManager;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.dialogs.BoundedTextAnnotationDialog;
 import org.cytoscape.ding.internal.util.IconUtil;
@@ -55,17 +56,19 @@ public class BoundedTextAnnotationFactory extends AbstractDingAnnotationFactory<
 	}
 	
 	@Override
-	public JDialog createAnnotationDialog(DGraphView view, Point2D location) {
-		return new BoundedTextAnnotationDialog(view, location, ViewUtil.getActiveWindow(view));
+	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		return new BoundedTextAnnotationDialog(re, location, ViewUtil.getActiveWindow(re));
 	}
 
 	@Override
-	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view,
-			Map<String, String> argMap) {
-		if (!(view instanceof DGraphView) || !this.type.equals(type))
+	public BoundedTextAnnotation createAnnotation(Class<? extends BoundedTextAnnotation> type, CyNetworkView view, Map<String,String> argMap) {
+		if (!this.type.equals(type))
 			return null;
-
-		return new BoundedTextAnnotationImpl((DGraphView) view, argMap);
+		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
+		if(re == null)
+			return null;
+		return new BoundedTextAnnotationImpl(re, argMap);
 	}
 	
 	@Override

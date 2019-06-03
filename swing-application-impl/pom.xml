@@ -222,6 +222,11 @@
 			<artifactId>flexmark-util</artifactId>
 			<version>0.22.4</version>
 		</dependency>
+		<dependency>
+			<groupId>cytoscape-temp</groupId>
+			<artifactId>org.swinglabs.swingx</artifactId>
+			<version>1.6.1</version>
+		</dependency>
 		
 		<dependency>
 			<groupId>com.apple.developer</groupId>

@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.geom.Point2D;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -29,10 +31,9 @@ import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.values.Handle;
-
-import java.awt.geom.Point2D;
 
 /**
  * A simple implementation of edge handle.
@@ -62,18 +63,32 @@ public class HandleImpl implements Handle {
 		this.sinTheta = h.sinTheta;
 		this.ratio = h.ratio;
 	}
+	
+	
+	private static View<CyNode> getSourceNodeView(CyNetworkView graphView, View<CyEdge> edge) {
+		if(graphView instanceof CyNetworkViewSnapshot)
+			return ((CyNetworkViewSnapshot)graphView).getEdgeInfo(edge).getSourceNodeView();
+		else
+			return graphView.getNodeView(edge.getModel().getSource());
+	}
+	
+	private static View<CyNode> getTargetNodeView(CyNetworkView graphView, View<CyEdge> edge) {
+		if(graphView instanceof CyNetworkViewSnapshot)
+			return ((CyNetworkViewSnapshot)graphView).getEdgeInfo(edge).getTargetNodeView();
+		else
+			return graphView.getNodeView(edge.getModel().getTarget());
+	}
+	
 
 	@Override
 	public Point2D calculateHandleLocation(final CyNetworkView graphView, final View<CyEdge> view) {
 		if (Double.isNaN(sinTheta) || Double.isNaN(cosTheta)) {
 			defineHandle(graphView, view, x, y);
 		}
-		final CyNode source = view.getModel().getSource();
-		final CyNode target = view.getModel().getTarget();
-
-		final View<CyNode> sourceView = graphView.getNodeView(source);
-		final View<CyNode> targetView = graphView.getNodeView(target);
-
+		
+		final View<CyNode> sourceView = getSourceNodeView(graphView, view);
+		final View<CyNode> targetView = getTargetNodeView(graphView, view);
+		
 		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
 		final double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 		final double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
@@ -108,10 +123,8 @@ public class HandleImpl implements Handle {
 	}
 
 	private void convertToRatio(final CyNetworkView graphView, View<CyEdge> view, final Point2D absolutePoint) {
-		final CyNode source = view.getModel().getSource();
-		final CyNode target = view.getModel().getTarget();
-		final View<CyNode> sourceView = graphView.getNodeView(source);
-		final View<CyNode> targetView = graphView.getNodeView(target);
+		final View<CyNode> sourceView = getSourceNodeView(graphView, view);
+		final View<CyNode> targetView = getTargetNodeView(graphView, view);
 
 		// Location of source node
 		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);

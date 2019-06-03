@@ -46,6 +46,7 @@ import org.cytoscape.view.manual.internal.util.Util;
 @SuppressWarnings("serial")
 public class DistPanel extends JPanel {
 	
+	private JLabel label;
 	private JButton halButton;
 	private JButton hacButton;
 	private JButton harButton;
@@ -69,7 +70,7 @@ public class DistPanel extends JPanel {
 		VDistCenter vac = new VDistCenter(vaci,app);
 		VDistBottom vab = new VDistBottom(vabi,app);
 
-		JLabel label = new JLabel("Distribute:");
+		label = new JLabel("Distribute:");
 		makeSmall(label);
 		
 		setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
@@ -88,6 +89,7 @@ public class DistPanel extends JPanel {
 	
 	@Override
 	public void setEnabled(final boolean enabled) {
+		label.setEnabled(enabled);
 		halButton.setEnabled(enabled);
 		hacButton.setEnabled(enabled);
 		harButton.setEnabled(enabled);

@@ -5,15 +5,12 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 
-import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineFactory;
-import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 /*
  * #%L
@@ -41,90 +38,44 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
+	private final DingNetworkViewFactory viewFactory;
 	private final VisualLexicon dingLexicon;
-	private final AnnotationFactoryManager annMgr;
-	private final CyServiceRegistrar registrar;
-	
-	private ViewTaskFactoryListener vtfListener;
-	
-	private DingGraphLOD dingGraphLOD;
-	
-	private final HandleFactory handleFactory; 
 
-	public DingRenderingEngineFactory(
-			final VisualLexicon dingLexicon,
-			final ViewTaskFactoryListener vtfListener,
-			final AnnotationFactoryManager annMgr,
-			final DingGraphLOD dingGraphLOD,
-			final HandleFactory handleFactory,
-			final CyServiceRegistrar registrar
-	) {
+	public DingRenderingEngineFactory(DingNetworkViewFactory viewFactory, VisualLexicon dingLexicon) {
+		this.viewFactory = viewFactory;
 		this.dingLexicon = dingLexicon;
-		this.annMgr = annMgr;
-		this.handleFactory = handleFactory;
-		this.vtfListener = vtfListener;
-		this.dingGraphLOD = dingGraphLOD;
-		this.registrar = registrar;
 	}
 
 	/**
 	 * Render given view model by Ding rendering engine.
 	 */
 	@Override
-	public RenderingEngine<CyNetwork> createRenderingEngine(final Object presentationContainer,
-			final View<CyNetwork> view) {
-		// Validate arguments
-		if (presentationContainer == null)
+	public RenderingEngine<CyNetwork> createRenderingEngine(Object container, View<CyNetwork> view) {
+		if (container == null)
 			throw new IllegalArgumentException("Container is null.");
-
 		if (view == null)
 			throw new IllegalArgumentException("Cannot create presentation for null view model.");
-
 		if (view instanceof CyNetworkView == false)
 			throw new IllegalArgumentException("Ding accepts CyNetworkView only.");
 
-		final CyNetworkView targetView = (CyNetworkView) view;
-		DGraphView dgv = null;
+		DRenderingEngine re = viewFactory.getRenderingEngine((CyNetworkView) view);
 		
-		if (presentationContainer instanceof JComponent || presentationContainer instanceof RootPaneContainer) {
-			if (view instanceof DGraphView) {
-				dgv = (DGraphView) view;				
-			} else {
-				dgv = new DGraphView(targetView, dingLexicon, vtfListener, annMgr, dingGraphLOD, handleFactory,
-						registrar);
-				dgv.registerServices();
-			}
-			
-			if (presentationContainer instanceof RootPaneContainer) {
-				final RootPaneContainer container = (RootPaneContainer) presentationContainer;
-				final InternalFrameComponent ifComp = new InternalFrameComponent(container.getLayeredPane(), dgv);
-				container.setContentPane(ifComp);
-			} else {
-				final JComponent component = (JComponent) presentationContainer;
-				component.setLayout(new BorderLayout());
-				component.add(dgv.getComponent(), BorderLayout.CENTER);
-			}
+		if (container instanceof RootPaneContainer) {
+			RootPaneContainer rootPane = (RootPaneContainer) container;
+			InputHandlerGlassPane glassPane = re.getInputHandlerGlassPane();
+			rootPane.setGlassPane(glassPane);
+			rootPane.setContentPane(new InternalFrameComponent(rootPane.getLayeredPane(), re));
+			glassPane.setVisible(true);
+		} else if (container instanceof JComponent){
+			JComponent component = (JComponent) container;
+			component.setLayout(new BorderLayout());
+			component.add(re.getCanvas(), BorderLayout.CENTER);
 		} else {
-			throw new IllegalArgumentException(
-					"frame object is not of type JComponent or RootPaneContainer, which is invalid for this implementation of PresentationFactory");
+			throw new IllegalArgumentException("visualizationContainer object must be of type JComponent or RootPaneContainer");
 		}
-
-		return dgv;
+		
+		return re;
 	}
-
-//	/**
-//	 * This method simply redraw the canvas, NOT updating the view model. To
-//	 * apply and draw the new view model, you need to call this after apply.
-//	 * 
-//	 */
-//	@Override
-//	public void handleEvent(UpdateNetworkPresentationEvent nvce) {
-//		DGraphView gv = vtfListener.viewMap.get(nvce.getSource());
-//		logger.debug("NetworkViewChangedEvent listener got view update request: "
-//				+ nvce.getSource().getSUID());
-//		if (gv != null)
-//			gv.updateView();
-//	}
 
 	
 	@Override

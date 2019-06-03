@@ -13,17 +13,17 @@ import org.cytoscape.ding.NetworkViewTestSupport;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.graph.render.stateful.EdgeDetails;
+import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.internal.CyRootNetworkManagerImpl;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.spacial.SpacialIndex2DFactory;
-import org.cytoscape.spacial.internal.rtree.RTreeFactory;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.model.VisualLexicon;
+import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.NodeShape;
@@ -62,38 +62,27 @@ import org.mockito.MockitoAnnotations;
 
 public class DGraphViewApplyTest {
 
-	private DGraphView dgv;
+	private CyNetworkView dgv;
+	private DRenderingEngine re;
+	private EdgeDetails edgeDetails;
+	private NodeDetails nodeDetails;
 
 	NetworkViewTestSupport testSupport = new NetworkViewTestSupport();
 
 	private CyNetwork network;
-	private CyRootNetworkManager rootNetworkManager;
-	private SpacialIndex2DFactory spacialFactory;
-	private VisualLexicon dingLexicon;
+	private DVisualLexicon dingLexicon;
 	private HandleFactory handleFactory;
 
-	@Mock
-	private UndoSupport undoSupport;
-	@Mock
-	private ViewTaskFactoryListener vtfListener;
-	@Mock
-	private DialogTaskManager dialogTaskManager;
-	@Mock
-	private CyEventHelper eventHelper;
-	@Mock
-	private IconManager iconManager;
-	@Mock
-	private AnnotationFactoryManager annotationFactoryManager;
-	@Mock
-	private DingGraphLOD dingGraphLOD;
-	@Mock
-	private VisualMappingManager visualMappingManager;
-	@Mock
-	private CyNetworkViewManager networkViewManager;
-	@Mock
-	private CustomGraphicsManager cgManager;
-	@Mock
-	private CyServiceRegistrar serviceRegistrar;
+	@Mock private UndoSupport undoSupport;
+	@Mock private DialogTaskManager dialogTaskManager;
+	@Mock private CyEventHelper eventHelper;
+	@Mock private IconManager iconManager;
+	@Mock private AnnotationFactoryManager annotationFactoryManager;
+	@Mock private DingGraphLOD dingGraphLOD;
+	@Mock private VisualMappingManager visualMappingManager;
+	@Mock private CyNetworkViewManager networkViewManager;
+	@Mock private CustomGraphicsManager cgManager;
+	@Mock private CyServiceRegistrar serviceRegistrar;
 	
 	// Network contents
 	CyNode node1;
@@ -104,50 +93,47 @@ public class DGraphViewApplyTest {
 	CyEdge edge23;
 	CyEdge edge13;
 
-	DEdgeView ev1;
-	DEdgeView ev2;
-	DEdgeView ev3;
+	View<CyEdge> ev12;
+	View<CyEdge> ev13;
+	View<CyEdge> ev23;
 
-	DNodeView nodeView1;
-	DNodeView nodeView2;
-	DNodeView nodeView3;
+	View<CyNode> nodeView1;
+	View<CyNode> nodeView2;
+	View<CyNode> nodeView3;
 
 	@Before
 	public void setUp() throws Exception {
-		// Build real DGraphView object.
 		MockitoAnnotations.initMocks(this);
 
 		testSupport.getNetworkTableManager();
-
 		network = buildNetworkModel();
-		rootNetworkManager = new CyRootNetworkManagerImpl();
-		spacialFactory = new RTreeFactory();
 		dingLexicon = new DVisualLexicon(cgManager);
 		handleFactory = new HandleFactoryImpl();
 		
-		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetworkManager);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
-		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(spacialFactory);
 		when(serviceRegistrar.getService(DialogTaskManager.class)).thenReturn(dialogTaskManager);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
-
-		dgv = new DGraphView(network, dingLexicon, vtfListener, annotationFactoryManager, dingGraphLOD, handleFactory,
-				serviceRegistrar);
+		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(testSupport.getSpacialIndex2DFactory());
+		
+		dgv = testSupport.getNetworkViewFactoryFactory().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
+		re = new DRenderingEngine(dgv, dingLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);
+		nodeDetails = re.getNodeDetails();
+		edgeDetails = re.getEdgeDetails();
 
 		assertNotNull(dgv);
 		assertEquals(3, dgv.getModel().getNodeCount());
 		assertEquals(3, dgv.getModel().getEdgeCount());
 
-		nodeView1 = dgv.getDNodeView(node1);
-		nodeView2 = dgv.getDNodeView(node2);
-		nodeView3 = dgv.getDNodeView(node3);
+		nodeView1 = dgv.getNodeView(node1);
+		nodeView2 = dgv.getNodeView(node2);
+		nodeView3 = dgv.getNodeView(node3);
 
-		ev1 = dgv.getDEdgeView(edge12);
-		ev2 = dgv.getDEdgeView(edge13);
-		ev3 = dgv.getDEdgeView(edge23);
+		ev12 = dgv.getEdgeView(edge12);
+		ev13 = dgv.getEdgeView(edge13);
+		ev23 = dgv.getEdgeView(edge23);
 	}
 
 	private CyNetwork buildNetworkModel() {
@@ -181,46 +167,45 @@ public class DGraphViewApplyTest {
 		final Color targetArrowColorM1 = Color.red;
 		final Color targetArrowColorM2 = Color.magenta;
 
+		EdgeDetails edgeDetails = re.getEdgeDetails();
 		dgv.setViewDefault(DVisualLexicon.EDGE_UNSELECTED_PAINT, strokeColor);
-		assertEquals(255, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge12)).getAlpha());
-		assertEquals(255, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge13)).getAlpha());
-		assertEquals(255, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge23)).getAlpha());
+		assertEquals(255, ((Color) edgeDetails.getUnselectedPaint(ev12)).getAlpha());
+		assertEquals(255, ((Color) edgeDetails.getUnselectedPaint(ev13)).getAlpha());
+		assertEquals(255, ((Color) edgeDetails.getUnselectedPaint(ev23)).getAlpha());
 
 		dgv.setViewDefault(DVisualLexicon.EDGE_TRANSPARENCY, 100);
-
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge12)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge13)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge23)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev12)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev13)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getUnselectedPaint(ev23)).getAlpha());
 
 		dgv.setViewDefault(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, targetArrowColor);
-		assertEquals(targetArrowColor.getRed(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getRed());
-		assertEquals(targetArrowColor.getGreen(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getGreen());
-		assertEquals(targetArrowColor.getBlue(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getBlue());
+		assertEquals(targetArrowColor.getRed(),   ((Color) edgeDetails.getTargetArrowPaint(ev12)).getRed());
+		assertEquals(targetArrowColor.getGreen(), ((Color) edgeDetails.getTargetArrowPaint(ev12)).getGreen());
+		assertEquals(targetArrowColor.getBlue(),  ((Color) edgeDetails.getTargetArrowPaint(ev12)).getBlue());
 
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge13)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge23)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev12)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev13)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev23)).getAlpha());
 
 		// Create mapping
-		ev1.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, targetArrowColorM1);
-		ev2.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, targetArrowColorM2);
+		ev12.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, targetArrowColorM1);
+		ev13.setVisualProperty(DVisualLexicon.EDGE_TARGET_ARROW_UNSELECTED_PAINT, targetArrowColorM2);
 
-		assertEquals(targetArrowColorM1.getRed(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getRed());
-		assertEquals(targetArrowColorM1.getGreen(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getGreen());
-		assertEquals(targetArrowColorM1.getBlue(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getBlue());
-		assertEquals(targetArrowColorM2.getRed(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge13)).getRed());
-		assertEquals(targetArrowColorM2.getGreen(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge13)).getGreen());
-		assertEquals(targetArrowColorM2.getBlue(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge13)).getBlue());
-		assertEquals(targetArrowColor.getRed(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge23)).getRed());
-		assertEquals(targetArrowColor.getGreen(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge23)).getGreen());
-		assertEquals(targetArrowColor.getBlue(), ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge23)).getBlue());
+		assertEquals(targetArrowColorM1.getRed(),   ((Color) edgeDetails.getTargetArrowPaint(ev12)).getRed());
+		assertEquals(targetArrowColorM1.getGreen(), ((Color) edgeDetails.getTargetArrowPaint(ev12)).getGreen());
+		assertEquals(targetArrowColorM1.getBlue(),  ((Color) edgeDetails.getTargetArrowPaint(ev12)).getBlue());
+		assertEquals(targetArrowColorM2.getRed(),   ((Color) edgeDetails.getTargetArrowPaint(ev13)).getRed());
+		assertEquals(targetArrowColorM2.getGreen(), ((Color) edgeDetails.getTargetArrowPaint(ev13)).getGreen());
+		assertEquals(targetArrowColorM2.getBlue(),  ((Color) edgeDetails.getTargetArrowPaint(ev13)).getBlue());
+		assertEquals(targetArrowColor.getRed(),   ((Color) edgeDetails.getTargetArrowPaint(ev23)).getRed());
+		assertEquals(targetArrowColor.getGreen(), ((Color) edgeDetails.getTargetArrowPaint(ev23)).getGreen());
+		assertEquals(targetArrowColor.getBlue(),  ((Color) edgeDetails.getTargetArrowPaint(ev23)).getBlue());
 
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge12)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge13)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_edgeDetails.getTargetArrowPaint(edge23)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev12)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev13)).getAlpha());
+		assertEquals(100, ((Color) edgeDetails.getTargetArrowPaint(ev23)).getAlpha());
 
 		// TODO: Add more tests (mixing defaults and mappings)
-
 	}
 
 	@Test
@@ -229,40 +214,40 @@ public class DGraphViewApplyTest {
 		final Color labelColor = Color.orange;
 
 		dgv.setViewDefault(DVisualLexicon.NODE_FILL_COLOR, fillColor);
-		assertEquals(255, ((Color) dgv.m_nodeDetails.getFillPaint(node1)).getAlpha());
-		assertEquals(255, ((Color) dgv.m_nodeDetails.getFillPaint(node2)).getAlpha());
-		assertEquals(255, ((Color) dgv.m_nodeDetails.getFillPaint(node3)).getAlpha());
+		assertEquals(255, ((Color) nodeDetails.getFillPaint(nodeView1)).getAlpha());
+		assertEquals(255, ((Color) nodeDetails.getFillPaint(nodeView2)).getAlpha());
+		assertEquals(255, ((Color) nodeDetails.getFillPaint(nodeView3)).getAlpha());
 
 		// Test labels
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_COLOR, labelColor);
-		assertEquals(labelColor.getRed(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getRed());
-		assertEquals(labelColor.getGreen(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getGreen());
-		assertEquals(labelColor.getBlue(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getBlue());
-		assertEquals(255, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
+		assertEquals(labelColor.getRed(),   ((Color) nodeDetails.getLabelPaint(nodeView1)).getRed());
+		assertEquals(labelColor.getGreen(), ((Color) nodeDetails.getLabelPaint(nodeView1)).getGreen());
+		assertEquals(labelColor.getBlue(),  ((Color) nodeDetails.getLabelPaint(nodeView1)).getBlue());
+		assertEquals(255, ((Color) nodeDetails.getLabelPaint(nodeView1)).getAlpha());
 
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_TRANSPARENCY, 100);
-		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node2, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node3, 0)).getAlpha());
+		assertEquals(100, ((Color) nodeDetails.getLabelPaint(nodeView1)).getAlpha());
+		assertEquals(100, ((Color) nodeDetails.getLabelPaint(nodeView2)).getAlpha());
+		assertEquals(100, ((Color) nodeDetails.getLabelPaint(nodeView3)).getAlpha());
 
 		// Test mappings
 
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_COLOR, Color.blue);
-		assertEquals(Color.blue.getBlue(), ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getBlue());
+		assertEquals(Color.blue.getBlue(), ((Color) nodeDetails.getLabelPaint(nodeView1)).getBlue());
 
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_TRANSPARENCY, 20);
-		assertEquals(20, ((Color) dgv.m_nodeDetails.getLabelPaint(node1, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node2, 0)).getAlpha());
-		assertEquals(100, ((Color) dgv.m_nodeDetails.getLabelPaint(node3, 0)).getAlpha());
+		assertEquals(20,  ((Color) nodeDetails.getLabelPaint(nodeView1)).getAlpha());
+		assertEquals(100, ((Color) nodeDetails.getLabelPaint(nodeView2)).getAlpha());
+		assertEquals(100, ((Color) nodeDetails.getLabelPaint(nodeView3)).getAlpha());
 
 		// Font
 		dgv.setViewDefault(DVisualLexicon.NODE_LABEL_FONT_SIZE, 20);
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_FONT_SIZE, 10);
 		nodeView2.setVisualProperty(DVisualLexicon.NODE_LABEL_FONT_SIZE, 8);
 
-		assertEquals(10, dgv.m_nodeDetails.getLabelFont(node1, 0).getSize());
-		assertEquals(8, dgv.m_nodeDetails.getLabelFont(node2, 0).getSize());
-		assertEquals(20, dgv.m_nodeDetails.getLabelFont(node3, 0).getSize());
+		assertEquals(10, nodeDetails.getLabelFont(nodeView1).getSize());
+		assertEquals(8,  nodeDetails.getLabelFont(nodeView2).getSize());
+		assertEquals(20, nodeDetails.getLabelFont(nodeView3).getSize());
 
 		final Font defFont = new Font("SansSerif", Font.PLAIN, 22);
 		final Font mapFont = new Font("Serif", Font.PLAIN, 40);
@@ -270,31 +255,31 @@ public class DGraphViewApplyTest {
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_LABEL_FONT_FACE, mapFont);
 		nodeView2.setVisualProperty(DVisualLexicon.NODE_LABEL_FONT_FACE, mapFont);
 
-		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node1, 0).getFontName());
-		assertEquals(mapFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node2, 0).getFontName());
-		assertEquals(defFont.getFontName(), dgv.m_nodeDetails.getLabelFont(node3, 0).getFontName());
+		assertEquals(mapFont.getFontName(), nodeDetails.getLabelFont(nodeView1).getFontName());
+		assertEquals(mapFont.getFontName(), nodeDetails.getLabelFont(nodeView2).getFontName());
+		assertEquals(defFont.getFontName(), nodeDetails.getLabelFont(nodeView3).getFontName());
 	}
 
 	@Test
 	public void testDefaultValues() {
 		dgv.setViewDefault(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.cyan);
-		assertEquals(Color.cyan, ev1.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
-		assertEquals(Color.cyan, ev2.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
-		assertEquals(Color.cyan, ev3.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
-		assertEquals(Color.cyan.getRed(), ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge12)).getRed());
-		assertEquals(Color.cyan.getGreen(), ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge12)).getGreen());
-		assertEquals(Color.cyan.getBlue(), ((Color) dgv.m_edgeDetails.getUnselectedPaint(edge12)).getBlue());
+		assertEquals(Color.cyan, ev12.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Color.cyan, ev13.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Color.cyan, ev23.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Color.cyan.getRed(),   ((Color) edgeDetails.getUnselectedPaint(ev12)).getRed());
+		assertEquals(Color.cyan.getGreen(), ((Color) edgeDetails.getUnselectedPaint(ev12)).getGreen());
+		assertEquals(Color.cyan.getBlue(),  ((Color) edgeDetails.getUnselectedPaint(ev12)).getBlue());
 
-		ev1.setVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.yellow);
-		assertEquals(Color.yellow, ev1.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
-		assertEquals(Color.cyan, ev2.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
-		assertEquals(Color.cyan, ev3.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		ev12.setVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT, Color.yellow);
+		assertEquals(Color.yellow, ev12.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Color.cyan,   ev13.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
+		assertEquals(Color.cyan,   ev23.getVisualProperty(DVisualLexicon.EDGE_STROKE_UNSELECTED_PAINT));
 
 		Double defEdgeWidth = 20d;
 		dgv.setViewDefault(DVisualLexicon.EDGE_WIDTH, defEdgeWidth);
-		assertEquals(defEdgeWidth, ev1.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
-		assertEquals(defEdgeWidth, ev2.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
-		assertEquals(defEdgeWidth, ev3.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
+		assertEquals(defEdgeWidth, ev12.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
+		assertEquals(defEdgeWidth, ev13.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
+		assertEquals(defEdgeWidth, ev23.getVisualProperty(DVisualLexicon.EDGE_WIDTH));
 
 		dgv.setViewDefault(DVisualLexicon.NODE_FILL_COLOR, Color.magenta);
 		assertEquals(Color.magenta, nodeView1.getVisualProperty(DVisualLexicon.NODE_FILL_COLOR));
@@ -307,7 +292,7 @@ public class DGraphViewApplyTest {
 
 		dgv.setViewDefault(DVisualLexicon.NODE_SHAPE, NodeShapeVisualProperty.DIAMOND);
 		NodeShape returnedShape = nodeView1.getVisualProperty(DVisualLexicon.NODE_SHAPE);
-		System.out.println("Shape ==> " + returnedShape);
+//		System.out.println("Shape ==> " + returnedShape);
 		assertEquals(NodeShapeVisualProperty.DIAMOND, returnedShape);
 	}
 
@@ -319,33 +304,29 @@ public class DGraphViewApplyTest {
 		dgv.setViewDefault(DVisualLexicon.NODE_BORDER_PAINT, Color.magenta);
 		dgv.setViewDefault(DVisualLexicon.NODE_BORDER_TRANSPARENCY, trans);
 
-		final Color resultColor = new Color(Color.magenta.getRed(), Color.magenta.getGreen(), Color.magenta.getBlue(),
-				trans);
+		final Color resultColor = new Color(Color.magenta.getRed(), Color.magenta.getGreen(), Color.magenta.getBlue(), trans);
 		assertEquals(borderW, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
-		assertEquals(resultColor, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
-		assertEquals(resultColor, dgv.m_nodeDetails.getBorderPaint(node1));
-		assertEquals(resultColor.getAlpha(), ((Color) dgv.m_nodeDetails.getBorderPaint(node1)).getAlpha());
-		assertEquals(trans, dgv.m_nodeDetails.getBorderTransparency(node1));
+		assertEquals(Color.magenta, nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(resultColor, nodeDetails.getBorderPaint(nodeView1));
+		assertEquals(resultColor.getAlpha(), ((Color) nodeDetails.getBorderPaint(nodeView1)).getAlpha());
+		assertEquals(trans, nodeDetails.getBorderTransparency(nodeView1));
 
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_BORDER_PAINT, Color.cyan);
 		nodeView1.setVisualProperty(DVisualLexicon.NODE_BORDER_TRANSPARENCY, 222);
 		final Color resultColor2 = new Color(Color.cyan.getRed(), Color.cyan.getGreen(), Color.cyan.getBlue(), 222);
 
-		assertEquals(resultColor2.getAlpha(), ((Color) dgv.m_nodeDetails.getBorderPaint(node1)).getAlpha());
-		assertEquals(resultColor2.getRed(),
-				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getRed());
-		assertEquals(resultColor2.getGreen(),
-				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getGreen());
-		assertEquals(resultColor2.getBlue(),
-				((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getBlue());
-		assertEquals(resultColor2, dgv.m_nodeDetails.getBorderPaint(node1));
+		assertEquals(resultColor2.getAlpha(), ((Color) nodeDetails.getBorderPaint(nodeView1)).getAlpha());
+		assertEquals(resultColor2.getRed(),   ((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getRed());
+		assertEquals(resultColor2.getGreen(), ((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getGreen());
+		assertEquals(resultColor2.getBlue(),  ((Color) nodeView1.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT)).getBlue());
+		assertEquals(resultColor2, nodeDetails.getBorderPaint(nodeView1));
 
-		assertEquals(222, dgv.m_nodeDetails.getBorderTransparency(node1).intValue());
+		assertEquals(222, nodeDetails.getBorderTransparency(nodeView1).intValue());
 
 		assertEquals(borderW, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_WIDTH));
-		assertEquals(resultColor, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
-		assertEquals(resultColor, dgv.m_nodeDetails.getBorderPaint(node2));
-		assertEquals(resultColor.getAlpha(), ((Color) dgv.m_nodeDetails.getBorderPaint(node2)).getAlpha());
-		assertEquals(trans, dgv.m_nodeDetails.getBorderTransparency(node2));
+		assertEquals(Color.magenta, nodeView2.getVisualProperty(DVisualLexicon.NODE_BORDER_PAINT));
+		assertEquals(resultColor, nodeDetails.getBorderPaint(nodeView2));
+		assertEquals(resultColor.getAlpha(), ((Color) nodeDetails.getBorderPaint(nodeView2)).getAlpha());
+		assertEquals(trans, nodeDetails.getBorderTransparency(nodeView2));
 	}
 }

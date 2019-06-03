@@ -7,7 +7,6 @@
 	</parent>
 
 	<artifactId>viewmodel-impl-parent</artifactId>
-  <version>3.8.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
     <name>Cytoscape View Model Impl Parent (${project.artifactId})</name>
 

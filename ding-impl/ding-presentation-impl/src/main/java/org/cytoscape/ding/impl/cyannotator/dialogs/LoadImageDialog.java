@@ -25,7 +25,7 @@ import javax.swing.filechooser.FileFilter;
 
 import org.apache.commons.io.FilenameUtils;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ImageAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -66,20 +66,19 @@ public class LoadImageDialog extends JDialog {
 	private JButton cancelButton;
 	private JFileChooser fileChooser;
 	
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final CustomGraphicsManager cgm;
 	private final Point2D startingLocation;
 
 	private static final Logger logger = LoggerFactory.getLogger(LoadImageDialog.class);
 
-	public LoadImageDialog(final DGraphView view, final Point2D start, final CustomGraphicsManager cgm,
-			final Window owner) {
+	public LoadImageDialog(final DRenderingEngine re, final Point2D start, final CustomGraphicsManager cgm, final Window owner) {
 		super(owner);
-		this.view = view;
+		this.re = re;
 		this.cgm = cgm;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start != null ? start : view.getCenter();
+		this.cyAnnotator = re.getCyAnnotator();
+		this.startingLocation = start != null ? start : re.getCenter();
 
 		initComponents();
 	}
@@ -146,10 +145,10 @@ public class LoadImageDialog extends JDialog {
 			
 			// The Attributes are x, y, Image, componentNumber, scaleFactor
 			ImageAnnotationImpl newOne = new ImageAnnotationImpl(
-					view,
+					re,
 					(int) startingLocation.getX(),
 					(int) startingLocation.getY(),
-					url, image, view.getZoom(), cgm
+					url, image, re.getZoom(), cgm
 			);
 
 			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
@@ -158,7 +157,7 @@ public class LoadImageDialog extends JDialog {
 			cyAnnotator.addAnnotation(newOne);
 			
 			// Update the canvas
-			view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+			re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 			// Set this shape to be resized
 			cyAnnotator.resizeShape(newOne);

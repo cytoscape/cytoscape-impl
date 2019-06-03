@@ -60,15 +60,28 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	AboutToRemoveNodeViewsListener, AboutToRemoveEdgeViewsListener,
 	NetworkViewAboutToBeDestroyedListener {
 
+	/**
+	 * Ding will handle updating selection events internally.
+	 * This class now only exists for backwards compatibility.
+	 */
+	private static String DING_ID = "org.cytoscape.ding";
+			
 	private final Map<CyNetworkView, Map<CyRow,View<? extends CyIdentifiable>>> rowViewMapsByNetworkView;
 	private final Map<CyTable, Set<CyNetworkView>> networkViewsByTable;
-
+	
 	public RowViewTracker() {
 		rowViewMapsByNetworkView = new IdentityHashMap<CyNetworkView, Map<CyRow,View<? extends CyIdentifiable>>>();
 		networkViewsByTable = new IdentityHashMap<CyTable, Set<CyNetworkView>>();
 	}
 
 	public void handleEvent(final NetworkViewAddedEvent e) {
+		String rendererId = e.getNetworkView().getRendererId();
+		if(rendererId.equals(DING_ID)) {
+			System.out.println("RowViewTracker.handleEvent(NetworkViewAddedEvent) " + e.getNetworkView().getSUID());
+			DING_ID = rendererId; // optimization, makes calling equals() faster because reference equality
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView view = e.getNetworkView();
@@ -125,6 +138,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 
 	public void handleEvent(final AddedNodeViewsEvent e) {
+		if(e.getSource().getRendererId().equals(DING_ID)) {
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView view = e.getSource();
@@ -139,6 +156,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 	
 	public void handleEvent(final AddedEdgeViewsEvent e) {
+		if(e.getSource().getRendererId().equals(DING_ID)) {
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				final CyNetworkView view = e.getSource();
@@ -153,6 +174,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 	
 	public void handleEvent(final AboutToRemoveNodeViewsEvent e) {
+		if(e.getSource().getRendererId().equals(DING_ID)) {
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
@@ -169,6 +194,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	}
 	
 	public void handleEvent(final AboutToRemoveEdgeViewsEvent e) {
+		if(e.getSource().getRendererId().equals(DING_ID)) {
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				Map<CyRow, View<? extends CyIdentifiable>> rowViewMap = rowViewMapsByNetworkView.get(e.getSource());
@@ -185,6 +214,10 @@ public class RowViewTracker implements NetworkViewAddedListener,
 	
 	@Override
 	public void handleEvent(final NetworkViewAboutToBeDestroyedEvent e) {
+		if(e.getNetworkView().getRendererId().equals(DING_ID)) {
+			return;
+		}
+		
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				CyNetworkView view = e.getNetworkView();

@@ -8,11 +8,10 @@ import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -39,14 +38,14 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class AddAnnotationTask extends AbstractNetworkViewTask {
+public class AddAnnotationTask extends AbstractTask {
 
+	private final DRenderingEngine re;
 	private final Point2D location;
 	private final AnnotationFactory<?> annotationFactory; 
 
-	public AddAnnotationTask(final CyNetworkView view, final Point2D location,
-			final AnnotationFactory<?> annotationFactory) {
-		super(view);
+	public AddAnnotationTask(DRenderingEngine re, Point2D location, AnnotationFactory<?> annotationFactory) {
+		this.re = re;
 		this.location = location;
 		this.annotationFactory = annotationFactory;
 	}
@@ -55,10 +54,9 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Annotation");
 		
-		if (view instanceof DGraphView && annotationFactory instanceof AbstractDingAnnotationFactory) {
+		if (re != null && annotationFactory instanceof AbstractDingAnnotationFactory) {
 			invokeOnEDT(() -> {
-				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory)
-						.createAnnotationDialog((DGraphView) view, location);
+				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
 				
 				if (dialog != null) {
 					Window owner = dialog.getOwner();
@@ -67,7 +65,7 @@ public class AddAnnotationTask extends AbstractNetworkViewTask {
 						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
 						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
 					} else {
-						dialog.setLocationRelativeTo(((DGraphView) view).getCanvas());
+						dialog.setLocationRelativeTo(re.getCanvas());
 					}
 					
 					dialog.setVisible(true);

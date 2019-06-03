@@ -19,9 +19,8 @@ import java.util.Map;
 
 import javax.swing.JComponent;
 
-import org.cytoscape.ding.impl.DGraphView.Canvas;
+import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 
 /*
  * #%L
@@ -59,7 +58,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	/**
 	 * Our reference to the DGraphView we live within
 	 */
-	private DGraphView m_dGraphView;
+	private DRenderingEngine m_view;
 
 	/**
 	 * Our reference to the inner canvas
@@ -93,13 +92,13 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	 * @param isVisible boolean
 	 * @param opaque boolean
 	 */
-	public ArbitraryGraphicsCanvas(DGraphView dGraphView,
+	public ArbitraryGraphicsCanvas(DRenderingEngine re,
 								   Canvas canvasId,
 	                               InnerCanvas innerCanvas,
 	                               Color backgroundColor,
 	                               boolean opaque) {
 		super(canvasId);
-		m_dGraphView = dGraphView;
+		m_view = re;
 		m_innerCanvas = innerCanvas;
 		m_backgroundColor = backgroundColor;
 		setOpaque(opaque);
@@ -115,7 +114,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		nodeCanvasCoordinates[0] = component.getX();
 		nodeCanvasCoordinates[1] = component.getY();
 
-		m_dGraphView.xformComponentToNodeCoords(nodeCanvasCoordinates);
+		m_view.xformComponentToNodeCoords(nodeCanvasCoordinates);
 
 		Point nodePos=new Point( (int)nodeCanvasCoordinates[0], (int)nodeCanvasCoordinates[1]);
 
@@ -196,7 +195,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		nodeCanvasCoordinates[0] = x;
 		nodeCanvasCoordinates[1] = y;
 
-		m_dGraphView.xformComponentToNodeCoords(nodeCanvasCoordinates);
+		m_view.xformComponentToNodeCoords(nodeCanvasCoordinates);
 
 		nodePos.x=(int)nodeCanvasCoordinates[0];
 		nodePos.y=(int)nodeCanvasCoordinates[1];
@@ -252,7 +251,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 			nodeCanvasCoordinates[1] = c.getY() + c.getHeight();
 
 			// Transform the maximum extent to get network cooredinates
-			m_dGraphView.xformComponentToNodeCoords(nodeCanvasCoordinates);
+			m_view.xformComponentToNodeCoords(nodeCanvasCoordinates);
 
 			// Adjust, if necessary
 			if (nodeCanvasCoordinates[0] > currentBounds[2])
@@ -408,10 +407,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	}
 
 	private void contentChanged() {
-		ContentChangeListener lis = m_dGraphView.m_cLis[0];
-
-		if (lis != null)
-			lis.contentChanged();
+		m_view.fireContentChanged();
 	}
 
 	// Sort the components by z order
@@ -441,7 +437,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 		// Bug #1178: This class is being leaked by Swing's focus subsystem
 		// In order to ensure no other instances get strung along, we should
 		// release them here.
-		m_dGraphView = null;
+		m_view = null;
 		m_innerCanvas = null;
 		m_componentToPointMap = null;
 	}

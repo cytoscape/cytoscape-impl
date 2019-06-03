@@ -15,7 +15,7 @@ import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
-import org.cytoscape.internal.util.ViewUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
@@ -288,7 +288,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			nodeCountLabel.setToolTipText("Nodes");
 			nodeCountLabel.setFont(nodeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			nodeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			nodeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			nodeCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return nodeCountLabel;
@@ -300,7 +300,7 @@ public class SubNetworkPanel extends AbstractNetworkPanel<CySubNetwork> {
 			edgeCountLabel.setToolTipText("Edges");
 			edgeCountLabel.setFont(edgeCountLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 			edgeCountLabel.setHorizontalAlignment(JLabel.RIGHT);
-			edgeCountLabel.setForeground(UIManager.getColor("Label.disabledForeground"));
+			edgeCountLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
 		return edgeCountLabel;

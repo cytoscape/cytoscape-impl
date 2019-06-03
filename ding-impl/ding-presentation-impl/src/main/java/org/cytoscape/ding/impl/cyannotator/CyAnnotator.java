@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.cyannotator;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
 import java.awt.Component;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
@@ -25,19 +26,16 @@ import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingCanvas;
 import org.cytoscape.ding.impl.InnerCanvas;
+import org.cytoscape.ding.impl.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasKeyListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseMotionListener;
-import org.cytoscape.ding.impl.cyannotator.listeners.CanvasMouseWheelListener;
 import org.cytoscape.ding.impl.cyannotator.tasks.AnnotationEdit;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -80,7 +78,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
 	private static final int MAX_NAME_LENGH = 200;
 
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private final ArbitraryGraphicsCanvas foreGroundCanvas;
 	private final ArbitraryGraphicsCanvas backGroundCanvas;
 	private final InnerCanvas networkCanvas;
@@ -94,11 +92,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
 	
-	private CanvasMouseMotionListener mouseMotionListener;
-	private CanvasMouseListener mouseListener;
-	private CanvasKeyListener keyListener;
-	private CanvasMouseWheelListener mouseWheelListener;
-	
 	private AnnotationEdit undoEdit;
 	
 	private final SwingPropertyChangeSupport propChangeSupport = new SwingPropertyChangeSupport(this);
@@ -106,12 +99,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public CyAnnotator(DGraphView view, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
-		this.view = view;
+	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
+		this.re = re;
 		this.registrar = registrar;
-		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS));
-		this.backGroundCanvas = (ArbitraryGraphicsCanvas) (view.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS));
-		this.networkCanvas = view.getCanvas();
+		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+		this.backGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+		this.networkCanvas = re.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		annotationSelection = new AnnotationSelection(this);
 		
@@ -150,41 +143,20 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	private void initListeners() {
-		mouseListener = new CanvasMouseListener(this, view, registrar);
-		mouseMotionListener = new CanvasMouseMotionListener(this, view);
-		keyListener = new CanvasKeyListener(this, view);
-		mouseWheelListener = new CanvasMouseWheelListener(this, view);
-		
-		foreGroundCanvas.addMouseListener(mouseListener);
-		foreGroundCanvas.addMouseMotionListener(mouseMotionListener);
-		foreGroundCanvas.addKeyListener(keyListener);
-		foreGroundCanvas.setFocusable(true);
-
-		//The created annotations resize (Their font changes), if we zoom in and out
-		foreGroundCanvas.addMouseWheelListener(mouseWheelListener);
-
 		//We also setup this class as a ViewportChangeListener to the current networkview
 		myViewportChangeListener=new MyViewportChangeListener();
-		view.addViewportChangeListener(myViewportChangeListener);
+		re.addViewportChangeListener(myViewportChangeListener);
 	}
 	
 	public void dispose() {
-		// Bug #1178: Swing's focus subsystem is leaking foreGroundCanvas.
-		// We need to remove all our listeners from that class to ensure we don't leak anything further.
-		foreGroundCanvas.removeMouseListener(mouseListener);
-		foreGroundCanvas.removeMouseMotionListener(mouseMotionListener);
-		foreGroundCanvas.removeKeyListener(keyListener);
-		foreGroundCanvas.removeMouseWheelListener(mouseWheelListener);
-		
-		view.removeViewportChangeListener(myViewportChangeListener);
-		
+		re.removeViewportChangeListener(myViewportChangeListener);
 		foreGroundCanvas.dispose();
 		backGroundCanvas.dispose();
 	}
 
 	
 	public void loadAnnotations() {
-		CyNetwork network = view.getModel();
+		CyNetwork network = re.getViewModel().getModel();
 		// Now, see if this network has any existing annotations
 		final CyTable networkAttributes = network.getTable(CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 
@@ -233,11 +205,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	public void update() {
-		view.updateView();
+		re.updateView();
 	}
 
-	public DGraphView getView() {
-		return view;
+	public DRenderingEngine getRenderingEngine() {
+		return re;
 	}
 
 	public CyServiceRegistrar getRegistrar() {
@@ -247,19 +219,13 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	/**
  	 * Find all of our annotations that are at this point.  Return the top annotation
  	 * (the one with the lowest Z value) if there are more than one.
- 	 *
- 	 * @param cnvs the Canvas we're looking at
- 	 * @param x the x value of the point
- 	 * @param y the y value of the point
- 	 * @return the component
  	 */
-	public DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private DingAnnotation getComponentAt(DingCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		
 		for (DingAnnotation a : annotationSet) {
 			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
-				if ((top == null)
-						|| (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
+				if ((top == null) || (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
 					top = a;
 				}
 			}
@@ -268,15 +234,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 
 	/**
- 	 * Find all of our annotations that are at this point.  Return the top annotation
- 	 * (the one with the lowest Z value) if there are more than one.
- 	 *
- 	 * @param cnvs the Canvas we're looking at
- 	 * @param x the x value of the point
- 	 * @param y the y value of the point
- 	 * @return the list of components
+ 	 * Find all of our annotations that are at this point. 
  	 */
-	public List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private List<DingAnnotation> getComponentsAt(DingCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
 
 		for (DingAnnotation a : annotationSet) {
@@ -296,26 +256,26 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return list;
 	}
 
+	// MKTODO should we do this???
 	public DingAnnotation getAnnotationAt(Point2D position) {
-		DingAnnotation a = getComponentAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (a != null) {
-			while (a.getGroupParent() != null) {
+		DingAnnotation a = getAnnotationAt(foreGroundCanvas, position);
+		if(a == null)
+			a = getAnnotationAt(backGroundCanvas, position);
+		return a;
+	}
+	
+	public DingAnnotation getAnnotationAt(DingCanvas canvas, Point2D position) {
+		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
+		if(a != null) {
+			while(a.getGroupParent() != null) {
 				a = (DingAnnotation)a.getGroupParent();
 			}
-			return a;
-		}
-
-		a = getComponentAt(backGroundCanvas, (int)position.getX(), (int)position.getY());
-		if (a != null) {
-			while (a.getGroupParent() != null)
-				a = (DingAnnotation)a.getGroupParent();
 		}
 		return a;
 	}
 
 	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
 		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-
 		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
 		return a;
 	}
@@ -325,11 +285,23 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		for (Annotation ann: getAnnotations()) {
 			DingAnnotation d = (DingAnnotation)ann;
 			Rectangle2D bounds = d.getComponent().getBounds();
-			if (rect.contains(bounds) && d.getGroupParent() == null)
+			if (d.getGroupParent() == null && rect.contains(bounds))
 				anns.add(d);
 		}
 		return anns;
 	}
+	
+	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
+		List<DingAnnotation> anns = new ArrayList<>();
+		for (Annotation ann: getAnnotations()) {
+			DingAnnotation d = (DingAnnotation)ann;
+			Rectangle2D bounds = d.getComponent().getBounds();
+			if(d.getGroupParent() == null && path.intersects(bounds))
+				anns.add(d);
+		}
+		return anns;
+	}
+	
 
 	public InnerCanvas getNetworkCanvas() {
 		return networkCanvas;
@@ -559,7 +531,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	@Override
 	public void handleEvent(SessionAboutToBeSavedEvent e) {
-		CyNetwork network = view.getModel();
+		CyNetwork network = re.getViewModel().getModel();
 		List<String> networkAnnotation = createSavableNetworkAttribute();
 		
 		if (network.getDefaultNetworkTable().getColumn(ANNOTATION_ATTRIBUTE) == null) {
@@ -625,7 +597,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				continue;
 			}
 
-			Annotation a = annotationFactoryManager.createAnnotation(type,view,argMap);
+			Annotation a = annotationFactoryManager.createAnnotation(type, re.getViewModel() ,argMap);
 			
 			if (a == null || !(a instanceof DingAnnotation))
 				continue;
@@ -681,7 +653,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private void loadArrows(List<Map<String, String>> arrowList, Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
 		for (Map<String, String> argMap : arrowList) {
 			String type = argMap.get("type");
-			Annotation annotation = annotationFactoryManager.createAnnotation(type,view,argMap);
+			Annotation annotation = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
 			
 			if (annotation instanceof ArrowAnnotationImpl) {
 				ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
@@ -796,9 +768,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	class ZComparator implements Comparator<DingAnnotation> {
 		
-		final ArbitraryGraphicsCanvas cnvs;
+		final DingCanvas cnvs;
 		
-		public ZComparator(final ArbitraryGraphicsCanvas c) {
+		public ZComparator(final DingCanvas c) {
 			this.cnvs = c;
 		}
 		

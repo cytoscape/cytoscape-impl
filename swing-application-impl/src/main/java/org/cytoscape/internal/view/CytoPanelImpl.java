@@ -1,48 +1,50 @@
 package org.cytoscape.internal.view;
 
-import static org.cytoscape.application.swing.CytoPanelState.DOCK;
-import static org.cytoscape.application.swing.CytoPanelState.FLOAT;
-import static org.cytoscape.application.swing.CytoPanelState.HIDE;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.EAST;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.SOUTH;
 import static org.cytoscape.internal.view.CytoPanelNameInternal.WEST;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.FLOAT;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.MINIMIZE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.BOTTOM_MIN_WIDTH;
-import static org.cytoscape.internal.view.CytoPanelUtil.BUTTON_SIZE;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.EAST_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.SOUTH_MIN_WIDTH;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_HEIGHT;
 import static org.cytoscape.internal.view.CytoPanelUtil.WEST_MIN_WIDTH;
-import static org.cytoscape.util.swing.IconManager.ICON_CARET_DOWN;
-import static org.cytoscape.util.swing.IconManager.ICON_REMOVE;
-import static org.cytoscape.util.swing.IconManager.ICON_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MAXIMIZE;
+import static org.cytoscape.util.swing.IconManager.ICON_WINDOW_MINIMIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FontMetrics;
+import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.SwingConstants;
+import javax.swing.UIManager;
+import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelComponent;
@@ -52,9 +54,11 @@ import org.cytoscape.application.swing.CytoPanelState;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelStateChangedEvent;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.internal.util.IconUtil;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.DropDownMenuButton;
 import org.cytoscape.util.swing.IconManager;
-import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -62,7 +66,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -80,89 +84,57 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public class CytoPanelImpl implements CytoPanel, ChangeListener {
+public class CytoPanelImpl implements CytoPanel {
 	
-	private static final int FLOAT_PANEL_SCALE_FACTOR = 2;
-
-	private static final String TOOL_TIP_SWITCH = "Switch To...";
-	private static final String TOOL_TIP_FLOAT = "Float Window";
-	private static final String TOOL_TIP_DOCK = "Dock Window";
-	private static final String TOOL_TIP_CLOSE = "Close Window";
+	public static final String TEXT_DOCK = "Dock";
+	public static final String TEXT_UNDOCK = "Undock";
+	public static final String TEXT_FLOAT = "Float";
+	public static final String TEXT_MINIMIZE = "Minimize";
+	public static final String TEXT_HIDE = "Hide";
 	
-	/* These are the minimum sizes for our CytoPanels. A CytoPanel can't exceed these values. */
+	public static final float STATE_ICON_FONT_SIZE = 11.0f;
+	
 	private final int NOTIFICATION_STATE_CHANGE = 0;
 	private final int NOTIFICATION_COMPONENT_SELECTED = 1;
-	private final int NOTIFICATION_COMPONENT_ADDED = 2;
-	private final int NOTIFICATION_COMPONENT_REMOVED = 3;
 
-	private JTabbedPane tabbedPane;
-	private JLabel floatLabel;
-	private JButton switchCompButton;
+	private JPanel mainPanel;
+	private JPanel titlePanel;
+	private DropDownMenuButton titleButton;
 	private JButton floatButton;
-	private JButton closeButton;
+	private JButton dockButton;
+	private JButton undockButton;
+	private JButton minimizeButton;
 	
-	private final JComponent contentPane = new ContentPane();
-	private final BiModalJSplitPane splitPane;
+	private JPanel cardsPanel;
+	private final CardLayout cardLayout = new CardLayout();
+	
 	private final CytoPanelNameInternal compassDirection;
-	private final int tabPlacement;
+	private final int trimBarIndex;
 	
-	private CytoPanelState cytoPanelState;
-
+	private CytoPanelStateInternal state;
+	private boolean maximized;
+	
+	private final List<CytoPanelComponent> cytoPanelComponents = new ArrayList<>();
 	private final Map<String, CytoPanelComponent2> componentsById = new HashMap<>();
+	
+	private final SwingPropertyChangeSupport pcs = new SwingPropertyChangeSupport(this, true);
 
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public CytoPanelImpl(
 			final CytoPanelNameInternal compassDirection,
-			final int tabPlacement,
-			final CytoPanelState cytoPanelState,
+			final int trimBarIndex,
+			final CytoPanelStateInternal state,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		this.compassDirection = compassDirection;
-		this.tabPlacement = tabPlacement;
+		this.trimBarIndex = trimBarIndex;
 		this.serviceRegistrar = serviceRegistrar;
 		
-		splitPane = null;
-		
-		init();
-		setState(cytoPanelState);
+		update();
+		setStateInternal(state);
 	}
 	
-	/**
-	 * Use this constructor to create a CytoPanel that can contain another CytoPanel.
-	 * In this case, it uses a {@link BiModalJSplitPane} to separate this CytoPanel from the other CytoPanel.
-	 * @param compassDirection
-	 * @param tabPlacement
-	 * @param cytoPanelState
-	 * @param otherPanel
-	 * @param splitOrientation see {@link JSplitPane}
-	 * @param resizeWeight see {@link JSplitPane}
-	 * @param serviceRegistrar
-	 */
-	public CytoPanelImpl(
-			final CytoPanelNameInternal compassDirection,
-			final int tabPlacement,
-			final CytoPanelState cytoPanelState,
-			final CytoPanelImpl otherPanel,
-			final int splitOrientation,
-			final double resizeWeight, 
-			final CyServiceRegistrar serviceRegistrar
-	) {
-		this.compassDirection = compassDirection;
-		this.tabPlacement = tabPlacement;
-		this.serviceRegistrar = serviceRegistrar;
-		
-		splitPane = new BiModalJSplitPane(otherPanel.getCytoPanelNameInternal(), splitOrientation, contentPane,
-				otherPanel.getThisComponent());
-		
-		if (resizeWeight >= 0.0)
-			splitPane.setResizeWeight(resizeWeight);
-		
-		init();
-		setState(cytoPanelState);
-	}
-
 	String getTitle() {
 		return compassDirection.getTitle();
 	}
@@ -175,78 +147,10 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 	public CytoPanelNameInternal getCytoPanelNameInternal() {
 		return compassDirection;
 	}
-
-	public void add(CytoPanelComponent comp) {
-		insert(comp, getCytoPanelComponentCount());
-	}
-	
-	public void insert(CytoPanelComponent comp, int index) {
-		if (comp instanceof CytoPanelComponent2) {
-			final CytoPanelComponent2 comp2 = (CytoPanelComponent2) comp;
-			
-			if (comp2.getIdentifier() == null)
-				throw new NullPointerException("'CytoPanelComponent2.identifier' must not be null");
-			
-			componentsById.put(comp2.getIdentifier(), comp2);
-		}
-		
-		// Check our sizes, and override, if necessary
-		checkSizes(comp.getComponent());
-		// add tab to JTabbedPane
-		getTabbedPane().insertTab(comp.getTitle(), comp.getIcon(), comp.getComponent(), null, index);
-		// send out a notification
-		notifyListeners(NOTIFICATION_COMPONENT_ADDED);
-	}
-
-	@Override
-	public int getCytoPanelComponentCount() {
-		return getTabbedPane().getTabCount();
-	}
-
-	@Override
-	public Component getSelectedComponent() {
-		return getTabbedPane().getSelectedComponent();
-	}
-
-	@Override
-	public Component getComponentAt(int index) {
-		return getTabbedPane().getComponentAt(index);
-	}
-
-	@Override
-	public int getSelectedIndex() {
-		return getTabbedPane().getSelectedIndex();
-	}
-
-	@Override
-	public int indexOfComponent(Component component) {
-		return getTabbedPane().indexOfComponent(component);
-	}
 	
 	@Override
-	public int indexOfComponent(String identifier) {
-		final CytoPanelComponent cpComp = componentsById.get(identifier);
-		
-		return cpComp != null ? indexOfComponent(cpComp.getComponent()) : -1;
-	}
-
-	public void remove(CytoPanelComponent comp) {
-		getTabbedPane().remove(comp.getComponent());
-		
-		if (comp instanceof CytoPanelComponent2)
-			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
-	}
-
-	@Override
-	public void setSelectedIndex(final int index) {
-		if (getTabbedPane().getTabCount() <= index)
-			return;
-		
-		getTabbedPane().setSelectedIndex(index);
-		
-		if (splitPane != null && getTabbedPane().getSelectedComponent() != null)
-			splitPane.updateDividerLocation();
-		// Do not have to sent out notification--the tabbedPane will let us know...
+	public CytoPanelState getState() {
+		return getCytoPanelComponentCount() > 0 ? state.toCytoPanelState() : CytoPanelState.HIDE;
 	}
 
 	@Override
@@ -254,34 +158,168 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 		if (newState == null)
 			throw new IllegalArgumentException("CytoPanelState must not be null.");
 		
-		if (newState != cytoPanelState) {
-			cytoPanelState = newState;
+		setStateInternal(CytoPanelStateInternal.valueOf(newState));
+	}
+	
+	public CytoPanelStateInternal getStateInternal() {
+		return state;
+	}
+	
+	public void setStateInternal(CytoPanelStateInternal newState) {
+		if (newState == null)
+			throw new IllegalArgumentException("'newState' must not be null.");
+		
+		if (newState != state) {
+			CytoPanelState oldApiState = getState();
+			CytoPanelStateInternal oldState = state;
+			state = newState;
 			update();
-			notifyListeners(NOTIFICATION_STATE_CHANGE);
+			
+			if (pcs.hasListeners("stateInternal"))
+				pcs.firePropertyChange("stateInternal", oldState, newState);
+			
+			if (oldApiState != getState()) // Not all internal states will change the API state!
+				notifyListeners(NOTIFICATION_STATE_CHANGE);
+		}
+	}
+	
+	public int getTrimBarIndex() {
+		return trimBarIndex;
+	}
+
+	public void insert(CytoPanelComponent cpc, int index) {
+		if (indexOfComponent(cpc.getComponent()) >= 0)
+			return;
+		
+		CytoPanelState oldState = getState();
+		cytoPanelComponents.add(index, cpc);
+		
+		if (cpc instanceof CytoPanelComponent2) {
+			final CytoPanelComponent2 comp2 = (CytoPanelComponent2) cpc;
+			
+			if (comp2.getIdentifier() == null)
+				throw new NullPointerException("'CytoPanelComponent2.identifier' must not be null");
+			
+			componentsById.put(comp2.getIdentifier(), comp2);
+		}
+		
+		checkSizes(cpc.getComponent()); // Check our sizes, and override, if necessary
+		getCardsPanel().add(cpc.getComponent(), getIdentifier(cpc));
+		
+		update();
+		
+		// For backwards compatibility
+		if (oldState != getState())
+			notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed from HIDE
+	}
+	
+	@Override
+	public int getCytoPanelComponentCount() {
+		return cytoPanelComponents.size();
+	}
+
+	@Override
+	public Component getSelectedComponent() {
+		for (Component c : getCardsPanel().getComponents()) {
+		    if (c.isVisible())
+		    	return c;
+		}
+		
+		return null;
+	}
+
+	@Override
+	public Component getComponentAt(int index) {
+		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
+				cytoPanelComponents.get(index) : null;
+
+		return cpc != null ? cpc.getComponent() : null;
+	}
+
+	@Override
+	public int getSelectedIndex() {
+		return indexOfComponent(getSelectedComponent());
+	}
+
+	@Override
+	public int indexOfComponent(Component component) {
+		int i = 0;
+		
+		for (CytoPanelComponent cpc : cytoPanelComponents) {
+			if (cpc.getComponent().equals(component))
+				return i;
+			
+			i++;
+		}
+		
+		return -1;
+	}
+	
+	@Override
+	public int indexOfComponent(String identifier) {
+		final CytoPanelComponent cpc = componentsById.get(identifier);
+		
+		return cpc != null ? indexOfComponent(cpc.getComponent()) : -1;
+	}
+
+	public void remove(CytoPanelComponent comp) {
+		CytoPanelState oldState = getState();
+		boolean changed = cytoPanelComponents.remove(comp);
+		getCardsPanel().remove(comp.getComponent());
+		
+		if (comp instanceof CytoPanelComponent2)
+			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
+		
+		if (changed) {
+			update();
+			
+			// For backwards compatibility
+			if (oldState != getState())
+				notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed to HIDE
+		}
+	}
+	
+	public List<CytoPanelComponent> getCytoPanelComponents() {
+		return new ArrayList<>(cytoPanelComponents);
+	}
+	
+	public void clear() {
+		getCardsPanel().removeAll();
+		cytoPanelComponents.clear();
+		componentsById.clear();
+	}
+
+	@Override
+	public void setSelectedIndex(int index) {
+		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
+				cytoPanelComponents.get(index) : null;
+		
+		if (cpc != null) {
+			cardLayout.show(getCardsPanel(), getIdentifier(cpc));
+			updateTitleButton();
+			notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
 		}
 	}
 
 	@Override
-	public CytoPanelState getState() {
-		return cytoPanelState;
+	public Component getThisComponent() {
+		return getMainPanel();
 	}
 	
-	@Override
-	public Component getThisComponent() {
-		return splitPane != null ? splitPane : contentPane;
+	public boolean isMaximized() {
+		return maximized;
 	}
-
-	/**
-	 * Our implementation of the ChangeListener interface, to determine when new tab has been selected
-	 */
-	@Override
-	public void stateChanged(ChangeEvent e) {
-		updateSwitchCompButton();
-		
-		if (splitPane != null && getTabbedPane().getSelectedComponent() != null)
-			splitPane.updateDividerLocation();
-		
-		notifyListeners(NOTIFICATION_COMPONENT_SELECTED);
+	
+	public void setMaximized(boolean maximized) {
+		this.maximized = maximized;
+	}
+	
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+	
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
 	}
 	
 	/**
@@ -299,167 +337,193 @@ public class CytoPanelImpl implements CytoPanel, ChangeListener {
 			comp.setMinimumSize(new Dimension(BOTTOM_MIN_WIDTH, BOTTOM_MIN_HEIGHT));
 	}
 	
-	private void init() {
-		initButtons();
-
-		// add label and button components to yet another panel, 
-		// so we can layout properly
-		final JPanel floatDockPanel = new JPanel();
-		final BoxLayout boxLayout = new BoxLayout(floatDockPanel, BoxLayout.X_AXIS);
-		floatDockPanel.setLayout(boxLayout);
+	private JPanel getMainPanel() {
+		if (mainPanel == null) {
+			mainPanel = new JPanel();
+			mainPanel.setBorder(BorderFactory.createEmptyBorder());
+			
+			mainPanel.setLayout(new BorderLayout());
+			mainPanel.add(getTitlePanel(), BorderLayout.NORTH);
+			mainPanel.add(getCardsPanel(), BorderLayout.CENTER);
+		}
 		
-		floatDockPanel.add(Box.createHorizontalStrut(8));
-		floatDockPanel.add(getFloatLabel());
-		floatDockPanel.add(Box.createHorizontalGlue());
-		floatDockPanel.add(switchCompButton);
-		floatDockPanel.add(Box.createHorizontalStrut(8));
-		floatDockPanel.add(floatButton);
-		floatDockPanel.add(closeButton);
-		floatDockPanel.add(Box.createHorizontalStrut(8));
-
-		// set preferred size - we can use float or dock icon dimensions - they are the same
-		final FontMetrics fm = getFloatLabel().getFontMetrics(getFloatLabel().getFont());
-		floatDockPanel.setMinimumSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
-				* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
-		if (compassDirection == BOTTOM)
-			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
-					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE));
-		else
-			floatDockPanel.setPreferredSize(new Dimension((fm.stringWidth(getTitle()) + BUTTON_SIZE)
-					* FLOAT_PANEL_SCALE_FACTOR, BUTTON_SIZE + 2));
-
-		contentPane.setLayout(new BorderLayout());
-		contentPane.add(floatDockPanel, BorderLayout.NORTH);
-		contentPane.add(getTabbedPane(), BorderLayout.CENTER);
-		contentPane.setBorder(BorderFactory.createEmptyBorder());
-		
-		update();
+		return mainPanel;
 	}
 	
-	JTabbedPane getTabbedPane() {
-		if (tabbedPane == null) {
-			tabbedPane = new JTabbedPane(tabPlacement);
-			tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-			tabbedPane.addChangeListener(this);
+	JPanel getTitlePanel() {
+		if (titlePanel == null) {
+			titlePanel = new JPanel();
+			titlePanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
+
+			GroupLayout layout = new GroupLayout(titlePanel);
+			titlePanel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(true);
+
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(getTitleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addGap(20, 20, Short.MAX_VALUE)
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getUndockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addContainerGap()
+			);
+			layout.setVerticalGroup(layout.createParallelGroup(Alignment.CENTER, true)
+					.addComponent(getTitleButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getFloatButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getDockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getUndockButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					.addComponent(getMinimizeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			);
 		}
 		
-		return tabbedPane;
+		return titlePanel;
 	}
-
-	private JLabel getFloatLabel() {
-		if (floatLabel == null) {
-			floatLabel = new JLabel(getTitle());
-			floatLabel.setFont(floatLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
-			if (compassDirection == BOTTOM)
-				floatLabel.setBorder(new EmptyBorder(0, 0, 0, 0));
-			else
-				floatLabel.setBorder(new EmptyBorder(0, 5, 0, 0));
+	
+	private JPanel getCardsPanel() {
+		if (cardsPanel == null) {
+			cardsPanel = new JPanel(cardLayout);
 		}
 		
-		return floatLabel;
+		return cardsPanel;
 	}
-
-	private void initButtons() {
-		final IconManager iconManager = serviceRegistrar.getService(IconManager.class);
+	
+	JButton getFloatButton() {
+		if (floatButton == null) {
+			floatButton = new JButton(ICON_WINDOW_MAXIMIZE);
+			floatButton.setToolTipText(TEXT_FLOAT);
+			CytoPanelUtil.styleButton(floatButton);
+			floatButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(STATE_ICON_FONT_SIZE));
+		}
 		
-		switchCompButton = new JButton(ICON_CARET_DOWN);
-		switchCompButton.setToolTipText(TOOL_TIP_SWITCH);
-		CytoPanelUtil.styleButton(switchCompButton);
-		switchCompButton.setFont(iconManager.getIconFont(14));
-		switchCompButton.setSelected(true);
-		updateSwitchCompButton();
+		return floatButton;
+	}
+	
+	JButton getUndockButton() {
+		if (undockButton == null) {
+			undockButton = new JButton(IconUtil.UNPIN);
+			undockButton.setToolTipText(TEXT_UNDOCK);
+			CytoPanelUtil.styleButton(undockButton);
+			undockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, STATE_ICON_FONT_SIZE));
+		}
 		
-		switchCompButton.addActionListener(evt -> {
-			if (getTabbedPane().getTabCount() == 0)
-				return;
-
-			final JPopupMenu popupMenu = new JPopupMenu();
-			final int count = getTabbedPane().getTabCount();
+		return undockButton;
+	}
+	
+	JButton getDockButton() {
+		if (dockButton == null) {
+			dockButton = new JButton(IconUtil.PIN);
+			dockButton.setToolTipText(TEXT_DOCK);
+			CytoPanelUtil.styleButton(dockButton);
+			dockButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, STATE_ICON_FONT_SIZE));
+		}
+		
+		return dockButton;
+	}
+	
+	JButton getMinimizeButton() {
+		if (minimizeButton == null) {
+			minimizeButton = new JButton(ICON_WINDOW_MINIMIZE);
+			minimizeButton.setToolTipText(TEXT_MINIMIZE);
+			CytoPanelUtil.styleButton(minimizeButton);
+			minimizeButton.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(STATE_ICON_FONT_SIZE));
+		}
+		
+		return minimizeButton;
+	}
+	
+	DropDownMenuButton getTitleButton() {
+		if (titleButton == null) {
+			titleButton = new DropDownMenuButton();
+			titleButton.setHorizontalAlignment(SwingConstants.LEFT);
+			titleButton.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+			titleButton.setContentAreaFilled(false);
+			makeSmall(titleButton);
+			titleButton.addActionListener(evt -> {
+				if (getCytoPanelComponentCount() > 0) {
+					JPopupMenu popupMenu = new JPopupMenu();
+					int i = 0;
+					
+					for (CytoPanelComponent cpc : cytoPanelComponents) {
+						int index = i++;
+						String title = cpc.getTitle();
+						Icon icon = cpc.getIcon();
+						JCheckBoxMenuItem mi = new JCheckBoxMenuItem(title, icon);
+						mi.setSelected(getSelectedIndex() == index);
+						mi.addActionListener(e -> setSelectedIndex(index));
+						popupMenu.add(mi);
+					}
+					
+					popupMenu.show(titleButton, 0, titleButton.getHeight());
+					popupMenu.requestFocusInWindow();
+				}
+			});
 			
-			for (int i = 0; i < count; i++) {
-				final int idx = i;
-				final String title = getTabbedPane().getTitleAt(idx);
-				final Icon icon = getTabbedPane().getIconAt(idx);
-				final JCheckBoxMenuItem mi = new JCheckBoxMenuItem(title, icon);
-				mi.setEnabled(getTabbedPane().isEnabledAt(idx));
-				mi.setSelected(getTabbedPane().getSelectedIndex() == idx);
-				mi.addActionListener(e -> setSelectedIndex(idx));
-				popupMenu.add(mi);
-			}
-			
-			popupMenu.show(switchCompButton, 0, switchCompButton.getHeight());
-			popupMenu.requestFocusInWindow();
-		});
+			updateTitleButton();
+		}
 		
-		floatButton = new JButton(ICON_SQUARE_O);
-		floatButton.setToolTipText(TOOL_TIP_FLOAT);
-		CytoPanelUtil.styleButton(floatButton);
-		floatButton.setFont(iconManager.getIconFont(12));
-		floatButton.setSelected(true);
-		floatButton.addActionListener(evt -> setState(cytoPanelState == FLOAT ? DOCK : FLOAT));
-		
-		closeButton = new JButton(ICON_REMOVE);
-		closeButton.setToolTipText(TOOL_TIP_CLOSE);
-		CytoPanelUtil.styleButton(closeButton);
-		closeButton.setFont(iconManager.getIconFont(13));
-		closeButton.setSelected(true);
-		closeButton.addActionListener(evt -> setState(HIDE));
+		return titleButton;
 	}
 
 	private void notifyListeners(int notificationType) {
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 
-		// determine what event to fire
 		switch (notificationType) {
 			case NOTIFICATION_STATE_CHANGE:
-				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, cytoPanelState));
+				eventHelper.fireEvent(new CytoPanelStateChangedEvent(this, this, getState()));
 				break;
-	
 			case NOTIFICATION_COMPONENT_SELECTED:
-				int selectedIndex = getTabbedPane().getSelectedIndex();
+				int selectedIndex = getSelectedIndex();
 				eventHelper.fireEvent(new CytoPanelComponentSelectedEvent(this, this, selectedIndex));
-				break;
-	
-			case NOTIFICATION_COMPONENT_ADDED:
-				break;
-	
-			case NOTIFICATION_COMPONENT_REMOVED:
 				break;
 		}
 	}
 	
 	void update() {
-		getFloatLabel().setText(cytoPanelState == DOCK ? getTitle() : "");
-		floatButton.setText(cytoPanelState == DOCK ? ICON_SQUARE_O : ICON_THUMB_TACK);
-		floatButton.setToolTipText(cytoPanelState == DOCK ? TOOL_TIP_FLOAT : TOOL_TIP_DOCK);
+		updateTitleButton();
 		
-		getThisComponent().setVisible(getState() != HIDE);
+		getFloatButton().setVisible(state != FLOAT);
+		getDockButton().setVisible(state != DOCK);
+		getUndockButton().setVisible(state != UNDOCK);
+		getMinimizeButton().setVisible(state != MINIMIZE);
+		
+		getThisComponent().setVisible(getCytoPanelComponentCount() > 0 && state != HIDE && state != MINIMIZE);
 		getThisComponent().validate();
 	}
-	
-	private void updateSwitchCompButton() {
-		switchCompButton.setEnabled(getTabbedPane().getTabCount() > 0);
+
+	private void updateTitleButton() {
+		int index = getSelectedIndex();
+		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
+				cytoPanelComponents.get(index) : null;
+
+		String text = cpc != null && cpc.getTitle() != null ? cpc.getTitle().trim() : "";
+		
+		// Show icon instead, if there's no text
+		Icon icon = cpc != null && text.isEmpty() ? cpc.getIcon() : null;
+		
+		// Make sure the icon is no too big
+		if (icon != null && icon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
+			icon = ViewUtil.resizeIcon(icon, CytoPanelUtil.BUTTON_SIZE);
+
+		getTitleButton().setText(text);
+		getTitleButton().setIcon(icon);
+		getTitleButton().setToolTipText(text);
+		getTitleButton().setEnabled(getCytoPanelComponentCount() > 0);
+		getTitleButton().setVisible(getCytoPanelComponentCount() > 0);
 	}
 	
-	class ContentPane extends JPanel {
+	private String getIdentifier(CytoPanelComponent cpc) {
+		if (cpc instanceof CytoPanelComponent2)
+			return ((CytoPanelComponent2) cpc).getIdentifier();
 		
-		@Override
-		public void remove(Component component) {
-			getTabbedPane().remove(component);
-			notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
-		}
-		
-		@Override
-		public void remove(int index) {
-			getTabbedPane().remove(index);
-			notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
-		}
-
-		@Override
-		public void removeAll() {
-			getTabbedPane().removeAll();
-			componentsById.clear();
-			notifyListeners(NOTIFICATION_COMPONENT_REMOVED);
-		}
+		return cpc.getTitle() + "__" + cpc.getClass().getName();
+	}
+	
+	@Override
+	public String toString() {
+		return compassDirection.getTitle();
 	}
 }

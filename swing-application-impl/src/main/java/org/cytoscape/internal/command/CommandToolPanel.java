@@ -65,8 +65,11 @@ import org.cytoscape.application.events.CyShutdownEvent;
 import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 
 @SuppressWarnings("serial")
 public class CommandToolPanel extends JPanel implements CytoPanelComponent2, ActionListener, CyShutdownListener {
@@ -88,6 +91,8 @@ public class CommandToolPanel extends JPanel implements CytoPanelComponent2, Act
 	private JResultsPane resultsText;
 	private JTextField inputField;
 	private File savedCommandsFile;
+	
+	private TextIcon icon;
 
 	public CommandToolPanel(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
@@ -141,7 +146,11 @@ public class CommandToolPanel extends JPanel implements CytoPanelComponent2, Act
 
 	@Override
 	public Icon getIcon() { 
-		return null; 
+		if (icon == null)
+			icon = new TextIcon(IconUtil.TERMINAL,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16.0f), 16, 16);
+		
+		return icon;
 	}
 
 	@Override

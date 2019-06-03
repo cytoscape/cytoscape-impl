@@ -15,7 +15,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.TextAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -54,19 +54,19 @@ public class TextAnnotationDialog extends JDialog {
 	private JButton applyButton;
 	private JButton cancelButton;
 	
-	private final DGraphView view;
+	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final Point2D startingLocation;
 	private final boolean create;
 	private final TextAnnotationImpl mAnnotation;
 	private TextAnnotationImpl preview;
 
-	public TextAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+	public TextAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
 		super(owner);
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start != null ? start : view.getCenter();
-		this.mAnnotation = new TextAnnotationImpl(view, false);
+		this.re = re;
+		this.cyAnnotator = re.getCyAnnotator();
+		this.startingLocation = start != null ? start : re.getCenter();
+		this.mAnnotation = new TextAnnotationImpl(re, false);
 		create = true;
 		initComponents();
 	}
@@ -75,7 +75,7 @@ public class TextAnnotationDialog extends JDialog {
 		super(owner);
 		this.mAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.view = cyAnnotator.getView();
+		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 		this.startingLocation = null;
 
@@ -89,7 +89,7 @@ public class TextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Text Annotation" : "Modify Text Annotation");
 		
 		// Create the preview panel
-		preview = new TextAnnotationImpl(view, true);
+		preview = new TextAnnotationImpl(re, true);
 		preview.getComponent().setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
 		PreviewPanel previewPanel = new PreviewPanel(preview);
 
@@ -165,6 +165,6 @@ public class TextAnnotationDialog extends JDialog {
 		cyAnnotator.postUndoEdit();
 		
 		// Update the canvas
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 	}
 }

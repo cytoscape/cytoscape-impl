@@ -26,9 +26,15 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Properties;
 
+import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewFactory;
+import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
+import org.cytoscape.view.model.internal.debug.PrintSpacialIndexAction;
+import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
+import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
+import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -40,9 +46,27 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManagerImpl cyNetworkViewManager = new CyNetworkViewManagerImpl(serviceRegistrar);
 		registerAllServices(bc, cyNetworkViewManager, new Properties());
 
-		NullCyNetworkViewFactory nullCyNetworkViewFactory = new NullCyNetworkViewFactory();
-		Properties nullViewFactoryProperties = new Properties();
-		nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
-		registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
+		{
+			NullCyNetworkViewFactory nullCyNetworkViewFactory = new NullCyNetworkViewFactory();
+			Properties nullViewFactoryProperties = new Properties();
+			nullViewFactoryProperties.put("id", "NullCyNetworkViewFactory");
+			registerService(bc, nullCyNetworkViewFactory, CyNetworkViewFactory.class, nullViewFactoryProperties);
+		}
+		{
+			CyNetworkViewFactoryFactory factoryFactory = new CyNetworkViewFactoryFactoryImpl(serviceRegistrar);
+			registerService(bc, factoryFactory, CyNetworkViewFactoryFactory.class, new Properties());
+		}
+		
+		registerService(bc, new SpacialIndex2DFactoryImpl(), SpacialIndex2DFactory.class);
+		
+		
+		// Debug actions
+		CyAction printModelAction = new PrintViewModelAction(serviceRegistrar);
+		printModelAction.setPreferredMenu("Tools.Renderer DEBUG");
+		registerAllServices(bc, printModelAction, new Properties());
+		
+		CyAction printSpacialAction = new PrintSpacialIndexAction(serviceRegistrar);
+		printSpacialAction.setPreferredMenu("Tools.Renderer DEBUG");
+		registerAllServices(bc, printSpacialAction, new Properties());
 	}
 }

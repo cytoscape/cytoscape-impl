@@ -12,7 +12,6 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 
 import org.cytoscape.filter.internal.filters.composite.CompositeTransformerPanel;
 import org.cytoscape.filter.internal.work.TransformerWorker;
@@ -64,11 +63,10 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 		final JLabel startWithLabel = new JLabel("Start with:");
 		startWithComboBox = new JComboBox<>(controller.getStartWithComboBoxModel());
 		startWithComboBox.setRenderer(ViewUtil.createElipsisRenderer(50));
-		final JSeparator sep = new JSeparator();
 		
 		final GroupLayout layout = new GroupLayout(this);
 		this.setLayout(layout);
-		layout.setAutoCreateContainerGaps(!isAquaLAF());
+		layout.setAutoCreateContainerGaps(false);
 		layout.setAutoCreateGaps(!isAquaLAF());
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING)
@@ -76,10 +74,11 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 						.addComponent(namedElementComboBox, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(optionsButton, PREFERRED_SIZE, 64, PREFERRED_SIZE)
 				)
-				.addComponent(sep, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createSequentialGroup()
+						.addContainerGap()
 						.addComponent(startWithLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(startWithComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addContainerGap()
 				)
 				.addComponent(editPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(applyPanel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -89,7 +88,6 @@ public class TransformerPanel extends AbstractPanel<TransformerElement, Transfor
 						.addComponent(namedElementComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(optionsButton, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				)
-				.addComponent(sep, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(startWithLabel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(startWithComboBox, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)

@@ -1,32 +1,6 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.work.ServiceProperties.APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_LINKOUTS_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.EDGE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_AFTER;
-import static org.cytoscape.work.ServiceProperties.INSERT_SEPARATOR_BEFORE;
-import static org.cytoscape.work.ServiceProperties.MENU_GRAVITY;
-import static org.cytoscape.work.ServiceProperties.NETWORK_ADD_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_DELETE_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.NETWORK_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_APPS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_EDIT_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_GROUP_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_LINKOUTS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_NESTED_NETWORKS_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_PREFERENCES_MENU;
-import static org.cytoscape.work.ServiceProperties.NODE_SELECT_MENU;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_ACTION;
-import static org.cytoscape.work.ServiceProperties.PREFERRED_MENU;
-import static org.cytoscape.work.ServiceProperties.TITLE;
-import static org.cytoscape.work.ServiceProperties.TOOLTIP;
+import static org.cytoscape.work.ServiceProperties.*;
 
 import java.awt.Component;
 import java.awt.Point;
@@ -49,8 +23,6 @@ import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyMenuItem;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
-import org.cytoscape.ding.EdgeView;
-import org.cytoscape.ding.NodeView;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -61,6 +33,7 @@ import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.util.swing.GravityTracker;
 import org.cytoscape.util.swing.JMenuTracker;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.work.TaskFactory;
@@ -103,7 +76,12 @@ class PopupMenuHelper {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PopupMenuHelper.class);
 
-	private DGraphView graphView;
+	// MKTODO replace with an enum
+	public static final String ACTION_NEW  = "NEW";
+	public static final String ACTION_OPEN = "OPEN";
+	
+	
+	private DRenderingEngine re;
 
 	/** the component we should create the popup menu on */
 	private Component invoker;
@@ -111,11 +89,13 @@ class PopupMenuHelper {
 	private StaticTaskFactoryProvisioner factoryProvisioner;
 
 	private final CyServiceRegistrar serviceRegistrar;
+	private final ViewTaskFactoryListener vtfl;
 
-	PopupMenuHelper(DGraphView v, Component inv, CyServiceRegistrar serviceRegistrar) {
-		graphView = v;
+	PopupMenuHelper(DRenderingEngine re, Component inv, CyServiceRegistrar serviceRegistrar) {
+		this.re = re;
 		invoker = inv;
 		this.serviceRegistrar = serviceRegistrar;
+		this.vtfl = serviceRegistrar.getService(ViewTaskFactoryListener.class);
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
@@ -124,16 +104,16 @@ class PopupMenuHelper {
 	 *
 	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
-	void createEdgeViewMenu(EdgeView edgeView, int x, int y, String action) {
+	void createEdgeViewMenu(View<CyEdge> edgeView, int x, int y, String action) {
+		edgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
 		if (edgeView != null ) {
-			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(graphView.edgeViewTFs,action);
-			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(graphView.cyEdgeViewContextMenuFactory, action);
-			View<CyEdge> ev = (DEdgeView)edgeView;
+			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getEdgeViewTaskFactoryMap(), action);
+			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyEdgeViewContextMenuFactoryMap(), action);
 			// remove TaskFactories that can't be executed from double-click menu
 			if (action.equalsIgnoreCase("OPEN")) {
 				Iterator<EdgeViewTaskFactory> i = usableTFs.iterator();
 				while(i.hasNext()) {
-					if(!i.next().isReady(ev,graphView))
+					if(!i.next().isReady(edgeView, re.getViewModel()))
 						i.remove();
 				}
 			}
@@ -143,9 +123,9 @@ class PopupMenuHelper {
 
 			if (action.equalsIgnoreCase("OPEN") && menuItemCount == 1 && tfCount == 1) {
 				EdgeViewTaskFactory tf = usableTFs.iterator().next();
-				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(ev, graphView));
+				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(edgeView, re.getViewModel()));
 			} else {
-				String edgeLabel = graphView.getModel().getRow(ev.getModel()).get(CyEdge.INTERACTION, String.class);
+				String edgeLabel = re.getViewModel().getModel().getRow(edgeView.getModel()).get(CyEdge.INTERACTION, String.class);
 				JPopupMenu menu = createMenu(edgeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -157,15 +137,15 @@ class PopupMenuHelper {
 
 				for (EdgeViewTaskFactory evtf : usableTFs) {
 					Object context = null;
-					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, ev, graphView);
-					addMenuItem(ev, menu, provisioner, context, tracker, graphView.edgeViewTFs.get(evtf));
+					NamedTaskFactory provisioner = factoryProvisioner.createFor(evtf, edgeView, re.getViewModel());
+					addMenuItem(edgeView, menu, provisioner, context, tracker, vtfl.getEdgeViewTaskFactoryMap().get(evtf));
 				}
 
 				for (CyEdgeViewContextMenuFactory edgeCMF : usableCMFs) {
 					// menu.add(edgeCMF.createMenuItem(m_view, ev).getMenuItem());
 					try {
-						CyMenuItem menuItem = edgeCMF.createMenuItem(graphView, ev);
-						addCyMenuItem(ev, menu, menuItem, tracker, graphView.cyEdgeViewContextMenuFactory.get(edgeCMF));
+						CyMenuItem menuItem = edgeCMF.createMenuItem(re.getViewModel(), edgeView);
+						addCyMenuItem(edgeView, menu, menuItem, tracker, vtfl.getCyEdgeViewContextMenuFactoryMap().get(edgeCMF));
 					} catch (Throwable t) {
 						logger.error("Could not display context menu.", t);
 					}
@@ -180,21 +160,21 @@ class PopupMenuHelper {
 	 *
 	 * @param action Acceptable values are "NEW", "OPEN", or "EDGE". Case does not matter.
 	 */
-	void createNodeViewMenu(NodeView nview, int x, int y , String action) {
-		if (nview != null ) {
-			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(graphView.nodeViewTFs,action);
-			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(graphView.cyNodeViewContextMenuFactory,action);
-			View<CyNode> nv = (DNodeView)nview;
+	void createNodeViewMenu(View<CyNode> nodeView, int x, int y , String action) {
+		nodeView = re.getViewModel().getNodeView(nodeView.getSUID()); // get the mutable node view
+		if (nodeView != null ) {
+			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getNodeViewTaskFactoryMap(),action);
+			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),action);
 			//If the action is NEW, we should also include the Edge Actions
 			if (action.equalsIgnoreCase("NEW")) {
-				usableTFs.addAll(getPreferredActions(graphView.nodeViewTFs,"Edge"));
-				usableCMFs.addAll(getPreferredActions(graphView.cyNodeViewContextMenuFactory,"Edge"));
+				usableTFs.addAll(getPreferredActions(vtfl.getNodeViewTaskFactoryMap(),"Edge"));
+				usableCMFs.addAll(getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),"Edge"));
 			}
 			// remove TaskFactories that can't be executed from double-click menu
 			else if(action.equalsIgnoreCase("OPEN")) {
 				Iterator<NodeViewTaskFactory> i = usableTFs.iterator();
 				while(i.hasNext()) {
-					if(!i.next().isReady(nv,graphView))
+					if(!i.next().isReady(nodeView,re.getViewModel()))
 						i.remove();
 				}
 			}
@@ -202,12 +182,11 @@ class PopupMenuHelper {
 			int menuItemCount = usableTFs.size() + usableCMFs.size();
 			int tfCount = usableTFs.size();
 
-			if ((action.equalsIgnoreCase("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1
-					&& tfCount == 1) {
+			if ((action.equalsIgnoreCase("OPEN") || action.equalsIgnoreCase("Edge")) && menuItemCount == 1 && tfCount == 1) {
 				NodeViewTaskFactory tf = usableTFs.iterator().next();
-				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(nv, graphView));
+				serviceRegistrar.getService(DialogTaskManager.class).execute(tf.createTaskIterator(nodeView,re.getViewModel()));
 			} else {
-				String nodeLabel = graphView.getModel().getRow(nv.getModel()).get(CyNetwork.NAME, String.class);
+				String nodeLabel = re.getViewModel().getModel().getRow(nodeView.getModel()).get(CyNetwork.NAME, String.class);
 				JPopupMenu menu = createMenu(nodeLabel);
 				JMenuTracker tracker = new JMenuTracker(menu);
 
@@ -219,15 +198,15 @@ class PopupMenuHelper {
 
 				for (NodeViewTaskFactory nvtf : usableTFs) {
 					Object context = null;
-					NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, nv, graphView);
-					addMenuItem(nv, menu, provisioner, context, tracker, graphView.nodeViewTFs.get(nvtf));
+					NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, nodeView, re.getViewModel());
+					addMenuItem(nodeView, menu, provisioner, context, tracker, vtfl.getNodeViewTaskFactoryMap().get(nvtf));
 				}
 
 				for (CyNodeViewContextMenuFactory nodeCMF : usableCMFs) {
 					// menu.add(nodeVMF.createMenuItem(m_view,  nv).getMenuItem());
 					try {
-						CyMenuItem menuItem = nodeCMF.createMenuItem(graphView, nv);
-						addCyMenuItem(nv, menu, menuItem, tracker, graphView.cyNodeViewContextMenuFactory.get(nodeCMF));
+						CyMenuItem menuItem = nodeCMF.createMenuItem(re.getViewModel(), nodeView);
+						addCyMenuItem(nodeView, menu, menuItem, tracker, vtfl.getCyNodeViewContextMenuFactoryMap().get(nodeCMF));
 					} catch (Throwable t) {
 						logger.error("Could not display context menu.", t);
 					}
@@ -244,23 +223,20 @@ class PopupMenuHelper {
 	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
 	void createNetworkViewMenu(Point rawPt, Point xformPt, String action) {
-		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(graphView.emptySpaceTFs, action);
-		Collection<NetworkViewLocationTaskFactory> usableTFs2 =
-				getPreferredActions(graphView.networkViewLocationTfs, action);
-		Collection<CyNetworkViewContextMenuFactory> usableCMFs =
-				getPreferredActions(graphView.cyNetworkViewContextMenuFactory, action);
+		Collection<NetworkViewTaskFactory> usableTFs = getPreferredActions(vtfl.getEmptySpaceTaskFactoryMap(), action);
+		Collection<NetworkViewLocationTaskFactory> usableTFs2 = getPreferredActions(vtfl.getNetworkViewLocationTaskFactoryMap(), action);
+		Collection<CyNetworkViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyNetworkViewContextMenuFactoryMap(), action);
 		
+		CyNetworkView graphView = re.getViewModel();
 		// remove TaskFactories that can't be executed from double-click menu
 		if (action.equalsIgnoreCase("OPEN")) {
 			Iterator<NetworkViewTaskFactory> i = usableTFs.iterator();
-			
 			while (i.hasNext()) {
 				if (!i.next().isReady(graphView))
 					i.remove();
 			}
 			
 			Iterator<NetworkViewLocationTaskFactory> i2 = usableTFs2.iterator();
-			
 			while (i2.hasNext()) {
 				if (!i2.next().isReady(graphView, rawPt, xformPt))
 					i2.remove();
@@ -293,18 +269,18 @@ class PopupMenuHelper {
 
 			for (NetworkViewTaskFactory nvtf : usableTFs) {
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvtf, graphView);
-				addMenuItem(null, menu, provisioner, null, tracker, graphView.emptySpaceTFs.get(nvtf));
+				addMenuItem(null, menu, provisioner, null, tracker, vtfl.getEmptySpaceTaskFactoryMap().get(nvtf));
 			}
 			
 			for ( NetworkViewLocationTaskFactory nvltf : usableTFs2 ) {
 				NamedTaskFactory provisioner = factoryProvisioner.createFor(nvltf, graphView, rawPt, xformPt);
-				addMenuItem(null, menu, provisioner, null, tracker, graphView.networkViewLocationTfs.get( nvltf ) );
+				addMenuItem(null, menu, provisioner, null, tracker, vtfl.getNetworkViewLocationTaskFactoryMap().get( nvltf ) );
 			}
 			
 			for (CyNetworkViewContextMenuFactory netVMF: usableCMFs) {
 				try {
 					CyMenuItem menuItem = netVMF.createMenuItem(graphView);
-					addCyMenuItem(graphView, menu, menuItem, tracker, graphView.cyNetworkViewContextMenuFactory.get(netVMF));
+					addCyMenuItem(graphView, menu, menuItem, tracker, vtfl.getCyNetworkViewContextMenuFactoryMap().get(netVMF));
 				}
 				catch (Throwable t) {
 					logger.error("Could not display context menu." , t);
@@ -384,7 +360,7 @@ class PopupMenuHelper {
 				else if (view.getModel() instanceof CyEdge)
 					clazz = CyEdge.class;
 
-				final VisualProperty<?> vp = graphView.getVisualLexicon().lookup(clazz, targetVP.toString());
+				final VisualProperty<?> vp = re.getVisualLexicon().lookup(clazz, targetVP.toString());
 
 				if (vp == null)
 					isSelected = false;
@@ -539,7 +515,7 @@ class PopupMenuHelper {
 	/**
 	 * Extract and return all T's that match the defined action.  If action is null, then return everything.
 	 */
-	private <T> Collection<T> getPreferredActions(Map<T, Map> tfs, String action) {
+	private <T> Collection<T> getPreferredActions(Map<T, Map<String,String>> tfs, String action) {
 		// if the action is null, return all available
 		if (action == null)
 			return tfs.keySet();
@@ -594,6 +570,6 @@ class PopupMenuHelper {
 	}
 
 	public void dispose() {
-		graphView = null;
+		re = null;
 	}
 }

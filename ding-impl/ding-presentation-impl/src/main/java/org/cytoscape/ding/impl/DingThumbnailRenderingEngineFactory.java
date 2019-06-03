@@ -18,10 +18,12 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
  */
 public class DingThumbnailRenderingEngineFactory implements RenderingEngineFactory<CyNetwork> {
 	
+	private final DingNetworkViewFactory viewFactoryMediator;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
-	public DingThumbnailRenderingEngineFactory(final VisualLexicon dingLexicon, final CyServiceRegistrar registrar) {
+	public DingThumbnailRenderingEngineFactory(DingNetworkViewFactory viewFactoryMediator, VisualLexicon dingLexicon, CyServiceRegistrar registrar) {
+		this.viewFactoryMediator = viewFactoryMediator;
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;
 	}
@@ -39,17 +41,12 @@ public class DingThumbnailRenderingEngineFactory implements RenderingEngineFacto
 			throw new IllegalArgumentException("Visualization Container object is not of type Component, "
 					+ "which is invalid for this implementation of PresentationFactory");
 		
-		if (!(view instanceof DGraphView))
-			throw new IllegalArgumentException("This rendering engine needs DING view model as its view model.");
-		
-		
-		// Shared instance of the view.
-		final DGraphView dgv = (DGraphView) view;
+		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
 		
 		final JComponent container = (JComponent) visualizationContainer;
 		
 		// Create instance of an engine.
-		final ThumbnailView bev = new ThumbnailView(dgv, registrar);
+		final ThumbnailView bev = new ThumbnailView(re, registrar);
 		
 		bev.registerServices();
 

@@ -5,7 +5,7 @@ import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeTyp
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
-import static org.cytoscape.internal.util.ViewUtil.invokeOnEDTAndWait;
+import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isNimbusLAF;
@@ -33,7 +33,9 @@ import java.util.Locale;
 import java.util.Properties;
 
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -84,7 +86,6 @@ import org.cytoscape.internal.tunable.CyPropertyConfirmationHandler;
 import org.cytoscape.internal.undo.RedoAction;
 import org.cytoscape.internal.undo.UndoAction;
 import org.cytoscape.internal.util.HSLColor;
-import org.cytoscape.internal.util.ViewUtil;
 import org.cytoscape.internal.util.undo.UndoMonitor;
 import org.cytoscape.internal.view.CyColumnPresentationManagerImpl;
 import org.cytoscape.internal.view.CyDesktopManager;
@@ -108,8 +109,9 @@ import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
-import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
+import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -121,6 +123,8 @@ import org.cytoscape.task.NetworkViewCollectionTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.RootNetworkCollectionTaskFactory;
 import org.cytoscape.task.TableTaskFactory;
+import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -129,6 +133,7 @@ import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.swing.GUITunableHandlerFactory;
 import org.cytoscape.work.swing.SimpleGUITunableHandlerFactory;
+import org.jdesktop.swingx.color.ColorUtil;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -531,11 +536,11 @@ public class CyActivator extends AbstractCyActivator {
 		bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 		
-		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, true, cytoscapeDesktop, 1.0f);
-		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, true, cytoscapeDesktop, 1.1f);
-		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, false, cytoscapeDesktop, 1.2f);
-		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, false, cytoscapeDesktop, 1.3f);
-		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, false, cytoscapeDesktop, 1.35f);
+		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, cytoscapeDesktop, 1.0f, serviceRegistrar);
+		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, cytoscapeDesktop, 1.1f, serviceRegistrar);
+		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, cytoscapeDesktop, 1.2f, serviceRegistrar);
+		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f, serviceRegistrar);
+		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f, serviceRegistrar);
 		
 		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
@@ -549,6 +554,8 @@ public class CyActivator extends AbstractCyActivator {
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {
+		IconManager iconManager = getService(bc, IconManager.class);
+		
 		// Set Look and Feel
 		final Properties props = getCy3Property(bc).getProperties();
 		String lookAndFeel = props.getProperty("lookAndFeel");
@@ -620,20 +627,21 @@ public class CyActivator extends AbstractCyActivator {
 				if (originalDisabledFg != null)
 					originalDisabledFg = new Color(originalDisabledFg.getRGB());
 			} else {
-				originalDisabledFg = UIManager.getColor("Label.disabledForeground");
+				originalDisabledFg = UIManager.getColor(isGtkLAF() ? "Button.disabledForeground" : "Label.disabledForeground");
 				
 				if (originalDisabledFg == null)
 					originalDisabledFg = UIManager.getColor("TextField.inactiveForeground");
 			}
 			
-			if (originalDisabledFg == null)
-				originalDisabledFg = Color.LIGHT_GRAY;
-			
 			// The default disabled color is usually too dark, so let's make it look more like the native one
-			Color disabledFg = originalDisabledFg;
+			final Color disabledFg;
 			
-			if (isWinLAF() || isAquaLAF())
-				disabledFg = disabledFg.brighter();
+			if (originalDisabledFg == null)
+				disabledFg = originalDisabledFg = UIManager.getColor("Panel.background").darker();
+			else if (isWinLAF() || isAquaLAF())
+				disabledFg = ColorUtil.setBrightness(originalDisabledFg, 0.75f);
+			else
+				disabledFg = originalDisabledFg;
 			
 			UIManager.put("Label.disabledForeground", disabledFg);
 			UIManager.put("Button.disabledForeground", disabledFg);
@@ -644,6 +652,7 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("Radio.disabledForeground", disabledFg);
 			UIManager.put("Menu.disabledForeground", disabledFg);
 			UIManager.put("MenuItem.disabledForeground", disabledFg);
+			UIManager.put("CheckBoxMenuItem.disabledForeground", disabledFg);
 			UIManager.put("RadioButtonMenuItem.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledForeground", disabledFg);
 			UIManager.put("Table.disabledText", disabledFg);
@@ -663,6 +672,9 @@ public class CyActivator extends AbstractCyActivator {
 			// Hide the separator line and increase the gap
 			UIManager.put("ToolBar.separatorSize", new Dimension(1, 20));
 			UIManager.put("ToolBarSeparatorUI", "javax.swing.plaf.basic.BasicToolBarSeparatorUI");
+			
+			// Cytoscape
+			UIManager.put("Label.infoForeground", ColorUtil.setBrightness(UIManager.getColor("Label.foreground"), 0.48f));
 			
 			final Font tableFont = UIManager.getFont("Label.font").deriveFont(11.0f);
 			
@@ -699,6 +711,7 @@ public class CyActivator extends AbstractCyActivator {
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				
 				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
@@ -719,6 +732,8 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
 				UIManager.put("Table.alternateRowColor", Color.WHITE);
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
+				
+				UIManager.put("Viewport.background", Color.WHITE);
 				
 				UIManager.put("Table.showGrid", true);
 				UIManager.put("Table.gridColor", new Color(242, 242, 242));
@@ -746,7 +761,7 @@ public class CyActivator extends AbstractCyActivator {
 				// JList has ugly inconsistent selection colors in the latest Java 8 version
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textBackground", new Color(57, 105, 138));
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textForeground", Color.WHITE);
-			} else if (UIManager.getLookAndFeel() != null && "GTK".equals(UIManager.getLookAndFeel().getID())) {
+			} else if (isGtkLAF()) {
 				// GTK (usually Linux):
 				UIManager.put(
 						"TableHeader.cellBorder", 
@@ -758,25 +773,50 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 			}
 			
-			// Created for Cytoscape
-			UIManager.put("ToggleButton.unselectedBackground", UIManager.getColor("Button.background"));
-			UIManager.put("ToggleButton.unselectedForeground", UIManager.getColor("Button.foreground"));
+			// Tree icons -- we need a right-to-left arrow!
+			if (UIManager.getIcon("Tree.rightToLeftCollapsedIcon") == null && (isWinLAF() || isGtkLAF())) {
+				// These custom icons did not work well with original JTrees on Nimbus (they were misaligned)
+				// and Aqua usually does not need this.
+				Icon treeIcon = UIManager.getIcon("Tree.collapsedIcon");
+				int w = treeIcon != null ? Math.max(12, treeIcon.getIconWidth()) : 16;
+				int h = treeIcon != null ? Math.max(12, treeIcon.getIconHeight()) : 16;
+				Font font = iconManager.getIconFont(10f);
+				Color c = UIManager.getColor("Label.infoForeground");
+				UIManager.put("Tree.expandedIcon", new TextIcon(IconManager.ICON_CHEVRON_DOWN, font, c, w, h));
+				UIManager.put("Tree.collapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_RIGHT, font, c, w, h));
+				UIManager.put("Tree.rightToLeftCollapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_LEFT, font, c, w, h));
+			}
+			
+			// ScrollPane
+			UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			
+			// SplitPane
+			UIManager.put("SplitPaneUI", "javax.swing.plaf.basic.BasicSplitPaneUI");
+			UIManager.put("SplitPane.dividerSize", ViewUtil.DIVIDER_SIZE);
+			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
+			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
+			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
+			
+			// Created for Cytoscape ------------------------------------------------------------------------
+			// ToggleButton
+			UIManager.put("CyToggleButton.background", UIManager.getColor("Button.background"));
 			
 			if (isNimbusLAF()) {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
-			} else if (isAquaLAF()) {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Tree.selectionBackground"));
+				UIManager.put("CyToggleButton.foreground", new Color(UIManager.getColor("Button.foreground").getRGB()));
+				UIManager.put("CyToggleButton[Selected].background", new Color(UIManager.getColor("nimbusBlueGrey").getRGB()));
+				UIManager.put("CyToggleButton[Selected].foreground", new Color(UIManager.getColor("ToggleButton.foreground").getRGB()));
+				UIManager.put("CyToggleButton[Selected].borderColor", new Color(UIManager.getColor("nimbusBorder").getRGB()));
 			} else {
-				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
+				UIManager.put("CyToggleButton.foreground", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.25f));
+				UIManager.put("CyToggleButton[Selected].background", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.8f));
+				UIManager.put("CyToggleButton[Selected].foreground", UIManager.getColor("Button.foreground"));
+				UIManager.put("CyToggleButton[Selected].borderColor", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.68f));
 			}
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}
 		
-		// Cytoscape Palette (http://paletton.com/#uid=70F2h0krdtngVCclWv9tYnSyeiT)
+		// Cytoscape Palette (http://paletton.com/#uid=70F2h0krdtngVCclWv9tYnSyeiT) -------------------------
 		UIManager.put("CyColor.primary(-2)", new Color(150, 83, 0));    // Darkest
 		UIManager.put("CyColor.primary(-1)", new Color(190, 110, 12));  // Darker
 		UIManager.put("CyColor.primary(0)",  new Color(234, 145, 35));  // Base color
@@ -804,11 +844,24 @@ public class CyActivator extends AbstractCyActivator {
 		UIManager.put("CyColor.complement",     new Color(29, 105, 149));
 		UIManager.put("CyColor.complement(+1)", new Color(56, 120, 158));
 		UIManager.put("CyColor.complement(+2)", new Color(92, 149, 183));
+		
+		// A JPopupMenu that is completely contained inside the frame bounds is called lightweight and
+		// lives in the Popup layer of the layered pane, which means popups created when a CytoPanel is in
+		// the UNDOCK state may be covered by the undocked CytoPanel component. That happens because the
+		// CytoPanel component is rendered on the Glass Pane, which resides on top of the Popup layer.
+		// To avoid this issue, let's just disable lightweight popup menus
+		// (NOTE: This must be done before showing the application frame).
+		// See: https://www.pushing-pixels.org/category/swing/page/72
+		JPopupMenu.setDefaultLightWeightPopupEnabled(false);
 	}
 	
 	@SuppressWarnings("unchecked")
 	private CyProperty<Properties> getCy3Property(final BundleContext bc) {
 		return getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+	}
+	
+	public static boolean isGtkLAF() {
+		return UIManager.getLookAndFeel() != null && "GTK".equals(UIManager.getLookAndFeel().getID());
 	}
 	
 	private class ViewComparator implements Comparator<CyNetworkView> {

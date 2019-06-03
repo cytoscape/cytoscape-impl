@@ -16,7 +16,7 @@ import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -59,7 +59,7 @@ public class GraphicsDetailAction extends AbstractCyAction {
 			CyServiceRegistrar serviceRegistrar
 	) {
 		super(
-				"Force High Graphics Details",
+				"Always Show Graphics Details",
 				serviceRegistrar.getService(CyApplicationManager.class),
 				"networkAndView",
 				serviceRegistrar.getService(CyNetworkViewManager.class)
@@ -90,18 +90,15 @@ public class GraphicsDetailAction extends AbstractCyAction {
 			serviceRegistrar.getService(DialogTaskManager.class).execute(taskFactory.createTaskIterator(view));
 	}
 
-	/**
-	 * This dynamically sets the title of the menu based on the state of the graphics detail.
-	 */
 	@Override
 	public void menuSelected(MenuEvent me) {
 		updateEnableState();
-		JCheckBoxMenuItem item = getThisItem(); 
+		JCheckBoxMenuItem item = getThisItem();
 
 		if (item != null) {
 			CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 			
-			if (view instanceof DGraphView && isEnabled())
+			if (view instanceof DRenderingEngine && isEnabled())
 				item.setSelected(view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
 			else
 				item.setSelected(false);

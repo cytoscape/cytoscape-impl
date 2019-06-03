@@ -30,6 +30,8 @@ package org.cytoscape.graph.render.immed;
  * mode.
  */
 public interface EdgeAnchors {
+	
+	
 	/**
 	 * Returns the number of edge anchors.
 	 */
@@ -47,5 +49,6 @@ public interface EdgeAnchors {
 	 * @exception IndexOutOfBoundsException if anchorIndex is not in the
 	 *   range [0, numAnchors()-1].
 	 */
-	public void getAnchor(int anchorIndex, float[] anchorArr, int offset);
+	public void getAnchor(int anchorIndex, float[] anchorArr);
+	
 }

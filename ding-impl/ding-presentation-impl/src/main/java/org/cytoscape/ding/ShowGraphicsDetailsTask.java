@@ -1,6 +1,6 @@
 package org.cytoscape.ding;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
@@ -39,7 +39,7 @@ public class ShowGraphicsDetailsTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor tm) {
-		if (view instanceof DGraphView) {
+		if (DingRenderer.ID.equals(view.getRendererId())) {
 			Boolean hd = view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
 			view.setLockedValue(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL, !hd);
 		}

@@ -40,6 +40,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.VolatileImage;
 import java.awt.print.Printable;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -49,8 +50,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.ding.GraphView;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -82,7 +81,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final double[] m_extents = new double[4];
 
 	// This is the view model of this presentation (rendering engine).  Shared with main view.
-	private final DGraphView viewModel;
+	private final DRenderingEngine re;
 	
 	private final ContentChangeListener m_cLis;
 	private final ViewportChangeListener m_vLis;
@@ -116,16 +115,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 	/**
 	 * Creates a new BirdsEyeView object.
-	 * 
-	 * @param viewModel
-	 *            The view to monitor
 	 */
-	public BirdsEyeView(final DGraphView viewModel, final CyServiceRegistrar registrar) {
-		if (viewModel == null)
-			throw new NullPointerException("DGraphView is null.");
-
-		this.viewModel = viewModel;
-		this.registrar = registrar;
+	public BirdsEyeView(DRenderingEngine re, CyServiceRegistrar registrar) {
+		this.re = Objects.requireNonNull(re);
+		this.registrar = Objects.requireNonNull(registrar);
 
 		m_cLis = new InnerContentChangeListener();
 		m_vLis = new InnerViewportChangeListener();
@@ -141,24 +134,22 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
 
-		initializeView(viewModel);
+		initializeView(re);
 
 		// Create thread pool
 		redrawTimer = new Timer("Bird's Eye View Timer");
-
-		this.viewModel.m_navigationCanvas = this;
 	}
 	
-	private void initializeView(final GraphView view) {
-		viewModel.addContentChangeListener(m_cLis);
-		viewModel.addViewportChangeListener(m_vLis);
+	private void initializeView(final DRenderingEngine re) {
+		re.addContentChangeListener(m_cLis);
+		re.addViewportChangeListener(m_vLis);
 		
 		updateBounds();
-		final Point2D pt = viewModel.getCenter();
+		final Point2D pt = re.getCenter();
 		m_viewXCenter = pt.getX();
 		m_viewYCenter = pt.getY();
 		
-		m_viewScaleFactor = viewModel.getZoom();
+		m_viewScaleFactor = re.getZoom();
 		
 		// Create default empty graphics object
 		imageWidth = MIN_SIZE.width;
@@ -167,7 +158,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		boundChanged = true;
 		imageUpdated = true;		
 		imageDirty = false;
-		drawEdges = viewModel.getGraphLOD().getDrawEdges();
+		drawEdges = re.getGraphLOD().getDrawEdges();
 	}
 
 	private void updateBounds() {
@@ -181,7 +172,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 	
 	private Rectangle2D getViewableRect() {
-		final Rectangle r = viewModel.getComponent().getBounds();
+		final Rectangle r = re.getCanvas().getBounds();
 		return new Rectangle2D.Double(r.x, r.y, r.width, r.height);
 	}
 
@@ -190,12 +181,12 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		final double[] origin = new double[2];
 		origin[0] = viewable.getX();
 		origin[1] = viewable.getY();
-		viewModel.xformComponentToNodeCoords(origin);
+		re.xformComponentToNodeCoords(origin);
 
 		final double[] destination = new double[2];
 		destination[0] = viewable.getX() + viewable.getWidth();
 		destination[1] = viewable.getY() + viewable.getHeight();
-		viewModel.xformComponentToNodeCoords(destination);
+		re.xformComponentToNodeCoords(destination);
 
 		return new Rectangle2D.Double(origin[0], origin[1], destination[0] - origin[0], destination[1] - origin[1]);
 	}
@@ -225,18 +216,18 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 * Render actual image on the panel.
 	 */
 	@Override public void update(Graphics g) {
-		viewModel.m_networkCanvas.ensureInitialized();
+		re.getCanvas().ensureInitialized();
 
 		ArbitraryGraphicsCanvas foregroundCanvas = 
-		    (ArbitraryGraphicsCanvas) viewModel.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS);
+		    (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
 		ArbitraryGraphicsCanvas backgroundCanvas = 
-		    (ArbitraryGraphicsCanvas) viewModel.getCanvas(DGraphView.Canvas.BACKGROUND_CANVAS);
+		    (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
 
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
 			
-			boolean hasComponents = viewModel.getExtents(m_extents);
+			boolean hasComponents = re.getExtents(m_extents);
 			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
 			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
 			
@@ -262,7 +253,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				// actually is slower
 				// TODO: at some point, we need to implement a different model of drawSnapshot that doesn't
 				// use the RTree, which isn't needed since we redraw everything anyways
-				if (viewModel.largeModel) {
+				if (re.isLargeModel()) {
 						// Run as a thread
 						if (redrawTask != null) {
 							redrawTask.cancel();
@@ -277,7 +268,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 					networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 
 					// Now draw the network
-					viewModel.drawSnapshot(networkImage, viewModel.getGraphLOD(), viewModel.getBackgroundPaint(),
+					re.drawSnapshot(networkImage, re.getGraphLOD(), re.getBackgroundPaint(),
 							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor);
 					if (imageDirty) imageDirty = false;
 				}
@@ -310,7 +301,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		boundChanged = false; imageUpdated = false;
 	}
 
-	public void updateSubgraph(List<CyNode> nodes, List<CyEdge> edges) {
+	public void updateSubgraph(List<View<CyNode>> nodes, List<View<CyEdge>> edges) {
 		// System.out.println("BirdsEyeView: updateSubgraph with "+nodes.size()+" nodes and "+edges.size()+" edges");
 		try {
 			if (networkImage == null) {
@@ -322,8 +313,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			}
 			
 			// Now draw the network
-			viewModel.drawSnapshot(networkImage, new BirdsEyeViewLOD(viewModel.getGraphLOD()),
-					viewModel.getBackgroundPaint(), m_extents[0], m_extents[1], m_myXCenter, m_myYCenter,
+			re.drawSnapshot(networkImage, new BirdsEyeViewLOD(re.getGraphLOD()),
+					re.getBackgroundPaint(), m_extents[0], m_extents[1], m_myXCenter, m_myYCenter,
 					m_myScaleFactor, nodes, edges);
 		} catch (Exception e) {
 			logger.error("Error updating subgraph", e);
@@ -346,7 +337,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		public void contentChanged() {
 			// System.out.println("ContentChanged: ");
 			imageUpdated = true;
-			drawEdges = viewModel.getGraphLOD().getDrawEdges();
+			drawEdges = re.getGraphLOD().getDrawEdges();
 			repaint();
 		}
 	}
@@ -363,10 +354,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			m_viewXCenter = newXCenter;
 			m_viewYCenter = newYCenter;
 			m_viewScaleFactor = newScaleFactor;			
-			if ((viewModel.getGraphLOD().getDrawEdges() && !drawEdges) || imageDirty) {
+			if ((re.getGraphLOD().getDrawEdges() && !drawEdges) || imageDirty) {
 				imageUpdated = true;
 			}
-			drawEdges = viewModel.getGraphLOD().getDrawEdges();
+			drawEdges = re.getGraphLOD().getDrawEdges();
 			repaint();
 		}
 	}
@@ -389,8 +380,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double centerX = ((m_lastXMousePos - halfWidth) / m_myScaleFactor) + m_myXCenter;
 				double centerY = ((m_lastYMousePos - halfHeight) / m_myScaleFactor) + m_myYCenter;
 				
-				viewModel.setCenter(centerX, centerY);
-				viewModel.updateView();
+				re.setCenter(centerX, centerY);
+				re.updateView();
 			}
 		}
 
@@ -406,7 +397,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final class InnerMouseWheelListener implements MouseWheelListener {
 		@Override 
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			viewModel.m_networkCanvas.mouseWheelMoved(e);
+			re.getInputHandlerGlassPane().processMouseWheelEvent(e);
 		}
 	}
 	
@@ -424,20 +415,20 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double deltaX = 0;
 				double deltaY = 0;
 				
-				if (!viewModel.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
 					deltaX = (currX - m_lastXMousePos) / m_myScaleFactor;
 					m_lastXMousePos = currX;
 				}
-				if (!viewModel.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
 					deltaY = (currY - m_lastYMousePos) / m_myScaleFactor;
 					m_lastYMousePos = currY;
 				}
 				
 				if (deltaX != 0 || deltaY != 0) {
-					final Point2D pt = viewModel.getCenter();
-					viewModel.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
-					viewModel.m_networkCanvas.setHideEdges();
-					viewModel.updateView();
+					final Point2D pt = re.getCenter();
+					re.setCenter(pt.getX() + deltaX, pt.getY() + deltaY);
+					re.getCanvas().setHideEdges();
+					re.updateView();
 				}
 			}
 		}
@@ -450,27 +441,27 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 	@Override
 	public View<CyNetwork> getViewModel() {
-		return viewModel.getViewModel();
+		return re.getViewModel();
 	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return viewModel.getVisualLexicon();
+		return re.getVisualLexicon();
 	}
 
 	@Override
 	public Properties getProperties() {
-		return viewModel.getProperties();
+		return re.getProperties();
 	}
 	
 	@Override
 	public Printable createPrintable() {
-		return viewModel.createPrintable();
+		return re.createPrintable();
 	}
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int width, int height) {
-		return viewModel.createIcon(vp, value, width, height);
+		return re.createIcon(vp, value, width, height);
 	}
 
 	@Override
@@ -516,15 +507,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 				// Now draw the network
 				// System.out.println("Drawing snapshot");
-				if (viewModel.getGraphLOD() instanceof DingGraphLOD)
-					bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)viewModel.getGraphLOD()));
+				if (re.getGraphLOD() instanceof DingGraphLOD)
+					bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)re.getGraphLOD()));
 				else if (bevLOD == null)
-					bevLOD = new BirdsEyeViewLOD(viewModel.getGraphLOD());
+					bevLOD = new BirdsEyeViewLOD(re.getGraphLOD());
 
 				if (imageDirty)
 					bevLOD.setDrawEdges(true);
-				viewModel.drawSnapshot(networkImage2, bevLOD, viewModel.getBackgroundPaint(),
-						extents[0], extents[1], xCenter, yCenter, scale);
+				re.drawSnapshot(networkImage2, bevLOD, re.getBackgroundPaint(), extents[0], extents[1], xCenter, yCenter, scale);
 				imageDirty = false;
 				networkImage = networkImage2;
 			} catch (Exception e) {

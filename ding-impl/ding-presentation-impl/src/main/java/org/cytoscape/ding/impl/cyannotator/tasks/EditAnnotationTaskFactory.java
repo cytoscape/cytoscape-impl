@@ -28,7 +28,8 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import java.awt.geom.Point2D;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -38,24 +39,38 @@ import org.cytoscape.work.TaskIterator;
 
 public class EditAnnotationTaskFactory implements NetworkViewLocationTaskFactory {
 	
+	private final DingRenderer dingRenderer;
+	
+	public EditAnnotationTaskFactory(DingRenderer dingRenderer) {
+		this.dingRenderer = dingRenderer;
+	}
+	
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
+		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+		if(re == null)
+			return null;
+		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
-		return new TaskIterator(new EditAnnotationTask(networkView, annotation, javaPt));
+		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
 
 	}
 
 	@Override
 	public boolean isReady(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		CyAnnotator cyAnnotator = ((DGraphView)networkView).getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+		if(re == null)
+			return false;
+		DingAnnotation annotation = re.getCyAnnotator().getAnnotationAt(javaPt);
 		if (annotation != null)
 			return true;
 		return false;
 	}
 
 	public TaskIterator createTaskIterator(CyNetworkView networkView, DingAnnotation annotation, Point2D javaPt) {
-		return new TaskIterator(new EditAnnotationTask(networkView, annotation, javaPt));
+		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
+		if(re == null)
+			return null;
+		return new TaskIterator(new EditAnnotationTask(re, annotation, javaPt));
 	}
 }

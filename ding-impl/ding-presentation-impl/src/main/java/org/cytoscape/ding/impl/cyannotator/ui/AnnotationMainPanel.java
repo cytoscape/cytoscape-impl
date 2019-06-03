@@ -4,7 +4,6 @@ import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
-import static org.cytoscape.util.swing.LookAndFeelUtil.createPanelBorder;
 import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
@@ -65,7 +64,7 @@ import javax.swing.tree.TreePath;
 
 import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationNode;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
@@ -143,7 +142,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	/** GroupAnnotation icon when expanded */
 	private Icon openAnnotationIcon;
 	
-	private DGraphView view;
+	/** Tab icon */
+	private TextIcon icon;
+	private DRenderingEngine re;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -195,7 +196,12 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 
 	@Override
 	public Icon getIcon() {
-		return null;
+		if (icon == null) {
+			Font font = serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16f);
+			icon = new TextIcon(IconUtil.ICON_ANNOTATION_BOUNDED_TEXT_2, font, 16, 16);
+		}
+		
+		return icon;
 	}
 	
 	@Override
@@ -285,8 +291,8 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		return set;
 	}
 	
-	DGraphView getDGraphView() {
-		return view;
+	DRenderingEngine getRenderingEngine() {
+		return re;
 	}
 	
 	int getAnnotationCount() {
@@ -322,7 +328,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	}
 	
 	void setSelected(Annotation a, boolean selected) {
-		if (view == null || getAnnotationCount() == 0)
+		if (re == null || getAnnotationCount() == 0)
 			return;
 
 		// group annotations can be on both canvases at the same time
@@ -345,18 +351,18 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		}
 	}
 	
-	void update(DGraphView view) {
-		this.view = view;
+	void update(DRenderingEngine re) {
+		this.re = re;
 		
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
 		// Enable/disable before next steps
-		setEnabled(view != null);
+		setEnabled(re != null);
 		
 		// Update annotation trees
-		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view == null ? null : view.getCyAnnotator());
+		AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re == null ? null : re.getCyAnnotator());
 		getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 		getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		
@@ -434,9 +440,9 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
-		final List<Annotation> annotations = view != null ? view.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
-			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, view.getCyAnnotator());
+			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re.getCyAnnotator());
 			getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);
 			getForegroundLayerPanel().update(annotationTree, Annotation.FOREGROUND);
 		}
@@ -522,7 +528,6 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 						.addComponent(rightFiller, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(getRemoveAnnotationsButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
-				.addPreferredGap(ComponentPlacement.RELATED)
 				.addComponent(getForegroundLayerPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addGroup(layout.createParallelGroup(CENTER, false)
 						.addComponent(getPushToBackgroundButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -541,7 +546,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	JPanel getButtonPanel() {
 		if (buttonPanel == null) {
 			buttonPanel = new JPanel();
-			buttonPanel.setBorder(createPanelBorder());
+			buttonPanel.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			
 			if (isAquaLAF())
 				buttonPanel.setOpaque(false);
@@ -806,7 +811,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		public LayerPanel(String canvasName) {
 			this.canvasName = canvasName;
 			init();
-			setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+			setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, UIManager.getColor("Separator.foreground")));
 			
 			getTree().getSelectionModel().addTreeSelectionListener(e -> {
 				stopTreeCellEditing();

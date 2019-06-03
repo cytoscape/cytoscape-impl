@@ -3,14 +3,13 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
-import org.cytoscape.task.AbstractNetworkViewTask;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
+import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -37,22 +36,17 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class GroupAnnotationsTask extends AbstractNetworkViewTask {
+public class GroupAnnotationsTask extends AbstractTask {
 
+	private final DRenderingEngine re;
 	private Collection<DingAnnotation> annotations;
 	
-	/**
-	 * Group the selected annotations, if any.
-	 */
-	public GroupAnnotationsTask(CyNetworkView view) {
-		super(view);
+	public GroupAnnotationsTask(DRenderingEngine re) {
+		this(re, null);
 	}
 	
-	/**
-	 * Group the passed annotations.
-	 */
-	public GroupAnnotationsTask(CyNetworkView view, Collection<DingAnnotation> annotations) {
-		super(view);
+	public GroupAnnotationsTask(DRenderingEngine re, Collection<DingAnnotation> annotations) {
+		this.re = re;
 		this.annotations = annotations;
 	}
 	
@@ -60,10 +54,8 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Group Annotations");
 		
-		if (view instanceof DGraphView) {
-			DGraphView dView = (DGraphView) view;
-			
-			CyAnnotator cyAnnotator = dView.getCyAnnotator();
+		if (re != null) {
+			CyAnnotator cyAnnotator = re.getCyAnnotator();
 			
 			Collection<DingAnnotation> selectedAnnotations;
 			if(annotations == null) {
@@ -87,7 +79,7 @@ public class GroupAnnotationsTask extends AbstractNetworkViewTask {
 				}
 			}
 			
-			GroupAnnotationImpl newGroup = new GroupAnnotationImpl(dView, Collections.emptyMap());
+			GroupAnnotationImpl newGroup = new GroupAnnotationImpl(re, Collections.emptyMap());
 			newGroup.addComponent(null); // Need to add this first so we can update things appropriately
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw

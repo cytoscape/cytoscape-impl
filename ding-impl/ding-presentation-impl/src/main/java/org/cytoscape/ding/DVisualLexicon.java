@@ -520,4 +520,9 @@ public class DVisualLexicon extends BasicVisualLexicon {
 		
 		return super.isSupported(vp);
 	}
+	
+	public boolean isAnimated(LineType lineType) {
+		return lineType == MARQUEE_DASH || lineType == MARQUEE_DASH_DOT || lineType == MARQUEE_EQUAL;
+	}
+	
 }

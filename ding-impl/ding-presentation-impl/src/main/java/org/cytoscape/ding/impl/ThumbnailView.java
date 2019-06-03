@@ -7,12 +7,11 @@ import java.awt.Image;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.awt.print.Printable;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.swing.Icon;
 
-import org.cytoscape.ding.impl.DGraphView.Canvas;
-import org.cytoscape.ding.impl.events.ViewportChangeListener;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowsSetEvent;
@@ -30,9 +29,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
 public class ThumbnailView extends Component implements RenderingEngine<CyNetwork>, ViewChangedListener, RowsSetListener {
-
 	
-	private final DGraphView viewModel;
+	private final DRenderingEngine re;
 	private final CyServiceRegistrar registrar;
 	
 	private ContentChangeListener contentListener;
@@ -41,14 +39,9 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	private boolean forceRender = false;
 	
 	
-	public ThumbnailView(final DGraphView viewModel, CyServiceRegistrar registrar) {
-		if (viewModel == null)
-			throw new NullPointerException("DGraphView is null.");
-		if (registrar == null)
-			throw new NullPointerException("registrar is null.");
-
-		this.viewModel = viewModel;
-		this.registrar = registrar;
+	public ThumbnailView(DRenderingEngine re, CyServiceRegistrar registrar) {
+		this.re = Objects.requireNonNull(re);
+		this.registrar = Objects.requireNonNull(registrar);
 		
 		contentListener  = () -> {
 			forceRender = false;
@@ -59,8 +52,8 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			repaint();
 		};
 		
-		viewModel.addContentChangeListener(contentListener);
-		viewModel.addViewportChangeListener(viewportListener);
+		re.addContentChangeListener(contentListener);
+		re.addViewportChangeListener(viewportListener);
 	}
 	
 	@Override
@@ -68,8 +61,8 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		// Ensure that the thumbnail updates when a visual property changes,
 		// because the ContentChangeListener won't fire if the network view isn't visible.
 		CyNetworkView source = e.getSource();
-		if(source.equals(viewModel)) {
-			if(!viewModel.getComponent().isShowing() && hasNonResizeEvent(e)) {
+		if(source.equals(re.getViewModel())) {
+			if(!re.getCanvas().isShowing() && hasNonResizeEvent(e)) {
 				forceRender = true;
 			}
 			repaint();
@@ -82,8 +75,8 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			return;
 		
 		CyTable source = e.getSource();
-		CyNetwork model = viewModel.getModel();
-		if(!viewModel.getComponent().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
+		CyNetwork model = re.getViewModel().getModel();
+		if(!re.getCanvas().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
 			forceRender = true;
 			repaint();
 		}
@@ -95,9 +88,11 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	
 	@Override
 	public void dispose() {
-		viewModel.removeContentChangeListener(contentListener);
-		viewModel.removeViewportChangeListener(viewportListener);
-		registrar.unregisterAllServices(this);
+		re.removeContentChangeListener(contentListener);
+		re.removeViewportChangeListener(viewportListener);
+		try {
+			registrar.unregisterAllServices(this);
+		} catch (Exception e) {}
 	}
 		
 	
@@ -114,14 +109,14 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		if(isVisible()) {
 			//long start = System.currentTimeMillis();
 			
-			viewModel.m_networkCanvas.ensureInitialized();
+			re.getCanvas().ensureInitialized();
 	
 			int w = getWidth();
 			int h = getHeight();
 			
-			DingCanvas bgCanvas  = viewModel.getCanvas(Canvas.BACKGROUND_CANVAS);
-			DingCanvas netCanvas = viewModel.getCanvas(Canvas.NETWORK_CANVAS);
-			DingCanvas fgCanvas  = viewModel.getCanvas(Canvas.FOREGROUND_CANVAS);
+			DingCanvas bgCanvas  = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+			DingCanvas netCanvas = re.getCanvas(DRenderingEngine.Canvas.NETWORK_CANVAS);
+			DingCanvas fgCanvas  = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
 			
 			Image bgImage  = bgCanvas.getImage();
 			Image netImage = netCanvas.getImage();
@@ -208,27 +203,27 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	
 	@Override
 	public View<CyNetwork> getViewModel() {
-		return viewModel.getViewModel();
+		return re.getViewModel();
 	}
 
 	@Override
 	public VisualLexicon getVisualLexicon() {
-		return viewModel.getVisualLexicon();
+		return re.getVisualLexicon();
 	}
 
 	@Override
 	public Properties getProperties() {
-		return viewModel.getProperties();
+		return re.getProperties();
 	}
 
 	@Override
 	public Printable createPrintable() {
-		return viewModel.createPrintable();
+		return re.createPrintable();
 	}
 
 	@Override
 	public <V> Icon createIcon(VisualProperty<V> vp, V value, int width, int height) {
-		return viewModel.createIcon(vp, value, width, height);
+		return re.createIcon(vp, value, width, height);
 	}
 
 	@Override

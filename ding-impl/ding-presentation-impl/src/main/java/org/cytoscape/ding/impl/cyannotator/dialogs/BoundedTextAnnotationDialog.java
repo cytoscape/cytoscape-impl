@@ -17,7 +17,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import org.cytoscape.ding.impl.DGraphView;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.BoundedTextAnnotationImpl;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -60,18 +60,18 @@ public class BoundedTextAnnotationDialog extends JDialog {
 	private JButton cancelButton;
 
 	private final CyAnnotator cyAnnotator;    
-	private final DGraphView view;    
+	private final DRenderingEngine re;    
 	private final Point2D startingLocation;
 	private final BoundedTextAnnotationImpl mAnnotation;
 	private BoundedTextAnnotationImpl preview;
 	private final boolean create;
 	
-	public BoundedTextAnnotationDialog(final DGraphView view, final Point2D start, final Window owner) {
+	public BoundedTextAnnotationDialog(final DRenderingEngine re, final Point2D start, final Window owner) {
 		super(owner);
-		this.view = view;
-		this.cyAnnotator = view.getCyAnnotator();
-		this.startingLocation = start != null ? start : view.getCenter();
-		this.mAnnotation = new BoundedTextAnnotationImpl(view, false);
+		this.re = re;
+		this.cyAnnotator = re.getCyAnnotator();
+		this.startingLocation = start != null ? start : re.getCenter();
+		this.mAnnotation = new BoundedTextAnnotationImpl(re, false);
 		this.create = true;
 
 		initComponents();		        
@@ -81,7 +81,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		super(owner);
 		this.mAnnotation = mAnnotation;
 		this.cyAnnotator = mAnnotation.getCyAnnotator();
-		this.view = cyAnnotator.getView();
+		this.re = cyAnnotator.getRenderingEngine();
 		this.create = false;
 		this.startingLocation = null;
 
@@ -95,7 +95,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		setTitle(create ? "Create Bounded Text Annotation" : "Modify Bounded Text Annotation");
 		
 		// Create the preview panel
-		preview = new BoundedTextAnnotationImpl(view, true);
+		preview = new BoundedTextAnnotationImpl(re, true);
 		preview.setText(mAnnotation.getText());
 		preview.setFont(mAnnotation.getFont());
 		preview.fitShapeToText();
@@ -173,7 +173,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		cyAnnotator.addAnnotation(mAnnotation);
 
 		// Update the canvas
-		view.getCanvas(DGraphView.Canvas.FOREGROUND_CANVAS).repaint();
+		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(mAnnotation);

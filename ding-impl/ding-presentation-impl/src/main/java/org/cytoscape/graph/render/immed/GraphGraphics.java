@@ -78,7 +78,7 @@ import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
@@ -230,7 +230,7 @@ public final class GraphGraphics {
 	// package scoped for unit testing
 	final EdgeAnchors m_noAnchors = new EdgeAnchors() {
 		public final int numAnchors() { return 0; }
-		public final void getAnchor(final int inx, final float[] arr, final int off) { }
+		public final void getAnchor(final int inx, final float[] arr) { }
 	};
 
 	private final double[] m_edgePtsBuff = new double[(MAX_EDGE_ANCHORS + 1) * 6];
@@ -1655,7 +1655,7 @@ public final class GraphGraphics {
 		// finds the first anchor point other than the start point and
 		// add it to the edge points buffer
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff, 0);
+			anchors.getAnchor(anchorInx++, m_floatBuff);
 
 			if (!((m_floatBuff[0] == x0) && (m_floatBuff[1] == y0))) {
 				m_edgePtsBuff[2] = m_floatBuff[0];
@@ -1668,7 +1668,7 @@ public final class GraphGraphics {
 
 		// now fill edge points buffer with all subsequent anchors
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff, 0);
+			anchors.getAnchor(anchorInx++, m_floatBuff);
 			// Duplicate anchors are allowed.
 			m_edgePtsBuff[m_edgePtsCount * 2] = m_floatBuff[0];
 			m_edgePtsBuff[(m_edgePtsCount * 2) + 1] = m_floatBuff[1];
@@ -2120,7 +2120,7 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkView netView, final CyNode node,
+	public final void drawCustomGraphicFull(final CyNetworkViewSnapshot netView, final View<CyNode> node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {
@@ -2146,8 +2146,7 @@ public final class GraphGraphics {
 			m_g2d.fill(shape);
 		} else if (cg instanceof Cy2DGraphicLayer) {
 			Cy2DGraphicLayer layer = (Cy2DGraphicLayer)cg;
-			final View<CyNode> view = (netView != null && node != null) ? netView.getNodeView(node) : null;
-			layer.draw(m_g2d, nodeShape, netView, view);
+			layer.draw(m_g2d, nodeShape, netView, node);
 		} else if (cg instanceof ImageCustomGraphicLayer) {
 			Rectangle bounds = cg.getBounds2D().getBounds();
 			final BufferedImage bImg = ((ImageCustomGraphicLayer)cg).getPaint(bounds).getImage();
