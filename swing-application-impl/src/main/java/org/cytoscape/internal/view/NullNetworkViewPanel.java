@@ -3,10 +3,11 @@ package org.cytoscape.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static javax.swing.GroupLayout.Alignment.CENTER;
+import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -23,6 +24,7 @@ import javax.swing.JSeparator;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.UIManager;
 
+import org.cytoscape.internal.util.IconUtil;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
@@ -70,8 +72,8 @@ public class NullNetworkViewPanel extends JPanel {
 	private JButton createViewButton;
 	private final GridViewTogglePanel gridViewTogglePanel;
 	
-	private final JSeparator sep1 = new JSeparator(JSeparator.VERTICAL);
-	private final JSeparator sep2 = new JSeparator(JSeparator.VERTICAL);
+	private final JSeparator sep1 = ViewUtil.createToolBarSeparator();
+	private final JSeparator sep2 = ViewUtil.createToolBarSeparator();
 	
 	private CyNetworkView networkView;
 	private CyNetwork network;
@@ -212,24 +214,31 @@ public class NullNetworkViewPanel extends JPanel {
 			layout.setHorizontalGroup(layout.createSequentialGroup()
 					.addContainerGap()
 					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep1, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getTitleLabel())
 					.addGap(0, 0, Short.MAX_VALUE)
 					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
-					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(1)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(1)
 			);
+			
+			equalizeSize(gridViewTogglePanel.getGridModeButton(), gridViewTogglePanel.getViewModeButton(),
+					getReattachViewButton());
 		}
 		
 		return toolBar;
@@ -273,9 +282,10 @@ public class NullNetworkViewPanel extends JPanel {
 	
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
-			reattachViewButton = new JButton(" " + ICON_THUMB_TACK + " ");
+			reattachViewButton = new JButton(IconUtil.PIN);
 			reattachViewButton.setToolTipText("Reattach View");
-			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			styleToolBarButton(reattachViewButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16.0f));
 		}
 		
 		return reattachViewButton;

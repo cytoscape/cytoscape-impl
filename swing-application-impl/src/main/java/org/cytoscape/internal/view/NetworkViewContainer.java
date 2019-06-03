@@ -6,7 +6,6 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static javax.swing.GroupLayout.Alignment.LEADING;
 import static javax.swing.GroupLayout.Alignment.TRAILING;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import static javax.swing.LayoutStyle.ComponentPlacement.UNRELATED;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_CHECK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
@@ -14,7 +13,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
-import static org.cytoscape.util.swing.IconManager.ICON_THUMB_TACK;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -266,8 +264,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	}
 	
 	private void updateHighDetailButton() {
-		getGraphicsDetailButton().setSelected(Boolean.TRUE.equals(
-				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar)));
+		boolean hd = Boolean.TRUE.equals(
+				Util.getVisualProperty("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, networkView, serviceRegistrar));
+		getGraphicsDetailButton().setSelected(hd);
 	}
 	
 	private void updateSelectionModePanel() {
@@ -441,7 +440,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(sep2, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addPreferredGap(UNRELATED)
+					.addPreferredGap(RELATED)
 					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addPreferredGap(RELATED)
 					.addComponent(getViewTitleLabel())
@@ -466,24 +465,28 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addContainerGap()
 			);
-			layout.setVerticalGroup(layout.createParallelGroup(CENTER, false)
-					.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getGraphicsDetailButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-					.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(1)
+					.addGroup(layout.createParallelGroup(CENTER, false)
+							.addComponent(gridViewTogglePanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep1, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getDetachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getReattachViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep2, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getCurrentLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getViewTitleLabel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getViewTitleTextField(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep3, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getExportButton(),PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep4, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getGraphicsDetailButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getSelectionModePanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep5, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getInfoPanel(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(sep6, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+							.addComponent(getBirdsEyeViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+					)
+					.addGap(1)
 			);
 			
 			Set<JComponent> allButtons = new HashSet<>(selectionModeButtons);
@@ -510,9 +513,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JButton getReattachViewButton() {
 		if (reattachViewButton == null) {
-			reattachViewButton = new JButton(" " + ICON_THUMB_TACK + " ");
+			reattachViewButton = new JButton(IconUtil.PIN);
 			reattachViewButton.setToolTipText("Reattach View");
-			styleToolBarButton(reattachViewButton, serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			styleToolBarButton(reattachViewButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 16.0f));
 		}
 		
 		return reattachViewButton;
@@ -662,7 +666,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel getSelectionIconLabel() {
 		if (selectionIconLabel == null) {
 			selectionIconLabel = new JLabel(ICON_CHECK_SQUARE);
-			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
+			selectionIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(10.0f));
 			selectionIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
@@ -672,7 +676,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	private JLabel getHiddenIconLabel() {
 		if (hiddenIconLabel == null) {
 			hiddenIconLabel = new JLabel(ICON_EYE_SLASH);
-			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(14.0f));
+			hiddenIconLabel.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(12.0f));
 			hiddenIconLabel.setForeground(UIManager.getColor("Label.infoForeground"));
 		}
 		
@@ -725,7 +729,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JToggleButton getGraphicsDetailButton() {
 		if (graphicsDetailButton == null) {
-			graphicsDetailButton = new SimpleToolBarToggleButton(IconUtil.GD);
+			graphicsDetailButton = new SimpleToolBarToggleButton(IconUtil.GD_LOW);
 			graphicsDetailButton.setToolTipText("Always Show Graphics Details");
 			styleToolBarButton(graphicsDetailButton,
 					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 20.0f));
@@ -733,6 +737,9 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			graphicsDetailButton.addActionListener(evt -> {
 				Util.setLockedValue("NETWORK_FORCE_HIGH_DETAIL", CyNetwork.class, graphicsDetailButton.isSelected(),
 						networkView, serviceRegistrar);
+			});
+			graphicsDetailButton.addItemListener(evt -> {
+				getGraphicsDetailButton().setText(graphicsDetailButton.isSelected() ? IconUtil.GD_HIGH : IconUtil.GD_LOW);
 			});
 		}
 		

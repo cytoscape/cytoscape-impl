@@ -6,6 +6,7 @@ import static javax.swing.GroupLayout.Alignment.CENTER;
 import static org.cytoscape.internal.view.util.ViewUtil.styleToolBarButton;
 import static org.cytoscape.util.swing.IconManager.ICON_SHARE_ALT_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_TH;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -105,10 +106,10 @@ public class GridViewTogglePanel extends JPanel {
 				.addComponent(getViewModeButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
 		
+		equalizeSize(getGridModeButton(), getViewModeButton());
 		setKeyBindings(this);
 		
 		model.addPropertyChangeListener("mode", modePropertyListener);
-		
 		update();
 	}
 	

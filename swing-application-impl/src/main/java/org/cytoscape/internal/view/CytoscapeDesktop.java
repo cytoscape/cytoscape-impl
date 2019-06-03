@@ -1548,9 +1548,9 @@ public class CytoscapeDesktop extends JFrame
 						btn.setMinimumSize(d);
 						btn.setMaximumSize(d);
 						btn.setSize(d);
-						btn.addItemListener(evt -> ViewUtil.updateToolBarStyle(btn));
+						btn.addItemListener(evt -> ViewUtil.updateToolBarStyle(btn, false));
 						btn.addMouseListener(new ContextMenuMouseListener(cytoPanel));
-						ViewUtil.updateToolBarStyle(btn);
+						ViewUtil.updateToolBarStyle(btn, false);
 						
 						buttons.add(btn);
 						

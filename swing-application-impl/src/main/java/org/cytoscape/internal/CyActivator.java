@@ -627,7 +627,7 @@ public class CyActivator extends AbstractCyActivator {
 				if (originalDisabledFg != null)
 					originalDisabledFg = new Color(originalDisabledFg.getRGB());
 			} else {
-				originalDisabledFg = UIManager.getColor("Label.disabledForeground");
+				originalDisabledFg = UIManager.getColor(isGtkLAF() ? "Button.disabledForeground" : "Label.disabledForeground");
 				
 				if (originalDisabledFg == null)
 					originalDisabledFg = UIManager.getColor("TextField.inactiveForeground");
@@ -711,24 +711,13 @@ public class CyActivator extends AbstractCyActivator {
 				);
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
+				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				
 				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
 				
 				if (selBgColor != null)
 					UIManager.put("Focus.color", new Color(selBgColor.getRGB()));
-				
-				// Tree icons -- we need a right-to-left arrow!
-				if (UIManager.getIcon("Tree.rightToLeftCollapsedIcon") == null) {
-					Icon treeIcon = UIManager.getIcon("Tree.collapsedIcon");
-					int w = treeIcon != null ? Math.max(12, treeIcon.getIconWidth()) : 16;
-					int h = treeIcon != null ? Math.max(12, treeIcon.getIconHeight()) : 16;
-					Font font = iconManager.getIconFont(10f);
-					Color c = UIManager.getColor("Label.infoForeground");
-					UIManager.put("Tree.expandedIcon", new TextIcon(IconManager.ICON_CHEVRON_DOWN, font, c, w, h));
-					UIManager.put("Tree.collapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_RIGHT, font, c, w, h));
-					UIManager.put("Tree.rightToLeftCollapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_LEFT, font, c, w, h));
-				}
 			} else if (isNimbusLAF()) {
 				// Nimbus (usually Linux)
 				// Translating Nimbus default colors to more standard UIManager keys
@@ -743,6 +732,8 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table.foreground", new Color(UIManager.getColor("Table.foreground").getRGB()));
 				UIManager.put("Table.alternateRowColor", Color.WHITE);
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
+				
+				UIManager.put("Viewport.background", Color.WHITE);
 				
 				UIManager.put("Table.showGrid", true);
 				UIManager.put("Table.gridColor", new Color(242, 242, 242));
@@ -770,7 +761,7 @@ public class CyActivator extends AbstractCyActivator {
 				// JList has ugly inconsistent selection colors in the latest Java 8 version
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textBackground", new Color(57, 105, 138));
 				UIManager.getLookAndFeelDefaults().put("List[Selected].textForeground", Color.WHITE);
-			} else if (UIManager.getLookAndFeel() != null && "GTK".equals(UIManager.getLookAndFeel().getID())) {
+			} else if (isGtkLAF()) {
 				// GTK (usually Linux):
 				UIManager.put(
 						"TableHeader.cellBorder", 
@@ -782,22 +773,19 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 			}
 			
-			// Created for Cytoscape
-			UIManager.put("ToggleButton.unselectedBackground", UIManager.getColor("Button.background"));
-			UIManager.put("ToggleButton.unselectedForeground", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.25f));
-			
-//			if (isNimbusLAF()) {
-//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Table.focusCellBackground"));
-//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Table.selectionBackground"));
-//			} else if (isAquaLAF()) {
-//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Tree.selectionBackground"));
-//			} else {
-//				UIManager.put("ToggleButton.selectedBackground", UIManager.getColor("Button.background"));
-//				UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Focus.color"));
-//			}
-			UIManager.put("ToggleButton.selectedBackground", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.75f));
-			UIManager.put("ToggleButton.selectedForeground", UIManager.getColor("Button.foreground"));
+			// Tree icons -- we need a right-to-left arrow!
+			if (UIManager.getIcon("Tree.rightToLeftCollapsedIcon") == null && (isWinLAF() || isGtkLAF())) {
+				// These custom icons did not work well with original JTrees on Nimbus (they were misaligned)
+				// and Aqua usually does not need this.
+				Icon treeIcon = UIManager.getIcon("Tree.collapsedIcon");
+				int w = treeIcon != null ? Math.max(12, treeIcon.getIconWidth()) : 16;
+				int h = treeIcon != null ? Math.max(12, treeIcon.getIconHeight()) : 16;
+				Font font = iconManager.getIconFont(10f);
+				Color c = UIManager.getColor("Label.infoForeground");
+				UIManager.put("Tree.expandedIcon", new TextIcon(IconManager.ICON_CHEVRON_DOWN, font, c, w, h));
+				UIManager.put("Tree.collapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_RIGHT, font, c, w, h));
+				UIManager.put("Tree.rightToLeftCollapsedIcon", new TextIcon(IconManager.ICON_CHEVRON_LEFT, font, c, w, h));
+			}
 			
 			// ScrollPane
 			UIManager.put("ScrollPane.border", BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
@@ -808,11 +796,27 @@ public class CyActivator extends AbstractCyActivator {
 			UIManager.put("SplitPane.foreground", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPane.background", UIManager.getColor("Separator.foreground"));
 			UIManager.put("SplitPaneDivider.border", BorderFactory.createEmptyBorder());
+			
+			// Created for Cytoscape ------------------------------------------------------------------------
+			// ToggleButton
+			UIManager.put("CyToggleButton.background", UIManager.getColor("Button.background"));
+			
+			if (isNimbusLAF()) {
+				UIManager.put("CyToggleButton.foreground", new Color(UIManager.getColor("Button.foreground").getRGB()));
+				UIManager.put("CyToggleButton[Selected].background", new Color(UIManager.getColor("nimbusBlueGrey").getRGB()));
+				UIManager.put("CyToggleButton[Selected].foreground", new Color(UIManager.getColor("ToggleButton.foreground").getRGB()));
+				UIManager.put("CyToggleButton[Selected].borderColor", new Color(UIManager.getColor("nimbusBorder").getRGB()));
+			} else {
+				UIManager.put("CyToggleButton.foreground", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.25f));
+				UIManager.put("CyToggleButton[Selected].background", ColorUtil.setBrightness(UIManager.getColor("Button.background"), 0.8f));
+				UIManager.put("CyToggleButton[Selected].foreground", UIManager.getColor("Button.foreground"));
+				UIManager.put("CyToggleButton[Selected].borderColor", ColorUtil.setBrightness(UIManager.getColor("Button.foreground"), 0.68f));
+			}
 		} catch (Exception e) {
 			logger.error("Unexpected error", e);
 		}
 		
-		// Cytoscape Palette (http://paletton.com/#uid=70F2h0krdtngVCclWv9tYnSyeiT)
+		// Cytoscape Palette (http://paletton.com/#uid=70F2h0krdtngVCclWv9tYnSyeiT) -------------------------
 		UIManager.put("CyColor.primary(-2)", new Color(150, 83, 0));    // Darkest
 		UIManager.put("CyColor.primary(-1)", new Color(190, 110, 12));  // Darker
 		UIManager.put("CyColor.primary(0)",  new Color(234, 145, 35));  // Base color
@@ -854,6 +858,10 @@ public class CyActivator extends AbstractCyActivator {
 	@SuppressWarnings("unchecked")
 	private CyProperty<Properties> getCy3Property(final BundleContext bc) {
 		return getService(bc, CyProperty.class, "(cyPropertyName=cytoscape3.props)");
+	}
+	
+	public static boolean isGtkLAF() {
+		return UIManager.getLookAndFeel() != null && "GTK".equals(UIManager.getLookAndFeel().getID());
 	}
 	
 	private class ViewComparator implements Comparator<CyNetworkView> {

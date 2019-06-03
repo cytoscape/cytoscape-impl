@@ -79,9 +79,6 @@ public final class ViewUtil {
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
-	public static final Border DESELECTED_TOGLLE_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
-	public static final Border SELECTED_TOGLLE_BORDER = DESELECTED_TOGLLE_BORDER;
-	
 	public static String getName(final CyNetwork network) {
 		String name = "";
 		
@@ -168,7 +165,7 @@ public final class ViewUtil {
 	
 	public static void styleToolBarButton(final AbstractButton btn, final Font font, final boolean addPadding) {
 		int hPad = addPadding ? 5 : 0;
-		int vPad = addPadding ? 2 : 0;
+		int vPad = addPadding ? 4 : 0;
 		styleToolBarButton(btn, font, hPad, vPad);
 	}
 	
@@ -205,21 +202,33 @@ public final class ViewUtil {
 		}
 	}
 	
-	public static void updateToolBarStyle(final JToggleButton btn) {
+	public static void updateToolBarStyle(JToggleButton btn) {
+		updateToolBarStyle(btn, true);
+	}
+	
+	public static void updateToolBarStyle(JToggleButton btn, boolean showSelectionBorder) {
+		Border defBorder = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+		
 		if (btn.isEnabled()) {
-			btn.setBorder(btn.isSelected() ? SELECTED_TOGLLE_BORDER : DESELECTED_TOGLLE_BORDER);
+			Border selBorder = showSelectionBorder ?
+					BorderFactory.createCompoundBorder(
+							BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("CyToggleButton[Selected].borderColor")),
+							BorderFactory.createEmptyBorder(1, 1, 1, 1))
+					: defBorder;
+			
+			btn.setBorder(btn.isSelected() ? selBorder : defBorder);
 			btn.setBackground(
 					btn.isSelected() ?
-					UIManager.getColor("ToggleButton.selectedBackground") :
-					UIManager.getColor("ToggleButton.unselectedBackground"));
+					UIManager.getColor("CyToggleButton[Selected].background") :
+					UIManager.getColor("CyToggleButton.background"));
 			btn.setForeground(
 					btn.isSelected() ?
-					UIManager.getColor("ToggleButton.selectedForeground") :
-					UIManager.getColor("ToggleButton.unselectedForeground"));
+					UIManager.getColor("CyToggleButton[Selected].foreground") :
+					UIManager.getColor("CyToggleButton.foreground"));
 		} else {
-			btn.setBorder(DESELECTED_TOGLLE_BORDER);
+			btn.setBorder(defBorder);
 			btn.setForeground(UIManager.getColor("ToggleButton.disabledForeground"));
-			btn.setBackground(UIManager.getColor("ToggleButton.unselectedBackground"));
+			btn.setBackground(UIManager.getColor("CyToggleButton.unselectedBackground"));
 		}
 	}
 	
