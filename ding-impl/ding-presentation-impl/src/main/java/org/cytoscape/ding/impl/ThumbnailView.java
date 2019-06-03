@@ -90,7 +90,9 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	public void dispose() {
 		re.removeContentChangeListener(contentListener);
 		re.removeViewportChangeListener(viewportListener);
-		registrar.unregisterAllServices(this);
+		try {
+			registrar.unregisterAllServices(this);
+		} catch (Exception e) {}
 	}
 		
 	

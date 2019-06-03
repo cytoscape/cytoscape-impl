@@ -1358,13 +1358,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return cyAnnotator;
 	}
 	
+	
+	@Override
+	public void handleDispose() {
+		dispose();
+	}
+	
 	@Override
 	public void dispose() {
-		synchronized (this) {
+		synchronized(this) {
 			checkDirtyTimer.stop();
 			coalesceTimer.shutdown();
-			
-			// m_lis[0] = null;
 			cyAnnotator.dispose();
 			serviceRegistrar.unregisterAllServices(cyAnnotator);
 			networkCanvas.dispose();
