@@ -107,6 +107,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	private final CyServiceRegistrar serviceRegistrar;
+	private final CyEventHelper eventHelper;
+	private final VisualMappingManager vmm;
+	
 	private final DVisualLexicon lexicon;
 
 	private final CyNetworkView viewModel;
@@ -170,6 +173,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			final CyServiceRegistrar registrar
 	) {
 		this.serviceRegistrar = registrar;
+		this.eventHelper = registrar.getService(CyEventHelper.class);
+		this.vmm = registrar.getService(VisualMappingManager.class);
+		
 		this.props = new Properties();
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
@@ -439,7 +445,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	private void fitContent(final boolean updateView) {
-		serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
+		eventHelper.flushPayloadEvents();
 
 		// MKTODO why does this have to run on the edt?
 		invokeOnEDT(() -> {
@@ -498,9 +504,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void updateView(final boolean forceRedraw) {
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
-		if(eventHelper == null)
-			return; // shutting down
 		eventHelper.flushPayloadEvents();
 		
 		invokeOnEDTAndWait(() -> {
@@ -558,7 +561,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public void fitSelected() {
-		CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
 		
 //		synchronized (m_lock) {
@@ -846,8 +848,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		final Set<VisualPropertyDependency<?>> dependencies =
-				serviceRegistrar.getService(VisualMappingManager.class)
-				.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
+				vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
 
 		// synchronized (m_lock) {
 		try {
@@ -985,8 +986,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		try {
 //			synchronized (m_lock) {
-			Set<VisualPropertyDependency<?>> dependencies = serviceRegistrar.getService(VisualMappingManager.class)
-					.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
+			Set<VisualPropertyDependency<?>> dependencies =
+					vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
 				
 			lastRenderDetail = GraphRenderer.renderGraph(getViewModelSnapshot(),
 			  						     lod,
