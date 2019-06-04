@@ -1,6 +1,7 @@
 package org.cytoscape.view.model.internal.model.snapshot;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
@@ -129,7 +130,11 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	public void clearVisualProperties() {
 		throw new UnsupportedOperationException("Cannot modify view snapshot");
 	}
-
+	
+	@Override
+	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
 	
 	
 	@Override

@@ -128,7 +128,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
-	public Object getLock() {
+	public ViewLock getLock() {
 		return netLock;
 	}
 	

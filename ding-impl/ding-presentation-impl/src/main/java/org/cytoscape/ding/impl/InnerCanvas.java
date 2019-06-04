@@ -608,7 +608,9 @@ public class InnerCanvas extends DingCanvas {
 		
 		setHideEdges();
 		re.setViewportChanged();
-		re.getViewModel().setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+		re.getViewModel().batch(netView -> {
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+		}, false);
 		repaint();
 	}
 

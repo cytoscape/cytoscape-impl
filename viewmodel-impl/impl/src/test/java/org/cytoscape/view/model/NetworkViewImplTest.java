@@ -350,6 +350,31 @@ public class NetworkViewImplTest {
 	
 	
 	@Test
+	public void testDirtyFlag() throws Exception {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNetworkViewImpl netView = createNetworkView(network);
+		
+		netView.setVisualProperty(NODE_PAINT, Color.BLUE);
+		assertTrue(netView.isDirty());
+		
+		netView.createSnapshot();
+		assertFalse(netView.isDirty());
+		
+		netView.batch(nv -> {
+			nv.setVisualProperty(NODE_PAINT, Color.RED);
+			nv.setVisualProperty(NODE_PAINT, Color.BLUE);
+		}, false);
+		assertFalse(netView.isDirty());
+		
+		netView.batch(nv -> {
+			nv.setVisualProperty(NODE_PAINT, Color.RED);
+			nv.setVisualProperty(NODE_PAINT, Color.BLUE);
+		});
+		assertTrue(netView.isDirty());
+	}
+	
+	
+	@Test
 	public void testAdjacentEdges() {
 		CyNetwork network = networkSupport.getNetwork();
 		CyNode n1 = network.addNode();

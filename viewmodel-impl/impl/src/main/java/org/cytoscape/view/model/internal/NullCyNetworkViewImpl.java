@@ -2,6 +2,7 @@ package org.cytoscape.view.model.internal;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.function.Consumer;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -115,6 +116,11 @@ public class NullCyNetworkViewImpl implements NullCyNetworkView {
 	@Override
 	public String getRendererId() {
 		return null;
+	}
+	
+	@Override
+	public void batch(Consumer<View<CyNetwork>> viewConsumer, boolean setDirty) {
+		viewConsumer.accept(this);
 	}
 	
 }

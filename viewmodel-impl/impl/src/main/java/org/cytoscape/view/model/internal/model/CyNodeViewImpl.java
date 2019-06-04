@@ -61,7 +61,7 @@ public class CyNodeViewImpl extends CyViewBase<CyNode> {
 	}
 
 	@Override
-	public Object getLock() {
+	public ViewLock getLock() {
 		return getNetworkView().nodeLock;
 	}
 	
