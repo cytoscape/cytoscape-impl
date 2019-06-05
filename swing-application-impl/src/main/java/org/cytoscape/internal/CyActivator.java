@@ -712,6 +712,7 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("TableHeader.background", UIManager.getColor("Table.background"));
 				UIManager.put("Table.gridColor", UIManager.getColor("Table.background"));
 				UIManager.put("Viewport.background", UIManager.getColor("Table.background"));
+				UIManager.put("ScrollPane.background", UIManager.getColor("Table.background"));
 				UIManager.put("Separator.foreground", new Color(208, 208, 208));
 				
 				final Color selBgColor = UIManager.getColor("TextField.selectionBackground");
@@ -734,6 +735,7 @@ public class CyActivator extends AbstractCyActivator {
 				UIManager.put("Table:\"Table.cellRenderer\".background", Color.WHITE);
 				
 				UIManager.put("Viewport.background", Color.WHITE);
+				UIManager.put("ScrollPane.background", Color.WHITE);
 				
 				UIManager.put("Table.showGrid", true);
 				UIManager.put("Table.gridColor", new Color(242, 242, 242));
