@@ -1207,7 +1207,7 @@ public class CytoscapeDesktop extends JFrame
 					getEastPanel().getThisComponent()
 			);
 			topRightPane.setResizeWeight(1.0);
-			topRightPane.setMinimumSize(new Dimension(topRightPane.getPreferredSize().width, 0));
+			topRightPane.setMinimumSize(new Dimension(topRightPane.getMinimumSize().width, 0));
 		}
 
 		return topRightPane;
@@ -1263,6 +1263,8 @@ public class CytoscapeDesktop extends JFrame
 	private CytoPanelImpl getEastPanel() {
 		if (eastPanel == null) {
 			eastPanel = new CytoPanelImpl(EAST, 2, DOCK, serviceRegistrar);
+			eastPanel.getThisComponent().setMinimumSize(
+					new Dimension(eastPanel.getThisComponent().getMinimumSize().width, 0));
 		}
 
 		return eastPanel;
@@ -1272,7 +1274,7 @@ public class CytoscapeDesktop extends JFrame
 		if (southPanel == null) {
 			southPanel = new CytoPanelImpl(SOUTH, 3, DOCK, serviceRegistrar);
 			southPanel.getThisComponent().setMinimumSize(
-					new Dimension(southPanel.getThisComponent().getPreferredSize().width, 0));
+					new Dimension(southPanel.getThisComponent().getMinimumSize().width, 0));
 		}
 
 		return southPanel;
