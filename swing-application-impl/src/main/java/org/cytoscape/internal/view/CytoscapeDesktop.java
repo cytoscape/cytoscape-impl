@@ -621,7 +621,7 @@ public class CytoscapeDesktop extends JFrame
 	public void handleEvent(AppsFinishedStartingEvent e) {
 		invokeOnEDT(() -> {
 			// Only show Starter Panel the first time if the initial session is empty
-			// (for instance, Cystoscape can start up with a session file specified through the terminal)
+			// (for instance, Cytoscape can start up with a session file specified through the terminal)
 			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
 			
@@ -715,17 +715,26 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	public void showStarterPanel() {
-		// TODO check removed and updated preferred height
-		getCenterPanel().add(getStarterPanel(), StarterPanel.NAME);
-		getStarterPanel().update();
-		((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
+		invokeOnEDT(() -> {
+			getCenterPanel().add(getStarterPanel(), StarterPanel.NAME);
+			getStarterPanel().update();
+			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
+			
+			if (getStarterPanel().getMinimumSize() != null
+					&& getCenterPanel().getHeight() < getStarterPanel().getMinimumSize().height) {
+				getRightPane().setDividerLocation(getStarterPanel().getMinimumSize().height);
+				getRightPane().resetToPreferredSizes();
+			}
+		});
 	}
 	
 	public void hideStarterPanel() {
-		if (isStarterPanelVisible()) {
-			getCenterPanel().remove(getStarterPanel());
-			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
-		}
+		invokeOnEDT(() -> {
+			if (isStarterPanelVisible()) {
+				getCenterPanel().remove(getStarterPanel());
+				((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), NetworkViewMainPanel.NAME);
+			}
+		});
 	}
 	
 	public boolean isStarterPanelVisible() {
