@@ -1198,6 +1198,7 @@ public class CytoscapeDesktop extends JFrame
 					getEastPanel().getThisComponent()
 			);
 			topRightPane.setResizeWeight(1.0);
+			topRightPane.setMinimumSize(new Dimension(topRightPane.getPreferredSize().width, 0));
 		}
 
 		return topRightPane;
@@ -1261,6 +1262,8 @@ public class CytoscapeDesktop extends JFrame
 	private CytoPanelImpl getSouthPanel() {
 		if (southPanel == null) {
 			southPanel = new CytoPanelImpl(SOUTH, 3, DOCK, serviceRegistrar);
+			southPanel.getThisComponent().setMinimumSize(
+					new Dimension(southPanel.getThisComponent().getPreferredSize().width, 0));
 		}
 
 		return southPanel;
