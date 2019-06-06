@@ -1088,7 +1088,7 @@ public final class GraphRenderer {
 							float yOffset = (float) (doubleBuff2[1] + offsetVectorY);
 							nodeShape = createCustomGraphicsShape(nodeShape, layer, -xOffset, -yOffset);
 							
-							grafx.drawCustomGraphicFull(netView, cyNode, nodeShape, layer, xOffset, yOffset);
+							grafx.drawCustomGraphicFull(netViewForCharts, mutableNode, nodeShape, layer, xOffset, yOffset);
 						}
 					}
 				}
