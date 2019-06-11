@@ -184,7 +184,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
 		
-		nodeDetails = new DNodeDetails(this);
+		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		

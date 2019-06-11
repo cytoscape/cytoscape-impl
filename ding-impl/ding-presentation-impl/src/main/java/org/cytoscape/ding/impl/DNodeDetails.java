@@ -31,9 +31,12 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Paint;
 import java.awt.Stroke;
+import java.awt.TexturePaint;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -44,7 +47,11 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.graph.render.stateful.CustomGraphicsInfo;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
@@ -58,11 +65,15 @@ import org.cytoscape.view.presentation.property.values.Position;
 
 public class DNodeDetails implements NodeDetails {
 
+	private static final float NESTED_IMAGE_SCALE_FACTOR = 0.6f;
+	
 	private final DRenderingEngine re;
+	private final CyServiceRegistrar registrar;
 	
 	// These images will be used when a view is not available for a nested network.
 	private static BufferedImage DEFAULT_NESTED_NETWORK_IMAGE;
 	private static BufferedImage RECURSIVE_NESTED_NETWORK_IMAGE;
+	
 	// Used to detect recursive rendering of nested networks.
 	private static int nestedNetworkPaintingDepth = 0;
 	
@@ -78,8 +89,9 @@ public class DNodeDetails implements NodeDetails {
 		}
 	}
 	
-	public DNodeDetails(DRenderingEngine re) {
+	public DNodeDetails(DRenderingEngine re, CyServiceRegistrar registrar) {
 		this.re = re;
+		this.registrar = registrar;
 	}
 	
 	
@@ -324,65 +336,71 @@ public class DNodeDetails implements NodeDetails {
 	}
 	
 	
-//	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
-//		++nestedNetworkPaintingDepth;
-//		try {
-//			boolean nestedNetworkVisible = getNestedNetworkImgVisible(nodeView);
-//			if (!Boolean.TRUE.equals(nestedNetworkVisible)) {
-//				return null;
-//			}
-//			
-//			SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
-//			CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
-//			
-//			if (modelNode == null || nestedNetworkPaintingDepth > 1 ||  modelNode.getNetworkPointer() == null)
-//				return null;
-//
-//
-//			final double IMAGE_WIDTH  = getWidth(nodeView)  * NESTED_IMAGE_SCALE_FACTOR;
-//			final double IMAGE_HEIGHT = getHeight(nodeView) * NESTED_IMAGE_SCALE_FACTOR;
-//
-//			CyNetworkView nestedNetworkView = getNestedNetworkView(netView, nodeView);
-//
-//			// Do we have a node w/ a self-reference?
-//			if (netView.getMutableNetworkView() == nestedNetworkView) {
-//				if (RECURSIVE_NESTED_NETWORK_IMAGE == null)
-//					return null;
-//
-//				final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
-//				return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
-//			}
-//			
-//			if (nestedNetworkView != null) {
-//				DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(netView.getMutableNetworkView());
-//				final double scaleFactor = re.getGraphLOD().getNestedNetworkImageScaleFactor();
-//				return nestedNetworkView.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
-//			} else {
-//				if (DEFAULT_NESTED_NETWORK_IMAGE == null || !isVisible || getWidth() == -1 || getHeight() == -1)
-//					return null;
-//
-//				final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
-//				return new TexturePaint(DEFAULT_NESTED_NETWORK_IMAGE, rect);
-//			}
-//		} finally {
-//			--nestedNetworkPaintingDepth;
-//		}
-//	}
-//
-//	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
-//		SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
-//		CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
-//		
-//		if (modelNode.getNetworkPointer() == null) {
-//			return null;
-//		} else {
-//			final CyNetworkViewManager netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
-//			final Iterator<CyNetworkView> viewIterator = netViewMgr.getNetworkViews(modelNode.getNetworkPointer()).iterator();
-//			
-//			if (viewIterator.hasNext())
-//				return viewIterator.next();
-//			else
-//				return null;
-//		}
-//	}
+	@Override
+	public TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
+		++nestedNetworkPaintingDepth;
+		try {
+			boolean nestedNetworkVisible = getNestedNetworkImgVisible(nodeView);
+			if(!Boolean.TRUE.equals(nestedNetworkVisible)) {
+				return null;
+			}
+			
+			SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
+			CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
+			
+			if (modelNode == null || nestedNetworkPaintingDepth > 1 ||  modelNode.getNetworkPointer() == null)
+				return null;
+
+			final double IMAGE_WIDTH  = getWidth(nodeView)  * NESTED_IMAGE_SCALE_FACTOR;
+			final double IMAGE_HEIGHT = getHeight(nodeView) * NESTED_IMAGE_SCALE_FACTOR;
+
+			CyNetworkView nestedNetworkView = getNestedNetworkView(netView, nodeView);
+
+			// Do we have a node w/ a self-reference?
+			if (netView.getMutableNetworkView() == nestedNetworkView) {
+				if (RECURSIVE_NESTED_NETWORK_IMAGE == null)
+					return null;
+
+				final Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
+				return new TexturePaint(RECURSIVE_NESTED_NETWORK_IMAGE, rect);
+			}
+			
+			if (nestedNetworkView != null) {
+				DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
+				
+				DRenderingEngine re = dingRenderer.getRenderingEngine(netView.getMutableNetworkView());
+				double scaleFactor = re.getGraphLOD().getNestedNetworkImageScaleFactor();
+				
+				DRenderingEngine nestedRe = dingRenderer.getRenderingEngine(nestedNetworkView);
+				if(nestedRe == null)
+					return null; // not a Ding network
+				
+				return nestedRe.getSnapshot(IMAGE_WIDTH * scaleFactor, IMAGE_HEIGHT * scaleFactor);
+			} else {
+				if (DEFAULT_NESTED_NETWORK_IMAGE == null || getWidth(nodeView) == -1 || getHeight(nodeView) == -1)
+					return null;
+
+				Rectangle2D rect = new Rectangle2D.Double(-IMAGE_WIDTH / 2, -IMAGE_HEIGHT / 2, IMAGE_WIDTH, IMAGE_HEIGHT);
+				return new TexturePaint(DEFAULT_NESTED_NETWORK_IMAGE, rect);
+			}
+		} finally {
+			--nestedNetworkPaintingDepth;
+		}
+	}
+
+	public CyNetworkView getNestedNetworkView(CyNetworkViewSnapshot netView, View<CyNode> nodeView) {
+		SnapshotNodeInfo nodeInfo = netView.getNodeInfo(nodeView);
+		CyNode modelNode = netView.getMutableNetworkView().getModel().getNode(nodeInfo.getModelSUID());
+		
+		if(modelNode.getNetworkPointer() == null)
+			return null;
+		
+		CyNetworkViewManager netViewMgr = registrar.getService(CyNetworkViewManager.class);
+		Iterator<CyNetworkView> viewIterator = netViewMgr.getNetworkViews(modelNode.getNetworkPointer()).iterator();
+		
+		if(viewIterator.hasNext())
+			return viewIterator.next();
+		
+		return null;
+	}
 }

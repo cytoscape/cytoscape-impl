@@ -162,6 +162,7 @@ public class InputHandlerGlassPane extends JComponent {
 		get(AddEdgeListener.class).beginAddingEdge(nodeView);
 	}
 
+	// Called by the Annotation panel
 	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback)	 {
 		get(AddAnnotationListener.class).beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
 	}
