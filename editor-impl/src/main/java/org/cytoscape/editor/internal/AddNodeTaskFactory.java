@@ -33,6 +33,8 @@ import org.cytoscape.work.TaskIterator;
 
 public class AddNodeTaskFactory extends AbstractNetworkViewLocationTaskFactory{
 
+	private static int new_node_index = 1;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 	
 	public AddNodeTaskFactory(final CyServiceRegistrar serviceRegistrar) { 
@@ -41,6 +43,9 @@ public class AddNodeTaskFactory extends AbstractNetworkViewLocationTaskFactory{
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetworkView networkView, Point2D javaPt, Point2D xformPt) {
-		return new TaskIterator(new AddNodeTask(networkView, xformPt, serviceRegistrar));
+		final String nodeName = "Node " + new_node_index;
+		new_node_index++;
+		
+		return new TaskIterator(new AddNodeTask(networkView, xformPt, nodeName, serviceRegistrar));
 	}
 }

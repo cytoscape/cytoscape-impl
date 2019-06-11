@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl.cyannotator.tasks;
+package org.cytoscape.ding.impl.undo;
 
 import java.util.List;
 

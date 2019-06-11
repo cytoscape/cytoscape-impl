@@ -13,6 +13,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -39,40 +40,57 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class AddNodeTask extends AbstractNetworkViewTask{
+public class AddNodeTask extends AbstractNetworkViewTask implements ObservableTask {
 
 	private final Point2D xformPt;
-	private static int new_node_index =1;
-	private final CyServiceRegistrar serviceRegistrar;
+	private final String nodeName;
+	private final CyServiceRegistrar registrar;
 	
-	public AddNodeTask(final CyNetworkView view, final Point2D xformPt, final CyServiceRegistrar serviceRegistrar) {
+	private boolean postUndo = true;
+	private CyNode node = null;
+	
+	public AddNodeTask(CyNetworkView view, Point2D xformPt, String nodeName, CyServiceRegistrar registrar) {
 		super(view);
 		this.xformPt = xformPt;
-		this.serviceRegistrar = serviceRegistrar;
+		this.nodeName = nodeName;
+		this.registrar = registrar;
 	}
-
+	
+	public void setPostUndo(boolean postUndo) {
+		this.postUndo = postUndo;
+	}
+	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		final CyNetwork net = view.getModel();
-		final CyNode n = net.addNode();
-
-		// set the name attribute for the new node
-		final String nodeName = "Node " + new_node_index;
-		new_node_index++;
-
-		final CyRow nodeRow = net.getRow(n);
+		node = net.addNode();
+		
+		final CyRow nodeRow = net.getRow(node);
 		nodeRow.set(CyNetwork.NAME, nodeName);
 
-		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		final CyEventHelper eventHelper = registrar.getService(CyEventHelper.class);
 		eventHelper.flushPayloadEvents();
-		View<CyNode> nv = view.getNodeView(n);
+		View<CyNode> nv = view.getNodeView(node);
 		nv.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xformPt.getX());
 		nv.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, xformPt.getY());
 
 		// Apply visual style
-		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
+		final VisualMappingManager vmMgr = registrar.getService(VisualMappingManager.class);
 		VisualStyle vs = vmMgr.getVisualStyle(view);
-		vs.apply(net.getRow(n), nv);
+		vs.apply(net.getRow(node), nv);
 		view.updateView();
+		
+		if(postUndo) {
+			AddNodeEdit addNodeEdit = new AddNodeEdit(view, node, xformPt, nodeName, registrar);
+			addNodeEdit.post();
+		}
+	}
+
+	@Override
+	public <R> R getResults(Class<? extends R> type) {
+		if(CyNode.class.equals(type)) {
+			return type.cast(node);
+		}
+		return null;
 	}
 }

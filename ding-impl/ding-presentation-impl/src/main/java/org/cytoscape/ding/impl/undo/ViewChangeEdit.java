@@ -1,7 +1,6 @@
-package org.cytoscape.ding;
+package org.cytoscape.ding.impl.undo;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.ViewState;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
