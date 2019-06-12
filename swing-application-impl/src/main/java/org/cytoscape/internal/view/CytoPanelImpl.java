@@ -187,9 +187,9 @@ public class CytoPanelImpl implements CytoPanel {
 		return trimBarIndex;
 	}
 
-	public void insert(CytoPanelComponent cpc, int index) {
+	public boolean insert(CytoPanelComponent cpc, int index) {
 		if (indexOfComponent(cpc.getComponent()) >= 0)
-			return;
+			return false;
 		
 		CytoPanelState oldState = getState();
 		cytoPanelComponents.add(index, cpc);
@@ -211,6 +211,8 @@ public class CytoPanelImpl implements CytoPanel {
 		// For backwards compatibility
 		if (oldState != getState())
 			notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed from HIDE
+		
+		return true;
 	}
 	
 	@Override
@@ -262,21 +264,23 @@ public class CytoPanelImpl implements CytoPanel {
 		return cpc != null ? indexOfComponent(cpc.getComponent()) : -1;
 	}
 
-	public void remove(CytoPanelComponent comp) {
+	public boolean remove(CytoPanelComponent comp) {
 		CytoPanelState oldState = getState();
-		boolean changed = cytoPanelComponents.remove(comp);
+		boolean removed = cytoPanelComponents.remove(comp);
 		getCardsPanel().remove(comp.getComponent());
 		
 		if (comp instanceof CytoPanelComponent2)
 			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
 		
-		if (changed) {
+		if (removed) {
 			update();
 			
 			// For backwards compatibility
 			if (oldState != getState())
 				notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed to HIDE
 		}
+		
+		return removed;
 	}
 	
 	public List<CytoPanelComponent> getCytoPanelComponents() {

@@ -248,7 +248,8 @@ public class CytoscapeDesktop extends JFrame
 	private final GlassPaneMouseListener glassPaneMouseListener = new GlassPaneMouseListener();
 	
 	/** User preferred sizes for each cytopanel popup, to be set when the user manually resizes a popup. */
-	private final Map<CytoPanelNameInternal, Dimension> popupPreferredSizes = new HashMap<>();
+	private final Map<CytoPanelNameInternal, Dimension> undockPreferredSizes = new HashMap<>();
+	private final Map<CytoPanelNameInternal, Dimension> dockPreferredSizes = new HashMap<>();
 	
 	private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
 	
@@ -263,6 +264,8 @@ public class CytoscapeDesktop extends JFrame
 	/** Holds frames that contain floating CytoPanels */
 	private final  Map<CytoPanel, JFrame> floatingFrames = new HashMap<>();
 	private boolean ignoreFloatingFrameCloseEvents;
+	
+	private boolean appsFinishedStarting;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -389,8 +392,12 @@ public class CytoscapeDesktop extends JFrame
 	}
 	
 	private void addListeners(CytoPanelImpl cp) {
-		cp.addPropertyChangeListener("stateInternal",
-				evt -> handleStateInternalChanged(cp, (CytoPanelStateInternal) evt.getNewValue()));
+		cp.addPropertyChangeListener("stateInternal", evt -> {
+			if (appsFinishedStarting && evt.getOldValue() == DOCK)
+				saveDockedSize(cp);
+			
+			handleStateInternalChanged(cp, (CytoPanelStateInternal) evt.getNewValue());
+		});
 		
 		cp.getFloatButton().addActionListener(evt -> cp.setStateInternal(FLOAT));
 		cp.getDockButton().addActionListener(evt -> cp.setStateInternal(DOCK));
@@ -552,15 +559,22 @@ public class CytoscapeDesktop extends JFrame
 				cytoPanel = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cpc.getCytoPanelName()));
 
 			int index = getInsertIndex(cpc, cytoPanel);
-			cytoPanel.insert(cpc, index);
+			boolean inserted = cytoPanel.insert(cpc, index);
 			getTrimStackOf(cytoPanel).update();
 			
 			// Automatically show the cytopanel again when it was empty and the first component is added
 			if (cytoPanel.getCytoPanelComponentCount() == 1) {
 				if (cytoPanel.getStateInternal() == DOCK) {
-					getSplitPaneOf(cytoPanel).update();
+					BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+				
+					if (splitPane != null)
+						splitPane.update();
+				
 					getTrimStackOf(cytoPanel).update();
 					getSideBarOf(cytoPanel).update();
+					
+					if (appsFinishedStarting && inserted)
+						restoreDockedSize(cytoPanel);
 				} else if (cytoPanel.getStateInternal() == FLOAT) {
 					floatCytoPanel(cytoPanel);
 				}
@@ -577,17 +591,25 @@ public class CytoscapeDesktop extends JFrame
 			else
 				cytoPanel = getCytoPanelInternal(CytoPanelNameInternal.valueOf(cpc.getCytoPanelName()));
 			
-			cytoPanel.remove(cpc);
+			boolean removed = cytoPanel.remove(cpc);
 			
-			if (cytoPanel.getCytoPanelComponentCount() == 0)
+			if (removed && cytoPanel.getCytoPanelComponentCount() == 0) {
+				if (cytoPanel.getStateInternal() == DOCK)
+					saveDockedSize(cytoPanel);
+				
 				hideCytoPanel(cytoPanel);
+			}
 			
 			getTrimStackOf(cytoPanel).update();
 			getSideBarOf(cytoPanel).update();
 			
 			// Automatically hide the cytopanel when the last component is removed
 			if (cytoPanel.getCytoPanelComponentCount() == 0 && cytoPanel.getStateInternal() == DOCK) {
-				getSplitPaneOf(cytoPanel).update();
+				BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+				
+				if (splitPane != null)
+					splitPane.update();
+				
 				getSideBarOf(cytoPanel).update();
 			}
 		});
@@ -778,7 +800,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		if (isPopupShowingFor(cytoPanel))
 			disposeComponentPopup();
-		else
+		else if (getSplitPaneOf(cytoPanel) != null)
 			getSplitPaneOf(cytoPanel).update();
 	}
 
@@ -857,12 +879,17 @@ public class CytoscapeDesktop extends JFrame
 			disposeFloatingCytoPanel(cytoPanel);
 
 		showCytoPanel(cytoPanel);
-		
 		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
-		splitPane.addCytoPanel(cytoPanel);
-		splitPane.update();
+		
+		if (splitPane != null) {
+			splitPane.addCytoPanel(cytoPanel);
+			splitPane.update();
+			
+			if (appsFinishedStarting)
+				restoreDockedSize(cytoPanel);
+		}
 	}
-	
+
 	private void undockCytoPanel(CytoPanelImpl cytoPanel) {
 		if (isFloating(cytoPanel))
 			disposeFloatingCytoPanel(cytoPanel);
@@ -880,7 +907,10 @@ public class CytoscapeDesktop extends JFrame
 				oldCytoPanel.setStateInternal(MINIMIZE);
 		}
 		
-		getSplitPaneOf(cytoPanel).update();
+		BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+		
+		if (splitPane != null)
+			splitPane.update();
 		
 		SideBar.TrimStack ts = getTrimStackOf(cytoPanel);
 		ts.update();
@@ -924,7 +954,10 @@ public class CytoscapeDesktop extends JFrame
 			minimizedButtonGroup.clearSelection();
 			isAdjusting = false;
 		} else {
-			getSplitPaneOf(cytoPanel).update();
+			BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+			
+			if (splitPane != null)
+				splitPane.update();
 		}
 	}
 	
@@ -1290,6 +1323,43 @@ public class CytoscapeDesktop extends JFrame
 		return automationPanel;
 	}
 	
+	private void saveDockedSize(CytoPanelImpl cytoPanel) {
+		invokeOnEDT(() -> {
+			if (cytoPanel != null)
+				dockPreferredSizes.put(cytoPanel.getCytoPanelNameInternal(), cytoPanel.getThisComponent().getSize());
+		});
+	}
+	
+	private Dimension getDockedSize(CytoPanelImpl cytoPanel) {
+		Dimension dim = dockPreferredSizes.get(cytoPanel.getCytoPanelNameInternal());
+		
+		return dim != null ? dim : cytoPanel.getThisComponent().getPreferredSize();
+	}
+	
+	private void restoreDockedSize(CytoPanelImpl cytoPanel) {
+		Dimension dim = getDockedSize(cytoPanel);
+		
+		if (dim != null) {
+			if (cytoPanel.getCytoPanelNameInternal() == EAST) {
+				int w = getTopRightPane().getWidth() - dim.width - ViewUtil.DIVIDER_SIZE;
+
+				if (w >= 0)
+					getCenterPanel().setPreferredSize(new Dimension(w, getCenterPanel().getPreferredSize().height));
+			} else if (cytoPanel.getCytoPanelNameInternal() == SOUTH) {
+				int h = getRightPane().getHeight() - dim.height - ViewUtil.DIVIDER_SIZE;
+				
+				if (h >= 0)
+					getTopRightPane().setPreferredSize(new Dimension(getTopRightPane().getPreferredSize().width, h));
+			}
+			
+			cytoPanel.getThisComponent().setPreferredSize(dim);
+			BiModalJSplitPane splitPane = getSplitPaneOf(cytoPanel);
+			
+			if (splitPane != null)
+				splitPane.resetToPreferredSizes();
+		}
+	}
+	
 	private void updateComponentPopupBounds() {
 		if (popup == null)
 			return;
@@ -1304,7 +1374,7 @@ public class CytoscapeDesktop extends JFrame
 		
 		try {
 			Dimension maxDim = popup.getMaximumSize();
-			Dimension newDim = cytoPanel.isMaximized() ? maxDim : popupPreferredSizes.get(name);
+			Dimension newDim = cytoPanel.isMaximized() ? maxDim : undockPreferredSizes.get(name);
 			Dimension dim = newDim != null ? newDim : cytoPanel.getThisComponent().getPreferredSize();
 			
 			if (newDim == null) {
@@ -1733,8 +1803,8 @@ public class CytoscapeDesktop extends JFrame
 							
 							JMenuItem mi = new JCheckBoxMenuItem(action);
 							mi.setSelected(state != HIDE);
-							mi.setEnabled(action.isEnabled());
 							menu.add(mi);
+							action.updateEnableState();
 						}
 					}
 					
@@ -2083,7 +2153,7 @@ public class CytoscapeDesktop extends JFrame
 							getParent().revalidate();
 						
 						if (cytoPanel != null)
-							popupPreferredSizes.put(cytoPanel.getCytoPanelNameInternal(), new Dimension(w, h));
+							undockPreferredSizes.put(cytoPanel.getCytoPanelNameInternal(), new Dimension(w, h));
 					}
 				}
 			});
