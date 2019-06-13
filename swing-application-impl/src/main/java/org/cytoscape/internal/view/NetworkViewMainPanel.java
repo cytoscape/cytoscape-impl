@@ -579,6 +579,11 @@ public class NetworkViewMainPanel extends JPanel {
 		return view != null ? showViewContainer(createUniqueKey(view)) : null;
 	}
 	
+	public void dispose() {
+		networkViewGrid.dispose();
+		removeAll();
+	}
+	
 	private NetworkViewContainer showViewContainer(final String key) {
 		NetworkViewContainer viewContainer = null;
 		

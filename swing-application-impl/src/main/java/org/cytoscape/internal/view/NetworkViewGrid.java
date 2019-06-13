@@ -134,6 +134,8 @@ public class NetworkViewGrid extends JPanel {
 	private ThumbnailPanel selectionHead;
 	private ThumbnailPanel selectionTail;
 	
+	private ComponentAdapter componentAdapter;
+	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public NetworkViewGrid(
@@ -223,6 +225,15 @@ public class NetworkViewGrid extends JPanel {
 			
 			((JComponent) tp.getParent()).scrollRectToVisible(tp.getBounds());
 		}
+	}
+	
+	public void dispose() {
+		if (componentAdapter != null) {
+			removeComponentListener(componentAdapter);
+			componentAdapter = null;
+		}
+		
+		removeAll();
 	}
 	
 	private boolean contains(final RenderingEngine<CyNetwork> re) {
@@ -534,7 +545,7 @@ public class NetworkViewGrid extends JPanel {
 		add(getGridScrollPane(), BorderLayout.CENTER);
 		add(getToolBar(), BorderLayout.SOUTH);
 		
-		addComponentListener(new ComponentAdapter() {
+		addComponentListener(componentAdapter = new ComponentAdapter() {
 			@Override
 			public void componentShown(ComponentEvent e) {
 				update(thumbnailSize);
@@ -860,7 +871,6 @@ public class NetworkViewGrid extends JPanel {
 		return views;
 	}
 	
-	
 	private static class RenderingEngines {
 		public final RenderingEngine<CyNetwork> networkEngine;
 		public final Optional<RenderingEngineFactory<CyNetwork>> thumbnailEngineFactory;
@@ -1140,18 +1150,17 @@ public class NetworkViewGrid extends JPanel {
 				imagePanel.getGlassPane().setVisible(true);
 				Container contentPane = imagePanel.getContentPane();
 				
-				if(engines.thumbnailEngineFactory.isPresent()) {
+				if (engines.thumbnailEngineFactory.isPresent()) {
 					RenderingEngineFactory<CyNetwork> engineFactory = engines.thumbnailEngineFactory.get();
 					CyNetworkView netView = getNetworkView();
 					thumbnailRenderer = Optional.of(engineFactory.createRenderingEngine(contentPane, netView));
-				}
-				else {
+				} else {
 					JLabel label = new JLabel(IconManager.ICON_SHARE_ALT_SQUARE);
 					label.setFont(serviceRegistrar.getService(IconManager.class).getIconFont(40.0f));
 					Color c = UIManager.getColor("Label.disabledForeground");
 					c = new Color(c.getRed(), c.getGreen(), c.getBlue(), 40);
 					label.setForeground(c);
-					
+
 					label.setHorizontalAlignment(JLabel.CENTER);
 					label.setVerticalAlignment(JLabel.CENTER);
 					contentPane.setLayout(new BorderLayout());
@@ -1172,7 +1181,6 @@ public class NetworkViewGrid extends JPanel {
 			return getNetworkView().getVisualProperty(NETWORK_TITLE);
 		}
 
-		
 		private class ThumbnailLabel extends JLabel {
 
 			private final boolean highlightWhenCurrent;
