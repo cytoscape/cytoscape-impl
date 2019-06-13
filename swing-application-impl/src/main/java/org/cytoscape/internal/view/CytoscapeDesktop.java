@@ -658,8 +658,16 @@ public class CytoscapeDesktop extends JFrame
 			final CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			final CyTableManager tableManager = serviceRegistrar.getService(CyTableManager.class);
 			
-			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty())
+			if (netManager.getNetworkSet().isEmpty() && tableManager.getAllTables(false).isEmpty()) {
 				showStarterPanel();
+				
+				if (getCenterPanel().getHeight() < getStarterPanel().getPreferredSize().height) {
+					getRightPane().setDividerLocation(getStarterPanel().getPreferredSize().height + getRightPane().getDividerSize() / 2);
+					getRightPane().resetToPreferredSizes();
+				}
+			}
+			
+			appsFinishedStarting = true;
 		});
 	}
 	
@@ -753,11 +761,16 @@ public class CytoscapeDesktop extends JFrame
 			getStarterPanel().update();
 			((CardLayout) getCenterPanel().getLayout()).show(getCenterPanel(), StarterPanel.NAME);
 			
-			if (getStarterPanel().getMinimumSize() != null
-					&& getCenterPanel().getHeight() < getStarterPanel().getMinimumSize().height) {
-				getRightPane().setDividerLocation(getStarterPanel().getMinimumSize().height);
-				getRightPane().resetToPreferredSizes();
+			if (appsFinishedStarting) {
+				if (getCenterPanel().getHeight() < getStarterPanel().getMinimumSize().height) {
+					getRightPane().setDividerLocation(getStarterPanel().getMinimumSize().height + getRightPane().getDividerSize() / 2);
+					getRightPane().resetToPreferredSizes();
+				}
 			}
+			
+			// Minimize any undocked cytopanel, because it could hide the Starter panel
+			if (popup != null && popup.getCytoPanel() != null)
+				popup.getCytoPanel().setStateInternal(MINIMIZE);
 		});
 	}
 	

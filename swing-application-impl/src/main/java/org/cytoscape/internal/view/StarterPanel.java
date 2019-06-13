@@ -93,10 +93,14 @@ public class StarterPanel extends JPanel {
 	public final Color LIST_FOCUS_BG_COLOR = UIManager.getColor("Table.selectionBackground");
 	public final Color LINK_FONT_COLOR = UIManager.getColor("Table.focusCellBackground");
 	
-	private final Border DEF_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+	private static final int PANEL_PAD = 4;
+	private static final int V_GAP = 10;
+	private static final int BORDER_WIDTH = 2;
+	
+	private final Border DEF_BORDER = BorderFactory.createEmptyBorder(BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH, BORDER_WIDTH);
 	private final Border FOCUS_BORDER = BorderFactory.createCompoundBorder(
-			BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), 1),
-			BorderFactory.createLineBorder(LIST_FOCUS_BG_COLOR, 1));
+			BorderFactory.createLineBorder(UIManager.getColor("Focus.color"), BORDER_WIDTH / 2),
+			BorderFactory.createLineBorder(LIST_FOCUS_BG_COLOR, BORDER_WIDTH / 2));
 	
 	private static final String SAMPLE_DATA_DIR = "sampleData/sessions";
 	private static final String SESSION_EXT = ".cys";
@@ -132,6 +136,25 @@ public class StarterPanel extends JPanel {
 		update();
 	}
 
+	@Override
+	public Dimension getPreferredSize() {
+		if (isPreferredSizeSet())
+			return super.getPreferredSize();
+		
+		synchronized (getTreeLock()) {
+			int w = 2 * PANEL_PAD + Math.max(getRecentSessionsPanel().getPreferredSize().width,
+					getSampleSessionsPanel().getPreferredSize().width);
+			int h = 2 * PANEL_PAD
+					+ getTitlePanel().getPreferredSize().height
+					+ getRecentSessionsPanel().getPreferredSize().height
+					+ V_GAP
+					+ getSampleSessionsPanel().getPreferredSize().height
+					+ getLinksPanel().getPreferredSize().height;
+			
+			return new Dimension(w, h);
+		}
+	}
+	
 	public void update() {
 		List<FileInfo> recentFiles = getRecentFiles();
 		getRecentSessionsPanel().update(recentFiles);
@@ -141,7 +164,7 @@ public class StarterPanel extends JPanel {
 	}
 	
 	private void init() {
-		setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
+		setBorder(BorderFactory.createEmptyBorder(PANEL_PAD, PANEL_PAD, PANEL_PAD, PANEL_PAD));
 		
 		setLayout(new BorderLayout());
 		add(getTitlePanel(), BorderLayout.NORTH);
@@ -154,10 +177,10 @@ public class StarterPanel extends JPanel {
 			contentPane = new JPanel();
 			contentPane.setOpaque(false);
 			
-			final GroupLayout layout = new GroupLayout(contentPane);
+			GroupLayout layout = new GroupLayout(contentPane);
 			contentPane.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
-			layout.setAutoCreateGaps(true);
+			layout.setAutoCreateGaps(false);
 			
 			layout.setHorizontalGroup(layout.createParallelGroup(CENTER, true)
 					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -165,6 +188,7 @@ public class StarterPanel extends JPanel {
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addComponent(getRecentSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(V_GAP)
 					.addComponent(getSampleSessionsPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 			);
 		}
@@ -181,7 +205,7 @@ public class StarterPanel extends JPanel {
 			titleLabel.setHorizontalAlignment(JLabel.CENTER);
 			makeSmall(titleLabel);
 			
-			final GroupLayout layout = new GroupLayout(titlePanel);
+			GroupLayout layout = new GroupLayout(titlePanel);
 			titlePanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(false);
 			layout.setAutoCreateGaps(false);
@@ -223,7 +247,7 @@ public class StarterPanel extends JPanel {
 		
 			LookAndFeelUtil.equalizeSize(tutorialsLabel, newsLabel);
 			
-			final GroupLayout layout = new GroupLayout(linksPanel);
+			GroupLayout layout = new GroupLayout(linksPanel);
 			linksPanel.setLayout(layout);
 			layout.setAutoCreateContainerGaps(true);
 			layout.setAutoCreateGaps(true);
@@ -262,7 +286,6 @@ public class StarterPanel extends JPanel {
 		label.setForeground(LINK_FONT_COLOR);
 		label.setHorizontalAlignment(SwingConstants.CENTER);
 		label.setCursor(new Cursor(Cursor.HAND_CURSOR));
-		makeSmall(label);
 		
 		label.addMouseListener(new MouseAdapter() {
 			@Override
@@ -420,16 +443,37 @@ public class StarterPanel extends JPanel {
 		
 		JScrollPane getScrollPane() {
 			if (scrollPane == null) {
-				scrollPane = new JScrollPane(getListPanel());
+				scrollPane = new JScrollPane(getListPanel()) {
+					@Override
+					public Dimension getPreferredSize() {
+						if (getViewport().getView() == null)
+							return super.getPreferredSize();
+						
+						// Trying to set the size of the scrollpane container so that the scrollbar does not appear
+						int w = getViewport().getView().getPreferredSize().width;
+						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+						Dimension dim = new Dimension(w,
+								super.getPreferredSize().height + getHorizontalScrollBar().getSize().height);
+						setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+						
+						return dim;
+					}
+				};
 				scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
 				scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 				scrollPane.getViewport().setBackground(getListPanel().getBackground());
 				scrollPane.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, UIManager.getColor("Separator.foreground")));
 				
+				// Set a minimum size that shows at least one row
 				SessionPanel tmpSessionPanel = new SessionPanel(new FileInfo(new File("_tmp"), "TEMP", null));
-				int minWidth = tmpSessionPanel.getPreferredSize().width + 60;
-				int minHeight = tmpSessionPanel.getPreferredSize().height + 12;
-				scrollPane.setMinimumSize(new Dimension(minWidth, minHeight));
+				ScrollableListPanel tmpListPanel = new ScrollableListPanel();
+				tmpListPanel.add(tmpSessionPanel);
+				JScrollPane tmpScrollPane = new JScrollPane(tmpListPanel);
+				int w = tmpListPanel.getPreferredSize().width + 2;
+				tmpScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+				int vgap = ((ModifiedFlowLayout) tmpListPanel.getLayout()).getVgap() / 2;
+				int h = tmpListPanel.getPreferredSize().height + tmpScrollPane.getHorizontalScrollBar().getHeight() + vgap + 2;
+				scrollPane.setMinimumSize(new Dimension(w, h));
 			}
 			
 			return scrollPane;
