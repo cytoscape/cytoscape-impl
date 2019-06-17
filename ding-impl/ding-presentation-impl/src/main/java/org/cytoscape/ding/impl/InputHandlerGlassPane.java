@@ -48,6 +48,7 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -65,7 +66,9 @@ import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
+import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
@@ -118,6 +121,7 @@ public class InputHandlerGlassPane extends JComponent {
         	new ContextMenuListener(),
         	new DoubleClickListener(),
         	new AddEdgeListener(),
+        	new TooltipListener(),
         	new SelecionClickAndDragListener(),
         	new AddAnnotationListener(),
         	new SelectionLassoListener(),
@@ -516,6 +520,28 @@ public class InputHandlerGlassPane extends JComponent {
 			AddEdgeTask addEdgeTask = new AddEdgeTask(registrar, netView, sourceNodeView, targetNodeView);
 			DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);
 			taskManager.execute(new TaskIterator(addEdgeTask));
+		}
+	}
+	
+	
+	private class TooltipListener extends MouseAdapter {
+		
+		private CoalesceTimer delayTimer = new CoalesceTimer(60, 1);
+		
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			// This event gets called a lot as the user moves the mouse over the canvas.
+			// Use a CoalesceTimer to debounce the event to avoid calling getPickedNodeView() constantly.
+			delayTimer.coalesce(() -> showTooltip(e));
+		}
+		
+		private void showTooltip(MouseEvent e) {
+			View<CyNode> node = re.getPickedNodeView(e.getPoint());
+			String text = node == null ? null : re.getNodeDetails().getTooltipText(node);
+			ViewUtil.invokeOnEDT(() -> {
+				setToolTipText(text);
+				ToolTipManager.sharedInstance().mouseMoved(e);
+			});
 		}
 	}
 	
