@@ -60,7 +60,7 @@ public class SpacialIndex2DSnapshotImpl extends SpacialIndex2DBase<Long> {
 	private Comparator<Entry<Long,?>> createComparator() {
 		Comparator<Entry<Long,?>> comparator;
 		comparator = Comparator.comparing(entry -> snapshot.getZ(entry.value()));
-		comparator = comparator.thenComparing(entry -> entry.value()); // if z-order is the same break the tie using suid
+//		comparator = comparator.thenComparing(entry -> entry.value()); // if z-order is the same break the tie using suid
 		return comparator;
 	}
 }
