@@ -1183,17 +1183,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		boolean treatNodeShapesAsRectangle = (networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0;
 		List<Long> suids = getNodesIntersectingRectangle(x, y, x, y, treatNodeShapesAsRectangle);
 
-		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		if(suids.isEmpty())
+			return null;
 		
-		// return node with topmost Z
-		View<CyNode> nv = null;
-		for(Long suid : suids) {
-			View<CyNode> dnv = netViewSnapshot.getNodeView(suid);
-			if (nv == null || nodeDetails.getZPosition(dnv) > nodeDetails.getZPosition(nv)) {
-				nv = dnv;
-			}
-		}
-		return nv;
+		Long suid = suids.get(suids.size() - 1);
+		return getViewModelSnapshot().getNodeView(suid);
 	}
 
 	public View<CyEdge> getPickedEdgeView(Point2D pt) {

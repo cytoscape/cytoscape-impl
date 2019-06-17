@@ -4,6 +4,7 @@ import static org.cytoscape.view.model.NetworkViewTestUtils.assertHidden;
 import static org.cytoscape.view.model.NetworkViewTestUtils.assertMBR;
 import static org.cytoscape.view.model.NetworkViewTestUtils.assertVisible;
 import static org.cytoscape.view.model.NetworkViewTestUtils.createNetworkView;
+import static org.cytoscape.view.model.NetworkViewTestUtils.enumToList;
 import static org.cytoscape.view.model.NetworkViewTestUtils.setGeometry;
 import static org.cytoscape.view.model.NetworkViewTestUtils.toMap;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
@@ -15,9 +16,12 @@ import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
@@ -43,11 +47,11 @@ public class SpacialIndex2DTest {
 		
 		CyNetworkViewImpl networkView = createNetworkView(network);
 		View<CyNode> nv1 = networkView.getNodeView(n1);
-		setGeometry(nv1, 4, 2, 4, 2);
+		setGeometry(nv1, 4, 2, 4, 2, 1);
 		View<CyNode> nv2 = networkView.getNodeView(n2);
-		setGeometry(nv2, 6, 3, 4, 2);
+		setGeometry(nv2, 6, 3, 4, 2, 2);
 		View<CyNode> nv3 = networkView.getNodeView(n3);
-		setGeometry(nv3, 9, 9, 4, 2);
+		setGeometry(nv3, 9, 9, 4, 2, 3);
 		
 		CyNetworkViewSnapshot snapshot = networkView.createSnapshot();
 		SpacialIndex2D<Long> spacialIndex = snapshot.getSpacialIndex2D();
@@ -158,9 +162,9 @@ public class SpacialIndex2DTest {
 		CyEdge e3 = network.addEdge(n3, n1, false);
 		
 		CyNetworkViewImpl networkView = createNetworkView(network);
-		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2);
-		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2);
-		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2);
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
+		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
+		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
 		
 		CyNetworkViewSnapshot snapshot;
 		
@@ -229,7 +233,7 @@ public class SpacialIndex2DTest {
 		CyNode n1 = network.addNode();
 		
 		CyNetworkViewImpl networkView = createNetworkView(network);
-		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2);
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 0);
 		
 		View<CyNode> nv1 = networkView.getNodeView(n1);
 		
@@ -243,5 +247,78 @@ public class SpacialIndex2DTest {
 		assertVisible(networkView.createSnapshot(), n1, 0);
 	}
 	
+	
+	@Test
+	public void testNullSpacialIndex() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		CyNode n3 = network.addNode();
+		
+		CyNetworkViewImpl networkView = createNetworkView(network, false); // turn spacial index off
+		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
+		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
+		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
+		
+		assertNull(networkView.createSnapshot().getSpacialIndex2D());
+	}
+	
+	
+	@Test
+	public void testZSort() {
+		CyNetwork network = networkSupport.getNetwork();
+		CyNode n1 = network.addNode();
+		CyNode n2 = network.addNode();
+		CyNode n3 = network.addNode();
+		CyNode n4 = network.addNode();
+		CyNode n5 = network.addNode();
+		CyNode n6 = network.addNode();
+		CyNode n7 = network.addNode();
+		CyNode n8 = network.addNode();
+		CyNode n9 = network.addNode();
+		
+		CyNetworkViewImpl networkView = createNetworkView(network);
+		View<CyNode> nv1 = networkView.getNodeView(n1);
+		View<CyNode> nv2 = networkView.getNodeView(n2);
+		View<CyNode> nv3 = networkView.getNodeView(n3);
+		View<CyNode> nv4 = networkView.getNodeView(n4);
+		View<CyNode> nv5 = networkView.getNodeView(n5);
+		View<CyNode> nv6 = networkView.getNodeView(n6);
+		View<CyNode> nv7 = networkView.getNodeView(n7);
+		View<CyNode> nv8 = networkView.getNodeView(n8);
+		View<CyNode> nv9 = networkView.getNodeView(n9);
+		
+		setGeometry(nv1, 1, 1, 2, 2, 1);
+		setGeometry(nv2, 1, 1, 2, 2, 6);
+		setGeometry(nv3, 1, 1, 2, 2, 2);
+		setGeometry(nv4, 1, 1, 2, 2, 8);
+		setGeometry(nv5, 1, 1, 2, 2, 4);
+		setGeometry(nv6, 1, 1, 2, 2, 3);
+		setGeometry(nv7, 1, 1, 2, 2, 5);
+		setGeometry(nv8, 1, 1, 2, 2, 9);
+		setGeometry(nv9, 1, 1, 2, 2, 7);
+		
+		List<Long> expectedOrder = Arrays.asList(
+			nv1.getSUID(), 
+			nv3.getSUID(),
+			nv6.getSUID(),
+			nv5.getSUID(),
+			nv7.getSUID(),
+			nv2.getSUID(),
+			nv9.getSUID(),
+			nv4.getSUID(),
+			nv8.getSUID()
+		);
+		
+		SpacialIndex2D<Long> spacialIndex = networkView.createSnapshot().getSpacialIndex2D();
+		
+		SpacialIndex2DEnumerator<Long> allEnum = spacialIndex.queryAll();
+		List<Long> suids = enumToList(allEnum);
+		assertEquals(expectedOrder, suids);
+		
+		SpacialIndex2DEnumerator<Long> overlapEnum = spacialIndex.queryOverlap(0, 0, 4, 4);
+		List<Long> suids2 = enumToList(overlapEnum);
+		assertEquals(expectedOrder, suids2);
+	}
 	
 }

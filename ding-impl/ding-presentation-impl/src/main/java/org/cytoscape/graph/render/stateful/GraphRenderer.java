@@ -35,8 +35,6 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -614,12 +612,8 @@ public final class GraphRenderer {
 						                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
 				}
 			} else { // High detail.
-				SpacialIndex2DEnumerator<Long> zHits = nodeHits;
-				if (haveZOrder) {
-					zHits = new SpacialEntry2DEnumeratorZSort(netView, nodeDetails, nodeHits);
-				}
-				while (zHits.hasNext()) {
-					final long node = zHits.nextExtents(floatBuff1);
+				while (nodeHits.hasNext()) {
+					final long node = nodeHits.nextExtents(floatBuff1);
 					final View<CyNode> cyNode = netView.getNodeView(node);
 
 					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
@@ -1108,71 +1102,4 @@ public final class GraphRenderer {
 		return xform.createTransformedShape(nodeShape);
 	}
 
-	private static class SpacialEntry2DEnumeratorZSort implements SpacialIndex2DEnumerator<Long> {
-		private final Iterator<ZSpacialEntry> entries;
-		private final int size;
-
-		public SpacialEntry2DEnumeratorZSort(CyNetworkViewSnapshot netView, NodeDetails nodeDetails, SpacialIndex2DEnumerator<Long> nodeHits) {
-			// Get arrays of SUIDs, extents, Z
-			List<ZSpacialEntry> entryList = new ArrayList<>();
-			while (nodeHits.hasNext()) {
-				float[] extents = new float[4];
-				long suid = nodeHits.nextExtents(extents);
-				// Create an index
-				View<CyNode> node = netView.getNodeView(suid);
-				ZSpacialEntry entry = new ZSpacialEntry(suid, extents, nodeDetails.getZPosition(node));
-				entryList.add(entry);
-			}
-			Collections.sort(entryList);
-			this.size = entryList.size();
-			this.entries = entryList.iterator();
-		}
-		
-		private static long copyExtents(float[] extents, ZSpacialEntry entry) {
-			float[] entryExtents = entry.getExtents();
-			extents[0] = entryExtents[0];
-			extents[1] = entryExtents[1];
-			extents[2] = entryExtents[2];
-			extents[3] = entryExtents[3];
-			return entry.getSUID();
-		}
-
-		@Override
-		public int size() {
-			return size;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return entries.hasNext();
-		}
-
-		@Override
-		public Long nextExtents(float[] extents) {
-			return copyExtents(extents, entries.next());
-		}
-	}
-
-	private static class ZSpacialEntry implements Comparable<ZSpacialEntry> {
-		private long suid;
-		private float[] extentsArr;
-		private double z;
-
-		public ZSpacialEntry(long suid, float[] extentsArr, double z) {
-			this.suid = suid;
-			this.extentsArr = extentsArr;
-			this.z = z;
-		}
-
-		public long getSUID() { return this.suid; }
-		public float[] getExtents() { return this.extentsArr; }
-		public double getZ() { return this.z; }
-		public String toString() { return "Suid: "+suid+" z = "+z; }
-
-		public int compareTo(ZSpacialEntry other) {
-			if (other == null || z == other.getZ()) return 0;
-			if (z < other.getZ()) return -1;
-			return 1;
-		}
-	}
 }

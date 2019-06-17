@@ -45,6 +45,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	protected final VPNetworkStore netVPs;
 	
 	private final SpacialIndex2D<Long> spacialIndex;
+	private final boolean isBVL;
 	
 	// Store of immutable node/edge objects
 	// MKTODO these objects probably won't change much between snapshots, they don't actually store the VPs,
@@ -64,7 +65,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			VPStore nodeVPs,
 			VPStore edgeVPs,
 			VPNetworkStore netVPs,
-			SpacialIndex2DSnapshotImpl spacialIndex
+			SpacialIndex2DSnapshotImpl spacialIndex,
+			boolean isBVL
 	) {
 		super(networkView.getSUID());
 		this.networkView = networkView;
@@ -78,6 +80,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
 		this.spacialIndex = spacialIndex;
+		this.isBVL = isBVL;
+		if(spacialIndex != null)
+			spacialIndex.setSnapshot(this);
 	}
 	
 	@Override
@@ -86,7 +91,15 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	private boolean isNodeVisible(Long nodeSuid) {
-		return spacialIndex.exists(nodeSuid);
+		if(spacialIndex == null) {
+			if(isBVL) {
+				return Boolean.TRUE.equals(nodeVPs.getVisualProperty(nodeSuid, BasicVisualLexicon.NODE_VISIBLE));
+			} else {
+				return true;
+			}
+		} else {
+			return spacialIndex.exists(nodeSuid);
+		}
 	}
 	
 	private boolean isEdgeVisible(CyEdgeViewImpl mutableEdgeView) {
@@ -227,6 +240,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return list;
 	}
 
+	public Double getZ(Long nodeViewSuid) {
+		return nodeVPs.getVisualProperty(nodeViewSuid, BasicVisualLexicon.NODE_Z_LOCATION);
+	}
 
 	@Override
 	public String getRendererId() {

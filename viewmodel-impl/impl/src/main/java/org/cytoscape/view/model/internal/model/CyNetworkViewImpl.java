@@ -71,7 +71,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
-	private final SpacialIndexStore spacialIndex = new SpacialIndexStore();
+	private final SpacialIndexStore spacialIndex;
 
 	
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
@@ -83,6 +83,11 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon, config);
+		
+		if(visualLexicon instanceof BasicVisualLexicon && config.isSpacialIndex2DEnabled())
+			this.spacialIndex = new SpacialIndexStore();
+		else
+			this.spacialIndex = null;
 	}
 	
 	
@@ -105,7 +110,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						spacialIndex.createSnapshot()
+						spacialIndex == null ? null : spacialIndex.createSnapshot(),
+						visualLexicon instanceof BasicVisualLexicon
 					);
 				}
 			}
@@ -152,7 +158,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
-			spacialIndex.addDefault(nodeVPs, view.getSUID());
+			if(spacialIndex != null)
+				spacialIndex.addDefault(nodeVPs, view.getSUID());
 			setDirty();
 		}
 		
@@ -193,7 +200,8 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 					
 					nodeVPs.remove(nodeView.getSUID());
-					spacialIndex.remove(nodeView.getSUID());
+					if(spacialIndex != null)
+						spacialIndex.remove(nodeView.getSUID());
 					
 					setDirty();
 				}
@@ -320,8 +328,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	
 
 	protected <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
-		synchronized (nodeLock) {
-			spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
+		if(spacialIndex != null) {
+			synchronized (nodeLock) {
+				spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
+			}
 		}
 	}
 	
@@ -350,7 +360,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				if(nodeVPs.getConfig().isTracked(vp)) {
 					netVPs.updateTrackedVP(getSUID(), vp);
 				}
-				if(NODE_GEOMETRIC_PROPS.contains(vp)) {
+				if(spacialIndex != null && NODE_GEOMETRIC_PROPS.contains(vp)) {
 					for(CyNodeViewImpl node : dataSuidToNode.values()) {
 						spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
 					}
