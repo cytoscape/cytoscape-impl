@@ -232,10 +232,13 @@ public class CytoPanelImpl implements CytoPanel {
 
 	@Override
 	public Component getComponentAt(int index) {
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 
 		return cpc != null ? cpc.getComponent() : null;
+	}
+	
+	public CytoPanelComponent getCytoPanelComponentAt(int index) {
+		return index >= 0 && cytoPanelComponents.size() > index ? cytoPanelComponents.get(index) : null;
 	}
 
 	@Override
@@ -295,8 +298,7 @@ public class CytoPanelImpl implements CytoPanel {
 
 	@Override
 	public void setSelectedIndex(int index) {
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 		
 		if (cpc != null) {
 			cardLayout.show(getCardsPanel(), getIdentifier(cpc));
@@ -500,8 +502,7 @@ public class CytoPanelImpl implements CytoPanel {
 
 	private void updateTitleButton() {
 		int index = getSelectedIndex();
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 
 		String text = cpc != null && cpc.getTitle() != null ? cpc.getTitle().trim() : "";
 		
