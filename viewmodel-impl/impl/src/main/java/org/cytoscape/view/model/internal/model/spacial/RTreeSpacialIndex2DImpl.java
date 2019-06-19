@@ -11,7 +11,7 @@ import io.vavr.collection.Map;
  * This is a generic mutable spacial index that can be created by any App by using
  * the SpacialIndex2DFactory. 
  */
-public class SpacialIndex2DImpl<T> extends SpacialIndex2DBase<T> {
+public class RTreeSpacialIndex2DImpl<T> extends RTreeSpacialIndex2DBase<T> {
 
 	private RTree<T,Rectangle> rtree = RTree.create();
 	private Map<T,Rectangle> geometries = HashMap.empty();

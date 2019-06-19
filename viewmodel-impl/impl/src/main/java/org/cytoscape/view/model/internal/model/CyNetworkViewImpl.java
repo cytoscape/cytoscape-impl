@@ -30,7 +30,7 @@ import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
-import org.cytoscape.view.model.internal.model.spacial.SpacialIndexStore;
+import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndexStore;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.Tuple2;
@@ -71,7 +71,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
-	private final SpacialIndexStore spacialIndex;
+	private final RTreeSpacialIndexStore spacialIndex;
 
 	
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
@@ -84,10 +84,13 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon, config);
 		
-		if(visualLexicon instanceof BasicVisualLexicon && config.isSpacialIndex2DEnabled())
-			this.spacialIndex = new SpacialIndexStore();
-		else
+		if(visualLexicon instanceof BasicVisualLexicon && config.isSpacialIndex2DEnabled()) {
+			System.out.println("Using RTree spacial index");
+			this.spacialIndex = new RTreeSpacialIndexStore();
+		} else {
+			System.out.println("Using Simple spacial index");
 			this.spacialIndex = null;
+		}
 	}
 	
 	

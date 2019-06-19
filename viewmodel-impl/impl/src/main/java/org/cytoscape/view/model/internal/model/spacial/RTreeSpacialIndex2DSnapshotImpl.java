@@ -11,7 +11,7 @@ import com.github.davidmoten.rtree.geometry.Rectangle;
 
 import io.vavr.collection.Map;
 
-public class SpacialIndex2DSnapshotImpl extends SpacialIndex2DBase<Long> {
+public class RTreeSpacialIndex2DSnapshotImpl extends RTreeSpacialIndex2DBase<Long> {
 	
 	private final RTree<Long,Rectangle> rtree;
 	private final Map<Long,Rectangle> geometries;
@@ -19,7 +19,7 @@ public class SpacialIndex2DSnapshotImpl extends SpacialIndex2DBase<Long> {
 	private CyNetworkViewSnapshotImpl snapshot = null;
 	private Comparator<Entry<Long,?>> zOrderComparator;
 	
-	public SpacialIndex2DSnapshotImpl(RTree<Long,Rectangle> rtree, Map<Long,Rectangle> geometries) {
+	public RTreeSpacialIndex2DSnapshotImpl(RTree<Long,Rectangle> rtree, Map<Long,Rectangle> geometries) {
 		this.rtree = rtree;
 		this.geometries = geometries;
 		this.zOrderComparator = createComparator();

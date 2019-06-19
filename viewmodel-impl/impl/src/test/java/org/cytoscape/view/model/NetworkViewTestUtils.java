@@ -33,7 +33,7 @@ public class NetworkViewTestUtils {
 	private NetworkViewTestUtils() {}
 	
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean enableSpacialIndex) {
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
@@ -42,7 +42,7 @@ public class NetworkViewTestUtils {
 		
 		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
 		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
-		config.setEnableSpacialIndex2D(enableSpacialIndex);
+		config.setEnableSpacialIndex2D(useRTree);
 		CyNetworkViewFactory viewFactory = factoryFactory.createNetworkViewFactory(lexicon, "test", config);
 		CyNetworkViewImpl networkView = (CyNetworkViewImpl)viewFactory.createNetworkView(network);
 		return networkView;

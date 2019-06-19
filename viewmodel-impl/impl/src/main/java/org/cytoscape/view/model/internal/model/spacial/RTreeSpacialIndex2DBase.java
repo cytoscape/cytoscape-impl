@@ -16,7 +16,7 @@ import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import rx.Observable;
 
-abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
+abstract class RTreeSpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 	
 	// MKTODO what to return if the rtree is empty????
 	private static final Rectangle EMPTY_MBR = RectangleFloat.create(0, 0, 0, 0);
