@@ -112,6 +112,31 @@ public class GraphMLReaderTest {
 	}
 	
 	@Test
+	public void testReadDescTags() throws Exception {
+		File file = new File("src/test/resources/desc.graphml");
+		InputStream stream = file.toURI().toURL().openStream();
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory, serviceRegistrar);
+		assertNotNull(reader);
+		reader.run(tm);
+		CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		CyNetwork net = networks[0];
+		assertEquals(2, net.getNodeCount());
+		assertEquals(1, net.getEdgeCount());
+		// Network name from <desc> tag
+		String networkName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(NAME, String.class);
+		assertEquals("desc Test", networkName);
+		// Node name from <desc> tag
+		CyNode n1 = getNodeByName(net, "Node 1");
+		CyNode n2 = getNodeByName(net, "Node 2");
+		assertNotNull(n1);
+		assertNotNull(n2);
+		// Edge name from <desc> tag
+		CyEdge e = getEdgeByName(net, "Node 1::Node 2");
+		assertNotNull(e);
+	}
+	
+	@Test
 	public void testReadAttrGraph() throws Exception {
 		File file = new File("src/test/resources/simpleWithAttributes.xml");
 		InputStream stream = file.toURI().toURL().openStream();

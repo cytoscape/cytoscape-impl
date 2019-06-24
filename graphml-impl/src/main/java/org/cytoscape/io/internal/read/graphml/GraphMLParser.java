@@ -4,6 +4,7 @@ import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRNAME;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRTYPE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DATA;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DEFAULT;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DESC;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DIRECTED;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGEDEFAULT;
@@ -12,6 +13,7 @@ import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ID;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.KEY;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.NODE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.SOURCE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.STRING;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.TARGET;
 
 import java.util.ArrayList;
@@ -168,6 +170,12 @@ public class GraphMLParser extends DefaultHandler {
 			// This is for table value.
 			currentAttributeKey = atts.getValue(KEY.getTag());
 			currentAttributeType = datatypeMap.get(currentAttributeKey);
+		} else if (qName.equals(DESC.getTag())) {
+			// This is for the standard <desc> tag, which Cytoscape imports as "name" column
+			// (valid for networks, nodes and edges)
+			currentAttributeKey = DESC.getTag();
+			currentAttributeType = STRING.getTag();
+			datanameMap.put(DESC.getTag(), CyNetwork.NAME);
 		}
 	}
 
@@ -290,7 +298,7 @@ public class GraphMLParser extends DefaultHandler {
 			return;
 		}
 		
-		if(currentTag.equals(DATA.getTag())) {
+		if (currentTag.equals(DESC.getTag()) || currentTag.equals(DATA.getTag())) {
 			parseData(finalString);
 		} else if (currentTag.equals(DEFAULT.getTag())) {
 		

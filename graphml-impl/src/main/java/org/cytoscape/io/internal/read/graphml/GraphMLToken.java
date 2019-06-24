@@ -29,7 +29,7 @@ public enum GraphMLToken {
 	// Graph ML Tags
 	ID("id"), GRAPH("graph"), EDGEDEFAULT("edgedefault"), DIRECTED("directed"),
 	UNDIRECTED("undirected"), KEY("key"), FOR("for"), ALL("all"), ATTRNAME("attr.name"),
-	ATTRTYPE("attr.type"), DEFAULT("default"), NODE("node"), EDGE("edge"),
+	ATTRTYPE("attr.type"), DEFAULT("default"), NODE("node"), EDGE("edge"), DESC("desc"),
 	SOURCE("source"), TARGET("target"), DATA("data"), TYPE("type"),
 	
 	// Supported attribute data types
