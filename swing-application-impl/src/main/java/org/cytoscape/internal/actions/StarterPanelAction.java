@@ -1,12 +1,19 @@
 package org.cytoscape.internal.actions;
 
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
-import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.CytoscapeDesktop;
+import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -14,7 +21,7 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -35,23 +42,52 @@ import org.cytoscape.internal.view.CytoscapeDesktop;
 @SuppressWarnings("serial")
 public class StarterPanelAction extends AbstractCyAction {
 	
-	private static String TITLE = "Starter Panel";
-	private static String SHOW = "Show";
-	private static String HIDE = "Hide";
+	private static String TITLE = "Show Starter Panel";
 
 	private final CytoscapeDesktop desktop;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	public StarterPanelAction(final float menuGravity, final CytoscapeDesktop desktop) {
-		super(getTitle(desktop));
+	/**
+	 * Use this constructor to register the action as a menu item.
+	 */
+	public StarterPanelAction(float menuGravity, CytoscapeDesktop desktop, CyServiceRegistrar serviceRegistrar) {
+		super(TITLE);
 		this.desktop = desktop;
+		this.serviceRegistrar = serviceRegistrar;
 		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
 		insertSeparatorBefore = true;
+		useCheckBoxMenuItem = true;
+	}
+	
+	/**
+	 * Use this constructor to register the action as a tool bar button.
+	 */
+	public StarterPanelAction(float toolbarGravity, Icon icon, CytoscapeDesktop desktop, CyServiceRegistrar serviceRegistrar) {
+		super(TITLE);
+		this.desktop = desktop;
+		this.serviceRegistrar = serviceRegistrar;
+		
+		putValue(LARGE_ICON_KEY, icon);
+		putValue(SHORT_DESCRIPTION, TITLE);
+		setIsInToolBar(true);
+		setToolbarGravity(toolbarGravity);
+		
+		desktop.getStarterPanel().addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				updateEnableState();
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+				updateEnableState();
+			}
+		});
 	}
 
 	@Override
-	public void actionPerformed(ActionEvent e) {
+	public void actionPerformed(ActionEvent evt) {
 		if (desktop.isStarterPanelVisible())
 			desktop.hideStarterPanel();
 		else
@@ -59,11 +95,32 @@ public class StarterPanelAction extends AbstractCyAction {
 	}
 	
 	@Override
-	public void menuSelected(MenuEvent e) {
-		putValue(Action.NAME, getTitle(desktop));
+	public void menuSelected(MenuEvent evt) {
+		updateEnableState();
+		JCheckBoxMenuItem item = getThisItem();
+
+		if (item != null)
+			item.setSelected(desktop.isStarterPanelVisible());
 	}
 	
-	private static String getTitle(final CytoscapeDesktop desktop) {
-		return (desktop.isStarterPanelVisible() ? HIDE : SHOW) + " " + TITLE;
+	@Override
+	public void updateEnableState() {
+		if (isInToolBar()) // For the tool bar button
+			setEnabled(!desktop.isStarterPanelVisible());
+		else // For the menu item
+			super.updateEnableState();
+	}
+	
+	private JCheckBoxMenuItem getThisItem() {
+		JMenu menu = serviceRegistrar.getService(CySwingApplication.class).getJMenu(getPreferredMenu());
+		
+		for (int i = 0; i < menu.getItemCount(); i++) {
+			JMenuItem item = menu.getItem(i);
+			
+			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
+				return (JCheckBoxMenuItem) item;
+		}
+		
+		return null;
 	}
 }

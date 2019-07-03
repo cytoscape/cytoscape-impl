@@ -1321,7 +1321,7 @@ public class CytoscapeDesktop extends JFrame
 		return bottomPanel;
 	}
 	
-	private StarterPanel getStarterPanel() {
+	public StarterPanel getStarterPanel() {
 		if (starterPanel == null) {
 			starterPanel = new StarterPanel(serviceRegistrar);
 			starterPanel.getCloseButton().addActionListener(e -> hideStarterPanel());

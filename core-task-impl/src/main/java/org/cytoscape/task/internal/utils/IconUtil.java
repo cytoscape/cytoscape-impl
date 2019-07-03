@@ -31,7 +31,7 @@ public abstract class IconUtil {
 	// Colors
 	public static Color C1 = new Color(5, 62, 96); // Main color
 	public static Color C2 = Color.WHITE; // Background color
-	public static Color C3 = new Color(56, 119, 158); // Highlight color
+	public static Color C3 = new Color(56, 120, 158); // Highlight color
 	
 	public static final Color[] COLORS_2A = new Color[] { C1, C2 };
 	public static final Color[] COLORS_2B = new Color[] { C1, C3 };
