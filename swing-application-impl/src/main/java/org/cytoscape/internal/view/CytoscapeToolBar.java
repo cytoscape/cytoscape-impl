@@ -31,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.UIManager;
@@ -170,6 +171,7 @@ public class CytoscapeToolBar extends JToolBar {
 							));
 							mi.addActionListener(ev -> {
 								button.setVisible(!button.isVisible());
+								updateSeparators();
 								resave();
 							});
 							popup.add(mi);
@@ -238,25 +240,11 @@ public class CytoscapeToolBar extends JToolBar {
 		if (stopList.contains(action.getName()))
 			button.component.setVisible(false);
 
-		addComponents();
+		update();
 
 		return true;
 	}
 
-	
-	private static class ActionButton {
-		final JButton component;
-		final boolean separatorBefore;
-		final boolean separatorAfter;
-		
-		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
-			this.component = button;
-			this.separatorBefore = separatorBefore;
-			this.separatorAfter = separatorAfter;
-		}
-	}
-	
-	
 	public void showAll() {
 		for (Object o : orderedList) {
 			if (o instanceof Component)
@@ -264,6 +252,8 @@ public class CytoscapeToolBar extends JToolBar {
 			if (o instanceof ActionButton)
 				((ActionButton) o).component.setVisible(true);
 		}
+		
+		updateSeparators();
 	}
 
 	public void hideAll() {
@@ -273,29 +263,8 @@ public class CytoscapeToolBar extends JToolBar {
 			if (o instanceof ActionButton)
 				((ActionButton) o).component.setVisible(false);
 		}
-	}
-
-	private void addComponents() {
-		removeAll();
 		
-		for (Object o : orderedList) {
-			if (o instanceof JButton)
-				add((JButton) o);
-			else if (o instanceof Float)
-				addSeparator();
-			else if (o instanceof ToolBarComponent)
-				add(((ToolBarComponent) o).getComponent());
-			else if (o instanceof ActionButton) {
-				ActionButton ab = (ActionButton) o;
-				if(ab.separatorBefore)
-					addSeparator();
-				add(ab.component);
-				if(ab.separatorAfter)
-					addSeparator();
-			}
-		}
-		
-		validate();
+		updateSeparators();
 	}
 
 	public void addSeparator(float gravity) {
@@ -328,7 +297,7 @@ public class CytoscapeToolBar extends JToolBar {
 			return false;
 
 		orderedList.remove(button);
-		addComponents();
+		update();
 
 		return true;
 	}
@@ -344,7 +313,7 @@ public class CytoscapeToolBar extends JToolBar {
 		componentGravity.put(tbc,tbc.getToolBarGravity());
 		int addInd = getInsertLocation(tbc.getToolBarGravity());
 		orderedList.add(addInd, tbc);
-		addComponents();
+		update();
 	}
 
 	public void removeToolBarComponent(ToolBarComponent tbc){
@@ -403,6 +372,49 @@ public class CytoscapeToolBar extends JToolBar {
 		}
 		
 		return button;
+	}
+	
+	private void update() {
+		// Remove and add everything again
+		removeAll();
+		
+		for (Object o : orderedList) {
+			if (o instanceof JButton) {
+				add((JButton) o);
+			} else if (o instanceof Float) {
+				addSeparator();
+			} else if (o instanceof ToolBarComponent) {
+				add(((ToolBarComponent) o).getComponent());
+			} else if (o instanceof ActionButton) {
+				ActionButton ab = (ActionButton) o;
+				
+				if (ab.separatorBefore)
+					addSeparator();
+				
+				add(ab.component);
+				
+				if (ab.separatorAfter)
+					addSeparator();
+			}
+		}
+		
+		// Hide duplicate separators
+		updateSeparators();
+	}
+
+	private void updateSeparators() {
+		// Pretend we start with a separator, because we don't want any separator as the first component
+		boolean lastIsSep = true;
+		
+		for (Component c : getComponents()) {
+			if (c instanceof JSeparator)
+				c.setVisible(!lastIsSep);
+			
+			if (c.isVisible())
+				lastIsSep = c instanceof JSeparator;
+		}
+		
+		validate();
 	}
 	
 	private void readStopList() {
@@ -583,4 +595,17 @@ public class CytoscapeToolBar extends JToolBar {
 //			}
 //			return "";
 //		}
+	
+	private static class ActionButton {
+		
+		final JButton component;
+		final boolean separatorBefore;
+		final boolean separatorAfter;
+		
+		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
+			this.component = button;
+			this.separatorBefore = separatorBefore;
+			this.separatorAfter = separatorAfter;
+		}
+	}
 }
