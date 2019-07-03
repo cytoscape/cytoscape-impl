@@ -9,10 +9,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -51,7 +55,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -78,6 +82,8 @@ public class CytoscapeToolBar extends JToolBar {
 	public static int ICON_WIDTH = 32;
 	public static int ICON_HEIGHT = 32;
 	private static int BUTTON_BORDER_SIZE = 2;
+	
+	private static final String STOPLIST_FILENAME = "toolbar.stoplist";
 	
 	private Map<CyAction, ActionButton> actionButtonMap;
 	private List<Object> orderedList;
@@ -195,10 +201,7 @@ public class CytoscapeToolBar extends JToolBar {
 				}
 		}
 		
-		if (hidden.size() == 0)
-			deleteStopList();
-		else
-			writeStopList(hidden);
+		writeStopList(hidden);
 	}
 
 	@Override
@@ -419,7 +422,7 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	private void readStopList() {
 		stopList.clear();
-		final List<String> lines;
+		List<String> lines = null;
 		
 		try {
 			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
@@ -431,39 +434,32 @@ public class CytoscapeToolBar extends JToolBar {
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
 			
-			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+			if (configDirectory.exists()) {
+				configFile = new File(configDirectory.toPath() + "/" + STOPLIST_FILENAME);
+				
+				if (configFile.exists())
+					lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset());
+			}
 			
-			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset());
+			if (lines == null) {
+				// Copy from our bundle resources file
+				try (InputStream is = getClass().getResourceAsStream("/" + STOPLIST_FILENAME)) {
+					if (is != null)
+						lines = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset())).lines()
+								.collect(Collectors.toList());
+				}
+			}
 		} catch (IOException e) {
 			// file not found: there's no customization, just return
 			return;
 		}
 
-		for (String line : lines)
-			stopList.add(line.trim());
+		if (lines != null) {
+			for (String line : lines)
+				stopList.add(line.trim());
+		}
 	}
 	
-	private void deleteStopList() {
-		CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
-				.getService(CyApplicationConfiguration.class);
-		
-		if (cyApplicationConfiguration == null) {
-			System.err.println("cyApplicationConfiguration not found");
-			return;
-		}
-
-		File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
-		File configFile = null;
-		
-		if (configDirectory.exists()) {
-			configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
-			
-			if (configFile.exists())
-				configFile.delete();
-		}
-	}
-
 	private void writeStopList(List<String> list) {
 		BufferedWriter writer = null;
 		
@@ -480,7 +476,7 @@ public class CytoscapeToolBar extends JToolBar {
 			File configFile = null;
 			
 			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+				configFile = new File(configDirectory.toPath() + "/" + STOPLIST_FILENAME);
 			
 			writer = new BufferedWriter(new FileWriter(configFile));
 			

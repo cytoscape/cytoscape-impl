@@ -92,10 +92,13 @@ public class CytoscapeMenus {
 		menuBar.addSeparator("Help", 9.0);
 
 		toolBar.addSeparator(2.0f);
-//		toolBar.addSeparator(3.0f);
+		toolBar.addSeparator(3.0f);
 		toolBar.addSeparator(4.0f);
+		toolBar.addSeparator(5.0f);
 		toolBar.addSeparator(6.0f);
+		toolBar.addSeparator(7.0f);
 		toolBar.addSeparator(8.0f);
+		toolBar.addSeparator(9.0f);
 		toolBar.addSeparator(10.0f);
 		toolBar.addSeparator(11.0f);
 	}
