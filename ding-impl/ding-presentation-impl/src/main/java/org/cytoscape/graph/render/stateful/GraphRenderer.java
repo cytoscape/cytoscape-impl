@@ -1,5 +1,7 @@
 package org.cytoscape.graph.render.stateful;
 
+import java.awt.Color;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -109,6 +111,9 @@ public final class GraphRenderer {
 	 */
 	public final static int LOD_CUSTOM_GRAPHICS = 0x100;
 
+	
+	private static final Paint clearPaint = new Color(0, 0, 0, 0);
+	
 	// No constructor.
 	private GraphRenderer() {
 	}
@@ -151,7 +156,6 @@ public final class GraphRenderer {
 	                                    final NodeDetails nodeDetails,
 	                                    final EdgeDetails edgeDetails,
 	                                    final GraphGraphics grafx,
-	                                    final Paint bgPaint,
 	                                    final double xCenter,
 	                                    final double yCenter,
 	                                    final double scaleFactor,
@@ -164,9 +168,9 @@ public final class GraphRenderer {
 		LongHash nodeBuff = new LongHash();
 		
 		// Define the visible window in node coordinate space.
-		final float xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null)) / scaleFactor));
+		final float xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null))  / scaleFactor));
 		final float yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
-		final float xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null)) / scaleFactor)); 
+		final float xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null))  / scaleFactor)); 
 		final float yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
 
 		// Define buffers.  These are of the few objects we're instantiating directly in this method.
@@ -274,8 +278,7 @@ public final class GraphRenderer {
 		}
 		// Clear the background.
 		{
-			if (bgPaint != null)
-				grafx.clear(bgPaint, xCenter, yCenter, scaleFactor);
+			grafx.clear(clearPaint, xCenter, yCenter, scaleFactor);
 		}
 
 		// Render the edges first.  No edge shall be rendered twice.  Render edge

@@ -62,9 +62,9 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		// because the ContentChangeListener won't fire if the network view isn't visible.
 		CyNetworkView source = e.getSource();
 		if(source.equals(re.getViewModel())) {
-			if(!re.getCanvas().isShowing() && hasNonResizeEvent(e)) {
-				forceRender = true;
-			}
+//			if(!re.getCanvas().isShowing() && hasNonResizeEvent(e)) {
+//				forceRender = true;
+//			}
 			repaint();
 		}
 	}
@@ -76,8 +76,11 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 		
 		CyTable source = e.getSource();
 		CyNetwork model = re.getViewModel().getModel();
-		if(!re.getCanvas().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
-			forceRender = true;
+//		if(!re.getCanvas().isShowing() && (source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable())) {
+//			forceRender = true;
+//			repaint();
+//		}
+		if(source == model.getDefaultNodeTable() || source == model.getDefaultEdgeTable()) {
 			repaint();
 		}
 	}
@@ -114,9 +117,9 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			int w = getWidth();
 			int h = getHeight();
 			
-			DingCanvas bgCanvas  = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
-			DingCanvas netCanvas = re.getCanvas(DRenderingEngine.Canvas.NETWORK_CANVAS);
-			DingCanvas fgCanvas  = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+			DingCanvas bgCanvas   = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+			InnerCanvas netCanvas = re.getCanvas();
+			DingCanvas fgCanvas   = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
 			
 			Image bgImage  = bgCanvas.getImage();
 			Image netImage = netCanvas.getImage();

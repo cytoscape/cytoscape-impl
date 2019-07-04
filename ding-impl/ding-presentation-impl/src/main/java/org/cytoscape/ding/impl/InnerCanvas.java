@@ -1,12 +1,10 @@
 package org.cytoscape.ding.impl;
 
-import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -24,6 +22,7 @@ import java.util.Set;
 import javax.swing.Timer;
 
 import org.cytoscape.ding.impl.BendStore.HandleKey;
+import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.graph.render.export.ImageImposter;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
@@ -39,7 +38,6 @@ import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 
 /*
@@ -69,20 +67,21 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
 /**
  * Canvas to be used for drawing actual network visualization
  */
-@SuppressWarnings("serial")
 public class InnerCanvas extends DingCanvas {
 
-	public GraphGraphics grafx;
+	private GraphGraphics grafx;
 	private final DRenderingEngine re;
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private Image image;
 	
 	final DingLock dingLock;
 	
 	protected GraphLOD lod;
 	
-	double xCenter;
-	double yCenter;
-	double scaleFactor;
+	private double xCenter;
+	private double yCenter;
+	private double scaleFactor;
 	
 	private int lastRenderDetail;
 	private boolean isPrinting;
@@ -90,14 +89,13 @@ public class InnerCanvas extends DingCanvas {
 	
 	private Timer hideEdgesTimer;
 	
+	
 	InnerCanvas(DingLock lock, DRenderingEngine re, CyServiceRegistrar serviceRegistrar) {
-		super(DRenderingEngine.Canvas.NETWORK_CANVAS);
+		super(Canvas.NETWORK_CANVAS);
 		this.dingLock = lock;
 		this.re = re;
 		this.serviceRegistrar = serviceRegistrar;
 		this.lod = new GraphLOD(); // Default LOD.
-		this.m_backgroundColor = Color.WHITE;
-		setOpaque(false);
 		this.xCenter = 0.0d;
 		this.yCenter = 0.0d;
 		this.scaleFactor = 1.0d;
@@ -106,23 +104,54 @@ public class InnerCanvas extends DingCanvas {
 		ActionListener taskPerformer = evt -> {
 			hideEdgesTimer.stop();
 			lod.setDrawEdges(true);
-			re.setViewportChanged();
-			repaint();
+//			re.setViewportChanged();
+			re.updateView();
 		};
 		hideEdgesTimer = new Timer(600, taskPerformer);
 	}
 
+	
+	public Image getImage() {
+		return image;
+	}
+	
+	public double getCenterX() {
+		return xCenter;
+	}
+	
+	public double getCenterY() {
+		return yCenter;
+	}
+	
+	public double getScaleFactor(){
+		return scaleFactor;
+	}
+	
+	public void setScaleFactor(double scaleFactor) {
+		this.scaleFactor = scaleFactor;
+	}
+	
+	
+	public void getNodeShape(byte nodeShape, float xMin, float yMin, float xMax, float yMax, GeneralPath path) {
+		grafx.getNodeShape(nodeShape, xMin, yMin, xMax, yMax, path);
+	}
+	
+	public void xformImageToNodeCoords(double[] coords) {
+		grafx.xformImageToNodeCoords(coords);
+	}
+	
+	public void xformNodetoImageCoords(double[] coords) {
+		grafx.xformNodetoImageCoords(coords);
+	}
+	
 	@Override
-	public void setBounds(int x, int y, int width, int height) {
-		boolean resized = (this.getWidth() != width) || (this.getHeight() != height);
-        boolean moved = (this.getX() != x) || (this.getY() != y);
-        
-        if (!resized && !moved)
+	public void setSize(int width, int height) {
+        if(width == getWidth() && height == getHeight())
             return;
-		
-		super.setBounds(x, y, width, height);
+        
+        super.setSize(width, height);
 
-		if ((width > 0) && (height > 0)) {
+		if(width > 0 && height > 0) {
 			Image img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 			GraphGraphics grafx = new GraphGraphics(img, false, true);
 
@@ -135,53 +164,44 @@ public class InnerCanvas extends DingCanvas {
 	}
 
 	@Override
-	public void update(Graphics g) {
+	public void paint(Graphics g) {
 		if (grafx == null || re == null)
 			return;
 
 		// This is the magical portion of code that transfers what is in the
 		// visual data structures into what's on the image.
-		boolean contentChanged = false;
-		boolean viewportChanged = false;
-		double xCenter = 0.0d;
-		double yCenter = 0.0d;
-		double scaleFactor = 1.0d;
+//		boolean contentChanged = false;
+//		boolean viewportChanged = false;
+//		double xCenter = 0.0d;
+//		double yCenter = 0.0d;
+//		double scaleFactor = 1.0d;
 
 		this.fontMetrics = g.getFontMetrics();
 
 		synchronized (dingLock) {
 			if (re != null && re.isDirty()) {
-				contentChanged = re.isContentChanged();
-				viewportChanged = re.isViewportChanged();
+//				contentChanged = re.isContentChanged();
+//				viewportChanged = re.isViewportChanged();
 				renderGraph(grafx,/* setLastRenderDetail = */ true, lod);
-				xCenter = this.xCenter;
-				yCenter = this.yCenter;
-				scaleFactor = this.scaleFactor;
+//				xCenter = this.xCenter;
+//				yCenter = this.yCenter;
+//				scaleFactor = this.scaleFactor;
 				
 				// set the publicly accessible image object *after* it has been rendered
-				m_img = grafx.image;
+				image = grafx.image;
 			}
 		}
 
-		// if canvas is visible, draw it
-		if (isVisible()) {
-			// TODO Should this be on the AWT thread?
-			g.drawImage(grafx.image, 0, 0, null);
-		}
+		g.drawImage(image, 0, 0, null);
 
-		if (contentChanged && re != null) {
-			re.fireContentChanged();
-		}
-		if (viewportChanged && re != null) {
-			re.fireViewportChanged(getWidth(), getHeight(), xCenter, yCenter, scaleFactor);
-		}
+//		if (contentChanged && re != null) {
+//			re.fireContentChanged();
+//		}
+//		if (viewportChanged && re != null) {
+//			re.fireViewportChanged(getWidth(), getHeight(), xCenter, yCenter, scaleFactor);
+//		}
 	}
 
-
-	@Override
-	public void paint(Graphics g) {
-		update(g);
-	}
 
 	@Override
 	public void print(Graphics g) {
@@ -215,17 +235,6 @@ public class InnerCanvas extends DingCanvas {
  	 */
 	public boolean isPrinting() { 
 		return isPrinting; 
-	}
-
-	/**
-	 * This method exposes the JComponent processMouseEvent so that canvases on
-	 * top of us can pass events they don't want down.
-	 * 
-	 * @param e the MouseEvent to process
-	 */
-	@Override
-	public void processMouseEvent(MouseEvent e) {
-		super.processMouseEvent(e);
 	}
 
 	
@@ -590,30 +599,6 @@ public class InnerCanvas extends DingCanvas {
         yCenter = y;
     }
 
-	public void adjustZoom(int ticks) {
-		if(re.getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
-			return;
-		
-		double factor;
-		if (ticks < 0)
-			factor = 1.1; // scroll up, zoom in
-		else if (ticks > 0)
-			factor = 0.9; // scroll down, zoom out
-		else
-			return;
-		
-		synchronized(dingLock) {
-			scaleFactor *= factor;
-		}
-		
-		setHideEdges();
-		re.setViewportChanged();
-		re.getViewModel().batch(netView -> {
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
-		}, false);
-		repaint();
-	}
-
 
 	public int getLastRenderDetail() {
 		return lastRenderDetail;
@@ -631,50 +616,15 @@ public class InnerCanvas extends DingCanvas {
 		return (grafx != null) ? grafx.getTransform() : null;
 	}
 
-	public void updateSubgraph(List<View<CyNode>> nodes, List<View<CyEdge>> edges) {
-		renderSubgraph(grafx, false, lod, nodes, edges);
-	}
-
-	// Render just a portion of the graph.  This is used for selections when we want to overwrite
-	// a limited number of nodes and edges
-	private void renderSubgraph(GraphGraphics graphics, final boolean setLastRenderDetail, final GraphLOD lod, 
-	                            List<View<CyNode>> nodes, List<View<CyEdge>> edges) {
-
-		// Pass the color even though we won't use it if we actually only render the subgraph.  If we're
-		// not in largeModel mode, or we're only painting a small portion of the network, we'll wind up
-		// calling renderGraph anyways and we'll need to clear the image
-		final Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(), m_backgroundColor.getBlue(), 0);
-
-//		synchronized (m_lock) {
-			int lastRenderDetail = re.renderSubgraph(graphics, lod, backgroundColor, xCenter, yCenter, scaleFactor, nodes, edges);
-			if (setLastRenderDetail)
-				this.lastRenderDetail = lastRenderDetail;
-//		}
-
-		repaint();
-	}
-	
 	/**
 	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
 	 */
 	private void renderGraph(GraphGraphics graphics, boolean setLastRenderDetail, GraphLOD lod) {
-		int alpha = (isOpaque()) ? 255 : 0;
-		Color backgroundColor = new Color(m_backgroundColor.getRed(), m_backgroundColor.getGreen(), m_backgroundColor.getBlue(), alpha);
-
-		// long timeBegin = System.currentTimeMillis();
-		int lastRenderDetail = re.renderGraph(graphics, lod, backgroundColor, xCenter, yCenter, scaleFactor);
-		// System.out.println("Rendered graph in "+(System.currentTimeMillis()-timeBegin)+"ms");
-
+		int lastRenderDetail = re.renderGraph(graphics, lod, xCenter, yCenter, scaleFactor);
 		if (setLastRenderDetail)
 			this.lastRenderDetail = lastRenderDetail;
-		// repaint();
 	}
 
-
-
-	public double getScaleFactor(){
-		return scaleFactor;
-	}
 
 	public void dispose() {
 	}
@@ -690,4 +640,5 @@ public class InnerCanvas extends DingCanvas {
 		lod.setDrawEdges(false);
 		hideEdgesTimer.start();
 	}
+	
 }

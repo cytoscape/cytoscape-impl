@@ -39,16 +39,15 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.swing.JComponent;
-
 import org.cytoscape.ding.DVisualLexicon;
+import org.cytoscape.ding.impl.DingComponent;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
 
 @SuppressWarnings("serial")
-public class AnnotationSelection extends JComponent implements Iterable<DingAnnotation> {
+public class AnnotationSelection extends DingComponent implements Iterable<DingAnnotation> {
 	
 	Rectangle2D union;
 	Rectangle2D[] anchors = new Rectangle2D[8];
@@ -80,7 +79,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 			selectedAnnotations.add(e);
 			updateBounds();
 		}
-		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
 	public boolean isEmpty() {
@@ -119,8 +117,6 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 			cyAnnotator.getForeGroundCanvas().setSelection(null);
 		else
 			updateBounds();
-		
-		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
 	public void saveAnchor(Position anchor, double anchorOffsetX, double anchorOffsetY) {
@@ -199,11 +195,9 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 			// OK, now update
 			annotation.moveAnnotationRelative(pt);
 			annotation.update();
-			annotation.getCanvas().repaint();
 		}
 
 		updateBounds();
-		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
 	public void resizeAnnotationsRelative(int mouseX, int mouseY) {
@@ -229,11 +223,9 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 			// OK, now update
 			da.update();
-			da.getCanvas().repaint();
 		}
 
 		updateBounds();
-		cyAnnotator.getForeGroundCanvas().repaint();
 	}
 
 	// NOTE: bounds, mouseX and mouseY should be in node coordinates
@@ -294,22 +286,21 @@ public class AnnotationSelection extends JComponent implements Iterable<DingAnno
 
 	
 	private void updateBounds() {
-		if (selectedAnnotations.size() == 0)
+		if (selectedAnnotations.isEmpty())
 			return;
 
 		union = null;
 		for (DingAnnotation a: selectedAnnotations) {
 			if (union == null)
-				union = a.getComponent().getBounds().getBounds2D();
+				union = a.getBounds().getBounds2D();
 			else
-				union = union.createUnion(a.getComponent().getBounds().getBounds2D());
+				union = union.createUnion(a.getBounds().getBounds2D());
 		}
 		setSize((int)(union.getWidth()+border*8), (int)(union.getHeight()+border*8));
 		setLocation((int)(union.getX()-border*4), (int)(union.getY()-border*4));
 	}
 
 	
-	@Override
 	public void paint(Graphics g) {
 		updateBounds();
 

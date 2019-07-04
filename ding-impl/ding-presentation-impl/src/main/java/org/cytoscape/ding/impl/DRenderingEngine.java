@@ -1,8 +1,6 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
-
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FontMetrics;
@@ -10,6 +8,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -29,6 +28,8 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 
 import org.cytoscape.ding.DVisualLexicon;
@@ -126,6 +127,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private InnerCanvas networkCanvas;
 	private ArbitraryGraphicsCanvas backgroundCanvas;
 	private ArbitraryGraphicsCanvas foregroundCanvas;
+	private Color backgroundColor;
+	private RendererComponent renderComponent;
 	
 	private int imageWidth = 0;
 	private int imageHeight = 0;
@@ -150,13 +153,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private final Properties props;
 	private final CyAnnotator cyAnnotator;
-	private boolean annotationsLoaded;
 	private boolean largeModel = false;
-	private boolean haveZOrder = true; // MKTODO assume node zorder matters, maybe remove this
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 	
-	private Timer animationTimer;
+//	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
 	private final CoalesceTimer coalesceTimer;
 	
@@ -189,10 +190,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		printLOD = new PrintLOD();
 		
 		networkCanvas = new InnerCanvas(dingLock, this, registrar);
-		backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, networkCanvas, Color.white, true);
+		backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, networkCanvas);
 		addViewportChangeListener(backgroundCanvas);
-		foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, networkCanvas, Color.white, false);
+		foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, networkCanvas);
 		addViewportChangeListener(foregroundCanvas);
+		renderComponent = new RendererComponent();
 
 		setGraphLOD(dingGraphLOD);
 
@@ -209,12 +211,87 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
+		cyAnnotator.loadAnnotations();
+		
 		coalesceTimer = new CoalesceTimer();
 		
 		// Check if the view model has changed approximately 30 times per second
 		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());
 		checkDirtyTimer.setRepeats(true);
 		checkDirtyTimer.start();
+	}
+	
+	
+	public void install(RootPaneContainer rootPane) {
+		InputHandlerGlassPane glassPane = getInputHandlerGlassPane();
+		rootPane.setGlassPane(glassPane);
+		rootPane.setContentPane(renderComponent);
+		glassPane.setVisible(true);
+	}
+	
+	public void install(JComponent component) {
+		component.setLayout(new BorderLayout());
+		component.add(renderComponent, BorderLayout.CENTER);
+	}
+	
+	
+	/**
+	 * This is the interface between the renderer and Swing.
+	 */
+	@SuppressWarnings("serial")
+	private class RendererComponent extends JComponent {
+		
+		private boolean annotationsLoaded = false;
+		
+		@Override
+		public void setBounds(int x, int y, int width, int height) {
+			super.setBounds(x, y, width, height);
+			foregroundCanvas.setBounds(x, y, width, height);
+			networkCanvas.setBounds(x, y, width, height);
+			backgroundCanvas.setBounds(x, y, width, height);
+			
+			// If this is the first call to setBounds, load any annotations
+			if(!annotationsLoaded) {
+				annotationsLoaded = true;
+				// MKTODO make this asynchronous
+				// MKTODO we should not load annotations here!
+				cyAnnotator.loadAnnotations();
+			}
+			
+			getViewModel().batch(netView -> {
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) width);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
+			}, false); // don't set the dirty flag
+		}
+		
+		@Override
+		public void paint(Graphics g) {
+			if(viewportChanged) {
+				double centerX = networkCanvas.getCenterX();
+				double centerY = networkCanvas.getCenterY();
+				double scaleFactor = networkCanvas.getScaleFactor();
+				fireViewportChanged(getWidth(), getHeight(), centerX, centerY, scaleFactor);
+			}
+			
+			g.setColor(backgroundColor);
+			g.fillRect(0, 0, getWidth(), getHeight());
+			
+			backgroundCanvas.paint(g);
+			networkCanvas.paint(g);
+			foregroundCanvas.paint(g);
+			
+			if(contentChanged) {
+				fireContentChanged();
+			}
+			
+			setContentChanged(false);
+			setViewportChanged(false);
+		}
+	}
+	
+	
+	public Rectangle getBounds() {
+		return renderComponent.getBounds();
 	}
 	
 	
@@ -244,23 +321,23 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-		if(!backgroundPaint.equals(networkCanvas.getBackground())) {
+		if(!backgroundPaint.equals(this.backgroundColor)) {
 			setBackgroundPaint(backgroundPaint);
 		}
 		
 		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		bendStore.updateSelectedEdges(selectedEdges);
 		
-		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
-		edgeDetails.updateAnimatedEdges(animatedEdges);
-		if(animatedEdges.isEmpty() && animationTimer != null) {
-			animationTimer.stop();
-			animationTimer = null;
-		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
-			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
-			animationTimer.setRepeats(true);
-			animationTimer.start();
-		}
+//		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
+//		edgeDetails.updateAnimatedEdges(animatedEdges);
+//		if(animatedEdges.isEmpty() && animationTimer != null) {
+//			animationTimer.stop();
+//			animationTimer = null;
+//		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
+//			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
+//			animationTimer.setRepeats(true);
+//			animationTimer.start();
+//		}
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
@@ -269,12 +346,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// update view (for example if "fit selected" was run)
 		double x = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double y = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-		if(networkCanvas.xCenter != x || networkCanvas.yCenter != y) {
+		if(networkCanvas.getCenterX() != x || networkCanvas.getCenterY() != y) {
 			setCenter(x, y);
 		}
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		if(networkCanvas.scaleFactor != scaleFactor) {
+		if(networkCanvas.getScaleFactor() != scaleFactor) {
 			setZoom(scaleFactor);
 		}
 		
@@ -282,13 +359,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	private void advanceAnimatedEdges() {
-		edgeDetails.advanceAnimatedEdges();
-		// This is more lightweight than calling updateView(). And if the animation thread is faster 
-		// than the renderer the EDT will coalesce the extra paint events.
-		setContentChanged();
-		networkCanvas.repaint();
-	}
+//	private void advanceAnimatedEdges() {
+//		edgeDetails.advanceAnimatedEdges();
+//		// This is more lightweight than calling updateView(). And if the animation thread is faster 
+//		// than the renderer the EDT will coalesce the extra paint events.
+//		setContentChanged();
+//		networkCanvas.repaint();
+//	}
 	
 	
 	public BendStore getBendStore() {
@@ -300,6 +377,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			inputHandler = new InputHandlerGlassPane(serviceRegistrar, this);
 		}
 		return inputHandler;
+	}
+	
+	public JComponent getComponent() {
+		return getInputHandlerGlassPane();
 	}
 
 	public boolean isNodeSelectionEnabled() {
@@ -353,9 +434,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void setBackgroundPaint(Paint paint) {
 		synchronized (dingLock) {
 			if (paint instanceof Color) {
-				backgroundCanvas.setBackground((Color) paint);
-				networkCanvas.setBackground((Color)paint); // for antialiasing...
-				foregroundCanvas.setBackground((Color)paint); // for antialiasing...
+				backgroundColor = (Color) paint;
 				setContentChanged();
 			} else {
 				logger.debug("DGraphView.setBackgroundPaint(), Color not found.");
@@ -363,11 +442,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 
-	public Paint getBackgroundPaint() {
-		return backgroundCanvas.getBackground();
+	public Color getBackgroundPaint() {
+		return backgroundColor;
 	}
 
-	
 	public boolean isNodeSelected(long suid) {
 		return nodeDetails.isSelected(getViewModelSnapshot().getNodeView(suid));
 	}
@@ -423,7 +501,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 
 	public double getZoom() {
-		return networkCanvas.scaleFactor;
+		return networkCanvas.getScaleFactor();
 	}
 
 	public boolean isLargeModel() {
@@ -439,7 +517,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	public void setZoom(double zoom) {
 		synchronized (dingLock) {
-			networkCanvas.scaleFactor = checkZoom(zoom, networkCanvas.scaleFactor);
+			networkCanvas.setScaleFactor(checkZoom(zoom, networkCanvas.getScaleFactor()));
 			setViewportChanged();
 		}
 	}
@@ -447,46 +525,43 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private void fitContent(final boolean updateView) {
 		eventHelper.flushPayloadEvents();
 
-		// MKTODO why does this have to run on the edt?
-		invokeOnEDT(() -> {
-			synchronized (dingLock) {
-				// make sure we use the latest snapshot
-				CyNetworkViewSnapshot netViewSnapshot = viewModel.createSnapshot();
-				if(netViewSnapshot.getNodeCount() == 0)
-					return;
-				if (networkCanvas.getWidth() == 0 || networkCanvas.getHeight() == 0)
-					return;
-				
-				double[] extentsBuff = new double[4];
-				netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff);
-	
-				// Adjust the content based on the foreground canvas
-				foregroundCanvas.adjustBounds(extentsBuff);
-				// Adjust the content based on the background canvas
-				backgroundCanvas.adjustBounds(extentsBuff);
-	
-				netViewSnapshot.getMutableNetworkView().batch(netView -> {
-					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
-						netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extentsBuff[0] + extentsBuff[2]) / 2.0d);
-					
-					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
-						netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extentsBuff[1] + extentsBuff[3]) / 2.0d);
-		
-					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
-						// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-						final double zoom = Math.min(((double) networkCanvas.getWidth()) / 
-						                             (extentsBuff[2] - extentsBuff[0]), 
-						                              ((double) networkCanvas.getHeight()) / 
-						                             (extentsBuff[3] - extentsBuff[1])) * 0.98;
-						// Update view model.  Zoom Level should be modified.
-						netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-					}
-				});
-			}
+		synchronized (dingLock) {
+			// make sure we use the latest snapshot
+			CyNetworkViewSnapshot netViewSnapshot = viewModel.createSnapshot();
+			if(netViewSnapshot.getNodeCount() == 0)
+				return;
+			if (networkCanvas.getWidth() == 0 || networkCanvas.getHeight() == 0)
+				return;
 			
-			if (updateView)
-				updateSnapshotAndView();
-		});
+			double[] extentsBuff = new double[4];
+			netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff);
+
+			// Adjust the content based on the foreground canvas
+			foregroundCanvas.adjustBounds(extentsBuff);
+			// Adjust the content based on the background canvas
+			backgroundCanvas.adjustBounds(extentsBuff);
+
+			netViewSnapshot.getMutableNetworkView().batch(netView -> {
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extentsBuff[0] + extentsBuff[2]) / 2.0d);
+				
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extentsBuff[1] + extentsBuff[3]) / 2.0d);
+	
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
+					final double zoom = Math.min(((double) networkCanvas.getWidth()) / 
+					                             (extentsBuff[2] - extentsBuff[0]), 
+					                              ((double) networkCanvas.getHeight()) / 
+					                             (extentsBuff[3] - extentsBuff[1])) * 0.98;
+					// Update view model.  Zoom Level should be modified.
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+				}
+			});
+		}
+		
+		if (updateView)
+			updateSnapshotAndView();
 	}
 	
 	@Override
@@ -505,38 +580,60 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void updateView(final boolean forceRedraw) {
 		// MKTODO we don't need to do this anymore right?
-		eventHelper.flushPayloadEvents();
+//		eventHelper.flushPayloadEvents();
 		
-		invokeOnEDTAndWait(() -> {
-			if (forceRedraw) {
-				setContentChanged();
-			}
-			
-			networkCanvas.repaint();
-			
-			//Check if image size has changed if so, visual property needs to be changed as well
-			if (networkCanvas.getWidth() != imageWidth || networkCanvas.getHeight() != imageHeight) {
-				imageWidth  = networkCanvas.getWidth();
-				imageHeight = networkCanvas.getHeight();
-				getViewModel().batch(netView -> {
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) imageWidth);
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
-				}, false); // don't set the dirty flag
-			}
-		});
+		if (forceRedraw) {
+			setContentChanged();
+		}
+		
+		renderComponent.repaint();
+		
+//		//Check if image size has changed if so, visual property needs to be changed as well
+//		if (networkCanvas.getWidth() != imageWidth || networkCanvas.getHeight() != imageHeight) {
+//			imageWidth  = networkCanvas.getWidth();
+//			imageHeight = networkCanvas.getHeight();
+//			getViewModel().batch(netView -> {
+//				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) imageWidth);
+//				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
+//			}, false); // don't set the dirty flag
+//		}
 		
 		// Fire this event on another thread so that it doesn't block the renderer
 		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
 	
+	
+	public void zoom(int ticks) {
+		if(getViewModelSnapshot().isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR))
+			return;
+		
+		double factor;
+		if (ticks < 0)
+			factor = 1.1; // scroll up, zoom in
+		else if (ticks > 0)
+			factor = 0.9; // scroll down, zoom out
+		else
+			return;
+		
+		double scaleFactor = networkCanvas.getScaleFactor() * factor;
+		
+//			setHideEdges();
+		setZoom(scaleFactor);
+		
+		getViewModel().batch(netView -> {
+			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+		}, false);
+	}
+	
+	
 	public void pan(double deltaX, double deltaY) {
 		synchronized (dingLock) {
-			double x = networkCanvas.xCenter + deltaX;
-			double y = networkCanvas.yCenter + deltaY;
+			double x = networkCanvas.getCenterX() + deltaX;
+			double y = networkCanvas.getCenterY() + deltaY;
 			setCenter(x, y);
 		}
 		networkCanvas.setHideEdges();
-		networkCanvas.repaint();
+		renderComponent.repaint();
 	}
 	
 	public void setCenter(double x, double y) {
@@ -547,15 +644,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			// Update view model
 			// TODO: don't do it from here?
 			getViewModel().batch(netView -> {
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.xCenter);
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.yCenter);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.getCenterX());
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.getCenterY());
 			}, false); // don't set the dirty flag
 		}
 	}
 
 	public Point2D getCenter() {
 		synchronized (dingLock) {
-			return new Point2D.Double(networkCanvas.xCenter, networkCanvas.yCenter);
+			return new Point2D.Double(networkCanvas.getCenterX(), networkCanvas.getCenterY());
 		}
 	}
 	
@@ -567,67 +664,65 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void fitSelected() {
 		eventHelper.flushPayloadEvents();
 		
-//		synchronized (m_lock) {
-			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-			SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
-			Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			if(selectedElms.isEmpty())
-				return;
-			
-			float[] extentsBuff = new float[4];
+		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
+		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+		if(selectedElms.isEmpty())
+			return;
+		
+		float[] extentsBuff = new float[4];
 
-			float xMin = Float.POSITIVE_INFINITY;
-			float yMin = Float.POSITIVE_INFINITY;
-			float xMax = Float.NEGATIVE_INFINITY;
-			float yMax = Float.NEGATIVE_INFINITY;
+		float xMin = Float.POSITIVE_INFINITY;
+		float yMin = Float.POSITIVE_INFINITY;
+		float xMax = Float.NEGATIVE_INFINITY;
+		float yMax = Float.NEGATIVE_INFINITY;
 
-			View<CyNode> leftMost = null;
-			View<CyNode> rightMost = null;
+		View<CyNode> leftMost = null;
+		View<CyNode> rightMost = null;
 
-			for(View<CyNode> nodeView : selectedElms) {
-				spacial.get(nodeView.getSUID(), extentsBuff);
-				if (extentsBuff[0] < xMin) {
-					xMin = extentsBuff[0];
-					leftMost = nodeView;
-				}
-
-				if (extentsBuff[2] > xMax) {
-					xMax = extentsBuff[2];
-					rightMost = nodeView;
-				}
-
-				yMin = Math.min(yMin, extentsBuff[1]);
-				yMax = Math.max(yMax, extentsBuff[3]);
+		for(View<CyNode> nodeView : selectedElms) {
+			spacial.get(nodeView.getSUID(), extentsBuff);
+			if (extentsBuff[0] < xMin) {
+				xMin = extentsBuff[0];
+				leftMost = nodeView;
 			}
 
-			float xMinF = xMin - (getLabelWidth(leftMost) / 2);
-			float xMaxF = xMax + (getLabelWidth(rightMost) / 2);
-			float yMaxF = yMax;
-			float yMinF = yMin;
+			if (extentsBuff[2] > xMax) {
+				xMax = extentsBuff[2];
+				rightMost = nodeView;
+			}
 
-			netViewSnapshot.getMutableNetworkView().batch(netView -> {
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-					double zoom = Math.min(((double) networkCanvas.getWidth())
-							/ (((double) xMaxF) - ((double) xMinF)),
-							((double) networkCanvas.getHeight())
-									/ (((double) yMaxF) - ((double) yMinF)));
-					zoom = checkZoom(zoom, networkCanvas.scaleFactor);
-					
-					// Update view model.  Zoom Level should be modified.
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-				}
+			yMin = Math.min(yMin, extentsBuff[1]);
+			yMax = Math.max(yMax, extentsBuff[3]);
+		}
+
+		float xMinF = xMin - (getLabelWidth(leftMost) / 2);
+		float xMaxF = xMax + (getLabelWidth(rightMost) / 2);
+		float yMaxF = yMax;
+		float yMinF = yMin;
+
+		netViewSnapshot.getMutableNetworkView().batch(netView -> {
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				double zoom = Math.min(((double) networkCanvas.getWidth())
+						/ (((double) xMaxF) - ((double) xMinF)),
+						((double) networkCanvas.getHeight())
+								/ (((double) yMaxF) - ((double) yMinF)));
+				zoom = checkZoom(zoom, networkCanvas.getScaleFactor());
 				
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
-					double xCenter = (((double) xMinF) + ((double) xMaxF)) / 2.0d;
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
-				}
-				
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-					double yCenter = (((double) yMinF) + ((double) yMaxF)) / 2.0d;
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
-				}
-			});
-//		}
+				// Update view model.  Zoom Level should be modified.
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+			}
+			
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+				double xCenter = (((double) xMinF) + ((double) xMaxF)) / 2.0d;
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
+			}
+			
+			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+				double yCenter = (((double) yMinF) + ((double) yMaxF)) / 2.0d;
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
+			}
+		});
 			
 		updateSnapshotAndView();
 	}
@@ -740,7 +835,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				    || ((extentsBuff[2] > xMax) && (extentsBuff[1] < yMin))) {
 					
 					GeneralPath path = new GeneralPath();
-					networkCanvas.grafx.getNodeShape(nodeDetails.getShape(cyNode),
+					networkCanvas.getNodeShape(nodeDetails.getShape(cyNode),
 							extentsBuff[0], extentsBuff[1],
 							extentsBuff[2], extentsBuff[3], path);
 
@@ -787,7 +882,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				Long suid = under.nextExtents(extents);
 				View<CyNode> nodeView = netViewSnapshot.getNodeView(suid);
 				GeneralPath nodeShape = new GeneralPath();
-				networkCanvas.grafx.getNodeShape(nodeDetails.getShape(nodeView),
+				networkCanvas.getNodeShape(nodeDetails.getShape(nodeView),
 						extents[0], extents[1],
 						extents[2], extents[3], nodeShape);
 				Area pathArea = new Area(path);
@@ -814,69 +909,63 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	/**
-	 * Extents of the nodes.
-	 * Called by the birds-eye-view
+	 * Extents of the nodes. Called by the birds-eye-view
 	 */
 	public boolean getExtents(double[] extentsBuff) {
-//		synchronized (m_lock) {
-			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-			if(netViewSnapshot.getNodeCount() == 0) {
-				Arrays.fill(extentsBuff, 0.0);
-				return false;
-			}
-			netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff);
-			return true;
-//		}
+		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		if(netViewSnapshot.getNodeCount() == 0) {
+			Arrays.fill(extentsBuff, 0.0);
+			return false;
+		}
+		netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff);
+		return true;
 	}
 
 	public void xformComponentToNodeCoords(double[] coords) {
-		synchronized (dingLock) {
-			if (networkCanvas != null && networkCanvas.grafx != null)
-				networkCanvas.grafx.xformImageToNodeCoords(coords);
-		}
+		networkCanvas.xformImageToNodeCoords(coords);
 	}
 	
 	public void xformNodeToComponentCoords(double[] coords) {
-		synchronized (dingLock) {
-			if (networkCanvas != null && networkCanvas.grafx != null)
-				networkCanvas.grafx.xformNodetoImageCoords(coords);
-		}
+		networkCanvas.xformNodetoImageCoords(coords);
 	}
 
 	/**
 	 * This method is called by the BirdsEyeView to get a snapshot of the graphics.
 	 */
 	//TODO: Need to fix up scaling and sizing.  
-	public void drawSnapshot(VolatileImage img, GraphLOD lod, Paint bgPaint, 
+	public void drawSnapshot(VolatileImage img, GraphLOD lod, Color bgPaint, 
 	                         double xMin, double yMin, double xCenter,
 	                         double yCenter, double scaleFactor) {
-		// First paint the background
+		
+		// background color
+		Graphics2D g = img.createGraphics(); 
+		g.setPaint(bgPaint);
+		g.fillRect(0, 0, img.getWidth(), img.getHeight());
+		
 		backgroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 		
-		// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
 		final Set<VisualPropertyDependency<?>> dependencies =
 				vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
 
-		// synchronized (m_lock) {
-		try {
-			GraphRenderer.renderGraph(getViewModelSnapshot(), lod, nodeDetails,
-			                          edgeDetails, new GraphGraphics(img, false, false),
-			                          bgPaint, xCenter, yCenter, scaleFactor, haveZOrder, dependencies);
-		} catch (Exception e) { 
-			// We probably had a node or edge view removed out from underneath us.  Just quietly return, but
-			// set content changed so we redraw again
-			setContentChanged();
+		synchronized (dingLock) {
+			try {
+				GraphRenderer.renderGraph(getViewModelSnapshot(), lod, nodeDetails,
+				                          edgeDetails, new GraphGraphics(img, false, false),
+				                          xCenter, yCenter, scaleFactor, true, dependencies);
+			} catch (Exception e) { 
+				// We probably had a node or edge view removed out from underneath us.  Just quietly return, but
+				// set content changed so we redraw again
+				setContentChanged();
+			}
 		}
-		// }
 
-		// Finally, draw the foreground
 		foregroundCanvas.drawCanvas(img, xMin, yMin, xCenter, yCenter, scaleFactor);
 	}
 
 	public void drawSnapshot(
 		VolatileImage img,
 		GraphLOD lod,
-		Paint bgPaint, 
+		Color bgPaint, 
 		double xMin,
 		double yMin,
 		double xCenter,
@@ -892,7 +981,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		try {
 			synchronized (dingLock) {
-				renderSubgraph(new GraphGraphics(img, false, false), lod, bgPaint, xCenter, yCenter, scaleFactor, nodes, edges);
+				renderGraph(new GraphGraphics(img, false, false), lod, xCenter, yCenter, scaleFactor);//, nodes, edges);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -900,116 +989,25 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	
-	/**
-	 * MKTODO
-	 * This is commented out for now.
-	 * Typically this is called when the selection changes, and only the selected nodes are re-rendered.
-	 * This worsk by drawing just the selected nodes over top of the current canvas.
-	 * 
-	 * This is the following issues:
-	 * - Complex and heavyweight. The old solution required creating a separate spacial index and network.
-	 * - Doesn't respect z-order, the selected nodes are always rendered on top, causing them to pop to the top.
-	 * - Only happens for one frame. Anything else that triggers a render will overwrite the entire canvas.
-	 *   So the users selects some nodes, they pop up to the top, then they go back down again, it looks strange.
-	 *
-	 * I feel that we should look to alternate ways to optimize the renderer, and abandon the logic in this method.
-	 */
-	int renderSubgraph(GraphGraphics graphics, final GraphLOD lod, 
-	                   Paint bgColor, double xCenter, double yCenter, double scale,
-	                   List<View<CyNode>> nodeList, List<View<CyEdge>> edgeList) {
-
-		// If we're updateing more then 1/4 of the nodes or edges, just redraw the entire network to avoid
-		// the overhead of creating the SpacialIndex2D and CySubNetwork
-//		if (!largeModel) // || ((nodeList.size() + edgeList.size()) >= (m_drawPersp.getNodeCount() + m_drawPersp.getEdgeCount())/4))
-			return renderGraph(graphics, lod, bgColor, xCenter, yCenter, scale);
-//
-////		// Make a copy of the nodes and edges arrays to avoid a conflict with selection events
-////		// The assumption here is that these arrays are relatively small
-////		List<CyNode> nodes = new ArrayList<>(nodeList);
-////		List<CyEdge> edges = new ArrayList<>(edgeList);
-//
-//		// Make sure the graphics is initialized
-//		if (!graphics.isInitialized())
-//			graphics.clear(bgColor, xCenter, yCenter, scale);
-//
-//		Color bg = (Color)bgColor;
-//		
-//		if (bg != null)
-//			bg = new Color(bg.getRed(), bg.getBlue(), bg.getGreen(), 0);
-//
-//		// Create our private spacial index.
-////		final SpacialIndex2DFactory spacialFactory = serviceRegistrar.getService(SpacialIndex2DFactory.class);
-////		SpacialIndex2D sub_spacial = spacialFactory.createSpacialIndex2D();
-//
-//		// And our private subnetwork
-////		CySubNetwork net = new MinimalNetwork(SUIDFactory.getNextSUID());
-//
-//		for (View<CyEdge> edge : edgeList) {
-//			SnapshotEdgeInfo edgeInfo = getViewModelSnapshot().getEdgeInfo(edge);
-//			nodeList.add(edgeInfo.getTargetNodeView());
-//			nodeList.add(edgeInfo.getSourceNodeView());
-//		}
-//		
-////		for (CyNode node: nodes) {
-////			long idx = node.getSUID();
-////			if (m_spacial.exists(idx, m_extentsBuff, 0)) {
-////				if (!sub_spacial.exists(idx, new float[4], 0))
-////					sub_spacial.insert(idx, m_extentsBuff[0], m_extentsBuff[1], m_extentsBuff[2], m_extentsBuff[3], 0.0);
-//////				net.addNode(node);
-////			}
-////		}
-//		
-////		for (CyEdge edge: edges) {
-////			net.addEdge(edge);
-////		}
-//
-//		int lastRenderDetail = 0;
-//		
-//		try {
-//			// final VisualMappingManager vmm = serviceRegistrar.getService(VisualMappingManager.class);
-//			final Set<VisualPropertyDependency<?>> dependencies =
-//					vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
-//			
-////			synchronized (m_lock) {
-//				lastRenderDetail = GraphRenderer.renderGraph(this, sub_spacial, lod, m_nodeDetails, m_edgeDetails, hash,
-//						graphics, null, xCenter, yCenter, scale, haveZOrder, dependencies);
-////			}
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		
-//		setContentChanged(false);
-//		setViewportChanged(false);
-//		m_visualChanged = true;
-//
-//		return lastRenderDetail;
-	}
-	
-	/**
-	 *  @param setLastRenderDetail if true, "m_lastRenderDetail" will be updated, otherwise it will not be updated.
-	 */
-	int renderGraph(GraphGraphics graphics, final GraphLOD lod, Paint bgColor, double xCenter, double yCenter, double scale) {
+	int renderGraph(GraphGraphics graphics, final GraphLOD lod, double xCenter, double yCenter, double scale) {
 		int lastRenderDetail = 0;
 		
 		try {
-//			synchronized (m_lock) {
-			Set<VisualPropertyDependency<?>> dependencies =
-					vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
-				
-			lastRenderDetail = GraphRenderer.renderGraph(getViewModelSnapshot(),
-			  						     lod,
-			  						     nodeDetails,
-			  						     edgeDetails,
-			  						     graphics, bgColor, xCenter,
-			  						     yCenter, scale, haveZOrder,
-			  						     dependencies);
-//			}
+			synchronized (dingLock) {
+				Set<VisualPropertyDependency<?>> dependencies =
+						vmm.getVisualStyle(getViewModel()).getAllVisualPropertyDependencies();
+					
+				lastRenderDetail = GraphRenderer.renderGraph(getViewModelSnapshot(),
+				  						     lod,
+				  						     nodeDetails,
+				  						     edgeDetails,
+				  						     graphics, xCenter,
+				  						     yCenter, scale, true,
+				  						     dependencies);
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
-		setContentChanged(false);
-		setViewportChanged(false);
 		
 		return lastRenderDetail;
 	}
@@ -1063,7 +1061,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			// getComponent().print(g);
 
 			// from InternalFrameComponent
-			g.clipRect(0, 0, backgroundCanvas.getWidth(), backgroundCanvas.getHeight());
+			g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
 			backgroundCanvas.print(g);
 			networkCanvas.print(g);
 			foregroundCanvas.print(g);
@@ -1122,50 +1120,48 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		final double scale = shrink;
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		
-		invokeOnEDTAndWait(() -> {
-			// Save current sizes, zoom and viewport position
-			Dimension originalBgSize  = backgroundCanvas.getSize();
-			Dimension originalNetSize = networkCanvas.getSize();
-			Dimension originalFgSize  = foregroundCanvas.getSize();
-			double zoom = getZoom();
-			
-			CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
-			Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
-			Double centerY = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-			Double scaleFactor = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-			
-			// Create image to return
-			final Graphics g = image.getGraphics();
-	
-			if (!skipBackground) {
-				// Paint background canvas into image
-				backgroundCanvas.setSize(width, height);
-				backgroundCanvas.paint(g);
-			}
-			
-			// Paint inner canvas (network)
-			networkCanvas.setSize(width, height);
-			fitContent(true);
-			setZoom(getZoom() * scale);
-			networkCanvas.paint(g);
-			
-			// Paint foreground canvas
-			foregroundCanvas.setSize(width, height);
-			foregroundCanvas.paint(g);
-			
-			// Restore to to original size, zoom and viewport
-			backgroundCanvas.setSize(originalBgSize);
-			networkCanvas.setSize(originalNetSize);
-			foregroundCanvas.setSize(originalFgSize);
-			setZoom(zoom);
-			
-			CyNetworkView netView = getViewModel();
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
-			
-			updateSnapshotAndView();
-		});
+		// Save current sizes, zoom and viewport position
+		Dimension originalBgSize  = backgroundCanvas.getSize();
+		Dimension originalNetSize = networkCanvas.getSize();
+		Dimension originalFgSize  = foregroundCanvas.getSize();
+		double zoom = getZoom();
+		
+		CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
+		Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
+		Double centerY = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
+		Double scaleFactor = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
+		
+		// Create image to return
+		final Graphics g = image.getGraphics();
+
+		if (!skipBackground) {
+			// Paint background canvas into image
+			backgroundCanvas.setSize(width, height);
+			backgroundCanvas.paint(g);
+		}
+		
+		// Paint inner canvas (network)
+		networkCanvas.setSize(width, height);
+		fitContent(true);
+		setZoom(getZoom() * scale);
+		networkCanvas.paint(g);
+		
+		// Paint foreground canvas
+		foregroundCanvas.setSize(width, height);
+		foregroundCanvas.paint(g);
+		
+		// Restore to to original size, zoom and viewport
+		backgroundCanvas.setSize(originalBgSize);
+		networkCanvas.setSize(originalNetSize);
+		foregroundCanvas.setSize(originalFgSize);
+		setZoom(zoom);
+		
+		CyNetworkView netView = getViewModel();
+		netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
+		netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
+		netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
+		
+		updateSnapshotAndView();
 		
 		return image;
 	}
@@ -1222,14 +1218,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * This method is used by freehep lib to export network as graphics.
 	 */
 	public void print(Graphics g) {
-		boolean opaque = backgroundCanvas.isOpaque();
-		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
-		backgroundCanvas.setOpaque(!transparentBackground);
-		backgroundCanvas.print(g);
-		
-		backgroundCanvas.setOpaque(opaque); // restore the previous opaque value
-		networkCanvas.print(g);
-		foregroundCanvas.print(g);
+//		boolean opaque = backgroundCanvas.isOpaque();
+//		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+//		backgroundCanvas.setOpaque(!transparentBackground);
+//		backgroundCanvas.print(g);
+//		
+//		backgroundCanvas.setOpaque(opaque); // restore the previous opaque value
+//		networkCanvas.print(g);
+//		foregroundCanvas.print(g);
 	}
 
 	/**
@@ -1241,26 +1237,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		foregroundCanvas.print(g);
 	}
 
-	/**
-	 * Our implementation of Component setBounds(). If we don't do this, the
-	 * individual canvas do not get rendered.
-	 */
-	public void setBounds(int x, int y, int width, int height) {
-		// call reshape on each canvas
-		backgroundCanvas.setBounds(x, y, width, height);
-		networkCanvas.setBounds(x, y, width, height);
-		foregroundCanvas.setBounds(x, y, width, height);
-	
-		// If this is the first call to setBounds, load any annotations
-		if (!annotationsLoaded) {
-			annotationsLoaded = true;
-			cyAnnotator.loadAnnotations();
-		}
-	}
-
-	public void setSize(Dimension d) {
-		networkCanvas.setSize(d);
-	}
 
 	@Override
 	public Printable createPrintable() {

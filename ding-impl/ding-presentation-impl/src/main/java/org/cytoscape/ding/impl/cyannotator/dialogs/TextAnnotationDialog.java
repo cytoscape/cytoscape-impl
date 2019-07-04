@@ -90,7 +90,7 @@ public class TextAnnotationDialog extends JDialog {
 		
 		// Create the preview panel
 		preview = new TextAnnotationImpl(re, true);
-		preview.getComponent().setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
+		preview.setSize(PREVIEW_WIDTH - 10, PREVIEW_HEIGHT - 10);
 		PreviewPanel previewPanel = new PreviewPanel(preview);
 
 		textAnnotationPanel = new TextAnnotationPanel(mAnnotation, previewPanel);
@@ -153,18 +153,14 @@ public class TextAnnotationDialog extends JDialog {
 		}
 
 		// Apply
-		mAnnotation.addComponent(null);
-		mAnnotation.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
+		mAnnotation.setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 		// We need to have bounds or it won't render
-		mAnnotation.getComponent().setBounds(mAnnotation.getComponent().getBounds());
+		mAnnotation.setBounds(mAnnotation.getBounds());
 		mAnnotation.update();
 		cyAnnotator.addAnnotation(mAnnotation);
 		
 		mAnnotation.contentChanged();
 
 		cyAnnotator.postUndoEdit();
-		
-		// Update the canvas
-		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 	}
 }

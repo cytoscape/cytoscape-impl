@@ -1,7 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -14,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -98,7 +95,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 			}
 			
 			// We muck with the ZOrder directly, so we need to make sure we're on the EDT
-			ViewUtil.invokeOnEDTAndWait(() -> {
+//			ViewUtil.invokeOnEDTAndWait(() -> {
 //				// First, we need to make sure that this annotation is already registered and added to the canvas
 //				if (dMember.getCanvas() != null) {
 //					dMember.addComponent(dMember.getCanvas());
@@ -130,7 +127,7 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 //						//  java.lang.IllegalArgumentException: component and container should be in the same top-level window
 //						// getCanvas().setComponentZOrder(getComponent(), z);
 //					}
-			});
+//			});
 		}
 	}
 
@@ -152,24 +149,20 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 	@Override
 	public void removeAnnotation() {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			// Remove all of our children
-			for (DingAnnotation a: annotations) {
-				canvas.remove(a.getComponent());
-				cyAnnotator.removeAnnotation(a);
-			}
-			
-			annotations.clear();
+		// Remove all of our children
+		for (DingAnnotation a: annotations) {
+			canvas.remove(a);
+			cyAnnotator.removeAnnotation(a);
+		}
+		
+		annotations.clear();
 
-			// Now remove ourselves
-			canvas.remove(this);
-			cyAnnotator.removeAnnotation(this);
-			
-			if (parent != null)
-				parent.removeMember(this);
-			
-			canvas.repaint();
-		});
+		// Now remove ourselves
+		canvas.remove(this);
+		cyAnnotator.removeAnnotation(this);
+		
+		if (parent != null)
+			parent.removeMember(this);
 	}
 	
 	@Override
@@ -246,7 +239,6 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	 * 2) move each child
 	 * 3) reset the size of each child
 	 */
-	@Override
 	public void setSize(Dimension d) {
 		// Get our width
 		double width = getWidth();
@@ -266,17 +258,15 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 
 			// Now and move each of our children
 			for (DingAnnotation child: annotations) {
-				JComponent childComponent = child.getComponent();
-				double childX = childComponent.getX();
-				double childY = childComponent.getY();
-				double childWidth = childComponent.getWidth();
-				double childHeight = childComponent.getHeight();
+				double childX = child.getX();
+				double childY = child.getY();
+				double childWidth = child.getWidth();
+				double childHeight = child.getHeight();
 				double newX = (childX-x)*dx + x;
 				double newY = (childY-y)*dy + y;
 				double newWidth = childWidth*dx;
 				double newHeight = childHeight*dy;
-				childComponent.setLocation((int)Math.round(newX), (int)Math.round(newY));
-				child.getCanvas().modifyComponentLocation((int)Math.round(newX), (int)Math.round(newY), childComponent);
+				child.setLocation((int)Math.round(newX), (int)Math.round(newY));
 
 				if (child instanceof TextAnnotationImpl) {
 					TextAnnotation textChild = (TextAnnotation)child;
@@ -392,20 +382,18 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	private void updateBounds() {
-		invokeOnEDTAndWait(() -> {
-			Rectangle2D union = null;
+		Rectangle2D union = null;
 
-			for (DingAnnotation child : annotations) {
-				if (union == null)
-					union = child.getComponent().getBounds().getBounds2D();
-				else
-					union = union.createUnion(child.getComponent().getBounds().getBounds2D());
-			}
+		for (DingAnnotation child : annotations) {
+			if (union == null)
+				union = child.getBounds().getBounds2D();
+			else
+				union = union.createUnion(child.getBounds().getBounds2D());
+		}
 
-			if(union != null) {
-				setBounds(union.getBounds());
-			}
-		});
+		if(union != null) {
+			setBounds(union.getBounds());
+		}
 	}
 
 }

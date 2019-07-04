@@ -132,30 +132,31 @@ public class AnnotationManagerImpl implements AnnotationManager {
 		
 		DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 		
-		invokeOnEDTAndWait(() -> {
-			annotationsByView.forEach((view, annotationsByCanvas) -> {
-				annotationsByCanvas.forEach((canvasId, dingAnnotations) -> {
-					DRenderingEngine re = dingRenderer.getRenderingEngine(view);
-					
-					// The following code is a batch version of Annotation.removeAnnotation()
-					for (DingAnnotation a : dingAnnotations) {
-						GroupAnnotation parent = a.getGroupParent();
-						if (parent != null)
-							parent.removeMember(a);
-					}
+		annotationsByView.forEach((view, annotationsByCanvas) -> {
+			DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+			
+			annotationsByCanvas.forEach((canvasId, dingAnnotations) -> {
+				// The following code is a batch version of Annotation.removeAnnotation()
+				for (DingAnnotation a : dingAnnotations) {
+					GroupAnnotation parent = a.getGroupParent();
+					if (parent != null)
+						parent.removeMember(a);
+				}
 
-					List<DingAnnotation> arrows = getArrows(dingAnnotations);
-					
-					ArbitraryGraphicsCanvas canvas = (ArbitraryGraphicsCanvas)re.getCanvas(canvasId);
-					canvas.removeAnnotations(arrows);
-					canvas.removeAnnotations(dingAnnotations);
-					canvas.repaint();
+				List<DingAnnotation> arrows = getArrows(dingAnnotations);
+				
+				ArbitraryGraphicsCanvas canvas = (ArbitraryGraphicsCanvas)re.getCanvas(canvasId);
+				canvas.removeAnnotations(arrows);
+				canvas.removeAnnotations(dingAnnotations);
 
-					re.getCyAnnotator().removeAnnotations(arrows);
-					re.getCyAnnotator().removeAnnotations(dingAnnotations);
-				});
+				re.getCyAnnotator().removeAnnotations(arrows);
+				re.getCyAnnotator().removeAnnotations(dingAnnotations);
 			});
+			
+			re.updateView();
 		});
+		
+		
 		
 		// TODO
 //		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);

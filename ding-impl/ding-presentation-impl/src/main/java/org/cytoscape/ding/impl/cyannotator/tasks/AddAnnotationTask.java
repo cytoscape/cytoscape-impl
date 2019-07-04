@@ -65,7 +65,7 @@ public class AddAnnotationTask extends AbstractTask {
 						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
 						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
 					} else {
-						dialog.setLocationRelativeTo(re.getCanvas());
+						dialog.setLocationRelativeTo(re.getComponent());
 					}
 					
 					dialog.setVisible(true);

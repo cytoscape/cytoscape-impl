@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
@@ -63,9 +64,8 @@ import org.slf4j.LoggerFactory;
  * Swing component to display overview of the network.
  * 
  */
+@SuppressWarnings("serial")
 public final class BirdsEyeView extends Component implements RenderingEngine<CyNetwork> {
-	
-	private final static long serialVersionUID = 1202416511863994L;
 	
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
@@ -115,8 +115,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		this.re = Objects.requireNonNull(re);
 		this.registrar = Objects.requireNonNull(registrar);
 
-		m_cLis = new InnerContentChangeListener();
-		m_vLis = new InnerViewportChangeListener();
+		m_cLis = new BirdsEyeViewInnerContentChangeListener();
+		m_vLis = new BirdsEyeViewInnerViewportChangeListener();
 		
 		Color c = UIManager.getColor("Table.focusCellBackground");
 		VIEW_WINDOW_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
@@ -165,7 +165,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 	
 	private Rectangle2D getViewableRect() {
-		final Rectangle r = re.getCanvas().getBounds();
+		final Rectangle r = re.getBounds();
 		return new Rectangle2D.Double(r.x, r.y, r.width, r.height);
 	}
 
@@ -212,10 +212,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	public void update(Graphics g) {
 		re.getCanvas().ensureInitialized();
 
-		ArbitraryGraphicsCanvas foregroundCanvas = 
-		    (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
-		ArbitraryGraphicsCanvas backgroundCanvas = 
-		    (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+		ArbitraryGraphicsCanvas foregroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
+		ArbitraryGraphicsCanvas backgroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
 
 		updateBounds();
 
@@ -229,7 +227,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
 				m_myYCenter = (m_extents[1] + m_extents[3]) / 2.0d;
 				m_myScaleFactor = SCALE_FACTOR * 
-				                  Math.min(((double) getWidth()) / (m_extents[2] - m_extents[0]), 
+				                  Math.min(((double) getWidth())  / (m_extents[2] - m_extents[0]), 
 				                           ((double) getHeight()) / (m_extents[3] - m_extents[1]));
 			} else {
 				m_myXCenter = 0.0d;
@@ -247,14 +245,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				// TODO: at some point, we need to implement a different model of drawSnapshot that doesn't
 				// use the RTree, which isn't needed since we redraw everything anyways
 				if (re.isLargeModel()) {
-						// Run as a thread
-						if (redrawTask != null) {
-							redrawTask.cancel();
-						}
-						redrawTask = new UpdateImage(m_extents, m_myXCenter, m_myYCenter, m_myScaleFactor);
-						// System.out.println("Executing redraw");
-						redrawTimer.schedule(redrawTask, 10);
-						// System.out.println("redrawTask execution done");
+					// Run as a thread
+					if (redrawTask != null) {
+						redrawTask.cancel();
+					}
+					redrawTask = new UpdateImage(m_extents, m_myXCenter, m_myYCenter, m_myScaleFactor);
+					// System.out.println("Executing redraw");
+					redrawTimer.schedule(redrawTask, 10);
+					// System.out.println("redrawTask execution done");
 				} else {
 					// Need to create new image.  This is VERY expensive operation.
 					final GraphicsConfiguration gc = getGraphicsConfiguration();
@@ -300,7 +298,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		update(g);
 	}
 
-	private final class InnerContentChangeListener implements ContentChangeListener {
+	private final class BirdsEyeViewInnerContentChangeListener implements ContentChangeListener {
 		/**
 		 * Will be called when something is changed in the main view.
 		 */
@@ -311,7 +309,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		}
 	}
 
-	private final class InnerViewportChangeListener implements ViewportChangeListener {
+	private final class BirdsEyeViewInnerViewportChangeListener implements ViewportChangeListener {
 		
 		/**
 		 * Update the view if panned.
@@ -342,7 +340,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double halfWidth  = (double)getWidth() / 2.0d;
 				double halfHeight = (double)getHeight() / 2.0d;
 				
-				double centerX = ((m_lastXMousePos - halfWidth) / m_myScaleFactor) + m_myXCenter;
+				double centerX = ((m_lastXMousePos - halfWidth)  / m_myScaleFactor) + m_myXCenter;
 				double centerY = ((m_lastYMousePos - halfHeight) / m_myScaleFactor) + m_myYCenter;
 				
 				re.setCenter(centerX, centerY);

@@ -1,7 +1,5 @@
 package org.cytoscape.ding.impl;
 
-import java.awt.BorderLayout;
-
 import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 
@@ -62,21 +60,16 @@ public class DingRenderingEngineFactory implements RenderingEngineFactory<CyNetw
 		
 		if (container instanceof RootPaneContainer) {
 			RootPaneContainer rootPane = (RootPaneContainer) container;
-			InputHandlerGlassPane glassPane = re.getInputHandlerGlassPane();
-			rootPane.setGlassPane(glassPane);
-			rootPane.setContentPane(new InternalFrameComponent(rootPane.getLayeredPane(), re));
-			glassPane.setVisible(true);
+			re.install(rootPane);
 		} else if (container instanceof JComponent){
 			JComponent component = (JComponent) container;
-			component.setLayout(new BorderLayout());
-			component.add(re.getCanvas(), BorderLayout.CENTER);
+			re.install(component);
 		} else {
-			throw new IllegalArgumentException("visualizationContainer object must be of type JComponent or RootPaneContainer");
+			throw new IllegalArgumentException("container object must be of type JComponent or RootPaneContainer");
 		}
 		
 		return re;
 	}
-
 	
 	@Override
 	public VisualLexicon getVisualLexicon() {

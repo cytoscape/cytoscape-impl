@@ -46,7 +46,6 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	
@@ -68,8 +67,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 		this.text = DEF_TEXT;
-		Graphics2D graphics = (Graphics2D) this.getGraphics();
-		super.setSize(getTextWidth(graphics) + 4, getTextHeight(graphics) + 4);
+		super.setSize(getTextWidth() + 4, getTextHeight() + 4);
 	}
 
 	public BoundedTextAnnotationImpl(DRenderingEngine re, double width, double height) {
@@ -118,9 +116,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			name = text.trim();
 		
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
-			Graphics2D graphics = (Graphics2D) this.getGraphics();
-			double width = getTextWidth(graphics) + 8;
-			double height = getTextHeight(graphics) + 8;
+			double width = getTextWidth() + 8;
+			double height = getTextHeight() + 8;
 			super.setSize(width, height);
 		}
 	}
@@ -154,27 +151,26 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void fitShapeToText() {
-		Graphics2D graphics = (Graphics2D)this.getGraphics();
-		double width = getTextWidth(graphics)+8;
-		double height = getTextHeight(graphics)+8;
+		double width = getTextWidth()+8;
+		double height = getTextHeight()+8;
 		shapeIsFit = true;
 
 		// Different depending on the type...
 		ShapeType shapeType = getShapeTypeInt();
 		switch (shapeType) {
 		case ELLIPSE:
-			width = getTextWidth(graphics)*3/2+8;
-			height = getTextHeight(graphics)*2;
+			width = getTextWidth()*3/2+8;
+			height = getTextHeight()*2;
 			break;
 		case TRIANGLE:
-			width = getTextWidth(graphics)*3/2+8;
-			height = getTextHeight(graphics)*2;
+			width = getTextWidth()*3/2+8;
+			height = getTextHeight()*2;
 			break;
 		case PENTAGON:
 		case HEXAGON:
 		case STAR5:
 		case STAR6:
-			width = getTextWidth(graphics)*9/7+8;
+			width = getTextWidth()*9/7+8;
 			height = width;
 			break;
 		}
@@ -246,14 +242,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		final Composite originalComposite = g2.getComposite();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		int halfWidth = (int)(getWidth()-getTextWidth(g2))/2;
-		int halfHeight = (int)(getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
-
-		if(usedForPreviews) {
-			g2.drawString(text, halfWidth, halfHeight);
-			g2.setComposite(originalComposite);
-			return;
-		}
+		int halfWidth  = (int)(getWidth()-getTextWidth())/2;
+		int halfHeight = (int)(getHeight()+getTextHeight()/2)/2; // Note, this is + because we start at the baseline
 
 		g2.drawString(text, halfWidth, halfHeight);
 		g2.setComposite(originalComposite);
@@ -389,33 +379,17 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth((Graphics2D) this.getGraphics()), shapeWidth);
-		double yBound = Math.max(getTextHeight((Graphics2D) this.getGraphics()), shapeHeight);
+		double xBound = Math.max(getTextWidth(), shapeWidth);
+		double yBound = Math.max(getTextHeight(), shapeHeight);
 		setSize(xBound + 4, yBound + 4);
 	}
 
-	double getTextWidth(Graphics2D g2) {
+	double getTextWidth() {
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
-		/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.stringWidth(text);
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(text.length()*fontSize);
-		*/
 	}
 
-	double getTextHeight(Graphics2D g2) {
+	double getTextHeight() {
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
-		/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.getHeight();
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(fontSize*1.5);
-		*/
 	}
 
 	Font getArgFont(Map<String, String> argMap) {

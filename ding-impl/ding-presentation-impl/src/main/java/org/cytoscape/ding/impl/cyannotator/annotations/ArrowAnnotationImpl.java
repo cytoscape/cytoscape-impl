@@ -159,7 +159,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			Paint targetColor,
 			float targetSize
 	) {
-		super(re, source.getComponent().getX(), source.getComponent().getY(), re.getZoom());
+		super(re, source.getX(), source.getY(), re.getZoom());
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -633,14 +633,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			return new Line2D.Double(10.0, shapeHeight/2, shapeWidth-20.0, shapeHeight/2);
 
 		Point2D targetPoint = null;
-		Point2D sourceCenter = centerPoint(source.getComponent().getBounds());
+		Point2D sourceCenter = centerPoint(source.getBounds());
 		
 		if (target instanceof Point2D) {
 			targetPoint = ViewUtils.getComponentCoordinates(re, ((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {
 			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds
-			Rectangle targetBounds = a.getComponent().getBounds();
+			Rectangle targetBounds = a.getBounds();
 			// Find the closest face and return
 			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
 		} else if (target instanceof CyNode) {
@@ -650,7 +650,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
 		}
 
-		Rectangle sourceBounds = source.getComponent().getBounds();
+		Rectangle sourceBounds = source.getBounds();
 		Point2D sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
 		
 		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;

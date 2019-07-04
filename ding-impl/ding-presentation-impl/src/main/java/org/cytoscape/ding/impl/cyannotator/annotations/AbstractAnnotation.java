@@ -1,14 +1,14 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,14 +16,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingComponent;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -52,8 +51,7 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public abstract class AbstractAnnotation extends JComponent implements DingAnnotation {
+public abstract class AbstractAnnotation extends DingComponent implements DingAnnotation {
 	
 	protected boolean selected;
 
@@ -81,6 +79,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 	protected Map<String, String> savedArgMap;
 	protected double zOrder;
+	
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	/**
 	 * This constructor is used to create an empty annotation
@@ -171,20 +171,16 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		    (cnvs.equals(FOREGROUND) && canvasName.equals(DRenderingEngine.Canvas.FOREGROUND_CANVAS)))
 			return;
 
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			if (!(this instanceof ArrowAnnotationImpl)) {
-				for (ArrowAnnotation arrow: arrowList) {
-					if (arrow instanceof DingAnnotation)
-						((DingAnnotation)arrow).changeCanvas(cnvs);
-				}
+		if (!(this instanceof ArrowAnnotationImpl)) {
+			for (ArrowAnnotation arrow: arrowList) {
+				if (arrow instanceof DingAnnotation)
+					((DingAnnotation)arrow).changeCanvas(cnvs);
 			}
-			
-			canvas.remove(this);	// Remove ourselves from the current canvas
-			canvas.repaint();  	// update the canvas
-			setCanvas(cnvs);		// Set the new canvas
-			canvas.add(this);	// Add ourselves		
-			canvas.repaint();  	// update the canvas
-		});
+		}
+		
+		canvas.remove(this);	// Remove ourselves from the current canvas
+		setCanvas(cnvs);		// Set the new canvas
+		canvas.add(this);	// Add ourselves		
 	}
 
 	@Override
@@ -197,10 +193,6 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return canvas;
 	}
 
-	public JComponent getComponent() {
-		return (JComponent)this;
-	}
-
 	public UUID getUUID() {
 		return uuid;
 	}
@@ -209,28 +201,27 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return zOrder;
 	}
 
-	@Override
-	public void addComponent(final JComponent cnvs) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			if (inCanvas(canvas) && (canvas == cnvs)) {
-				canvas.setComponentZOrder(this, (int)zOrder);
-				return;
-			}
-
-			if (cnvs == null && canvas != null) {
-	
-			} else if (cnvs == null) {
-				setCanvas(FOREGROUND);
-			} else {
-				if (cnvs.equals(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS)))
-					setCanvas(BACKGROUND);
-				else
-					setCanvas(FOREGROUND);
-			}
-			canvas.add(this.getComponent());
-			canvas.setComponentZOrder(this, (int)zOrder);
-		});
-	}
+//	public void addComponent(final JComponent cnvs) {
+//		ViewUtil.invokeOnEDTAndWait(() -> {
+//			if (inCanvas(canvas) && (canvas == cnvs)) {
+//				canvas.setComponentZOrder(this, (int)zOrder);
+//				return;
+//			}
+//
+//			if (cnvs == null && canvas != null) {
+//	
+//			} else if (cnvs == null) {
+//				setCanvas(FOREGROUND);
+//			} else {
+//				if (cnvs.equals(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS)))
+//					setCanvas(BACKGROUND);
+//				else
+//					setCanvas(FOREGROUND);
+//			}
+//			canvas.add(this.getComponent());
+//			canvas.setComponentZOrder(this, (int)zOrder);
+//		});
+//	}
     
 	@Override
 	public CyAnnotator getCyAnnotator() {return cyAnnotator;}
@@ -273,46 +264,15 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	@Override
-	public void setLocation(final int x, final int y) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			super.setLocation(x, y);
-			canvas.modifyComponentLocation(x, y, this);
-		});
-	}
-
-	@Override
-	public void setSize(final int width, final int height) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			super.setSize(width, height);
-		});
-	}
-
-	@Override
-	public Point getLocation() {
-		return super.getLocation();
-	}
-
-	@Override
-	public boolean contains(int x, int y) {
-		if (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight())
-			return true;
-		return false;
-	}
-
-	@Override
 	public void removeAnnotation() {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			canvas.remove(this);
-			cyAnnotator.removeAnnotation(this);
-			for (ArrowAnnotation arrow: arrowList) {
-				if (arrow instanceof DingAnnotation)
-					((DingAnnotation)arrow).removeAnnotation();
-			}
-			if (parent != null)
-				parent.removeMember(this);
-	
-			canvas.repaint();
-		});
+		canvas.remove(this);
+		cyAnnotator.removeAnnotation(this);
+		for (ArrowAnnotation arrow: arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation)arrow).removeAnnotation();
+		}
+		if (parent != null)
+			parent.removeMember(this);
 	}
 
 	
@@ -328,7 +288,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 
 		// Now, switch back to component coordinates
 		Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getRenderingEngine(), newBounds);
-		getComponent().setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
+		setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
 		resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
 	}
 	
@@ -403,7 +363,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			cyAnnotator.setSelectedAnnotation(this, selected);
 			
 			if (firePropertyChangeEvent)
-				firePropertyChange("selected", !selected, selected);
+				pcs.firePropertyChange("selected", !selected, selected);
 		}
 	}
 
@@ -440,7 +400,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		if (parent != null)
 			argMap.put(PARENT_ID, parent.getUUID().toString());
 
-		int zOrder = canvas.getComponentZOrder(getComponent());
+		int zOrder = canvas.getZOrder(this);
 		argMap.put(Z, Integer.toString(zOrder));
 
 		return argMap;
@@ -458,7 +418,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	@Override
 	public void update() {
 		updateAnnotationAttributes();
-		getCanvas().repaint();
+//		getCanvas().repaint();
 	}
 
 	// Component overrides
@@ -521,8 +481,8 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			return;
 		}
 
-		Point2D mouse = ViewUtils.getNodeCoordinates(re, offset.getX(), offset.getY());
-		Point2D current = ViewUtils.getNodeCoordinates(re, getLocation().getX(), getLocation().getY());
+		Point2D mouse   = ViewUtils.getNodeCoordinates(re, offset.getX(), offset.getY());
+		Point2D current = ViewUtils.getNodeCoordinates(re, getX(), getY());
 
 		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
 	}
@@ -547,11 +507,20 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return d;
 	}
 
-	public boolean inCanvas(ArbitraryGraphicsCanvas cnvs) {
-		for (Component c: cnvs.getComponents()) {
-			if (c == this) return true;
-		}
-		return false;
+
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(listener);
 	}
 
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
+	}
+
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
+	}
 }

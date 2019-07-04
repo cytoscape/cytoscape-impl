@@ -151,14 +151,10 @@ public class LoadImageDialog extends JDialog {
 					url, image, re.getZoom(), cgm
 			);
 
-			newOne.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
-			newOne.addComponent(null);
+			newOne.setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 			newOne.update();
 			cyAnnotator.addAnnotation(newOne);
 			
-			// Update the canvas
-			re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
-
 			// Set this shape to be resized
 			cyAnnotator.resizeShape(newOne);
 
@@ -176,7 +172,7 @@ public class LoadImageDialog extends JDialog {
 					width = 100;
 				}
 				
-				Point start = newOne.getComponent().getLocationOnScreen();
+				Point start = re.getComponent().getLocationOnScreen();
 				Robot robot = new Robot();
 				robot.mouseMove((int) start.getX() + (int) width, (int) start.getY() + (int) height);
 			} catch (Exception e) {

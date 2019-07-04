@@ -124,7 +124,7 @@ public final class ViewUtil {
 	}
 	
 	public static Window getActiveWindow(DRenderingEngine re) {
-		Window window = SwingUtilities.getWindowAncestor(re.getCanvas());
+		Window window = SwingUtilities.getWindowAncestor(re.getComponent());
 		if (window == null)
 			window = FocusManager.getCurrentManager().getActiveWindow();
 		return window;

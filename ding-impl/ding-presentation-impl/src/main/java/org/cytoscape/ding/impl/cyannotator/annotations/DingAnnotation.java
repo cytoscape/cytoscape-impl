@@ -2,11 +2,11 @@ package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
@@ -39,14 +39,11 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  */
 
 public interface DingAnnotation extends Annotation {
-
+	
+	
 	void changeCanvas(String canvas);
 
 	ArbitraryGraphicsCanvas getCanvas();
-
-	JComponent getComponent();
-
-	void addComponent(JComponent canvas);
 
 	CyAnnotator getCyAnnotator();
 
@@ -62,8 +59,10 @@ public interface DingAnnotation extends Annotation {
 
 	// Overrides of Component
 	void paint(Graphics g);
-
-	Point getLocation();
+	
+	default void print(Graphics g) {
+		paint(g);
+	}
 
 	// Group support
 	void setGroupParent(GroupAnnotation parent);
@@ -84,4 +83,22 @@ public interface DingAnnotation extends Annotation {
 	void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
 	
 	void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
+
+	boolean contains(int x, int y);
+
+	Rectangle getBounds();
+
+	int getX();
+
+	int getY();
+
+	int getWidth();
+
+	int getHeight();
+
+	void setLocation(int x, int y);
+
+	Point getLocation();
+
+	void setBounds(int i, int j, int width, int height);
 }

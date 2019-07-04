@@ -1,10 +1,7 @@
 package org.cytoscape.ding.impl;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
-
-import javax.swing.JComponent;
 
 import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 
@@ -40,22 +37,9 @@ import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
  * Currently (9/7/06), two classes will extend DingCanves, org.cytoscape.ding.impl.InnerCanvas
  * and org.cytoscape.ding.impl.ArbitraryGraphicsCanvas.
  */
-public abstract class DingCanvas extends JComponent {
+public abstract class DingCanvas extends DingComponent {
 	
-	private static final long serialVersionUID = -789701521899087090L;
-
-	/**
-	 * ref to image we maintain
-	 */
-	protected Image m_img;
-
-	/**
-	 * ref to our background color
-	 */
-	protected Color m_backgroundColor;
-
-	protected final Canvas canvasId;
-
+	private final Canvas canvasId;
 	
 	public DingCanvas(Canvas canvasId) {
 		this.canvasId = canvasId;
@@ -65,29 +49,14 @@ public abstract class DingCanvas extends JComponent {
 		return canvasId;
 	}
 	
-	@Override
-	public Color getBackground() {
-		return m_backgroundColor;
-	}
-
-	@Override
-	public void setBackground(Color backgroundColor) {
-		m_backgroundColor = backgroundColor;
-	}
-
-	/**
-	 * Returns the image maintained by the canvas.
-	 *
-	 * @return Image
-	 */
-	public Image getImage() {
-		return m_img;
-	}
-
-	/**
-	 * Method used to print canvas without using image imposter.
-	 */
+	public abstract Image getImage();
+	
+	public abstract void paint(Graphics g);
+	
+	public abstract void print(Graphics g);
+	
 	public void printNoImposter(Graphics g) {
 		print(g);
 	}
+	
 }

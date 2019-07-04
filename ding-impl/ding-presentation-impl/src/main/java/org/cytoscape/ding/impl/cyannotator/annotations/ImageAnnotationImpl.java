@@ -226,8 +226,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			height = (int)resizedImage.getHeight();
 		}
 		resizedImage=resizeImage((int)width, (int)height);
-		if (!isUsedForPreviews())
-			getCanvas().repaint();
 		update();
 	}
 
@@ -299,8 +297,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		// Resize the image
 		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
-		if (!isUsedForPreviews())
-			getCanvas().repaint();
 	}
 
 	@Override
@@ -377,7 +373,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 				BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), 
 				                                           BufferedImage.TYPE_INT_RGB);
 				Graphics2D g = rgbImage.createGraphics();
-				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), this);
+				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null); // TODO
 				source = rgbImage;
 			}
 			adjustedImage = new BufferedImage(image.getWidth(), image.getHeight(), 
@@ -406,7 +402,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 
-		g.drawImage(adjustedImage, 0, 0, width, height, this);
+		g.drawImage(adjustedImage, 0, 0, width, height, null);
 		g.dispose();
 		return newImage;
 	}
@@ -471,7 +467,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
 		g2.setComposite(ac);
-		g2.drawImage(resizedImage, x+border+1, y+border+1, this);
+		g2.drawImage(resizedImage, x+border+1, y+border+1, null);
 		super.paint(g);
 	}
 

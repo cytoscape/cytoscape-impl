@@ -13,8 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JComponent;
-
+import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -114,14 +113,14 @@ public class AnnotationTree {
 		int[] zf = {0}; // foreground canvas z-order
 		foregroundTree.depthFirstTraversal(node -> {
 			DingAnnotation da = (DingAnnotation) node.getAnnotation();
-			da.getCanvas().setComponentZOrder(da.getComponent(), zf[0]++);
+			da.getCanvas().setZOrder(da, zf[0]++);
 		});
 		
 		int[] zb = {0};
 		backgroundTree.depthFirstTraversal(node -> {
 			DingAnnotation da = (DingAnnotation) node.getAnnotation();
 			if(!(da instanceof GroupAnnotation)) {
-				da.getCanvas().setComponentZOrder(da.getComponent(), zb[0]++);
+				da.getCanvas().setZOrder(da, zb[0]++);
 			}
 		});
 	}
@@ -298,10 +297,10 @@ public class AnnotationTree {
 			if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
 				DingAnnotation da1 = (DingAnnotation) a1;
 				DingAnnotation da2 = (DingAnnotation) a2;
-				JComponent canvas1 = da1.getCanvas();
-				JComponent canvas2 = da2.getCanvas();
-				int z1 = canvas1.getComponentZOrder(da1.getComponent());
-				int z2 = canvas2.getComponentZOrder(da2.getComponent());
+				ArbitraryGraphicsCanvas canvas1 = da1.getCanvas();
+				ArbitraryGraphicsCanvas canvas2 = da2.getCanvas();
+				int z1 = canvas1.getZOrder(da1);
+				int z2 = canvas2.getZOrder(da2);
 				if(z1 >= 0 && z2 >= 0) {
 					return Integer.compare(z1, z2);
 				} else {

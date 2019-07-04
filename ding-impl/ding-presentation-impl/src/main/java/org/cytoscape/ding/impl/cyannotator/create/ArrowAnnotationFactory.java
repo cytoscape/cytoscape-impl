@@ -65,7 +65,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		DingAnnotation annotation = cyAnnotator.getAnnotationAt(location);
 		
 		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
-			JOptionPane.showMessageDialog(re.getCanvas(), "Please click another annotation.");
+			JOptionPane.showMessageDialog(re.getInputHandlerGlassPane(), "Please click another annotation.");
 			return null;
 		}
 		

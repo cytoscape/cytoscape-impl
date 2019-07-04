@@ -82,13 +82,11 @@ public class NVLTFActionSupport {
 			CyNetworkView view = registrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 			DRenderingEngine re = registrar.getService(DingRenderer.class).getRenderingEngine(view);
 
-			// Get the canvas component. We need to use the foreground canvas because its
-			// on top and it's the only one that provides the mouse position
-			Component foregroundCanvas = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+			// We need to use the glass pane  because its on top and it's the only one that provides the mouse position.
+			Component foregroundCanvas = re.getInputHandlerGlassPane();
 
 			// Now get the current mouse position
 			Point2D javaPt = foregroundCanvas.getMousePosition();
-			
 			if (javaPt == null)
 				javaPt = new Point2D.Double(0.0, 0.0);
 

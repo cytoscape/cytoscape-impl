@@ -186,20 +186,16 @@ public class ArrowAnnotationDialog extends JDialog {
 			return;
 		}
 
-		annotation.addComponent(null);
 		annotation.setSource(this.source);
 		annotation.update();
 		cyAnnotator.addAnnotation(annotation);
-
-		// Update the canvas
-		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.positionArrow(annotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = annotation.getComponent().getLocationOnScreen();
+			Point start = re.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
 			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {

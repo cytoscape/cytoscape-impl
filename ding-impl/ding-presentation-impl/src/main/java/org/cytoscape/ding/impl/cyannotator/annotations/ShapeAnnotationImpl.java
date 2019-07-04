@@ -4,9 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.geom.Rectangle2D;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +41,6 @@ import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnnotation {
 	
 	private ShapeType shapeType;
@@ -200,14 +197,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		setSize((int) (shapeWidth + borderWidth * 2 * getZoom()), (int) (shapeHeight + borderWidth * 2 * getZoom()));
 	}
 
-	@Override
-	public Rectangle getBounds() {
-		return new Rectangle(getX(), getY(), getWidth(), getHeight());
-	}
-
-	public Rectangle2D getBounds2D() {
-		return new Rectangle2D.Double(getX(), getY(), getWidth(), getHeight());
-	}
 
 	@Override
 	public Shape getShape() {
@@ -296,7 +285,7 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
 		super.drawAnnotation(g, x, y, scaleFactor);
 
-		int width = (int) (shapeWidth * scaleFactor / getZoom());
+		int width  = (int) (shapeWidth  * scaleFactor / getZoom());
 		int height = (int) (shapeHeight * scaleFactor / getZoom());
 
 		double savedBorder = borderWidth;
@@ -315,9 +304,9 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		super.paint(g);
 
 		if (canvas.isPrinting())
-			GraphicsUtilities.drawShape(g, 0, 0, getWidth() - 1, getHeight() - 1, this, true);
+			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, true);
 		else
-			GraphicsUtilities.drawShape(g, 0, 0, getWidth() - 1, getHeight() - 1, this, false);
+			GraphicsUtilities.drawShape(g, getX(), getY(), getWidth() - 1, getHeight() - 1, this, false);
 	}
 
 	@Override
@@ -340,7 +329,6 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 		update();
 	}
 
-	@Override
 	public void setSize(Dimension d) {
 		setSize(d.getWidth(), d.getHeight());
 		update();

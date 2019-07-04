@@ -9,6 +9,7 @@ import static java.awt.event.KeyEvent.VK_RIGHT;
 import static java.awt.event.KeyEvent.VK_UP;
 import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.BACKGROUND_CANVAS;
 import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.FOREGROUND_CANVAS;
+import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.NETWORK_CANVAS;
 import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
@@ -21,7 +22,6 @@ import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -100,9 +100,9 @@ public class InputHandlerGlassPane extends JComponent {
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
 
-	private final DingCanvas  backgroundCanvas;
+	private final ArbitraryGraphicsCanvas backgroundCanvas;
 	private final InnerCanvas networkCanvas;
-	private final DingCanvas  foregroundCanvas;
+	private final ArbitraryGraphicsCanvas foregroundCanvas;
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		// MKTODO make sure undo works for everything
@@ -111,9 +111,9 @@ public class InputHandlerGlassPane extends JComponent {
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
 		
-		this.backgroundCanvas = re.getCanvas(BACKGROUND_CANVAS);
-		this.networkCanvas    = re.getCanvas();
-		this.foregroundCanvas = re.getCanvas(FOREGROUND_CANVAS);
+		this.backgroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(BACKGROUND_CANVAS);
+		this.networkCanvas    = (InnerCanvas) re.getCanvas(NETWORK_CANVAS);
+		this.foregroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(FOREGROUND_CANVAS);
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
@@ -196,7 +196,7 @@ public class InputHandlerGlassPane extends JComponent {
 				deleteSelectedNodesAndEdges();
 			}
 			
-			networkCanvas.repaint();
+			re.updateView();
 		}
 		
 		@Override
@@ -219,11 +219,12 @@ public class InputHandlerGlassPane extends JComponent {
 			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 			
 			for (DingAnnotation annotation : annotationSelection) {
-				Component c = annotation.getComponent();
-				int x = c.getX(), y = c.getY();
+				int x = annotation.getX();
+				int y = annotation.getY();
 				if (annotation instanceof ShapeAnnotationImpl && e.isShiftDown()) {
 					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)annotation;
-					int width = c.getWidth(), height = c.getHeight();
+					int width  = annotation.getWidth();
+					int height = annotation.getHeight();
 					int borderWidth = (int)sa.getBorderWidth(); // We need to take this into account
 					if (code == VK_UP) {
 						height -= move*2; width -= borderWidth*2;
@@ -247,10 +248,10 @@ public class InputHandlerGlassPane extends JComponent {
 						x+=move;
 
 					//Adjust the locations of the selected annotations
-					annotation.getComponent().setLocation(x,y);
+					annotation.setLocation(x,y);
 				}
 				annotation.update();
-				annotation.getCanvas().repaint();	
+				re.updateView();
 			}
 		}
 		
@@ -360,7 +361,7 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
-			networkCanvas.adjustZoom(e.getWheelRotation());
+			re.zoom(e.getWheelRotation());
 		}
 	}
 
@@ -575,7 +576,7 @@ public class InputHandlerGlassPane extends JComponent {
 			
 			hit = mousePressedCheckHit(e);
 			if(hit) {
-				networkCanvas.repaint();
+				re.updateView();
 				e.consume(); // no selection rectangle or lasso
 			} else if(!isAdditiveSelect(e)) {
 				deselectAllOnRelease = true;
@@ -686,7 +687,7 @@ public class InputHandlerGlassPane extends JComponent {
 			} 
 
 			if(toggle != Toggle.NOCHANGE)
-				annotation.getCanvas().repaint();
+				re.updateView();
 			
 			return toggle;
 		}
@@ -804,7 +805,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			mousePressedPoint = null;
-			networkCanvas.repaint();
+			re.updateView();
 			
 			if(annotationMovingEdit != null && moveNodesEdit != null) {
 				CompositeCyEdit compositeEdit = new CompositeCyEdit("Move", registrar);
@@ -853,7 +854,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			mouseDraggedHandleNodesAndEdges(e);
-			networkCanvas.repaint();
+			re.updateView();
 		}
 
 		private void mouseDraggedHandleNodesAndEdges(MouseEvent e) {
@@ -1006,7 +1007,7 @@ public class InputHandlerGlassPane extends JComponent {
 				resizeAnnotation.setLocation((int)bounds.getX(), (int)bounds.getY());
 				resizeAnnotation.resizeAnnotation(bounds.getWidth(), bounds.getHeight());
 				resizeAnnotation.update();
-				resizeAnnotation.getCanvas().repaint();
+				re.updateView();
 			} else if (repositionAnnotation != null) {
 				Point2D mousePoint = new Point2D.Double(mouseX, mouseY);
 
@@ -1030,7 +1031,7 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 
 				repositionAnnotation.update();
-				repositionAnnotation.getCanvas().repaint();
+				re.updateView();
 			}
 		}
 		
@@ -1259,6 +1260,7 @@ public class InputHandlerGlassPane extends JComponent {
 				
 				double deltaX = oldX - newX;
 				double deltaY = oldY - newY;
+				
 				re.pan(deltaX, deltaY);
 			}
 		}

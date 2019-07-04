@@ -336,8 +336,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		final Composite originalComposite = g2.getComposite();
 		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		int halfWidth = (int)((double)getWidth()-getTextWidth(g2))/2;
-		int halfHeight = (int)((double)getHeight()+getTextHeight(g2)/2.0)/2; // Note, this is + because we start at the baseline
+		int halfWidth  = (int)((double)getWidth()-getTextWidth())/2;
+		int halfHeight = (int)((double)getHeight()+getTextHeight()/2.0)/2; // Note, this is + because we start at the baseline
 
 		if(usedForPreviews) {
 			g2.drawString(text, halfWidth, halfHeight);
@@ -370,14 +370,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	int getAnnotationWidth() {
-		return (int) (getTextWidth((Graphics2D) this.getGraphics()) + 1.0);
+		return (int) (getTextWidth() + 1.0);
 	}
 
 	int getAnnotationHeight() {
-		return (int)(getTextHeight((Graphics2D)this.getGraphics())+1.0);
+		return (int)(getTextHeight()+1.0);
 	}
 
-	double getTextWidth(Graphics2D g2) {
+	double getTextWidth() {
 		if (text == null) return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
 /*
@@ -390,7 +390,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 */
 	}
 
-	double getTextHeight(Graphics2D g2) {
+	double getTextHeight() {
 		if (text == null) return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
 /*

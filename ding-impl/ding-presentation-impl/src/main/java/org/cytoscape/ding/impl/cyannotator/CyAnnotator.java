@@ -2,7 +2,6 @@ package org.cytoscape.ding.impl.cyannotator;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.Component;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -27,7 +26,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingCanvas;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
@@ -106,7 +104,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		this.backGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
 		this.networkCanvas = re.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
-		annotationSelection = new AnnotationSelection(this);
+		this.annotationSelection = new AnnotationSelection(this);
 		
 		initListeners();
 	}
@@ -220,12 +218,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
  	 * Find all of our annotations that are at this point.  Return the top annotation
  	 * (the one with the lowest Z value) if there are more than one.
  	 */
-	private DingAnnotation getComponentAt(DingCanvas cnvs, int x, int y) {
+	private DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		
 		for (DingAnnotation a : annotationSet) {
-			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
-				if ((top == null) || (cnvs.getComponentZOrder(top.getComponent()) > cnvs.getComponentZOrder(a.getComponent()))) {
+			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
+				if ((top == null) || (cnvs.getZOrder(top) > cnvs.getZOrder(a))) {
 					top = a;
 				}
 			}
@@ -236,11 +234,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	/**
  	 * Find all of our annotations that are at this point. 
  	 */
-	private List<DingAnnotation> getComponentsAt(DingCanvas cnvs, int x, int y) {
+	private List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
 
 		for (DingAnnotation a : annotationSet) {
-			if (a.getCanvas().equals(cnvs) && a.getComponent().contains(x, y)) {
+			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
 				// Make sure to find the parent if this is a group
 				while (a.getGroupParent() != null) {
 					a = (DingAnnotation) a.getGroupParent();
@@ -264,7 +262,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return a;
 	}
 	
-	public DingAnnotation getAnnotationAt(DingCanvas canvas, Point2D position) {
+	public DingAnnotation getAnnotationAt(ArbitraryGraphicsCanvas canvas, Point2D position) {
 		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
 		if(a != null) {
 			while(a.getGroupParent() != null) {
@@ -284,7 +282,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		List<DingAnnotation> anns = new ArrayList<>();
 		for (Annotation ann: getAnnotations()) {
 			DingAnnotation d = (DingAnnotation)ann;
-			Rectangle2D bounds = d.getComponent().getBounds();
+			Rectangle2D bounds = d.getBounds();
 			if (d.getGroupParent() == null && rect.contains(bounds))
 				anns.add(d);
 		}
@@ -295,7 +293,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		List<DingAnnotation> anns = new ArrayList<>();
 		for (Annotation ann: getAnnotations()) {
 			DingAnnotation d = (DingAnnotation)ann;
-			Rectangle2D bounds = d.getComponent().getBounds();
+			Rectangle2D bounds = d.getBounds();
 			if(d.getGroupParent() == null && path.intersects(bounds))
 				anns.add(d);
 		}
@@ -422,37 +420,24 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return annotationSet.contains(a);
 	}
 
-	public void setSelectedAnnotation(final DingAnnotation a, final boolean selected) {
-		invokeOnEDT(() -> {
-			if (selected) {
-				requestFocusInWindow(a);
-				annotationSelection.add(a);
-			} else
-				annotationSelection.remove(a);
-		});
+	public void setSelectedAnnotation(DingAnnotation a, boolean selected) {
+		if (selected) {
+//			requestFocusInWindow(a);
+			annotationSelection.add(a);
+		} else {
+			annotationSelection.remove(a);
+		}
 	}
 
 	public void clearSelectedAnnotations() {
-		invokeOnEDT(() -> {
-			boolean repaintForeGround = false;
-			boolean repaintBackGround = false;
-	
-			for (DingAnnotation a : annotationSelection.getSelectedAnnotations()) {
-				a.setSelected(false);
-
-				if (a.getCanvasName().equals(Annotation.FOREGROUND))
-					repaintForeGround = true;
-				else
-					repaintBackGround = true;
-			}
-
-			if (repaintForeGround)
-				foreGroundCanvas.repaint();
-			if (repaintBackGround)
-				backGroundCanvas.repaint();
-
-			annotationSelection.clear();
-		});
+		if(annotationSelection.isEmpty())
+			return;
+		
+		for(DingAnnotation a : annotationSelection) {
+			a.setSelected(false);
+		}
+		annotationSelection.clear();
+		re.updateView();
 	}
 
 	public AnnotationSelection getAnnotationSelection() {
@@ -466,7 +451,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		} else {
 			resizing = shape;
 			resizeBounds = shape.getBounds();
-			requestFocusInWindow(resizing);
+//			requestFocusInWindow(resizing);
 		}
 	}
 
@@ -480,8 +465,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public void positionArrow(ArrowAnnotationImpl arrow) {
 		repositioning = arrow;
-		if (repositioning != null)
-			requestFocusInWindow(repositioning);
+//		if (repositioning != null)
+//			requestFocusInWindow(repositioning);
 	}
 
 	public ArrowAnnotationImpl getRepositioningArrow() {
@@ -608,11 +593,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			Object canvas;
 
 			if (annotation.getCanvas() != null) {
-				annotation.getCanvas().add(annotation.getComponent());
+				annotation.getCanvas().add(annotation);
 				canvas = annotation.getCanvas();
 			} else {
 				canvas = foreGroundCanvas;
-				foreGroundCanvas.add(annotation.getComponent());
+				foreGroundCanvas.add(annotation);
 			}
 
 			if (argMap.containsKey(Annotation.Z)) {
@@ -661,10 +646,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				Object canvas;
 				
 				if (arrow.getCanvas() != null) {
-					arrow.getCanvas().add(arrow.getComponent());
+					arrow.getCanvas().add(arrow);
 					canvas = arrow.getCanvas();
 				} else {
-					foreGroundCanvas.add(arrow.getComponent());
+					foreGroundCanvas.add(arrow);
 					canvas = foreGroundCanvas;
 				}
 
@@ -690,9 +675,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				DingAnnotation a = map.get(zOrder);
 				
 				if (a.getCanvas() != null)
-					a.getCanvas().setComponentZOrder(a.getComponent(), zOrder);
+					a.getCanvas().setZOrder(a, zOrder);
 				else
-					foreGroundCanvas.setComponentZOrder(a.getComponent(), zOrder);
+					foreGroundCanvas.setZOrder(a, zOrder);
 			}
 		}
 	}
@@ -717,12 +702,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return result;
 	}
 
-	private void requestFocusInWindow(final Annotation annotation) {
-		invokeOnEDT(() -> {
-			if (annotation != null && annotation instanceof DingAnnotation)
-				((DingAnnotation) annotation).getCanvas().requestFocusInWindow();
-		});
-	}
+//	private void requestFocusInWindow(final Annotation annotation) {
+//		invokeOnEDT(() -> {
+//			if (annotation != null && annotation instanceof DingAnnotation)
+//				((DingAnnotation) annotation).getCanvas().requestFocusInWindow();
+//		});
+//	}
 
 /*
 	private String printCurrentAnnotations() {
@@ -749,43 +734,38 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		@Override
 		public void viewportChanged(int x, int y, double width, double height, double newZoom) {
 			//We adjust the font size of all the created annotations if the  if there are changes in viewport
-			Component[] annotations=foreGroundCanvas.getComponents();
-
-			for(int i=0;i<annotations.length;i++){
-				if(annotations[i] instanceof DingAnnotation) {
-					((DingAnnotation)annotations[i]).setZoom(newZoom);
-				}
+			List<DingAnnotation> annotations = foreGroundCanvas.getAnnotations();
+			for(DingAnnotation a : annotations) {
+				a.setZoom(newZoom);
 			}
-
-			annotations=backGroundCanvas.getComponents();
-			for(int i=0;i<annotations.length;i++){
-				if(annotations[i] instanceof DingAnnotation) {
-					((DingAnnotation)annotations[i]).setZoom(newZoom);
-				}
+			
+			annotations = backGroundCanvas.getAnnotations();
+			for(DingAnnotation a : annotations) {
+				a.setZoom(newZoom);
 			}
 		}
 	}
 
 	class ZComparator implements Comparator<DingAnnotation> {
 		
-		final DingCanvas cnvs;
+		final ArbitraryGraphicsCanvas cnvs;
 		
-		public ZComparator(final DingCanvas c) {
+		public ZComparator(ArbitraryGraphicsCanvas c) {
 			this.cnvs = c;
 		}
 		
 		@Override
 		public int compare(DingAnnotation o1, DingAnnotation o2) {
-			int z1 = cnvs.getComponentZOrder(o1.getComponent());
-			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			int z1 = cnvs.getZOrder(o1);
+			int z2 = cnvs.getZOrder(o2);
 			if (z1 < z2) return -1;
 			if (z1 > z2) return 1;
 			return 0;
 		}
 
 		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
-			int z1 = cnvs.getComponentZOrder(o1.getComponent());
-			int z2 = cnvs.getComponentZOrder(o2.getComponent());
+			int z1 = cnvs.getZOrder(o1);
+			int z2 = cnvs.getZOrder(o2);
 			if (z1 == z2) return true;
 			return false;
 		}
