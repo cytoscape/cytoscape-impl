@@ -9,7 +9,7 @@ import java.beans.PropertyChangeListener;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -43,7 +43,7 @@ public interface DingAnnotation extends Annotation {
 	
 	void changeCanvas(String canvas);
 
-	ArbitraryGraphicsCanvas getCanvas();
+	AnnotationCanvas getCanvas();
 
 	CyAnnotator getCyAnnotator();
 

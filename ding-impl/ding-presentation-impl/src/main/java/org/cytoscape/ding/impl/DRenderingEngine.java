@@ -125,8 +125,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private PrintLOD printLOD;
 
 	private InnerCanvas networkCanvas;
-	private ArbitraryGraphicsCanvas backgroundCanvas;
-	private ArbitraryGraphicsCanvas foregroundCanvas;
+	private AnnotationCanvas backgroundCanvas;
+	private AnnotationCanvas foregroundCanvas;
 	private Color backgroundColor;
 	private RendererComponent renderComponent;
 	
@@ -190,9 +190,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		printLOD = new PrintLOD();
 		
 		networkCanvas = new InnerCanvas(dingLock, this, registrar);
-		backgroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.BACKGROUND_CANVAS, networkCanvas);
+		backgroundCanvas = new AnnotationCanvas(this, Canvas.BACKGROUND_CANVAS, networkCanvas);
 		addViewportChangeListener(backgroundCanvas);
-		foregroundCanvas = new ArbitraryGraphicsCanvas(this, Canvas.FOREGROUND_CANVAS, networkCanvas);
+		foregroundCanvas = new AnnotationCanvas(this, Canvas.FOREGROUND_CANVAS, networkCanvas);
 		addViewportChangeListener(foregroundCanvas);
 		renderComponent = new RendererComponent();
 

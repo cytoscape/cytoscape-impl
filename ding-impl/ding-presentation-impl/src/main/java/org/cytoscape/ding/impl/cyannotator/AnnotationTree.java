@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -297,8 +297,8 @@ public class AnnotationTree {
 			if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
 				DingAnnotation da1 = (DingAnnotation) a1;
 				DingAnnotation da2 = (DingAnnotation) a2;
-				ArbitraryGraphicsCanvas canvas1 = da1.getCanvas();
-				ArbitraryGraphicsCanvas canvas2 = da2.getCanvas();
+				AnnotationCanvas canvas1 = da1.getCanvas();
+				AnnotationCanvas canvas2 = da2.getCanvas();
 				int z1 = canvas1.getZOrder(da1);
 				int z2 = canvas2.getZOrder(da2);
 				if(z1 >= 0 && z2 >= 0) {

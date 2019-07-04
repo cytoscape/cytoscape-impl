@@ -212,8 +212,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	public void update(Graphics g) {
 		re.getCanvas().ensureInitialized();
 
-		ArbitraryGraphicsCanvas foregroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
-		ArbitraryGraphicsCanvas backgroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
+		AnnotationCanvas foregroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
+		AnnotationCanvas backgroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
 
 		updateBounds();
 

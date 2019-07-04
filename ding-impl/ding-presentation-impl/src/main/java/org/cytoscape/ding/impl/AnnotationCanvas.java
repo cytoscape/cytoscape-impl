@@ -45,7 +45,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
  * #L%
  */
 
-public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChangeListener {
+public class AnnotationCanvas extends DingCanvas implements ViewportChangeListener {
 	
 	private DRenderingEngine re;
 	private InnerCanvas networkCanvas;
@@ -60,7 +60,7 @@ public class ArbitraryGraphicsCanvas extends DingCanvas implements ViewportChang
 	private AnnotationSelection selection;
 
 
-	public ArbitraryGraphicsCanvas(DRenderingEngine re, Canvas canvasId, InnerCanvas innerCanvas) {
+	public AnnotationCanvas(DRenderingEngine re, Canvas canvasId, InnerCanvas innerCanvas) {
 		super(canvasId);
 		this.re = re;
 		this.networkCanvas = innerCanvas;

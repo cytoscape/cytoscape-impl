@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.InnerCanvas;
 import org.cytoscape.ding.impl.ViewportChangeListener;
@@ -77,8 +77,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private static final int MAX_NAME_LENGH = 200;
 
 	private final DRenderingEngine re;
-	private final ArbitraryGraphicsCanvas foreGroundCanvas;
-	private final ArbitraryGraphicsCanvas backGroundCanvas;
+	private final AnnotationCanvas foreGroundCanvas;
+	private final AnnotationCanvas backGroundCanvas;
 	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
@@ -100,8 +100,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.re = re;
 		this.registrar = registrar;
-		this.foreGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
-		this.backGroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+		this.foreGroundCanvas = (AnnotationCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+		this.backGroundCanvas = (AnnotationCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
 		this.networkCanvas = re.getCanvas();
 		this.annotationFactoryManager = annotationFactoryManager;
 		this.annotationSelection = new AnnotationSelection(this);
@@ -218,7 +218,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
  	 * Find all of our annotations that are at this point.  Return the top annotation
  	 * (the one with the lowest Z value) if there are more than one.
  	 */
-	private DingAnnotation getComponentAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private DingAnnotation getComponentAt(AnnotationCanvas cnvs, int x, int y) {
 		DingAnnotation top = null;
 		
 		for (DingAnnotation a : annotationSet) {
@@ -234,7 +234,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	/**
  	 * Find all of our annotations that are at this point. 
  	 */
-	private List<DingAnnotation> getComponentsAt(ArbitraryGraphicsCanvas cnvs, int x, int y) {
+	private List<DingAnnotation> getComponentsAt(AnnotationCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
 
 		for (DingAnnotation a : annotationSet) {
@@ -262,7 +262,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return a;
 	}
 	
-	public DingAnnotation getAnnotationAt(ArbitraryGraphicsCanvas canvas, Point2D position) {
+	public DingAnnotation getAnnotationAt(AnnotationCanvas canvas, Point2D position) {
 		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
 		if(a != null) {
 			while(a.getGroupParent() != null) {
@@ -305,11 +305,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return networkCanvas;
 	}
 
-	public ArbitraryGraphicsCanvas getForeGroundCanvas() {
+	public AnnotationCanvas getForeGroundCanvas() {
 		return foreGroundCanvas;
 	}
 
-	public ArbitraryGraphicsCanvas getBackGroundCanvas() {
+	public AnnotationCanvas getBackGroundCanvas() {
 		return backGroundCanvas;
 	}
 	
@@ -748,9 +748,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	class ZComparator implements Comparator<DingAnnotation> {
 		
-		final ArbitraryGraphicsCanvas cnvs;
+		final AnnotationCanvas cnvs;
 		
-		public ZComparator(ArbitraryGraphicsCanvas c) {
+		public ZComparator(AnnotationCanvas c) {
 			this.cnvs = c;
 		}
 		

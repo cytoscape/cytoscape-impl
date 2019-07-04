@@ -100,9 +100,9 @@ public class InputHandlerGlassPane extends JComponent {
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
 
-	private final ArbitraryGraphicsCanvas backgroundCanvas;
+	private final AnnotationCanvas backgroundCanvas;
 	private final InnerCanvas networkCanvas;
-	private final ArbitraryGraphicsCanvas foregroundCanvas;
+	private final AnnotationCanvas foregroundCanvas;
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		// MKTODO make sure undo works for everything
@@ -111,9 +111,9 @@ public class InputHandlerGlassPane extends JComponent {
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
 		
-		this.backgroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(BACKGROUND_CANVAS);
+		this.backgroundCanvas = (AnnotationCanvas) re.getCanvas(BACKGROUND_CANVAS);
 		this.networkCanvas    = (InnerCanvas) re.getCanvas(NETWORK_CANVAS);
-		this.foregroundCanvas = (ArbitraryGraphicsCanvas) re.getCanvas(FOREGROUND_CANVAS);
+		this.foregroundCanvas = (AnnotationCanvas) re.getCanvas(FOREGROUND_CANVAS);
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(

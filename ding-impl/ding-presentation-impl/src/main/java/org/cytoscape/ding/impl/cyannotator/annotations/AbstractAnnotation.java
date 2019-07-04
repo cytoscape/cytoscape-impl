@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingComponent;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -65,7 +65,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 
 	protected final boolean usedForPreviews;
 	protected DRenderingEngine re;
-	protected ArbitraryGraphicsCanvas canvas;
+	protected AnnotationCanvas canvas;
 	protected GroupAnnotationImpl parent;
 	protected CyAnnotator cyAnnotator;
 	protected String name;
@@ -92,7 +92,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 		this.re = re;
 		this.cyAnnotator = re == null ? null : re.getCyAnnotator();
 		this.usedForPreviews = usedForPreviews;
-		this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS));
+		this.canvas = (AnnotationCanvas)(re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS));
 		this.canvasName = DRenderingEngine.Canvas.FOREGROUND_CANVAS;
 		this.globalZoom = re.getZoom();
 		name = getDefaultName();
@@ -123,7 +123,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
-			this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS));
+			this.canvas = (AnnotationCanvas)(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS));
 			this.canvasName = DRenderingEngine.Canvas.BACKGROUND_CANVAS;
 		}
 
@@ -156,7 +156,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 	@Override
 	public void setCanvas(String cnvs) {
 		canvasName = (cnvs.equals(BACKGROUND)) ? DRenderingEngine.Canvas.BACKGROUND_CANVAS : DRenderingEngine.Canvas.FOREGROUND_CANVAS;
-		canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(canvasName));
+		canvas = (AnnotationCanvas)(re.getCanvas(canvasName));
 		for (ArrowAnnotation arrow: arrowList) 
 			if (arrow instanceof DingAnnotation)
 				((DingAnnotation)arrow).setCanvas(cnvs);
@@ -189,7 +189,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 	}
 
 	@Override
-	public ArbitraryGraphicsCanvas getCanvas() {
+	public AnnotationCanvas getCanvas() {
 		return canvas;
 	}
 

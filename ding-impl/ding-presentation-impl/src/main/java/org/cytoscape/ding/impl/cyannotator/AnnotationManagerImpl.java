@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
+import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.ding.impl.DingRenderer;
@@ -95,12 +95,12 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				
 				if(annotationsByCanvas.containsKey(Canvas.FOREGROUND_CANVAS)) {
 					List<DingAnnotation> foregroundAnnotations = annotationsByCanvas.get(Canvas.FOREGROUND_CANVAS);
-					((ArbitraryGraphicsCanvas)re.getCanvas(Canvas.FOREGROUND_CANVAS)).addAnnotations(foregroundAnnotations);
+					((AnnotationCanvas)re.getCanvas(Canvas.FOREGROUND_CANVAS)).addAnnotations(foregroundAnnotations);
 					all.addAll(foregroundAnnotations);
 				}
 				if(annotationsByCanvas.containsKey(Canvas.BACKGROUND_CANVAS)) {
 					List<DingAnnotation> backgroundAnnotations = annotationsByCanvas.get(Canvas.BACKGROUND_CANVAS);
-					((ArbitraryGraphicsCanvas)re.getCanvas(Canvas.BACKGROUND_CANVAS)).addAnnotations(backgroundAnnotations);
+					((AnnotationCanvas)re.getCanvas(Canvas.BACKGROUND_CANVAS)).addAnnotations(backgroundAnnotations);
 					all.addAll(backgroundAnnotations);
 				}
 				
@@ -145,7 +145,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 				List<DingAnnotation> arrows = getArrows(dingAnnotations);
 				
-				ArbitraryGraphicsCanvas canvas = (ArbitraryGraphicsCanvas)re.getCanvas(canvasId);
+				AnnotationCanvas canvas = (AnnotationCanvas)re.getCanvas(canvasId);
 				canvas.removeAnnotations(arrows);
 				canvas.removeAnnotations(dingAnnotations);
 
