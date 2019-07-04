@@ -1,5 +1,6 @@
 package org.cytoscape.internal.view.util;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -12,6 +13,8 @@ import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.util.Properties;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -38,7 +41,9 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
+import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -78,6 +83,12 @@ public final class ViewUtil {
 	public static final String DEFAULT_PROVIDER_PROP_KEY = "networkSearch.defaultProvider";
 	
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
+	
+	public static final Border DESELECTED_TOGLLE_BORDER = BorderFactory.createEmptyBorder(2, 2, 2, 2);
+	public static final Border SELECTED_TOGLLE_BORDER = DESELECTED_TOGLLE_BORDER;
+	
+	private static final String DEF_ICON_REGEX = "([A-Z]?[0-9a-z]+)|([A-Z]+)"; // Finds camelCase and PascalCase groups
+	private static final Pattern DEF_ICON_PATTERN = Pattern.compile(DEF_ICON_REGEX);
 	
 	public static String getName(final CyNetwork network) {
 		String name = "";
@@ -383,6 +394,82 @@ public final class ViewUtil {
 	 */
 	public static boolean isScreenMenuBar() {
 		return LookAndFeelUtil.isAquaLAF() && "true".equals(System.getProperty("apple.laf.useScreenMenuBar"));
+	}
+	
+	public static Icon createDefaultIcon(String title, int size, IconManager iconManager) {
+		String text = createDefaultIconText(title);
+		Color iconColor = getDefaultIconColor(title);
+		Color textColor = getContrastingColor(iconColor);
+		String shape = text.length() > 1 ? IconManager.ICON_SQUARE : IconManager.ICON_CIRCLE;
+
+		Font iconFont = iconManager.getIconFont(size * 1.125f);
+		int fontSize = (int) Math.round(size / (text.length() > 1 ? 1.6 : 1.3));
+		Font textFont = new Font(Font.MONOSPACED, Font.BOLD, fontSize);
+		
+		return new TextIcon(
+				new String[] { shape, text },
+				new Font[]   { iconFont,  textFont },
+				new Color[]  { iconColor, textColor },
+				size, size
+		);
+	}
+
+	// copy-pasted from org.cytoscape.ding.internal.util.ColorUtil.getContrastingColor(Color)
+	public static Color getContrastingColor(Color color) {
+		int d = 0;
+		// Counting the perceptive luminance - human eye favors green color...
+		final double a = 1 - (0.299 * color.getRed() + 0.587 * color.getGreen() + 0.114 * color.getBlue()) / 255;
+
+		if (a < 0.5)
+			d = 0; // bright colors - black font
+		else
+			d = 255; // dark colors - white font
+
+		return new Color(d, d, d);
+	}
+	
+	static String createDefaultIconText(String title) {
+		String text = "";
+		title = title.trim();
+
+		if (!title.isEmpty()) {
+			Matcher matcher = DEF_ICON_PATTERN.matcher(title);
+
+			DONE:
+			while (matcher.find()) {
+				for (int i = 1; i <= matcher.groupCount(); i++) {
+					String s = matcher.group(i);
+					s = s != null ? s.trim() : "";
+
+					if (!s.isEmpty())
+						text += s.substring(0, 1);
+					
+					if (text.length() == 2)
+						break DONE;
+				}
+			}
+			
+			if (text.isEmpty())
+				text = title.substring(0, 1);
+		}
+
+		return text.isEmpty() ? text = " " : text;
+	}
+	
+	private static Color getDefaultIconColor(String text) {
+		// http://colorbrewer2.org/#type=qualitative&scheme=Set1&n=8 (RED excluded!)
+		int index = Math.abs(text.toLowerCase().hashCode() % 7);
+		
+		switch (index) {
+			default:
+			case 0:  return new Color(55, 126, 184);
+			case 1:  return new Color(77, 175, 74);
+			case 2:  return new Color(152, 78, 163);
+			case 3:  return new Color(255, 127, 0);
+			case 4:  return new Color(255, 255, 51);
+			case 5:  return new Color(166, 86, 40);
+			case 6:  return new Color(247, 129, 191);
+		}
 	}
 	
 	private ViewUtil() {

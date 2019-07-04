@@ -9,10 +9,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.ImageProducer;
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -31,6 +35,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.UIManager;
@@ -50,7 +55,7 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -77,6 +82,8 @@ public class CytoscapeToolBar extends JToolBar {
 	public static int ICON_WIDTH = 32;
 	public static int ICON_HEIGHT = 32;
 	private static int BUTTON_BORDER_SIZE = 2;
+	
+	private static final String STOPLIST_FILENAME = "toolbar.stoplist";
 	
 	private Map<CyAction, ActionButton> actionButtonMap;
 	private List<Object> orderedList;
@@ -170,6 +177,7 @@ public class CytoscapeToolBar extends JToolBar {
 							));
 							mi.addActionListener(ev -> {
 								button.setVisible(!button.isVisible());
+								updateSeparators();
 								resave();
 							});
 							popup.add(mi);
@@ -193,10 +201,7 @@ public class CytoscapeToolBar extends JToolBar {
 				}
 		}
 		
-		if (hidden.size() == 0)
-			deleteStopList();
-		else
-			writeStopList(hidden);
+		writeStopList(hidden);
 	}
 
 	@Override
@@ -238,25 +243,11 @@ public class CytoscapeToolBar extends JToolBar {
 		if (stopList.contains(action.getName()))
 			button.component.setVisible(false);
 
-		addComponents();
+		update();
 
 		return true;
 	}
 
-	
-	private static class ActionButton {
-		final JButton component;
-		final boolean separatorBefore;
-		final boolean separatorAfter;
-		
-		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
-			this.component = button;
-			this.separatorBefore = separatorBefore;
-			this.separatorAfter = separatorAfter;
-		}
-	}
-	
-	
 	public void showAll() {
 		for (Object o : orderedList) {
 			if (o instanceof Component)
@@ -264,6 +255,8 @@ public class CytoscapeToolBar extends JToolBar {
 			if (o instanceof ActionButton)
 				((ActionButton) o).component.setVisible(true);
 		}
+		
+		updateSeparators();
 	}
 
 	public void hideAll() {
@@ -273,29 +266,8 @@ public class CytoscapeToolBar extends JToolBar {
 			if (o instanceof ActionButton)
 				((ActionButton) o).component.setVisible(false);
 		}
-	}
-
-	private void addComponents() {
-		removeAll();
 		
-		for (Object o : orderedList) {
-			if (o instanceof JButton)
-				add((JButton) o);
-			else if (o instanceof Float)
-				addSeparator();
-			else if (o instanceof ToolBarComponent)
-				add(((ToolBarComponent) o).getComponent());
-			else if (o instanceof ActionButton) {
-				ActionButton ab = (ActionButton) o;
-				if(ab.separatorBefore)
-					addSeparator();
-				add(ab.component);
-				if(ab.separatorAfter)
-					addSeparator();
-			}
-		}
-		
-		validate();
+		updateSeparators();
 	}
 
 	public void addSeparator(float gravity) {
@@ -328,7 +300,7 @@ public class CytoscapeToolBar extends JToolBar {
 			return false;
 
 		orderedList.remove(button);
-		addComponents();
+		update();
 
 		return true;
 	}
@@ -344,7 +316,7 @@ public class CytoscapeToolBar extends JToolBar {
 		componentGravity.put(tbc,tbc.getToolBarGravity());
 		int addInd = getInsertLocation(tbc.getToolBarGravity());
 		orderedList.add(addInd, tbc);
-		addComponents();
+		update();
 	}
 
 	public void removeToolBarComponent(ToolBarComponent tbc){
@@ -405,9 +377,52 @@ public class CytoscapeToolBar extends JToolBar {
 		return button;
 	}
 	
+	private void update() {
+		// Remove and add everything again
+		removeAll();
+		
+		for (Object o : orderedList) {
+			if (o instanceof JButton) {
+				add((JButton) o);
+			} else if (o instanceof Float) {
+				addSeparator();
+			} else if (o instanceof ToolBarComponent) {
+				add(((ToolBarComponent) o).getComponent());
+			} else if (o instanceof ActionButton) {
+				ActionButton ab = (ActionButton) o;
+				
+				if (ab.separatorBefore)
+					addSeparator();
+				
+				add(ab.component);
+				
+				if (ab.separatorAfter)
+					addSeparator();
+			}
+		}
+		
+		// Hide duplicate separators
+		updateSeparators();
+	}
+
+	private void updateSeparators() {
+		// Pretend we start with a separator, because we don't want any separator as the first component
+		boolean lastIsSep = true;
+		
+		for (Component c : getComponents()) {
+			if (c instanceof JSeparator)
+				c.setVisible(!lastIsSep);
+			
+			if (c.isVisible())
+				lastIsSep = c instanceof JSeparator;
+		}
+		
+		validate();
+	}
+	
 	private void readStopList() {
 		stopList.clear();
-		final List<String> lines;
+		List<String> lines = null;
 		
 		try {
 			CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
@@ -419,39 +434,32 @@ public class CytoscapeToolBar extends JToolBar {
 			File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
 			File configFile = null;
 			
-			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+			if (configDirectory.exists()) {
+				configFile = new File(configDirectory.toPath() + "/" + STOPLIST_FILENAME);
+				
+				if (configFile.exists())
+					lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset());
+			}
 			
-			lines = Files.readAllLines(configFile.toPath(), Charset.defaultCharset());
+			if (lines == null) {
+				// Copy from our bundle resources file
+				try (InputStream is = getClass().getResourceAsStream("/" + STOPLIST_FILENAME)) {
+					if (is != null)
+						lines = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset())).lines()
+								.collect(Collectors.toList());
+				}
+			}
 		} catch (IOException e) {
 			// file not found: there's no customization, just return
 			return;
 		}
 
-		for (String line : lines)
-			stopList.add(line.trim());
+		if (lines != null) {
+			for (String line : lines)
+				stopList.add(line.trim());
+		}
 	}
 	
-	private void deleteStopList() {
-		CyApplicationConfiguration cyApplicationConfiguration = serviceRegistrar
-				.getService(CyApplicationConfiguration.class);
-		
-		if (cyApplicationConfiguration == null) {
-			System.err.println("cyApplicationConfiguration not found");
-			return;
-		}
-
-		File configDirectory = cyApplicationConfiguration.getConfigurationDirectoryLocation();
-		File configFile = null;
-		
-		if (configDirectory.exists()) {
-			configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
-			
-			if (configFile.exists())
-				configFile.delete();
-		}
-	}
-
 	private void writeStopList(List<String> list) {
 		BufferedWriter writer = null;
 		
@@ -468,7 +476,7 @@ public class CytoscapeToolBar extends JToolBar {
 			File configFile = null;
 			
 			if (configDirectory.exists())
-				configFile = new File(configDirectory.toPath() + "/toolbar.stoplist");
+				configFile = new File(configDirectory.toPath() + "/" + STOPLIST_FILENAME);
 			
 			writer = new BufferedWriter(new FileWriter(configFile));
 			
@@ -583,4 +591,17 @@ public class CytoscapeToolBar extends JToolBar {
 //			}
 //			return "";
 //		}
+	
+	private static class ActionButton {
+		
+		final JButton component;
+		final boolean separatorBefore;
+		final boolean separatorAfter;
+		
+		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
+			this.component = button;
+			this.separatorBefore = separatorBefore;
+			this.separatorAfter = separatorAfter;
+		}
+	}
 }

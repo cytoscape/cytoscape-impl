@@ -235,7 +235,8 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoPanelAction cytoPanelSouthWestAction;
 	private CytoPanelAction cytoPanelCommandAction;
 
-	private StarterPanelAction starterPanelAction;
+	private StarterPanelAction starterPanelActionMenu;
+	private StarterPanelAction starterPanelActionToolBar;
 	private DetachedViewToolBarAction detachedViewToolBarAction;
 	private CloseWindowAction closeWindowAction;
 	private CreateNetworkViewsAction createNetworkViewsAction;
@@ -281,7 +282,8 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, cytoPanelEastAction, CyAction.class);
 		registerService(bc, cytoPanelSouthWestAction, CyAction.class);
 		registerService(bc, cytoPanelCommandAction, CyAction.class);
-		registerService(bc, starterPanelAction, CyAction.class);
+		registerService(bc, starterPanelActionMenu, CyAction.class);
+		registerService(bc, starterPanelActionToolBar, CyAction.class);
 		registerService(bc, detachedViewToolBarAction, CyAction.class);
 		registerService(bc, closeWindowAction, CyAction.class);
 		
@@ -468,6 +470,7 @@ public class CyActivator extends AbstractCyActivator {
 	private void initComponents(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {
 		CyApplicationManager applicationManager = getService(bc, CyApplicationManager.class);
 		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
+		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
 		final RootNetworkManager rootNetManager = new RootNetworkManager();
 		
@@ -542,7 +545,14 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f, serviceRegistrar);
 		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f, serviceRegistrar);
 		
-		starterPanelAction = new StarterPanelAction(1.4f, cytoscapeDesktop);
+		{
+			TextIcon icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),
+					UIManager.getColor("CyColor.complement(+1)"), 32, 32);
+			
+			starterPanelActionToolBar = new StarterPanelAction(Float.MAX_VALUE - 1.0f, icon, cytoscapeDesktop, serviceRegistrar);
+			starterPanelActionMenu = new StarterPanelAction(1.4f, cytoscapeDesktop, serviceRegistrar);
+		}
+		
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);
 		
 		closeWindowAction = new CloseWindowAction(1.99f, netViewMediator);

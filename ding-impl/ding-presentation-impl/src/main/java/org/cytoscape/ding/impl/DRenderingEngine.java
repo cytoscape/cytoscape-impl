@@ -623,6 +623,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		getViewModel().batch(netView -> {
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
 		}, false);
+		
+		renderComponent.repaint();
 	}
 	
 	

@@ -1,0 +1,15 @@
+
+<graphml>
+    <graph edgedefault="directed">
+        <desc>desc Test</desc>
+        <node id="n0">
+            <desc>Node 1</desc>
+        </node>
+        <node id="n1">
+            <desc>Node 2</desc>
+        </node>
+        <edge id="e0" source="n0" target="n1">
+            <desc>Node 1::Node 2</desc>
+        </edge>
+    </graph>
+</graphml>

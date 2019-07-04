@@ -27,7 +27,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.Font;
 import java.awt.KeyboardFocusManager;
 import java.awt.MouseInfo;
 import java.awt.Point;
@@ -1322,7 +1321,7 @@ public class CytoscapeDesktop extends JFrame
 		return bottomPanel;
 	}
 	
-	private StarterPanel getStarterPanel() {
+	public StarterPanel getStarterPanel() {
 		if (starterPanel == null) {
 			starterPanel = new StarterPanel(serviceRegistrar);
 			starterPanel.getCloseButton().addActionListener(e -> hideStarterPanel());
@@ -1653,12 +1652,8 @@ public class CytoscapeDesktop extends JFrame
 							Icon buttonIcon = icon;
 							
 							if (buttonIcon == null) {
-								buttonIcon = new TextIcon(
-										"" + title.charAt(0),
-										UIManager.getFont("Button.font").deriveFont(Font.BOLD),
-										CytoPanelUtil.BUTTON_SIZE,
-										CytoPanelUtil.BUTTON_SIZE
-								);
+								buttonIcon = ViewUtil.createDefaultIcon(title, CytoPanelUtil.BUTTON_SIZE,
+										serviceRegistrar.getService(IconManager.class));
 							} else if (buttonIcon instanceof ImageIcon) {
 								if (showLabels && buttonIcon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
 									buttonIcon = ViewUtil.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);

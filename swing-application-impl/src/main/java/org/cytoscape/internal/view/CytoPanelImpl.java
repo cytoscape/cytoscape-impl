@@ -457,6 +457,13 @@ public class CytoPanelImpl implements CytoPanel {
 						int index = i++;
 						String title = cpc.getTitle();
 						Icon icon = cpc.getIcon();
+						
+						if (icon == null)
+							icon = ViewUtil.createDefaultIcon(title, CytoPanelUtil.BUTTON_SIZE,
+									serviceRegistrar.getService(IconManager.class));
+						else if (icon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
+							icon = ViewUtil.resizeIcon(icon, CytoPanelUtil.BUTTON_SIZE);
+						
 						JCheckBoxMenuItem mi = new JCheckBoxMenuItem(title, icon);
 						mi.setSelected(getSelectedIndex() == index);
 						mi.addActionListener(e -> setSelectedIndex(index));
