@@ -94,7 +94,7 @@ public class NVLTFActionSupport {
 			double[] coords = new double[2];
 			coords[0] = javaPt.getX();
 			coords[1] = javaPt.getY();
-			re.xformComponentToNodeCoords(coords);
+			re.getTransform().xformImageToNodeCoords(coords);
 			Point2D xformPt = new Point2D.Double(coords[0], coords[1]);
 
 			registrar.getService(DialogTaskManager.class).execute(nvltf.createTaskIterator(view, javaPt, xformPt));

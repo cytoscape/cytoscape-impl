@@ -49,7 +49,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
@@ -81,7 +80,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final DRenderingEngine re;
 	
 	private final ContentChangeListener m_cLis;
-	private final ViewportChangeListener m_vLis;
 	private final CyServiceRegistrar registrar;
 
 	private VolatileImage networkImage;
@@ -116,7 +114,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		this.registrar = Objects.requireNonNull(registrar);
 
 		m_cLis = new BirdsEyeViewInnerContentChangeListener();
-		m_vLis = new BirdsEyeViewInnerViewportChangeListener();
 		
 		Color c = UIManager.getColor("Table.focusCellBackground");
 		VIEW_WINDOW_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
@@ -137,7 +134,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private void initializeView(final DRenderingEngine re) {
 		re.addContentChangeListener(m_cLis);
-		re.addViewportChangeListener(m_vLis);
 		
 		updateBounds();
 		final Point2D pt = re.getCenter();
@@ -155,11 +151,11 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 
 	private void updateBounds() {
-		final Rectangle2D viewable = getViewableRect();
+		Rectangle2D viewable = getViewableRect();
 		m_viewWidth = (int) viewable.getWidth();
 		m_viewHeight = (int) viewable.getHeight();
 
-		final Rectangle2D viewableInView = getViewableRectInView(viewable);
+		Rectangle2D viewableInView = getViewableRectInView(viewable);
 		m_viewXCenter = viewableInView.getX() + viewableInView.getWidth() / 2.0;
 		m_viewYCenter = viewableInView.getY() + viewableInView.getHeight() / 2.0;
 	}
@@ -170,33 +166,23 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 
 	private Rectangle2D getViewableRectInView(final Rectangle2D viewable) {
-
-		final double[] origin = new double[2];
+		double[] origin = new double[2];
 		origin[0] = viewable.getX();
 		origin[1] = viewable.getY();
-		re.xformComponentToNodeCoords(origin);
+		re.getTransform().xformImageToNodeCoords(origin);
 
-		final double[] destination = new double[2];
+		double[] destination = new double[2];
 		destination[0] = viewable.getX() + viewable.getWidth();
 		destination[1] = viewable.getY() + viewable.getHeight();
-		re.xformComponentToNodeCoords(destination);
+		re.getTransform().xformImageToNodeCoords(destination);
 
 		return new Rectangle2D.Double(origin[0], origin[1], destination[0] - origin[0], destination[1] - origin[1]);
 	}
 	
-	/**
-	 * This used to be called reshape, which is deprecated, so I've changed it
-	 * to setBounds. Not sure if this will break anything!
-	 * 
-	 * @param x
-	 * @param y
-	 * @param width
-	 * @param height
-	 */
+
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		super.setBounds(x, y, width, height);
-
 		if(imageWidth != width || imageHeight != height) {
 			imageWidth = width;
 			imageHeight = height;
@@ -210,18 +196,18 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	 */
 	@Override 
 	public void update(Graphics g) {
-		re.getCanvas().ensureInitialized();
+//		re.getCanvas().ensureInitialized();
 
-		AnnotationCanvas foregroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
-		AnnotationCanvas backgroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
+//		AnnotationCanvas foregroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
+//		AnnotationCanvas backgroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
 
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
 			
 			boolean hasComponents = re.getExtents(m_extents);
-			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
-			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
+//			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
+//			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
 			
 			if(hasComponents) {
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;
@@ -259,8 +245,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 					networkImage = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
 
 					// Now draw the network
-					re.drawSnapshot(networkImage, re.getGraphLOD(), re.getBackgroundPaint(),
-							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor);
+//					re.drawSnapshot(networkImage, re.getGraphLOD(), re.getBackgroundPaint(),
+//							m_extents[0], m_extents[1], m_myXCenter, m_myYCenter, m_myScaleFactor);
 				}
 			}
 		}
@@ -273,10 +259,10 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		}
 
 		// Compute view area
-		final int rectWidth = (int) (m_myScaleFactor * (((double) m_viewWidth) / m_viewScaleFactor));
+		final int rectWidth  = (int) (m_myScaleFactor * (((double) m_viewWidth)  / m_viewScaleFactor));
 		final int rectHeight = (int) (m_myScaleFactor * (((double) m_viewHeight) / m_viewScaleFactor));
 		
-		final double rectXCenter = (((double) getWidth()) / 2.0d) + (m_myScaleFactor * (m_viewXCenter - m_myXCenter));
+		final double rectXCenter = (((double) getWidth())  / 2.0d) + (m_myScaleFactor * (m_viewXCenter - m_myXCenter));
 		final double rectYCenter = (((double) getHeight()) / 2.0d) + (m_myScaleFactor * (m_viewYCenter - m_myYCenter));
 		
 		final int x = (int) (rectXCenter - (rectWidth/2));
@@ -309,21 +295,21 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		}
 	}
 
-	private final class BirdsEyeViewInnerViewportChangeListener implements ViewportChangeListener {
-		
-		/**
-		 * Update the view if panned.
-		 */
-		@Override
-		public void viewportChanged(int w, int h, double newXCenter, double newYCenter, double newScaleFactor) {
-			m_viewWidth = w;
-			m_viewHeight = h;
-			m_viewXCenter = newXCenter;
-			m_viewYCenter = newYCenter;
-			m_viewScaleFactor = newScaleFactor;			
-			repaint();
-		}
-	}
+//	private final class BirdsEyeViewInnerViewportChangeListener implements ViewportChangeListener {
+//		
+//		/**
+//		 * Update the view if panned.
+//		 */
+//		@Override
+//		public void viewportChanged(int w, int h, double newXCenter, double newYCenter, double newScaleFactor) {
+//			m_viewWidth = w;
+//			m_viewHeight = h;
+//			m_viewXCenter = newXCenter;
+//			m_viewYCenter = newYCenter;
+//			m_viewScaleFactor = newScaleFactor;			
+//			repaint();
+//		}
+//	}
 
 	private int m_currMouseButton = 0;
 	private int m_lastXMousePos = 0;
@@ -344,7 +330,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double centerY = ((m_lastYMousePos - halfHeight) / m_myScaleFactor) + m_myYCenter;
 				
 				re.setCenter(centerX, centerY);
-				re.updateView();
+//				re.updateView();
 			}
 		}
 
@@ -461,20 +447,20 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		@Override
 		public void run() {
 			try {
-				final GraphicsConfiguration gc = getGraphicsConfiguration();
-				VolatileImage networkImage2 = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
-
-				// Now draw the network
-				// System.out.println("Drawing snapshot");
-				if (re.getGraphLOD() instanceof DingGraphLOD)
-					bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)re.getGraphLOD()));
-				else if (bevLOD == null)
-					bevLOD = new BirdsEyeViewLOD(re.getGraphLOD());
-
-				bevLOD.setDrawEdges(true);
-				
-				re.drawSnapshot(networkImage2, bevLOD, re.getBackgroundPaint(), extents[0], extents[1], xCenter, yCenter, scale);
-				networkImage = networkImage2;
+//				final GraphicsConfiguration gc = getGraphicsConfiguration();
+//				VolatileImage networkImage2 = gc.createCompatibleVolatileImage(imageWidth, imageHeight, VolatileImage.OPAQUE);
+//
+//				// Now draw the network
+//				// System.out.println("Drawing snapshot");
+//				if (re.getGraphLOD() instanceof DingGraphLOD)
+//					bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)re.getGraphLOD()));
+//				else if (bevLOD == null)
+//					bevLOD = new BirdsEyeViewLOD(re.getGraphLOD());
+//
+//				bevLOD.setDrawEdges(true);
+//				
+//				re.drawSnapshot(networkImage2, bevLOD, re.getBackgroundPaint(), extents[0], extents[1], xCenter, yCenter, scale);
+//				networkImage = networkImage2;
 			} catch (Exception e) {
 				logger.error("UpdateImage Error", e);
 			}

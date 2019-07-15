@@ -74,7 +74,8 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 		if (selectedAnnotations.size() == 0) {
 			selectedAnnotations.add(e);
 			updateBounds();
-			cyAnnotator.getForeGroundCanvas().setSelection(this);
+			// MKTODO
+//			cyAnnotator.getForeGroundCanvas().setSelection(this);
 		} else {
 			selectedAnnotations.add(e);
 			updateBounds();
@@ -94,7 +95,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			a.setOffset(null);
 		
 		selectedAnnotations.clear();
-		cyAnnotator.getForeGroundCanvas().setSelection(null);
+//		cyAnnotator.getForeGroundCanvas().setSelection(null);
 	}
 
 	public boolean contains(Object e) {
@@ -113,10 +114,11 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	public void remove(Object e) {
 		selectedAnnotations.remove(e);
 		
-		if (selectedAnnotations.isEmpty())
-			cyAnnotator.getForeGroundCanvas().setSelection(null);
-		else
+		if (selectedAnnotations.isEmpty()) {
+			//cyAnnotator.getForeGroundCanvas().setSelection(null);
+		} else {
 			updateBounds();
+		}
 	}
 
 	public void saveAnchor(Position anchor, double anchorOffsetX, double anchorOffsetY) {

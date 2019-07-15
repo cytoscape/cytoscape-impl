@@ -34,7 +34,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	private final CyServiceRegistrar registrar;
 	
 	private ContentChangeListener contentListener;
-	private ViewportChangeListener viewportListener;
+//	private ViewportChangeListener viewportListener;
 	
 	private boolean forceRender = false;
 	
@@ -47,13 +47,13 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 			forceRender = false;
 			repaint();
 		};
-		viewportListener = (w, h, xCenter, yCenter, scale) -> {
-			forceRender = false;
-			repaint();
-		};
+//		viewportListener = (w, h, xCenter, yCenter, scale) -> {
+//			forceRender = false;
+//			repaint();
+//		};
 		
 		re.addContentChangeListener(contentListener);
-		re.addViewportChangeListener(viewportListener);
+//		re.addViewportChangeListener(viewportListener);
 	}
 	
 	@Override
@@ -92,7 +92,7 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	@Override
 	public void dispose() {
 		re.removeContentChangeListener(contentListener);
-		re.removeViewportChangeListener(viewportListener);
+//		re.removeViewportChangeListener(viewportListener);
 		try {
 			registrar.unregisterAllServices(this);
 		} catch (Exception e) {}
@@ -109,53 +109,53 @@ public class ThumbnailView extends Component implements RenderingEngine<CyNetwor
 	 */
 	@Override 
 	public void update(Graphics g) {
-		if(isVisible()) {
-			//long start = System.currentTimeMillis();
-			
-			re.getCanvas().ensureInitialized();
-	
-			int w = getWidth();
-			int h = getHeight();
-			
-			DingCanvas bgCanvas   = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
-			InnerCanvas netCanvas = re.getCanvas();
-			DingCanvas fgCanvas   = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
-			
-			Image bgImage  = bgCanvas.getImage();
-			Image netImage = netCanvas.getImage();
-			Image fgImage  = fgCanvas.getImage();
-			
-			if(forceRender || bgImage == null || netImage == null || fgImage == null) {
-				// Slow path
-				// If the view hasn't been rendered yet then the cached images won't be available (can happen on session load).
-				// If a visual property has changed but the view hasn't rendered yet then the images are stale.
-				// In these cases we need to force a render of the thumbnail.
-				
-				int vw = netCanvas.getWidth();  // assume the canvases are the same size
-				int vh = netCanvas.getHeight();
-				
-				BufferedImage bufferedImage = new BufferedImage(vw, vh, BufferedImage.TYPE_INT_ARGB);
-				Graphics g2 = bufferedImage.getGraphics();
-				
-				// Painting will cause the images to be cached, so next time the fast path should run.
-				bgCanvas.paint(g2);
-				netCanvas.paint(g2);
-				fgCanvas.paint(g2);
-				g2.dispose();
-				
-				drawThumbnailLayer(g, w, h, bufferedImage);
-				forceRender = false;
-			}
-			else {
-				// Fast path, take the pre-rendered cached images and scale them.
-				drawThumbnailLayer(g, w, h, bgImage);
-				drawThumbnailLayer(g, w, h, netImage);
-				drawThumbnailLayer(g, w, h, fgImage);
-			}
-			
-			//long time = System.currentTimeMillis() - start;
-			//System.out.println("ThumbnailView.update() done: " + time);
-		}
+//		if(isVisible()) {
+//			//long start = System.currentTimeMillis();
+//			
+//			re.getCanvas().ensureInitialized();
+//	
+//			int w = getWidth();
+//			int h = getHeight();
+//			
+//			DingCanvas bgCanvas   = re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
+//			InnerCanvas netCanvas = re.getCanvas();
+//			DingCanvas fgCanvas   = re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
+//			
+//			Image bgImage  = bgCanvas.getImage();
+//			Image netImage = netCanvas.getImage();
+//			Image fgImage  = fgCanvas.getImage();
+//			
+//			if(forceRender || bgImage == null || netImage == null || fgImage == null) {
+//				// Slow path
+//				// If the view hasn't been rendered yet then the cached images won't be available (can happen on session load).
+//				// If a visual property has changed but the view hasn't rendered yet then the images are stale.
+//				// In these cases we need to force a render of the thumbnail.
+//				
+//				int vw = netCanvas.getWidth();  // assume the canvases are the same size
+//				int vh = netCanvas.getHeight();
+//				
+//				BufferedImage bufferedImage = new BufferedImage(vw, vh, BufferedImage.TYPE_INT_ARGB);
+//				Graphics g2 = bufferedImage.getGraphics();
+//				
+//				// Painting will cause the images to be cached, so next time the fast path should run.
+//				bgCanvas.paint(g2);
+//				netCanvas.paint(g2);
+//				fgCanvas.paint(g2);
+//				g2.dispose();
+//				
+//				drawThumbnailLayer(g, w, h, bufferedImage);
+//				forceRender = false;
+//			}
+//			else {
+//				// Fast path, take the pre-rendered cached images and scale them.
+//				drawThumbnailLayer(g, w, h, bgImage);
+//				drawThumbnailLayer(g, w, h, netImage);
+//				drawThumbnailLayer(g, w, h, fgImage);
+//			}
+//			
+//			//long time = System.currentTimeMillis() - start;
+//			//System.out.println("ThumbnailView.update() done: " + time);
+//		}
 	}
 	
 	

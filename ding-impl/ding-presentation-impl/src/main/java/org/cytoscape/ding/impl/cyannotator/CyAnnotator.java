@@ -26,8 +26,6 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.InnerCanvas;
-import org.cytoscape.ding.impl.ViewportChangeListener;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
@@ -79,11 +77,10 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private final DRenderingEngine re;
 	private final AnnotationCanvas foreGroundCanvas;
 	private final AnnotationCanvas backGroundCanvas;
-	private final InnerCanvas networkCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
 	private final AnnotationSelection annotationSelection;
-	private MyViewportChangeListener myViewportChangeListener;
+//	private MyViewportChangeListener myViewportChangeListener;
 	private AbstractAnnotation resizing;
 	private Rectangle2D resizeBounds;
 	private ArrowAnnotationImpl repositioning;
@@ -100,13 +97,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.re = re;
 		this.registrar = registrar;
-		this.foreGroundCanvas = (AnnotationCanvas) re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS);
-		this.backGroundCanvas = (AnnotationCanvas) re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS);
-		this.networkCanvas = re.getCanvas();
+		this.foreGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.FOREGROUND);
+		this.backGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.BACKGROUND);
 		this.annotationFactoryManager = annotationFactoryManager;
 		this.annotationSelection = new AnnotationSelection(this);
 		
-		initListeners();
+//		initListeners();
 	}
 	
 	public void markUndoEdit(String label) {
@@ -140,17 +136,17 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		propChangeSupport.removePropertyChangeListener(propertyName, listener);
 	}
 	
-	private void initListeners() {
-		//We also setup this class as a ViewportChangeListener to the current networkview
-		myViewportChangeListener=new MyViewportChangeListener();
-		re.addViewportChangeListener(myViewportChangeListener);
-	}
+//	private void initListeners() {
+//		//We also setup this class as a ViewportChangeListener to the current networkview
+//		myViewportChangeListener=new MyViewportChangeListener();
+//		re.addViewportChangeListener(myViewportChangeListener);
+//	}
 	
-	public void dispose() {
-		re.removeViewportChangeListener(myViewportChangeListener);
-		foreGroundCanvas.dispose();
-		backGroundCanvas.dispose();
-	}
+//	public void dispose() {
+//		re.removeViewportChangeListener(myViewportChangeListener);
+//		foreGroundCanvas.dispose();
+//		backGroundCanvas.dispose();
+//	}
 
 	
 	public void loadAnnotations() {
@@ -202,9 +198,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return null;
 	}
 
-	public void update() {
-		re.updateView();
-	}
+//	public void update() {
+//		re.updateView();
+//	}
 
 	public DRenderingEngine getRenderingEngine() {
 		return re;
@@ -236,7 +232,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
  	 */
 	private List<DingAnnotation> getComponentsAt(AnnotationCanvas cnvs, int x, int y) {
 		List<DingAnnotation> list = new ArrayList<>();
-
+		
+		// MKTODO it should not be necessary to z-sort, the canvas should return the annotations in z-order
 		for (DingAnnotation a : annotationSet) {
 			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
 				// Make sure to find the parent if this is a group
@@ -301,9 +298,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 
-	public InnerCanvas getNetworkCanvas() {
-		return networkCanvas;
-	}
 
 	public AnnotationCanvas getForeGroundCanvas() {
 		return foreGroundCanvas;
@@ -437,7 +431,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			a.setSelected(false);
 		}
 		annotationSelection.clear();
-		re.updateView();
+//		re.updateView();
 	}
 
 	public AnnotationSelection getAnnotationSelection() {
@@ -729,22 +723,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 */
 
-	class MyViewportChangeListener implements ViewportChangeListener {
-		
-		@Override
-		public void viewportChanged(int x, int y, double width, double height, double newZoom) {
-			//We adjust the font size of all the created annotations if the  if there are changes in viewport
-			List<DingAnnotation> annotations = foreGroundCanvas.getAnnotations();
-			for(DingAnnotation a : annotations) {
-				a.setZoom(newZoom);
-			}
-			
-			annotations = backGroundCanvas.getAnnotations();
-			for(DingAnnotation a : annotations) {
-				a.setZoom(newZoom);
-			}
-		}
-	}
 
 	class ZComparator implements Comparator<DingAnnotation> {
 		

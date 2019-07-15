@@ -64,7 +64,9 @@ public class AnnotationEdit extends AbstractCyEdit {
 			}
 			annotator.removeAnnotations(annotations);
 			annotator.loadAnnotations(state);
-			annotator.update();
+			
+			// MKTODO ?
+//			annotator.update();
 		}
 	}
 	

@@ -40,11 +40,21 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
 public interface DingAnnotation extends Annotation {
 	
+	public static enum CanvasID {
+		FOREGROUND, BACKGROUND;
+		
+		public String toArgName() {
+			return this == BACKGROUND ? Annotation.BACKGROUND : Annotation.FOREGROUND;
+		}
+		public static CanvasID fromArgName(String prop) {
+			return DingAnnotation.BACKGROUND.equals(prop) ? BACKGROUND : FOREGROUND;
+		}
+	}
 	
-	void changeCanvas(String canvas);
+	void changeCanvas(CanvasID canvasId);
 
 	AnnotationCanvas getCanvas();
-
+	
 	CyAnnotator getCyAnnotator();
 
 	void moveAnnotationRelative(Point2D location);

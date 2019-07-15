@@ -58,7 +58,6 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 	private double globalZoom = 1.0;
 	private double myZoom = 1.0;
 
-	private DRenderingEngine.Canvas canvasName;
 	private UUID uuid = UUID.randomUUID();
 
 	private Set<ArrowAnnotation> arrowList = new HashSet<>();
@@ -92,17 +91,15 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 		this.re = re;
 		this.cyAnnotator = re == null ? null : re.getCyAnnotator();
 		this.usedForPreviews = usedForPreviews;
-		this.canvas = (AnnotationCanvas)(re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS));
-		this.canvasName = DRenderingEngine.Canvas.FOREGROUND_CANVAS;
+		this.canvas = re.getAnnotationCanvas(CanvasID.FOREGROUND);
 		this.globalZoom = re.getZoom();
 		name = getDefaultName();
 	}
 
 	protected AbstractAnnotation(AbstractAnnotation c, boolean usedForPreviews) {
 		this(c.re, usedForPreviews);
-		arrowList = new HashSet<>(c.arrowList);
+		this.arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
-		this.canvasName = c.canvasName;
 	}
 
 	protected AbstractAnnotation(DRenderingEngine re, double x, double y, double zoom) {
@@ -123,8 +120,7 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
-			this.canvas = (AnnotationCanvas)(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS));
-			this.canvasName = DRenderingEngine.Canvas.BACKGROUND_CANVAS;
+			this.canvas = re.getAnnotationCanvas(CanvasID.BACKGROUND);
 		}
 
 		setLocation((int)coords.getX(), (int)coords.getY());
@@ -148,39 +144,29 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 
 	@Override
 	public String getCanvasName() {
-		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
-			return BACKGROUND;
-		return FOREGROUND;
+		return canvas.getCanvasID().toArgName();
 	}
 
 	@Override
-	public void setCanvas(String cnvs) {
-		canvasName = (cnvs.equals(BACKGROUND)) ? DRenderingEngine.Canvas.BACKGROUND_CANVAS : DRenderingEngine.Canvas.FOREGROUND_CANVAS;
-		canvas = (AnnotationCanvas)(re.getCanvas(canvasName));
-		for (ArrowAnnotation arrow: arrowList) 
-			if (arrow instanceof DingAnnotation)
-				((DingAnnotation)arrow).setCanvas(cnvs);
-
+	public void setCanvas(String name) {
+		CanvasID canvasID = CanvasID.fromArgName(name); 
+		changeCanvas(canvasID);
 		update();		// Update network attributes
 	}
 
 	@Override
-	public void changeCanvas(final String cnvs) {
-		// Are we really changing anything?
-		if ((cnvs.equals(BACKGROUND) && canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS)) ||
-		    (cnvs.equals(FOREGROUND) && canvasName.equals(DRenderingEngine.Canvas.FOREGROUND_CANVAS)))
+	public void changeCanvas(CanvasID canvasID) {
+		if(canvas.getCanvasID() == canvasID)
 			return;
-
-		if (!(this instanceof ArrowAnnotationImpl)) {
-			for (ArrowAnnotation arrow: arrowList) {
-				if (arrow instanceof DingAnnotation)
-					((DingAnnotation)arrow).changeCanvas(cnvs);
-			}
+		canvas.remove(this);
+		canvas = re.getAnnotationCanvas(canvasID);
+		canvas.add(this);
+		
+		for (ArrowAnnotation arrow: arrowList) {
+			if (arrow instanceof DingAnnotation)
+				((DingAnnotation)arrow).changeCanvas(canvasID);
 		}
 		
-		canvas.remove(this);	// Remove ourselves from the current canvas
-		setCanvas(cnvs);		// Set the new canvas
-		canvas.add(this);	// Add ourselves		
 	}
 
 	@Override
@@ -388,14 +374,12 @@ public abstract class AbstractAnnotation extends DingComponent implements DingAn
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = new HashMap<>();
 		if (name != null)
-			argMap.put(NAME, this.name);
+			argMap.put(NAME, name);
+		
 		ViewUtils.addNodeCoordinates(re, argMap, getX(), getY());
-		argMap.put(ZOOM,Double.toString(this.globalZoom));
-		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
-			argMap.put(CANVAS, BACKGROUND);
-		else
-			argMap.put(CANVAS, FOREGROUND);
-		argMap.put(ANNOTATION_ID, this.uuid.toString());
+		argMap.put(ZOOM,Double.toString(globalZoom));
+		argMap.put(CANVAS, canvas.getCanvasID().toArgName());
+		argMap.put(ANNOTATION_ID, uuid.toString());
 
 		if (parent != null)
 			argMap.put(PARENT_ID, parent.getUUID().toString());

@@ -1,9 +1,8 @@
 package org.cytoscape.ding.impl;
 
-import java.awt.Graphics;
 import java.awt.Image;
-
-import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
+import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -29,34 +28,35 @@ import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
  * #L%
  */
 
-/**
- * This class is meant to be extended by a class which
- * is meant to exist within the InternalFrameComponent class.
- * It provides the services required to draw onto it.
- *
- * Currently (9/7/06), two classes will extend DingCanves, org.cytoscape.ding.impl.InnerCanvas
- * and org.cytoscape.ding.impl.ArbitraryGraphicsCanvas.
- */
-public abstract class DingCanvas extends DingComponent {
+
+
+public interface DingCanvas extends Callable<Image>, Supplier<Image> {
 	
-	private final Canvas canvasId;
 	
-	public DingCanvas(Canvas canvasId) {
-		this.canvasId = canvasId;
+	default void setViewport(int width, int height) {}
+	
+	default void setCenter(double x, double y) {}
+	
+	default void setScaleFactor(double scaleFactor) {}
+	
+	
+	default Image call() {
+		return paintImage();
 	}
 	
-	public Canvas getCanvasId() {
-		return canvasId;
+	default Image get() {
+		return paintImage();
 	}
 	
-	public abstract Image getImage();
+	Image paintImage();
 	
-	public abstract void paint(Graphics g);
+	default void dispose() {}
 	
-	public abstract void print(Graphics g);
-	
-	public void printNoImposter(Graphics g) {
-		print(g);
-	}
+//	// Don't know about this yet
+//	public abstract void print(Graphics g);
+//	
+//	default void printNoImposter(Graphics g) {
+//		print(g);
+//	}
 	
 }

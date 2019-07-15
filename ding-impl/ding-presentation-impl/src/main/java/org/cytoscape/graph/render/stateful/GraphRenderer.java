@@ -766,8 +766,7 @@ public final class GraphRenderer {
 	 *
 	 * @return DOCUMENT ME!
 	 */
-	public final static boolean computeEdgeEndpoints(final GraphGraphics grafx,
-	                                                 final float[] srcNodeExtents,
+	public final static boolean computeEdgeEndpoints(final float[] srcNodeExtents,
 	                                                 final byte srcNodeShape, final ArrowShape srcArrow,
 	                                                 final float srcArrowSize, EdgeAnchors anchors,
 	                                                 final float[] trgNodeExtents,
@@ -804,13 +803,12 @@ public final class GraphRenderer {
 			trgYOut = floatBuff[1];
 		}
 
-		calcIntersection(grafx, srcNodeShape, srcNodeExtents, srcX, srcY, 
+		calcIntersection(srcNodeShape, srcNodeExtents, srcX, srcY, 
 		                 srcXOut, srcYOut, floatBuff); 
 		final float srcXAdj = floatBuff[0];
 		final float srcYAdj = floatBuff[1];
 
-		calcIntersection(grafx, trgNodeShape, trgNodeExtents, trgX, trgY, 
-		                 trgXOut, trgYOut, floatBuff); 
+		calcIntersection(trgNodeShape, trgNodeExtents, trgX, trgY, trgXOut, trgYOut, floatBuff); 
 		final float trgXAdj = floatBuff[0];
 		final float trgYAdj = floatBuff[1];
 
@@ -822,7 +820,7 @@ public final class GraphRenderer {
 		return true;
 	}
 
-	private static void calcIntersection(GraphGraphics grafx, byte nodeShape, 
+	private static void calcIntersection(byte nodeShape, 
 	                                     float[] nodeExtents, float x, float y,
 	                                     float xOut, float yOut, float[] retVal) {
 		if ((nodeExtents[0] == nodeExtents[2]) || 
@@ -830,7 +828,7 @@ public final class GraphRenderer {
 			retVal[0] = x;
 			retVal[1] = y;
 		} else {
-			if (!grafx.computeEdgeIntersection(nodeShape, nodeExtents[0],
+			if (!GraphGraphics.computeEdgeIntersection(nodeShape, nodeExtents[0],
 			                                   nodeExtents[1], nodeExtents[2],
 			                                   nodeExtents[3], 0.0f, xOut, yOut,
 			                                   retVal)) {
@@ -856,7 +854,7 @@ public final class GraphRenderer {
 					newYOut = (float) (((dY / len) * desiredDist) + yOut);
 				}
 
-				grafx.computeEdgeIntersection(nodeShape, nodeExtents[0],
+				GraphGraphics.computeEdgeIntersection(nodeShape, nodeExtents[0],
 				                              nodeExtents[1], nodeExtents[2],
 				                              nodeExtents[3], 0.0f, newXOut,
 				                              newYOut, retVal);

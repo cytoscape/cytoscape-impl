@@ -213,7 +213,9 @@ public class ViewState {
 
 		re.setZoom(scaleFactor);
 		re.setCenter(center.getX(), center.getY());
-		re.updateView();
+		
+		// MKTODO
+		//re.updateView();
 
 		if (anchors != null) {
 			for(View<CyEdge> e: anchors.keySet()) {

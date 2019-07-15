@@ -3,7 +3,6 @@ package org.cytoscape.ding.impl;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
-import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
@@ -17,8 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /*
@@ -45,27 +42,34 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
  * #L%
  */
 
-public class AnnotationCanvas extends DingCanvas implements ViewportChangeListener {
+public class AnnotationCanvas implements DingCanvas {
+	
+	private final DingAnnotation.CanvasID canvasID;
 	
 	private DRenderingEngine re;
-	private InnerCanvas networkCanvas;
+//	private InnerCanvas networkCanvas;
 	private Map<DingAnnotation,Point> annotationToPointMap = new HashMap<>();
 	private List<DingAnnotation> annotations = new LinkedList<>();
+	
+	private CompositeCanvas parent;
 	/*
  	 * Flag to record that we're printing since we don't use the PrinterGraphics interface
  	 */
-	private boolean isPrinting;
+//	private boolean isPrinting;
 	private Image img;
+	private boolean dirty = true;
 	
-	private AnnotationSelection selection;
 
 
-	public AnnotationCanvas(DRenderingEngine re, Canvas canvasId, InnerCanvas innerCanvas) {
-		super(canvasId);
+	public AnnotationCanvas(CompositeCanvas parent, DingAnnotation.CanvasID canvasID, DRenderingEngine re) {
+		this.parent = parent;
 		this.re = re;
-		this.networkCanvas = innerCanvas;
+		this.canvasID = canvasID;
 	}
 
+	public DingAnnotation.CanvasID getCanvasID() {
+		return canvasID;
+	}
 	
 	public Image getImage() {
 		return img;
@@ -80,7 +84,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 		nodeCanvasCoordinates[0] = annotation.getX();
 		nodeCanvasCoordinates[1] = annotation.getY();
 
-		re.xformComponentToNodeCoords(nodeCanvasCoordinates);
+		parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
 
 		Point nodePos = new Point( (int)nodeCanvasCoordinates[0], (int)nodeCanvasCoordinates[1]);
 
@@ -107,12 +111,6 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 		contentChanged();
 	}
 	
-    
-    public void setSelection(AnnotationSelection selection) {
-    	this.selection = selection;
-    }
-    
-
 	/**
 	 * Our implementation of add
 	 */
@@ -140,12 +138,14 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 	
 	
 	@Override
-	public void viewportChanged(int viewportWidth, int viewportHeight, double newXCenter, double newYCenter, double newScaleFactor) {
+	public void setCenter(double x, double y) {
 		setBoundsChildren();
-//		if (setBoundsChildren())
-//			repaint();
 	}
-
+	
+	@Override
+	public void setScaleFactor(double scaleFactor) {
+		setBoundsChildren();
+	}
 	
 	public void modifyComponentLocation(int x, int y, DingAnnotation component){
 		final Point nodePos = annotationToPointMap.get(component);
@@ -155,7 +155,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 		nodeCanvasCoordinates[0] = x;
 		nodeCanvasCoordinates[1] = y;
 
-		re.xformComponentToNodeCoords(nodeCanvasCoordinates);
+		parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
 
 		nodePos.x = (int)nodeCanvasCoordinates[0];
 		nodePos.y = (int)nodeCanvasCoordinates[1];
@@ -164,17 +164,23 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 	}
 
 	@Override
-	public void setSize(int width, int height) {
-		super.setSize(width, height);
+	public void setViewport(int width, int height) {
 		// our bounds have changed, create a new image with new size
 		if (width > 1 && height > 1) {
 			// create the buffered image
 			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-			// update children's bounds
 			setBoundsChildren();
 		}
 	}
 
+//	private int getWidth() {
+//		return img.getWidth(null);
+//	}
+//	
+//	private int getHeight() {
+//		return img.getHeight(null);
+//	}
+	
 	/**
 	 * An implementation of getBounds that adjusts the bounds to
 	 * include all of the child elements
@@ -209,7 +215,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 			nodeCanvasCoordinates[1] = c.getY() + c.getHeight();
 
 			// Transform the maximum extent to get network cooredinates
-			re.xformComponentToNodeCoords(nodeCanvasCoordinates);
+			parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
 
 			// Adjust, if necessary
 			if (nodeCanvasCoordinates[0] > currentBounds[2])
@@ -255,7 +261,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 	}
 
 	@Override
-	public void paint(Graphics graphics) {
+	public Image paintImage() {
 		// only paint if we have an image to paint on
 		if (img != null) {
 			// get image graphics
@@ -283,50 +289,52 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 			
 			image2D.dispose();
 			// render image
-			graphics.drawImage(img, 0, 0, null);
+//			graphics.drawImage(img, 0, 0, null);
 			
 			// Make img publicly available *after* it has been rendered
 //			m_img = img;
 		}
+		dirty = false;
+		return img;
 	}
 
-	@Override
-	public void print(Graphics graphics) {
-		isPrinting = true;
-		// Only do this if we're opaque (i.e. the background canvas)
-//		if (isOpaque())
-			clearImage((Graphics2D)graphics);
-//		this.printChildren(graphics);
-		isPrinting = false;
-	}
+//	@Override
+//	public void print(Graphics graphics) {
+//		isPrinting = true;
+//		// Only do this if we're opaque (i.e. the background canvas)
+////		if (isOpaque())
+//			clearImage((Graphics2D)graphics);
+////		this.printChildren(graphics);
+//		isPrinting = false;
+//	}
+//
+//	/**
+// 	 * Return true if this view is currently being printed (as opposed to painted on the screen)
+// 	 * @return true if we're currently being printed, false otherwise
+// 	 */
+//	public boolean isPrinting() { 
+//		return isPrinting; 
+//	}
 
-	/**
- 	 * Return true if this view is currently being printed (as opposed to painted on the screen)
- 	 * @return true if we're currently being printed, false otherwise
- 	 */
-	public boolean isPrinting() { 
-		return isPrinting; 
-	}
-
-	private boolean setBoundsChildren() {
-		if (annotations.isEmpty())
-			return false;
-		
-		networkCanvas.ensureInitialized();
-
+//	public void setTransform(double xCenter, double yCenter, double scaleFactor) {
+//		xform.setToTranslation(0.5d * getWidth(), 0.5d * getHeight());
+//		xform.scale(scaleFactor, scaleFactor);
+//		xform.translate(-xCenter, -yCenter);
+//	}
+	
+	private void setBoundsChildren() {
 		for (DingAnnotation a : annotations) {
 			Point node = annotationToPointMap.get(a);
 			if (node == null) 
 				continue;
 			
 			double[] currentNodeCoordinates = {node.getX(), node.getY()};
-			AffineTransform transform = networkCanvas.getAffineTransform();
+			AffineTransform transform = parent.getTransform().getAffineTransform();
 			transform.transform(currentNodeCoordinates, 0, currentNodeCoordinates, 0, 1);
 
 			a.setBounds((int) currentNodeCoordinates[0], (int) currentNodeCoordinates[1], a.getWidth(), a.getHeight());
+			a.setZoom(parent.getScaleFactor());
 		}
-
-		return true;
 	}
 
 	/**
@@ -348,7 +356,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 	}
 
 	private void contentChanged() {
-		re.fireContentChanged();
+		dirty = true;
 	}
 
 //	// Sort the components by z order
@@ -378,7 +386,7 @@ public class AnnotationCanvas extends DingCanvas implements ViewportChangeListen
 		// In order to ensure no other instances get strung along, we should
 		// release them here.
 		re = null;
-		networkCanvas = null;
+//		networkCanvas = null;
 		annotations = null;
 	}
 }

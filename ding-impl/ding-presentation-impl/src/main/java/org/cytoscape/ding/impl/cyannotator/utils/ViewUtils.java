@@ -191,7 +191,7 @@ public class ViewUtils {
 		if (argMap.containsKey(Annotation.Y))
 			nextLocn[1] = Double.parseDouble(argMap.get(Annotation.Y));
 
-		re.xformNodeToComponentCoords(nextLocn);
+		re.getTransform().xformNodeToImageCoords(nextLocn);
 		
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
@@ -204,12 +204,12 @@ public class ViewUtils {
 		double[] nextLocn1 = new double[2];
 		nextLocn1[0] = x1;
 		nextLocn1[1] = y1;
-		re.xformComponentToNodeCoords(nextLocn1);
+		re.getTransform().xformImageToNodeCoords(nextLocn1);
 
 		double[] nextLocn2 = new double[2];
 		nextLocn2[0] = x2;
 		nextLocn2[1] = y2;
-		re.xformComponentToNodeCoords(nextLocn2);
+		re.getTransform().xformImageToNodeCoords(nextLocn2);
 
 		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
 	}
@@ -222,12 +222,12 @@ public class ViewUtils {
 		double[] nextLocn1 = new double[2];
 		nextLocn1[0] = x1;
 		nextLocn1[1] = y1;
-		re.xformNodeToComponentCoords(nextLocn1);
+		re.getTransform().xformNodeToImageCoords(nextLocn1);
 
 		double[] nextLocn2 = new double[2];
 		nextLocn2[0] = x2;
 		nextLocn2[1] = y2;
-		re.xformNodeToComponentCoords(nextLocn2);
+		re.getTransform().xformNodeToImageCoords(nextLocn2);
 
 		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
 	}
@@ -236,7 +236,7 @@ public class ViewUtils {
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
-		re.xformComponentToNodeCoords(nextLocn);
+		re.getTransform().xformImageToNodeCoords(nextLocn);
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
@@ -244,7 +244,7 @@ public class ViewUtils {
 		double[] nextLocn = new double[2];
 		nextLocn[0] = x;
 		nextLocn[1] = y;
-		re.xformNodeToComponentCoords(nextLocn);
+		re.getTransform().xformNodeToImageCoords(nextLocn);
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 
