@@ -10,7 +10,9 @@ import org.cytoscape.work.TaskMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+/**
+ * Task for the "Add > Edge" context menu item.
+ */
 public class AddEdgeBeginTask extends AbstractNodeViewTask {
 
 	private final CyServiceRegistrar serviceRegistrar;

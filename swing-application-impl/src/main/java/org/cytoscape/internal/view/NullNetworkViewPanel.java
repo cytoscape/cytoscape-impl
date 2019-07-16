@@ -39,7 +39,7 @@ import org.cytoscape.view.model.CyNetworkView;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -196,6 +196,9 @@ public class NullNetworkViewPanel extends JPanel {
 					.addComponent(getCreateViewButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					.addGap(0, 0, Short.MAX_VALUE)
 			);
+			
+			centerPanel.setMinimumSize(new Dimension(centerPanel.getMinimumSize().width, 0));
+
 		}
 		
 		return centerPanel;

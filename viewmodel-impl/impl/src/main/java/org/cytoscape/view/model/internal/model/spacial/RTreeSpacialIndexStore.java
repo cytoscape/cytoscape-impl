@@ -19,14 +19,14 @@ import io.vavr.collection.Map;
 /**
  * Mutable SpacialIndex specifically for use by CyNetworkViewImpl.
  */
-public class SpacialIndexStore {
+public class RTreeSpacialIndexStore {
 	
 	private RTree<Long,Rectangle> rtree = RTree.create();
 	private Map<Long,Rectangle> geometries = HashMap.empty();
 	
 	
-	public SpacialIndex2DSnapshotImpl createSnapshot() {
-		return new SpacialIndex2DSnapshotImpl(rtree, geometries);
+	public RTreeSpacialIndex2DSnapshotImpl createSnapshot() {
+		return new RTreeSpacialIndex2DSnapshotImpl(rtree, geometries);
 	}
 	
 	public void addDefault(VPStore nodeVPs, Long suid) {

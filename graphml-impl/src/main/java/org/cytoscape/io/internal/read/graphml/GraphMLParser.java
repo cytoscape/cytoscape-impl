@@ -4,6 +4,7 @@ import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRNAME;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ATTRTYPE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DATA;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DEFAULT;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DESC;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.DIRECTED;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.EDGEDEFAULT;
@@ -12,6 +13,7 @@ import static org.cytoscape.io.internal.read.graphml.GraphMLToken.ID;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.KEY;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.NODE;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.SOURCE;
+import static org.cytoscape.io.internal.read.graphml.GraphMLToken.STRING;
 import static org.cytoscape.io.internal.read.graphml.GraphMLToken.TARGET;
 
 import java.util.ArrayList;
@@ -46,7 +48,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -168,6 +170,12 @@ public class GraphMLParser extends DefaultHandler {
 			// This is for table value.
 			currentAttributeKey = atts.getValue(KEY.getTag());
 			currentAttributeType = datatypeMap.get(currentAttributeKey);
+		} else if (qName.equals(DESC.getTag())) {
+			// This is for the standard <desc> tag, which Cytoscape imports as "name" column
+			// (valid for networks, nodes and edges)
+			currentAttributeKey = DESC.getTag();
+			currentAttributeType = STRING.getTag();
+			datanameMap.put(DESC.getTag(), CyNetwork.NAME);
 		}
 	}
 
@@ -176,26 +184,25 @@ public class GraphMLParser extends DefaultHandler {
 		
 		if (networkStack.size() == 0) {
 			// Root network.
-			if(newNetwork == null) {
-				currentNetwork = root.addSubNetwork();
-			} else {
-				currentNetwork = newNetwork;
-			}
+			currentNetwork = (newNetwork == null) ? root.addSubNetwork() : newNetwork;
 		} else {
 			final CyNetwork parentNetwork = networkStack.peek();
 			currentNetwork = rootNetworkManager.getRootNetwork(parentNetwork).addSubNetwork();
-			if(lastTag != null && lastTag.equals(NODE.getTag())) {
+
+			if (lastTag != null && lastTag.equals(NODE.getTag())) {
 				Collection<CyNode> toBeRemoved = new ArrayList<>();
 				toBeRemoved.add(lastNode);
-				
-				for(CyNetwork network: networkStack)
+
+				for (CyNetwork network : networkStack)
 					network.removeNodes(toBeRemoved);
 			}
 		}
+		
 		currentNetwork.getRow(currentNetwork).set(CyNetwork.NAME, networkID);
 		
 		networkStack.push(currentNetwork);
 		cyNetworks.add(currentNetwork);
+		
 		// parse directed or undirected
 		String edef = atts.getValue(EDGEDEFAULT.getTag());
 		directed = DIRECTED.getTag().equalsIgnoreCase(edef);
@@ -209,6 +216,7 @@ public class GraphMLParser extends DefaultHandler {
 		if (networkStack.size() > 1) {
 			final CyNetwork rootNetwork = networkStack.get(0);
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
+			
 			if (currentObject == null) {
 				currentObject = rootNetwork.addNode();
 				rootNetwork.getRow(currentObject).set(CyNetwork.NAME, currentAttributeID);
@@ -224,6 +232,7 @@ public class GraphMLParser extends DefaultHandler {
 		} else {
 			// Root
 			currentObject = nodeid2CyNodeMap.get(currentAttributeID);
+			
 			if (currentObject == null) {
 				currentObject = currentNetwork.addNode();
 				currentNetwork.getRow(currentObject).set(CyNetwork.NAME, currentAttributeID);
@@ -263,14 +272,12 @@ public class GraphMLParser extends DefaultHandler {
 		}
 	}
 
-	
 	@Override
 	public void characters(char[] ch, int start, int length) {
 		currentAttributeData = String.valueOf(ch, start, length);
 		builder.append(currentAttributeData);
 	}
-
-
+	
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 		parseString();
@@ -283,37 +290,35 @@ public class GraphMLParser extends DefaultHandler {
 		}
 	}
 
-
 	private void parseString() {
 		final String finalString = builder.toString().trim();
-		if(finalString.isEmpty()) {
-			return;
-		}
 		
-		if(currentTag.equals(DATA.getTag())) {
+		if (finalString.isEmpty())
+			return;
+		
+		if (currentTag.equals(DESC.getTag()) || currentTag.equals(DATA.getTag())) {
 			parseData(finalString);
 		} else if (currentTag.equals(DEFAULT.getTag())) {
-		
 			// TODO support DEFAULT value
 		}
 	}
 	
 	private final void parseData(final String finalString) {
 		final GraphMLToken attrTag = GraphMLToken.getType(currentAttributeType);
-		if (attrTag == null || attrTag.getDataType() == null) {
+		
+		if (attrTag == null || attrTag.getDataType() == null)
 			return;
-		}
 		
 		final String columnName = datanameMap.get(currentAttributeKey);
 		final CyColumn column;
 		final CyTable table;
 		final CyRow row;
-		if(currentObject == null) {
+		
+		if (currentObject == null) {
 			// This is a network data.
 			table = currentNetwork.getDefaultNetworkTable();
 			column = table.getColumn(columnName);
 			row = table.getRow(currentNetwork.getSUID());
-			
 		} else {
 			table = currentNetwork.getRow(currentObject).getTable();
 			column = table.getColumn(columnName);

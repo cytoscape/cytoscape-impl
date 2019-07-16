@@ -184,7 +184,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
 		
-		nodeDetails = new DNodeDetails(this);
+		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
@@ -465,23 +465,23 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				// Adjust the content based on the background canvas
 				backgroundCanvas.adjustBounds(extentsBuff);
 	
-				CyNetworkView netView = netViewSnapshot.getMutableNetworkView();
-				
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extentsBuff[0] + extentsBuff[2]) / 2.0d);
-				
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extentsBuff[1] + extentsBuff[3]) / 2.0d);
-	
-				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
-					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-					final double zoom = Math.min(((double) networkCanvas.getWidth()) / 
-					                             (extentsBuff[2] - extentsBuff[0]), 
-					                              ((double) networkCanvas.getHeight()) / 
-					                             (extentsBuff[3] - extentsBuff[1])) * 0.98;
-					// Update view model.  Zoom Level should be modified.
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-				}
+				netViewSnapshot.getMutableNetworkView().batch(netView -> {
+					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
+						netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extentsBuff[0] + extentsBuff[2]) / 2.0d);
+					
+					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
+						netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extentsBuff[1] + extentsBuff[3]) / 2.0d);
+		
+					if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
+						// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
+						final double zoom = Math.min(((double) networkCanvas.getWidth()) / 
+						                             (extentsBuff[2] - extentsBuff[0]), 
+						                              ((double) networkCanvas.getHeight()) / 
+						                             (extentsBuff[3] - extentsBuff[1])) * 0.98;
+						// Update view model.  Zoom Level should be modified.
+						netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+					}
+				});
 			}
 			
 			if (updateView)
@@ -504,21 +504,24 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void updateView(final boolean forceRedraw) {
+		// MKTODO we don't need to do this anymore right?
 		eventHelper.flushPayloadEvents();
 		
 		invokeOnEDTAndWait(() -> {
-			if (forceRedraw)
+			if (forceRedraw) {
 				setContentChanged();
+			}
 			
 			networkCanvas.repaint();
 			
 			//Check if image size has changed if so, visual property needs to be changed as well
 			if (networkCanvas.getWidth() != imageWidth || networkCanvas.getHeight() != imageHeight) {
-				imageWidth = networkCanvas.getWidth();
+				imageWidth  = networkCanvas.getWidth();
 				imageHeight = networkCanvas.getHeight();
-				CyNetworkView netView = getViewModel();
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH, (double) imageWidth);
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
+				getViewModel().batch(netView -> {
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) imageWidth);
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) imageHeight);
+				}, false); // don't set the dirty flag
 			}
 		});
 		
@@ -543,9 +546,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			
 			// Update view model
 			// TODO: don't do it from here?
-			CyNetworkView netView = getViewModel();
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.xCenter);
-			netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.yCenter);
+			getViewModel().batch(netView -> {
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, networkCanvas.xCenter);
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, networkCanvas.yCenter);
+			}, false); // don't set the dirty flag
 		}
 	}
 
@@ -596,30 +600,33 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				yMax = Math.max(yMax, extentsBuff[3]);
 			}
 
-			xMin = xMin - (getLabelWidth(leftMost) / 2);
-			xMax = xMax + (getLabelWidth(rightMost) / 2);
+			float xMinF = xMin - (getLabelWidth(leftMost) / 2);
+			float xMaxF = xMax + (getLabelWidth(rightMost) / 2);
+			float yMaxF = yMax;
+			float yMinF = yMin;
 
-			CyNetworkView netView = netViewSnapshot.getMutableNetworkView();
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				double zoom = Math.min(((double) networkCanvas.getWidth())
-						/ (((double) xMax) - ((double) xMin)),
-						((double) networkCanvas.getHeight())
-								/ (((double) yMax) - ((double) yMin)));
-				zoom = checkZoom(zoom, networkCanvas.scaleFactor);
+			netViewSnapshot.getMutableNetworkView().batch(netView -> {
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+					double zoom = Math.min(((double) networkCanvas.getWidth())
+							/ (((double) xMaxF) - ((double) xMinF)),
+							((double) networkCanvas.getHeight())
+									/ (((double) yMaxF) - ((double) yMinF)));
+					zoom = checkZoom(zoom, networkCanvas.scaleFactor);
+					
+					// Update view model.  Zoom Level should be modified.
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
+				}
 				
-				// Update view model.  Zoom Level should be modified.
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
-			}
-			
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
-				double xCenter = (((double) xMin) + ((double) xMax)) / 2.0d;
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
-			}
-			
-			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				double yCenter = (((double) yMin) + ((double) yMax)) / 2.0d;
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
-			}
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+					double xCenter = (((double) xMinF) + ((double) xMaxF)) / 2.0d;
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, xCenter);
+				}
+				
+				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+					double yCenter = (((double) yMinF) + ((double) yMaxF)) / 2.0d;
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, yCenter);
+				}
+			});
 //		}
 			
 		updateSnapshotAndView();
@@ -1176,17 +1183,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		boolean treatNodeShapesAsRectangle = (networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0;
 		List<Long> suids = getNodesIntersectingRectangle(x, y, x, y, treatNodeShapesAsRectangle);
 
-		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+		if(suids.isEmpty())
+			return null;
 		
-		// return node with topmost Z
-		View<CyNode> nv = null;
-		for(Long suid : suids) {
-			View<CyNode> dnv = netViewSnapshot.getNodeView(suid);
-			if (nv == null || nodeDetails.getZPosition(dnv) > nodeDetails.getZPosition(nv)) {
-				nv = dnv;
-			}
-		}
-		return nv;
+		Long suid = suids.get(suids.size() - 1);
+		return getViewModelSnapshot().getNodeView(suid);
 	}
 
 	public View<CyEdge> getPickedEdgeView(Point2D pt) {

@@ -376,11 +376,7 @@ public interface NodeDetails {
 	}
 
 	/**
-	 * Child class should ovrride this method to render correct Nexted Network
-	 * Image.
-	 * 
-	 * @param node
-	 * @return
+	 * Child class should ovrride this method to render correct Nexted Network Image.
 	 */
 	default TexturePaint getNestedNetworkTexturePaint(CyNetworkViewSnapshot netView, View<CyNode> node) {
 		return null;

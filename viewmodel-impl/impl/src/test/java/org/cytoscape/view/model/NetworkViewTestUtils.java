@@ -8,8 +8,10 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,7 +33,7 @@ public class NetworkViewTestUtils {
 	private NetworkViewTestUtils() {}
 	
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network) {
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
@@ -40,11 +42,15 @@ public class NetworkViewTestUtils {
 		
 		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
 		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
+		config.setEnableSpacialIndex2D(useRTree);
 		CyNetworkViewFactory viewFactory = factoryFactory.createNetworkViewFactory(lexicon, "test", config);
 		CyNetworkViewImpl networkView = (CyNetworkViewImpl)viewFactory.createNetworkView(network);
 		return networkView;
 	}
 	
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network) {
+		return createNetworkView(network, true);
+	}
 
 	public static Set<Long> asSuidSet(Iterable<? extends CyIdentifiable> iterable) {
 		HashSet<Long> set = new HashSet<>();
@@ -65,11 +71,12 @@ public class NetworkViewTestUtils {
 		assertEquals(adj, toSet(snapshot.getAdjacentEdgeIterable(nv)).size());
 	}
 	
-	public static void setGeometry(View<CyNode> node, float x, float y, float w, float h) {
+	public static void setGeometry(View<CyNode> node, float x, float y, float w, float h, double z) {
 		node.setVisualProperty(BasicVisualLexicon.NODE_HEIGHT, h);
 		node.setVisualProperty(BasicVisualLexicon.NODE_WIDTH, w);
 		node.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, x);
 		node.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, y);
+		node.setVisualProperty(BasicVisualLexicon.NODE_Z_LOCATION, z);
 	}
 	
 	public static void assertMBR(CyNetworkViewSnapshot snapshot, float xMin, float yMin, float xMax, float yMax) {
@@ -95,6 +102,14 @@ public class NetworkViewTestUtils {
 		Set<T> set = new HashSet<>();
 		iterable.forEach(set::add);
 		return set;
+	}
+	
+	public static List<Long> enumToList(SpacialIndex2DEnumerator<Long> indexEnum) {
+		List<Long> list = new ArrayList<>(indexEnum.size());
+		while(indexEnum.hasNext()) {
+			list.add(indexEnum.next());
+		}
+		return list;
 	}
 	
 }

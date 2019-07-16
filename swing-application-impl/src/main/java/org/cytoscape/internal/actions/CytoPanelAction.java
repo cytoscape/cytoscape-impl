@@ -1,7 +1,9 @@
 package org.cytoscape.internal.actions;
 
+import static org.cytoscape.internal.view.CytoPanelNameInternal.BOTTOM;
 import static org.cytoscape.internal.view.CytoPanelStateInternal.DOCK;
 import static org.cytoscape.internal.view.CytoPanelStateInternal.HIDE;
+import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
 
 import java.awt.event.ActionEvent;
 
@@ -74,7 +76,14 @@ public class CytoPanelAction extends AbstractCyAction {
 	public void actionPerformed(ActionEvent evt) {
 		CytoPanelImpl cytoPanel = (CytoPanelImpl) desktop.getCytoPanel(position);
 		CytoPanelStateInternal state = cytoPanel.getStateInternal();
-		cytoPanel.setStateInternal(state == HIDE ? DOCK : HIDE);
+		final CytoPanelStateInternal newState;
+		
+		if (state == HIDE)
+			newState = cytoPanel.getCytoPanelNameInternal() == BOTTOM ? UNDOCK : DOCK;
+		else
+			newState = HIDE;
+		
+		cytoPanel.setStateInternal(newState);
 	} 
 
 	@Override

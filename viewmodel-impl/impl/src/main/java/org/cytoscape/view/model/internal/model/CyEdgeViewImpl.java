@@ -41,7 +41,7 @@ public class CyEdgeViewImpl extends CyViewBase<CyEdge> {
 	}
 
 	@Override
-	public Object getLock() {
+	public ViewLock getLock() {
 		return getNetworkView().edgeLock;
 	}
 	

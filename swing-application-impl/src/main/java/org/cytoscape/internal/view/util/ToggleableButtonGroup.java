@@ -119,6 +119,9 @@ public class ToggleableButtonGroup extends ButtonGroup {
 	public void setSelected(ButtonModel model, boolean selected) {
 		AbstractButton button = getButton(model);
 		
+		if (button == null)
+			return;
+		
 		if (toggleable) {
 			if (model == lastModel)
 				clearSelection();

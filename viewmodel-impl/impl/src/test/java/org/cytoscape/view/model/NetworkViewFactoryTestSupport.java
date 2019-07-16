@@ -7,7 +7,7 @@ import static org.mockito.Mockito.withSettings;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
-import org.cytoscape.view.model.internal.model.spacial.SpacialIndex2DFactoryImpl;
+import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.NullVisualProperty;
@@ -33,7 +33,7 @@ public class NetworkViewFactoryTestSupport {
 	}
 
 	public SpacialIndex2DFactory getSpacialIndex2DFactory() {
-		return new SpacialIndex2DFactoryImpl();
+		return new RTreeSpacialIndex2DFactoryImpl();
 	}
 	
 }

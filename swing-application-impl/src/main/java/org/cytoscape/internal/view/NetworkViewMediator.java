@@ -24,6 +24,8 @@ import javax.swing.Timer;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.CyShutdownEvent;
+import org.cytoscape.application.events.CyShutdownListener;
 import org.cytoscape.application.events.SetCurrentNetworkViewEvent;
 import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.internal.view.GridViewToggleModel.Mode;
@@ -114,7 +116,7 @@ public class NetworkViewMediator
 		implements NetworkViewAddedListener, NetworkViewAboutToBeDestroyedListener, SetCurrentNetworkViewListener,
 		RowsSetListener, VisualStyleChangedListener, SetCurrentVisualStyleListener, UpdateNetworkPresentationListener,
 		VisualStyleSetListener, SessionAboutToBeLoadedListener, SessionLoadedListener, ColumnDeletedListener,
-		ColumnNameChangedListener, ViewChangedListener {
+		ColumnNameChangedListener, ViewChangedListener, CyShutdownListener {
 
 	private static final String SHOW_VIEW_TOOLBARS_KEY = "showDetachedViewToolBars";
 	
@@ -446,6 +448,14 @@ public class NetworkViewMediator
 					updateView(view, null);
 			}
 		}
+	}
+	
+	@Override
+	public void handleEvent(CyShutdownEvent e) {
+		invokeOnEDT(() -> {
+			// Dispose any component that could be put in a bad state during shutdown and throw exceptions 
+			getNetworkViewMainPanel().dispose();
+		});
 	}
 
 	@SuppressWarnings("unchecked")

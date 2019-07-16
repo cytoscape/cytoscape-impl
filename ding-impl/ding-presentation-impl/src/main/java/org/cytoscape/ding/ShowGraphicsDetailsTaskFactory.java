@@ -38,6 +38,6 @@ public class ShowGraphicsDetailsTaskFactory implements NetworkViewTaskFactory {
 	
 	@Override
 	public boolean isReady(CyNetworkView view) {
-		return DingRenderer.ID.equals(view.getRendererId());
+		return view != null && DingRenderer.ID.equals(view.getRendererId());
 	}
 }

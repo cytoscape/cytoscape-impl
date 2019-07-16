@@ -187,9 +187,9 @@ public class CytoPanelImpl implements CytoPanel {
 		return trimBarIndex;
 	}
 
-	public void insert(CytoPanelComponent cpc, int index) {
+	public boolean insert(CytoPanelComponent cpc, int index) {
 		if (indexOfComponent(cpc.getComponent()) >= 0)
-			return;
+			return false;
 		
 		CytoPanelState oldState = getState();
 		cytoPanelComponents.add(index, cpc);
@@ -211,6 +211,8 @@ public class CytoPanelImpl implements CytoPanel {
 		// For backwards compatibility
 		if (oldState != getState())
 			notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed from HIDE
+		
+		return true;
 	}
 	
 	@Override
@@ -230,10 +232,13 @@ public class CytoPanelImpl implements CytoPanel {
 
 	@Override
 	public Component getComponentAt(int index) {
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 
 		return cpc != null ? cpc.getComponent() : null;
+	}
+	
+	public CytoPanelComponent getCytoPanelComponentAt(int index) {
+		return index >= 0 && cytoPanelComponents.size() > index ? cytoPanelComponents.get(index) : null;
 	}
 
 	@Override
@@ -262,21 +267,23 @@ public class CytoPanelImpl implements CytoPanel {
 		return cpc != null ? indexOfComponent(cpc.getComponent()) : -1;
 	}
 
-	public void remove(CytoPanelComponent comp) {
+	public boolean remove(CytoPanelComponent comp) {
 		CytoPanelState oldState = getState();
-		boolean changed = cytoPanelComponents.remove(comp);
+		boolean removed = cytoPanelComponents.remove(comp);
 		getCardsPanel().remove(comp.getComponent());
 		
 		if (comp instanceof CytoPanelComponent2)
 			componentsById.remove(((CytoPanelComponent2)comp).getIdentifier());
 		
-		if (changed) {
+		if (removed) {
 			update();
 			
 			// For backwards compatibility
 			if (oldState != getState())
 				notifyListeners(NOTIFICATION_STATE_CHANGE); // The CytoPanelState probably changed to HIDE
 		}
+		
+		return removed;
 	}
 	
 	public List<CytoPanelComponent> getCytoPanelComponents() {
@@ -291,9 +298,11 @@ public class CytoPanelImpl implements CytoPanel {
 
 	@Override
 	public void setSelectedIndex(int index) {
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
-		
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
+		setSelectedComponent(cpc);
+	}
+	
+	public void setSelectedComponent(CytoPanelComponent cpc) {
 		if (cpc != null) {
 			cardLayout.show(getCardsPanel(), getIdentifier(cpc));
 			updateTitleButton();
@@ -451,6 +460,13 @@ public class CytoPanelImpl implements CytoPanel {
 						int index = i++;
 						String title = cpc.getTitle();
 						Icon icon = cpc.getIcon();
+						
+						if (icon == null)
+							icon = ViewUtil.createDefaultIcon(title, CytoPanelUtil.BUTTON_SIZE,
+									serviceRegistrar.getService(IconManager.class));
+						else if (icon.getIconHeight() > CytoPanelUtil.BUTTON_SIZE)
+							icon = ViewUtil.resizeIcon(icon, CytoPanelUtil.BUTTON_SIZE);
+						
 						JCheckBoxMenuItem mi = new JCheckBoxMenuItem(title, icon);
 						mi.setSelected(getSelectedIndex() == index);
 						mi.addActionListener(e -> setSelectedIndex(index));
@@ -496,8 +512,7 @@ public class CytoPanelImpl implements CytoPanel {
 
 	private void updateTitleButton() {
 		int index = getSelectedIndex();
-		CytoPanelComponent cpc = index >= 0 && cytoPanelComponents.size() > index ?
-				cytoPanelComponents.get(index) : null;
+		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
 
 		String text = cpc != null && cpc.getTitle() != null ? cpc.getTitle().trim() : "";
 		

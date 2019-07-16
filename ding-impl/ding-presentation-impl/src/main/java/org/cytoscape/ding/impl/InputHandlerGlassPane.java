@@ -48,10 +48,10 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.ViewChangeEdit;
 import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
@@ -63,17 +63,17 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
-import org.cytoscape.ding.internal.util.CompositeCyEdit;
+import org.cytoscape.ding.impl.undo.AnnotationEdit;
+import org.cytoscape.ding.impl.undo.CompositeCyEdit;
+import org.cytoscape.ding.impl.undo.ViewChangeEdit;
+import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
-import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyRow;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
@@ -88,13 +88,8 @@ import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.Position;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
-import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.swing.DialogTaskManager;
 
 @SuppressWarnings("serial")
@@ -126,6 +121,7 @@ public class InputHandlerGlassPane extends JComponent {
         	new ContextMenuListener(),
         	new DoubleClickListener(),
         	new AddEdgeListener(),
+        	new TooltipListener(),
         	new SelecionClickAndDragListener(),
         	new AddAnnotationListener(),
         	new SelectionLassoListener(),
@@ -170,6 +166,7 @@ public class InputHandlerGlassPane extends JComponent {
 		get(AddEdgeListener.class).beginAddingEdge(nodeView);
 	}
 
+	// Called by the Annotation panel
 	public void beginClickToAddAnnotation(AnnotationFactory<? extends Annotation> annotationFactory, Runnable mousePressedCallback)	 {
 		get(AddAnnotationListener.class).beginClickToAddAnnotation(annotationFactory, mousePressedCallback);
 	}
@@ -519,41 +516,32 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private void createEdge(View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
-			Task createEdgeTask = new AbstractTask() {
-				@Override
-				public void run(TaskMonitor taskMonitor) {
-					CyNetworkView netView = re.getViewModel();
-					CyNetwork net = netView.getModel();
-					View<CyNode> mutableSourceNodeView = netView.getNodeView(sourceNodeView.getSUID());
-					View<CyNode> mutableTargetNodeView = netView.getNodeView(targetNodeView.getSUID());
-					if(mutableSourceNodeView == null || mutableTargetNodeView == null)
-						return;
-					
-					CyNode sourceNode = mutableSourceNodeView.getModel();
-					CyNode targetNode = mutableTargetNodeView.getModel();
-					
-					final CyEdge newEdge = net.addEdge(sourceNode, targetNode, true);
-					final String interaction = "interacts with";
-					String sourceName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
-					String targetName = net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
-					String edgeName = sourceName + " (" + interaction + ") " + targetName;
-					
-					CyRow edgeRow = net.getRow(newEdge, CyNetwork.DEFAULT_ATTRS);
-					edgeRow.set(CyNetwork.NAME, edgeName);
-					edgeRow.set(CyEdge.INTERACTION, interaction);
-
-					// Apply visual style
-					// To make sure the edge view is created before applying the style
-					registrar.getService(CyEventHelper.class).flushPayloadEvents();
-					
-					VisualStyle vs = registrar.getService(VisualMappingManager.class).getVisualStyle(netView);
-					View<CyEdge> edgeView = netView.getEdgeView(newEdge);
-					if (edgeView != null)
-						vs.apply(edgeRow, edgeView);
-				}
-			};
+			CyNetworkView netView = re.getViewModel();
+			AddEdgeTask addEdgeTask = new AddEdgeTask(registrar, netView, sourceNodeView, targetNodeView);
 			DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);
-			taskManager.execute(new TaskIterator(createEdgeTask));
+			taskManager.execute(new TaskIterator(addEdgeTask));
+		}
+	}
+	
+	
+	private class TooltipListener extends MouseAdapter {
+		
+		private CoalesceTimer delayTimer = new CoalesceTimer(60, 1);
+		
+		@Override
+		public void mouseMoved(MouseEvent e) {
+			// This event gets called a lot as the user moves the mouse over the canvas.
+			// Use a CoalesceTimer to debounce the event to avoid calling getPickedNodeView() constantly.
+			delayTimer.coalesce(() -> showTooltip(e));
+		}
+		
+		private void showTooltip(MouseEvent e) {
+			View<CyNode> node = re.getPickedNodeView(e.getPoint());
+			String text = node == null ? null : re.getNodeDetails().getTooltipText(node);
+			ViewUtil.invokeOnEDT(() -> {
+				setToolTipText(text);
+				ToolTipManager.sharedInstance().mouseMoved(e);
+			});
 		}
 	}
 	
@@ -564,14 +552,24 @@ public class InputHandlerGlassPane extends JComponent {
 		private boolean deselectAllOnRelease;
 		private boolean hit;
 		
-		private CompositeCyEdit undoEdit;
+		private AnnotationEdit annotationResizeEdit;
+		private AnnotationEdit annotationMovingEdit;
+		private ViewChangeEdit removeHandleEdit;
+		private ViewChangeEdit addHandleEdit;
+		private ViewChangeEdit moveNodesEdit;
+		
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(!isSingleLeftClick(e))
 				return;
 			
-			undoEdit = null;
+			annotationResizeEdit = null;
+			annotationMovingEdit = null;
+			removeHandleEdit = null;
+			addHandleEdit = null;
+			moveNodesEdit = null;
+			
 			deselectAllOnRelease = false;
 			mousePressedPoint = e.getPoint();
 			
@@ -590,7 +588,6 @@ public class InputHandlerGlassPane extends JComponent {
 				annotationSelection.setOffset(e.getPoint());
 				
 				AnchorLocation anchor = annotationSelection.overAnchor(e.getX(), e.getY());
-				
 				if(!annotationSelection.isEmpty() && anchor != null) {
 					mousePressedHandleAnnotationAnchor(anchor, e);
 					return true;
@@ -598,7 +595,11 @@ public class InputHandlerGlassPane extends JComponent {
 				
 				DingAnnotation annotation = cyAnnotator.getAnnotationAt(foregroundCanvas, e.getPoint());
 				if(annotation != null) {
-					mousePressedHandleAnnotation(annotation, e);
+					Toggle select = mousePressedHandleAnnotation(annotation, e);
+					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
+						deselectAllNodesAndEdges();
+					}
+					annotationSelection.setOffset(e.getPoint());
 					return true;
 				}
 			}
@@ -650,6 +651,8 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private void mousePressedHandleAnnotationAnchor(AnchorLocation anchor, MouseEvent e) {
+			annotationResizeEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
+			
 			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 			// save the distance between the anchor location and the mouse location
 			double offsetX = e.getX() - annotationSelection.getX() - anchor.getX();
@@ -659,27 +662,33 @@ public class InputHandlerGlassPane extends JComponent {
 			annotationSelection.setResizing(true);
 			annotationSelection.saveAnchor(anchor.getPosition(), offsetX, offsetY);
 			annotationSelection.saveBounds();
-			
-//			resizeUndoEdit = new AnnotationEdit("Resize Annotation", cyAnnotator, registrar);
 		}
 		
-		private void mousePressedHandleAnnotation(DingAnnotation annotation, MouseEvent e) {
-			boolean selected = annotation.isSelected();
-			if(selected && e.isShiftDown()) {
+		private Toggle mousePressedHandleAnnotation(DingAnnotation annotation, MouseEvent e) {
+			Toggle toggle = Toggle.NOCHANGE;
+			boolean wasSelected = annotation.isSelected();
+			if(wasSelected && isAdditiveSelect(e)) {
 				annotation.setSelected(false);
+				toggle = Toggle.DESELECT;
 			} else {
-				if(!selected && !e.isPopupTrigger() && !e.isShiftDown() && !((e.isControlDown() || e.isMetaDown()) && !e.isAltDown())) {
+				if(!wasSelected && !isAdditiveSelect(e)) {
 					cyAnnotator.clearSelectedAnnotations();
 				}
-				annotation.setSelected(true);
+				if(!wasSelected) {
+					annotation.setSelected(true);
+					toggle = Toggle.SELECT;
+				}
 			}
 
 			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 			if(!annotationSelection.isEmpty()) {
-//				movingUndoEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
+				annotationMovingEdit = new AnnotationEdit("Move Annotation", cyAnnotator, registrar);
 			} 
 
-			annotation.getCanvas().repaint();
+			if(toggle != Toggle.NOCHANGE)
+				annotation.getCanvas().repaint();
+			
+			return toggle;
 		}
 		
 		private Toggle toggleNodeSelection(View<CyNode> nodeView, MouseEvent e) {
@@ -698,7 +707,7 @@ public class InputHandlerGlassPane extends JComponent {
 			
 			// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
 			if(e.isAltDown()) { // Remove handle
-//				undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", registrar);
+				removeHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", registrar);
 				setBendAsLockedValue(ev);
 				re.getBendStore().removeHandle(chosenAnchor);
 			} else {
@@ -762,7 +771,7 @@ public class InputHandlerGlassPane extends JComponent {
 			double[] ptBuff = {e.getX(), e.getY()};
 			re.xformComponentToNodeCoords(ptBuff);
 			// Store current handle list
-//			undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", registrar);
+			addHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", registrar);
 			
 			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
 			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
@@ -797,12 +806,21 @@ public class InputHandlerGlassPane extends JComponent {
 			mousePressedPoint = null;
 			networkCanvas.repaint();
 			
-//			if(undoableEdit != null)
-//				undoableEdit.post();
-//			if(resizeUndoEdit != null) 
-//				resizeUndoEdit.post();
-//			if(movingUndoEdit != null)
-//				movingUndoEdit.post();
+			if(annotationMovingEdit != null && moveNodesEdit != null) {
+				CompositeCyEdit compositeEdit = new CompositeCyEdit("Move", registrar);
+				compositeEdit.add(annotationMovingEdit, moveNodesEdit);
+				compositeEdit.post();
+			} else if(annotationResizeEdit != null) {
+				annotationResizeEdit.post();
+			} else if(annotationMovingEdit != null) {
+				annotationMovingEdit.post();
+			} else if(removeHandleEdit != null) {
+				removeHandleEdit.post();
+			} else if(addHandleEdit != null) {
+				addHandleEdit.post();
+			} else if(moveNodesEdit != null) {
+				moveNodesEdit.post();
+			}
 		}
 		
 		
@@ -839,8 +857,8 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 
 		private void mouseDraggedHandleNodesAndEdges(MouseEvent e) {
-//			if(undoableEdit == null)
-//				undoableEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
+			if(moveNodesEdit == null)
+				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
 			
 			double[] ptBuff = {mousePressedPoint.getX(), mousePressedPoint.getY()};
 			re.xformComponentToNodeCoords(ptBuff);
@@ -1338,6 +1356,11 @@ public class InputHandlerGlassPane extends JComponent {
 		if(annotationSelectionEnabled()) {
 			cyAnnotator.clearSelectedAnnotations();
 		}
+	}
+	
+	private void deselectAllNodesAndEdges() {
+		deselectAllNodes();
+		deselectAllEdges();
 	}
 	
 	private void deselectAll() {

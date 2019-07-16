@@ -1,29 +1,5 @@
 package org.cytoscape.data.reader.graphml;
 
-/*
- * #%L
- * Cytoscape GraphML Impl (graphml-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.model.CyNetwork.NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -45,7 +21,6 @@ import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.model.internal.NetworkNameSetListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
@@ -56,6 +31,30 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+/*
+ * #%L
+ * Cytoscape GraphML Impl (graphml-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class GraphMLReaderTest {
 	
@@ -109,6 +108,31 @@ public class GraphMLReaderTest {
 		final CyNetwork network = networks[0];
 		assertEquals(11, network.getNodeCount());
 		assertEquals(12, network.getEdgeCount());
+	}
+	
+	@Test
+	public void testReadDescTags() throws Exception {
+		File file = new File("src/test/resources/desc.graphml");
+		InputStream stream = file.toURI().toURL().openStream();
+		GraphMLReader reader = new GraphMLReader(stream, layouts, appManager, netFactory, networkManager, rootFactory, serviceRegistrar);
+		assertNotNull(reader);
+		reader.run(tm);
+		CyNetwork[] networks = reader.getNetworks();
+		assertEquals(1, networks.length);
+		CyNetwork net = networks[0];
+		assertEquals(2, net.getNodeCount());
+		assertEquals(1, net.getEdgeCount());
+		// Network name from <desc> tag
+		String networkName = net.getDefaultNetworkTable().getRow(net.getSUID()).get(NAME, String.class);
+		assertEquals("desc Test", networkName);
+		// Node name from <desc> tag
+		CyNode n1 = getNodeByName(net, "Node 1");
+		CyNode n2 = getNodeByName(net, "Node 2");
+		assertNotNull(n1);
+		assertNotNull(n2);
+		// Edge name from <desc> tag
+		CyEdge e = getEdgeByName(net, "Node 1::Node 2");
+		assertNotNull(e);
 	}
 	
 	@Test

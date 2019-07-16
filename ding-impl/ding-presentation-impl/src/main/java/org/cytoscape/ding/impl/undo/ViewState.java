@@ -1,10 +1,10 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.undo;
 
-import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.ALL;
-import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.EDGES;
-import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.NODES;
-import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.SELECTED;
-import static org.cytoscape.ding.ViewChangeEdit.SavedObjs.SELECTED_NODES;
+import static org.cytoscape.ding.impl.undo.ViewChangeEdit.SavedObjs.ALL;
+import static org.cytoscape.ding.impl.undo.ViewChangeEdit.SavedObjs.EDGES;
+import static org.cytoscape.ding.impl.undo.ViewChangeEdit.SavedObjs.NODES;
+import static org.cytoscape.ding.impl.undo.ViewChangeEdit.SavedObjs.SELECTED;
+import static org.cytoscape.ding.impl.undo.ViewChangeEdit.SavedObjs.SELECTED_NODES;
 
 /*
  * #%L
@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.ViewChangeEdit;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;

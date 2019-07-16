@@ -78,7 +78,7 @@ import org.cytoscape.graph.render.immed.nodeshape.RoundedRectangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.TriangleNodeShape;
 import org.cytoscape.graph.render.immed.nodeshape.VeeNodeShape;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.customgraphics.CustomGraphicLayer;
 import org.cytoscape.view.presentation.customgraphics.Cy2DGraphicLayer;
@@ -2120,7 +2120,7 @@ public final class GraphGraphics {
 	 *            in node coordinates, a value to add to the Y coordinates of
 	 *            the shape's definition.
 	 */
-	public final void drawCustomGraphicFull(final CyNetworkViewSnapshot netView, final View<CyNode> node,
+	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<CyNode> node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
 		if (m_debug) {

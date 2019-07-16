@@ -84,17 +84,19 @@ public class VerticalButtonUI extends BasicButtonUI {
 		viewRect.height = b.getWidth() - (viewInsets.left + viewInsets.right);
 		viewRect.width = b.getHeight() - (viewInsets.top + viewInsets.bottom);
 
-		Rectangle2D strBounds = fm.getStringBounds(text, g2);
+		Rectangle2D strBounds = text != null ? fm.getStringBounds(text, g2) : new Rectangle2D.Double();
 
 		iconRect.x = (int) Math.round((viewRect.width - icon.getIconWidth() - b.getIconTextGap() - strBounds.getWidth()) / 2.0f);
 		iconRect.y = viewRect.y + (int) Math.round((viewRect.height - icon.getIconHeight()) / 2.0f);
 		iconRect.width = icon.getIconWidth();
 		iconRect.height = icon.getIconHeight();
 		
-		textRect.x = iconRect.x + iconRect.width + b.getIconTextGap();
-		textRect.y = viewRect.y + (int) Math.round((viewRect.height - strBounds.getHeight()) / 2.0f);
-		textRect.width = (int) strBounds.getWidth();
-		textRect.height = (int) strBounds.getHeight();
+		if (text != null) {
+			textRect.x = iconRect.x + iconRect.width + b.getIconTextGap();
+			textRect.y = viewRect.y + (int) Math.round((viewRect.height - strBounds.getHeight()) / 2.0f);
+			textRect.width = (int) strBounds.getWidth();
+			textRect.height = (int) strBounds.getHeight();
+		}
 		
 		if (clockwise) {
 			g2.rotate(Math.PI / 2);

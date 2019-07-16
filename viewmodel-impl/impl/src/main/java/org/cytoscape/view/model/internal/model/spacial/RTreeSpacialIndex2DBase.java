@@ -12,12 +12,11 @@ import com.github.davidmoten.rtree.RTree;
 import com.github.davidmoten.rtree.geometry.Rectangle;
 import com.github.davidmoten.rtree.geometry.internal.RectangleFloat;
 
-import io.vavr.Tuple2;
 import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import rx.Observable;
 
-abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
+abstract class RTreeSpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 	
 	// MKTODO what to return if the rtree is empty????
 	private static final Rectangle EMPTY_MBR = RectangleFloat.create(0, 0, 0, 0);
@@ -71,13 +70,29 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 	
 	@Override
 	public SpacialIndex2DEnumerator<T> queryAll() {
-		return new AllEntriesEnumeratorImpl();
+		Observable<Entry<T,Rectangle>> overlap = getRTree().entries();
+		return createEnumerator(overlap);
 	}
 	
 	@Override
 	public SpacialIndex2DEnumerator<T> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
 		Observable<Entry<T,Rectangle>> overlap = getRTree().search(RectangleFloat.create(xMin, yMin, xMax, yMax));
-		return new SearchResultEnumeratorImpl<>(overlap);
+		return createEnumerator(overlap);
+	}
+	
+	private SpacialIndex2DEnumerator<T> createEnumerator(Observable<Entry<T,Rectangle>> overlap) {
+		// Important to convert to a list first, that avoids enabling the RTree's 
+		// backpressure support which we don't need and has too much overhead.
+		List<Entry<T, Rectangle>> list = overlap.toList().toBlocking().first();
+		list = maybeSort(list);
+		return new SearchResultEnumeratorImpl<>(list);
+	}
+	
+	/**
+	 * Subclasses may override to sort the results.
+	 */
+	protected List<Entry<T, Rectangle>> maybeSort(List<Entry<T, Rectangle>> list) {
+		return list;
 	}
 	
 	
@@ -99,45 +114,13 @@ abstract class SpacialIndex2DBase<T> implements SpacialIndex2D<T> {
 		}
 	}
 	
-	private class AllEntriesEnumeratorImpl implements SpacialIndex2DEnumerator<T> {
-
-		private final io.vavr.collection.Iterator<Tuple2<T,Rectangle>> iterator;
-		private final int size;
-		
-		public AllEntriesEnumeratorImpl() {
-			Map<T, Rectangle> geometries = getGeometries();
-			iterator = geometries.iterator();
-			size = geometries.size();
-		}
-		
-		@Override
-		public int size() {
-			return size;
-		}
-
-		@Override
-		public boolean hasNext() {
-			return iterator.hasNext();
-		}
-
-		@Override
-		public T nextExtents(float[] extents) {
-			Tuple2<T,Rectangle> next = iterator.next();
-			copyExtents(next._2(), extents);
-			return next._1();
-		}
-	}
-	
 	
 	private static class SearchResultEnumeratorImpl<T> implements SpacialIndex2DEnumerator<T> {
 		
 		private final Iterator<Entry<T,Rectangle>> iterator;
 		private final int size;
 		
-		public SearchResultEnumeratorImpl(Observable<Entry<T, Rectangle>> overlap) {
-			// Important to convert to a list first, that avoids enabling the RTree's 
-			// backpressure support which we don't need and has too much overhead.
-			List<Entry<T, Rectangle>> list = overlap.toList().toBlocking().first();
+		public SearchResultEnumeratorImpl(List<Entry<T, Rectangle>> list) {
 			this.size = list.size();
 			this.iterator = list.iterator();
 		}

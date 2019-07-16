@@ -154,14 +154,20 @@ public class BiModalJSplitPane extends JSplitPane {
 	}
 	
 	public void update() {
-		if (isBothComponentsVisible())
-			showSplit();
-		else
-			hideSplit();
+		if (isBothComponentsVisible()) {
+			if (dividerSize <= 0 || getDividerLocation() < 0)
+				showSplit();
+		} else {
+			if (dividerSize > 0 || getDividerLocation() >= 0)
+				hideSplit();
+		}
 		
 		Component lc = getLeftComponent();
 		Component rc = getRightComponent();
-		setVisible((lc != null && lc.isVisible()) || (rc != null && rc.isVisible()));
+		boolean visible = (lc != null && lc.isVisible()) || (rc != null && rc.isVisible());
+		
+		if (visible != isVisible())
+			setVisible(visible);
 		
 		// Recursively do the same with the parent split pane
 		Container parent = getParent();

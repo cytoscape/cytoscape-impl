@@ -1,6 +1,7 @@
 package org.cytoscape.view.model.internal.model;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.cytoscape.model.SUIDFactory;
 import org.cytoscape.view.model.View;
@@ -28,7 +29,7 @@ public abstract class CyViewBase<M> implements View<M> {
 	 */
 	public abstract CyNetworkViewImpl getNetworkView();
 	public abstract VPStore getVPStore();
-	public abstract Object getLock();
+	public abstract ViewLock getLock();
 	
 	
 	@Override
@@ -50,15 +51,31 @@ public abstract class CyViewBase<M> implements View<M> {
 	
 	@Override
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
-		synchronized (getLock()) {
+		ViewLock lock = getLock();
+		synchronized (lock) {
 			getVPStore().setVisualProperty(suid, vp, value);
-			getNetworkView().setDirty();
+			if(lock.isUpdateDirty())
+				getNetworkView().setDirty();
 			boolean locked = getVPStore().isValueLocked(suid, vp);
 			if(!locked) {
 				// If the value is overridden by a lock then the value returned 
 				// by getVisualProperty() won't visibly change by setting the VP here.
 				fireViewChangedEvent(vp, value, false);
 			}
+		}
+	}
+	
+	@Override
+	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
+		ViewLock lock = getLock();
+		synchronized (lock) {
+			lock.setUpdateDirty(setDirty);
+			
+			viewConsumer.accept(this);
+			
+			if(setDirty)
+				getNetworkView().setDirty();
+			lock.setUpdateDirty(true);
 		}
 	}
 	
@@ -80,9 +97,11 @@ public abstract class CyViewBase<M> implements View<M> {
 	 */
 	@Override
 	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
-		synchronized (getLock()) {
+		ViewLock lock = getLock();
+		synchronized (lock) {
 			getVPStore().setLockedValue(suid, vp, value);
-			getNetworkView().setDirty();
+			if(lock.isUpdateDirty())
+				getNetworkView().setDirty();
 		
 			VisualLexiconNode visualLexiconNode = getNetworkView().getVisualLexicon().getVisualLexiconNode(vp);
 			if(visualLexiconNode.getChildren().isEmpty()) {

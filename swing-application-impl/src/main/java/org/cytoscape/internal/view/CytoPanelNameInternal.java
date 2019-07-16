@@ -63,6 +63,6 @@ public enum CytoPanelNameInternal {
 	}
 
 	public String getTitle() {
-		return this == CytoPanelNameInternal.BOTTOM ? "Automation Panel" : toCytoPanelName().getTitle();
+		return this == CytoPanelNameInternal.BOTTOM ? "Command Panel" : toCytoPanelName().getTitle();
 	}
 }
