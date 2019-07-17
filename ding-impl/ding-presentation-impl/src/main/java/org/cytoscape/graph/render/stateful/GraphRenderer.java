@@ -188,7 +188,7 @@ public final class GraphRenderer {
 		
 		LongHash nodeBuff = new LongHash();
 		
-		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleArea();
+		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaInNodeCoords();
 		
 		// Define buffers.  These are of the few objects we're instantiating directly in this method.
 		final float[] floatBuff1 = new float[4];

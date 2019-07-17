@@ -71,7 +71,10 @@ import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyRow;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
@@ -79,6 +82,7 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationFactory;
@@ -1101,9 +1105,9 @@ public class InputHandlerGlassPane extends JComponent {
 				
 				// Select
 				if(!nodes.isEmpty())
-					re.select(nodes, CyNode.class, true);
+					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
-					re.select(edges, CyEdge.class, true);
+					select(edges, CyEdge.class, true);
 				for(HandleKey handle : handles)
 					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
@@ -1182,9 +1186,9 @@ public class InputHandlerGlassPane extends JComponent {
 				
 				// Select
 				if(!nodes.isEmpty())
-					re.select(nodes, CyNode.class, true);
+					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
-					re.select(edges, CyEdge.class, true);
+					select(edges, CyEdge.class, true);
 				for(HandleKey handle : handles)
 					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
@@ -1335,16 +1339,16 @@ public class InputHandlerGlassPane extends JComponent {
 	private <T extends CyIdentifiable> void toggleSelection(View<T> element, Class<T> type, Toggle toggle) {
 		if(element != null) {
 			if(toggle == Toggle.SELECT)
-				re.select(Collections.singletonList(element), type, true);
+				select(Collections.singletonList(element), type, true);
 			else if(toggle == Toggle.DESELECT)
-				re.select(Collections.singletonList(element), type, false);
+				select(Collections.singletonList(element), type, false);
 		}
 	}
 	
 	private void deselectAllNodes() {
 		if(nodeSelectionEnabled()) {
 			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			re.select(selectedNodes, CyNode.class, false);
+			select(selectedNodes, CyNode.class, false);
 		}
 	}
 	
@@ -1352,7 +1356,7 @@ public class InputHandlerGlassPane extends JComponent {
 		if(edgeSelectionEnabled()) {
 			re.getBendStore().unselectAllHandles();
 			Collection<View<CyEdge>> selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-			re.select(selectedEdges, CyEdge.class, false);
+			select(selectedEdges, CyEdge.class, false);
 		}
 	}
 	
@@ -1384,5 +1388,35 @@ public class InputHandlerGlassPane extends JComponent {
 			parent = parent.getParent();
 		}
 	} 
+	
+	
+	private <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {
+		if (nodesOrEdgeViews == null || nodesOrEdgeViews.isEmpty())
+			return;
+		
+		boolean isNodes = type.equals(CyNode.class);
+		Boolean selectedBoxed = Boolean.valueOf(selected);
+		
+		CyNetwork model = re.getViewModel().getModel();
+		CyTable table = isNodes ? model.getDefaultNodeTable() : model.getDefaultEdgeTable();
+		
+		// MKTODO is this right? what if the row doesn't exist?
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
+			if(isNodes) {
+				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(nodeOrEdgeView.getSUID());
+				Long modelSuid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
+				CyRow row = table.getRow(modelSuid);
+				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, selectedBoxed);
+				row.set(CyNetwork.SELECTED, selectedBoxed);	
+			} else {
+				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(nodeOrEdgeView.getSUID());
+				Long modelSuid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
+				CyRow row = table.getRow(modelSuid);
+				mutableEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_SELECTED, selectedBoxed);
+				row.set(CyNetwork.SELECTED, selectedBoxed);	
+			}
+		}
+	}
 	
 }

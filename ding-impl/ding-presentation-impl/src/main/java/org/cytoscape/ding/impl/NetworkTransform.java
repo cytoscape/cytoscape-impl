@@ -14,6 +14,6 @@ public interface NetworkTransform {
 	
 	public GeneralPath pathInNodeCoords(GeneralPath path);
 
-	public Rectangle2D.Float getNetworkVisibleArea();
-
+	public Rectangle2D.Float getNetworkVisibleAreaInNodeCoords();
+	
 }

@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.geom.AffineTransform;
@@ -14,6 +15,8 @@ import java.awt.image.BufferedImage;
  *
  */
 public class NetworkImageBuffer implements NetworkTransform {
+	
+	private static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
 	
 	private int width;
 	private int height;
@@ -103,7 +106,7 @@ public class NetworkImageBuffer implements NetworkTransform {
 	}
 	
 	@Override
-	public Rectangle2D.Float getNetworkVisibleArea() {
+	public Rectangle2D.Float getNetworkVisibleAreaInNodeCoords() {
 		return area;
 	}
 	
@@ -136,13 +139,16 @@ public class NetworkImageBuffer implements NetworkTransform {
 			return null;
 		}
 	}
-
-	@Override
-	public String toString() {
-		return "NetworkImageBuffer [width=" + width + ", height=" + height + ", x=" + x + ", y=" + y + ", scaleFactor="
-				+ scaleFactor + ", xform=" + xform + ", area=" + area + "]";
+	
+	public void fill(Color color) {
+		Graphics2D g = getGraphics();
+		g.setColor(color);
+		g.fillRect(0, 0, width, height);
 	}
-	
-	
-	
+
+	public void clear() {
+		Graphics2D g = getGraphics();
+		g.setBackground(TRANSPARENT_COLOR);
+		g.clearRect(0, 0, width, height);
+	}
 }

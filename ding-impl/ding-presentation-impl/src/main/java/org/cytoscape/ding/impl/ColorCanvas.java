@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Color;
-import java.awt.Graphics;
 
 public class ColorCanvas extends DingCanvas {
 
@@ -11,7 +10,7 @@ public class ColorCanvas extends DingCanvas {
 	private boolean dirty = true;
 	
 	public ColorCanvas(Color color) {
-		this.color = color;
+		setColor(color);
 	}
 	
 	public ColorCanvas() {
@@ -19,7 +18,7 @@ public class ColorCanvas extends DingCanvas {
 	}
 	
 	public void setColor(Color color) {
-		this.color = color;
+		this.color = color == null ? DEFAULT_COLOR : color;
 		dirty = true;
 	}
 
@@ -31,13 +30,8 @@ public class ColorCanvas extends DingCanvas {
 	
 	@Override
 	public void paintImage() {
-		if(color == null)
-			return;
-		
 		if(dirty) {
-			Graphics g = image.getGraphics();
-			g.setColor(color);
-			g.fillRect(0, 0, image.getWidth(), image.getHeight());
+			image.fill(color);
 			dirty = false;
 		}
 	}

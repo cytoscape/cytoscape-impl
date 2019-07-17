@@ -6,11 +6,10 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -25,16 +24,16 @@ public class CompositeCanvas {
 	
 	private final NetworkImageBuffer image = new NetworkImageBuffer();
 	
-//	private AnnotationSelection selection;
-	private AnnotationCanvas foregroundAnnotationCanvas;
-	private InnerCanvas networkCanvas;
-	private AnnotationCanvas backgroundAnnotationCanvas;
-	private ColorCanvas backgroundColorCanvas;
-	
 	private GraphLOD lod;
 	
-	private final List<DingCanvas> canvasList;
+	// Canvas layers from top to bottom
+	private final AnnotationSelectionCanvas annotationSelectionCanvas;
+	private final AnnotationCanvas foregroundAnnotationCanvas;
+	private final InnerCanvas networkCanvas;
+	private final AnnotationCanvas backgroundAnnotationCanvas;
+	private final ColorCanvas backgroundColorCanvas;
 	
+	private final List<DingCanvas> canvasList;
 	private final ExecutorService executor;
 	
 	
@@ -42,12 +41,12 @@ public class CompositeCanvas {
 		this.lod = lod;
 		
 		// Must be in reverse order
-		// MKTODO add an annotation selection canvas?
 		canvasList = Arrays.asList(
 			backgroundColorCanvas = new ColorCanvas(),
 			backgroundAnnotationCanvas = new AnnotationCanvas(this, DingAnnotation.CanvasID.BACKGROUND, re),
 			networkCanvas = new InnerCanvas(dingLock, this, re, registrar),
-			foregroundAnnotationCanvas = new AnnotationCanvas(this, DingAnnotation.CanvasID.FOREGROUND, re)
+			foregroundAnnotationCanvas = new AnnotationCanvas(this, DingAnnotation.CanvasID.FOREGROUND, re),
+			annotationSelectionCanvas = new AnnotationSelectionCanvas()
 		);
 		
 		// MKTODO what's the best thread pool for this?
@@ -56,6 +55,10 @@ public class CompositeCanvas {
 	
 	public void dispose() {
 		canvasList.forEach(DingCanvas::dispose);
+	}
+	
+	public void setAnnotationSelection(AnnotationSelection selection) {
+		annotationSelectionCanvas.setSelection(selection);
 	}
 	
 	public void setLOD(GraphLOD lod) {
@@ -139,10 +142,7 @@ public class CompositeCanvas {
 		return composite;
 	}
 	
-	
 	public void paintBlocking(Graphics g) {
-		// this can still be parallelized, just blocking
-		// What if a frame is currently being renderered
 		for(DingCanvas c : canvasList) {
 			c.paintImage();
 			Image canvasImage = c.get();
@@ -151,30 +151,24 @@ public class CompositeCanvas {
 		g.drawImage(image.getImage(), 0, 0, null);
 	}
 	
-	
-	private void paintParallel(Graphics g) {
-		CompletableFuture<Image> f = CompletableFuture.completedFuture(image.getImage());
-		for(DingCanvas c : canvasList) {
-			CompletableFuture<Image> cf = CompletableFuture.supplyAsync(c, executor);
-			f = f.thenCombineAsync(cf, CompositeCanvas::overlayImage, executor);
-		}
-		
-		try {
-			f.get(); // block
-			g.drawImage(image.getImage(), 0, 0, null);
-		} catch (InterruptedException | ExecutionException e) {
-			// MKTODO what to do here?
-			e.printStackTrace();
-		}
-	}
-	
+//	private void paintParallel(Graphics g) {
+//		CompletableFuture<Image> f = CompletableFuture.completedFuture(image.getImage());
+//		for(DingCanvas c : canvasList) {
+//			CompletableFuture<Image> cf = CompletableFuture.supplyAsync(c, executor);
+//			f = f.thenCombineAsync(cf, CompositeCanvas::overlayImage, executor);
+//		}
+//		
+//		try {
+//			f.get(); // block
+//			g.drawImage(image.getImage(), 0, 0, null);
+//		} catch (InterruptedException | ExecutionException e) {
+//			// MKTODO what to do here?
+//			e.printStackTrace();
+//		}
+//	}
 	
 	public void print(Graphics g) {
 		
 	}
-	
-	public void paintAsync(Runnable callback) {
-		
-	}
-	
+
 }
