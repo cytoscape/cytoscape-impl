@@ -45,7 +45,6 @@ public class AnnotationCanvas extends DingCanvas {
 	private final DingAnnotation.CanvasID canvasID;
 	
 	private DRenderingEngine re;
-//	private InnerCanvas networkCanvas;
 	private Map<DingAnnotation,Point> annotationToPointMap = new HashMap<>();
 	private List<DingAnnotation> annotations = new LinkedList<>();
 	

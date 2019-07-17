@@ -80,7 +80,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
 	private final AnnotationSelection annotationSelection;
-//	private MyViewportChangeListener myViewportChangeListener;
 	private AbstractAnnotation resizing;
 	private Rectangle2D resizeBounds;
 	private ArrowAnnotationImpl repositioning;
@@ -97,12 +96,12 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.re = re;
 		this.registrar = registrar;
+		
+		// MKTODO shouldn't have direct access to the canvases
 		this.foreGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.FOREGROUND);
 		this.backGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.BACKGROUND);
 		this.annotationFactoryManager = annotationFactoryManager;
 		this.annotationSelection = new AnnotationSelection(this);
-		
-//		initListeners();
 	}
 	
 	public void markUndoEdit(String label) {
@@ -298,6 +297,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 
+	public void setSelection(AnnotationSelection selection) {
+		re.setAnnotationSelection(selection);
+	}
 
 	public AnnotationCanvas getForeGroundCanvas() {
 		return foreGroundCanvas;

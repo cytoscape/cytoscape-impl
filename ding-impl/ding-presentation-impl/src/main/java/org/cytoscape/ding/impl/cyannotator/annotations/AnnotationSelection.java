@@ -46,7 +46,6 @@ import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
 
-@SuppressWarnings("serial")
 public class AnnotationSelection extends DingComponent implements Iterable<DingAnnotation> {
 	
 	Rectangle2D union;
@@ -75,7 +74,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			selectedAnnotations.add(e);
 			updateBounds();
 			// MKTODO
-//			cyAnnotator.getForeGroundCanvas().setSelection(this);
+			cyAnnotator.setSelection(this);
 		} else {
 			selectedAnnotations.add(e);
 			updateBounds();
@@ -95,7 +94,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			a.setOffset(null);
 		
 		selectedAnnotations.clear();
-//		cyAnnotator.getForeGroundCanvas().setSelection(null);
+		cyAnnotator.setSelection(null);
 	}
 
 	public boolean contains(Object e) {
@@ -115,7 +114,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 		selectedAnnotations.remove(e);
 		
 		if (selectedAnnotations.isEmpty()) {
-			//cyAnnotator.getForeGroundCanvas().setSelection(null);
+			cyAnnotator.setSelection(null);
 		} else {
 			updateBounds();
 		}
