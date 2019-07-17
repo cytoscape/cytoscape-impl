@@ -4,10 +4,8 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.awt.image.VolatileImage;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,7 +40,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
  * #L%
  */
 
-public class AnnotationCanvas implements DingCanvas {
+public class AnnotationCanvas extends DingCanvas {
 	
 	private final DingAnnotation.CanvasID canvasID;
 	
@@ -56,7 +54,6 @@ public class AnnotationCanvas implements DingCanvas {
  	 * Flag to record that we're printing since we don't use the PrinterGraphics interface
  	 */
 //	private boolean isPrinting;
-	private Image img;
 	private boolean dirty = true;
 	
 
@@ -71,10 +68,6 @@ public class AnnotationCanvas implements DingCanvas {
 		return canvasID;
 	}
 	
-	public Image getImage() {
-		return img;
-	}
-	
 	/**
 	 * Our implementation of add
 	 */
@@ -84,7 +77,7 @@ public class AnnotationCanvas implements DingCanvas {
 		nodeCanvasCoordinates[0] = annotation.getX();
 		nodeCanvasCoordinates[1] = annotation.getY();
 
-		parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
+		image.xformImageToNodeCoords(nodeCanvasCoordinates);
 
 		Point nodePos = new Point( (int)nodeCanvasCoordinates[0], (int)nodeCanvasCoordinates[1]);
 
@@ -139,13 +132,22 @@ public class AnnotationCanvas implements DingCanvas {
 	
 	@Override
 	public void setCenter(double x, double y) {
+		super.setCenter(x, y);
 		setBoundsChildren();
 	}
 	
 	@Override
 	public void setScaleFactor(double scaleFactor) {
+		super.setScaleFactor(scaleFactor);
 		setBoundsChildren();
 	}
+	
+	@Override
+	public void setViewport(int width, int height) {
+		super.setViewport(width, height);
+		setBoundsChildren();
+	}
+	
 	
 	public void modifyComponentLocation(int x, int y, DingAnnotation component){
 		final Point nodePos = annotationToPointMap.get(component);
@@ -155,7 +157,7 @@ public class AnnotationCanvas implements DingCanvas {
 		nodeCanvasCoordinates[0] = x;
 		nodeCanvasCoordinates[1] = y;
 
-		parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
+		image.xformImageToNodeCoords(nodeCanvasCoordinates);
 
 		nodePos.x = (int)nodeCanvasCoordinates[0];
 		nodePos.y = (int)nodeCanvasCoordinates[1];
@@ -163,15 +165,16 @@ public class AnnotationCanvas implements DingCanvas {
 		contentChanged();
 	}
 
-	@Override
-	public void setViewport(int width, int height) {
-		// our bounds have changed, create a new image with new size
-		if (width > 1 && height > 1) {
-			// create the buffered image
-			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-			setBoundsChildren();
-		}
-	}
+	
+//	@Override
+//	public void setViewport(int width, int height) {
+//		// our bounds have changed, create a new image with new size
+//		if (width > 1 && height > 1) {
+//			// create the buffered image
+//			img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+//			setBoundsChildren();
+//		}
+//	}
 
 //	private int getWidth() {
 //		return img.getWidth(null);
@@ -215,7 +218,7 @@ public class AnnotationCanvas implements DingCanvas {
 			nodeCanvasCoordinates[1] = c.getY() + c.getHeight();
 
 			// Transform the maximum extent to get network cooredinates
-			parent.getTransform().xformImageToNodeCoords(nodeCanvasCoordinates);
+			image.xformImageToNodeCoords(nodeCanvasCoordinates);
 
 			// Adjust, if necessary
 			if (nodeCanvasCoordinates[0] > currentBounds[2])
@@ -261,19 +264,18 @@ public class AnnotationCanvas implements DingCanvas {
 	}
 
 	@Override
-	public Image paintImage() {
+	public void paintImage() {
 		// only paint if we have an image to paint on
-		if (img != null) {
-			// get image graphics
-			final Graphics2D image2D = ((BufferedImage) img).createGraphics();
+		// get image graphics
+		final Graphics2D image2D = image.getGraphics();
 
-			// first clear the image
-			clearImage(image2D);
-			
-			// MKTODO only paint annotations that intersect with the bounds
-			for (DingAnnotation a : annotations) {
-				a.paint(image2D);
-			}
+		// first clear the image
+		clearImage(image2D);
+		
+		// MKTODO only paint annotations that intersect with the bounds
+		for (DingAnnotation a : annotations) {
+			a.paint(image2D);
+		}
 
 //			// now paint children
 //			if (isVisible()) {
@@ -286,16 +288,14 @@ public class AnnotationCanvas implements DingCanvas {
 //					paintChildren(image2D);
 //				}
 //			}
-			
-			image2D.dispose();
-			// render image
+		
+		image2D.dispose();
+		// render image
 //			graphics.drawImage(img, 0, 0, null);
-			
-			// Make img publicly available *after* it has been rendered
+		
+		// Make img publicly available *after* it has been rendered
 //			m_img = img;
-		}
 		dirty = false;
-		return img;
 	}
 
 //	@Override
@@ -329,7 +329,7 @@ public class AnnotationCanvas implements DingCanvas {
 				continue;
 			
 			double[] currentNodeCoordinates = {node.getX(), node.getY()};
-			AffineTransform transform = parent.getTransform().getAffineTransform();
+			AffineTransform transform = image.getAffineTransform();
 			transform.transform(currentNodeCoordinates, 0, currentNodeCoordinates, 0, 1);
 
 			a.setBounds((int) currentNodeCoordinates[0], (int) currentNodeCoordinates[1], a.getWidth(), a.getHeight());
@@ -344,15 +344,13 @@ public class AnnotationCanvas implements DingCanvas {
 	 * image2D Graphics2D
 	 */
 	private void clearImage(Graphics2D image2D) {
-		if (img != null) {
-			Color clear = new Color(0, 0, 0, 0);
-			// set the alpha composite on the image, and clear its area
-			Composite origComposite = image2D.getComposite();
-			image2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-			image2D.setPaint(clear);
-			image2D.fillRect(0, 0, img.getWidth(null), img.getHeight(null));
-			image2D.setComposite(origComposite);
-		}
+		Color clear = new Color(0, 0, 0, 0);
+		// set the alpha composite on the image, and clear its area
+		Composite origComposite = image2D.getComposite();
+		image2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+		image2D.setPaint(clear);
+		image2D.fillRect(0, 0, image.getWidth(), image.getHeight());
+		image2D.setComposite(origComposite);
 	}
 
 	private void contentChanged() {

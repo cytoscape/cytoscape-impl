@@ -28,29 +28,55 @@ import java.util.function.Supplier;
  * #L%
  */
 
-
-
-public interface DingCanvas extends Callable<Image>, Supplier<Image> {
+/**
+ * 
+ */
+public abstract class DingCanvas implements Callable<Image>, Supplier<Image> {
+	
+	protected final NetworkImageBuffer image;
 	
 	
-	default void setViewport(int width, int height) {}
-	
-	default void setCenter(double x, double y) {}
-	
-	default void setScaleFactor(double scaleFactor) {}
-	
-	
-	default Image call() {
-		return paintImage();
+	public DingCanvas() {
+		// MKTODO this is kind of dumb, what is the best way to properly initialize this?
+		this(1, 1);
 	}
 	
-	default Image get() {
-		return paintImage();
+	public DingCanvas(int width, int height) {
+		// MKTODO what about x, y, scaleFactor??
+		image = new NetworkImageBuffer(width, height);
 	}
 	
-	Image paintImage();
+	public void setViewport(int width, int height) {
+		image.setViewport(width, height);
+	}
 	
-	default void dispose() {}
+	public void setCenter(double x, double y) {
+		image.setCenter(x, y);
+	}
+	
+	public void setScaleFactor(double scaleFactor) {
+		image.setScaleFactor(scaleFactor);
+	}
+	
+	public NetworkImageBuffer getImageBuffer() {
+		return image;
+	}
+	
+	@Override
+	public Image call() {
+		return get();
+	}
+	
+	@Override
+	public Image get() {
+		paintImage();
+		return image.getImage();
+	}
+	
+	public abstract void paintImage();
+	
+	public void dispose() {
+	}
 	
 //	// Don't know about this yet
 //	public abstract void print(Graphics g);

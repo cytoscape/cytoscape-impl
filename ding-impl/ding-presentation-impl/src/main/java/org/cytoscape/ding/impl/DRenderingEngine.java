@@ -110,6 +110,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private CompositeCanvas compositeCanvas;
 	private RendererComponent renderComponent;
+	private NetworkPicker picker;
 	private FontMetrics fontMetrics;
 	
 	// Snapshot of current view.  Will be updated by CONTENT_CHANGED event.
@@ -160,6 +161,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		compositeCanvas = new CompositeCanvas(registrar, this, dingLock, dingGraphLOD);
 		renderComponent = new RendererComponent();
+		picker = new NetworkPicker(this);
 
 //		setGraphLOD(dingGraphLOD);
 
@@ -268,13 +270,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 	
+	public NetworkPicker getPicker() {
+		return picker;
+	}
 	
 	public Rectangle getBounds() {
 		return renderComponent.getBounds();
 	}
 	
 	public NetworkTransform getTransform() {
-		return compositeCanvas.getTransform();
+		return compositeCanvas.getNetworkTransform();
 	}
 	
 	public GraphLOD getGraphLOD() {
@@ -284,6 +289,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public AnnotationCanvas getAnnotationCanvas(DingAnnotation.CanvasID canvasID) {
 		return compositeCanvas.getAnnotationCanvas(canvasID);
 	}
+	
+	
 	/**
 	 * TEMPORARY
 	 * 
@@ -317,7 +324,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		updateView();
 	}
 	
-	private void updateView() {
+	public void updateView() {
 		renderComponent.repaint();
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
@@ -370,6 +377,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		networkCanvas.repaint();
 //	}
 	
+	public int getLastRenderDetail() {
+		return compositeCanvas.getLastRenderDetail();
+	}
+	
+	public boolean treatNodeShapesAsRectangle() {
+		return compositeCanvas.treatNodeShapesAsRectangle();
+	}
 	
 	public BendStore getBendStore() {
 		return bendStore;
@@ -1071,7 +1085,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setZoom(compositeCanvas.getScaleFactor() * scale);
 		
 		Graphics g = image.getGraphics();
-		compositeCanvas.paintBlocking(g);
+//		compositeCanvas.paintBlocking(g);
 		
 		compositeCanvas.setViewport(origWidth, origHeight);
 		setZoom(origZoom);
@@ -1087,44 +1101,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 
-//	/**
-//	 * utility that returns the nodeView that is located at input point
-//	 */
-//	public View<CyNode> getPickedNodeView(Point2D pt) {
-//		double[] locn = {pt.getX(), pt.getY()};
-//		xformComponentToNodeCoords(locn);
-//		float x = (float) locn[0];
-//		float y = (float) locn[1];
-//
-//		boolean treatNodeShapesAsRectangle = (networkCanvas.getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0;
-//		List<Long> suids = getNodesIntersectingRectangle(x, y, x, y, treatNodeShapesAsRectangle);
-//
-//		if(suids.isEmpty())
-//			return null;
-//		
-//		Long suid = suids.get(suids.size() - 1);
-//		return getViewModelSnapshot().getNodeView(suid);
-//	}
-//
-//	public View<CyEdge> getPickedEdgeView(Point2D pt) {
-//		View<CyEdge> ev = null;
-//		List<Long> edges = queryDrawnEdges((int) pt.getX(), (int) pt.getY(), (int) pt.getX(), (int) pt.getY());
-//
-//		long chosenEdge = edges.isEmpty() ? -1 : edges.get(edges.size()-1);
-//		if (chosenEdge >= 0) {
-//			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-//			ev = netViewSnapshot.getEdgeView(chosenEdge);
-//		}
-//		return ev;
-//	}
-//	
-//	public HandleKey getPickedEdgeHandle(Point2D pt) {
-//		double[] ptBuff = {pt.getX(), pt.getY()};
-//		xformComponentToNodeCoords(ptBuff);
-//		HandleKey handleKey = getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
-//		return handleKey;
-//	}
-//	
 
 	private double checkZoom(double zoom, double orig) {
 		if (zoom > 0)

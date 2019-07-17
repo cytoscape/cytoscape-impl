@@ -315,11 +315,11 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	}
 
 	@Override
-	public void changeCanvas(final String cnvs) {
+	public void changeCanvas(CanvasID canvasId) {
 		for (DingAnnotation ann: annotations) {
-			ann.changeCanvas(cnvs);
+			ann.changeCanvas(canvasId);
 		}
-		super.changeCanvas(cnvs);
+		super.changeCanvas(canvasId);
 	}
 
 	@Override
@@ -336,12 +336,13 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		if (!canvas.isPrinting())
+		// MKTODO
+//		if (!canvas.isPrinting())
 			updateBounds();
 		
 		Graphics2D g2 = (Graphics2D) g;
 		
-		if (isSelected() && !canvas.isPrinting()) {
+		if (isSelected() /* && !canvas.isPrinting() */) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, getWidth(), getHeight());

@@ -142,11 +142,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 //		re.addViewportChangeListener(myViewportChangeListener);
 //	}
 	
-//	public void dispose() {
+	public void dispose() {
 //		re.removeViewportChangeListener(myViewportChangeListener);
 //		foreGroundCanvas.dispose();
 //		backGroundCanvas.dispose();
-//	}
+	}
 
 	
 	public void loadAnnotations() {

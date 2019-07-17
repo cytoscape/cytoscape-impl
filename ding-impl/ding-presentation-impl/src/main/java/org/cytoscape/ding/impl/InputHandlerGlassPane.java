@@ -7,9 +7,6 @@ import static java.awt.event.KeyEvent.VK_ESCAPE;
 import static java.awt.event.KeyEvent.VK_LEFT;
 import static java.awt.event.KeyEvent.VK_RIGHT;
 import static java.awt.event.KeyEvent.VK_UP;
-import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.BACKGROUND_CANVAS;
-import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.FOREGROUND_CANVAS;
-import static org.cytoscape.ding.impl.DRenderingEngine.Canvas.NETWORK_CANVAS;
 import static org.cytoscape.ding.internal.util.ViewUtil.getResizeCursor;
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 import static org.cytoscape.ding.internal.util.ViewUtil.isAdditiveSelect;
@@ -59,6 +56,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
@@ -99,10 +97,12 @@ public class InputHandlerGlassPane extends JComponent {
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
-
-	private final AnnotationCanvas backgroundCanvas;
-	private final InnerCanvas networkCanvas;
-	private final AnnotationCanvas foregroundCanvas;
+//
+//	private final AnnotationCanvas backgroundCanvas;
+//	private final InnerCanvas networkCanvas;
+//	private final AnnotationCanvas foregroundCanvas;
+	
+//	private final CompositeCanvas canvas;
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		// MKTODO make sure undo works for everything
@@ -110,10 +110,9 @@ public class InputHandlerGlassPane extends JComponent {
 		this.registrar = registrar;
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		
-		this.backgroundCanvas = (AnnotationCanvas) re.getCanvas(BACKGROUND_CANVAS);
-		this.networkCanvas    = (InnerCanvas) re.getCanvas(NETWORK_CANVAS);
-		this.foregroundCanvas = (AnnotationCanvas) re.getCanvas(FOREGROUND_CANVAS);
+//		this.backgroundCanvas = (AnnotationCanvas) re.getCanvas(BACKGROUND_CANVAS);
+//		this.networkCanvas    = (InnerCanvas) re.getCanvas(NETWORK_CANVAS);
+//		this.foregroundCanvas = (AnnotationCanvas) re.getCanvas(FOREGROUND_CANVAS);
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
@@ -389,20 +388,21 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		private void showContextMenu(Point p) {
 			// Node menu
-			View<CyNode> nodeView = re.getPickedNodeView(p);
+			NetworkPicker picker = re.getPicker();
+			View<CyNode> nodeView = picker.getPickedNodeView(p);
 			if(nodeView != null) {
 				popupMenuHelper.createNodeViewMenu(nodeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
 			// Edge menu
-			View<CyEdge> edgeView = re.getPickedEdgeView(p);
+			View<CyEdge> edgeView = picker.getPickedEdgeView(p);
 			if(edgeView != null) {
 				popupMenuHelper.createEdgeViewMenu(edgeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
 			// Network canvas menu
 			double[] loc = { p.getX(), p.getY() };
-			re.xformComponentToNodeCoords(loc);
+			re.getTransform().xformImageToNodeCoords(loc);
 			Point xformP = new Point();
 			xformP.setLocation(loc[0], loc[1]); 
 			popupMenuHelper.createNetworkViewMenu(p, xformP, PopupMenuHelper.ACTION_NEW);
@@ -463,7 +463,7 @@ public class InputHandlerGlassPane extends JComponent {
 				Point2D mousePoint = e.getPoint();
 				coords[0] = mousePoint.getX();
 				coords[1] = mousePoint.getY();
-				re.xformComponentToNodeCoords(coords);
+				re.getTransform().xformImageToNodeCoords(coords);
 				endPoint.setLocation(coords[0], coords[1]);
 				repaint();
 			}
@@ -475,10 +475,10 @@ public class InputHandlerGlassPane extends JComponent {
 				return;
 			coords[0] = endPoint.getX();
 			coords[1] = endPoint.getY();
-			re.xformNodeToComponentCoords(coords);
+			re.getTransform().xformNodeToImageCoords(coords);
 			Point2D ep = new Point2D.Double(coords[0], coords[1]);
 
-			View<CyNode> targetNode = re.getPickedNodeView(ep);
+			View<CyNode> targetNode = re.getPicker().getPickedNodeView(ep);
 			if(targetNode != null) {
 				createEdge(sourceNode, targetNode);
 				reset();
@@ -492,13 +492,13 @@ public class InputHandlerGlassPane extends JComponent {
 
 			coords[0] = startPoint.getX();
 			coords[1] = startPoint.getY();
-			re.xformNodeToComponentCoords(coords);
+			re.getTransform().xformNodeToImageCoords(coords);
 	        double x1 = coords[0];
 	        double y1 = coords[1];
 	        
 	        coords[0] = endPoint.getX();
 			coords[1] = endPoint.getY();
-			re.xformNodeToComponentCoords(coords);
+			re.getTransform().xformNodeToImageCoords(coords);
 	        double x2 = coords[0];
 	        double y2 = coords[1];
 	        
@@ -537,7 +537,7 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private void showTooltip(MouseEvent e) {
-			View<CyNode> node = re.getPickedNodeView(e.getPoint());
+			View<CyNode> node = re.getPicker().getPickedNodeView(e.getPoint());
 			String text = node == null ? null : re.getNodeDetails().getTooltipText(node);
 			ViewUtil.invokeOnEDT(() -> {
 				setToolTipText(text);
@@ -594,6 +594,7 @@ public class InputHandlerGlassPane extends JComponent {
 					return true;
 				}
 				
+				AnnotationCanvas foregroundCanvas = re.getAnnotationCanvas(CanvasID.FOREGROUND);
 				DingAnnotation annotation = cyAnnotator.getAnnotationAt(foregroundCanvas, e.getPoint());
 				if(annotation != null) {
 					Toggle select = mousePressedHandleAnnotation(annotation, e);
@@ -606,7 +607,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(nodeSelectionEnabled()) {
-				View<CyNode> node = re.getPickedNodeView(e.getPoint());
+				View<CyNode> node = re.getPicker().getPickedNodeView(e.getPoint());
 				if(node != null) {
 					Toggle select = toggleNodeSelection(node, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
@@ -618,7 +619,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(edgeSelectionEnabled() && isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS)) {
-				HandleKey handle = re.getPickedEdgeHandle(e.getPoint());
+				HandleKey handle = re.getPicker().getPickedEdgeHandle(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
 					return true;
@@ -626,7 +627,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(edgeSelectionEnabled()) {
-				View<CyEdge> edge = re.getPickedEdgeView(e.getPoint());
+				View<CyEdge> edge = re.getPicker().getPickedEdgeView(e.getPoint());
 				if(edge != null) {
 					if(e.isAltDown() && isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS))
 						addHandle(edge, e);
@@ -640,6 +641,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(annotationSelectionEnabled()) {
+				AnnotationCanvas backgroundCanvas = re.getAnnotationCanvas(CanvasID.BACKGROUND);
 				DingAnnotation annotation = cyAnnotator.getAnnotationAt(backgroundCanvas, e.getPoint());
 				if(annotation != null) {
 					mousePressedHandleAnnotation(annotation, e);
@@ -755,7 +757,7 @@ public class InputHandlerGlassPane extends JComponent {
 
 				if (isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS)) {
 					double[] ptBuff = {e.getX(), e.getY()};
-					re.xformComponentToNodeCoords(ptBuff);
+					re.getTransform().xformImageToNodeCoords(ptBuff);
 					HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
 					if(hit != null) {
 						re.getBendStore().selectHandle(hit);
@@ -770,7 +772,7 @@ public class InputHandlerGlassPane extends JComponent {
 		private void addHandle(View<CyEdge> edgeView, MouseEvent e) {
 			re.getBendStore().unselectAllHandles();
 			double[] ptBuff = {e.getX(), e.getY()};
-			re.xformComponentToNodeCoords(ptBuff);
+			re.getTransform().xformImageToNodeCoords(ptBuff);
 			// Store current handle list
 			addHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", registrar);
 			
@@ -862,13 +864,13 @@ public class InputHandlerGlassPane extends JComponent {
 				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
 			
 			double[] ptBuff = {mousePressedPoint.getX(), mousePressedPoint.getY()};
-			re.xformComponentToNodeCoords(ptBuff);
+			re.getTransform().xformImageToNodeCoords(ptBuff);
 			double oldX = ptBuff[0];
 			double oldY = ptBuff[1];
 			mousePressedPoint = e.getPoint();
 			ptBuff[0] = mousePressedPoint.getX();
 			ptBuff[1] = mousePressedPoint.getY();
-			re.xformComponentToNodeCoords(ptBuff);
+			re.getTransform().xformImageToNodeCoords(ptBuff);
 			double newX = ptBuff[0];
 			double newY = ptBuff[1];
 			double deltaX = newX - oldX;
@@ -948,9 +950,9 @@ public class InputHandlerGlassPane extends JComponent {
 			if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
 				re.setContentChanged();
 			}
-			if (!selectedNodes.isEmpty() && re.getBendStore().getSelectedHandles().isEmpty()) {
-				networkCanvas.setHideEdges();
-			}
+//			if (!selectedNodes.isEmpty() && re.getBendStore().getSelectedHandles().isEmpty()) {
+//				networkCanvas.setHideEdges();
+//			}
 		}
 	}
 	
@@ -1089,12 +1091,12 @@ public class InputHandlerGlassPane extends JComponent {
 					annotations = cyAnnotator.getAnnotationsInPath(selectionLasso);
 				}
 				if(nodeSelectionEnabled()) {
-					nodes = networkCanvas.getNodesInPath(selectionLasso);
+					nodes = re.getPicker().getNodesInPath(selectionLasso);
 				}
 				if(edgeSelectionEnabled()) {
 					// MKTODO
-					edges = networkCanvas.getEdgesInPath(selectionLasso);
-					handles = networkCanvas.getHandlesInPath(selectionLasso);
+					edges   = re.getPicker().getEdgesInPath(selectionLasso);
+					handles = re.getPicker().getHandlesInPath(selectionLasso);
 				}
 				
 				// Select
@@ -1171,11 +1173,11 @@ public class InputHandlerGlassPane extends JComponent {
 					annotations = cyAnnotator.getAnnotationsIn(selectionRect);
 				}
 				if(nodeSelectionEnabled()) {
-					nodes = networkCanvas.getNodesInRectangle(selectionRect);
+					nodes = re.getPicker().getNodesInRectangle(selectionRect);
 				}
 				if(edgeSelectionEnabled()) {
-					edges = networkCanvas.getEdgesInRectangle(selectionRect);
-					handles = networkCanvas.getHandlesInRectangle(selectionRect);
+					edges = re.getPicker().getEdgesInRectangle(selectionRect);
+					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
 				
 				// Select
@@ -1246,13 +1248,13 @@ public class InputHandlerGlassPane extends JComponent {
 				// MKTODO does holding SHIFT matter??
 				coords[0] = mousePressedPoint.getX();
 				coords[1] = mousePressedPoint.getY();
-				re.xformComponentToNodeCoords(coords);
+				re.getTransform().xformImageToNodeCoords(coords);
 				double oldX = coords[0];
 				double oldY = coords[1];
 				
 				coords[0] = e.getX();
 				coords[1] = e.getY();
-				re.xformComponentToNodeCoords(coords);
+				re.getTransform().xformImageToNodeCoords(coords);
 				double newX = coords[0];
 				double newY = coords[1];
 				
@@ -1318,15 +1320,15 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private boolean isLODEnabled(int flag) {
-		return (networkCanvas.getLastRenderDetail() & flag) != 0;
+		return (re.getLastRenderDetail() & flag) != 0;
 	}
 
 	private boolean overNode(Point2D mousePoint) {
-		return re.getPickedNodeView(mousePoint) != null;
+		return re.getPicker().getPickedNodeView(mousePoint) != null;
 	}
 
 	private CyNode getNodeAtLocation(Point2D mousePoint) {
-		return re.getPickedNodeView(mousePoint).getModel();
+		return re.getPicker().getPickedNodeView(mousePoint).getModel();
 	}
 	
 	

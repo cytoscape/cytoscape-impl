@@ -2,16 +2,12 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.image.BufferedImage;
 
-public class ColorCanvas implements DingCanvas {
+public class ColorCanvas extends DingCanvas {
 
 	public static final Color DEFAULT_COLOR = Color.WHITE;
 	
-	private Image image;
 	private Color color;
-	
 	private boolean dirty = true;
 	
 	public ColorCanvas(Color color) {
@@ -29,22 +25,21 @@ public class ColorCanvas implements DingCanvas {
 
 	@Override
 	public void setViewport(int width, int height) {
-		image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		super.setViewport(width, height);
 		dirty = true;
 	}
 	
 	@Override
-	public Image paintImage() {
-		if(color == null || image == null)
-			return null;
+	public void paintImage() {
+		if(color == null)
+			return;
 		
 		if(dirty) {
 			Graphics g = image.getGraphics();
 			g.setColor(color);
-			g.fillRect(0, 0, image.getWidth(null), image.getHeight(null));
+			g.fillRect(0, 0, image.getWidth(), image.getHeight());
 			dirty = false;
 		}
-		return image;
 	}
 	
 }

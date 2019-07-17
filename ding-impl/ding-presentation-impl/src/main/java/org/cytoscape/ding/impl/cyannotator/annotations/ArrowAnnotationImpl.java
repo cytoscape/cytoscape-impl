@@ -209,7 +209,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			double[] nextLocn = new double[2];
 			nextLocn[0] = Double.parseDouble(xy[0]);
 			nextLocn[1] = Double.parseDouble(xy[1]);
-			re.xformNodeToComponentCoords(nextLocn);
+			re.getTransform().xformNodeToImageCoords(nextLocn);
 			target = new Point2D.Double(nextLocn[0], nextLocn[1]);
 		} else if (argMap.containsKey(TARGETANN)) {
 			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
@@ -219,7 +219,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			String[] xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
-			View<CyNode> nv = re.getPickedNodeView(new Point2D.Double(x, y));
+			View<CyNode> nv = re.getPicker().getPickedNodeView(new Point2D.Double(x, y));
 			target = nv.getModel();
 		}
 		
@@ -489,9 +489,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void paint(Graphics g) {
 		super.paint(g);
-		if (canvas.isPrinting())
-			drawArrow(g, true);
-		else
+//		if (canvas.isPrinting())
+//			drawArrow(g, true);
+//		else
 			drawArrow(g, false);
 	}
 
@@ -745,14 +745,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		// Now convert to component coordinates
 		nextLocn[0] = xStart;
 		nextLocn[1] = yStart;
-		re.xformNodeToComponentCoords(nextLocn);
+		re.getTransform().xformNodeToImageCoords(nextLocn);
 
 		double x = nextLocn[0];
 		double y = nextLocn[1];
 
 		nextLocn[0] = xEnd;
 		nextLocn[1] = yEnd;
-		re.xformNodeToComponentCoords(nextLocn);
+		re.getTransform().xformNodeToImageCoords(nextLocn);
 
 		width = nextLocn[0]-x;
 		height = nextLocn[1]-y;

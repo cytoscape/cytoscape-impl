@@ -119,6 +119,31 @@ public final class GraphRenderer {
 	}
 	
 	
+	private static int lodToBits(int renderNodeCount, int renderEdgeCount, GraphLOD lod) {
+		int lodTemp = 0;
+		if (lod.detail(renderNodeCount, renderEdgeCount)) {
+			lodTemp |= LOD_HIGH_DETAIL;
+			if (lod.nodeBorders(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_NODE_BORDERS;
+			if (lod.nodeLabels(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_NODE_LABELS;
+			if (lod.edgeArrows(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_EDGE_ARROWS;
+			if (lod.dashedEdges(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_DASHED_EDGES;
+			if (lod.edgeAnchors(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_EDGE_ANCHORS;
+			if (lod.edgeLabels(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_EDGE_LABELS;
+			if ((((lodTemp & LOD_NODE_LABELS) != 0) || ((lodTemp & LOD_EDGE_LABELS) != 0)) && lod.textAsShape(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_TEXT_AS_SHAPE;
+			if (lod.customGraphics(renderNodeCount, renderEdgeCount))
+				lodTemp |= LOD_CUSTOM_GRAPHICS;
+		}
+		return lodTemp;
+	}
+	
+	
 	/**
 	 * Renders a graph.
 	 * @param netView the network view; nodes in this graph must correspond to
@@ -156,23 +181,15 @@ public final class GraphRenderer {
 	                                    final NodeDetails nodeDetails,
 	                                    final EdgeDetails edgeDetails,
 	                                    final GraphGraphics grafx,
-	                                    final double xCenter,
-	                                    final double yCenter,
-	                                    final double scaleFactor,
-	                                    final boolean haveZOrder,
 	                                    final Set<VisualPropertyDependency<?>> dependencies) {
 
-		if (grafx == null || grafx.image == null)
+		if (grafx == null)
 			return 0;
 		
 		LongHash nodeBuff = new LongHash();
 		
-		// Define the visible window in node coordinate space.
-		final float xMin = (float) (xCenter - ((0.5d * grafx.image.getWidth(null))  / scaleFactor));
-		final float yMin = (float) (yCenter - ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
-		final float xMax = (float) (xCenter + ((0.5d * grafx.image.getWidth(null))  / scaleFactor)); 
-		final float yMax = (float) (yCenter + ((0.5d * grafx.image.getHeight(null)) / scaleFactor));
-
+		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleArea();
+		
 		// Define buffers.  These are of the few objects we're instantiating directly in this method.
 		final float[] floatBuff1 = new float[4];
 		final float[] floatBuff2 = new float[4];
@@ -189,7 +206,7 @@ public final class GraphRenderer {
 		final byte renderEdges;
 
 		{
-			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 			
 			final int visibleNodeCount = nodeHits.size();
 			final int totalNodeCount = netView.getNodeCount();
@@ -250,36 +267,10 @@ public final class GraphRenderer {
 		// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
 
 		// Based on number of objects we are going to render, determine LOD.
-		final int lodBits;
-		{
-			int lodTemp = 0;
-			if (lod.detail(renderNodeCount, renderEdgeCount)) {
-				lodTemp |= LOD_HIGH_DETAIL;
-				if (lod.nodeBorders(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_NODE_BORDERS;
-				if (lod.nodeLabels(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_NODE_LABELS;
-				if (lod.edgeArrows(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_EDGE_ARROWS;
-				if (lod.dashedEdges(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_DASHED_EDGES;
-				if (lod.edgeAnchors(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_EDGE_ANCHORS;
-				if (lod.edgeLabels(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_EDGE_LABELS;
-				if ((((lodTemp & LOD_NODE_LABELS) != 0) || ((lodTemp & LOD_EDGE_LABELS) != 0))
-				    && lod.textAsShape(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_TEXT_AS_SHAPE;
-				if (lod.customGraphics(renderNodeCount, renderEdgeCount))
-					lodTemp |= LOD_CUSTOM_GRAPHICS;
-			}
-
-			lodBits = lodTemp;
-		}
+		final int lodBits = lodToBits(renderNodeCount, renderEdgeCount, lod);
+		
 		// Clear the background.
-		{
-			grafx.clear(clearPaint, xCenter, yCenter, scaleFactor);
-		}
+		grafx.initialize(clearPaint);
 
 		// Render the edges first.  No edge shall be rendered twice.  Render edge
 		// labels.  A label is not necessarily on top of every edge; it is only
@@ -296,7 +287,7 @@ public final class GraphRenderer {
 				// that our spacial index has the subquery order-preserving property.
 				nodeHits = netView.getSpacialIndex2D().queryAll();
 			else
-				nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+				nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height); // MKTODO why are we querying twice?
 		
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
@@ -399,7 +390,7 @@ public final class GraphRenderer {
 							// Compute the anchors to use when rendering edge.
 							final EdgeAnchors anchors = (((lodBits & LOD_EDGE_ANCHORS) == 0) ? null : edgeDetails.getAnchors(netView, edge));
 
-							if (!computeEdgeEndpoints(grafx, srcExtents, srcShape, srcArrow,
+							if (!computeEdgeEndpoints(srcExtents, srcShape, srcArrow,
 							                          srcArrowSize, anchors, trgExtents, trgShape,
 							                          trgArrow, trgArrowSize, floatBuff3, floatBuff4))
 								continue;
@@ -461,7 +452,7 @@ public final class GraphRenderer {
 									if (edgeAnchor == Position.WEST) {		edgeAnchorPointX = srcXAdj;   edgeAnchorPointY = srcYAdj;
 									} else if (edgeAnchor == Position.EAST) { edgeAnchorPointX = trgXAdj; edgeAnchorPointY = trgYAdj;
 									} else if (edgeAnchor == Position.CENTER) {
-										if (!grafx.getEdgePath(srcArrow, srcArrowSize, trgArrow,
+										if (!GraphGraphics.getEdgePath(srcArrow, srcArrowSize, trgArrow,
 										              trgArrowSize, srcXAdj, srcYAdj, anchors,  trgXAdj, trgYAdj, path2d)) {
 											continue;
 										}
@@ -576,10 +567,8 @@ public final class GraphRenderer {
 									doubleBuff1[3] = 0.5d * measuredText.getTotalHeight(); 
 									lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
-									final double textXCenter = edgeAnchorPointX - doubleBuff2[0]
-									                           + offsetVectorX;
-									final double textYCenter = edgeAnchorPointY - doubleBuff2[1]
-									                           + offsetVectorY;
+									final double textXCenter = edgeAnchorPointX - doubleBuff2[0] + offsetVectorX;
+									final double textYCenter = edgeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 									TextRenderingUtils.renderHorizontalText(grafx, measuredText, 
 									                                        font, fontScaleFactor,
 									                                        (float) textXCenter,
@@ -596,13 +585,14 @@ public final class GraphRenderer {
 				}
 			}
 		}
+
 		// Render nodes and labels.  A label is not necessarily on top of every
 		// node; it is only on top of the node it belongs to.
 		{
-			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(xMin, yMin, xMax, yMax);
+			SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 			// System.out.println("Rendering nodes: high detail = "+(lodBits & LOD_HIGH_DETAIL));
 			// System.out.println("time: "+(System.currentTimeMillis()-start)+"ms");
-
+			
 			if ((lodBits & LOD_HIGH_DETAIL) == 0) { // Low detail.
 
 				final int nodeHitCount = nodeHits.size();
@@ -619,8 +609,7 @@ public final class GraphRenderer {
 					final long node = nodeHits.nextExtents(floatBuff1);
 					final View<CyNode> cyNode = netView.getNodeView(node);
 
-					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2,
-							nodeDetails, lodBits, dependencies);
+					renderNodeHigh(netView, grafx, cyNode, floatBuff1, doubleBuff1, doubleBuff2, nodeDetails, lodBits, dependencies);
 
 					// Take care of label rendering.
 					if ((lodBits & LOD_NODE_LABELS) != 0) { // Potential label rendering.
@@ -663,10 +652,8 @@ public final class GraphRenderer {
 							doubleBuff1[3] = 0.5d * measuredText.getTotalHeight();
 							lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
 
-							final double textXCenter = nodeAnchorPointX - doubleBuff2[0]
-							                           + offsetVectorX;
-							final double textYCenter = nodeAnchorPointY - doubleBuff2[1]
-							                           + offsetVectorY;
+							final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
+							final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;
 							TextRenderingUtils.renderHorizontalText(grafx, measuredText, font,
 							                                        fontScaleFactor,
 							                                        (float) textXCenter,
