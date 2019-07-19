@@ -36,6 +36,7 @@ import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -345,8 +346,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		networkCanvas.repaint();
 //	}
 	
-	public int getLastRenderDetail() {
-		return compositeCanvas.getLastRenderDetail();
+	public RenderDetailFlags getLastRenderDetail() {
+		return compositeCanvas.getLastRenderDetailFlags();
 	}
 	
 	public boolean treatNodeShapesAsRectangle() {

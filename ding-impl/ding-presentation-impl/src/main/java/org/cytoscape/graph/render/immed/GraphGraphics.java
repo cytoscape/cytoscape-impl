@@ -150,7 +150,8 @@ public final class GraphGraphics {
 	 * particular constant results in elliptical-looking curves.
 	 */
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
-
+	private static final Paint CLEAR_PAINT = new Color(0, 0, 0, 0);
+	
 	// This member variable only to be used from within defineCustomNodeShape().
 	private byte m_lastCustomShapeType = s_last_shape;
 	
@@ -221,8 +222,6 @@ public final class GraphGraphics {
 	
 	private Graphics2D m_g2d;
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
-	private boolean m_cleared;
-	private final boolean m_clear;
 	
 	/**
 	 * All rendering operations will be performed on the specified image. No
@@ -256,11 +255,10 @@ public final class GraphGraphics {
 	 *            if this is true, we will clear the image before drawing.  This should
 	 *            only ever be false when we're printing....
 	 */
-	public GraphGraphics(NetworkImageBuffer image, final boolean clear) {
+	public GraphGraphics(NetworkImageBuffer image) {
 		this.image = image;
-		m_clear = clear;
 		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-		m_cleared = false;
+		initialize(CLEAR_PAINT);
 	}
 	
 	public NetworkTransform getTransform() {
@@ -306,7 +304,7 @@ public final class GraphGraphics {
 	 * @exception IllegalArgumentException
 	 *                if scaleFactor is not positive.
 	 */
-	public final void initialize(Paint bgPaint) {
+	private final void initialize(Paint bgPaint) {
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
 			m_gMinimal = null;
@@ -317,13 +315,11 @@ public final class GraphGraphics {
 
 		m_g2d = image.getGraphics();
 
-		if (m_clear) {
-			final Composite origComposite = m_g2d.getComposite();
-			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-			m_g2d.setPaint(bgPaint);
-			m_g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
-			m_g2d.setComposite(origComposite);
-		}
+		final Composite origComposite = m_g2d.getComposite();
+		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+		m_g2d.setPaint(bgPaint);
+		m_g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
+		m_g2d.setComposite(origComposite);
 		
 		// For detailed view, render high quality image as much as possible.
 		
@@ -348,9 +344,8 @@ public final class GraphGraphics {
 		
 		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 
+		// Very important
 		m_g2d.transform(getTransform().getAffineTransform());
-		
-		m_cleared = true;
 	}
 
 
@@ -384,7 +379,6 @@ public final class GraphGraphics {
 	public final void drawNodeLow(final float xMin, final float yMin,
 			final float xMax, final float yMax, final Color fillColor) {
 		if (debug) {
-			checkCleared();
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
 			if (fillColor.getAlpha() != 255) {
@@ -495,7 +489,6 @@ public final class GraphGraphics {
 			final Paint fillPaint, final float borderWidth, final Stroke borderStroke,
 			final Paint borderPaint) {
 		if (debug) {
-			checkCleared();
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
 			if (!(borderWidth >= 0.0f)) {
@@ -832,7 +825,6 @@ public final class GraphGraphics {
 	 */
 	public final void drawEdgeLow(final float x0, final float y0, final float x1, final float y1, final Color edgeColor) {
 		if (debug) {
-			checkCleared();
 			if (edgeColor.getAlpha() != 255) {
 				throw new IllegalArgumentException("edgeColor is not opaque");
 			}
@@ -1165,7 +1157,6 @@ public final class GraphGraphics {
 			final Stroke edgeStroke,
 			final float edgeThickness, 
 			final EdgeAnchors anchors) {
-		checkCleared();
 		if (!(edgeThickness >= 0.0f)) {
 			throw new IllegalArgumentException("edgeThickness < 0");
 		}
@@ -1691,8 +1682,6 @@ public final class GraphGraphics {
 	public final void drawTextLow(final Font font, final String text,
 			final float xCenter, final float yCenter, final Color color) {
 		if (debug) {
-//			checkDispatchThread();
-			checkCleared();
 			if (color.getAlpha() != 255) {
 				throw new IllegalStateException("color is not opaque");
 			}
@@ -1787,8 +1776,6 @@ public final class GraphGraphics {
 			final String text, final float xCenter, final float yCenter,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
 		if (debug) {
-//			checkDispatchThread();
-			checkCleared();
 			if (scaleFactor < 0.0) {
 				throw new IllegalArgumentException("scaleFactor must be positive");
 			}
@@ -1848,11 +1835,6 @@ public final class GraphGraphics {
 
 	public final void drawCustomGraphicImage(final Shape shape,
 			final float xOffset, final float yOffset, final TexturePaint paint) {
-		if (debug) {
-//			checkDispatchThread();
-			checkCleared();
-		}
-
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
@@ -1882,10 +1864,6 @@ public final class GraphGraphics {
 	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<CyNode> node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
-		if (debug) {
-//			checkDispatchThread();
-			checkCleared();
-		}
 
 		m_g2d.translate(xOffset, yOffset);
 		
@@ -1934,17 +1912,10 @@ public final class GraphGraphics {
 		return s; 
 	}
 
-	private void checkCleared() {
-		if (!m_cleared) 
-			throw new IllegalStateException( "clear() has not been called previously");
-	}
 
 	private void checkOrder(float min, float max, String id) {
 		if (!(min < max)) 
 			throw new IllegalArgumentException( id + "Min not less than " + id + "Max");
 	}
 	
-	public boolean isInitialized() {
-		return m_cleared;
-	}
 }

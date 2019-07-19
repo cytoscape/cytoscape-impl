@@ -1,8 +1,8 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Image;
-import java.util.concurrent.Callable;
-import java.util.function.Supplier;
+
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ import java.util.function.Supplier;
 /**
  * 
  */
-public abstract class DingCanvas implements Callable<Image>, Supplier<Image> {
+public abstract class DingCanvas {
 	
 	protected final NetworkImageBuffer image;
 	
@@ -62,18 +62,7 @@ public abstract class DingCanvas implements Callable<Image>, Supplier<Image> {
 		return image;
 	}
 	
-	@Override
-	public Image call() {
-		return get();
-	}
-	
-	@Override
-	public Image get() {
-		paintImage();
-		return image.getImage();
-	}
-	
-	public abstract void paintImage();
+	public abstract Image paintImage(RenderDetailFlags flags); 
 	
 	public void dispose() {
 	}

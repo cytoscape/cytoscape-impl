@@ -67,8 +67,8 @@ import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
-import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -622,7 +622,7 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 			}
 			
-			if(edgeSelectionEnabled() && isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS)) {
+			if(edgeSelectionEnabled() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
 				HandleKey handle = re.getPicker().getPickedEdgeHandle(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
@@ -633,7 +633,7 @@ public class InputHandlerGlassPane extends JComponent {
 			if(edgeSelectionEnabled()) {
 				View<CyEdge> edge = re.getPicker().getPickedEdgeView(e.getPoint());
 				if(edge != null) {
-					if(e.isAltDown() && isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS))
+					if(e.isAltDown() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS))
 						addHandle(edge, e);
 					Toggle select = toggleSelectedEdge(edge, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
@@ -759,7 +759,7 @@ public class InputHandlerGlassPane extends JComponent {
 			} else if (!wasSelected) {
 				toggle = Toggle.SELECT;
 
-				if (isLODEnabled(GraphRenderer.LOD_EDGE_ANCHORS)) {
+				if (isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
 					double[] ptBuff = {e.getX(), e.getY()};
 					re.getTransform().xformImageToNodeCoords(ptBuff);
 					HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
@@ -1324,7 +1324,7 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private boolean isLODEnabled(int flag) {
-		return (re.getLastRenderDetail() & flag) != 0;
+		return re.getLastRenderDetail().has(flag);
 	}
 
 	private boolean overNode(Point2D mousePoint) {

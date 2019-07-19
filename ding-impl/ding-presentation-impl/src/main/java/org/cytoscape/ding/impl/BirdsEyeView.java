@@ -49,6 +49,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyUserLog;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.View;
@@ -198,16 +199,16 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	public void update(Graphics g) {
 //		re.getCanvas().ensureInitialized();
 
-//		AnnotationCanvas foregroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.FOREGROUND_CANVAS);
-//		AnnotationCanvas backgroundCanvas = (AnnotationCanvas) re.getCanvas(Canvas.BACKGROUND_CANVAS);
+		AnnotationCanvas foregroundCanvas = re.getAnnotationCanvas(CanvasID.FOREGROUND);
+		AnnotationCanvas backgroundCanvas = re.getAnnotationCanvas(CanvasID.BACKGROUND);
 
 		updateBounds();
 
 		if (imageUpdated || boundChanged) {
 			
 			boolean hasComponents = re.getExtents(m_extents);
-//			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
-//			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
+			hasComponents |= foregroundCanvas.adjustBounds(m_extents);
+			hasComponents |= backgroundCanvas.adjustBounds(m_extents);
 			
 			if(hasComponents) {
 				m_myXCenter = (m_extents[0] + m_extents[2]) / 2.0d;

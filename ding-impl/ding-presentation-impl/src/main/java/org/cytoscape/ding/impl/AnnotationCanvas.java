@@ -4,6 +4,7 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.geom.AffineTransform;
 import java.awt.image.VolatileImage;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 /*
  * #%L
@@ -263,7 +265,7 @@ public class AnnotationCanvas extends DingCanvas {
 	}
 
 	@Override
-	public void paintImage() {
+	public Image paintImage(RenderDetailFlags flags) {
 		// only paint if we have an image to paint on
 		// get image graphics
 		final Graphics2D image2D = image.getGraphics();
@@ -295,6 +297,7 @@ public class AnnotationCanvas extends DingCanvas {
 		// Make img publicly available *after* it has been rendered
 //			m_img = img;
 		dirty = false;
+		return image.getImage();
 	}
 
 //	@Override

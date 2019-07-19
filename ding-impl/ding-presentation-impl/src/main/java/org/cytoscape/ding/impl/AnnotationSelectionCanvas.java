@@ -1,9 +1,11 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class AnnotationSelectionCanvas extends DingCanvas {
 
@@ -16,9 +18,9 @@ public class AnnotationSelectionCanvas extends DingCanvas {
 	}
 	
 	@Override
-	public void paintImage() {
+	public Image paintImage(RenderDetailFlags flags) {
 		if(selection == null)
-			return;
+			return null;
 		
 		image.clear();
 		Graphics2D g = image.getGraphics();
@@ -26,6 +28,7 @@ public class AnnotationSelectionCanvas extends DingCanvas {
 		g.translate(selection.getX(), selection.getY());
 		selection.paint(g);
 		g.setTransform(t);
+		return image.getImage();
 	}
 
 }

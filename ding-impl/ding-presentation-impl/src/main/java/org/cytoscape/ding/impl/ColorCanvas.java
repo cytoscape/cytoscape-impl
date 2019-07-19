@@ -1,6 +1,9 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Color;
+import java.awt.Image;
+
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class ColorCanvas extends DingCanvas {
 
@@ -29,11 +32,12 @@ public class ColorCanvas extends DingCanvas {
 	}
 	
 	@Override
-	public void paintImage() {
+	public Image paintImage(RenderDetailFlags flags) {
 		if(dirty) {
 			image.fill(color);
 			dirty = false;
 		}
+		return image.getImage();
 	}
 	
 }

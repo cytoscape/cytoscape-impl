@@ -69,8 +69,7 @@ public class GraphGraphicsTest extends TestCase {
 
 	public void setUp() {
 		image = new NetworkImageBuffer(canvasSize, canvasSize);
-		currentGraphGraphics = new GraphGraphics(image,true);
-		currentGraphGraphics.initialize(Color.white);
+		currentGraphGraphics = new GraphGraphics(image);
 		oldGraphGraphics = new OldGraphGraphics(image.getImage(),false);
 		oldGraphGraphics.clear(Color.white,0,0,1.0);
 	}

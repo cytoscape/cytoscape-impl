@@ -36,7 +36,7 @@ public class GraphRendererTest extends TestCase {
 
 	public void setUp() {
 		NetworkImageBuffer img = new NetworkImageBuffer(500,500);
-		grafx = new GraphGraphics(img, true);
+		grafx = new GraphGraphics(img);
 	}
 
 	// normal without anchors

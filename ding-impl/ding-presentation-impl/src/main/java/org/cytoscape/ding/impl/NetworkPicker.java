@@ -1,5 +1,9 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
+
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -19,6 +23,7 @@ import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -40,7 +45,7 @@ public class NetworkPicker {
 		this.edgeDetails = re.getEdgeDetails();
 	}
 	
-	private int getLastRenderDetail() {
+	private RenderDetailFlags getFlags() {
 		return re.getLastRenderDetail();
 	}
 	
@@ -217,7 +222,7 @@ public class NetworkPicker {
 		Set<Long> processedNodes = new HashSet<>();
 		List<Long> resultEdges = new ArrayList<>();
 		
-		if ((getLastRenderDetail() & GraphRenderer.LOD_HIGH_DETAIL) == 0) {
+		if (getFlags().not(LOD_HIGH_DETAIL)) {
 			// We won't need to look up arrows and their sizes.
 			while(nodeHits.hasNext()) {
 				long node = nodeHits.nextExtents(extentsBuff);
@@ -293,7 +298,7 @@ public class NetworkPicker {
 						GeneralPath path  = new GeneralPath();
 						GeneralPath path2 = new GeneralPath();
 						
-						if ((getLastRenderDetail() & GraphRenderer.LOD_EDGE_ARROWS) == 0) {
+						if (getFlags().not(LOD_EDGE_ARROWS)) {
 							srcArrow = trgArrow = ArrowShapeVisualProperty.NONE;
 							srcArrowSize = trgArrowSize = 0.0f;
 						} else {
@@ -303,9 +308,7 @@ public class NetworkPicker {
 							trgArrowSize = ((trgArrow == ArrowShapeVisualProperty.NONE) ? 0.0f : edgeDetails.getTargetArrowSize(edge));
 						}
 
-						final EdgeAnchors anchors = (((getLastRenderDetail()
-						                              & GraphRenderer.LOD_EDGE_ANCHORS) == 0)
-						                             ? null : edgeDetails.getAnchors(snapshot, edge));
+						final EdgeAnchors anchors = getFlags().not(LOD_EDGE_ANCHORS) ? null : edgeDetails.getAnchors(snapshot, edge);
 
 						if (!GraphRenderer.computeEdgeEndpoints(srcExtents, srcShape,
 						                                        srcArrow, srcArrowSize, anchors,
@@ -456,7 +459,7 @@ public class NetworkPicker {
 
 	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
 		BendStore bendStore = re.getBendStore();
-		if((getLastRenderDetail() & GraphRenderer.LOD_EDGE_ANCHORS) != 0) {
+		if(getFlags().has(LOD_EDGE_ANCHORS)) {
 			double[] ptBuff = {r.x, r.y};
 			re.getTransform().xformImageToNodeCoords(ptBuff);
 			final float xMin = (float) ptBuff[0];
