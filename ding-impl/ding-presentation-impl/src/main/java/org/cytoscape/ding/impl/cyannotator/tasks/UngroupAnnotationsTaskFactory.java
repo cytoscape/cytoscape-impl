@@ -30,7 +30,6 @@ import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.GroupAnnotationImpl;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -50,8 +49,7 @@ public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFac
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return null;
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
 		return new TaskIterator(new UngroupAnnotationsTask(re, annotation));
 
 	}
@@ -61,8 +59,7 @@ public class UngroupAnnotationsTaskFactory implements NetworkViewLocationTaskFac
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return false;
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
 		if (annotation != null && annotation instanceof GroupAnnotationImpl)
 			return true;
 		return false;

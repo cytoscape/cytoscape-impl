@@ -2,8 +2,6 @@ package org.cytoscape.ding.impl.cyannotator;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
-import java.awt.geom.GeneralPath;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -20,16 +18,17 @@ import java.util.TreeMap;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.swing.event.SwingPropertyChangeSupport;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.tasks.ReloadImagesTask;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.model.CyNetwork;
@@ -75,8 +74,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private static final int MAX_NAME_LENGH = 200;
 
 	private final DRenderingEngine re;
-	private final AnnotationCanvas foreGroundCanvas;
-	private final AnnotationCanvas backGroundCanvas;
+//	private final AnnotationCanvas foreGroundCanvas;
+//	private final AnnotationCanvas backGroundCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
 	private final AnnotationSelection annotationSelection;
@@ -98,8 +97,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		this.registrar = registrar;
 		
 		// MKTODO shouldn't have direct access to the canvases
-		this.foreGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.FOREGROUND);
-		this.backGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.BACKGROUND);
+//		this.foreGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.FOREGROUND);
+//		this.backGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.BACKGROUND);
 		this.annotationFactoryManager = annotationFactoryManager;
 		this.annotationSelection = new AnnotationSelection(this);
 	}
@@ -168,7 +167,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
 				Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
 				Map<String, Annotation> uuidMap = new HashMap<>();
-				Map<Object, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+				Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
 		
 				if (annotations != null) {
 					loadRegularAnnotations(annotations, arrowList, groupMap, uuidMap, zOrderMap);
@@ -209,105 +208,133 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return registrar;
 	}
 	
+//	/**
+// 	 * Find all of our annotations that are at this point.  Return the top annotation
+// 	 * (the one with the lowest Z value) if there are more than one.
+// 	 */
+//	private DingAnnotation getComponentAt(CanvasID cnvs, int x, int y) {
+//		DingAnnotation top = null;
+//		
+//		for (DingAnnotation a : annotationSet) {
+//			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
+//				if (top == null || top.getZOrder() > a.getZOrder()) {
+//					top = a;
+//				}
+//			}
+//		}
+//		return top;
+//	}
+	
+	
 	/**
- 	 * Find all of our annotations that are at this point.  Return the top annotation
- 	 * (the one with the lowest Z value) if there are more than one.
- 	 */
-	private DingAnnotation getComponentAt(AnnotationCanvas cnvs, int x, int y) {
-		DingAnnotation top = null;
-		
-		for (DingAnnotation a : annotationSet) {
-			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
-				if ((top == null) || (cnvs.getZOrder(top) > cnvs.getZOrder(a))) {
-					top = a;
-				}
-			}
-		}
-		return top;
-	}
-
-	/**
- 	 * Find all of our annotations that are at this point. 
- 	 */
-	private List<DingAnnotation> getComponentsAt(AnnotationCanvas cnvs, int x, int y) {
-		List<DingAnnotation> list = new ArrayList<>();
-		
-		// MKTODO it should not be necessary to z-sort, the canvas should return the annotations in z-order
-		for (DingAnnotation a : annotationSet) {
-			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
-				// Make sure to find the parent if this is a group
-				while (a.getGroupParent() != null) {
-					a = (DingAnnotation) a.getGroupParent();
-				}
-
-				if (!list.contains(a))
-					list.add(a);
-			}
-		}
-
-		// Now sort the list by Z order, smallest to largest
-		Collections.sort(list, new ZComparator(cnvs));
-		return list;
-	}
-
-	// MKTODO should we do this???
-	public DingAnnotation getAnnotationAt(Point2D position) {
-		DingAnnotation a = getAnnotationAt(foreGroundCanvas, position);
-		if(a == null)
-			a = getAnnotationAt(backGroundCanvas, position);
-		return a;
+	 * Returns the annotations on the given canvas sorted by z-order ascending.
+	 */
+	public List<DingAnnotation> getAnnotations(CanvasID canvasId) {
+		return getAnnotations(canvasId, true);
 	}
 	
-	public DingAnnotation getAnnotationAt(AnnotationCanvas canvas, Point2D position) {
-		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
-		if(a != null) {
-			while(a.getGroupParent() != null) {
-				a = (DingAnnotation)a.getGroupParent();
-			}
-		}
-		return a;
-	}
-
-	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
-		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
-		return a;
-	}
-
-	public List<DingAnnotation> getAnnotationsIn(Rectangle2D rect) {
-		List<DingAnnotation> anns = new ArrayList<>();
-		for (Annotation ann: getAnnotations()) {
-			DingAnnotation d = (DingAnnotation)ann;
-			Rectangle2D bounds = d.getBounds();
-			if (d.getGroupParent() == null && rect.contains(bounds))
-				anns.add(d);
-		}
-		return anns;
+	/**
+	 * Returns the annotations on the given canvas sorted by z-order.
+	 * @param ascending If true sort ascending, otherwise descending
+	 */
+	public List<DingAnnotation> getAnnotations(CanvasID canvasId, boolean ascending) {
+		if(annotationSet.isEmpty())
+			return Collections.emptyList();
+		
+		Comparator<DingAnnotation> zComparator = Comparator.comparing(DingAnnotation::getZOrder);
+		if(!ascending)
+			zComparator = zComparator.reversed();
+		
+		// MKTODO, optimize this, use loops or cache?
+		return annotationSet.stream()
+			.filter(a -> a.getCanvas() == canvasId)
+			.sorted(zComparator)
+			.collect(Collectors.toList());
 	}
 	
-	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
-		List<DingAnnotation> anns = new ArrayList<>();
-		for (Annotation ann: getAnnotations()) {
-			DingAnnotation d = (DingAnnotation)ann;
-			Rectangle2D bounds = d.getBounds();
-			if(d.getGroupParent() == null && path.intersects(bounds))
-				anns.add(d);
-		}
-		return anns;
-	}
+
+//	/**
+// 	 * Find all of our annotations that are at this point. 
+// 	 */
+//	private List<DingAnnotation> getComponentsAt(AnnotationCanvas cnvs, int x, int y) {
+//		List<DingAnnotation> list = new ArrayList<>();
+//		
+//		// MKTODO it should not be necessary to z-sort, the canvas should return the annotations in z-order
+//		for (DingAnnotation a : annotationSet) {
+//			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
+//				// Make sure to find the parent if this is a group
+//				while (a.getGroupParent() != null) {
+//					a = (DingAnnotation) a.getGroupParent();
+//				}
+//
+//				if (!list.contains(a))
+//					list.add(a);
+//			}
+//		}
+//
+//		// Now sort the list by Z order, smallest to largest
+//		Collections.sort(list, new ZComparator(cnvs));
+//		return list;
+//	}
+//
+////	// MKTODO should we do this???
+////	public DingAnnotation getAnnotationAt(Point2D position) {
+////		DingAnnotation a = getAnnotationAt(foreGroundCanvas, position);
+////		if(a == null)
+////			a = getAnnotationAt(backGroundCanvas, position);
+////		return a;
+////	}
+//	
+//	public DingAnnotation getAnnotationAt(AnnotationCanvas canvas, Point2D position) {
+//		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
+//		if(a != null) {
+//			while(a.getGroupParent() != null) {
+//				a = (DingAnnotation)a.getGroupParent();
+//			}
+//		}
+//		return a;
+//	}
+//
+//	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
+//		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
+//		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
+//		return a;
+//	}
+//
+//	public List<DingAnnotation> getAnnotationsIn(Rectangle2D rect) {
+//		List<DingAnnotation> anns = new ArrayList<>();
+//		for (Annotation ann: getAnnotations()) {
+//			DingAnnotation d = (DingAnnotation)ann;
+//			Rectangle2D bounds = d.getBounds();
+//			if (d.getGroupParent() == null && rect.contains(bounds))
+//				anns.add(d);
+//		}
+//		return anns;
+//	}
+//	
+//	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
+//		List<DingAnnotation> anns = new ArrayList<>();
+//		for (Annotation ann: getAnnotations()) {
+//			DingAnnotation d = (DingAnnotation)ann;
+//			Rectangle2D bounds = d.getBounds();
+//			if(d.getGroupParent() == null && path.intersects(bounds))
+//				anns.add(d);
+//		}
+//		return anns;
+//	}
 	
 
 	public void setSelection(AnnotationSelection selection) {
 		re.setAnnotationSelection(selection);
 	}
 
-	public AnnotationCanvas getForeGroundCanvas() {
-		return foreGroundCanvas;
-	}
-
-	public AnnotationCanvas getBackGroundCanvas() {
-		return backGroundCanvas;
-	}
+//	public AnnotationCanvas getForeGroundCanvas() {
+//		return foreGroundCanvas;
+//	}
+//
+//	public AnnotationCanvas getBackGroundCanvas() {
+//		return backGroundCanvas;
+//	}
 	
 	
 	public AnnotationTree getAnnotationTree() {
@@ -406,7 +433,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 
-	public List<Annotation> getAnnotations() {
+	public List<DingAnnotation> getAnnotations() {
 		return annotationSet.isEmpty() ? Collections.emptyList() : new ArrayList<>(annotationSet);
 	}
 	
@@ -563,7 +590,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			List<Map<String, String>> arrowList,
 			Map<GroupAnnotation, String> groupMap,
 			Map<String, Annotation> uuidMap,
-			Map<Object, Map<Integer, DingAnnotation>> zOrderMap
+			Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap
 	) {
 		for (String s: annotations) {
 			Map<String, String> argMap = createArgMap(s);
@@ -586,22 +613,22 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			annotation = (DingAnnotation)a;
 
 			uuidMap.put(annotation.getUUID().toString(), annotation);
-			Object canvas;
+			CanvasID canvas;
 
 			if (annotation.getCanvas() != null) {
-				annotation.getCanvas().add(annotation);
+//				annotation.getCanvas().add(annotation);
 				canvas = annotation.getCanvas();
 			} else {
-				canvas = foreGroundCanvas;
-				foreGroundCanvas.add(annotation);
+				canvas = CanvasID.FOREGROUND;
+//				foreGroundCanvas.add(annotation);
 			}
 
 			if (argMap.containsKey(Annotation.Z)) {
 				int zOrder = Integer.parseInt(argMap.get(Annotation.Z));
-				
 				if (zOrder >= 0) {
-					if (!zOrderMap.containsKey(canvas))
+					if (!zOrderMap.containsKey(canvas)) {
 						zOrderMap.put(canvas, new TreeMap<>());
+					}
 					zOrderMap.get(canvas).put(zOrder,annotation);
 				}
 			}
@@ -631,7 +658,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		}
 	}
 	
-	private void loadArrows(List<Map<String, String>> arrowList, Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
+	private void loadArrows(List<Map<String, String>> arrowList, Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap) {
 		for (Map<String, String> argMap : arrowList) {
 			String type = argMap.get("type");
 			Annotation annotation = annotationFactoryManager.createAnnotation(type, re.getViewModel(), argMap);
@@ -639,14 +666,14 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			if (annotation instanceof ArrowAnnotationImpl) {
 				ArrowAnnotationImpl arrow = (ArrowAnnotationImpl)annotation;
 				arrow.getSource().addArrow(arrow);
-				Object canvas;
+				CanvasID canvas;
 				
 				if (arrow.getCanvas() != null) {
-					arrow.getCanvas().add(arrow);
+//					arrow.getCanvas().add(arrow);
 					canvas = arrow.getCanvas();
 				} else {
-					foreGroundCanvas.add(arrow);
-					canvas = foreGroundCanvas;
+//					foreGroundCanvas.add(arrow);
+					canvas = CanvasID.FOREGROUND;
 				}
 
 				if (argMap.containsKey(Annotation.Z)) {
@@ -665,15 +692,14 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		}
 	}
 	
-	private void restoreZOrder(Map<Object, Map<Integer, DingAnnotation>> zOrderMap) {
+	private void restoreZOrder(Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap) {
 		for (Map<Integer, DingAnnotation> map: zOrderMap.values()) {
 			for (Integer zOrder: map.keySet()) {
 				DingAnnotation a = map.get(zOrder);
-				
 				if (a.getCanvas() != null)
-					a.getCanvas().setZOrder(a, zOrder);
-				else
-					foreGroundCanvas.setZOrder(a, zOrder);
+					a.setZOrder(zOrder);
+//				else
+//					foreGroundCanvas.setZOrder(a, zOrder);
 			}
 		}
 	}
@@ -726,28 +752,28 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 */
 
 
-	class ZComparator implements Comparator<DingAnnotation> {
-		
-		final AnnotationCanvas cnvs;
-		
-		public ZComparator(AnnotationCanvas c) {
-			this.cnvs = c;
-		}
-		
-		@Override
-		public int compare(DingAnnotation o1, DingAnnotation o2) {
-			int z1 = cnvs.getZOrder(o1);
-			int z2 = cnvs.getZOrder(o2);
-			if (z1 < z2) return -1;
-			if (z1 > z2) return 1;
-			return 0;
-		}
-
-		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
-			int z1 = cnvs.getZOrder(o1);
-			int z2 = cnvs.getZOrder(o2);
-			if (z1 == z2) return true;
-			return false;
-		}
-	}
+//	class ZComparator implements Comparator<DingAnnotation> {
+//		
+//		final AnnotationCanvas cnvs;
+//		
+//		public ZComparator(AnnotationCanvas c) {
+//			this.cnvs = c;
+//		}
+//		
+//		@Override
+//		public int compare(DingAnnotation o1, DingAnnotation o2) {
+//			int z1 = cnvs.getZOrder(o1);
+//			int z2 = cnvs.getZOrder(o2);
+//			if (z1 < z2) return -1;
+//			if (z1 > z2) return 1;
+//			return 0;
+//		}
+//
+//		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
+//			int z1 = cnvs.getZOrder(o1);
+//			int z2 = cnvs.getZOrder(o2);
+//			if (z1 == z2) return true;
+//			return false;
+//		}
+//	}
 }

@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -113,14 +112,14 @@ public class AnnotationTree {
 		int[] zf = {0}; // foreground canvas z-order
 		foregroundTree.depthFirstTraversal(node -> {
 			DingAnnotation da = (DingAnnotation) node.getAnnotation();
-			da.getCanvas().setZOrder(da, zf[0]++);
+			da.setZOrder(zf[0]++);
 		});
 		
 		int[] zb = {0};
 		backgroundTree.depthFirstTraversal(node -> {
 			DingAnnotation da = (DingAnnotation) node.getAnnotation();
 			if(!(da instanceof GroupAnnotation)) {
-				da.getCanvas().setZOrder(da, zb[0]++);
+				da.setZOrder(zb[0]++);
 			}
 		});
 	}
@@ -297,10 +296,8 @@ public class AnnotationTree {
 			if (a1 instanceof DingAnnotation && a2 instanceof DingAnnotation) {
 				DingAnnotation da1 = (DingAnnotation) a1;
 				DingAnnotation da2 = (DingAnnotation) a2;
-				AnnotationCanvas canvas1 = da1.getCanvas();
-				AnnotationCanvas canvas2 = da2.getCanvas();
-				int z1 = canvas1.getZOrder(da1);
-				int z2 = canvas2.getZOrder(da2);
+				int z1 = da1.getZOrder();
+				int z2 = da2.getZOrder();
 				if(z1 >= 0 && z2 >= 0) {
 					return Integer.compare(z1, z2);
 				} else {

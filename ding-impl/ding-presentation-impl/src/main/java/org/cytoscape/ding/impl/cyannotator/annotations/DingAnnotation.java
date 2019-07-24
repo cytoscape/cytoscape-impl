@@ -1,15 +1,12 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -53,13 +50,18 @@ public interface DingAnnotation extends Annotation {
 	
 	void changeCanvas(CanvasID canvasId);
 
-	AnnotationCanvas getCanvas();
+	CanvasID getCanvas();
+	
+	@Override
+	default String getCanvasName() {
+		return getCanvas().toArgName();
+	}
 	
 	CyAnnotator getCyAnnotator();
 
-	void moveAnnotationRelative(Point2D location);
+//	void moveAnnotationRelative(Point2D location);
 
-	void drawAnnotation(Graphics g, double x, double y, double scaleFactor);
+//	void drawAnnotation(Graphics g, double x, double y, double scaleFactor);
 
 	boolean isUsedForPreviews();
 
@@ -80,13 +82,13 @@ public interface DingAnnotation extends Annotation {
 	GroupAnnotation getGroupParent();
 
 	// Drag support
-	void setOffset(Point2D offset);
+//	void setOffset(Point2D offset);
 
-	Point2D getOffset();
+//	Point2D getOffset();
 
-	void saveBounds();
+//	void saveBounds();
 
-	Rectangle2D getInitialBounds();
+//	Rectangle2D getInitialBounds();
 	
 	Class<? extends Annotation> getType();
 	
@@ -94,21 +96,66 @@ public interface DingAnnotation extends Annotation {
 	
 	void removePropertyChangeListener(String propertyName, PropertyChangeListener listener);
 
-	boolean contains(int x, int y);
+	
+	double getX();
+	
+	double getY();
+	
+	/** Set location in node coordinates */
+	void setLocation(double x, double y);
+	
+	double getWidth();
+	
+	double getHeight();
+	
+	default boolean contains(double x, double y) {
+		return (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight());
+	}
+	
+	default boolean contains(Point2D p) {
+		return contains(p.getX(), p.getY());
+	}
+	
+	int getZOrder();
+	
+	void setZOrder(int z);
+	
+	default void setZoom(double zoom) {}
 
-	Rectangle getBounds();
+	default double getZoom() { return 1.0; }
+	
 
-	int getX();
+	@Override
+	default void setSpecificZoom(double zoom) {
+		setZoom(zoom);
+	}
+	
+	@Override
+	default double getSpecificZoom() {
+		return getZoom();
+	}
+	
+	/**
+	 * Returns the bounds of this annotation in NODE COORDINATES.
+	 */
+	default Rectangle2D getBounds() {
+		return new Rectangle2D.Double(getX(), getY(), getWidth(), getHeight());
+	}
+	
+	
+//	Rectangle getBounds();
 
-	int getY();
-
-	int getWidth();
-
-	int getHeight();
-
-	void setLocation(int x, int y);
-
-	Point getLocation();
-
-	void setBounds(int i, int j, int width, int height);
+//	int getX();
+//
+//	int getY();
+//
+//	int getWidth();
+//
+//	int getHeight();
+//
+//	void setLocation(int x, int y);
+//
+//	Point getLocation();
+//
+//	void setBounds(int i, int j, int width, int height);
 }

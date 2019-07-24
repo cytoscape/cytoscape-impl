@@ -35,35 +35,43 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DingComponent;
+import org.cytoscape.ding.impl.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
 import org.cytoscape.view.presentation.property.values.Position;
 
 public class AnnotationSelection extends DingComponent implements Iterable<DingAnnotation> {
 	
-	Rectangle2D union;
-	Rectangle2D[] anchors = new Rectangle2D[8];
-	double zoom;
-	CyAnnotator cyAnnotator;
-	static final float border = 2f;
-	static float[] dash = { 10.0f, 10.0f };
-	Rectangle2D initialBounds;
-	Rectangle2D initialUnion;
+	private static final float border = 2f;
+	private static float[] dash = { 10.0f, 10.0f };
 	
-	Position anchor;
-	double anchorOffsetX;
-	double anchorOffsetY;
-	boolean resizing;
+	private CyAnnotator cyAnnotator;
+	
+	private Rectangle2D union; // image coordinates
+	private boolean resizing;
 
+	private Rectangle2D initialBounds;
+	private Rectangle2D initialUnion;
+	private Map<DingAnnotation, Rectangle2D> initialBoundsMap;
+	private Point2D offset;
+	
+	
+	private Rectangle2D[] anchors = new Rectangle2D[8];
+	private Position anchor;
+	private double anchorOffsetX;
+	private double anchorOffsetY;
+	
 	private Set<DingAnnotation> selectedAnnotations;
 
+	
 	public AnnotationSelection(CyAnnotator cyAnnotator) {
 		this.cyAnnotator = cyAnnotator;
 		selectedAnnotations = new HashSet<>();
@@ -90,9 +98,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	}
 
 	public void clear() {
-		for (DingAnnotation a: selectedAnnotations)
-			a.setOffset(null);
-		
+		initialBoundsMap = null;
 		selectedAnnotations.clear();
 		cyAnnotator.setSelection(null);
 	}
@@ -127,18 +133,19 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	}
 
 	public void saveBounds() {
-		initialBounds = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), getBounds().getBounds2D());
-		initialUnion  = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), union.getBounds2D());
+		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
 		
+		initialBounds = transform.getNodeCoordinates(getBounds().getBounds2D());
+		initialUnion  = transform.getNodeCoordinates(union.getBounds2D());
+		
+		initialBoundsMap = new HashMap<>();
 		for(DingAnnotation da : selectedAnnotations) {
-			da.saveBounds();
+			initialBoundsMap.put(da, da.getBounds());
 		}
 	}
 	
 	public void setOffset(Point2D offset) {
-		for(DingAnnotation a : selectedAnnotations) {
-			a.setOffset(offset);
-		}
+		this.offset = offset;
 	}
 
 	public Rectangle2D getInitialBounds() {
@@ -178,9 +185,6 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	 * Assumes x and y are component (mouse) coordinates
 	 */
 	public void moveSelection(int x, int y) {
-		// Get our current transform
-		Point2D pt = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), x, y);
-		
 		// Avoid moving the same annotation twice
 		Set<DingAnnotation> annotationsToMove = new HashSet<>(selectedAnnotations);
 		for(DingAnnotation annotation : selectedAnnotations) {
@@ -192,13 +196,18 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			}
 		}
 
-		for (DingAnnotation annotation : annotationsToMove) {
-			// OK, now update
-			annotation.moveAnnotationRelative(pt);
-			annotation.update();
+		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
+		Point2D nodePt   = transform.getNodeCoordinates(x, y);
+		Point2D offsetPt = transform.getNodeCoordinates(offset);
+		
+		double dx = nodePt.getX() - offsetPt.getX();
+		double dy = nodePt.getY() - offsetPt.getY();
+		
+		for(DingAnnotation a : annotationsToMove) {
+			a.setLocation(a.getX() + dx, a.getY() + dy);
 		}
 
-		updateBounds();
+		updateBounds(); // MKTODO is this needed?
 	}
 
 	public void resizeAnnotationsRelative(int mouseX, int mouseY) {
@@ -212,15 +221,12 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 		if(isEast(anchor))
 			mouseX -= anchorOffsetX;
 		
-		Point2D mouse = ViewUtils.getNodeCoordinates(cyAnnotator.getRenderingEngine(), mouseX, mouseY);
-		double x = mouse.getX();
-		double y = mouse.getY();
-		
-		// OutlineBounds is in node coordinates!
-		Rectangle2D outlineBounds = resize(anchor, initialUnion, x, y);
+		Point2D node = cyAnnotator.getRenderingEngine().getTransform().getNodeCoordinates(mouseX, mouseY);
+		Rectangle2D outlineBounds = resize(anchor, initialUnion, node.getX(), node.getY());
 
 		for (DingAnnotation da : selectedAnnotations) {
-			((AbstractAnnotation)da).resizeAnnotationRelative(initialUnion, outlineBounds);
+			Rectangle2D daInitialBounds = initialBoundsMap.get(da);
+			resizeAnnotationRelative((AbstractAnnotation)da, daInitialBounds, initialUnion, outlineBounds);
 
 			// OK, now update
 			da.update();
@@ -228,6 +234,30 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 
 		updateBounds();
 	}
+	
+	private static void resizeAnnotationRelative(AbstractAnnotation da, Rectangle2D daBounds, Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+		double deltaW = outlineBounds.getWidth()  / initialBounds.getWidth();
+		double deltaH = outlineBounds.getHeight() / initialBounds.getHeight();
+		
+		double deltaX = (daBounds.getX() - initialBounds.getX()) / initialBounds.getWidth();
+		double deltaY = (daBounds.getY() - initialBounds.getY()) / initialBounds.getHeight();
+		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
+
+		// Now, switch back to component coordinates
+//		Rectangle2D componentBounds = cyAnnotator.getRenderingEngine().getTransform().getImageCoordinates(newBounds);
+		da.setBounds(newBounds);
+//		da.setLocation(newBounds.getX(), newBounds.getY());
+//		da.resizeAnnotation(newBounds.getWidth(), newBounds.getHeight());
+	}
+	
+	private static Rectangle2D adjustBounds(Rectangle2D bounds, Rectangle2D outerBounds, double dx, double dy, double dw, double dh) {
+		double newX = outerBounds.getX() + dx*outerBounds.getWidth();
+		double newY = outerBounds.getY() + dy*outerBounds.getHeight();
+		double newWidth = bounds.getWidth()*dw;
+		double newHeight = bounds.getHeight()*dh;
+		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
+	}
+	
 
 	// NOTE: bounds, mouseX and mouseY should be in node coordinates
 	public static Rectangle2D resize(Position anchor, Rectangle2D bounds, double mouseX, double mouseY) {
@@ -236,10 +266,10 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 		
 		final double boundsX = bounds.getX();
 		final double boundsY = bounds.getY();
-		final double boundsWidth = bounds.getWidth();
+		final double boundsWidth  = bounds.getWidth();
 		final double boundsHeight = bounds.getHeight();
 		final double boundsYBottom = boundsY + boundsHeight;
-		final double boundsXLeft = boundsX + boundsWidth;
+		final double boundsXLeft   = boundsX + boundsWidth;
 
 		double x = boundsX;
 		double y = boundsY;
@@ -289,13 +319,12 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	private void updateBounds() {
 		if (selectedAnnotations.isEmpty())
 			return;
-
+		
+		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
 		union = null;
-		for (DingAnnotation a: selectedAnnotations) {
-			if (union == null)
-				union = a.getBounds().getBounds2D();
-			else
-				union = union.createUnion(a.getBounds().getBounds2D());
+		for(DingAnnotation a: selectedAnnotations) {
+			Rectangle2D bounds = transform.getImageCoordinates(a.getBounds());
+			union = (union == null) ? bounds : union.createUnion(bounds);
 		}
 		setSize((int)(union.getWidth()+border*8), (int)(union.getHeight()+border*8));
 		setLocation((int)(union.getX()-border*4), (int)(union.getY()-border*4));

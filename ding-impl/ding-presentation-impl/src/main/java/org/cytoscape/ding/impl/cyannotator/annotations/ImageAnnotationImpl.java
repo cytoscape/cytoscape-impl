@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -88,8 +87,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
-		shapeWidth = image.getWidth();
-		shapeHeight = image.getHeight();
+		this.width = image.getWidth();
+		this.height = image.getHeight();
 		this.url = c.url;
 		this.opacity = c.opacity;
 		this.brightness = c.brightness;
@@ -111,10 +110,10 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 		this.image = image;
 		this.customGraphicsManager = customGraphicsManager;
-		shapeWidth = image.getWidth();
-		shapeHeight = image.getHeight();
+		this.width = image.getWidth();
+		this.height = image.getHeight();
 		this.url = url;
-		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
+		resizedImage = resizeImage((int) width, (int) height);
 		final Long id = customGraphicsManager.getNextAvailableID();
 		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
@@ -131,8 +130,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		
 		this.customGraphicsManager = customGraphicsManager;
 
-		shapeWidth = ViewUtils.getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
-		shapeHeight = ViewUtils.getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
+		this.width = ViewUtils.getDouble(argMap, ImageAnnotation.WIDTH, 100.0);
+		this.height = ViewUtils.getDouble(argMap, ImageAnnotation.HEIGHT, 100.0);
 
 		opacity = ViewUtils.getFloat(argMap, OPACITY, 1.0f);
 		brightness = ViewUtils.getInteger(argMap, LIGHTNESS, 0);
@@ -174,8 +173,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		argMap.put(TYPE, ImageAnnotation.class.getName());
 		if (url != null)
 			argMap.put(URL, url.toString());
-		argMap.put(ImageAnnotation.WIDTH, Double.toString(shapeWidth));
-		argMap.put(ImageAnnotation.HEIGHT, Double.toString(shapeHeight));
+		argMap.put(ImageAnnotation.WIDTH, Double.toString(width));
+		argMap.put(ImageAnnotation.HEIGHT, Double.toString(height));
 		argMap.put(OPACITY, Float.toString(opacity));
 		argMap.put(LIGHTNESS, Integer.toString(brightness));
 		argMap.put(CONTRAST, Integer.toString(contrast));
@@ -199,7 +198,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			logger.warn("Unable to restore image '"+this.url+"'",e);
 			return;
 		}
-		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
+		resizedImage = resizeImage((int) width, (int) height);
 	}
 
 	@Override
@@ -216,8 +215,8 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		else
 			return;
 
-		this.shapeWidth=this.image.getWidth();
-		this.shapeHeight=this.image.getHeight();
+		this.width=this.image.getWidth();
+		this.height=this.image.getHeight();
 		
 		int width = (int)this.image.getWidth();
 		int height = (int)this.image.getHeight();
@@ -287,16 +286,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 	@Override
-	public void setSize(Dimension d) {
-		setSize(d.getWidth(), d.getHeight());
-	}
-
-	@Override
 	public void setSize(double width, double height) {
 		super.setSize(width, height);
 
 		// Resize the image
-		resizedImage = resizeImage((int) shapeWidth, (int) shapeHeight);
+		resizedImage = resizeImage((int) width, (int) height);
 	}
 
 	@Override
@@ -332,7 +326,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public Shape getShape() {
-		return new Rectangle2D.Double((double) getX(), (double) getY(), shapeWidth, shapeHeight);
+		return new Rectangle2D.Double((double) getX(), (double) getY(), width, height);
 	}
 	
 	@Override
@@ -416,34 +410,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		return new ImageAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
-	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-		super.drawAnnotation(g, x, y, scaleFactor);
-
-		Graphics2D g2=(Graphics2D)g;
-
-		// Get the stroke
-		int border = (int)Math.round(getBorderWidth()*scaleFactor);
-
-		int width = (int)Math.round(shapeWidth*scaleFactor/getZoom())-border*2+1;
-		int height = (int)Math.round(shapeHeight*scaleFactor/getZoom())-border*2+1;
-		int xInt = (int)Math.round(x*scaleFactor)+border+1;
-		int yInt = (int)Math.round(y*scaleFactor)+border+1;
-
-		// System.out.println("ImageAnnotationImpl: drawAnnotation - width="+width+", height="+height+", border="+border);
-		// System.out.println("ImageAnnotationImpl: drawAnnotation - x="+x+",y="+y+", xInt="+xInt+", yInt="+yInt);
-		BufferedImage newImage =resizeImage(width, height);
-		if (newImage == null) return;
-
-		// boolean selected = isSelected();
-		// setSelected(false);
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
-		g2.setComposite(ac);
-		g2.drawImage(newImage, xInt, yInt, null);
-		// GraphicsUtilities.drawShape(g, 0, 0,
-		//                             getWidth()-1, getHeight()-1, this, false);
-		// setSelected(selected);
-	}
 
 	@Override
 	public void paint(Graphics g) {				
@@ -456,11 +422,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		int border = (int)Math.round(getBorderWidth()*getZoom());
 
 		// Calculate the new width & height
-		int width = getWidth()-border;
-		int height = getHeight()-border;
+		double width = getWidth()-border;
+		double height = getHeight()-border;
 
 		if (resizedImage == null || resizedImage.getWidth() != width || resizedImage.getHeight() != height)
-			resizedImage = resizeImage(width, height);
+			resizedImage = resizeImage((int)width, (int)height);
 
 		int x = 0;
 		int y = 0;
@@ -471,32 +437,4 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		super.paint(g);
 	}
 
-	@Override
-	public void setSpecificZoom(double newZoom) {
-		super.setSpecificZoom(newZoom);
-		resizedImage = resizeImage((int) Math.round(shapeWidth), (int) Math.round(shapeHeight));
-	}
-
-	@Override
-	public void setZoom(double newZoom) {
-		super.setZoom(newZoom);
-		resizedImage = resizeImage((int) Math.round(shapeWidth), (int) Math.round(shapeHeight));
-	}
-
-	public int getAnnotationWidth() {
-		return (int)Math.round(shapeWidth);
-	}
-
-	public int getAnnotationHeight() {
-		return (int)Math.round(shapeHeight);
-	}
-
-	@Override
-	public String toString() {
-		String s = super.toString();
-		s += "\nopacity = "+opacity+", brightness = "+brightness+", contrast = "+contrast;
-		s += "\nshapeWidth = "+shapeWidth+", shapeHeight = "+shapeHeight;
-		s += "\nbounds = "+getBounds().toString();
-		return s;
-	}
 }

@@ -30,7 +30,6 @@ import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -49,8 +48,7 @@ public class RemoveAnnotationTaskFactory implements NetworkViewLocationTaskFacto
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return null;
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
 		return new TaskIterator(new RemoveAnnotationTask(re, annotation));
 
 	}
@@ -60,8 +58,7 @@ public class RemoveAnnotationTaskFactory implements NetworkViewLocationTaskFacto
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return false;
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
 		if (annotation != null)
 			return true;
 		return false;

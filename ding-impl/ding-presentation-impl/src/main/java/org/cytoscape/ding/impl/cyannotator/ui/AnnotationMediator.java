@@ -274,7 +274,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			if ("annotations".equals(evt.getPropertyName())) {
 				// First remove property listeners from deleted annotations and add them to the new ones
 				Set<Annotation> oldList = mainPanel.getAllAnnotations();
-				List<Annotation> newList = cyAnnotator.getAnnotations();
+				List<DingAnnotation> newList = cyAnnotator.getAnnotations();
 				oldList.removeAll(newList);
 				removePropertyListeners(oldList);
 				addPropertyListeners((Collection<Annotation>) evt.getNewValue());
@@ -342,7 +342,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		if (re == null || re.getCyAnnotator() == null)
 			return;
 		
-		final List<Annotation> all = re.getCyAnnotator().getAnnotations();
+		final List<DingAnnotation> all = re.getCyAnnotator().getAnnotations();
 		
 		if (all != null && !all.isEmpty()) {
 			ignoreSelectedPropChangeEvents = true;
@@ -437,7 +437,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		re.getCyAnnotator().removePropertyChangeListener("annotationsReordered", this);
 	}
 	
-	private void addPropertyListeners(Collection<Annotation> list) {
+	private void addPropertyListeners(Collection<? extends Annotation> list) {
 		if (list != null)
 			list.forEach(a -> {
 				if (a instanceof DingAnnotation) {
@@ -447,7 +447,7 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			});
 	}
 	
-	private void removePropertyListeners(Collection<Annotation> list) {
+	private void removePropertyListeners(Collection<? extends Annotation> list) {
 		if (list != null)
 			list.forEach(a -> {
 				if (a instanceof DingAnnotation)

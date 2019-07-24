@@ -5,12 +5,9 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Rectangle;
 import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -88,7 +85,7 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 			int compCount,
 			double zoom
 	) {
-		super(re, x, y, zoom);
+		super(re, x, y);
 
 		this.text = text;
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
@@ -220,11 +217,11 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		return this.fontSize;
 	}
 
-	@Override
-	public void saveBounds() {
-		super.saveBounds();
-		savedFontSize = fontSize;
-	}
+//	@Override
+//	public void saveBounds() {
+//		super.saveBounds();
+//		savedFontSize = fontSize;
+//	}
 
 	@Override
 	public void setFontStyle(int style) {
@@ -272,51 +269,51 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	
-	@Override
-	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		super.resizeAnnotationRelative(initialBounds, outlineBounds);
-		// XXX This doesn't work!  Need to preserve font size in order for this to work right
-		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-		setFontSizeRelative(deltaW);
-	}
-	
-	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-		if (text == null) return;
-		super.drawAnnotation(g, x, y, scaleFactor);
+//	@Override
+//	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+//		super.resizeAnnotationRelative(initialBounds, outlineBounds);
+//		// XXX This doesn't work!  Need to preserve font size in order for this to work right
+//		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
+//		setFontSizeRelative(deltaW);
+//	}
+//	
+//	@Override
+//	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+//		if (text == null) return;
+//		super.drawAnnotation(g, x, y, scaleFactor);
+//
+//		Graphics2D g2 = (Graphics2D) g;
+//		// System.out.println("drawAnnotation: setting text color to: "+textColor);
+//		g2.setPaint(textColor);
+//		// Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
+//		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
+//		FontMetrics fontMetrics=g.getFontMetrics(tFont);
+//
+//		int width = (int)((double)getWidth()*scaleFactor/getZoom());
+//		int halfWidth = (width-fontMetrics.stringWidth(text))/2;
+//
+//		// Note, this is + because we start at the baseline
+//		int height = (int)((double)getHeight()*scaleFactor/getZoom());
+//		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
+//
+//		int xLoc = (int)(x*scaleFactor + halfWidth);
+//		int yLoc = (int)(y*scaleFactor + halfHeight);
+//
+//		g2.setFont(tFont);
+//
+//		// Handle opacity
+//		int alpha = textColor.getAlpha();
+//		float opacity = (float)alpha/(float)255;
+//		final Composite originalComposite = g2.getComposite();
+//		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+//		g2.drawString(text, xLoc, yLoc);
+//		g2.setComposite(originalComposite);
+//	}
 
-		Graphics2D g2 = (Graphics2D) g;
-		// System.out.println("drawAnnotation: setting text color to: "+textColor);
-		g2.setPaint(textColor);
-		// Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-
-		int width = (int)((double)getWidth()*scaleFactor/getZoom());
-		int halfWidth = (width-fontMetrics.stringWidth(text))/2;
-
-		// Note, this is + because we start at the baseline
-		int height = (int)((double)getHeight()*scaleFactor/getZoom());
-		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
-
-		int xLoc = (int)(x*scaleFactor + halfWidth);
-		int yLoc = (int)(y*scaleFactor + halfHeight);
-
-		g2.setFont(tFont);
-
-		// Handle opacity
-		int alpha = textColor.getAlpha();
-		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g2.getComposite();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-		g2.drawString(text, xLoc, yLoc);
-		g2.setComposite(originalComposite);
-	}
-
-	@Override
-	public Rectangle getBounds() {
-		return new Rectangle(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
-	}
+//	@Override
+//	public Rectangle getBounds() {
+//		return new Rectangle(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
+//	}
 
 	@Override
 	public void paint(Graphics g) {

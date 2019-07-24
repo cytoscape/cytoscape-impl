@@ -65,6 +65,7 @@ public class NodeCanvas extends DingCanvas {
 	public Image paintImage(RenderDetailFlags flags) {
 		Set<VisualPropertyDependency<?>> dependencies = getVPDeps();
 		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
+		// MKTODO don't need to create a graphics object on every frame
 		GraphGraphics graphics = new GraphGraphics(image);
 		EdgeDetails edgeDetails = re.getEdgeDetails();
 		NodeDetails nodeDetails = re.getNodeDetails();

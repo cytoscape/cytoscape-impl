@@ -30,7 +30,6 @@ import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -251,9 +250,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return compositeCanvas.getLOD();
 	}
 	
-	public AnnotationCanvas getAnnotationCanvas(DingAnnotation.CanvasID canvasID) {
-		return compositeCanvas.getAnnotationCanvas(canvasID);
-	}
+//	public AnnotationCanvas getAnnotationCanvas(DingAnnotation.CanvasID canvasID) {
+//		return compositeCanvas.getAnnotationCanvas(canvasID);
+//	}
 	
 	public void setAnnotationSelection(AnnotationSelection selection) {
 		compositeCanvas.setAnnotationSelection(selection);
@@ -352,6 +351,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public boolean treatNodeShapesAsRectangle() {
 		return compositeCanvas.treatNodeShapesAsRectangle();
+	}
+	
+	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
+		return compositeCanvas.adjustBoundsToIncludeAnnotations(extentsBuff);
 	}
 	
 	public BendStore getBendStore() {

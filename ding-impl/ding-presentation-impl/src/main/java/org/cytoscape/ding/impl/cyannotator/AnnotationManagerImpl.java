@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.AnnotationCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -95,12 +94,13 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				
 				if(annotationsByCanvas.containsKey(CanvasID.FOREGROUND)) {
 					List<DingAnnotation> foregroundAnnotations = annotationsByCanvas.get(CanvasID.FOREGROUND);
-					re.getAnnotationCanvas(CanvasID.FOREGROUND).addAnnotations(foregroundAnnotations);
+//					re.getAnnotationCanvas(CanvasID.FOREGROUND).addAnnotations(foregroundAnnotations);
+//					re.getCyAnnotator().addAnnotations(annotations);
 					all.addAll(foregroundAnnotations);
 				}
 				if(annotationsByCanvas.containsKey(CanvasID.BACKGROUND)) {
 					List<DingAnnotation> backgroundAnnotations = annotationsByCanvas.get(CanvasID.BACKGROUND);
-					re.getAnnotationCanvas(CanvasID.BACKGROUND).addAnnotations(backgroundAnnotations);
+//					re.getAnnotationCanvas(CanvasID.BACKGROUND).addAnnotations(backgroundAnnotations);
 					all.addAll(backgroundAnnotations);
 				}
 				
@@ -145,9 +145,9 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 				List<DingAnnotation> arrows = getArrows(dingAnnotations);
 				
-				AnnotationCanvas canvas = re.getAnnotationCanvas(canvasId);
-				canvas.removeAnnotations(arrows);
-				canvas.removeAnnotations(dingAnnotations);
+//				AnnotationCanvas canvas = re.getAnnotationCanvas(canvasId);
+//				canvas.removeAnnotations(arrows);
+//				canvas.removeAnnotations(dingAnnotations);
 
 				re.getCyAnnotator().removeAnnotations(arrows);
 				re.getCyAnnotator().removeAnnotations(dingAnnotations);
@@ -215,7 +215,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	
 
 	private static CanvasID getCanvas(CyNetworkView view, DingAnnotation annotation) {
-		return annotation.getCanvas() == null ? CanvasID.FOREGROUND : annotation.getCanvas().getCanvasID();
+		return annotation.getCanvas() == null ? CanvasID.FOREGROUND : annotation.getCanvas();
 	}
 	
 	private static List<DingAnnotation> getArrows(Collection<DingAnnotation> annotations) {
@@ -226,7 +226,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	public List<Annotation> getAnnotations(CyNetworkView networkView) {
 		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(networkView);
 		if(re != null)
-			return re.getCyAnnotator().getAnnotations();
+			return new ArrayList<>(re.getCyAnnotator().getAnnotations()); // just to shut up the type checker
 		return Collections.emptyList();
 	}
 }

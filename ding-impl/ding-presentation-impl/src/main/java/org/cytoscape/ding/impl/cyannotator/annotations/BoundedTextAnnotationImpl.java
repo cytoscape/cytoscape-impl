@@ -4,12 +4,10 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -184,49 +182,49 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		return new BoundedTextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 	
-	@Override
-	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		super.resizeAnnotationRelative(initialBounds, outlineBounds);
-		// XXX This doesn't work!  Need to preserve font size in order for this to work right
-		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-		setFontSizeRelative(deltaW);
-	}
+//	@Override
+//	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+//		super.resizeAnnotationRelative(initialBounds, outlineBounds);
+//		// XXX This doesn't work!  Need to preserve font size in order for this to work right
+//		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
+//		setFontSizeRelative(deltaW);
+//	}
 	
-	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-		super.drawAnnotation(g, x, y, scaleFactor);
-
-		if (text == null || textColor == null || font == null) return;
-
-		// For now, we put the text in the middle of the shape.  At some point, we may
-		// want to add other options
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(textColor);
-
-		int width = (int)((double)getWidth()*scaleFactor/getZoom());
-		int height = (int)((double)getHeight()*scaleFactor/getZoom());
-		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-
-		int halfWidth = (width-(int)(fontMetrics.stringWidth(text)))/2;
-
-		// Note, this is + because we start at the baseline
-		// int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
-		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
-
-		int xLoc = (int)(x*scaleFactor) + halfWidth;
-		int yLoc = (int)(y*scaleFactor) + halfHeight;
-
-		g2.setFont(tFont);
-
-		// Handle opacity
-		int alpha = textColor.getAlpha();
-		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g2.getComposite();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-		g2.drawString(text, xLoc, yLoc);
-		g2.setComposite(originalComposite);
-	}
+//	@Override
+//	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+//		super.drawAnnotation(g, x, y, scaleFactor);
+//
+//		if (text == null || textColor == null || font == null) return;
+//
+//		// For now, we put the text in the middle of the shape.  At some point, we may
+//		// want to add other options
+//		Graphics2D g2 = (Graphics2D) g;
+//		g2.setColor(textColor);
+//
+//		int width = (int)((double)getWidth()*scaleFactor/getZoom());
+//		int height = (int)((double)getHeight()*scaleFactor/getZoom());
+//		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
+//		FontMetrics fontMetrics=g.getFontMetrics(tFont);
+//
+//		int halfWidth = (width-(int)(fontMetrics.stringWidth(text)))/2;
+//
+//		// Note, this is + because we start at the baseline
+//		// int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
+//		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
+//
+//		int xLoc = (int)(x*scaleFactor) + halfWidth;
+//		int yLoc = (int)(y*scaleFactor) + halfHeight;
+//
+//		g2.setFont(tFont);
+//
+//		// Handle opacity
+//		int alpha = textColor.getAlpha();
+//		float opacity = (float)alpha/(float)255;
+//		final Composite originalComposite = g2.getComposite();
+//		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+//		g2.drawString(text, xLoc, yLoc);
+//		g2.setComposite(originalComposite);
+//	}
 
 	@Override
 	public void paint(Graphics g) {
@@ -249,25 +247,25 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		g2.setComposite(originalComposite);
 	}
 
-	@Override
-	public void setSpecificZoom(double zoom) {
-		if (zoom == getSpecificZoom())
-			return;
-
-		fontSize = (float) ((zoom / getSpecificZoom()) * fontSize);
-		font = font.deriveFont(fontSize);
-		super.setSpecificZoom(zoom);
-	}
-
-	@Override
-	public void setZoom(double zoom) {
-		if (zoom == getZoom())
-			return;
-
-		fontSize = (float) ((zoom / getZoom()) * fontSize);
-		font = font.deriveFont(fontSize);
-		super.setZoom(zoom);
-	}
+//	@Override
+//	public void setSpecificZoom(double zoom) {
+//		if (zoom == getSpecificZoom())
+//			return;
+//
+//		fontSize = (float) ((zoom / getSpecificZoom()) * fontSize);
+//		font = font.deriveFont(fontSize);
+//		super.setSpecificZoom(zoom);
+//	}
+//
+//	@Override
+//	public void setZoom(double zoom) {
+//		if (zoom == getZoom())
+//			return;
+//
+//		fontSize = (float) ((zoom / getZoom()) * fontSize);
+//		font = font.deriveFont(fontSize);
+//		super.setZoom(zoom);
+//	}
 
 	@Override
 	public void setText(String text) {
@@ -327,11 +325,11 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		return this.fontSize;
 	}
 
-	@Override
-	public void saveBounds() {
-		super.saveBounds();
-		savedFontSize = fontSize;
-	}
+//	@Override
+//	public void saveBounds() {
+//		super.saveBounds();
+//		savedFontSize = fontSize;
+//	}
 
 	@Override
 	public void setFontStyle(int style) {
@@ -379,8 +377,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth(), shapeWidth);
-		double yBound = Math.max(getTextHeight(), shapeHeight);
+		double xBound = Math.max(getTextWidth(),  width);
+		double yBound = Math.max(getTextHeight(), height);
 		setSize(xBound + 4, yBound + 4);
 	}
 

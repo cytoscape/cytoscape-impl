@@ -11,7 +11,6 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.dialogs.ArrowAnnotationDialog;
@@ -61,8 +60,7 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 	public JDialog createAnnotationDialog(CyNetworkView view, Point2D location) {
 		// We need to be over an annotation
 		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(view);
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(location);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(location);
 		
 		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
 			JOptionPane.showMessageDialog(re.getInputHandlerGlassPane(), "Please click another annotation.");

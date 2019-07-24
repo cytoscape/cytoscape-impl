@@ -63,6 +63,11 @@ public class NetworkImageBuffer implements NetworkTransform {
 		return image;
 	}
 	
+	/**
+	 * Returns the Graphics2D object directly from the image buffer, the AffineTransform has not 
+	 * been applied yet. To draw in node coordinates make sure to call
+	 * g.setTransform(networkImageBuffer.getAffineTransform()).
+	 */
 	public Graphics2D getGraphics() {
 		return (Graphics2D) image.getGraphics();
 	}

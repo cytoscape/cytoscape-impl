@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.impl.BendStore.HandleKey;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -33,6 +35,13 @@ import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 
+
+/**
+ * This class provides methods that will return the network elements (nodes/edges/annotations/handles)
+ * that are under a mouse point on the main network view.
+ * 
+ * All arguments to methods in this class must be in image (swing) coordinates.
+ */
 public class NetworkPicker {
 
 	private final DRenderingEngine re;
@@ -56,7 +65,7 @@ public class NetworkPicker {
 	/**
 	 * utility that returns the nodeView that is located at input point
 	 */
-	public View<CyNode> getPickedNodeView(Point2D pt) {
+	public View<CyNode> getNodeAt(Point2D pt) {
 		double[] locn = {pt.getX(), pt.getY()};
 		re.getTransform().xformImageToNodeCoords(locn);
 		float x = (float) locn[0];
@@ -70,9 +79,9 @@ public class NetworkPicker {
 		return re.getViewModelSnapshot().getNodeView(suid);
 	}
 
-	public View<CyEdge> getPickedEdgeView(Point2D pt) {
+	public View<CyEdge> getEdgeAt(Point2D pt) {
 		View<CyEdge> ev = null;
-		List<Long> edges = computeEdgesIntersecting((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());
+		List<Long> edges = getEdgesIntersecting((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());
 
 		long chosenEdge = edges.isEmpty() ? -1 : edges.get(edges.size()-1);
 		if (chosenEdge >= 0) {
@@ -82,7 +91,7 @@ public class NetworkPicker {
 		return ev;
 	}
 	
-	public HandleKey getPickedEdgeHandle(Point2D pt) {
+	public HandleKey getHandleAt(Point2D pt) {
 		double[] ptBuff = {pt.getX(), pt.getY()};
 		re.getTransform().xformImageToNodeCoords(ptBuff);
 		HandleKey handleKey = re.getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
@@ -137,7 +146,7 @@ public class NetworkPicker {
 	
 	
 	public List<View<CyEdge>> getEdgesInRectangle(Rectangle r) {
-		List<Long> suids = computeEdgesIntersecting(r.x, r.y, r.x + r.width, r.y + r.height);
+		List<Long> suids = getEdgesIntersecting(r.x, r.y, r.x + r.width, r.y + r.height);
 		return suidsToEdges(suids);
 	}
 
@@ -196,7 +205,7 @@ public class NetworkPicker {
 	}
 	
 	
-	public List<Long> computeEdgesIntersecting(int xMini, int yMini, int xMaxi, int yMaxi) {
+	public List<Long> getEdgesIntersecting(int xMini, int yMini, int xMaxi, int yMaxi) {
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		
 		double[] ptBuff = new double[2];
@@ -508,5 +517,88 @@ public class NetworkPicker {
 			list.add(handles.next());
 		}
 		return list;
+	}
+	
+	
+	// Annotations
+	
+	
+	public DingAnnotation getAnnotationAt(CanvasID canvasId, Point2D p) {
+		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, false); // highest z-order first
+		Point2D nodeP = re.getTransform().getNodeCoordinates(p);
+		
+		DingAnnotation hit = null;
+		for(DingAnnotation a : annotations) {
+			if(a.contains(nodeP)) {
+				hit = a;
+				break;
+			}
+		}
+		
+		if(hit != null) {
+			while(hit.getGroupParent() != null) {
+				hit = (DingAnnotation) hit.getGroupParent();
+			}
+		}
+		
+		return hit;
+	}
+	
+	
+	public DingAnnotation getAnnotationAt(Point2D p) {
+		DingAnnotation a = getAnnotationAt(CanvasID.FOREGROUND, p);
+		if(a == null)
+			a = getAnnotationAt(CanvasID.BACKGROUND, p);
+		return a;
+	}
+	
+	
+	public List<DingAnnotation> getAnnotationsAt(CanvasID canvasId, Point2D p) {
+		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, false); // highest z-order first
+		Point2D nodeP = re.getTransform().getNodeCoordinates(p);
+		
+		List<DingAnnotation> list = new ArrayList<>();
+		for(DingAnnotation a : annotations) {
+			if(a.contains(nodeP)) {
+				// Make sure to find the parent if this is a group
+				while(a.getGroupParent() != null) {
+					a = (DingAnnotation) a.getGroupParent();
+				}
+				if(!list.contains(a)) {
+					list.add(a);
+				}
+			}
+		}
+		return list;
+	}
+	
+	
+	public List<DingAnnotation> getAnnotationsAt(Point2D p) {
+		List<DingAnnotation> a = getAnnotationsAt(CanvasID.FOREGROUND, p);
+		a.addAll(getAnnotationsAt(CanvasID.BACKGROUND, p));
+		return a;
+	}
+	
+
+	public List<DingAnnotation> getAnnotationsInRectangle(Rectangle2D rect) {
+		Rectangle2D nodeRect = re.getTransform().getNodeCoordinates(rect);
+		List<DingAnnotation> anns = new ArrayList<>();
+		for(DingAnnotation a : re.getCyAnnotator().getAnnotations()) {
+			Rectangle2D bounds = a.getBounds();
+			if (a.getGroupParent() == null && nodeRect.contains(bounds))
+				anns.add(a);
+		}
+		return anns;
+	}
+	
+	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
+		GeneralPath nodePath = re.getTransform().pathInNodeCoords(path);
+		List<DingAnnotation> anns = new ArrayList<>();
+		for(DingAnnotation a : re.getCyAnnotator().getAnnotations()) {
+			Rectangle2D bounds = a.getBounds();
+			if(a.getGroupParent() == null && nodePath.intersects(bounds))
+				anns.add(a);
+		}
+		return anns;
 	}
 }

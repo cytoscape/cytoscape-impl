@@ -25,25 +25,19 @@ package org.cytoscape.ding.customgraphics.bitmap;
  */
 
 import java.awt.Image;
-import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.SortedSet;
 
 import javax.imageio.ImageIO;
 
 import org.cytoscape.ding.customgraphics.AbstractDCustomGraphics;
 import org.cytoscape.ding.customgraphics.ImageUtil;
-import org.cytoscape.ding.customgraphics.bitmap.ImageCustomGraphicImpl;
 import org.cytoscape.ding.customgraphics.paint.TexturePaintFactory;
-import org.cytoscape.graph.render.stateful.PaintFactory;
-import org.cytoscape.view.presentation.customgraphics.ImageCustomGraphicLayer;
 
-public class URLImageCustomGraphics <ImageCustomGraphicLayer> 
-        extends AbstractDCustomGraphics {
+public class URLImageCustomGraphics <ImageCustomGraphicLayer> extends AbstractDCustomGraphics {
 
 	private static final String DEF_IMAGE_FILE = "images/no_image.png";
 	protected static BufferedImage DEF_IMAGE;

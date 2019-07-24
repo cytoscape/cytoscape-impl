@@ -7,7 +7,6 @@ import java.awt.MultipleGradientPaint.CycleMethod;
 import java.awt.Paint;
 import java.awt.RadialGradientPaint;
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -175,7 +174,7 @@ public class ViewUtils {
 
 	// Private methods
 	static public void addNodeCoordinates(DRenderingEngine re, Map<String,String> argMap, double x, double y) {
-		Point2D xy = getNodeCoordinates(re, x, y);
+		Point2D xy = re.getTransform().getNodeCoordinates((int)x, (int)y);
 		argMap.put(Annotation.X,Double.toString(xy.getX()));
 		argMap.put(Annotation.Y,Double.toString(xy.getY()));
 	}
@@ -193,58 +192,6 @@ public class ViewUtils {
 
 		re.getTransform().xformNodeToImageCoords(nextLocn);
 		
-		return new Point2D.Double(nextLocn[0], nextLocn[1]);
-	}
-
-	static public Rectangle2D getNodeCoordinates(DRenderingEngine re, Rectangle2D bounds) {
-		double x1 = bounds.getX();
-		double y1 = bounds.getY();
-		double x2 = bounds.getX()+bounds.getWidth();
-		double y2 = bounds.getY()+bounds.getHeight();
-		double[] nextLocn1 = new double[2];
-		nextLocn1[0] = x1;
-		nextLocn1[1] = y1;
-		re.getTransform().xformImageToNodeCoords(nextLocn1);
-
-		double[] nextLocn2 = new double[2];
-		nextLocn2[0] = x2;
-		nextLocn2[1] = y2;
-		re.getTransform().xformImageToNodeCoords(nextLocn2);
-
-		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
-	}
-
-	static public Rectangle2D getComponentCoordinates(DRenderingEngine re, Rectangle2D bounds) {
-		double x1 = bounds.getX();
-		double y1 = bounds.getY();
-		double x2 = bounds.getX()+bounds.getWidth();
-		double y2 = bounds.getY()+bounds.getHeight();
-		double[] nextLocn1 = new double[2];
-		nextLocn1[0] = x1;
-		nextLocn1[1] = y1;
-		re.getTransform().xformNodeToImageCoords(nextLocn1);
-
-		double[] nextLocn2 = new double[2];
-		nextLocn2[0] = x2;
-		nextLocn2[1] = y2;
-		re.getTransform().xformNodeToImageCoords(nextLocn2);
-
-		return new Rectangle2D.Double(nextLocn1[0], nextLocn1[1], nextLocn2[0]-nextLocn1[0], nextLocn2[1]-nextLocn1[1]);
-	}
-
-	static public Point2D getNodeCoordinates(DRenderingEngine re, double x, double y) {
-		double[] nextLocn = new double[2];
-		nextLocn[0] = x;
-		nextLocn[1] = y;
-		re.getTransform().xformImageToNodeCoords(nextLocn);
-		return new Point2D.Double(nextLocn[0], nextLocn[1]);
-	}
-
-	static public Point2D getComponentCoordinates(DRenderingEngine re, double x, double y) {
-		double[] nextLocn = new double[2];
-		nextLocn[0] = x;
-		nextLocn[1] = y;
-		re.getTransform().xformNodeToImageCoords(nextLocn);
 		return new Point2D.Double(nextLocn[0], nextLocn[1]);
 	}
 

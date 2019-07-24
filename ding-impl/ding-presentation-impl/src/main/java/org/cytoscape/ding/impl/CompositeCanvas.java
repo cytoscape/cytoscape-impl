@@ -108,8 +108,8 @@ public class CompositeCanvas {
 	
 	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
 		// Returns true if either annotation canvas contains at least one annotation
-		return foregroundAnnotationCanvas.adjustBounds(extentsBuff)
-			|| backgroundAnnotationCanvas.adjustBounds(extentsBuff);
+		return foregroundAnnotationCanvas.adjustBoundsToIncludeAnnotations(extentsBuff)
+			|| backgroundAnnotationCanvas.adjustBoundsToIncludeAnnotations(extentsBuff);
 	}
 	
 	public void setViewport(int width, int height) {

@@ -57,7 +57,6 @@ import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
-import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
@@ -101,22 +100,11 @@ public class InputHandlerGlassPane extends JComponent {
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
-//
-//	private final AnnotationCanvas backgroundCanvas;
-//	private final InnerCanvas networkCanvas;
-//	private final AnnotationCanvas foregroundCanvas;
-	
-//	private final CompositeCanvas canvas;
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
-		// MKTODO make sure undo works for everything
-		
 		this.registrar = registrar;
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-//		this.backgroundCanvas = (AnnotationCanvas) re.getCanvas(BACKGROUND_CANVAS);
-//		this.networkCanvas    = (InnerCanvas) re.getCanvas(NETWORK_CANVAS);
-//		this.foregroundCanvas = (AnnotationCanvas) re.getCanvas(FOREGROUND_CANVAS);
 		
 		// Order matters, some listeners use MouseEvent.consume() to prevent subsequent listeners from running
 		this.orderedMouseAdapter = new OrderedMouseAdapter(
@@ -219,42 +207,55 @@ public class InputHandlerGlassPane extends JComponent {
 			int code = e.getKeyCode();
 			final int move = 2;
 			
-			AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
-			
-			for (DingAnnotation annotation : annotationSelection) {
-				int x = annotation.getX();
-				int y = annotation.getY();
-				if (annotation instanceof ShapeAnnotationImpl && e.isShiftDown()) {
-					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)annotation;
-					int width  = annotation.getWidth();
-					int height = annotation.getHeight();
-					int borderWidth = (int)sa.getBorderWidth(); // We need to take this into account
-					if (code == VK_UP) {
-						height -= move*2; width -= borderWidth*2;
-					} else if (code == VK_DOWN) {
-						height += move; width -= borderWidth*2;
-					} else if (code == VK_LEFT) {
-						width -= move*2; height -= borderWidth*2;
-					} else if (code == VK_RIGHT) {
-						width += move; height -= borderWidth*2;
-					}
-					// Adjust the size of the selected annotations
-					sa.setSize((double)width, (double)height);
-				} else {
-					if (code == VK_UP)
-						y-=move;
-					else if (code == VK_DOWN)
-						y+=move;
-					else if (code == VK_LEFT)
-						x-=move;
-					else if (code == VK_RIGHT)
-						x+=move;
+			for(DingAnnotation a : cyAnnotator.getAnnotationSelection()) {
+				double[] coords = {a.getX(), a.getY()};
+				re.getTransform().xformNodeToImageCoords(coords);
+				
+				if(code == VK_UP)
+					coords[1] -= move;
+				else if(code == VK_DOWN)
+					coords[1] += move;
+				else if(code == VK_LEFT)
+					coords[0] -= move;
+				else if(code == VK_RIGHT)
+					coords[0] += move;
 
-					//Adjust the locations of the selected annotations
-					annotation.setLocation(x,y);
-				}
-				annotation.update();
+				re.getTransform().xformImageToNodeCoords(coords);
+				a.setLocation(coords[0], coords[1]);
+				
+				a.update();
 				re.updateView();
+				
+				
+//				if (a instanceof ShapeAnnotationImpl && e.isShiftDown()) {
+//					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)a;
+//					int width  = a.getWidth();
+//					int height = a.getHeight();
+//					int borderWidth = (int)sa.getBorderWidth(); // We need to take this into account
+//					if (code == VK_UP) {
+//						height -= move*2; width -= borderWidth*2;
+//					} else if (code == VK_DOWN) {
+//						height += move; width -= borderWidth*2;
+//					} else if (code == VK_LEFT) {
+//						width -= move*2; height -= borderWidth*2;
+//					} else if (code == VK_RIGHT) {
+//						width += move; height -= borderWidth*2;
+//					}
+//					// Adjust the size of the selected annotations
+//					sa.setSize((double)width, (double)height);
+//				} else {
+//					if(code == VK_UP)
+//						y -= move;
+//					else if(code == VK_DOWN)
+//						y += move;
+//					else if(code == VK_LEFT)
+//						x -= move;
+//					else if(code == VK_RIGHT)
+//						x += move;
+//
+//					//Adjust the locations of the selected annotations
+//					a.setLocation(x,y);
+//				}
 			}
 		}
 		
@@ -392,14 +393,13 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		private void showContextMenu(Point p) {
 			// Node menu
-			NetworkPicker picker = re.getPicker();
-			View<CyNode> nodeView = picker.getPickedNodeView(p);
+			View<CyNode> nodeView = re.getPicker().getNodeAt(p);
 			if(nodeView != null) {
 				popupMenuHelper.createNodeViewMenu(nodeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
 			}
 			// Edge menu
-			View<CyEdge> edgeView = picker.getPickedEdgeView(p);
+			View<CyEdge> edgeView = re.getPicker().getEdgeAt(p);
 			if(edgeView != null) {
 				popupMenuHelper.createEdgeViewMenu(edgeView, p.x, p.y, PopupMenuHelper.ACTION_NEW);
 				return;
@@ -419,7 +419,7 @@ public class InputHandlerGlassPane extends JComponent {
 		@Override
 		public void mouseClicked(MouseEvent e) {
 			if(annotationSelectionEnabled() && isDoubleLeftClick(e)) {
-				DingAnnotation annotation = cyAnnotator.getAnnotationAt(e.getPoint());
+				DingAnnotation annotation = re.getPicker().getAnnotationAt(e.getPoint());
 				if(annotation != null) {
 					editAnnotation(annotation, e.getPoint());
 				}
@@ -482,7 +482,7 @@ public class InputHandlerGlassPane extends JComponent {
 			re.getTransform().xformNodeToImageCoords(coords);
 			Point2D ep = new Point2D.Double(coords[0], coords[1]);
 
-			View<CyNode> targetNode = re.getPicker().getPickedNodeView(ep);
+			View<CyNode> targetNode = re.getPicker().getNodeAt(ep);
 			if(targetNode != null) {
 				createEdge(sourceNode, targetNode);
 				reset();
@@ -541,7 +541,7 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private void showTooltip(MouseEvent e) {
-			View<CyNode> node = re.getPicker().getPickedNodeView(e.getPoint());
+			View<CyNode> node = re.getPicker().getNodeAt(e.getPoint());
 			String text = node == null ? null : re.getNodeDetails().getTooltipText(node);
 			ViewUtil.invokeOnEDT(() -> {
 				setToolTipText(text);
@@ -588,6 +588,8 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 		
 		private boolean mousePressedCheckHit(MouseEvent e) {
+			NetworkPicker picker = re.getPicker();
+			
 			if(annotationSelectionEnabled()) {
 				AnnotationSelection annotationSelection = cyAnnotator.getAnnotationSelection();
 				annotationSelection.setOffset(e.getPoint());
@@ -598,8 +600,7 @@ public class InputHandlerGlassPane extends JComponent {
 					return true;
 				}
 				
-				AnnotationCanvas foregroundCanvas = re.getAnnotationCanvas(CanvasID.FOREGROUND);
-				DingAnnotation annotation = cyAnnotator.getAnnotationAt(foregroundCanvas, e.getPoint());
+				DingAnnotation annotation = picker.getAnnotationAt(CanvasID.FOREGROUND, e.getPoint());
 				if(annotation != null) {
 					Toggle select = mousePressedHandleAnnotation(annotation, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
@@ -611,7 +612,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(nodeSelectionEnabled()) {
-				View<CyNode> node = re.getPicker().getPickedNodeView(e.getPoint());
+				View<CyNode> node = picker.getNodeAt(e.getPoint());
 				if(node != null) {
 					Toggle select = toggleNodeSelection(node, e);
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
@@ -623,7 +624,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(edgeSelectionEnabled() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
-				HandleKey handle = re.getPicker().getPickedEdgeHandle(e.getPoint());
+				HandleKey handle = picker.getHandleAt(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
 					return true;
@@ -631,7 +632,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(edgeSelectionEnabled()) {
-				View<CyEdge> edge = re.getPicker().getPickedEdgeView(e.getPoint());
+				View<CyEdge> edge = picker.getEdgeAt(e.getPoint());
 				if(edge != null) {
 					if(e.isAltDown() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS))
 						addHandle(edge, e);
@@ -645,8 +646,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			if(annotationSelectionEnabled()) {
-				AnnotationCanvas backgroundCanvas = re.getAnnotationCanvas(CanvasID.BACKGROUND);
-				DingAnnotation annotation = cyAnnotator.getAnnotationAt(backgroundCanvas, e.getPoint());
+				DingAnnotation annotation = picker.getAnnotationAt(CanvasID.BACKGROUND, e.getPoint());
 				if(annotation != null) {
 					mousePressedHandleAnnotation(annotation, e);
 					return true;
@@ -666,6 +666,7 @@ public class InputHandlerGlassPane extends JComponent {
 			double offsetY = e.getY() - annotationSelection.getY() - anchor.getY();
 			
 			changeCursor(getResizeCursor(anchor.getPosition()));
+			
 			annotationSelection.setResizing(true);
 			annotationSelection.saveAnchor(anchor.getPosition(), offsetX, offsetY);
 			annotationSelection.saveBounds();
@@ -856,6 +857,7 @@ public class InputHandlerGlassPane extends JComponent {
 					return;
 				} else {
 					annotationSelection.moveSelection(e.getX(), e.getY());
+					annotationSelection.setOffset(e.getPoint());
 				}
 			}
 			
@@ -1011,7 +1013,7 @@ public class InputHandlerGlassPane extends JComponent {
 				Rectangle2D bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, mouseX, mouseY);
 				// must call setLocation and setSize instead of setBounds because those methods are overridden
 				resizeAnnotation.setLocation((int)bounds.getX(), (int)bounds.getY());
-				resizeAnnotation.resizeAnnotation(bounds.getWidth(), bounds.getHeight());
+				resizeAnnotation.setSize(bounds.getWidth(), bounds.getHeight());
 				resizeAnnotation.update();
 				re.updateView();
 			} else if (repositionAnnotation != null) {
@@ -1019,7 +1021,7 @@ public class InputHandlerGlassPane extends JComponent {
 
 				// See what's under our mouse
 				// Annotation?
-				List<DingAnnotation> annotations = cyAnnotator.getAnnotationsAt(mousePoint);
+				List<DingAnnotation> annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				if (annotations.contains(repositionAnnotation))
 					annotations.remove(repositionAnnotation);
 
@@ -1092,7 +1094,7 @@ public class InputHandlerGlassPane extends JComponent {
 				List<View<CyEdge>> edges = Collections.emptyList();
 
 				if(annotationSelectionEnabled()) {
-					annotations = cyAnnotator.getAnnotationsInPath(selectionLasso);
+					annotations = re.getPicker().getAnnotationsInPath(selectionLasso);
 				}
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInPath(selectionLasso);
@@ -1174,7 +1176,7 @@ public class InputHandlerGlassPane extends JComponent {
 				List<View<CyEdge>> edges = Collections.emptyList();
 
 				if(annotationSelectionEnabled()) {
-					annotations = cyAnnotator.getAnnotationsIn(selectionRect);
+					annotations = re.getPicker().getAnnotationsInRectangle(selectionRect);
 				}
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInRectangle(selectionRect);
@@ -1328,11 +1330,11 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 
 	private boolean overNode(Point2D mousePoint) {
-		return re.getPicker().getPickedNodeView(mousePoint) != null;
+		return re.getPicker().getNodeAt(mousePoint) != null;
 	}
 
 	private CyNode getNodeAtLocation(Point2D mousePoint) {
-		return re.getPicker().getPickedNodeView(mousePoint).getModel();
+		return re.getPicker().getNodeAt(mousePoint).getModel();
 	}
 	
 	

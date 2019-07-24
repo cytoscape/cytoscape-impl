@@ -7,7 +7,6 @@ import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
-import java.awt.Rectangle;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -159,7 +158,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			Paint targetColor,
 			float targetSize
 	) {
-		super(re, source.getX(), source.getY(), re.getZoom());
+		super(re, source.getX(), source.getY());
 
 		// Line parameters
 		this.lineColor = lineColor;
@@ -219,7 +218,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			String[] xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
-			View<CyNode> nv = re.getPicker().getPickedNodeView(new Point2D.Double(x, y));
+			View<CyNode> nv = re.getPicker().getNodeAt(new Point2D.Double(x, y));
 			target = nv.getModel();
 		}
 		
@@ -309,7 +308,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	@Override
 	public void setTarget(Point2D target) { 
 		// Convert target to node coordinates
-		this.target = ViewUtils.getNodeCoordinates(re, target.getX(), target.getY()); 
+		this.target = re.getTransform().getNodeCoordinates(target); 
 		// updateBounds();
 		update();
 	}
@@ -431,60 +430,60 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		return GraphicsUtilities.getSupportedArrowTypeNames();
 	}
     
-	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-		super.drawAnnotation(g, x, y, scaleFactor);
-
-		// Draw the line
-		Graphics2D g2 = (Graphics2D)g;
-
-		boolean saveSelected = isSelected();
-		selected = false;
-
-		double scale = scaleFactor/getZoom();
-
-		// Get the stroke
-		double border = lineWidth*scale;
-		if (border < 1.0) border = 1.0;
-		g2.setPaint(lineColor);
-		g2.setStroke(new BasicStroke((float)border));
-		
-		Line2D relativeLine = getRelativeLine(arrowLine, 
-		                                      x*scaleFactor, y*scaleFactor, scale, border);
-
-		if (relativeLine != null) {
-			// Handle opacity
-			if (lineColor instanceof Color) {
-				int alpha = ((Color)lineColor).getAlpha();
-				float opacity = (float)alpha/(float)255;
-				final Composite originalComposite = g2.getComposite();
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-				g2.draw(relativeLine);
-				g2.setComposite(originalComposite);
-			} else {
-				g2.draw(relativeLine);
-			}
-		}
-
-		// Add the head
-		if (sourceType != ArrowType.NONE) {
-			Paint color = sourceColor;
-			if (color == null)
-				color = lineColor;
-
-			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.SOURCE, color, sourceSize*10.0*scaleFactor, sourceType);
-		}
-
-		if (targetType != ArrowType.NONE) {
-			Paint color = targetColor;
-			if (color == null)
-				color = lineColor;
-
-			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, color, targetSize*10.0*scaleFactor, targetType);
-		}
-
-		selected = saveSelected;
-	}
+//	@Override
+//	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
+//		super.drawAnnotation(g, x, y, scaleFactor);
+//
+//		// Draw the line
+//		Graphics2D g2 = (Graphics2D)g;
+//
+//		boolean saveSelected = isSelected();
+//		selected = false;
+//
+//		double scale = scaleFactor/getZoom();
+//
+//		// Get the stroke
+//		double border = lineWidth*scale;
+//		if (border < 1.0) border = 1.0;
+//		g2.setPaint(lineColor);
+//		g2.setStroke(new BasicStroke((float)border));
+//		
+//		Line2D relativeLine = getRelativeLine(arrowLine, 
+//		                                      x*scaleFactor, y*scaleFactor, scale, border);
+//
+//		if (relativeLine != null) {
+//			// Handle opacity
+//			if (lineColor instanceof Color) {
+//				int alpha = ((Color)lineColor).getAlpha();
+//				float opacity = (float)alpha/(float)255;
+//				final Composite originalComposite = g2.getComposite();
+//				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+//				g2.draw(relativeLine);
+//				g2.setComposite(originalComposite);
+//			} else {
+//				g2.draw(relativeLine);
+//			}
+//		}
+//
+//		// Add the head
+//		if (sourceType != ArrowType.NONE) {
+//			Paint color = sourceColor;
+//			if (color == null)
+//				color = lineColor;
+//
+//			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.SOURCE, color, sourceSize*10.0*scaleFactor, sourceType);
+//		}
+//
+//		if (targetType != ArrowType.NONE) {
+//			Paint color = targetColor;
+//			if (color == null)
+//				color = lineColor;
+//
+//			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, color, targetSize*10.0*scaleFactor, targetType);
+//		}
+//
+//		selected = saveSelected;
+//	}
 
 	@Override
 	public void paint(Graphics g) {
@@ -636,11 +635,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Point2D sourceCenter = centerPoint(source.getBounds());
 		
 		if (target instanceof Point2D) {
-			targetPoint = ViewUtils.getComponentCoordinates(re, ((Point2D)target).getX(), ((Point2D)target).getY());
+			targetPoint = re.getTransform().getImageCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
 		} else if (target instanceof DingAnnotation) {
 			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds
-			Rectangle targetBounds = a.getBounds();
+			Rectangle2D targetBounds = a.getBounds();
 			// Find the closest face and return
 			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
 		} else if (target instanceof CyNode) {
@@ -650,7 +649,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
 		}
 
-		Rectangle sourceBounds = source.getBounds();
+		Rectangle2D sourceBounds = source.getBounds();
 		Point2D sourcePoint = findFace(targetPoint, sourceBounds, sourceAnchorType);
 		
 		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;

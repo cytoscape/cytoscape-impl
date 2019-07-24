@@ -95,7 +95,7 @@ public class ArrowAnnotationDialog extends JDialog {
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
 		this.annotation = new ArrowAnnotationImpl(re, false);
-		this.source = cyAnnotator.getAnnotationAt(start != null ? start : re.getCenter());
+		this.source = re.getPicker().getAnnotationAt(start != null ? start : re.getCenter());
 		this.create = true;
 
 		initComponents();
