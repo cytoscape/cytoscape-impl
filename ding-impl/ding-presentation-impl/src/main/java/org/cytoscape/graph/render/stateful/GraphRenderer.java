@@ -146,7 +146,7 @@ public final class GraphRenderer {
 		final LongHash nodeBuff = new LongHash();
 		
 		final SpacialIndex2DEnumerator<Long> nodeHits;
-		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		if (flags.renderEdges() > 0)
 			// We want to render edges in the same order (back to front) that
 			// we would use to render just edges on visible nodes; this is assuming
@@ -444,7 +444,7 @@ public final class GraphRenderer {
 		final double[] doubleBuff1 = new double[4];
 		final double[] doubleBuff2 = new double[2];
 		
-		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
 		

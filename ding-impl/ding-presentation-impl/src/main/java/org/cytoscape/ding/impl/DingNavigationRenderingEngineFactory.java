@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
+import java.util.Properties;
 
 import javax.swing.JComponent;
 
@@ -77,13 +78,13 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		
 		// Create instance of an engine.
 		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
-		final BirdsEyeView bev = new BirdsEyeView(re, registrar);
+		BirdsEyeView2 bev = new BirdsEyeView2(re, registrar);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);
 
 		// Register this rendering engine as service.
-		bev.registerServices();
+		registrar.registerService(bev, RenderingEngine.class, new Properties());
 
 		logger.debug("Bird's Eye View had been set to the component.  Network Model = " + view.getModel().getSUID());
 		return bev;

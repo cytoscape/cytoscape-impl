@@ -70,7 +70,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getTransform().getCenter();
 		this.shapeAnnotation = new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false);
 		this.create = true;
 

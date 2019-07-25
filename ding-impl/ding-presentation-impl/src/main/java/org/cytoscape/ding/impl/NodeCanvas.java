@@ -50,7 +50,7 @@ public class NodeCanvas extends DingCanvas {
 
 	
 	public NodeCanvas(CompositeCanvas parent, DRenderingEngine re, CyServiceRegistrar registrar) {
-		super(parent.getWidth(), parent.getHeight());
+		super(parent.getTransform().getWidth(), parent.getTransform().getHeight());
 		this.re = re;
 		this.vmm = registrar.getService(VisualMappingManager.class);
 	}

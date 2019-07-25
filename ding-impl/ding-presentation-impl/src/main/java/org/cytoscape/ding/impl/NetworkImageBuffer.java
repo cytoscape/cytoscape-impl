@@ -72,46 +72,57 @@ public class NetworkImageBuffer implements NetworkTransform {
 		return (Graphics2D) image.getGraphics();
 	}
 	
+	@Override
 	public int getWidth() {
 		return width;
 	}
 	
+	@Override
 	public int getHeight() {
 		return height;
 	}
 	
-	public double getX() {
+	@Override
+	public double getCenterX() {
 		return x;
 	}
 	
-	public double getY() {
+	@Override
+	public double getCenterY() {
 		return y;
 	}
 	
+	@Override
 	public double getScaleFactor() {
 		return scaleFactor;
 	}
 	
 	public void setScaleFactor(double scaleFactor) {
-		this.scaleFactor = scaleFactor;
-		updateTransform();
+		if(this.scaleFactor != scaleFactor) {
+			this.scaleFactor = scaleFactor;
+			updateTransform();
+		}
 	}
 	
-	public void setCenter(double x, double y)	 {
-		this.x = x;
-		this.y = y;
-		updateTransform();
+	public void setCenter(double x, double y) {
+		if(this.x != x || this.y != y) {
+			this.x = x;
+			this.y = y;
+			updateTransform();
+		}
 	}
 	
 	public void setViewport(int width, int height) {
-		this.width = width;
-		this.height = height;
-		updateTransform();
-		updateImage();
+		if(this.width != width || this.height != height) {
+			this.width = width;
+			this.height = height;
+			updateTransform();
+			updateImage();
+		}
 	}
 	
 	@Override
-	public Rectangle2D.Float getNetworkVisibleAreaInNodeCoords() {
+	public Rectangle2D.Float getNetworkVisibleAreaNodeCoords() {
 		return area;
 	}
 	

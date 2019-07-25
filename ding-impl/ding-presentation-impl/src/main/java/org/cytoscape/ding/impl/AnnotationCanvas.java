@@ -259,7 +259,7 @@ public class AnnotationCanvas extends DingCanvas {
 		Graphics2D g = image.getGraphics();
 		g.setTransform(image.getAffineTransform());
 		
-		Rectangle2D.Float visibleArea = image.getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float visibleArea = image.getNetworkVisibleAreaNodeCoords();
 		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasID);
 		
 		for (DingAnnotation a : annotations) {

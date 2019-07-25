@@ -77,7 +77,7 @@ public class ViewState {
 		savedObjs = whatToSave;
 
 		// record the state of the view
-		center = re.getCenter();
+		center = re.getTransform().getCenter();
 		scaleFactor = re.getZoom();
 		NodeDetails nodeDetails = re.getNodeDetails();
 

@@ -49,7 +49,7 @@ public class RenderDetailFlags {
 	
 	
 	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod, EdgeDetails edgeDetails) {
-		Rectangle2D.Float area = transform.getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
 		final int renderNodeCount;

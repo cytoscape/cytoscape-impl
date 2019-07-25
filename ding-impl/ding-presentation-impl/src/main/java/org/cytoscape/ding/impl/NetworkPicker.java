@@ -166,7 +166,7 @@ public class NetworkPicker {
 		float[] extentsBuff = new float[4];
 		
 		// get viewport bounds in node coords
-		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
 		Set<Long> processedNodes = new HashSet<>();
@@ -225,7 +225,7 @@ public class NetworkPicker {
 		Line2D.Float line = new Line2D.Float();
 		float[] extentsBuff = new float[4];
 		
-		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaInNodeCoords();
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
 		Set<Long> processedNodes = new HashSet<>();

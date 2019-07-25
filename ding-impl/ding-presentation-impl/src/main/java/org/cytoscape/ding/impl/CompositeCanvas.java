@@ -25,8 +25,6 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  */
 public class CompositeCanvas {
 	
-	private final NetworkImageBuffer image = new NetworkImageBuffer();
-	
 	private GraphLOD lod;
 	private final DRenderingEngine re;
 	
@@ -37,6 +35,8 @@ public class CompositeCanvas {
 	private final EdgeCanvas edgeCanvas;
 	private final AnnotationCanvas backgroundAnnotationCanvas;
 	private final ColorCanvas backgroundColorCanvas;
+	
+	private final NetworkImageBuffer image = new NetworkImageBuffer();
 	
 	private final List<DingCanvas> canvasList;
 	private final ExecutorService executor;
@@ -79,8 +79,12 @@ public class CompositeCanvas {
 		return lod;
 	}
 	
-	public NetworkTransform getNetworkTransform() {
+	public NetworkTransform getTransform() {
 		return image;
+	}
+	
+	public Image getImage() {
+		return image.getImage();
 	}
 	
 	public RenderDetailFlags getLastRenderDetailFlags() {
@@ -127,26 +131,7 @@ public class CompositeCanvas {
 		canvasList.forEach(c -> c.setScaleFactor(scaleFactor));
 	}
 	
-	public double getCenterX() {
-		return image.getX();
-	}
-	
-	public double getCenterY() {
-		return image.getY();
-	}
-	
-	public double getScaleFactor() {
-		return image.getScaleFactor();
-	}
-	
-	public int getHeight() {
-		return image.getHeight();
-	}
-	
-	public int getWidth() {
-		return image.getWidth();
-	}
-	
+
 	private static Image overlayImage(Image composite, Image image) {
 		Graphics g = composite.getGraphics();
 		g.drawImage(image, 0, 0, null);
@@ -165,7 +150,9 @@ public class CompositeCanvas {
 			Image canvasImage = c.paintImage(lastRenderFlags);
 			overlayImage(image.getImage(), canvasImage);
 		}
-		g.drawImage(image.getImage(), 0, 0, null);
+		if(g != null) {
+			g.drawImage(image.getImage(), 0, 0, null);
+		}
 	}
 	
 	private void paintParallelBlocking(Graphics g) {
@@ -177,7 +164,9 @@ public class CompositeCanvas {
 		
 		try {
 			f.get(); // block the current thread, wait for other threads to complete
-			g.drawImage(image.getImage(), 0, 0, null);
+			if(g != null) {
+				g.drawImage(image.getImage(), 0, 0, null);
+			}
 		} catch (InterruptedException | ExecutionException e) {
 			// MKTODO what to do here?
 			e.printStackTrace();

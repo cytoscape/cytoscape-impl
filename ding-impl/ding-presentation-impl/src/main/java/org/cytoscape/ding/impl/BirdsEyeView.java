@@ -39,6 +39,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.VolatileImage;
 import java.awt.print.Printable;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Timer;
@@ -51,6 +52,7 @@ import javax.swing.UIManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -136,7 +138,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		re.addContentChangeListener(m_cLis);
 		
 		updateBounds();
-		final Point2D pt = re.getCenter();
+		final Point2D pt = re.getTransform().getCenter();
 		m_viewXCenter = pt.getX();
 		m_viewYCenter = pt.getY();
 		
@@ -192,10 +194,23 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	}
 
 	/**
+	 * Returns the extents of the nodes, in node coordinates.
+	 */
+	private boolean getNetworkExtents(double[] extents) {
+		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
+		if(netViewSnapshot.getNodeCount() == 0) {
+			Arrays.fill(extents, 0.0);
+			return false;
+		}
+		netViewSnapshot.getSpacialIndex2D().getMBR(extents);
+		return true;
+	}
+	/**
 	 * Render actual image on the panel.
 	 */
 	@Override 
 	public void update(Graphics g) {
+		System.out.println("BirdsEyeView.update()");
 //		re.getCanvas().ensureInitialized();
 
 //		AnnotationCanvas foregroundCanvas = re.getAnnotationCanvas(CanvasID.FOREGROUND);
@@ -205,7 +220,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 
 		if (imageUpdated || boundChanged) {
 			
-			boolean hasComponents = re.getExtents(m_extents);
+			
+			boolean hasComponents = getNetworkExtents(m_extents);
 			hasComponents |= re.adjustBoundsToIncludeAnnotations(m_extents);
 			
 //			hasComponents |= foregroundCanvas.adjustBounds(m_extents);

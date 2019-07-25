@@ -14,7 +14,7 @@ public class EdgeCanvas extends DingCanvas {
 	private final DRenderingEngine re;
 	
 	public EdgeCanvas(CompositeCanvas parent, DRenderingEngine re) {
-		super(parent.getWidth(), parent.getHeight());
+		super(parent.getTransform().getWidth(), parent.getTransform().getHeight());
 		this.re = re;
 	}
 

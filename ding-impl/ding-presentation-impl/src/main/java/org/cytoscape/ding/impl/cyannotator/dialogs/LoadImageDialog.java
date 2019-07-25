@@ -78,7 +78,7 @@ public class LoadImageDialog extends JDialog {
 		this.re = re;
 		this.cgm = cgm;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getTransform().getCenter();
 
 		initComponents();
 	}

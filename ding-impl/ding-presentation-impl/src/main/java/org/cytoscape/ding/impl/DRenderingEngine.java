@@ -8,12 +8,10 @@ import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.print.PageFormat;
 import java.awt.print.Printable;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -106,7 +104,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
-	private CompositeCanvas compositeCanvas;
+	private CompositeCanvas canvas;
 	private RendererComponent renderComponent;
 	private NetworkPicker picker;
 	private FontMetrics fontMetrics;
@@ -154,7 +152,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		compositeCanvas = new CompositeCanvas(registrar, this, dingLock, dingGraphLOD);
+		canvas = new CompositeCanvas(registrar, this, dingLock, dingGraphLOD);
 		renderComponent = new RendererComponent();
 		picker = new NetworkPicker(this);
 
@@ -208,7 +206,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
 			super.setBounds(x, y, width, height);
-			compositeCanvas.setViewport(width, height);
+			canvas.setViewport(width, height);
 			
 			// If this is the first call to setBounds, load any annotations
 			if(!annotationsLoaded) {
@@ -229,7 +227,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			if(fontMetrics == null) {
 				fontMetrics = g.getFontMetrics(); // needed to compute label widths
 			}
-			compositeCanvas.paintBlocking(g);
+			canvas.paintBlocking(g);
 		}
 	}
 	
@@ -243,19 +241,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public NetworkTransform getTransform() {
-		return compositeCanvas.getNetworkTransform();
+		return canvas.getTransform();
 	}
 	
 	public GraphLOD getGraphLOD() {
-		return compositeCanvas.getLOD();
+		return canvas.getLOD();
 	}
 	
-//	public AnnotationCanvas getAnnotationCanvas(DingAnnotation.CanvasID canvasID) {
-//		return compositeCanvas.getAnnotationCanvas(canvasID);
-//	}
-	
 	public void setAnnotationSelection(AnnotationSelection selection) {
-		compositeCanvas.setAnnotationSelection(selection);
+		canvas.setAnnotationSelection(selection);
 	}
 	
 	
@@ -304,7 +298,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-		compositeCanvas.setBackgroundPaint(backgroundPaint);
+		canvas.setBackgroundPaint(backgroundPaint);
 		
 		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		bendStore.updateSelectedEdges(selectedEdges);
@@ -322,15 +316,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-		compositeCanvas.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
+		canvas.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
 		
 		// update view (for example if "fit selected" was run)
 		double x = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double y = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-		compositeCanvas.setCenter(x, y);
+		canvas.setCenter(x, y);
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		compositeCanvas.setScaleFactor(scaleFactor);
+		canvas.setScaleFactor(scaleFactor);
 		
 		setContentChanged(false);
 //		updateView(true);
@@ -346,15 +340,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //	}
 	
 	public RenderDetailFlags getLastRenderDetail() {
-		return compositeCanvas.getLastRenderDetailFlags();
+		return canvas.getLastRenderDetailFlags();
 	}
 	
 	public boolean treatNodeShapesAsRectangle() {
-		return compositeCanvas.treatNodeShapesAsRectangle();
+		return canvas.treatNodeShapesAsRectangle();
 	}
 	
 	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
-		return compositeCanvas.adjustBoundsToIncludeAnnotations(extentsBuff);
+		return canvas.adjustBoundsToIncludeAnnotations(extentsBuff);
 	}
 	
 	public BendStore getBendStore() {
@@ -424,12 +418,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	public void setZoom(double zoom) {
 		synchronized (dingLock) {
-			compositeCanvas.setScaleFactor(checkZoom(zoom, compositeCanvas.getScaleFactor()));
+			canvas.setScaleFactor(checkZoom(zoom, canvas.getTransform().getScaleFactor()));
 		}
 	}
 	
 	public double getZoom() {
-		return compositeCanvas.getScaleFactor();
+		return canvas.getTransform().getScaleFactor();
 	}
 
 	private void fitContent(final boolean updateView) {
@@ -440,12 +434,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			CyNetworkViewSnapshot netViewSnapshot = viewModel.createSnapshot();
 			if(netViewSnapshot.getNodeCount() == 0)
 				return;
-			if (compositeCanvas.getWidth() == 0 || compositeCanvas.getHeight() == 0)
+			if (canvas.getTransform().getWidth() == 0 || canvas.getTransform().getHeight() == 0)
 				return;
 			
 			double[] extentsBuff = new double[4];
 			netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff); // extents of the network
-			compositeCanvas.adjustBoundsToIncludeAnnotations(extentsBuff); // extents of the annotation canvases
+			canvas.adjustBoundsToIncludeAnnotations(extentsBuff); // extents of the annotation canvases
 
 			netViewSnapshot.getMutableNetworkView().batch(netView -> {
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
@@ -456,8 +450,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
 					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-					final double zoom = Math.min(((double) compositeCanvas.getWidth())  /  (extentsBuff[2] - extentsBuff[0]), 
-					                             ((double) compositeCanvas.getHeight()) /  (extentsBuff[3] - extentsBuff[1])) * 0.98;
+					final double zoom = Math.min(((double) canvas.getTransform().getWidth())  /  (extentsBuff[2] - extentsBuff[0]), 
+					                             ((double) canvas.getTransform().getHeight()) /  (extentsBuff[3] - extentsBuff[1])) * 0.98;
 					// Update view model.  Zoom Level should be modified.
 					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
 				}
@@ -492,7 +486,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		else
 			return;
 		
-		double scaleFactor = compositeCanvas.getScaleFactor() * factor;
+		double scaleFactor = canvas.getTransform().getScaleFactor() * factor;
 		
 //			setHideEdges();
 		setZoom(scaleFactor);
@@ -507,8 +501,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public void pan(double deltaX, double deltaY) {
 		synchronized (dingLock) {
-			double x = compositeCanvas.getCenterX() + deltaX;
-			double y = compositeCanvas.getCenterY() + deltaY;
+			double x = canvas.getTransform().getCenterX() + deltaX;
+			double y = canvas.getTransform().getCenterY() + deltaY;
 			setCenter(x, y);
 		}
 //		networkCanvas.setHideEdges();
@@ -517,20 +511,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public void setCenter(double x, double y) {
 		synchronized (dingLock) {
-			compositeCanvas.setCenter(x,y);
+			canvas.setCenter(x,y);
 			
 			// Update view model
 			// TODO: don't do it from here?
 			getViewModel().batch(netView -> {
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, compositeCanvas.getCenterX());
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, compositeCanvas.getCenterY());
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, canvas.getTransform().getCenterX());
+				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, canvas.getTransform().getCenterY());
 			}, false); // don't set the dirty flag
 		}
 	}
 
-	public Point2D getCenter() {
-		return new Point2D.Double(compositeCanvas.getCenterX(), compositeCanvas.getCenterY());
-	}
 	
 	@Override
 	public void handleFitSelected() {
@@ -575,9 +566,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		netViewSnapshot.getMutableNetworkView().batch(netView -> {
 			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
-				double zoom = Math.min(((double) compositeCanvas.getWidth()) / (((double) xMaxF) - ((double) xMinF)),
-						((double) compositeCanvas.getHeight()) / (((double) yMaxF) - ((double) yMinF)));
-				zoom = checkZoom(zoom, compositeCanvas.getScaleFactor());
+				double zoom = Math.min(((double) canvas.getTransform().getWidth()) / (((double) xMaxF) - ((double) xMinF)),
+						((double) canvas.getTransform().getHeight()) / (((double) yMaxF) - ((double) yMinF)));
+				zoom = checkZoom(zoom, canvas.getTransform().getScaleFactor());
 				
 				// Update view model.  Zoom Level should be modified.
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
@@ -617,19 +608,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 
-	/**
-	 * Returns the extents of the nodes. Called by the birds-eye-view
-	 */
-	public boolean getExtents(double[] extentsBuff) {
-		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
-		if(netViewSnapshot.getNodeCount() == 0) {
-			Arrays.fill(extentsBuff, 0.0);
-			return false;
-		}
-		netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff);
-		return true;
-	}
-
 	
 	@Override
 	public int print(Graphics g, PageFormat pageFormat, int page) {
@@ -640,8 +618,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		// make sure the whole image on the screen will fit to the printable
 		// area of the paper
-		double image_scale = Math.min(pageFormat.getImageableWidth()  / compositeCanvas.getWidth(),
-									  pageFormat.getImageableHeight() / compositeCanvas.getHeight());
+		double image_scale = Math.min(pageFormat.getImageableWidth()  / canvas.getTransform().getWidth(),
+									  pageFormat.getImageableHeight() / canvas.getTransform().getHeight());
 
 		if (image_scale < 1.0d) {
 			((Graphics2D) g).scale(image_scale, image_scale);
@@ -654,7 +632,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		// from InternalFrameComponent
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
-		compositeCanvas.print(g);
+		canvas.print(g);
 
 		return PAGE_EXISTS;
 	}
@@ -678,9 +656,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 		
-		int origWidth = compositeCanvas.getWidth();
-		int origHeight = compositeCanvas.getHeight();
-		double origZoom = compositeCanvas.getScaleFactor();
+		int origWidth = canvas.getTransform().getWidth();
+		int origHeight = canvas.getTransform().getHeight();
+		double origZoom = canvas.getTransform().getScaleFactor();
 		
 		CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
 		Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
@@ -688,14 +666,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Double scaleFactor = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		
 		
-		compositeCanvas.setViewport(width, height);
+		canvas.setViewport(width, height);
 		fitContent(true);
-		setZoom(compositeCanvas.getScaleFactor() * scale);
+		setZoom(canvas.getTransform().getScaleFactor() * scale);
 		
 		Graphics g = image.getGraphics();
-		compositeCanvas.paintBlocking(g);
+		canvas.paintBlocking(g);
 		
-		compositeCanvas.setViewport(origWidth, origHeight);
+		canvas.setViewport(origWidth, origHeight);
 		setZoom(origZoom);
 		
 		CyNetworkView netView = getViewModel();
@@ -853,7 +831,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			coalesceTimer.shutdown();
 			cyAnnotator.dispose();
 			serviceRegistrar.unregisterAllServices(cyAnnotator);
-			compositeCanvas.dispose();
+			canvas.dispose();
 		}
 	}
 

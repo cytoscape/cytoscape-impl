@@ -68,7 +68,7 @@ public class ImageAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getTransform().getCenter();
 		this.annotation = new ImageAnnotationImpl(re, false);
 		this.create = true;
 
