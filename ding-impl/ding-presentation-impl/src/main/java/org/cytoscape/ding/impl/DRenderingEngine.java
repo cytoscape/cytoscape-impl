@@ -16,6 +16,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -126,7 +128,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
-	
+	private ExecutorService executor;
 	
 	public DRenderingEngine(
 			final CyNetworkView view,
@@ -152,7 +154,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		canvas = new CompositeCanvas(registrar, this, dingLock, dingGraphLOD);
+		canvas = new CompositeCanvas(registrar, this, dingGraphLOD, getExecutorService());
 		renderComponent = new RendererComponent();
 		picker = new NetworkPicker(this);
 
@@ -360,6 +362,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			inputHandler = new InputHandlerGlassPane(serviceRegistrar, this);
 		}
 		return inputHandler;
+	}
+	
+	public synchronized ExecutorService getExecutorService() {
+		if(executor == null) {
+			executor = Executors.newCachedThreadPool(r -> {
+				Thread thread = Executors.defaultThreadFactory().newThread(r);
+				thread.setName("ding-" + thread.getName());
+				return thread;
+			});
+		}
+		return executor;
 	}
 	
 	/**

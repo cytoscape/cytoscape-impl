@@ -41,7 +41,6 @@ public final class BirdsEyeView2 extends Component implements RenderingEngine<Cy
 	
 	public BirdsEyeView2(DRenderingEngine re, CyServiceRegistrar registrar) {
 		this.re = re;
-		System.out.println("BirdsEyeView2.BirdsEyeView2()");
 		
 		Color c = UIManager.getColor("Table.focusCellBackground");
 		VIEW_WINDOW_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
@@ -54,14 +53,13 @@ public final class BirdsEyeView2 extends Component implements RenderingEngine<Cy
 		re.addContentChangeListener(new BirdsEyeViewContentChangeListener());
 		
 		BirdsEyeViewLOD lod = getLOD();
-		canvas = new CompositeCanvas(registrar, re, re.dingLock, lod);
+		canvas = new CompositeCanvas(registrar, re, lod, re.getExecutorService());
 	}	
 	
 	private final class BirdsEyeViewContentChangeListener implements ContentChangeListener {
 		/** Will be called when something is changed in the main view.  */
 		@Override
 		public void contentChanged() {
-			System.out.println("BirdsEyeView2.BirdsEyeViewContentChangeListener.contentChanged()");
 			contentChanged = true;
 			repaint();
 		}

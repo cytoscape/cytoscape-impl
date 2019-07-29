@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
@@ -43,7 +42,7 @@ public class CompositeCanvas {
 	
 	private RenderDetailFlags lastRenderFlags;
 	
-	public CompositeCanvas(CyServiceRegistrar registrar, DRenderingEngine re, DingLock dingLock, GraphLOD lod) {
+	public CompositeCanvas(CyServiceRegistrar registrar, DRenderingEngine re, GraphLOD lod, ExecutorService executor) {
 		this.lod = lod;
 		this.re = re;
 		
@@ -60,7 +59,7 @@ public class CompositeCanvas {
 		Collections.reverse(canvasList);
 		
 		// MKTODO what's the best thread pool for this?
-		executor = Executors.newCachedThreadPool();
+		this.executor = executor;
 	}
 	
 	public void dispose() {
