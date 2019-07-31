@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl;
 import java.awt.Image;
 import java.util.Set;
 
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -62,7 +63,7 @@ public class NodeCanvas extends DingCanvas {
 
 
 	@Override
-	public Image paintImage(RenderDetailFlags flags) {
+	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
 		Set<VisualPropertyDependency<?>> dependencies = getVPDeps();
 		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
 		// MKTODO don't need to create a graphics object on every frame
@@ -70,7 +71,10 @@ public class NodeCanvas extends DingCanvas {
 		EdgeDetails edgeDetails = re.getEdgeDetails();
 		NodeDetails nodeDetails = re.getNodeDetails();
 		
-		GraphRenderer.renderNodes(graphics, netViewSnapshot, flags, nodeDetails, edgeDetails, dependencies);
+		if(pm.isCancelled())
+			return null;
+		
+		GraphRenderer.renderNodes(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails, dependencies);
 		
 		return image.getImage();
 	}

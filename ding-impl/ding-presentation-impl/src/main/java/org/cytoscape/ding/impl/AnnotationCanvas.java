@@ -6,6 +6,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.List;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 /*
@@ -252,9 +253,12 @@ public class AnnotationCanvas extends DingCanvas {
 //	}
 
 	@Override
-	public Image paintImage(RenderDetailFlags flags) {
+	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
 		// only paint if we have an image to paint on
 		// get image graphics
+		if(pm.isCancelled())
+			return null;
+		
 		image.clear();
 		Graphics2D g = image.getGraphics();
 		g.setTransform(image.getAffineTransform());
@@ -263,6 +267,9 @@ public class AnnotationCanvas extends DingCanvas {
 		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasID);
 		
 		for (DingAnnotation a : annotations) {
+			if(pm.isCancelled()) {
+				return null;
+			}
 			if(visibleArea.intersects(a.getBounds())) {
 				a.paint(g);
 			}

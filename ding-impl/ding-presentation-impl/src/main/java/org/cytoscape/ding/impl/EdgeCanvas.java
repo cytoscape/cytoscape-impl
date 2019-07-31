@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Image;
 
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -19,13 +20,16 @@ public class EdgeCanvas extends DingCanvas {
 	}
 
 	@Override
-	public Image paintImage(RenderDetailFlags flags) {
+	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
 		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
 		GraphGraphics graphics = new GraphGraphics(image);
 		EdgeDetails edgeDetails = re.getEdgeDetails();
 		NodeDetails nodeDetails = re.getNodeDetails();
 		
-		GraphRenderer.renderEdges(graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
+		if(pm.isCancelled())
+			return null;
+		
+		GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
 		
 		return image.getImage();
 	}

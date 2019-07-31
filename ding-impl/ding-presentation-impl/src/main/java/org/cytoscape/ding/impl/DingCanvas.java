@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Image;
 
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 /*
@@ -62,7 +63,7 @@ public abstract class DingCanvas {
 		return image;
 	}
 	
-	public abstract Image paintImage(RenderDetailFlags flags); 
+	public abstract Image paintImage(ProgressMonitor pm, RenderDetailFlags flags); 
 	
 	public void dispose() {
 	}

@@ -3,26 +3,13 @@ package org.cytoscape.ding.impl.work;
 public class SubProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor wrapped;
-	private double low;
-	private double high;
+	private final double percentage; // eg 0.2 = 20 percent
 	
-	public SubProgressMonitor(ProgressMonitor wrapped, double low, double high) {
+	SubProgressMonitor(ProgressMonitor wrapped, double percentage) {
 		this.wrapped = wrapped;
-		this.low = low;
-		this.high = high;
+		this.percentage = percentage;
 	}
 	
-	@Override
-	public void setProgress(double progress) {
-		double mappedProgress = low + (high - low) * progress;
-		wrapped.setProgress(mappedProgress);
-	}
-	
-	@Override
-	public void cancel() {
-		wrapped.cancel();
-	}
-
 	@Override
 	public boolean isCancelled() {
 		return wrapped.isCancelled();
@@ -31,6 +18,16 @@ public class SubProgressMonitor implements ProgressMonitor {
 	@Override
 	public void setStatusMessage(String message) {
 		wrapped.setStatusMessage(message);
+	}
+
+	@Override
+	public void addProgress(double progress) {
+		addProgress(progress * percentage);
+	}
+
+	@Override
+	public void done() {
+		wrapped.done();
 	}
 
 }

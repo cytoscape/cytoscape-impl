@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.geom.AffineTransform;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class AnnotationSelectionCanvas extends DingCanvas {
@@ -18,8 +19,10 @@ public class AnnotationSelectionCanvas extends DingCanvas {
 	}
 	
 	@Override
-	public Image paintImage(RenderDetailFlags flags) {
+	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
 		if(selection == null)
+			return null;
+		if(pm.isCancelled())
 			return null;
 		
 		image.clear();

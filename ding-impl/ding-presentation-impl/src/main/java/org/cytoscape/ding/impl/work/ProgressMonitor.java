@@ -1,39 +1,37 @@
 package org.cytoscape.ding.impl.work;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public interface ProgressMonitor {
 	
-	void cancel();
 	
 	boolean isCancelled();
 	
-	void setProgress(double progress);
-	
 	void setStatusMessage(String message);
 	
-	default void start() {
-		setProgress(0.0); // is this necessary?
-	}
-	default void done() {
-		setProgress(1.0);
-	}
+	void addProgress(double progress);
+	
+	default void start() {};
+	
+	void done();
 	
 	
-	public static ProgressMonitor nullMonitor() {
-		return new ProgressMonitor() {
-			@Override
-			public void setStatusMessage(String message) {
-			}
-			@Override
-			public void setProgress(double progress) {
-			}
-			@Override
-			public boolean isCancelled() {
-				return false;
-			}
-			@Override
-			public void cancel() {
-			}
-		};
+	default DiscreteProgressMonitor toDiscrete(int totalWork) {
+		return new DiscreteProgressMonitor(this, totalWork);
+	}
+	
+	default <T> List<ProgressMonitor> split(double ... parts) {
+		double sum = 0.0;
+		for(double part : parts)
+			sum += part;
+		
+		List<ProgressMonitor> monitors = new ArrayList<>(parts.length);
+		for(double part : parts) {
+			double percent = part / sum;
+			monitors.add(new SubProgressMonitor(this, percent));
+		}
+		return monitors;
 	}
 	
 }

@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.model.CyEdge;
@@ -80,56 +82,56 @@ public final class GraphRenderer {
 	}
 	
 	
-	/**
-	 * Renders a graph.
-	 * @param netView the network view; nodes in this graph must correspond to
-	 *   objKeys in nodePositions (the SpacialIndex2D parameter) and vice versa.
-	 * @param nodePositions defines the positions and extents of nodes in graph;
-	 *   each entry (objKey) in this structure must correspond to a node in graph
-	 *   (the CyNetwork parameter) and vice versa; the order in which nodes are
-	 *   rendered is defined by a non-reversed overlap query on this structure.
-	 * @param lod defines the different levels of detail; an appropriate level
-	 *   of detail is chosen based on the results of method calls on this
-	 *   object.
-	 * @param nodeDetails defines details of nodes such as colors, node border
-	 *   thickness, and shape; the node arguments passed to methods on this
-	 *   object will be nodes in the graph parameter.
-	 * @param edgeDetails defines details of edges such as colors, thickness,
-	 *   and arrow type; the edge arguments passed to methods on this
-	 *   object will be edges in the graph parameter.
-	 * @param nodeBuff this is a computational helper that is required in the
-	 *   implementation of this method; when this method returns, nodeBuff is
-	 *   in a state such that an edge in graph has been rendered by this method
-	 *   if and only if it touches at least one node in this nodeBuff set;
-	 *   no guarantee made regarding edgeless nodes.
-	 * @param grafx the graphics context that is to render this graph.
-	 * @param bgPaint the background paint to use when calling grafx.clear().
-	 * @param xCenter the xCenter parameter to use when calling grafx.clear().
-	 * @param yCenter the yCenter parameter to use when calling grafx.clear().
-	 * @param scaleFactor the scaleFactor parameter to use when calling
-	 *   grafx.clear().
-	 * @param dependencies 
-	 * @return bits representing the level of detail that was rendered; the
-	 *   return value is a bitwise-or'ed value of the LOD_* constants.
-	 */
-	public final static void renderGraph(final CyNetworkViewSnapshot netView,
-	                                    final RenderDetailFlags flags,
-	                                    final NodeDetails nodeDetails,
-	                                    final EdgeDetails edgeDetails,
-	                                    final GraphGraphics grafx,
-	                                    final Set<VisualPropertyDependency<?>> dependencies) {
-
-//		RenderDetailFlags flags = RenderDetailFlags.create(netView, grafx.getTransform(), lod, edgeDetails);
-		
-		if (flags.renderEdges() >= 0) {
-			renderEdges(grafx, netView, flags, nodeDetails, edgeDetails);
-		}
-		renderNodes(grafx, netView, flags, nodeDetails, edgeDetails, dependencies);
-	}
+//	/**
+//	 * Renders a graph.
+//	 * @param netView the network view; nodes in this graph must correspond to
+//	 *   objKeys in nodePositions (the SpacialIndex2D parameter) and vice versa.
+//	 * @param nodePositions defines the positions and extents of nodes in graph;
+//	 *   each entry (objKey) in this structure must correspond to a node in graph
+//	 *   (the CyNetwork parameter) and vice versa; the order in which nodes are
+//	 *   rendered is defined by a non-reversed overlap query on this structure.
+//	 * @param lod defines the different levels of detail; an appropriate level
+//	 *   of detail is chosen based on the results of method calls on this
+//	 *   object.
+//	 * @param nodeDetails defines details of nodes such as colors, node border
+//	 *   thickness, and shape; the node arguments passed to methods on this
+//	 *   object will be nodes in the graph parameter.
+//	 * @param edgeDetails defines details of edges such as colors, thickness,
+//	 *   and arrow type; the edge arguments passed to methods on this
+//	 *   object will be edges in the graph parameter.
+//	 * @param nodeBuff this is a computational helper that is required in the
+//	 *   implementation of this method; when this method returns, nodeBuff is
+//	 *   in a state such that an edge in graph has been rendered by this method
+//	 *   if and only if it touches at least one node in this nodeBuff set;
+//	 *   no guarantee made regarding edgeless nodes.
+//	 * @param grafx the graphics context that is to render this graph.
+//	 * @param bgPaint the background paint to use when calling grafx.clear().
+//	 * @param xCenter the xCenter parameter to use when calling grafx.clear().
+//	 * @param yCenter the yCenter parameter to use when calling grafx.clear().
+//	 * @param scaleFactor the scaleFactor parameter to use when calling
+//	 *   grafx.clear().
+//	 * @param dependencies 
+//	 * @return bits representing the level of detail that was rendered; the
+//	 *   return value is a bitwise-or'ed value of the LOD_* constants.
+//	 */
+//	public final static void renderGraph(final CyNetworkViewSnapshot netView,
+//	                                    final RenderDetailFlags flags,
+//	                                    final NodeDetails nodeDetails,
+//	                                    final EdgeDetails edgeDetails,
+//	                                    final GraphGraphics grafx,
+//	                                    final Set<VisualPropertyDependency<?>> dependencies) {
+//
+////		RenderDetailFlags flags = RenderDetailFlags.create(netView, grafx.getTransform(), lod, edgeDetails);
+//		
+//		if (flags.renderEdges() >= 0) {
+//			renderEdges(grafx, netView, flags, nodeDetails, edgeDetails);
+//		}
+//		renderNodes(grafx, netView, flags, nodeDetails, edgeDetails, dependencies);
+//	}
 	
 	
 	
-	public static void renderEdges(GraphGraphics grafx, CyNetworkViewSnapshot netView,
+	public static void renderEdges(ProgressMonitor progressMonitor, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails) {
 		
 		// Render the edges first.  No edge shall be rendered twice.  Render edge labels.  
@@ -155,9 +157,14 @@ public final class GraphRenderer {
 		else
 			nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height); // MKTODO why are we querying twice?
 		
+		DiscreteProgressMonitor dpm = progressMonitor.toDiscrete(nodeHits.size());
+		
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 
 			while (nodeHits.hasNext()) {
+				if(dpm.isCancelled())
+					return;
+				
 				final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
 				// Casting to double and then back we could achieve better accuracy
@@ -183,17 +190,23 @@ public final class GraphRenderer {
 						                  edgeDetails.getColorLowDetail(netView, edge));
 					}
 				}
-
 				nodeBuff.put(nodeSuid);
+				
+				dpm.increment();
 			}
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
+				if(dpm.isCancelled())
+					return;
+				
 				final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 				
 				final View<CyNode> node = netView.getNodeView(nodeSuid);
 				final byte nodeShape = nodeDetails.getShape(node);
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
 				for (View<CyEdge> edge : touchingEdges) {
+					if(dpm.isCancelled())
+						return;
 					if (!edgeDetails.isVisible(edge))
 						continue;
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
@@ -430,12 +443,13 @@ public final class GraphRenderer {
 				}
 
 				nodeBuff.put(nodeSuid);
+				dpm.increment();
 			}
 		}
 	}
 
 	
-	public static void renderNodes(GraphGraphics grafx, CyNetworkViewSnapshot netView,
+	public static void renderNodes(ProgressMonitor progressMonitor, GraphGraphics grafx, CyNetworkViewSnapshot netView,
 			RenderDetailFlags flags, NodeDetails nodeDetails, EdgeDetails edgeDetails, Set<VisualPropertyDependency<?>> dependencies) {
 		
 		// Render nodes and labels.  A label is not necessarily on top of every
@@ -447,19 +461,28 @@ public final class GraphRenderer {
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		
+		DiscreteProgressMonitor dpm = progressMonitor.toDiscrete(nodeHits.size());
+				
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 			final int nodeHitCount = nodeHits.size();
 
 			for (int i = 0; i < nodeHitCount; i++) {
+				if(dpm.isCancelled())
+					return;
+				
 				final View<CyNode> node = netView.getNodeView( nodeHits.nextExtents(floatBuff1) );
 
 				if ((floatBuff1[0] != floatBuff1[2]) && (floatBuff1[1] != floatBuff1[3]))
 					grafx.drawNodeLow(floatBuff1[0], floatBuff1[1], floatBuff1[2],
 					                  floatBuff1[3], nodeDetails.getColorLowDetail(netView, node));
+				
+				dpm.increment();
 			}
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
+				if(dpm.isCancelled())
+					return;
+				
 				final long node = nodeHits.nextExtents(floatBuff1);
 				final View<CyNode> cyNode = netView.getNodeView(node);
 
@@ -516,6 +539,7 @@ public final class GraphRenderer {
 						                                        flags.has(LOD_TEXT_AS_SHAPE));
 					}
 				}
+				dpm.increment();
 			}
 		}
 	}

@@ -14,6 +14,8 @@ import java.util.concurrent.ExecutorService;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.work.ConsoleProgressMonitor;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -38,6 +40,7 @@ public class CompositeCanvas {
 	private final NetworkImageBuffer image = new NetworkImageBuffer();
 	
 	private final List<DingCanvas> canvasList;
+	private final double[] weights;
 	private final ExecutorService executor;
 	
 	private RenderDetailFlags lastRenderFlags;
@@ -57,10 +60,13 @@ public class CompositeCanvas {
 		
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
+		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
+		weights = new double[] {1, 1, 10, 3, 1, 1}; // MKTODO not very elegant
 		
 		// MKTODO what's the best thread pool for this?
 		this.executor = executor;
 	}
+	
 	
 	public void dispose() {
 		canvasList.forEach(DingCanvas::dispose);
@@ -112,7 +118,7 @@ public class CompositeCanvas {
 	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
 		// Returns true if either annotation canvas contains at least one annotation
 		return foregroundAnnotationCanvas.adjustBoundsToIncludeAnnotations(extentsBuff)
-			|| backgroundAnnotationCanvas.adjustBoundsToIncludeAnnotations(extentsBuff);
+			 | backgroundAnnotationCanvas.adjustBoundsToIncludeAnnotations(extentsBuff);
 	}
 	
 	public void setViewport(int width, int height) {
@@ -132,8 +138,10 @@ public class CompositeCanvas {
 	
 
 	private static Image overlayImage(Image composite, Image image) {
-		Graphics g = composite.getGraphics();
-		g.drawImage(image, 0, 0, null);
+		if(image != null) {
+			Graphics g = composite.getGraphics();
+			g.drawImage(image, 0, 0, null);
+		}
 		return composite;
 	}
 	
@@ -144,20 +152,28 @@ public class CompositeCanvas {
 		paintParallelBlocking(g);
 	}
 	
-	private void paintSingleThreaded(Graphics g) {
-		for(DingCanvas c : canvasList) {
-			Image canvasImage = c.paintImage(lastRenderFlags);
-			overlayImage(image.getImage(), canvasImage);
-		}
-		if(g != null) {
-			g.drawImage(image.getImage(), 0, 0, null);
-		}
-	}
+//	private void paintSingleThreaded(Graphics g) {
+//		for(DingCanvas c : canvasList) {
+//			Image canvasImage = c.paintImage(lastRenderFlags);
+//			overlayImage(image.getImage(), canvasImage);
+//		}
+//		if(g != null) {
+//			g.drawImage(image.getImage(), 0, 0, null);
+//		}
+//	}
 	
 	private void paintParallelBlocking(Graphics g) {
+		ConsoleProgressMonitor pm = new ConsoleProgressMonitor("CompositeCanvas");
+		pm.start();
+		
+		List<ProgressMonitor> subPms = pm.split(weights);
+		
 		CompletableFuture<Image> f = CompletableFuture.completedFuture(image.getImage());
-		for(DingCanvas c : canvasList) {
-			CompletableFuture<Image> cf = CompletableFuture.supplyAsync(() -> c.paintImage(lastRenderFlags), executor);
+		
+		for(int i = 0; i < canvasList.size(); i++) {
+			DingCanvas c = canvasList.get(i);
+			ProgressMonitor subPm = subPms.get(i);
+			CompletableFuture<Image> cf = CompletableFuture.supplyAsync(() -> c.paintImage(subPm, lastRenderFlags), executor);
 			f = f.thenCombineAsync(cf, CompositeCanvas::overlayImage, executor);
 		}
 		
@@ -166,9 +182,10 @@ public class CompositeCanvas {
 			if(g != null) {
 				g.drawImage(image.getImage(), 0, 0, null);
 			}
+			pm.done();
 		} catch (InterruptedException | ExecutionException e) {
-			// MKTODO what to do here?
 			e.printStackTrace();
+			pm.cancel();
 		}
 	}
 	

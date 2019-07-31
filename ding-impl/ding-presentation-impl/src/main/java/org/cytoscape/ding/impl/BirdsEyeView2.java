@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.print.Printable;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +23,7 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
 public final class BirdsEyeView2 extends Component implements RenderingEngine<CyNetwork> {
@@ -46,6 +50,11 @@ public final class BirdsEyeView2 extends Component implements RenderingEngine<Cy
 		VIEW_WINDOW_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 60);
 		c = UIManager.getColor("Table.background");
 		VIEW_WINDOW_BORDER_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 90);
+		
+		InnerMouseListener mouseListener = new InnerMouseListener();
+		addMouseListener(mouseListener);
+		addMouseMotionListener(mouseListener);
+		addMouseWheelListener(mouseListener);
 		
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
@@ -155,7 +164,6 @@ public final class BirdsEyeView2 extends Component implements RenderingEngine<Cy
 	
 	@Override 
 	public void update(Graphics g) {
-		System.out.println("BirdsEyeView2.update()");
 		if(contentChanged) {
 			// render a new image
 			fitCanvasToNetwork();
@@ -197,6 +205,74 @@ public final class BirdsEyeView2 extends Component implements RenderingEngine<Cy
 		g.setColor(VIEW_WINDOW_BORDER_COLOR);
 		g.drawRect(x, y, rectWidth, rectHeight);
 	}
+	
+
+	private final class InnerMouseListener extends MouseAdapter {
+
+		private int currMouseButton = 0;
+		private int lastXMousePos = 0;
+		private int lastYMousePos = 0;
+		
+		@Override public void mousePressed(MouseEvent e) {
+			if(e.getButton() == MouseEvent.BUTTON1) {
+				currMouseButton = 1;
+				lastXMousePos = e.getX(); // needed by drag listener
+				lastYMousePos = e.getY();
+				
+				double myXCenter = canvas.getTransform().getCenterX();
+				double myYCenter = canvas.getTransform().getCenterY();
+				double myScaleFactor = canvas.getTransform().getScaleFactor();
+				
+				double halfWidth  = (double)getWidth() / 2.0d;
+				double halfHeight = (double)getHeight() / 2.0d;
+				
+				double centerX = ((lastXMousePos - halfWidth)  / myScaleFactor) + myXCenter;
+				double centerY = ((lastYMousePos - halfHeight) / myScaleFactor) + myYCenter;
+				
+				re.setCenter(centerX, centerY);
+//				re.updateView();
+			}
+		}
+
+		@Override 
+		public void mouseReleased(MouseEvent e) {
+			if(e.getButton() == MouseEvent.BUTTON1) {
+				if(currMouseButton == 1) {
+					currMouseButton = 0;
+				}
+			}
+		}
+		
+		@Override
+		public void mouseDragged(MouseEvent e) {
+			if(currMouseButton == 1) {
+				int currX = e.getX();
+				int currY = e.getY();
+				double deltaX = 0;
+				double deltaY = 0;
+				
+				double myScaleFactor = canvas.getTransform().getScaleFactor();
+				
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION)) {
+					deltaX = (currX - lastXMousePos) / myScaleFactor;
+					lastXMousePos = currX;
+				}
+				if (!re.getViewModel().isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
+					deltaY = (currY - lastYMousePos) / myScaleFactor;
+					lastYMousePos = currY;
+				}
+				if (deltaX != 0 || deltaY != 0) {
+					re.pan(deltaX, deltaY);
+				}
+			}
+		}
+		
+		@Override 
+		public void mouseWheelMoved(MouseWheelEvent e) {
+			re.getInputHandlerGlassPane().processMouseWheelEvent(e);
+		}
+	}
+	
 	
 	@Override
 	public Dimension getMinimumSize() {
