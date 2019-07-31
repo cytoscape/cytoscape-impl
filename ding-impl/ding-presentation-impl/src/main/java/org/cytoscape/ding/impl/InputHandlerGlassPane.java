@@ -225,37 +225,6 @@ public class InputHandlerGlassPane extends JComponent {
 				
 				a.update();
 				re.updateView();
-				
-				
-//				if (a instanceof ShapeAnnotationImpl && e.isShiftDown()) {
-//					ShapeAnnotationImpl sa = (ShapeAnnotationImpl)a;
-//					int width  = a.getWidth();
-//					int height = a.getHeight();
-//					int borderWidth = (int)sa.getBorderWidth(); // We need to take this into account
-//					if (code == VK_UP) {
-//						height -= move*2; width -= borderWidth*2;
-//					} else if (code == VK_DOWN) {
-//						height += move; width -= borderWidth*2;
-//					} else if (code == VK_LEFT) {
-//						width -= move*2; height -= borderWidth*2;
-//					} else if (code == VK_RIGHT) {
-//						width += move; height -= borderWidth*2;
-//					}
-//					// Adjust the size of the selected annotations
-//					sa.setSize((double)width, (double)height);
-//				} else {
-//					if(code == VK_UP)
-//						y -= move;
-//					else if(code == VK_DOWN)
-//						y += move;
-//					else if(code == VK_LEFT)
-//						x -= move;
-//					else if(code == VK_RIGHT)
-//						x += move;
-//
-//					//Adjust the locations of the selected annotations
-//					a.setLocation(x,y);
-//				}
 			}
 		}
 		

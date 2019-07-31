@@ -73,7 +73,7 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		
 		// Create instance of an engine.
 		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
-		BirdsEyeView2 bev = new BirdsEyeView2(re, registrar);
+		BirdsEyeView bev = new BirdsEyeView(re, registrar);
 
 		container.setLayout(new BorderLayout());
 		container.add(bev, BorderLayout.CENTER);

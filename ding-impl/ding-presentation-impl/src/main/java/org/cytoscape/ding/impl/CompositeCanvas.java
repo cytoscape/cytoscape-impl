@@ -51,10 +51,10 @@ public class CompositeCanvas {
 		
 		canvasList = Arrays.asList(
 			annotationSelectionCanvas = new AnnotationSelectionCanvas(),
-			foregroundAnnotationCanvas = new AnnotationCanvas(this, CanvasID.FOREGROUND, re),
+			foregroundAnnotationCanvas = new AnnotationCanvas(CanvasID.FOREGROUND, re),
 			nodeCanvas = new NodeCanvas(this, re, registrar),
 			edgeCanvas = new EdgeCanvas(this, re),
-			backgroundAnnotationCanvas = new AnnotationCanvas(this, CanvasID.BACKGROUND, re),
+			backgroundAnnotationCanvas = new AnnotationCanvas(CanvasID.BACKGROUND, re),
 			backgroundColorCanvas = new ColorCanvas()
 		);
 		
@@ -147,20 +147,10 @@ public class CompositeCanvas {
 	
 	public void paintBlocking(Graphics g) {
 		lastRenderFlags = RenderDetailFlags.create(re.getViewModelSnapshot(), image, lod, re.getEdgeDetails());
-		
-//		paintSingleThreaded(g);
 		paintParallelBlocking(g);
 	}
 	
-//	private void paintSingleThreaded(Graphics g) {
-//		for(DingCanvas c : canvasList) {
-//			Image canvasImage = c.paintImage(lastRenderFlags);
-//			overlayImage(image.getImage(), canvasImage);
-//		}
-//		if(g != null) {
-//			g.drawImage(image.getImage(), 0, 0, null);
-//		}
-//	}
+	
 	
 	private void paintParallelBlocking(Graphics g) {
 		ConsoleProgressMonitor pm = new ConsoleProgressMonitor("CompositeCanvas");
