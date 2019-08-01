@@ -1,10 +1,8 @@
 package org.cytoscape.internal.view.help;
 
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -30,25 +28,16 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class HelpReportABugTask extends AbstractTask {
-
-	private static final String BUG_REPORT_URL = "https://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
+public class HelpTourTaskFactory extends AbstractTaskFactory {
 
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public HelpReportABugTask(final CyServiceRegistrar serviceRegistrar) {
+	public HelpTourTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) {
-		// get OS string
-		String os_str = System.getProperty("os.name") + "_" + System.getProperty("os.version");
-		os_str = os_str.replace(" ", "_");
-		
-		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
-
-		openBrowser.openURL(BUG_REPORT_URL + "?cyversion=" + cyVersion.getVersion() + "&os=" + os_str);
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new HelpTourTask(serviceRegistrar));
 	}
 }
