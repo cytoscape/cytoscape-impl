@@ -32,7 +32,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HelpUserManualTask extends AbstractTask {
 	
-	private static final String MANUAL_URL = "http://manual.cytoscape.org/en/";
+	private static final String MANUAL_URL = "https://manual.cytoscape.org/en/";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
