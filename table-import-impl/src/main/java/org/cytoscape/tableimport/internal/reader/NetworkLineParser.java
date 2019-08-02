@@ -175,7 +175,7 @@ public class NetworkLineParser extends AbstractLineParser {
 			if (delimiter == null || delimiter.isEmpty())
 				delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
 			
-			Object value = parse(entry, type, delimiter);
+			Object value = parse(entry, type, delimiter, mapping.getDecimalSeparator());
 			
 			if (value instanceof List) {
 				// In case of list, do not overwrite the attribute. Get the existing list, and add it to the list.
@@ -192,7 +192,7 @@ public class NetworkLineParser extends AbstractLineParser {
 		} else {
 			createColumn(element, mapping.getAttributeNames()[index], type.getType(), namespace);
 			
-			final Object value = parse(entry, type, null);
+			final Object value = parse(entry, type, null, mapping.getDecimalSeparator());
 			network.getRow(element, namespace).set(mapping.getAttributeNames()[index], value);
 		}
 	}

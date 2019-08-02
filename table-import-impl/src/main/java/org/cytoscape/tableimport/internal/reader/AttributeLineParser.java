@@ -119,7 +119,7 @@ public class AttributeLineParser extends AbstractLineParser {
 				if (delimiter == null || delimiter.isEmpty())
 					delimiter = AbstractMappingParameters.DEF_LIST_DELIMITER;
 				
-				Object value = parse(entry, type, delimiter);
+				Object value = parse(entry, type, delimiter, mapping.getDecimalSeparator());
 				setListAttribute(table, type, key, mapping.getAttributeNames()[index], value);
 			} else {
 				setAttribute(table, type, key, mapping.getAttributeNames()[index], entry);
@@ -134,7 +134,7 @@ public class AttributeLineParser extends AbstractLineParser {
 		if (tbl.getColumn(attrName) == null)
 			tbl.createColumn(attrName, type.getType(), false);
 
-		final Object value = parse(attrValue, type, null);
+		final Object value = parse(attrValue, type, null, mapping.getDecimalSeparator());
 		final CyRow row = tbl.getRow(key);
 		row.set(attrName, value);
 	}
