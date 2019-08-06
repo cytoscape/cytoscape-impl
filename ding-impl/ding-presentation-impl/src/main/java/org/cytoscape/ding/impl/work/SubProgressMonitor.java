@@ -14,6 +14,10 @@ public class SubProgressMonitor implements ProgressMonitor {
 	public boolean isCancelled() {
 		return wrapped.isCancelled();
 	}
+	
+	@Override
+	public void cancel() {
+	}
 
 	@Override
 	public void setStatusMessage(String message) {
@@ -22,7 +26,7 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void addProgress(double progress) {
-		addProgress(progress * percentage);
+		wrapped.addProgress(progress * percentage);
 	}
 
 	@Override

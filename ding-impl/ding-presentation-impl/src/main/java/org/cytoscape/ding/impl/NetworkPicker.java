@@ -48,18 +48,29 @@ public class NetworkPicker {
 	private final NodeDetails nodeDetails;
 	private final EdgeDetails edgeDetails;
 	
-	public NetworkPicker(DRenderingEngine re) {
+	private RenderDetailFlags renderDetailFlags;
+	
+	public NetworkPicker(DRenderingEngine re, RenderDetailFlags renderDetailFlags) {
 		this.re = re;
 		this.nodeDetails = re.getNodeDetails();
 		this.edgeDetails = re.getEdgeDetails();
+		this.renderDetailFlags = renderDetailFlags;
 	}
 	
-	private RenderDetailFlags getFlags() {
-		return re.getLastRenderDetail();
+	public RenderDetailFlags getLastRenderDetail() {
+		return this.renderDetailFlags;
+	}
+	
+	public RenderDetailFlags getFlags() {
+		return this.renderDetailFlags;
+	}
+	
+	public void setRenderDetailFlags(RenderDetailFlags renderDetailFlags) {
+		this.renderDetailFlags = renderDetailFlags;
 	}
 	
 	private boolean treatNodeShapesAsRectangle() {
-		return re.treatNodeShapesAsRectangle();
+		return renderDetailFlags.treatNodeShapesAsRectangle();
 	}
 
 	/**

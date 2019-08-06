@@ -33,7 +33,7 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
 		if(currentProgress >= 1.0)
 			println("done");
 		else
-			println("progress " + progress);
+			println("progress " + currentProgress);
 	}
 	
 	@Override

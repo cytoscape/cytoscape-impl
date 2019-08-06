@@ -33,7 +33,7 @@ package org.cytoscape.graph.render.stateful;
  * To understand the significance of each method's return value, it makes
  * sense to become familiar with the API cytoscape.render.immed.GraphGraphics.
  */
-public class GraphLOD {
+public interface GraphLOD {
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
 	 * only those edges which touch a visible node.  By default
@@ -58,8 +58,7 @@ public class GraphLOD {
 	 *   positive if all edges are to be rendered, or negative if no edges
 	 *   are to be rendered.
 	 */
-	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount,
-	                        final int totalEdgeCount) {
+	default byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		return 0;
 	}
 
@@ -94,7 +93,7 @@ public class GraphLOD {
 	 * @param renderEdgeCount the number of edges that are about to be rendered.
 	 * @return true for full detail, false for low detail.
 	 */
-	public boolean detail(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean detail(int renderNodeCount, int renderEdgeCount) {
 		return (renderNodeCount + renderEdgeCount) < 1200;
 	}
 
@@ -109,7 +108,7 @@ public class GraphLOD {
 	 * @return true if and only if node borders are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	public boolean nodeBorders(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
 		return renderNodeCount < 200;
 	}
 
@@ -124,7 +123,7 @@ public class GraphLOD {
 	 * @return true if and only if node labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	public boolean nodeLabels(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
 		return renderNodeCount < 60;
 	}
 
@@ -139,7 +138,7 @@ public class GraphLOD {
 	 * @return true if and only if custom node graphics are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	public boolean customGraphics(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
 		return renderNodeCount < 60;
 	}
 
@@ -154,7 +153,7 @@ public class GraphLOD {
 	 * @return true if and only if edge arrows are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	public boolean edgeArrows(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
 		return renderEdgeCount < 300;
 	}
 
@@ -172,7 +171,7 @@ public class GraphLOD {
 	 * @return true if and only if dashed edges are to be honored.
 	 * @see #detail(int, int)
 	 */
-	public boolean dashedEdges(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
@@ -188,7 +187,7 @@ public class GraphLOD {
 	 * @return true if and only if edge anchors are to be honored.
 	 * @see #detail(int, int)
 	 */
-	public boolean edgeAnchors(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
@@ -203,7 +202,7 @@ public class GraphLOD {
 	 * @return true if and only if edge labels are to be rendered.
 	 * @see #detail(int, int)
 	 */
-	public boolean edgeLabels(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
 		return renderEdgeCount < 80;
 	}
 
@@ -220,12 +219,10 @@ public class GraphLOD {
 	 * @see #nodeLabels(int, int)
 	 * @see #edgeLabels(int, int)
 	 */
-	public boolean textAsShape(final int renderNodeCount, final int renderEdgeCount) {
+	default boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
 		return false;
 	}
 
-	public double getNestedNetworkImageScaleFactor() { return 1.0; }
+	default double getNestedNetworkImageScaleFactor() { return 1.0; }
 
-	public boolean getDrawEdges() { return true; }
-	public void setDrawEdges(boolean drawEdges) {  }
 }

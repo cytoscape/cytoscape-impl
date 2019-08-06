@@ -18,10 +18,12 @@ import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
 import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
 import java.awt.BasicStroke;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -45,6 +47,8 @@ import java.util.Set;
 
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
@@ -63,6 +67,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -96,10 +101,13 @@ import org.cytoscape.work.swing.DialogTaskManager;
 @SuppressWarnings("serial")
 public class InputHandlerGlassPane extends JComponent {
 	
+	private static final int PROGRESS_BAR_TICKS = 1000;
+	
 	private final CyServiceRegistrar registrar;
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
+	private final JProgressBar progressBar;
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		this.registrar = registrar;
@@ -122,11 +130,66 @@ public class InputHandlerGlassPane extends JComponent {
         
 		addMouseListener(orderedMouseAdapter);
 		addMouseMotionListener(orderedMouseAdapter);
-		
 		addKeyListener(new CanvasKeyListener());
         addMouseWheelListener(new CanvasMouseWheelListener());
-        
         setFocusable(true); // key listener needs the focus
+        
+        this.progressBar = addProgressBar();
+	}
+	
+	private JProgressBar addProgressBar() {
+		JProgressBar progressBar = new JProgressBar(0, PROGRESS_BAR_TICKS);
+		Dimension size = progressBar.getPreferredSize();
+		progressBar.setMaximumSize(new Dimension(100, size.height));
+		
+		JPanel panel = new JPanel();
+		panel.setOpaque(false);
+		panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+		panel.add(progressBar);
+		
+        setLayout(new BorderLayout());
+        add(panel, BorderLayout.SOUTH);
+        return progressBar;
+	}
+	
+	public ProgressMonitor createProgressMonitor() {
+		return new ProgressMonitor() {
+			private boolean cancelled = false;
+			private double currentProgress = 0.0;
+			
+			@Override
+			public void start() {
+				progressBar.setVisible(true);
+				progressBar.setValue(0);
+			}
+			
+			@Override
+			public void done() {
+				progressBar.setVisible(false);
+				progressBar.setValue(0);
+			}
+			
+			@Override
+			public void addProgress(double progress) {
+				synchronized(this) {
+					currentProgress += progress;
+				}
+				// theoretically this could read the wrong value for currentProgress, but its not critical
+				int ticks = (int) (currentProgress * PROGRESS_BAR_TICKS);
+				progressBar.setValue(ticks);
+			}
+			
+			@Override
+			public void cancel() {
+				cancelled = true;
+				done();
+			}
+			
+			@Override
+			public boolean isCancelled() {
+				return cancelled;
+			}
+		};
 	}
 	
 	private <T> T get(Class<T> t) {
@@ -1295,7 +1358,7 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private boolean isLODEnabled(int flag) {
-		return re.getLastRenderDetail().has(flag);
+		return re.getPicker().getLastRenderDetail().has(flag);
 	}
 
 	private boolean overNode(Point2D mousePoint) {

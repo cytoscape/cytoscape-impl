@@ -146,6 +146,30 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 //		backGroundCanvas.dispose();
 	}
 
+	/**
+	 * Adjusts the extents to also include annotations.
+	 */
+	public boolean adjustBoundsToIncludeAnnotations(double[] extents) {
+		List<DingAnnotation> annotations = getAnnotations();
+		if(annotations.isEmpty())
+			return false;
+
+		for(DingAnnotation a : annotations) {
+			if (a.getX() < extents[0]) 
+				extents[0] = a.getX();
+			if (a.getY() < extents[1]) 
+				extents[1] = a.getY();
+			
+			double x2 = a.getX() + a.getWidth();
+			double y2 = a.getY() + a.getHeight();
+
+			if (x2 > extents[2])
+				extents[2] = x2;
+			if (y2 > extents[3])
+				extents[3] = y2;
+		}
+		return true;
+	}
 	
 	public void loadAnnotations() {
 		CyNetwork network = re.getViewModel().getModel();

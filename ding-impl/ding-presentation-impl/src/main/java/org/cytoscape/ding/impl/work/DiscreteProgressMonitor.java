@@ -28,6 +28,11 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 	public boolean isCancelled() {
 		return wrapped.isCancelled();
 	}
+	
+	@Override
+	public void cancel() {
+		// you have to cancel the root PM
+	}
 
 	@Override
 	public void setStatusMessage(String message) {

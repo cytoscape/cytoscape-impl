@@ -1,14 +1,16 @@
 package org.cytoscape.ding.impl.work;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public interface ProgressMonitor {
 	
+	void cancel();
 	
 	boolean isCancelled();
 	
-	void setStatusMessage(String message);
+	default void setStatusMessage(String message) {};
 	
 	void addProgress(double progress);
 	
@@ -33,5 +35,29 @@ public interface ProgressMonitor {
 		}
 		return monitors;
 	}
+	
+	
+	public static final ProgressMonitor NULL = new ProgressMonitor() {
+		
+		@Override
+		public boolean isCancelled() { return false; }
+		
+		@Override
+		public void cancel() { }
+
+		@Override
+		public void setStatusMessage(String message) { }
+
+		@Override
+		public void addProgress(double progress) { }
+
+		@Override
+		public void done() { }
+
+		@Override
+		public <T> List<ProgressMonitor> split(double... parts) {
+			return Collections.nCopies(parts.length, NULL);
+		}
+	};
 	
 }

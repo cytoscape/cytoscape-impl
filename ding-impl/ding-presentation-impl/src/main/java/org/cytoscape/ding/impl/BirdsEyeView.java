@@ -14,6 +14,7 @@ import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
+import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -59,8 +60,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		
 		re.addContentChangeListener(new BirdsEyeViewContentChangeListener());
 		
-		BirdsEyeViewLOD lod = getLOD();
-		canvas = new CompositeCanvas(registrar, re, lod, re.getExecutorService());
+		GraphLOD lod = new BirdsEyeViewLOD(re.getGraphLOD());
+		canvas = new CompositeCanvas(registrar, re, lod);
 	}	
 	
 	private final class BirdsEyeViewContentChangeListener implements ContentChangeListener {
@@ -71,21 +72,6 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 			repaint();
 		}
 	}
-	
-	// MKTODO this is not right, the LOD can be changed
-	private BirdsEyeViewLOD getLOD() {
-		// Now draw the network
-		// System.out.println("Drawing snapshot");
-		BirdsEyeViewLOD bevLOD;
-		if (re.getGraphLOD() instanceof DingGraphLOD)
-			bevLOD = new BirdsEyeViewLOD(new DingGraphLOD((DingGraphLOD)re.getGraphLOD()));
-		else
-			bevLOD = new BirdsEyeViewLOD(re.getGraphLOD());
-
-		bevLOD.setDrawEdges(true);
-		return bevLOD;
-	}
-	
 	
 	/**
 	 * Returns the extents of the nodes, in node coordinates.
@@ -103,7 +89,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	private void fitCanvasToNetwork() {
 		boolean hasComponents = getNetworkExtents(extents);
-		hasComponents |= re.adjustBoundsToIncludeAnnotations(extents);
+		hasComponents |= re.getCyAnnotator().adjustBoundsToIncludeAnnotations(extents);
 		
 		double myXCenter;
 		double myYCenter;
@@ -142,7 +128,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		if(contentChanged) {
 			// render a new image
 			fitCanvasToNetwork();
-			canvas.paintBlocking(null);
+//			canvas.paint(null, this::repaint);
 			contentChanged = false;
 		} 
 		g.drawImage(canvas.getImage(), 0, 0, null);

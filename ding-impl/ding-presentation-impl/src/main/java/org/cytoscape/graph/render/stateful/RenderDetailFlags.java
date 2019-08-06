@@ -9,6 +9,7 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * The GraphLOD combined with the number of visible nodes/edges tells us exactly what level of
@@ -47,8 +48,11 @@ public class RenderDetailFlags {
 		return (lodBits & flag) != 0;
 	}
 	
+	public boolean treatNodeShapesAsRectangle() {
+		return not(RenderDetailFlags.LOD_HIGH_DETAIL);
+	}
 	
-	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod, EdgeDetails edgeDetails) {
+	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
@@ -96,7 +100,8 @@ public class RenderDetailFlags {
 
 				for ( View<CyEdge> e : touchingEdges ) {
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
-					if (!edgeDetails.isVisible(e))
+					boolean isVisible = Boolean.TRUE.equals(e.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
+					if (!isVisible)
 						continue;
 					long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
 					if (nodeBuff.get(otherNode) < 0)
@@ -137,6 +142,24 @@ public class RenderDetailFlags {
 				lodTemp |= LOD_CUSTOM_GRAPHICS;
 		}
 		return lodTemp;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + lodBits;
+		result = prime * result + renderEdges;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof RenderDetailFlags) {
+			RenderDetailFlags other = (RenderDetailFlags) obj;
+			return lodBits == other.lodBits && renderEdges == other.renderEdges;
+		}
+		return false;
 	}
 
 }
