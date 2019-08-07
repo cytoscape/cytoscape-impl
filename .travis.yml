@@ -13,5 +13,5 @@ deploy:
   provider: script
   on:
     branch: java11
-  script: "mvn deploy"
+  script: "mvn deploy -U -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
   skip_cleanup: true
