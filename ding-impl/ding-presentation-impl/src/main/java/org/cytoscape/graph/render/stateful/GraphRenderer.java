@@ -166,8 +166,10 @@ public final class GraphRenderer {
 		if (flags.not(LOD_HIGH_DETAIL)) { // Low detail.
 
 			while (nodeHits.hasNext()) {
-				if(dpm.isCancelled())
+				if(dpm.isCancelled()) {
+					System.out.println("CANCELLED");
 					return;
+				}
 				
 				final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 
@@ -200,8 +202,10 @@ public final class GraphRenderer {
 			}
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
-				if(dpm.isCancelled())
+				if(dpm.isCancelled()) {
+					System.out.println("CANCELLED");
 					return;
+				}
 				
 				final long nodeSuid = nodeHits.nextExtents(floatBuff1);
 				
@@ -209,8 +213,10 @@ public final class GraphRenderer {
 				final byte nodeShape = nodeDetails.getShape(node);
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
 				for (View<CyEdge> edge : touchingEdges) {
-					if(dpm.isCancelled())
+					if(dpm.isCancelled()) {
+						System.out.println("CANCELLED");
 						return;
+					}
 					if (!edgeDetails.isVisible(edge))
 						continue;
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
@@ -308,6 +314,11 @@ public final class GraphRenderer {
 						if (flags.has(LOD_EDGE_LABELS)) {
 							final int labelCount = edgeDetails.getLabelCount(edge);
 							for (int labelInx = 0; labelInx < labelCount; labelInx++) {
+								if(dpm.isCancelled()) {
+									System.out.println("CANCELLED");
+									return;
+								}
+								
 								final String text = edgeDetails.getLabelText(edge);
 								final Font font = edgeDetails.getLabelFont(edge);
 								final double fontScaleFactor = edgeDetails.getLabelScaleFactor(edge);

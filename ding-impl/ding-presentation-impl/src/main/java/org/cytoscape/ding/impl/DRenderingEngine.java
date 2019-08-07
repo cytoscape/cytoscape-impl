@@ -29,7 +29,6 @@ import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.ViewUtil;
@@ -238,10 +237,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
 			}, false); // don't set the dirty flag
 			
-			contentChanged(true);
+			updateView(true);
 		}
 		
-		public void contentChanged(boolean startRenderSlow) {
+		public void updateView(boolean startRenderSlow) {
 			System.out.println("DRenderingEngine.RendererComponent.contentChanged() " + startRenderSlow);
 			// run this on the EDT so there is no race condition with paint() ?????
 			ViewUtil.invokeOnEDT(() -> {
@@ -299,12 +298,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return fastCanvas.getTransform();
 	}
 	
-	public void setAnnotationSelection(AnnotationSelection selection) {
-		// MKTODO annotation selection should not be in CompositeCanvas, it should be in the glass pane
-		slowCanvas.setAnnotationSelection(selection);
-		fastCanvas.setAnnotationSelection(selection);
-	}
-	
 	public GraphLOD getGraphLOD() {
 		return dingGraphLOD;
 	}
@@ -355,7 +348,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setContentChanged(false);
 		setTransformChanged(false);
 	
-		renderComponent.contentChanged(startSlowPaint);
+		renderComponent.updateView(startSlowPaint);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
@@ -605,7 +598,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			setCenter(x, y);
 		}
 		
-		renderComponent.contentChanged(false);
 //		updateView();
 	}
 	

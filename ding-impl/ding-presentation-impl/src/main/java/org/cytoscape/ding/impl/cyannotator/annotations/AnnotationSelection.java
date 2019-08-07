@@ -82,7 +82,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			selectedAnnotations.add(e);
 			updateBounds();
 			// MKTODO
-			cyAnnotator.setSelection(this);
+//			cyAnnotator.setSelection(this);
 		} else {
 			selectedAnnotations.add(e);
 			updateBounds();
@@ -100,7 +100,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	public void clear() {
 		initialBoundsMap = null;
 		selectedAnnotations.clear();
-		cyAnnotator.setSelection(null);
+//		cyAnnotator.setSelection(null);
 	}
 
 	public boolean contains(Object e) {
@@ -120,7 +120,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 		selectedAnnotations.remove(e);
 		
 		if (selectedAnnotations.isEmpty()) {
-			cyAnnotator.setSelection(null);
+//			cyAnnotator.setSelection(null);
 		} else {
 			updateBounds();
 		}

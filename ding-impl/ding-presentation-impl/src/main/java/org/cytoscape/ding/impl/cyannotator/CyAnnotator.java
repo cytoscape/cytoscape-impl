@@ -348,9 +348,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 //	}
 	
 
-	public void setSelection(AnnotationSelection selection) {
-		re.setAnnotationSelection(selection);
-	}
+//	public void setSelection(AnnotationSelection selection) {
+//		re.setAnnotationSelection(selection);
+//	}
 
 //	public AnnotationCanvas getForeGroundCanvas() {
 //		return foreGroundCanvas;

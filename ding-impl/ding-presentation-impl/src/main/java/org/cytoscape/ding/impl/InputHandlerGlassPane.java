@@ -36,6 +36,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -49,6 +50,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.Timer;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
@@ -154,17 +156,23 @@ public class InputHandlerGlassPane extends JComponent {
 	
 	public ProgressMonitor createProgressMonitor() {
 		return new ProgressMonitor() {
+			
 			private boolean cancelled = false;
 			private double currentProgress = 0.0;
+			private Timer timer = new Timer(300, null);
 			
 			@Override
 			public void start() {
-				progressBar.setVisible(true);
 				progressBar.setValue(0);
+				timer.setInitialDelay(300);
+				timer.setRepeats(false);
+				timer.addActionListener(e -> progressBar.setVisible(true));
+				timer.start();
 			}
 			
 			@Override
 			public void done() {
+				timer.stop();
 				progressBar.setVisible(false);
 				progressBar.setValue(0);
 			}
@@ -201,6 +209,17 @@ public class InputHandlerGlassPane extends JComponent {
 		get(AddEdgeListener.class).drawAddingEdge(g);
 		get(SelectionRectangleListener.class).drawSelectionRectangle(g);
 		get(SelectionLassoListener.class).drawSelectionLasso(g);
+		paintAnnotaitonSelection((Graphics2D)g);
+	}
+	
+	private void paintAnnotaitonSelection(Graphics2D g) {
+		AnnotationSelection selection = cyAnnotator.getAnnotationSelection();
+		if(selection == null || selection.isEmpty())
+			return;
+		AffineTransform t = g.getTransform();
+		g.translate(selection.getX(), selection.getY());
+		selection.paint(g);
+		g.setTransform(t);
 	}
 	
 	@Override
@@ -398,6 +417,7 @@ public class InputHandlerGlassPane extends JComponent {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			re.zoom(e.getWheelRotation());
+			re.updateView(true);
 		}
 	}
 
@@ -1302,6 +1322,7 @@ public class InputHandlerGlassPane extends JComponent {
 				double deltaY = oldY - newY;
 				
 				re.pan(deltaX, deltaY);
+				re.updateView(false);
 			}
 		}
 		

@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -22,12 +21,12 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
  * Manages what used to be ContentChangedListener and ViewportChangedListener
  *
  */
+@SuppressWarnings("unused")
 public class CompositeCanvas {
 	
 	private final DRenderingEngine re;
 	
 	// Canvas layers from top to bottom
-	private final AnnotationSelectionCanvas annotationSelectionCanvas;
 	private final AnnotationCanvas foregroundAnnotationCanvas;
 	private final NodeCanvas nodeCanvas;
 	private final EdgeCanvas edgeCanvas;
@@ -40,14 +39,12 @@ public class CompositeCanvas {
 	private final List<DingCanvas> canvasList;
 	private final double[] weights;
 	
-//	private RenderDetailFlags lastRenderFlags;
 	
 	public CompositeCanvas(CyServiceRegistrar registrar, DRenderingEngine re, GraphLOD lod) {
 		this.re = re;
 		setLOD(lod);
 		
 		canvasList = Arrays.asList(
-			annotationSelectionCanvas = new AnnotationSelectionCanvas(),
 			foregroundAnnotationCanvas = new AnnotationCanvas(CanvasID.FOREGROUND, re),
 			nodeCanvas = new NodeCanvas(this, re, registrar),
 			edgeCanvas = new EdgeCanvas(this, re),
@@ -58,15 +55,11 @@ public class CompositeCanvas {
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
-		weights = new double[] {1, 1, 10, 3, 1, 1}; // MKTODO not very elegant
+		weights = new double[] {1, 1, 10, 3, 1}; // MKTODO not very elegant
 	}
 	
 	public void dispose() {
 		canvasList.forEach(DingCanvas::dispose);
-	}
-	
-	public void setAnnotationSelection(AnnotationSelection selection) {
-		annotationSelectionCanvas.setSelection(selection);
 	}
 	
 	public void setLOD(GraphLOD lod) {
@@ -82,10 +75,8 @@ public class CompositeCanvas {
 	}
 	
 	public void setBackgroundPaint(Paint paint) {
-		if(paint instanceof Color)
-			backgroundColorCanvas.setColor((Color)paint);
-		else
-			backgroundColorCanvas.setColor(ColorCanvas.DEFAULT_COLOR);
+		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
+		backgroundColorCanvas.setColor(color);
 	}
 	
 	public void setViewport(int width, int height) {
