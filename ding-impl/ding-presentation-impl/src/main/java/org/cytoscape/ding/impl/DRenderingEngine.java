@@ -30,7 +30,9 @@ import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -93,8 +95,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final CyNetworkView viewModel;
 	private CyNetworkViewSnapshot viewModelSnapshot;
 	
-	private boolean contentChanged = true;
-	
 	// Common object lock used for state synchronization
 	final DingLock dingLock = new DingLock();
 
@@ -121,7 +121,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final CyAnnotator cyAnnotator;
 	private boolean largeModel = false;
 	
-	private final List<ContentChangeListener> contentChangeListeners  = new CopyOnWriteArrayList<>();
+	//Flag that indicates that the content has changed and the graph needs to be redrawn.
+	private volatile boolean contentChanged;
+	// State variable for when zooming/panning have changed.
+	private volatile boolean transformChanged;
+
+	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
+	private final List<TransformChangeListener> transformChangeListeners = new CopyOnWriteArrayList<>();
 	
 //	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
@@ -145,6 +151,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
 		this.dingGraphLOD = dingGraphLOD;
+		
+		this.executor = Executors.newCachedThreadPool(r -> {
+			Thread thread = Executors.defaultThreadFactory().newThread(r);
+			thread.setName("ding-" + thread.getName());
+			return thread;
+		});
 		
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
@@ -203,9 +215,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private class RendererComponent extends JComponent {
 		
 		private boolean annotationsLoaded = false;
+		private ImageFuture slowFuture;
 		
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
+			if(width == getWidth() && height == getHeight())
+				return;
+			
 			super.setBounds(x, y, width, height);
 			fastCanvas.setViewport(width, height);
 			slowCanvas.setViewport(width, height);
@@ -221,14 +237,44 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) width);
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
 			}, false); // don't set the dirty flag
+			
+			contentChanged(true);
+		}
+		
+		public void contentChanged(boolean startRenderSlow) {
+			System.out.println("DRenderingEngine.RendererComponent.contentChanged() " + startRenderSlow);
+			// run this on the EDT so there is no race condition with paint() ?????
+			ViewUtil.invokeOnEDT(() -> {
+				if(slowFuture != null) {
+					slowFuture.cancel(); // if the slow future is ready this has no effect
+					slowFuture = null;
+				}
+				
+				// don't do this constantly while panning
+				if(startRenderSlow) {
+					ProgressMonitor pm = getInputHandlerGlassPane().createProgressMonitor();
+					slowFuture = slowCanvas.startPainting(pm, executor);
+					slowFuture.thenRun(this::repaint);
+				}
+				
+				repaint();
+			});
 		}
 		
 		@Override
 		public void paint(Graphics g) {
-			ImageFuture future = fastCanvas.startPainting(executor);
-			Image image = future.join(); // block and wait for render to complete
-			picker.setRenderDetailFlags(future.getLastRenderDetail());
-			g.drawImage(image, 0, 0, null);
+			if(slowFuture != null && slowFuture.isDone()) {
+				System.out.println("paint SLOOOOW");
+				Image image = slowFuture.join(); // returns immediately because isDone() is true
+				picker.setRenderDetailFlags(slowFuture.getLastRenderDetail());
+				g.drawImage(image, 0, 0, null);
+			} else {
+				System.out.println("paint fast");
+				ImageFuture future = fastCanvas.startPainting(executor);
+				Image image = future.join(); // block and wait for fast render to complete
+				picker.setRenderDetailFlags(future.getLastRenderDetail());
+				g.drawImage(image, 0, 0, null);
+			}
 		}
 		
 		@Override
@@ -286,19 +332,31 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			updateModel();
 		}
 		if(updateView) {
-			updateView();
-			fireContentChanged();
+			updateView(true);
 		}
 		contentChanged = false;
 	}
 	
 	private void updateModelAndView() {
 		updateModel();
-		updateView();
+		updateView(true);
 	}
 	
 	public void updateView() {
-		renderComponent.repaint();
+		updateView(true);
+	}
+	
+	public void updateView(boolean startSlowPaint) {
+		if(contentChanged)
+			fireContentChanged();
+		if(transformChanged)
+			fireTransformChanged();
+		
+		setContentChanged(false);
+		setTransformChanged(false);
+	
+		renderComponent.contentChanged(startSlowPaint);
+		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
 		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
@@ -372,14 +430,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return inputHandler;
 	}
 	
-	public synchronized ExecutorService getExecutorService() {
-		if(executor == null) {
-			executor = Executors.newCachedThreadPool(r -> {
-				Thread thread = Executors.defaultThreadFactory().newThread(r);
-				thread.setName("ding-" + thread.getName());
-				return thread;
-			});
-		}
+	public ExecutorService getExecutorService() {
 		return executor;
 	}
 	
@@ -400,21 +451,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	
-	public boolean isContentChanged() {
-		return contentChanged;
-	}
 	
 	public void setContentChanged() {
 		setContentChanged(true);
 	}
 	
-	private void setContentChanged(final boolean b) {
+	private void setContentChanged(boolean b) {
 		contentChanged = b;
 	}
 	
-	public void fireContentChanged() {
-		for(ContentChangeListener l : contentChangeListeners)
+	private void fireContentChanged() {
+		for(ContentChangeListener l : contentChangeListeners) {
 			l.contentChanged();
+		}
 	}
 	
 	public void addContentChangeListener(ContentChangeListener l) {
@@ -425,6 +474,31 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		contentChangeListeners.remove(l);
 	}
 
+	public void setTransformChanged() {
+		setTransformChanged(true);
+	}
+	
+	private void setTransformChanged(boolean b) {
+		this.transformChanged = b;
+	}
+	
+	private void fireTransformChanged() {
+		// MKTODO should we use an immutable copy of the transform here?, do we even need to pass the transform to the listener?
+		NetworkTransform transform = fastCanvas.getTransform();
+		for(TransformChangeListener l : transformChangeListeners) {
+			l.transformChanged(transform);
+		}
+	}
+	
+	public void addTransformChangeListener(TransformChangeListener l) {
+		transformChangeListeners.add(l);
+	}
+	
+	public void removeTransformChangeListener(TransformChangeListener l) {
+		transformChangeListeners.remove(l);
+	}
+	
+	
 
 	public boolean isLargeModel() {
 		return largeModel;
@@ -519,7 +593,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
 		}, false);
 		
-		renderComponent.repaint();
+//		updateView();
 	}
 	
 	
@@ -530,8 +604,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			double y = transform.getCenterY() + deltaY;
 			setCenter(x, y);
 		}
-//		networkCanvas.setHideEdges();
-		renderComponent.repaint();
+		
+		renderComponent.contentChanged(false);
+//		updateView();
 	}
 	
 	public void setCenter(double x, double y) {

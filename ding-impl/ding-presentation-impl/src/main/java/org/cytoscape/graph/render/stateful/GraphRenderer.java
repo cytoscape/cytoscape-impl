@@ -136,6 +136,10 @@ public final class GraphRenderer {
 		
 		// Render the edges first.  No edge shall be rendered twice.  Render edge labels.  
 		// A label is not necessarily on top of every edge; it is only on top of the edge it belongs to.
+
+		if(flags.renderEdges() < 0) {
+			return;
+		}
 		
 		final float[] floatBuff1 = new float[4];
 		final float[] floatBuff2 = new float[4];

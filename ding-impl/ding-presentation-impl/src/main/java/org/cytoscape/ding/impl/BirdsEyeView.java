@@ -59,16 +59,23 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		setMinimumSize(MIN_SIZE);
 		
 		re.addContentChangeListener(new BirdsEyeViewContentChangeListener());
+		re.addTransformChangeListener(new BirdsEyeViewTransformChangeListnener());
 		
 		GraphLOD lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		canvas = new CompositeCanvas(registrar, re, lod);
 	}	
 	
 	private final class BirdsEyeViewContentChangeListener implements ContentChangeListener {
-		/** Will be called when something is changed in the main view.  */
 		@Override
 		public void contentChanged() {
 			contentChanged = true;
+			repaint();
+		}
+	}
+	
+	private final class BirdsEyeViewTransformChangeListnener implements TransformChangeListener {
+		@Override
+		public void transformChanged(NetworkTransform t) {
 			repaint();
 		}
 	}
@@ -125,14 +132,14 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	@Override 
 	public void update(Graphics g) {
-		if(contentChanged) {
-			// render a new image
-			fitCanvasToNetwork();
-//			canvas.paint(null, this::repaint);
-			contentChanged = false;
-		} 
-		g.drawImage(canvas.getImage(), 0, 0, null);
-		paintRectangle(g);
+//		if(contentChanged) {
+//			// render a new image
+//			fitCanvasToNetwork();
+////			canvas.paint(null, this::repaint);
+//			contentChanged = false;
+//		} 
+//		g.drawImage(canvas.getImage(), 0, 0, null);
+//		paintRectangle(g);
 	}
 	
 	private void paintRectangle(Graphics g) {

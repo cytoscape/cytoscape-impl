@@ -250,7 +250,7 @@ public class InputHandlerGlassPane extends JComponent {
 				deleteSelectedNodesAndEdges();
 			}
 			
-			re.updateView();
+			re.updateView(true);
 		}
 		
 		@Override
@@ -1313,6 +1313,8 @@ public class InputHandlerGlassPane extends JComponent {
 			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			mousePressedPoint = null;
 			undoPanEdit = null;
+			
+			re.updateView(true);
 		}
 		
 		private Cursor createPanCursor() {

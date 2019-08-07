@@ -25,11 +25,8 @@ package org.cytoscape.ding.impl;
  */
 
 
-/**
- * DOCUMENT ME!
- *
- * @author $author$-
- */
+
+@FunctionalInterface
 public interface ContentChangeListener {
 	/**
 	 * This gets fired upon graph redraw when at least one of the following

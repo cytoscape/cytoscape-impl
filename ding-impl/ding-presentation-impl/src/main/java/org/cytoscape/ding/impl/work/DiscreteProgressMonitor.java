@@ -41,6 +41,6 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void done() {
-		wrapped.done();
+//		wrapped.done();
 	}
 }

@@ -33,4 +33,8 @@ public class ImageFuture {
 	public RenderDetailFlags getLastRenderDetail() {
 		return lastRenderDetail;
 	}
+	
+	public boolean isDone() {
+		return future.isDone();
+	}
 }
