@@ -38,6 +38,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -82,6 +83,7 @@ public class HideUtilsTest {
 		when(view.getModel()).thenReturn(network);
 	}
 	
+	@Ignore
 	@Test
 	public void testsetVisibleEdges() throws Exception {
 
@@ -90,6 +92,7 @@ public class HideUtilsTest {
 		
 	}
 	
+	@Ignore
 	@Test
 	public void testsetVisibleNodes() throws Exception {
 
