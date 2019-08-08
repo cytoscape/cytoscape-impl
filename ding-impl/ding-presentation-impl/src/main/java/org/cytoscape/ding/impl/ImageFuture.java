@@ -27,7 +27,11 @@ public class ImageFuture {
 	}
 	
 	public void thenRun(Runnable r) {
-		future.thenRun(r);
+		future.thenRun(() -> {
+			if(!progressMonitor.isCancelled()) {
+				r.run();
+			}
+		});
 	}
 	
 	public RenderDetailFlags getLastRenderDetail() {

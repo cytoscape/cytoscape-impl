@@ -20,11 +20,6 @@ public class SubProgressMonitor implements ProgressMonitor {
 	}
 
 	@Override
-	public void setStatusMessage(String message) {
-		wrapped.setStatusMessage(message);
-	}
-
-	@Override
 	public void addProgress(double progress) {
 		wrapped.addProgress(progress * percentage);
 	}

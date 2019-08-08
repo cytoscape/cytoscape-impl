@@ -62,7 +62,6 @@ public class RenderDetailFlags {
 		final int totalNodeCount = netView.getNodeCount();
 		final int totalEdgeCount = netView.getEdgeCount();
 		final byte renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
-		System.out.println("renderEdges: "+ renderEdges);
 		
 		final float[] floatBuff = new float[4];
 		

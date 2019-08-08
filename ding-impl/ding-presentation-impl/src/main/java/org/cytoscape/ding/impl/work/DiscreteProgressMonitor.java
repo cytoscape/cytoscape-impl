@@ -35,11 +35,6 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 	}
 
 	@Override
-	public void setStatusMessage(String message) {
-		wrapped.setStatusMessage(message);
-	}
-
-	@Override
 	public void done() {
 //		wrapped.done();
 	}

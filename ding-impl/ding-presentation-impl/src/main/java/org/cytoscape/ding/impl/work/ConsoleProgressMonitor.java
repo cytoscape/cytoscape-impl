@@ -44,11 +44,6 @@ public class ConsoleProgressMonitor implements ProgressMonitor {
 		println("donezo");
 	}
 
-	@Override
-	public void setStatusMessage(String message) {
-		println("status " + message);
-	}
-
 	private void println(String message) {
 		System.out.print(name);
 		System.out.print(": ");

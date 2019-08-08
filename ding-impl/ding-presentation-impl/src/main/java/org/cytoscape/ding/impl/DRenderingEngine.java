@@ -215,6 +215,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		private boolean annotationsLoaded = false;
 		private ImageFuture slowFuture;
+		private ImageFuture fastFuture;
 		
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
@@ -241,17 +242,22 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		
 		public void updateView(boolean startRenderSlow) {
-			System.out.println("DRenderingEngine.RendererComponent.contentChanged() " + startRenderSlow);
-			// run this on the EDT so there is no race condition with paint() ?????
-			ViewUtil.invokeOnEDT(() -> {
+			ViewUtil.invokeOnEDTAndWait(() -> {
+				System.out.println("updateView() " + startRenderSlow);
+				// run this on the EDT so there is no race condition with paint() ?????
 				if(slowFuture != null) {
-					slowFuture.cancel(); // if the slow future is ready this has no effect
+					slowFuture.cancel();
 					slowFuture = null;
+				}
+				if(fastFuture != null) {
+					fastFuture.cancel();
+					fastFuture = null;
 				}
 				
 				// don't do this constantly while panning
 				if(startRenderSlow) {
 					ProgressMonitor pm = getInputHandlerGlassPane().createProgressMonitor();
+//					ProgressMonitor pm = new NoOutputProgressMonitor();
 					slowFuture = slowCanvas.startPainting(pm, executor);
 					slowFuture.thenRun(this::repaint);
 				}
@@ -261,19 +267,29 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		
 		@Override
-		public void paint(Graphics g) {
+		public void paintComponent(Graphics g) {
+			// MKTODO should we use g.getClip() to constrain the area of the image drawn by g.drawImage() ???
+			// That seems like something that should be done automatically by drawImage itself right?
+			super.paintComponent(g);
+			ImageFuture future;
+			
+			// MKTODO !!!!!!!! compare render flags to see if a slow frame is even needed
+			
 			if(slowFuture != null && slowFuture.isDone()) {
-				System.out.println("paint SLOOOOW");
-				Image image = slowFuture.join(); // returns immediately because isDone() is true
-				picker.setRenderDetailFlags(slowFuture.getLastRenderDetail());
-				g.drawImage(image, 0, 0, null);
+				System.out.println("PAINT slowFuture isDone");
+				future = slowFuture;
+			} else if(fastFuture != null) {
+				System.out.println("PAINT fastFuture isDone");
+				future = fastFuture;
 			} else {
-				System.out.println("paint fast");
-				ImageFuture future = fastCanvas.startPainting(executor);
-				Image image = future.join(); // block and wait for fast render to complete
-				picker.setRenderDetailFlags(future.getLastRenderDetail());
-				g.drawImage(image, 0, 0, null);
+				System.out.println("PAINT fastFuture startPainting");
+				fastFuture = fastCanvas.startPainting(executor);
+				future = fastFuture;
 			}
+			
+			Image image = future.join();
+			picker.setRenderDetailFlags(future.getLastRenderDetail());
+			g.drawImage(image, 0, 0, null);
 		}
 		
 		@Override

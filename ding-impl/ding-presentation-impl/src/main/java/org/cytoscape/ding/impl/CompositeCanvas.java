@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
+import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -104,7 +105,7 @@ public class CompositeCanvas {
 	}
 	
 	public ImageFuture startPainting(ExecutorService executor) {
-		return startPainting(ProgressMonitor.NULL, executor);
+		return startPainting(new NoOutputProgressMonitor(), executor);
 	}
 	
 	public ImageFuture startPainting(ProgressMonitor pm, ExecutorService executor) {
