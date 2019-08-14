@@ -32,7 +32,8 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HelpTutorialsTask extends AbstractTask {
 	
-	private static final String TUTORIALS_URL = "http://tutorials.cytoscape.org/";
+//	private static final String TUTORIALS_URL = "http://tutorials.cytoscape.org/";
+	private static final String TUTORIALS_URL = "https://github.com/cytoscape/cytoscape-tutorials/wiki";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 

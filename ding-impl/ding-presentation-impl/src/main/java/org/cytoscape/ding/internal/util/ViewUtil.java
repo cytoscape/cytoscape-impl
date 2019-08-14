@@ -69,6 +69,14 @@ public final class ViewUtil {
 		}
 	}
 	
+	public static boolean isLeftMouse(MouseEvent e) {
+		boolean b = (e.getModifiers() & InputEvent.BUTTON1_MASK) != 0;
+		if(LookAndFeelUtil.isMac()) {
+			return !e.isControlDown() && b;
+		}
+		return b;
+	}
+
 	public static boolean isLeftClick(MouseEvent e) {
 		boolean b = e.getButton() == MouseEvent.BUTTON1;
 		if(LookAndFeelUtil.isMac()) {

@@ -32,7 +32,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HelpReportABugTask extends AbstractTask {
 
-	private static final String BUG_REPORT_URL = "http://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
+	private static final String BUG_REPORT_URL = "https://chianti.ucsd.edu/cyto_web/bugreport/bugreport.php";
 
 	private final CyServiceRegistrar serviceRegistrar;
 
