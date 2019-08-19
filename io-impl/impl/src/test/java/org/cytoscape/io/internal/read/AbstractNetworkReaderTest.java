@@ -111,8 +111,9 @@ public class AbstractNetworkReaderTest {
 		when(def.createLayoutContext()).thenReturn(context);
 		when(def.getDefaultLayoutContext()).thenReturn(context);
 		when(def.createTaskIterator(Mockito.any(CyNetworkView.class), Mockito.any(Object.class), Mockito.anySet(), Mockito.any(String.class))).thenReturn(new TaskIterator(new SimpleTask()));
-
+		
 		layouts = mock(CyLayoutAlgorithmManager.class);
+		when(layouts.getLayoutAttribute(Mockito.any(CyLayoutAlgorithm.class), Mockito.any(CyNetworkView.class))).thenReturn("DUMMY_DEFAULT_LAYOUT");
 		when(layouts.getDefaultLayout()).thenReturn(def);
 
 		NetworkTestSupport nts = new NetworkTestSupport();
