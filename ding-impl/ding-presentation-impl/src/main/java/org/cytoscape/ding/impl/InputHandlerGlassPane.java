@@ -143,6 +143,7 @@ public class InputHandlerGlassPane extends JComponent {
 		JProgressBar progressBar = new JProgressBar(0, PROGRESS_BAR_TICKS);
 		Dimension size = progressBar.getPreferredSize();
 		progressBar.setMaximumSize(new Dimension(100, size.height));
+		progressBar.setVisible(false);
 		
 		JPanel panel = new JPanel();
 		panel.setOpaque(false);
@@ -853,6 +854,9 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mouseReleased(MouseEvent e) {
+			if(!hit)
+				return;
+			
 			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			if(!isLeftClick(e)) // We only care about left mouse button
 				return;

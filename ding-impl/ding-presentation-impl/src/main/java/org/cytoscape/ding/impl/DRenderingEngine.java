@@ -257,7 +257,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				// don't do this constantly while panning
 				if(startRenderSlow) {
 					ProgressMonitor pm = getInputHandlerGlassPane().createProgressMonitor();
-//					ProgressMonitor pm = new NoOutputProgressMonitor();
 					slowFuture = slowCanvas.startPainting(pm, executor);
 					slowFuture.thenRun(this::repaint);
 				}
@@ -268,12 +267,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		@Override
 		public void paintComponent(Graphics g) {
-			// MKTODO should we use g.getClip() to constrain the area of the image drawn by g.drawImage() ???
-			// That seems like something that should be done automatically by drawImage itself right?
 			super.paintComponent(g);
 			ImageFuture future;
 			
-			// MKTODO !!!!!!!! compare render flags to see if a slow frame is even needed
+			// MKTODO compare render flags to see if a slow frame is even needed
+			// MKTODO make sure that the progress bar repainting is using a clip
+			// MKTODO try rendering on a single threaded thread pool
+			// MKTODO fast renderering could just render on the current thread and return a completed future
+			
 			
 			if(slowFuture != null && slowFuture.isDone()) {
 				System.out.println("PAINT slowFuture isDone");
