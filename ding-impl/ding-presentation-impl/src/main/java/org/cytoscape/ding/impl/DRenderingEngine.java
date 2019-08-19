@@ -26,6 +26,7 @@ import javax.swing.Timer;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
+import org.cytoscape.ding.debug.DebugCallback;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -206,6 +207,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		component.add(renderComponent, BorderLayout.CENTER);
 	}
 	
+	public void setDebugCallback(DebugCallback callback) {
+		renderComponent.setDebugCallback(callback);
+	}
+	
 	
 	/**
 	 * This is the interface between the renderer and Swing.
@@ -216,6 +221,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		private boolean annotationsLoaded = false;
 		private ImageFuture slowFuture;
 		private ImageFuture fastFuture;
+		
+		private DebugCallback debugCallback;
+		
+		public void setDebugCallback(DebugCallback callback) {
+			this.debugCallback = callback;
+		}
 		
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
@@ -243,7 +254,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		public void updateView(boolean startRenderSlow) {
 			ViewUtil.invokeOnEDTAndWait(() -> {
-				System.out.println("updateView() " + startRenderSlow);
 				// run this on the EDT so there is no race condition with paint() ?????
 				if(slowFuture != null) {
 					slowFuture.cancel();
@@ -257,8 +267,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				// don't do this constantly while panning
 				if(startRenderSlow) {
 					ProgressMonitor pm = getInputHandlerGlassPane().createProgressMonitor();
+					long startTime = System.currentTimeMillis();
 					slowFuture = slowCanvas.startPainting(pm, executor);
 					slowFuture.thenRun(this::repaint);
+					slowFuture.thenRun(() -> {
+						if(debugCallback != null) {
+							long endTime = System.currentTimeMillis();
+							long time = endTime - startTime;
+							debugCallback.addFrameTime(false, time);
+						}
+					});
 				}
 				
 				repaint();
@@ -270,11 +288,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			super.paintComponent(g);
 			ImageFuture future;
 			
+			// MKTODO add framerate monitor?
 			// MKTODO compare render flags to see if a slow frame is even needed
 			// MKTODO make sure that the progress bar repainting is using a clip
 			// MKTODO try rendering on a single threaded thread pool
 			// MKTODO fast renderering could just render on the current thread and return a completed future
-			
 			
 			if(slowFuture != null && slowFuture.isDone()) {
 				System.out.println("PAINT slowFuture isDone");
@@ -284,7 +302,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				future = fastFuture;
 			} else {
 				System.out.println("PAINT fastFuture startPainting");
+				long startTime = System.currentTimeMillis();
 				fastFuture = fastCanvas.startPainting(executor);
+				fastFuture.thenRun(() -> {
+					if(debugCallback != null) {
+						long endTime = System.currentTimeMillis();
+						long time = endTime - startTime;
+						debugCallback.addFrameTime(true, time);
+					}
+				});
 				future = fastFuture;
 			}
 			
