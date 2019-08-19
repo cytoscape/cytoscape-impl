@@ -109,6 +109,7 @@ import org.cytoscape.internal.view.ToolBarEnableUpdater;
 import org.cytoscape.internal.view.help.ArrangeTaskFactory;
 import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
+import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.util.ViewUtil;
@@ -192,6 +193,7 @@ public class CyActivator extends AbstractCyActivator {
 	private LayoutSettingsManager layoutSettingsManager;
 	
 	private HelpUserManualTaskFactory helpUserManualTaskFactory;
+	private HelpTourTaskFactory helpTourTaskFactory;
 	private HelpTutorialsTaskFactory helpTutorialsTaskFactory;
 	private HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory;
 	private HelpReportABugTaskFactory helpReportABugTaskFactory;
@@ -302,6 +304,13 @@ public class CyActivator extends AbstractCyActivator {
 		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
+			props.setProperty(TITLE, "Tour");
+			props.setProperty(MENU_GRAVITY, "1.2");
+			registerService(bc, helpTourTaskFactory, TaskFactory.class, props);
+		}
+		{
+			Properties props = new Properties();
+			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(TITLE, "Tutorials");
 			props.setProperty(MENU_GRAVITY, "1.5");
 			props.setProperty(TOOLTIP, "Show Tutorials");
@@ -321,6 +330,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
 		}
+
 		{
 			Properties props = new Properties();
 			props.setProperty(ServiceProperties.ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
@@ -505,6 +515,7 @@ public class CyActivator extends AbstractCyActivator {
 		helpTutorialsTaskFactory = new HelpTutorialsTaskFactory(serviceRegistrar);
 		helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(serviceRegistrar);
 		helpReportABugTaskFactory = new HelpReportABugTaskFactory(serviceRegistrar);
+		helpTourTaskFactory = new HelpTourTaskFactory(serviceRegistrar);
 		
 		cyDesktopManager = new CyDesktopManager(netViewMediator);
 		

@@ -1,10 +1,8 @@
 package org.cytoscape.internal.view.help;
 
-import org.cytoscape.application.CyVersion;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.util.swing.OpenBrowser;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -30,24 +28,16 @@ import org.cytoscape.work.TaskMonitor;
  * #L%
  */
 
-public class HelpUserManualTask extends AbstractTask {
-	
-	private static final String MANUAL_URL = "https://manual.cytoscape.org/en/";
-	
+public class HelpTourTaskFactory extends AbstractTaskFactory {
+
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public HelpUserManualTask(final CyServiceRegistrar serviceRegistrar) {
+	public HelpTourTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public void run(TaskMonitor tm) {
-		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
-		
-		openBrowser.openURL(MANUAL_URL + 
-				cyVersion.getMajorVersion() + "." +
-				cyVersion.getMinorVersion() + "." +
-				cyVersion.getBugFixVersion());
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new HelpTourTask(serviceRegistrar));
 	}
 }

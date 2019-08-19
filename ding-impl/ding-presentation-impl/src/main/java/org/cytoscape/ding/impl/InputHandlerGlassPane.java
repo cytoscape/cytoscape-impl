@@ -14,6 +14,7 @@ import static org.cytoscape.ding.internal.util.ViewUtil.isControlOrMetaDown;
 import static org.cytoscape.ding.internal.util.ViewUtil.isDoubleLeftClick;
 import static org.cytoscape.ding.internal.util.ViewUtil.isDragSelectionKeyDown;
 import static org.cytoscape.ding.internal.util.ViewUtil.isLeftClick;
+import static org.cytoscape.ding.internal.util.ViewUtil.isLeftMouse;
 import static org.cytoscape.ding.internal.util.ViewUtil.isSingleLeftClick;
 import static org.cytoscape.ding.internal.util.ViewUtil.isSingleRightClick;
 
@@ -342,7 +343,7 @@ public class InputHandlerGlassPane extends JComponent {
 		private void moveNodesAndHandles(KeyEvent k) {
 			final int code = k.getKeyCode();
 			final float move = k.isShiftDown() ? 15.0f : 1.0f;
-			
+
 			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 			for (View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
@@ -901,7 +902,7 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mouseDragged(MouseEvent e) {
-			if(!hit || !isSingleLeftClick(e))
+			if(!hit || !isLeftMouse(e))
 				return;
 			if(get(SelectionLassoListener.class).isDragging() || get(SelectionRectangleListener.class).isDragging())
 				return;
@@ -916,7 +917,6 @@ public class InputHandlerGlassPane extends JComponent {
 					annotationSelection.setOffset(e.getPoint());
 				}
 			}
-			
 			mouseDraggedHandleNodesAndEdges(e);
 			re.updateView();
 		}

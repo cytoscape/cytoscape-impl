@@ -1101,7 +1101,7 @@ public class CytoscapeDesktop extends JFrame
 			return;
 		
 		if (selected) {
-			cytoPanel.setSelectedIndex(btn.getIndex());
+			cytoPanel.setSelectedComponent(btn.getCytoPanelComponent());
 			
 			if (state == MINIMIZE) {
 				cytoPanel.setStateInternal(UNDOCK);
@@ -1662,7 +1662,7 @@ public class CytoscapeDesktop extends JFrame
 									buttonIcon = IconManager.resizeIcon(buttonIcon, CytoPanelUtil.BUTTON_SIZE);
 							}
 		
-							final SidebarToggleButton newButton = btn = new SidebarToggleButton(cytoPanel, index);
+							final SidebarToggleButton newButton = btn = new SidebarToggleButton(cytoPanel, cpc);
 							btn.setIcon(buttonIcon);
 							btn.setToolTipText(title);
 							btn.setAlignmentX(CENTER_ALIGNMENT);
@@ -1896,12 +1896,10 @@ public class CytoscapeDesktop extends JFrame
 		
 		private final CytoPanelImpl cytoPanel;
 		private final CytoPanelComponent cytoPanelComponent;
-		private final int index;
 
-		public SidebarToggleButton(CytoPanelImpl cytoPanel, int index) {
+		public SidebarToggleButton(CytoPanelImpl cytoPanel, CytoPanelComponent cytoPanelComponent) {
 			this.cytoPanel = cytoPanel;
-			this.cytoPanelComponent = cytoPanel.getCytoPanelComponentAt(index);
-			this.index = index;
+			this.cytoPanelComponent = cytoPanelComponent;
 			
 			setFont(getFont().deriveFont(getSmallFontSize()));
 			setFocusPainted(false);
@@ -1919,13 +1917,9 @@ public class CytoscapeDesktop extends JFrame
 			return cytoPanelComponent;
 		}
 		
-		public int getIndex() {
-			return index;
-		}
-		
 		@Override
 		public String toString() {
-			return index +  ": '" + getText() + "'";
+			return cytoPanelComponent != null ? cytoPanelComponent.getTitle() : super.toString();
 		}
 	}
 	

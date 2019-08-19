@@ -299,7 +299,10 @@ public class CytoPanelImpl implements CytoPanel {
 	@Override
 	public void setSelectedIndex(int index) {
 		CytoPanelComponent cpc = getCytoPanelComponentAt(index);
-		
+		setSelectedComponent(cpc);
+	}
+	
+	public void setSelectedComponent(CytoPanelComponent cpc) {
 		if (cpc != null) {
 			cardLayout.show(getCardsPanel(), getIdentifier(cpc));
 			updateTitleButton();
