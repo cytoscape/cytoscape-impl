@@ -24,9 +24,11 @@ import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 
+import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugCallback;
+import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -178,8 +180,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		//Updating the snapshot for nested networks
 //		this.addContentChangeListener(new DGraphViewContentChangeListener());
 
-		CyNetworkViewSnapshot snapshot = view.createSnapshot();
-		if (!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
+		var snapshot = view.createSnapshot();
+		if(!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
 			largeModel = true;
 
 		viewModelSnapshot = viewModel.createSnapshot();
@@ -221,6 +223,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		private boolean annotationsLoaded = false;
 		private ImageFuture slowFuture;
 		private ImageFuture fastFuture;
+		private boolean needSlowFrame = true;
 		
 		private DebugCallback debugCallback;
 		
@@ -253,30 +256,20 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		
 		public void updateView(boolean startRenderSlow) {
+			// Run this on the EDT so there is no race condition with paint()
+			// Fast painting and slow painting don't happen concurrently.
 			ViewUtil.invokeOnEDTAndWait(() -> {
-				// run this on the EDT so there is no race condition with paint() ?????
 				if(slowFuture != null) {
 					slowFuture.cancel();
-					slowFuture = null;
 				}
 				if(fastFuture != null) {
 					fastFuture.cancel();
 					fastFuture = null;
 				}
 				
-				// don't do this constantly while panning
+				// don't render slow frames while panning, only render slow when user releases mouse button
 				if(startRenderSlow) {
-					ProgressMonitor pm = getInputHandlerGlassPane().createProgressMonitor();
-					long startTime = System.currentTimeMillis();
-					slowFuture = slowCanvas.startPainting(pm, executor);
-					slowFuture.thenRun(this::repaint);
-					slowFuture.thenRun(() -> {
-						if(debugCallback != null) {
-							long endTime = System.currentTimeMillis();
-							long time = endTime - startTime;
-							debugCallback.addFrameTime(false, time);
-						}
-					});
+					needSlowFrame = true;
 				}
 				
 				repaint();
@@ -288,30 +281,29 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			super.paintComponent(g);
 			ImageFuture future;
 			
-			// MKTODO add framerate monitor?
-			// MKTODO compare render flags to see if a slow frame is even needed
-			// MKTODO make sure that the progress bar repainting is using a clip
-			// MKTODO try rendering on a single threaded thread pool
-			// MKTODO fast renderering could just render on the current thread and return a completed future
-			
-			if(slowFuture != null && slowFuture.isDone()) {
-				System.out.println("PAINT slowFuture isDone");
+			if(slowFuture != null && !slowFuture.isCancelled() && slowFuture.isDone()) {
 				future = slowFuture;
 			} else if(fastFuture != null) {
-				System.out.println("PAINT fastFuture isDone");
 				future = fastFuture;
 			} else {
-				System.out.println("PAINT fastFuture startPainting");
-				long startTime = System.currentTimeMillis();
-				fastFuture = fastCanvas.startPainting(executor);
-				fastFuture.thenRun(() -> {
-					if(debugCallback != null) {
-						long endTime = System.currentTimeMillis();
-						long time = endTime - startTime;
-						debugCallback.addFrameTime(true, time);
-					}
-				});
+				if(slowFuture != null) {
+					slowFuture.cancel();
+					slowFuture.join();
+					slowFuture = null;
+				}
+				
+				// RENDER: fast frame right now
+				var fastPm = debugPm(true, null);
+				fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
 				future = fastFuture;
+
+				// RENDER: start a slow frame if necessary
+				if(needSlowFrame && !sameDetail()) { 
+					var slowPm = debugPm(false, getInputHandlerGlassPane().createProgressMonitor());
+					slowFuture = slowCanvas.startPaintingSequential(slowPm);
+					slowFuture.thenRun(this::repaint);
+				}
+				needSlowFrame = false;
 			}
 			
 			Image image = future.join();
@@ -325,6 +317,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				fontMetrics = g.getFontMetrics(); // needed to compute label widths
 			}
 			super.update(g);
+		}
+		
+		private ProgressMonitor debugPm(boolean fast, ProgressMonitor pm) {
+			return CyActivator.DEBUG ? new DebugProgressMonitor(fast, pm, debugCallback) : pm;
+		}
+		
+		private boolean sameDetail() {
+			return fastFuture.getLastRenderDetail().equals(slowCanvas.getRenderDetailFlags());
 		}
 	}
 	
@@ -813,7 +813,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		Graphics g = image.getGraphics();
 //		slowCanvas.paint(g, null);
 		
-		ImageFuture future = slowCanvas.startPainting(executor);
+		ImageFuture future = slowCanvas.startPaintingSequential(null);
 		Image frame = future.join(); // block and wait for render to complete
 		Graphics g = image.getGraphics();
 		g.drawImage(frame, 0, 0, null);

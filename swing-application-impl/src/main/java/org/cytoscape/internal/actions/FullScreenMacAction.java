@@ -1,14 +1,6 @@
 package org.cytoscape.internal.actions;
 
-import javax.swing.JFrame;
-
 import org.cytoscape.application.swing.CySwingApplication;
-
-import com.apple.eawt.AppEvent.FullScreenEvent;
-import com.apple.eawt.Application;
-import com.apple.eawt.FullScreenAdapter;
-import com.apple.eawt.FullScreenListener;
-import com.apple.eawt.FullScreenUtilities;
 
 /*
  * #%L
@@ -43,36 +35,36 @@ public class FullScreenMacAction extends FullScreenAction {
 	public FullScreenMacAction(CySwingApplication desktop) {
 		super(desktop);
 
-		final FullScreenListener listener = new FullScreenAdapter() {
-
-			@Override
-			public void windowExitedFullScreen(FullScreenEvent e) {
-				macScreenState = false;
-			}
-
-			@Override
-			public void windowEnteredFullScreen(FullScreenEvent e) {
-				macScreenState = true;
-			}
-		};
-		FullScreenUtilities.addFullScreenListenerTo(desktop.getJFrame(), listener);
+//		final FullScreenListener listener = new FullScreenAdapter() {
+//
+//			@Override
+//			public void windowExitedFullScreen(FullScreenEvent e) {
+//				macScreenState = false;
+//			}
+//
+//			@Override
+//			public void windowEnteredFullScreen(FullScreenEvent e) {
+//				macScreenState = true;
+//			}
+//		};
+//		FullScreenUtilities.addFullScreenListenerTo(desktop.getJFrame(), listener);
 	}
 
 	@Override
 	protected void toggle() {
 		super.toggle();
-		final JFrame window = desktop.getJFrame();
-		
-		try {
-			// Full screen mode
-			if ((macScreenState != inFullScreenMode)) {
-				if (macScreenState == false && inFullScreenMode == true)
-					Application.getApplication().requestToggleFullScreen(window);
-			} else {
-				Application.getApplication().requestToggleFullScreen(window);
-			}
-		} catch (Exception e) {
-			// Usually, it will be ignored if it's not OS 10.7+
-		}
+//		final JFrame window = desktop.getJFrame();
+//		
+//		try {
+//			// Full screen mode
+//			if ((macScreenState != inFullScreenMode)) {
+//				if (macScreenState == false && inFullScreenMode == true)
+//					Application.getApplication().requestToggleFullScreen(window);
+//			} else {
+//				Application.getApplication().requestToggleFullScreen(window);
+//			}
+//		} catch (Exception e) {
+//			// Usually, it will be ignored if it's not OS 10.7+
+//		}
 	}
 }

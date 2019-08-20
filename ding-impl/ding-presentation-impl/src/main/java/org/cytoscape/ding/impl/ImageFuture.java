@@ -1,6 +1,7 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Image;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
@@ -9,17 +10,26 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 public class ImageFuture {
 
 	private final CompletableFuture<Image> future;
-	private final ProgressMonitor progressMonitor;
 	private final RenderDetailFlags lastRenderDetail;
+	private final ProgressMonitor progressMonitor;
 	
-	public ImageFuture(ProgressMonitor progressMonitor, CompletableFuture<Image> future, RenderDetailFlags lastRenderDetail) {
-		this.future = future;
-		this.progressMonitor = progressMonitor;
-		this.lastRenderDetail = lastRenderDetail;
+	
+	public ImageFuture(CompletableFuture<Image> future, RenderDetailFlags lastRenderDetail, ProgressMonitor progressMonitor) {
+		this.future = Objects.requireNonNull(future);
+		this.lastRenderDetail = Objects.requireNonNull(lastRenderDetail);
+		this.progressMonitor = ProgressMonitor.notNull(progressMonitor);
+	}
+	
+	public ImageFuture(CompletableFuture<Image> future, RenderDetailFlags lastRenderDetail) {
+		this(future, lastRenderDetail, null);
 	}
 	
 	public void cancel() {
 		progressMonitor.cancel();
+	}
+	
+	public boolean isCancelled() {
+		return progressMonitor.isCancelled();
 	}
 	
 	public Image join() {

@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
@@ -16,7 +17,6 @@ import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkViewSnapshot;
 
 /**
  * Manages what used to be ContentChangedListener and ViewportChangedListener
@@ -39,6 +39,8 @@ public class CompositeCanvas {
 	
 	private final List<DingCanvas> canvasList;
 	private final double[] weights;
+	
+	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 	
 	
 	public CompositeCanvas(CyServiceRegistrar registrar, DRenderingEngine re, GraphLOD lod) {
@@ -96,6 +98,12 @@ public class CompositeCanvas {
 	}
 	
 
+	public RenderDetailFlags getRenderDetailFlags() {
+		var snapshot = re.getViewModelSnapshot();
+		return RenderDetailFlags.create(snapshot, image, lod);
+	}
+	
+	
 	private Image overlayImage(Image composite, Image image) {
 		if(image != null) {
 			Graphics g = composite.getGraphics();
@@ -104,30 +112,62 @@ public class CompositeCanvas {
 		return composite;
 	}
 	
-	public ImageFuture startPainting(ExecutorService executor) {
-		return startPainting(new NoOutputProgressMonitor(), executor);
-	}
 	
-	public ImageFuture startPainting(ProgressMonitor pm, ExecutorService executor) {
-		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		RenderDetailFlags flags = RenderDetailFlags.create(snapshot, image, lod);
-		CompletableFuture<Image> future = paintLayersMultiThreaded(pm, executor, flags);
-		return new ImageFuture(pm, future, flags);
-	}
-	
-	private CompletableFuture<Image> paintLayersMultiThreaded(ProgressMonitor pm, ExecutorService executor, RenderDetailFlags flags) {
+	public ImageFuture paintOnCurrentThread(ProgressMonitor pm) {
+		// MKTODO get rid of pm argument, not needed
+		pm = ProgressMonitor.notNull(pm);
+		var flags = getRenderDetailFlags();
 		pm.start();
-		List<ProgressMonitor> subPms = pm.split(weights);
 		
-		CompletableFuture<Image> f = CompletableFuture.completedFuture(image.getImage());
+		for(DingCanvas c : canvasList) {
+			Image canvasImage = c.paintImage(new NoOutputProgressMonitor(), flags);
+			overlayImage(image.getImage(), canvasImage);
+		}
+		
+		pm.done();
+		var future = CompletableFuture.completedFuture(image.getImage());
+		return new ImageFuture(future ,flags);
+	}
+
+	
+	public ImageFuture startPaintingSequential(ProgressMonitor pm) {
+		pm = ProgressMonitor.notNull(pm);
+		var flags = getRenderDetailFlags();
+		var subPms = pm.split(weights);
+		pm.start();
+		
+		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
 			DingCanvas c = canvasList.get(i);
 			ProgressMonitor subPm = subPms.get(i);
-			CompletableFuture<Image> cf = CompletableFuture.supplyAsync(() -> c.paintImage(subPm, flags), executor);
+			f = f.thenApplyAsync(compositeImage -> {
+				Image image = c.paintImage(subPm, flags);
+				return overlayImage(compositeImage, image);
+			}, singleThreadExecutor);
+		}
+		f.thenRun(pm::done);
+		
+		return new ImageFuture(f, flags, pm);
+	}
+	
+	
+	public ImageFuture startPaintingConcurrent(ProgressMonitor pm, ExecutorService executor) {
+		pm = ProgressMonitor.notNull(pm);
+		var flags = getRenderDetailFlags();
+		var subPms = pm.split(weights);
+		
+		pm.start();
+		
+		var f = CompletableFuture.completedFuture(image.getImage());
+		for(int i = 0; i < canvasList.size(); i++) {
+			DingCanvas c = canvasList.get(i);
+			ProgressMonitor subPm = subPms.get(i);
+			var cf = CompletableFuture.supplyAsync(() -> c.paintImage(subPm, flags), executor);
 			f = f.thenCombineAsync(cf, this::overlayImage, executor);
 		}
 		f.thenRun(pm::done);
-		return f;
+		
+		return new ImageFuture(f, flags, pm);
 	}
 	
 	
