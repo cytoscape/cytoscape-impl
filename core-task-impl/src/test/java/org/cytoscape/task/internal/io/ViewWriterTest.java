@@ -84,10 +84,11 @@ public class ViewWriterTest extends AbstractCyWriterTest {
 				.thenReturn(aWriter);
 	}
 
-	static class AnyOutputStreamMatcher extends ArgumentMatcher<OutputStream> {
-		
+	static class AnyOutputStreamMatcher implements ArgumentMatcher<OutputStream> {
+
 		@Override
-		public boolean matches(final Object o) {
+		public boolean matches(OutputStream argument) {
+			
 			return true;
 		}
 	}

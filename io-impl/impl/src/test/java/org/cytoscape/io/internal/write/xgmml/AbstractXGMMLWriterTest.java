@@ -210,7 +210,7 @@ public abstract class AbstractXGMMLWriterTest {
 			        throw new UnsupportedOperationException();
 			    }
 				@Override
-			    public Iterator<?> getPrefixes(String uri) {
+			    public Iterator<String> getPrefixes(String uri) {
 			        throw new UnsupportedOperationException();
 			    }
 			});
