@@ -2,6 +2,6 @@ package org.cytoscape.ding.debug;
 
 public interface DebugCallback {
 	
-	void addFrameTime(boolean fast, long time);
+	void addFrameTime(FrameType type, long time);
 
 }

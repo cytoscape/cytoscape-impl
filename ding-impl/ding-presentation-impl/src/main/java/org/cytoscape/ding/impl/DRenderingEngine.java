@@ -29,6 +29,7 @@ import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugCallback;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
+import org.cytoscape.ding.debug.FrameType;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -138,6 +139,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
 	private ExecutorService executor;
+	private DebugCallback debugCallback;
 	
 	public DRenderingEngine(
 			final CyNetworkView view,
@@ -210,9 +212,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	public void setDebugCallback(DebugCallback callback) {
-		renderComponent.setDebugCallback(callback);
+		this.debugCallback = callback;
 	}
 	
+	public DebugCallback getDebugCallback() {
+		return debugCallback;
+	}
 	
 	/**
 	 * This is the interface between the renderer and Swing.
@@ -224,12 +229,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		private ImageFuture slowFuture;
 		private ImageFuture fastFuture;
 		private boolean needSlowFrame = true;
-		
-		private DebugCallback debugCallback;
-		
-		public void setDebugCallback(DebugCallback callback) {
-			this.debugCallback = callback;
-		}
 		
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
@@ -293,13 +292,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				}
 				
 				// RENDER: fast frame right now
-				var fastPm = debugPm(true, null);
+				var fastPm = debugPm(FrameType.MAIN_FAST, null);
 				fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
 				future = fastFuture;
 
 				// RENDER: start a slow frame if necessary
 				if(needSlowFrame && !sameDetail()) { 
-					var slowPm = debugPm(false, getInputHandlerGlassPane().createProgressMonitor());
+					var slowPm = debugPm(FrameType.MAIN_SLOW, getInputHandlerGlassPane().createProgressMonitor());
 					slowFuture = slowCanvas.startPaintingSequential(slowPm);
 					slowFuture.thenRun(this::repaint);
 				}
@@ -319,8 +318,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			super.update(g);
 		}
 		
-		private ProgressMonitor debugPm(boolean fast, ProgressMonitor pm) {
-			return CyActivator.DEBUG ? new DebugProgressMonitor(fast, pm, debugCallback) : pm;
+		private ProgressMonitor debugPm(FrameType type, ProgressMonitor pm) {
+			return CyActivator.DEBUG ? new DebugProgressMonitor(type, pm, debugCallback) : pm;
 		}
 		
 		private boolean sameDetail() {

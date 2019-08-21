@@ -113,6 +113,10 @@ public class CompositeCanvas {
 	}
 	
 	
+	public ImageFuture paintOnCurrentThread() {
+		return paintOnCurrentThread(null);
+	}
+	
 	public ImageFuture paintOnCurrentThread(ProgressMonitor pm) {
 		// MKTODO get rid of pm argument, not needed
 		pm = ProgressMonitor.notNull(pm);

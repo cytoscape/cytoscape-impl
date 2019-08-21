@@ -6,12 +6,12 @@ public class DebugProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor delegate;
 	private final DebugCallback callback;
-	private final boolean fast;
+	private final FrameType type;
 	
 	private long start;
 	
-	public DebugProgressMonitor(boolean fast, ProgressMonitor delegate, DebugCallback callback) {
-		this.fast = fast;
+	public DebugProgressMonitor(FrameType type, ProgressMonitor delegate, DebugCallback callback) {
+		this.type = type;
 		this.delegate = ProgressMonitor.notNull(delegate);
 		this.callback = callback;
 	}
@@ -28,7 +28,7 @@ public class DebugProgressMonitor implements ProgressMonitor {
 		long end = System.currentTimeMillis();
 		long time = end - start;
 		if(callback != null)
-			callback.addFrameTime(fast, time);
+			callback.addFrameTime(type, time);
 	}
 	
 	@Override

@@ -37,6 +37,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private DefaultListModel<String> fastModel;
 	private JList<String> slowList;
 	private DefaultListModel<String> slowModel;
+	private JList<String> birdList;
+	private DefaultListModel<String> birdModel;
 	
 	
 	public DingDebugPanel(CyServiceRegistrar registrar) {
@@ -46,18 +48,25 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 
 	private void createContents() {
 		networkNameLabel = new JLabel("Network Name");
-		JLabel fastTitle = new JLabel("Fast Frames");
-		JLabel slowTitle = new JLabel("Slow Frames");
+		JLabel birdTitle = new JLabel("Birds-Eye-View Frames (on EDT)");
+		JLabel fastTitle = new JLabel("Fast Frames (on EDT)");
+		JLabel slowTitle = new JLabel("Slow Frames (Async)");
+		
+		birdModel = new DefaultListModel<>();
+		birdList = new JList<>(birdModel);
+		var birdRenderer = (DefaultListCellRenderer)birdList.getCellRenderer();
+		birdRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
+		JScrollPane birdScrollPane = new JScrollPane(birdList);
 		
 		fastModel = new DefaultListModel<>();
 		fastList = new JList<>(fastModel);
-		DefaultListCellRenderer fastRenderer = (DefaultListCellRenderer)fastList.getCellRenderer();
+		var fastRenderer = (DefaultListCellRenderer)fastList.getCellRenderer();
 		fastRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 		JScrollPane fastScrollPane = new JScrollPane(fastList);
 		
 		slowModel = new DefaultListModel<>();
 		slowList = new JList<>(slowModel);
-		DefaultListCellRenderer slowRenderer = (DefaultListCellRenderer)slowList.getCellRenderer();
+		var slowRenderer = (DefaultListCellRenderer)slowList.getCellRenderer();
 		slowRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 		JScrollPane slowScrollPane = new JScrollPane(slowList);
 		
@@ -79,6 +88,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 				.addComponent(fastScrollPane)
 				.addComponent(slowScrollPane)
 			)
+			.addComponent(birdTitle)
+			.addComponent(birdScrollPane)
 			.addComponent(clearButton)
 		);
 		
@@ -95,6 +106,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 					.addComponent(slowScrollPane)
 				)
 			)
+			.addComponent(birdTitle)
+			.addComponent(birdScrollPane)
 			.addComponent(clearButton)
 		);
 	}
@@ -122,11 +135,29 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			re.setDebugCallback(this);
 	}
 	
+	
+	private JList<String> getList(FrameType type) {
+		switch(type) {
+			case BIRDS_EYE_VIEW: return birdList;
+			case MAIN_FAST: return fastList;
+			case MAIN_SLOW: return slowList;
+			default: return null;
+		}
+	}
+	
+	private DefaultListModel<String> getModel(FrameType type) {
+		switch(type) {
+			case BIRDS_EYE_VIEW: return birdModel;
+			case MAIN_FAST: return fastModel;
+			case MAIN_SLOW: return slowModel;
+			default: return null;
+		}
+	}
 
 	@Override
-	public void addFrameTime(boolean fast, long time) {
-		DefaultListModel<String> model = fast ? fastModel : slowModel;
-		JList<String> list = fast ? fastList : slowList;
+	public void addFrameTime(FrameType type, long time) {
+		var model = getModel(type);
+		var list = getList(type);
 		int i = model.size();
 		model.add(i, String.valueOf(time));
 		list.ensureIndexIsVisible(i);

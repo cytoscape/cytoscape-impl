@@ -14,7 +14,10 @@ import java.util.Properties;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.ding.CyActivator;
+import org.cytoscape.ding.debug.DebugProgressMonitor;
+import org.cytoscape.ding.debug.FrameType;
+import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -58,27 +61,16 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
 		
-		re.addContentChangeListener(new BirdsEyeViewContentChangeListener());
-		re.addTransformChangeListener(new BirdsEyeViewTransformChangeListnener());
+		re.addContentChangeListener(() -> {
+			contentChanged = true;
+			repaint();
+		});
+		re.addTransformChangeListener(t -> repaint());
 		
-		GraphLOD lod = new BirdsEyeViewLOD(re.getGraphLOD());
+		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		canvas = new CompositeCanvas(registrar, re, lod);
 	}	
 	
-	private final class BirdsEyeViewContentChangeListener implements ContentChangeListener {
-		@Override
-		public void contentChanged() {
-			contentChanged = true;
-			repaint();
-		}
-	}
-	
-	private final class BirdsEyeViewTransformChangeListnener implements TransformChangeListener {
-		@Override
-		public void transformChanged(NetworkTransform t) {
-			repaint();
-		}
-	}
 	
 	/**
 	 * Returns the extents of the nodes, in node coordinates.
@@ -120,6 +112,8 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
+		if(width == getWidth() && height == getHeight())
+			return;
 		super.setBounds(x, y, width, height);
 		contentChanged = true;
 		canvas.setViewport(width, height);
@@ -132,17 +126,25 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	
 	@Override 
 	public void update(Graphics g) {
-//		if(contentChanged) {
-//			// render a new image
-//			fitCanvasToNetwork();
-////			canvas.paint(null, this::repaint);
-//			contentChanged = false;
-//		} 
-//		g.drawImage(canvas.getImage(), 0, 0, null);
-//		paintRectangle(g);
+		if(contentChanged) {
+			// render a new image
+			fitCanvasToNetwork();
+			// I guess we are assuming that rendering the BirdsEyeView is fast
+			var pm = getProgressMonitor();
+			canvas.paintOnCurrentThread(pm);
+			contentChanged = false;
+		} 
+		g.drawImage(canvas.getImage(), 0, 0, null);
+		drawRectangle(g);
 	}
 	
-	private void paintRectangle(Graphics g) {
+	private ProgressMonitor getProgressMonitor() {
+		if(CyActivator.DEBUG)
+			return new DebugProgressMonitor(FrameType.BIRDS_EYE_VIEW, null, re.getDebugCallback());
+		return null;
+	}
+	
+	private void drawRectangle(Graphics g) {
 		// extents of network viewable in birds-eye-view (node coords)
 		double myXCenter = canvas.getTransform().getCenterX();
 		double myYCenter = canvas.getTransform().getCenterY();
