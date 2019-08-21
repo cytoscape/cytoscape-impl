@@ -200,7 +200,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				double centerY = ((lastYMousePos - halfHeight) / myScaleFactor) + myYCenter;
 				
 				re.setCenter(centerX, centerY);
-//				re.updateView();
+				re.updateView(true);
 			}
 		}
 
@@ -211,6 +211,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 					currMouseButton = 0;
 				}
 			}
+			re.updateView(true);
 		}
 		
 		@Override
@@ -233,6 +234,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 				}
 				if (deltaX != 0 || deltaY != 0) {
 					re.pan(deltaX, deltaY);
+					re.updateView(false);
 				}
 			}
 		}
