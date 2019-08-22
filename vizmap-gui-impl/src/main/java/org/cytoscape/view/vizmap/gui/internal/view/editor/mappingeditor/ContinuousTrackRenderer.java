@@ -54,8 +54,11 @@ import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.JXMultiThumbSlider;
 import org.jdesktop.swingx.multislider.Thumb;
+import org.jdesktop.swingx.multislider.ThumbDataEvent;
+import org.jdesktop.swingx.multislider.ThumbDataListener;
 
 /**
  * Track renderer for Continuous mapping (Number-to-Number mapping)
