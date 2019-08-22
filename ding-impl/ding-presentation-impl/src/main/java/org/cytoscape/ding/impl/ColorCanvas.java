@@ -2,6 +2,7 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.util.Objects;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -13,17 +14,24 @@ public class ColorCanvas extends DingCanvas {
 	private Color color;
 	private boolean dirty = true;
 	
-	public ColorCanvas(Color color) {
+	public ColorCanvas(Color color, int width, int height) {
+		super(width, height);
 		setColor(color);
 	}
 	
-	public ColorCanvas() {
-		this(DEFAULT_COLOR);
+	public ColorCanvas(int width, int height) {
+		this(null, width, height);
 	}
 	
 	public void setColor(Color color) {
-		this.color = color == null ? DEFAULT_COLOR : color;
+		if(Objects.equals(this.color, color))
+			return;
+		this.color = color;
 		dirty = true;
+	}
+	
+	public Color getColor() {
+		return color;
 	}
 
 	@Override
@@ -38,9 +46,14 @@ public class ColorCanvas extends DingCanvas {
 			return null;
 		
 		if(dirty) {
-			image.fill(color);
+			if(color != null) {
+				image.fill(color);
+			} else {
+				image.clear();
+			}
 			dirty = false;
 		}
+		
 		return image.getImage();
 	}
 	

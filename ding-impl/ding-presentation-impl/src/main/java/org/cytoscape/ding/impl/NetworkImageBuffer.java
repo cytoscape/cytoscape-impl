@@ -31,10 +31,6 @@ public class NetworkImageBuffer implements NetworkTransform {
 	private final Rectangle2D.Float area = new Rectangle2D.Float();
 	
 	
-	public NetworkImageBuffer() {
-		this(1, 1);
-	}
-	
 	public NetworkImageBuffer(int width, int height) {
 		this.width = width;
 		this.height = height;

@@ -1,5 +1,8 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
+import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
@@ -11,12 +14,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 /**
  * Manages what used to be ContentChangedListener and ViewportChangedListener
@@ -35,7 +36,7 @@ public class CompositeCanvas {
 	private final ColorCanvas backgroundColorCanvas;
 	
 	private GraphLOD lod;
-	private final NetworkImageBuffer image = new NetworkImageBuffer();
+	private final NetworkImageBuffer image;
 	
 	private final List<DingCanvas> canvasList;
 	private final double[] weights;
@@ -43,16 +44,17 @@ public class CompositeCanvas {
 	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 	
 	
-	public CompositeCanvas(CyServiceRegistrar registrar, DRenderingEngine re, GraphLOD lod) {
+	public CompositeCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
-		setLOD(lod);
+		this.lod = lod;
+		this.image = new NetworkImageBuffer(w, h);
 		
 		canvasList = Arrays.asList(
-			foregroundAnnotationCanvas = new AnnotationCanvas(CanvasID.FOREGROUND, re),
-			nodeCanvas = new NodeCanvas(this, re, registrar),
-			edgeCanvas = new EdgeCanvas(this, re),
-			backgroundAnnotationCanvas = new AnnotationCanvas(CanvasID.BACKGROUND, re),
-			backgroundColorCanvas = new ColorCanvas()
+			foregroundAnnotationCanvas = new AnnotationCanvas(FOREGROUND, re, w, h),
+			nodeCanvas = new NodeCanvas(re, w, h),
+			edgeCanvas = new EdgeCanvas(re, w, h),
+			backgroundAnnotationCanvas = new AnnotationCanvas(BACKGROUND, re, w, h),
+			backgroundColorCanvas = new ColorCanvas(w, h)
 		);
 		
 		// Must paint over top of each other in reverse order
@@ -60,6 +62,17 @@ public class CompositeCanvas {
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
 		weights = new double[] {1, 1, 10, 3, 1}; // MKTODO not very elegant
 	}
+	
+	public CompositeCanvas(DRenderingEngine re, GraphLOD lod) {
+		this(re, lod, 1, 1); // MKTODO does this make sense?
+	}
+	
+	public CompositeCanvas(DRenderingEngine re, GraphLOD lod, NetworkTransform transform) {
+		this(re, lod, transform.getWidth(), transform.getHeight());
+		setCenter(transform.getCenterX(), transform.getCenterY());
+		setScaleFactor(transform.getScaleFactor());
+	}
+	
 	
 	public void dispose() {
 		canvasList.forEach(DingCanvas::dispose);
@@ -80,6 +93,10 @@ public class CompositeCanvas {
 	public void setBackgroundPaint(Paint paint) {
 		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
 		backgroundColorCanvas.setColor(color);
+	}
+	
+	public Color getBackgroundPaint() {
+		return backgroundColorCanvas.getColor();
 	}
 	
 	public void setViewport(int width, int height) {
@@ -117,6 +134,10 @@ public class CompositeCanvas {
 		return paintOnCurrentThread(null);
 	}
 	
+	/**
+	 * Paints on the current thread and blocks until painting is complete.
+	 * Returns a future that is already complete (isDone() returns true immediatly).
+	 */
 	public ImageFuture paintOnCurrentThread(ProgressMonitor pm) {
 		// MKTODO get rid of pm argument, not needed
 		pm = ProgressMonitor.notNull(pm);
@@ -134,6 +155,12 @@ public class CompositeCanvas {
 	}
 
 	
+	/**
+	 * Starts painting on a single separate thread. 
+	 * Each layer of the canvas is painted sequentially in order. 
+	 * Returns an ImageFuture that represents the result of the painting.
+	 * To get the Image buffer from the ImageFuture call future.join().
+	 */
 	public ImageFuture startPaintingSequential(ProgressMonitor pm) {
 		pm = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
@@ -155,6 +182,12 @@ public class CompositeCanvas {
 	}
 	
 	
+	/**
+	 * Starts painting using a thread pool provided by the given ExecutorService. 
+	 * Each layer of the canvas is painted concurrently.
+	 * Returns an ImageFuture that represents the result of the painting.
+	 * To get the Image buffer from the ImageFuture call future.join().
+	 */
 	public ImageFuture startPaintingConcurrent(ProgressMonitor pm, ExecutorService executor) {
 		pm = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
@@ -174,9 +207,5 @@ public class CompositeCanvas {
 		return new ImageFuture(f, flags, pm);
 	}
 	
-	
-	public void print(Graphics g) {
-		
-	}
 
 }

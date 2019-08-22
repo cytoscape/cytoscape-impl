@@ -115,6 +115,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private void clear() {
 		fastModel.clear();
 		slowModel.clear();
+		birdModel.clear();
 	}
 	
 	@Override

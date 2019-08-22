@@ -5,13 +5,9 @@ import java.util.Set;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
-import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualPropertyDependency;
 
@@ -46,14 +42,12 @@ public class NodeCanvas extends DingCanvas {
 
 	private final VisualMappingManager vmm;
 	private final DRenderingEngine re;
-	
-//	private boolean isPrinting;
 
 	
-	public NodeCanvas(CompositeCanvas parent, DRenderingEngine re, CyServiceRegistrar registrar) {
-		super(parent.getTransform().getWidth(), parent.getTransform().getHeight());
+	public NodeCanvas(DRenderingEngine re, int width, int height) {
+		super(width, height);
 		this.re = re;
-		this.vmm = registrar.getService(VisualMappingManager.class);
+		this.vmm = re.getServiceRegistrar().getService(VisualMappingManager.class);
 	}
 	
 	private Set<VisualPropertyDependency<?>> getVPDeps() {
@@ -64,56 +58,18 @@ public class NodeCanvas extends DingCanvas {
 
 	@Override
 	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
-		Set<VisualPropertyDependency<?>> dependencies = getVPDeps();
-		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
-		// MKTODO don't need to create a graphics object on every frame
-		GraphGraphics graphics = new GraphGraphics(image);
-		EdgeDetails edgeDetails = re.getEdgeDetails();
-		NodeDetails nodeDetails = re.getNodeDetails();
+		var dependencies = getVPDeps();
+		var snapshot = re.getViewModelSnapshot();
+		var graphics = new GraphGraphics(image); // MKTODO don't need to create a graphics object on every frame
+		var edgeDetails = re.getEdgeDetails();
+		var nodeDetails = re.getNodeDetails();
 		
 		if(pm.isCancelled())
 			return null;
 		
-		GraphRenderer.renderNodes(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails, dependencies);
+		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
 		
 		return image.getImage();
 	}
-	
-	
-	
-//
-//	@Override
-//	public void print(Graphics g) {
-//		isPrinting = true;
-//		
-//		final int w = getWidth();
-//		final int h = getHeight();
-//		
-//		if (re != null && w > 0 && h > 0)
-//			renderGraph(
-//					new GraphGraphics(new ImageImposter(g, w, h), /* debug = */ false, /* clear = */ false), 
-//					/* setLastRenderDetail = */ false, re.getPrintLOD());
-//		
-//		isPrinting = false;
-//	}
-//
-//	@Override
-//	public void printNoImposter(Graphics g) {
-//		isPrinting = true;
-//		final Image img = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
-//		
-//		if (re != null)
-//			renderGraph(new GraphGraphics(img, false, false), /* setLastRenderDetail = */ false, re.getPrintLOD());
-//		
-//		isPrinting = false;
-//	}
-//
-//	/**
-// 	 * Return true if this view is curerntly being printed (as opposed to painted on the screen)
-// 	 * @return true if we're currently being printed, false otherwise
-// 	 */
-//	public boolean isPrinting() { 
-//		return isPrinting; 
-//	}
 	
 }

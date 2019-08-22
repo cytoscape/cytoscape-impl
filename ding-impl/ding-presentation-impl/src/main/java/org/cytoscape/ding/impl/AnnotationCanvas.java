@@ -39,7 +39,8 @@ public class AnnotationCanvas extends DingCanvas {
 	private final DingAnnotation.CanvasID canvasID;
 	private final DRenderingEngine re;
 	
-	public AnnotationCanvas(DingAnnotation.CanvasID canvasID, DRenderingEngine re) {
+	public AnnotationCanvas(DingAnnotation.CanvasID canvasID, DRenderingEngine re, int width, int height) {
+		super(width, height);
 		this.re = re;
 		this.canvasID = canvasID;
 	}

@@ -37,11 +37,6 @@ public abstract class DingCanvas {
 	protected final NetworkImageBuffer image;
 	
 	
-	public DingCanvas() {
-		// MKTODO this is kind of dumb, what is the best way to properly initialize this?
-		this(1, 1);
-	}
-	
 	public DingCanvas(int width, int height) {
 		// MKTODO what about x, y, scaleFactor??
 		image = new NetworkImageBuffer(width, height);
@@ -67,12 +62,4 @@ public abstract class DingCanvas {
 	
 	public void dispose() {
 	}
-	
-//	// Don't know about this yet
-//	public abstract void print(Graphics g);
-//	
-//	default void printNoImposter(Graphics g) {
-//		print(g);
-//	}
-	
 }

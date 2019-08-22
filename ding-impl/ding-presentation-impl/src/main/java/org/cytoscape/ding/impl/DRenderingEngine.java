@@ -1,6 +1,9 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
+
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -35,7 +38,6 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -169,8 +171,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		fastCanvas = new CompositeCanvas(registrar, this, dingGraphLOD.faster());
-		slowCanvas = new CompositeCanvas(registrar, this, dingGraphLOD);
+		fastCanvas = new CompositeCanvas(this, dingGraphLOD.faster());
+		slowCanvas = new CompositeCanvas(this, dingGraphLOD);
 		
 		renderComponent = new RendererComponent();
 		picker = new NetworkPicker(this, null);
@@ -179,8 +181,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
 		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
 		
-		//Updating the snapshot for nested networks
-//		this.addContentChangeListener(new DGraphViewContentChangeListener());
+		// Updating the snapshot for nested networks
+		addContentChangeListener(() -> {
+			latest = false;
+		});
 
 		var snapshot = view.createSnapshot();
 		if(!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
@@ -257,7 +261,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		public void updateView(boolean startRenderSlow) {
 			// Run this on the EDT so there is no race condition with paint()
 			// Fast painting and slow painting don't happen concurrently.
-			ViewUtil.invokeOnEDTAndWait(() -> {
+			invokeOnEDTAndWait(() -> {
 				if(slowFuture != null) {
 					slowFuture.cancel();
 				}
@@ -275,19 +279,23 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			});
 		}
 		
+		public ImageFuture getHDFuture() {
+			return slowFuture;
+		}
+		
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
 			ImageFuture future;
 			
-			if(slowFuture != null && !slowFuture.isCancelled() && slowFuture.isDone()) {
+			if(slowFuture != null && slowFuture.isReady()) {
 				future = slowFuture;
 			} else if(fastFuture != null) {
 				future = fastFuture;
 			} else {
 				if(slowFuture != null) {
 					slowFuture.cancel();
-					slowFuture.join();
+					slowFuture.join(); // make sure its cancelled
 					slowFuture = null;
 				}
 				
@@ -440,6 +448,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 //		updateView(true);
 	}
 	
+	
+	public Color getBackgroundColor() {
+		return fastCanvas.getBackgroundPaint();
+	}
 	
 //	private void advanceAnimatedEdges() {
 //		edgeDetails.advanceAnimatedEdges();
@@ -753,8 +765,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		((Graphics2D) g).translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
-		// make sure the whole image on the screen will fit to the printable
-		// area of the paper
+		// make sure the whole image on the screen will fit to the printable area of the paper
 		NetworkTransform transform = fastCanvas.getTransform();
 		double image_scale = Math.min(pageFormat.getImageableWidth()  / transform.getWidth(),
 									  pageFormat.getImageableHeight() / transform.getHeight());
@@ -763,73 +774,91 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			((Graphics2D) g).scale(image_scale, image_scale);
 		}
 
-		// old school
-		// g.clipRect(0, 0, getComponent().getWidth(),
-		// getComponent().getHeight());
-		// getComponent().print(g);
-
 		// from InternalFrameComponent
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
-//		canvas.print(g);
+
+		CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, transform);
+		tempCanvas.setBackgroundPaint(fastCanvas.getBackgroundPaint());
+		
+		Image frame = tempCanvas.paintOnCurrentThread().join();
+		g.drawImage(frame, 0, 0, null);
 
 		return PAGE_EXISTS;
 	}
 
+	
+	@Override
+	public void printCanvas(Graphics g) {
+		final boolean contentChanged = this.contentChanged;
+		final boolean transformChanged = this.transformChanged;
+		
+		// Check properties related to printing:
+		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
+		
+		setPrintingTextAsShape(exportAsShape);
+		print(g);
+		
+		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
+		// (this method is usually only used to export the View as image, create thumbnails, etc,
+		// therefore it should not flag the Graph View as updated, because the actual view canvas
+		// may still have to be redrawn after this).
+		setContentChanged(contentChanged);
+		setTransformChanged(transformChanged);
+	}
+	
+	/**
+	 * This method is used by freehep lib to export network as graphics.
+	 */
+	public void print(Graphics g) {
+		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		
+		NetworkTransform transform = fastCanvas.getTransform();
+		CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, transform);
+		if(!transparentBackground) {
+			var bg = fastCanvas.getBackgroundPaint();
+			tempCanvas.setBackgroundPaint(bg);
+		}
+		
+		Image frame = tempCanvas.paintOnCurrentThread().join();
+		g.drawImage(frame, 0, 0, null);
+	}
 
 	
 	/**
 	 * Method to return a reference to an Image object, which represents the current network view.
-	 *
 	 * @param width Width of desired image.
 	 * @param height Height of desired image.
-	 * @param shrink Percent to shrink the network shown in the image.
-	 * This doesn't shrink the image, just the network shown, as if the user zoomed out.
-	 * Can be between 0 and 1, if not it will default to 1.  
 	 */
-	private Image createImage(int width, final int height, double scale) {
+	@Override 
+	public Image createImage(int width, int height) {
 		if (width < 0 || height < 0)
 			throw new IllegalArgumentException("width and height arguments must be greater than zero");
-		if (scale < 0 || scale > 1.0)
-			scale = 1.0;
 
-		final Image image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		Image[] image = {null};
 		
-		NetworkTransform transform = slowCanvas.getTransform();
-		int origWidth   = transform.getWidth();
-		int origHeight  = transform.getHeight();
-		double origZoom = transform.getScaleFactor();
+		// Run on the EDT to make sure the canvas is not in the middle of painting
+		// MKTODO could we reuse the birds-eye-view buffer instead of doing a full frame draw?
+		invokeOnEDTAndWait(() -> {
+			// MKTODO copy-pasted from fitContent()
+			double[] extents = new double[4];
+			viewModel.createSnapshot().getSpacialIndex2D().getMBR(extents); // extents of the network
+			cyAnnotator.adjustBoundsToIncludeAnnotations(extents); // extents of the annotation canvases
+			double xCenter = (extents[0] + extents[2]) / 2.0d;
+			double yCenter = (extents[1] + extents[3]) / 2.0d;
+			double zoom = Math.min(((double) width)  / (extents[2] - extents[0]), 
+                                   ((double) height) / (extents[3] - extents[1])) * 0.98;
+			
+			CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, width, height);
+			tempCanvas.setBackgroundPaint(slowCanvas.getBackgroundPaint());
+			tempCanvas.setCenter(xCenter, yCenter);
+			tempCanvas.setScaleFactor(zoom);
+			
+			image[0] = tempCanvas.paintOnCurrentThread().join();
+		});
 		
-		CyNetworkViewSnapshot netVewSnapshot = getViewModelSnapshot();
-		Double centerX = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
-		Double centerY = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-		Double scaleFactor = netVewSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		
-		
-		slowCanvas.setViewport(width, height);
-		fitContent(true);
-		setZoom(slowCanvas.getTransform().getScaleFactor() * scale);
-		
-//		Graphics g = image.getGraphics();
-//		slowCanvas.paint(g, null);
-		
-		ImageFuture future = slowCanvas.startPaintingSequential(null);
-		Image frame = future.join(); // block and wait for render to complete
-		Graphics g = image.getGraphics();
-		g.drawImage(frame, 0, 0, null);
-		
-		slowCanvas.setViewport(origWidth, origHeight);
-		setZoom(origZoom);
-		
-		CyNetworkView netView = getViewModel();
-		netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, centerX);
-		netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, centerY);
-		netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
-		
-		updateModelAndView();
-		
-		return image;
+		return image[0];
 	}
-
+	
 	private double checkZoom(double zoom, double orig) {
 		if (zoom > 0)
 			return zoom;
@@ -837,29 +866,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		logger.debug("invalid zoom: " + zoom + "   using orig: " + orig);
 		return orig;
 	}
-
-	/**
-	 * This method is used by freehep lib to export network as graphics.
-	 */
-	public void print(Graphics g) {
-//		boolean opaque = backgroundCanvas.isOpaque();
-//		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
-//		backgroundCanvas.setOpaque(!transparentBackground);
-//		backgroundCanvas.print(g);
-//		
-//		backgroundCanvas.setOpaque(opaque); // restore the previous opaque value
-//		networkCanvas.print(g);
-//		foregroundCanvas.print(g);
-	}
-//
-//	/**
-//	 * This method is used by BitmapExporter to export network as graphics (png, jpg, bmp)
-//	 */
-//	public void printNoImposter(Graphics g) {
-//		backgroundCanvas.print(g);
-//		networkCanvas.printNoImposter(g);
-//		foregroundCanvas.print(g);
-//	}
 
 
 	@Override
@@ -872,10 +878,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return this.props;
 	}
 	
-	@Override 
-	public Image createImage(int width, int height) {
-		return createImage(width, height, 1);
-	}
 
 	@Override
 	public DVisualLexicon getVisualLexicon() {
@@ -908,10 +910,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 *
 	 * @return Image of this view.  It is always up-to-date.
 	 */
-	TexturePaint getSnapshot(final double width, final double height) {
-		if (!latest) {
+	protected TexturePaint getSnapshot(final double width, final double height) {
+		if(!latest) {
 			// Need to update snapshot.
-			snapshotImage = (BufferedImage) createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE, 1);
+			snapshotImage = (BufferedImage) createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE);
 			latest = true;
 		}
 
@@ -927,39 +929,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return texturePaint;
 	}
 
-
-	/**
-	 * Listener for update flag of snapshot image.
-	 */
-	private final class DGraphViewContentChangeListener implements ContentChangeListener {
-		public void contentChanged() {
-			latest = false;
-		}
-	}
-
-	@Override
-	public void printCanvas(Graphics printCanvas) {
-//		final boolean contentChanged = isContentChanged();
-//		final boolean viewportChanged = isViewportChanged();
-//		
-//		// Check properties related to printing:
-//		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
-//		
-//		setPrintingTextAsShape(exportAsShape);
-//		print(printCanvas);
-//		
-//		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
-//		// (this method is usually only used to export the View as image, create thumbnails, etc,
-//		// therefore it should not flag the Graph View as updated, because the actual view canvas
-//		// may still have to be redrawn after this).
-//		setContentChanged(contentChanged);
-//		setViewportChanged(viewportChanged);
-	}
-
 	public CyAnnotator getCyAnnotator() {
 		return cyAnnotator;
 	}
 	
+	public CyServiceRegistrar getServiceRegistrar() {
+		return serviceRegistrar;
+	}
 	
 	@Override
 	public void handleDispose() {

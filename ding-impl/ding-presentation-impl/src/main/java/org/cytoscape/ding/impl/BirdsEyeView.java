@@ -53,7 +53,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		c = UIManager.getColor("Table.background");
 		VIEW_WINDOW_BORDER_COLOR = new Color(c.getRed(), c.getGreen(), c.getBlue(), 90);
 		
-		InnerMouseListener mouseListener = new InnerMouseListener();
+		var mouseListener = new InnerMouseListener();
 		addMouseListener(mouseListener);
 		addMouseMotionListener(mouseListener);
 		addMouseWheelListener(mouseListener);
@@ -61,14 +61,15 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		setPreferredSize(MIN_SIZE);
 		setMinimumSize(MIN_SIZE);
 		
+		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
+		canvas = new CompositeCanvas(re, lod);
+		
+		re.addTransformChangeListener(t -> repaint());
 		re.addContentChangeListener(() -> {
 			contentChanged = true;
+			canvas.setBackgroundPaint(re.getBackgroundColor());
 			repaint();
 		});
-		re.addTransformChangeListener(t -> repaint());
-		
-		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
-		canvas = new CompositeCanvas(registrar, re, lod);
 	}	
 	
 	

@@ -48,7 +48,7 @@ public class ImageFuture {
 		return lastRenderDetail;
 	}
 	
-	public boolean isDone() {
-		return future.isDone();
+	public boolean isReady() {
+		return !progressMonitor.isCancelled() && future.isDone();
 	}
 }

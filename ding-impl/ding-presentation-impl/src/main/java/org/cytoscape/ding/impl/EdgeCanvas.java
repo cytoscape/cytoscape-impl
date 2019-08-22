@@ -4,27 +4,24 @@ import java.awt.Image;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
-import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
-import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
-import org.cytoscape.view.model.CyNetworkViewSnapshot;
 
 public class EdgeCanvas extends DingCanvas {
 
 	private final DRenderingEngine re;
 	
-	public EdgeCanvas(CompositeCanvas parent, DRenderingEngine re) {
-		super(parent.getTransform().getWidth(), parent.getTransform().getHeight());
+	public EdgeCanvas(DRenderingEngine re, int width, int height) {
+		super(width, height);
 		this.re = re;
 	}
 
 	@Override
 	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
-		CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
-		GraphGraphics graphics = new GraphGraphics(image);
-		EdgeDetails edgeDetails = re.getEdgeDetails();
-		NodeDetails nodeDetails = re.getNodeDetails();
+		var netViewSnapshot = re.getViewModelSnapshot();
+		var graphics = new GraphGraphics(image);
+		var edgeDetails = re.getEdgeDetails();
+		var nodeDetails = re.getNodeDetails();
 		
 		if(pm.isCancelled())
 			return null;
