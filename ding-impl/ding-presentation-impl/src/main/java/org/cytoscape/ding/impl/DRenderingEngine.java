@@ -284,10 +284,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			});
 		}
 		
-		public ImageFuture getHDFuture() {
-			return slowFuture;
-		}
-		
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
@@ -449,7 +445,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		slowCanvas.setScaleFactor(scaleFactor);
 		fastCanvas.setScaleFactor(scaleFactor);
 		
-		setContentChanged(false);
+		setContentChanged(true);
 //		updateView(true);
 	}
 	
