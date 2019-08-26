@@ -1,8 +1,8 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
-import java.awt.Image;
 import java.util.Set;
 
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
@@ -38,14 +38,13 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 /**
  * Canvas to be used for drawing actual network visualization
  */
-public class NodeCanvas extends DingCanvas {
+public class NodeCanvas<T extends NetworkTransform> extends DingCanvas<T> {
 
 	private final VisualMappingManager vmm;
 	private final DRenderingEngine re;
 
-	
-	public NodeCanvas(DRenderingEngine re, int width, int height) {
-		super(width, height);
+	public NodeCanvas(T t, DRenderingEngine re) {
+		super(t);
 		this.re = re;
 		this.vmm = re.getServiceRegistrar().getService(VisualMappingManager.class);
 	}
@@ -55,21 +54,17 @@ public class NodeCanvas extends DingCanvas {
 		return vmm.getVisualStyle(netView).getAllVisualPropertyDependencies();
 	}
 
-
 	@Override
-	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
+	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		var dependencies = getVPDeps();
 		var snapshot = re.getViewModelSnapshot();
-		var graphics = new GraphGraphics(image); // MKTODO don't need to create a graphics object on every frame
+		var graphics = new GraphGraphics(transform); // MKTODO don't need to create a graphics object on every frame
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
 		if(pm.isCancelled())
-			return null;
+			return;
 		
 		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
-		
-		return image.getImage();
 	}
-	
 }

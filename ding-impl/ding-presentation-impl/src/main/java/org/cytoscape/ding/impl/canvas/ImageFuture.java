@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
 import java.awt.Image;
 import java.util.Objects;

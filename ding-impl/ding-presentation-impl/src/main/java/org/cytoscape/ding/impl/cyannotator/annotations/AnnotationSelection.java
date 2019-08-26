@@ -43,7 +43,7 @@ import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DingComponent;
-import org.cytoscape.ding.impl.NetworkTransform;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.view.presentation.property.values.Position;

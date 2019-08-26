@@ -2,7 +2,7 @@ package org.cytoscape.graph.render.stateful;
 
 import java.awt.geom.Rectangle2D;
 
-import org.cytoscape.ding.impl.NetworkTransform;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;

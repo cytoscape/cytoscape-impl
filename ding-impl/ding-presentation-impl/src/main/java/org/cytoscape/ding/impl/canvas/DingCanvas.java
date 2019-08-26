@@ -1,6 +1,4 @@
-package org.cytoscape.ding.impl;
-
-import java.awt.Image;
+package org.cytoscape.ding.impl.canvas;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -32,33 +30,37 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 /**
  * 
  */
-public abstract class DingCanvas {
+public abstract class DingCanvas<T extends NetworkTransform> {
 	
-	protected final NetworkImageBuffer image;
+	protected final T transform;
 	
 	
-	public DingCanvas(int width, int height) {
-		// MKTODO what about x, y, scaleFactor??
-		image = new NetworkImageBuffer(width, height);
+	public DingCanvas(T transform) {
+		this.transform = transform;
 	}
 	
 	public void setViewport(int width, int height) {
-		image.setViewport(width, height);
+		transform.setViewport(width, height);
 	}
 	
 	public void setCenter(double x, double y) {
-		image.setCenter(x, y);
+		transform.setCenter(x, y);
 	}
 	
 	public void setScaleFactor(double scaleFactor) {
-		image.setScaleFactor(scaleFactor);
+		transform.setScaleFactor(scaleFactor);
 	}
 	
-	public NetworkImageBuffer getImageBuffer() {
-		return image;
+	public NetworkTransform getTransform() {
+		return transform;
 	}
 	
-	public abstract Image paintImage(ProgressMonitor pm, RenderDetailFlags flags); 
+	public abstract void paint(ProgressMonitor pm, RenderDetailFlags flags); 
+	
+	public T paintAndGet(ProgressMonitor pm, RenderDetailFlags flags) {
+		paint(pm, flags);
+		return transform;
+	}
 	
 	public void dispose() {
 	}

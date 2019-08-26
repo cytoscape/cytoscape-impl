@@ -6,7 +6,7 @@ import java.util.Random;
 
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TestUtils;
-import org.cytoscape.ding.impl.NetworkImageBuffer;
+import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 

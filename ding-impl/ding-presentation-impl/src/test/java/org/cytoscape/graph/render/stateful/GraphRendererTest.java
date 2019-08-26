@@ -1,6 +1,6 @@
 package org.cytoscape.graph.render.stateful;
 
-import org.cytoscape.ding.impl.NetworkImageBuffer;
+import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;

@@ -1,34 +1,30 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
-import java.awt.Image;
-
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.graph.render.stateful.GraphRenderer;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
-public class EdgeCanvas extends DingCanvas {
+public class EdgeCanvas<T extends NetworkTransform> extends DingCanvas<T> {
 
 	private final DRenderingEngine re;
 	
-	public EdgeCanvas(DRenderingEngine re, int width, int height) {
-		super(width, height);
+	public EdgeCanvas(T t, DRenderingEngine re) {
+		super(t);
 		this.re = re;
 	}
 
 	@Override
-	public Image paintImage(ProgressMonitor pm, RenderDetailFlags flags) {
+	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		var netViewSnapshot = re.getViewModelSnapshot();
-		var graphics = new GraphGraphics(image);
+		var graphics = new GraphGraphics(transform);
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		
 		if(pm.isCancelled())
-			return null;
+			return;
 		
 		GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
-		
-		return image.getImage();
 	}
-
 }

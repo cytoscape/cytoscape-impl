@@ -34,6 +34,11 @@ import org.cytoscape.ding.debug.DebugCallback;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.debug.FrameType;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
+import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
+import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
+import org.cytoscape.ding.impl.canvas.ImageFuture;
+import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
@@ -110,8 +115,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
-	private CompositeCanvas fastCanvas; // treat this as the 'main' canvas
-	private CompositeCanvas slowCanvas;
+	private CompositeImageCanvas fastCanvas; // treat this as the 'main' canvas
+	private CompositeImageCanvas slowCanvas;
 	
 	private RendererComponent renderComponent;
 	private NetworkPicker picker;
@@ -171,8 +176,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		fastCanvas = new CompositeCanvas(this, dingGraphLOD.faster());
-		slowCanvas = new CompositeCanvas(this, dingGraphLOD);
+		fastCanvas = new CompositeImageCanvas(this, dingGraphLOD.faster());
+		slowCanvas = new CompositeImageCanvas(this, dingGraphLOD);
 		
 		renderComponent = new RendererComponent();
 		picker = new NetworkPicker(this, null);
@@ -766,23 +771,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		((Graphics2D) g).translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
 		// make sure the whole image on the screen will fit to the printable area of the paper
-		NetworkTransform transform = fastCanvas.getTransform();
+		var transform = fastCanvas.getTransform();
 		double image_scale = Math.min(pageFormat.getImageableWidth()  / transform.getWidth(),
 									  pageFormat.getImageableHeight() / transform.getHeight());
 
 		if (image_scale < 1.0d) {
-			((Graphics2D) g).scale(image_scale, image_scale);
+			((Graphics2D)g).scale(image_scale, image_scale);
 		}
 
 		// from InternalFrameComponent
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
-
-		CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, transform);
-		tempCanvas.setBackgroundPaint(fastCanvas.getBackgroundPaint());
 		
-		Image frame = tempCanvas.paintOnCurrentThread().join();
-		g.drawImage(frame, 0, 0, null);
-
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), dingGraphLOD, transform);
+		
 		return PAGE_EXISTS;
 	}
 
@@ -794,8 +795,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Check properties related to printing:
 		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
-		
 		setPrintingTextAsShape(exportAsShape);
+		
 		print(g);
 		
 		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
@@ -810,17 +811,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * This method is used by freehep lib to export network as graphics.
 	 */
 	public void print(Graphics g) {
-		boolean transparentBackground = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		boolean transparent = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
 		
-		NetworkTransform transform = fastCanvas.getTransform();
-		CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, transform);
-		if(!transparentBackground) {
-			var bg = fastCanvas.getBackgroundPaint();
-			tempCanvas.setBackgroundPaint(bg);
-		}
+		var transform = fastCanvas.getTransform();
+		Color bg = transparent ? null : getBackgroundColor();
 		
-		Image frame = tempCanvas.paintOnCurrentThread().join();
-		g.drawImage(frame, 0, 0, null);
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, dingGraphLOD, transform);
 	}
 
 	
@@ -848,12 +844,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			double zoom = Math.min(((double) width)  / (extents[2] - extents[0]), 
                                    ((double) height) / (extents[3] - extents[1])) * 0.98;
 			
-			CompositeCanvas tempCanvas = new CompositeCanvas(this, dingGraphLOD, width, height);
-			tempCanvas.setBackgroundPaint(slowCanvas.getBackgroundPaint());
-			tempCanvas.setCenter(xCenter, yCenter);
-			tempCanvas.setScaleFactor(zoom);
+			NetworkImageBuffer buffer = new NetworkImageBuffer(width, height);
+			buffer.setCenter(xCenter, yCenter);
+			buffer.setScaleFactor(zoom);
 			
-			image[0] = tempCanvas.paintOnCurrentThread().join();
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, getBackgroundColor(), dingGraphLOD, buffer);
+			
+			image[0] = buffer.getImage();
 		});
 		
 		return image[0];

@@ -125,15 +125,16 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			re.setDebugCallback(null);
 		
 		CyNetworkView netView = e.getNetworkView();
-		
-		CyNetwork model = netView.getModel();
-		String name = model.getRow(model).get(CyNetwork.NAME, String.class);
-		networkNameLabel.setText(name);
-		
-		DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
-		re = dingRenderer.getRenderingEngine(netView);
-		if(re != null)
-			re.setDebugCallback(this);
+		if(netView != null) {
+			CyNetwork model = netView.getModel();
+			String name = model.getRow(model).get(CyNetwork.NAME, String.class);
+			networkNameLabel.setText(name);
+			
+			DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
+			re = dingRenderer.getRenderingEngine(netView);
+			if(re != null)
+				re.setDebugCallback(this);
+		}
 	}
 	
 	

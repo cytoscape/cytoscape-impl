@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.BACKGROUND;
 import static org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID.FOREGROUND;
@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -24,37 +25,37 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  *
  */
 @SuppressWarnings("unused")
-public class CompositeCanvas {
+public class CompositeImageCanvas {
 	
 	private final DRenderingEngine re;
 	
 	// Canvas layers from top to bottom
-	private final AnnotationCanvas foregroundAnnotationCanvas;
-	private final NodeCanvas nodeCanvas;
-	private final EdgeCanvas edgeCanvas;
-	private final AnnotationCanvas backgroundAnnotationCanvas;
-	private final ColorCanvas backgroundColorCanvas;
+	private final AnnotationCanvas<NetworkImageBuffer> foregroundAnnotationCanvas;
+	private final NodeCanvas<NetworkImageBuffer> nodeCanvas;
+	private final EdgeCanvas<NetworkImageBuffer> edgeCanvas;
+	private final AnnotationCanvas<NetworkImageBuffer> backgroundAnnotationCanvas;
+	private final ColorCanvas<NetworkImageBuffer> backgroundColorCanvas;
 	
 	private GraphLOD lod;
 	private final NetworkImageBuffer image;
 	
-	private final List<DingCanvas> canvasList;
+	private final List<DingCanvas<NetworkImageBuffer>> canvasList;
 	private final double[] weights;
 	
 	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 	
 	
-	public CompositeCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
+	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
 		this.lod = lod;
 		this.image = new NetworkImageBuffer(w, h);
 		
 		canvasList = Arrays.asList(
-			foregroundAnnotationCanvas = new AnnotationCanvas(FOREGROUND, re, w, h),
-			nodeCanvas = new NodeCanvas(re, w, h),
-			edgeCanvas = new EdgeCanvas(re, w, h),
-			backgroundAnnotationCanvas = new AnnotationCanvas(BACKGROUND, re, w, h),
-			backgroundColorCanvas = new ColorCanvas(w, h)
+			foregroundAnnotationCanvas = new AnnotationCanvas<>(new NetworkImageBuffer(w, h), FOREGROUND, re),
+			nodeCanvas = new NodeCanvas<>(new NetworkImageBuffer(w, h), re),
+			edgeCanvas = new EdgeCanvas<>(new NetworkImageBuffer(w, h), re),
+			backgroundAnnotationCanvas = new AnnotationCanvas<>(new NetworkImageBuffer(w, h), BACKGROUND, re),
+			backgroundColorCanvas = new ColorCanvas<>(new NetworkImageBuffer(w, h), null)
 		);
 		
 		// Must paint over top of each other in reverse order
@@ -63,16 +64,9 @@ public class CompositeCanvas {
 		weights = new double[] {1, 1, 10, 3, 1}; // MKTODO not very elegant
 	}
 	
-	public CompositeCanvas(DRenderingEngine re, GraphLOD lod) {
+	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod) {
 		this(re, lod, 1, 1); // MKTODO does this make sense?
 	}
-	
-	public CompositeCanvas(DRenderingEngine re, GraphLOD lod, NetworkTransform transform) {
-		this(re, lod, transform.getWidth(), transform.getHeight());
-		setCenter(transform.getCenterX(), transform.getCenterY());
-		setScaleFactor(transform.getScaleFactor());
-	}
-	
 	
 	public void dispose() {
 		canvasList.forEach(DingCanvas::dispose);
@@ -144,8 +138,8 @@ public class CompositeCanvas {
 		var flags = getRenderDetailFlags();
 		pm.start();
 		
-		for(DingCanvas c : canvasList) {
-			Image canvasImage = c.paintImage(new NoOutputProgressMonitor(), flags);
+		for(DingCanvas<NetworkImageBuffer> c : canvasList) {
+			Image canvasImage = c.paintAndGet(new NoOutputProgressMonitor(), flags).getImage();
 			overlayImage(image.getImage(), canvasImage);
 		}
 		
@@ -169,10 +163,10 @@ public class CompositeCanvas {
 		
 		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
-			DingCanvas c = canvasList.get(i);
+			DingCanvas<NetworkImageBuffer> c = canvasList.get(i);
 			ProgressMonitor subPm = subPms.get(i);
 			f = f.thenApplyAsync(compositeImage -> {
-				Image image = c.paintImage(subPm, flags);
+				Image image = c.paintAndGet(subPm, flags).getImage();
 				return overlayImage(compositeImage, image);
 			}, singleThreadExecutor);
 		}
@@ -197,9 +191,9 @@ public class CompositeCanvas {
 		
 		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
-			DingCanvas c = canvasList.get(i);
+			DingCanvas<NetworkImageBuffer> c = canvasList.get(i);
 			ProgressMonitor subPm = subPms.get(i);
-			var cf = CompletableFuture.supplyAsync(() -> c.paintImage(subPm, flags), executor);
+			var cf = CompletableFuture.supplyAsync(() -> c.paintAndGet(subPm, flags).getImage(), executor);
 			f = f.thenCombineAsync(cf, this::overlayImage, executor);
 		}
 		f.thenRun(pm::done);

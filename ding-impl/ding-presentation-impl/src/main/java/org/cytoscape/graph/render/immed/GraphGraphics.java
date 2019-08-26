@@ -1,33 +1,7 @@
 package org.cytoscape.graph.render.immed;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
@@ -47,8 +21,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.NetworkImageBuffer;
-import org.cytoscape.ding.impl.NetworkTransform;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrowShort;
@@ -218,10 +191,11 @@ public final class GraphGraphics {
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
 	
 	
-	private final NetworkImageBuffer image;
+	private final NetworkTransform transform;
 	
 	private Graphics2D m_g2d;
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
+	private final AffineTransform m_currNativeXform = new AffineTransform();
 	
 	/**
 	 * All rendering operations will be performed on the specified image. No
@@ -255,14 +229,14 @@ public final class GraphGraphics {
 	 *            if this is true, we will clear the image before drawing.  This should
 	 *            only ever be false when we're printing....
 	 */
-	public GraphGraphics(NetworkImageBuffer image) {
-		this.image = image;
+	public GraphGraphics(NetworkTransform transform) {
+		this.transform = transform;
 		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
 		initialize(CLEAR_PAINT);
 	}
 	
 	public NetworkTransform getTransform() {
-		return image;
+		return transform;
 	}
 
 	/**
@@ -313,13 +287,13 @@ public final class GraphGraphics {
 			m_g2d.dispose();
 		}
 
-		m_g2d = image.getGraphics();
+		m_g2d = transform.getGraphics();
 
-		final Composite origComposite = m_g2d.getComposite();
-		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-		m_g2d.setPaint(bgPaint);
-		m_g2d.fillRect(0, 0, image.getWidth(), image.getHeight());
-		m_g2d.setComposite(origComposite);
+//		final Composite origComposite = m_g2d.getComposite();
+//		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+//		m_g2d.setPaint(bgPaint);
+//		m_g2d.fillRect(0, 0, transform.getWidth(), transform.getHeight());
+//		m_g2d.setComposite(origComposite);
 		
 		// For detailed view, render high quality image as much as possible.
 		
@@ -344,8 +318,8 @@ public final class GraphGraphics {
 		
 		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 
-		// Very important
 		m_g2d.transform(getTransform().getAffineTransform());
+		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
 	}
 
 
@@ -396,7 +370,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = yMin;
 		m_ptsBuff[2] = xMax;
 		m_ptsBuff[3] = yMax;
-		image.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		// Here, double values outside of the range of ints will be cast to
 		// the nearest int without overflow.
@@ -414,7 +388,7 @@ public final class GraphGraphics {
 	 * Sets m_gMinimal.
 	 */
 	private final void makeMinimalGraphics() {
-		m_gMinimal = (Graphics2D) image.getGraphics();
+		m_gMinimal = transform.getGraphics();
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
@@ -846,7 +820,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = y0;
 		m_ptsBuff[2] = x1;
 		m_ptsBuff[3] = y1;
-		image.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		final int xNot = (int) m_ptsBuff[0];
 		final int yNot = (int) m_ptsBuff[1];
@@ -1090,7 +1064,7 @@ public final class GraphGraphics {
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow0Cap);
-				m_g2d.setTransform(image.getAffineTransform());
+				m_g2d.setTransform(m_currNativeXform);
 			}
 	
 			// Render arrow cap at end of poly path.
@@ -1104,7 +1078,7 @@ public final class GraphGraphics {
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow1Cap);
-				m_g2d.setTransform(image.getAffineTransform());
+				m_g2d.setTransform(m_currNativeXform);
 			}
 		}
 
@@ -1125,7 +1099,7 @@ public final class GraphGraphics {
 				m_g2d.setStroke(new BasicStroke(0.25f));
 				m_g2d.draw(arrow0);
 			}
-			m_g2d.setTransform(image.getAffineTransform());
+			m_g2d.setTransform(m_currNativeXform);
 		}
 
 		// Render arrow at end of poly path.
@@ -1147,7 +1121,7 @@ public final class GraphGraphics {
 				m_g2d.setStroke(new BasicStroke(0.025f));
 				m_g2d.draw(arrow1);
 			}
-			m_g2d.setTransform(image.getAffineTransform());
+			m_g2d.setTransform(m_currNativeXform);
 		}
 	}
 
@@ -1259,7 +1233,7 @@ public final class GraphGraphics {
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow0Cap);
-				m_g2d.setTransform(image.getAffineTransform());
+				m_g2d.setTransform(m_currNativeXform);
 			}
 
 			// Arrow cap at point 1.
@@ -1271,7 +1245,7 @@ public final class GraphGraphics {
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
 				m_g2d.fill(arrow1Cap);
-				m_g2d.setTransform(image.getAffineTransform());
+				m_g2d.setTransform(m_currNativeXform);
 			}
 		}
 
@@ -1293,7 +1267,7 @@ public final class GraphGraphics {
 					m_g2d.setStroke(new BasicStroke(0.1f));
 				m_g2d.draw(arrow0);
 			}
-			m_g2d.setTransform(image.getAffineTransform());
+			m_g2d.setTransform(m_currNativeXform);
 		}
 
 		// Render arrow at point 1.
@@ -1314,7 +1288,7 @@ public final class GraphGraphics {
 					m_g2d.setStroke(new BasicStroke(0.1f));
 				m_g2d.draw(arrow1);
 			}
-			m_g2d.setTransform(image.getAffineTransform());
+			m_g2d.setTransform(m_currNativeXform);
 		}
 	}
 
@@ -1693,7 +1667,7 @@ public final class GraphGraphics {
 
 		m_ptsBuff[0] = xCenter;
 		m_ptsBuff[1] = yCenter;
-		image.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
 		m_gMinimal.setFont(font);
 
 		final FontMetrics fMetrics = m_gMinimal.getFontMetrics();
@@ -1821,7 +1795,7 @@ public final class GraphGraphics {
 			m_g2d.drawString(text, 0.0f, 0.0f);
 		}
 
-		m_g2d.setTransform(image.getAffineTransform());
+		m_g2d.setTransform(m_currNativeXform);
 	}
 
 	/**
@@ -1841,7 +1815,7 @@ public final class GraphGraphics {
 			Rectangle bounds = shape.getBounds2D().getBounds();
 			m_g2d.drawImage(bImg, bounds.x, bounds.y, bounds.width, bounds.height, null);
 		}
-		m_g2d.setTransform(image.getAffineTransform());
+		m_g2d.setTransform(m_currNativeXform);
 	}
 
 	/**
@@ -1894,7 +1868,7 @@ public final class GraphGraphics {
 			m_g2d.fill(nodeShape);
 		}
 
-		m_g2d.setTransform(image.getAffineTransform());
+		m_g2d.setTransform(m_currNativeXform);
 	}
 
 	/**

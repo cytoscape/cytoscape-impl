@@ -17,6 +17,7 @@ import javax.swing.UIManager;
 import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.debug.FrameType;
+import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -41,7 +42,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 	private final double[] extents = new double[4];
 	
 	private final DRenderingEngine re;
-	private final CompositeCanvas canvas;
+	private final CompositeImageCanvas canvas;
 	private boolean contentChanged = true;
 	
 	
@@ -62,7 +63,7 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		setMinimumSize(MIN_SIZE);
 		
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
-		canvas = new CompositeCanvas(re, lod);
+		canvas = new CompositeImageCanvas(re, lod);
 		
 		re.addTransformChangeListener(t -> repaint());
 		re.addContentChangeListener(() -> {

@@ -46,6 +46,7 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 /**
  * This class is a CySubnetwork Implementation without tables
  */
+@Deprecated
 final class MinimalNetwork implements CySubNetwork {
 
 	// Unique ID for this
