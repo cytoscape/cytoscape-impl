@@ -197,12 +197,14 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 					if (newValue == null)
 						return;
 
-					if (range == 0) {
-						below = newValue;
-					} else if (range == getSlider().getModel().getThumbCount()) {
-						above = newValue;
-					} else {
-						getSlider().getModel().getSortedThumbs().get(range).setObject(newValue);
+					if (range >= 0) {
+						if (range == 0) {
+							below = newValue;
+						} else if (range == getSlider().getModel().getThumbCount()) {
+							above = newValue;
+						} else if (range < getSlider().getModel().getThumbCount()) {
+							getSlider().getModel().getSortedThumbs().get(range).setObject(newValue);
+						}
 					}
 
 					updateMap();

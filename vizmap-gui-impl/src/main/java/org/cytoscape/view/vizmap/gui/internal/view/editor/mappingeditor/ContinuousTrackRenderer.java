@@ -54,8 +54,11 @@ import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
 import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.JXMultiThumbSlider;
 import org.jdesktop.swingx.multislider.Thumb;
+import org.jdesktop.swingx.multislider.ThumbDataEvent;
+import org.jdesktop.swingx.multislider.ThumbDataListener;
 
 /**
  * Track renderer for Continuous mapping (Number-to-Number mapping)
@@ -93,7 +96,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private JXMultiThumbSlider<V> slider;
 	private CMouseListener listener = null;
 	private Map<Integer, Point> verticesList;
-	private int selectedIdx;
+	private int selectedIdx = -1;
 	// private Point dragOrigin;
 	
 	private String title;
@@ -406,15 +409,38 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 
 	@Override
-	public JComponent getRendererComponent(@SuppressWarnings("rawtypes") JXMultiThumbSlider slider) {
-		this.slider = slider;
-
-		if (listener == null) {
-			listener = new CMouseListener();
-			this.slider.addMouseListener(listener);
-			this.slider.addMouseMotionListener(new CMouseMotionListener());
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public JComponent getRendererComponent(JXMultiThumbSlider slider) {
+		if (this.slider != slider) {
+			if (listener == null)
+				listener = new CMouseListener();
+			
+			slider.addMouseListener(listener);
+			slider.addMouseMotionListener(new CMouseMotionListener());
+			
+			slider.getModel().addThumbDataListener(new ThumbDataListener() {
+				@Override
+				public void thumbRemoved(ThumbDataEvent evt) {
+					if (selectedIdx == evt.getIndex())
+						selectedIdx = -1;
+				}
+				@Override
+				public void thumbAdded(ThumbDataEvent evt) {
+					// Ignore...
+				}
+				@Override
+				public void positionChanged(ThumbDataEvent evt) {
+					// Ignore...
+				}
+				@Override
+				public void valueChanged(ThumbDataEvent evt) {
+					// Ignore...
+				}
+			});
+			
+			this.slider = slider;
 		}
-
+		
 		if (verticesList == null)
 			verticesList = new HashMap<Integer, Point>();
 
@@ -439,13 +465,9 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 			curPoint = e.getPoint();
 
-			/*
-			 * If beyond the bottom lin
-			 */
-			if (clickFlag == true) {
-				Thumb<V> selectedThumb = slider.getModel().getThumbAt(
-						selectedIdx);
-
+			// If beyond the bottom line
+			if (clickFlag == true && selectedIdx >= 0 && slider.getModel().getThumbCount() > selectedIdx) {
+				Thumb<V> selectedThumb = slider.getModel().getThumbAt(selectedIdx);
 				V zero = (V) Double.valueOf(0);
 				if (curPoint.getY() >= (trackHeight + 5)) {
 					selectedThumb.setObject(zero);
@@ -466,8 +488,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				V newVal = newY;
 				//cMapping.getPoint(selectedIdx).getRange().equalValue = newVal;
 
-				V lesserVal = cMapping.getPoint(selectedIdx).getRange().lesserValue;
-				V greaterVal = cMapping.getPoint(selectedIdx).getRange().greaterValue;
+				ContinuousMappingPoint<K, V> point = selectedIdx >= 0 && cMapping.getPointCount() > selectedIdx
+						? cMapping.getPoint(selectedIdx)
+						: null;
+				V lesserVal = point != null ? point.getRange().lesserValue : newVal;
+				V greaterVal = point != null ? point.getRange().greaterValue : newVal;
 
 				int numPoints = cMapping.getAllPoints().size();
 
@@ -488,7 +513,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 						vpValueType, lesserVal), NumberConverter.convert(vpValueType, newVal),
 						NumberConverter.convert(vpValueType, greaterVal));
 
-				cMapping.getPoint(selectedIdx).setRange(brv);
+				if (point != null)
+					point.setRange(brv);
 			}
 
 			// dragOrigin = e.getPoint();
@@ -522,14 +548,16 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 					return;
 				}
 
-				slider.getModel().getThumbAt(selectedIdx).setObject(newVal);
+				if (selectedIdx >= 0 && slider.getModel().getThumbCount() > selectedIdx)
+					slider.getModel().getThumbAt(selectedIdx).setObject(newVal);
 
 				updateMax();
 
-				//cMapping.getPoint(selectedIdx).getRange().equalValue = newVal;
-
-				V lesserVal = cMapping.getPoint(selectedIdx).getRange().lesserValue;
-				V greaterVal = cMapping.getPoint(selectedIdx).getRange().greaterValue;
+				ContinuousMappingPoint<K, V> point = selectedIdx >= 0 && cMapping.getPointCount() > selectedIdx
+						? cMapping.getPoint(selectedIdx)
+						: null;
+				V lesserVal = point != null ? point.getRange().lesserValue : newVal;
+				V greaterVal = point != null ? point.getRange().greaterValue : newVal;
 
 				// Update Values which are not accessible from
 				// UI
@@ -551,7 +579,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 						vpValueType, lesserVal), NumberConverter.convert(vpValueType, newVal),
 						NumberConverter.convert(vpValueType, greaterVal));
 
-				cMapping.getPoint(selectedIdx).setRange(brv);
+				if (point != null)
+					point.setRange(brv);
 
 				repaint();
 				slider.repaint();
