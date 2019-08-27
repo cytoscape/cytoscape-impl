@@ -1,7 +1,6 @@
 package org.cytoscape.ding.impl;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.MouseAdapter;
@@ -12,6 +11,7 @@ import java.util.Arrays;
 import java.util.Properties;
 
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.CyActivator;
@@ -29,7 +29,7 @@ import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public final class BirdsEyeView extends Component implements RenderingEngine<CyNetwork> {
+public final class BirdsEyeView extends JComponent implements RenderingEngine<CyNetwork> {
 
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	private final Color VIEW_WINDOW_COLOR;
@@ -65,8 +65,12 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		canvas = new CompositeImageCanvas(re, lod);
 		
-		re.addTransformChangeListener(t -> repaint());
+		re.addTransformChangeListener(t -> {
+			System.out.println("BirdsEyeView.addTransformChangeListener()");
+			repaint();
+		});
 		re.addContentChangeListener(() -> {
+			System.out.println("BirdsEyeView.addContentChangeListener()");
 			contentChanged = true;
 			canvas.setBackgroundPaint(re.getBackgroundColor());
 			repaint();
@@ -121,13 +125,9 @@ public final class BirdsEyeView extends Component implements RenderingEngine<CyN
 		canvas.setViewport(width, height);
 	}
 	
-	@Override
-	public void paint(Graphics g) {
-		update(g);
-	}
 	
 	@Override 
-	public void update(Graphics g) {
+	public void paintComponent(Graphics g) {
 		if(contentChanged) {
 			// render a new image
 			fitCanvasToNetwork();

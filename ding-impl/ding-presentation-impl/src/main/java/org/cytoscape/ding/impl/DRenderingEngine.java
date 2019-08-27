@@ -138,6 +138,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<TransformChangeListener> transformChangeListeners = new CopyOnWriteArrayList<>();
+	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
 //	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
@@ -228,6 +229,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return debugCallback;
 	}
 	
+	public Image getImage() {
+		return renderComponent.getImage();
+	}
+	
+	
 	/**
 	 * This is the interface between the renderer and Swing.
 	 */
@@ -247,6 +253,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			super.setBounds(x, y, width, height);
 			fastCanvas.setViewport(width, height);
 			slowCanvas.setViewport(width, height);
+			setTransformChanged();
 			
 			// If this is the first call to setBounds, load any annotations
 			if(!annotationsLoaded) {
@@ -284,6 +291,22 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			});
 		}
 		
+		public Image getImage() {
+			Image[] image = { null };
+			invokeOnEDTAndWait(() -> {
+				ImageFuture future;
+				if(slowFuture != null && slowFuture.isReady()) {
+					future = slowFuture;
+				} else if(fastFuture != null && fastFuture.isReady()) {
+					future = fastFuture;
+				} else {
+					future = fastCanvas.paintOnCurrentThread(null);
+				}
+				image[0] = future.join(); // in all cases the future will be ready here
+			});
+			return image[0];
+		}
+		
 		@Override
 		public void paintComponent(Graphics g) {
 			super.paintComponent(g);
@@ -304,12 +327,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				var fastPm = debugPm(FrameType.MAIN_FAST, null);
 				fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
 				future = fastFuture;
+				updateThumbnail(fastFuture);
 
 				// RENDER: start a slow frame if necessary
 				if(needSlowFrame && !sameDetail()) { 
 					var slowPm = debugPm(FrameType.MAIN_SLOW, getInputHandlerGlassPane().createProgressMonitor());
 					slowFuture = slowCanvas.startPaintingSequential(slowPm);
 					slowFuture.thenRun(this::repaint);
+					slowFuture.thenRun(() -> updateThumbnail(slowFuture));
 				}
 				needSlowFrame = false;
 			}
@@ -333,6 +358,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		private boolean sameDetail() {
 			return fastFuture.getLastRenderDetail().equals(slowCanvas.getRenderDetailFlags());
+		}
+		
+		private void updateThumbnail(ImageFuture future) {
+			fireThumbnailChanged(future.join());
 		}
 	}
 	
@@ -390,11 +419,14 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		updateView(true);
 	}
 	
+	
 	public void updateView(boolean startSlowPaint) {
-		if(contentChanged)
+		if(contentChanged) {
 			fireContentChanged();
-		if(transformChanged)
+		}
+		if(transformChanged) {
 			fireTransformChanged();
+		}
 		
 		setContentChanged(false);
 		setTransformChanged(false);
@@ -431,8 +463,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-		// regular canvas still 
-//		fastCanvas.setLOD(dingGraphLOD.faster()); // never change the lod on the fast canvas ???
 		slowCanvas.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
 		
 		// update view (for example if "fit selected" was run)
@@ -446,7 +476,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		fastCanvas.setScaleFactor(scaleFactor);
 		
 		setContentChanged(true);
-//		updateView(true);
 	}
 	
 	
@@ -509,9 +538,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 	private void fireContentChanged() {
-		for(ContentChangeListener l : contentChangeListeners) {
+		for(var l : contentChangeListeners) {
 			l.contentChanged();
 		}
+		fireThumbnailChanged(renderComponent.getImage());
 	}
 	
 	public void addContentChangeListener(ContentChangeListener l) {
@@ -532,10 +562,11 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void fireTransformChanged() {
 		// MKTODO should we use an immutable copy of the transform here?, do we even need to pass the transform to the listener?
-		NetworkTransform transform = fastCanvas.getTransform();
-		for(TransformChangeListener l : transformChangeListeners) {
+		var transform = fastCanvas.getTransform();
+		for(var l : transformChangeListeners) {
 			l.transformChanged(transform);
 		}
+		fireThumbnailChanged(renderComponent.getImage());
 	}
 	
 	public void addTransformChangeListener(TransformChangeListener l) {
@@ -546,6 +577,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		transformChangeListeners.remove(l);
 	}
 	
+	public void addThumbnailChangeListener(ThumbnailChangeListener l) {
+		thumbnailChangeListeners.add(l);
+	}
+	
+	public void removeThumbnailChangeListener(ThumbnailChangeListener l) {
+		thumbnailChangeListeners.remove(l);
+	}
+	
+	private void fireThumbnailChanged(Image image) {
+		for(var l : thumbnailChangeListeners) {
+			l.thumbnailChanged(image);
+		}
+	}
 	
 
 	public boolean isLargeModel() {
@@ -563,6 +607,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		synchronized (dingLock) {
 			slowCanvas.setScaleFactor(checkZoom(zoom, slowCanvas.getTransform().getScaleFactor()));
 			fastCanvas.setScaleFactor(checkZoom(zoom, fastCanvas.getTransform().getScaleFactor()));
+			fireTransformChanged();
 		}
 	}
 	
@@ -633,15 +678,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			return;
 		
 		double scaleFactor = fastCanvas.getTransform().getScaleFactor() * factor;
-		
-//			setHideEdges();
 		setZoom(scaleFactor);
 		
 		getViewModel().batch(netView -> {
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, scaleFactor);
 		}, false);
 		
-//		updateView();
 	}
 	
 	
@@ -652,8 +694,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			double y = transform.getCenterY() + deltaY;
 			setCenter(x, y);
 		}
-		
-//		updateView();
 	}
 	
 	public void setCenter(double x, double y) {
@@ -668,6 +708,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, transform.getCenterX());
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, transform.getCenterY());
 			}, false); // don't set the dirty flag
+			
+			setTransformChanged();
 		}
 	}
 
