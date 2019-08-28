@@ -1,29 +1,5 @@
 package org.cytoscape.browser.internal;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.work.ServiceProperties.TITLE;
 
 import java.awt.event.ActionListener;
@@ -53,6 +29,30 @@ import org.cytoscape.task.TableCellTaskFactory;
 import org.cytoscape.task.TableColumnTaskFactory;
 import org.osgi.framework.BundleContext;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class CyActivator extends AbstractCyActivator {
 	
 	@Override
@@ -66,19 +66,18 @@ public class CyActivator extends AbstractCyActivator {
 		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
 		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
 		
-		registerAllServices(bc, nodeTableBrowser, new Properties());
-		registerAllServices(bc, edgeTableBrowser, new Properties());
-		registerAllServices(bc, networkTableBrowser, new Properties());
+		registerAllServices(bc, nodeTableBrowser);
+		registerAllServices(bc, edgeTableBrowser);
+		registerAllServices(bc, networkTableBrowser);
 
-		final Properties globalTableProp = new Properties();
-		registerService(bc, globalTableBrowser, ActionListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionLoadedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAddedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, RowsSetListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, RowsDeletedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, ActionListener.class);
+		registerService(bc, globalTableBrowser, SessionLoadedListener.class);
+		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class);
+		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
+		registerService(bc, globalTableBrowser, TableAddedListener.class);
+		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
+		registerService(bc, globalTableBrowser, RowsSetListener.class);
+		registerService(bc, globalTableBrowser, RowsDeletedListener.class);
 
 		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
 		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
