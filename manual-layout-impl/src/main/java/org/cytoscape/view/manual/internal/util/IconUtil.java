@@ -28,7 +28,7 @@ public abstract class IconUtil {
 	
 	public static final String CY_FONT_NAME = "cytoscape-3";
 	
-	public static final String RULER_COMBINED_SOLID = "&";
+	public static final String RULER_COMBINED_SOLID = "*";
 	
 	private IconUtil() {
 		// ...
