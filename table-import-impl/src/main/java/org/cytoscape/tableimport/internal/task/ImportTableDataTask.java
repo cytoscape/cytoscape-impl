@@ -22,6 +22,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -92,6 +93,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		@Override
 		public String toString() {
 			return name;
+		}
+		
+		public static TableType fromType(Class<? extends CyIdentifiable> type) {
+			if (type == CyNode.class) return NODE_ATTR;
+			if (type == CyEdge.class) return EDGE_ATTR;
+			if (type == CyNetwork.class) return NETWORK_ATTR;
+			
+			return null;
 		}
 	};
 
@@ -351,24 +360,33 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			newTableName = globalTable.getTitle();
 		}
 		
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		
 		if (networksPresent) {
 			final List<TableType> options = new ArrayList<>();
 			
 			for (TableType type : TableType.values())
 				options.add(type);
 			
-			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
-			dataTypeTargetForNetworkCollection.setSelectedValue(TableType.NODE_ATTR);
+			final CyNetwork currNet = appMgr.getCurrentNetwork();
+			final CyTable currTable = appMgr.getCurrentTable();
 			
+			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
-			dataTypeTargetForNetworkList.setSelectedValue(TableType.NODE_ATTR);
+			
+			TableType tableType = currTable != null ? TableType.fromType(netTblMgr.getTableType(currTable)) : null;
+			
+			if (tableType == null)
+				tableType = TableType.NODE_ATTR;
+			
+			dataTypeTargetForNetworkCollection.setSelectedValue(tableType);
+			dataTypeTargetForNetworkList.setSelectedValue(tableType);
 	
 			for (CyNetwork net : netMgr.getNetworkSet()) {
 				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 				name2NetworkMap.put(netName, net);
 			}
-			
-			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 			
 			final List<String> names = new ArrayList<>();
 			names.addAll(name2NetworkMap.keySet());
@@ -378,7 +396,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				targetNetworkList = new ListMultipleSelection<>(NO_NETWORKS);
 			} else {
 				targetNetworkList = new ListMultipleSelection<>(names);
-				final CyNetwork currNet = appMgr.getCurrentNetwork();
 				
 				if (currNet != null) {
 					final String currName = currNet.getRow(currNet).get(CyNetwork.NAME, String.class);
@@ -417,7 +434,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			
 			if (!rootNames.isEmpty()) {
 				targetNetworkCollection.setSelectedValue(rootNames.get(0));
-				final CyNetwork currNet = appMgr.getCurrentNetwork();
 				final CyRootNetwork currRootNet = currNet instanceof CySubNetwork ?
 						rootNetMgr.getRootNetwork(currNet) : null;
 		

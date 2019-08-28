@@ -175,6 +175,10 @@ public abstract class AbstractTableBrowser extends JPanel
 		return icon;
 	}
 	
+	public CyTable getCurrentTable() {
+		return currentTable;
+	}
+	
 	/**
 	 * Delete the given table from the JTable
 	 */

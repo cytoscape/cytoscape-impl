@@ -29,12 +29,14 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.awt.event.ActionListener;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
 import org.cytoscape.browser.internal.view.PopupMenuHelper;
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -93,5 +95,9 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Format Column...");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
+		
+		TableBrowserMediator mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser,
+				networkTableBrowser, globalTableBrowser, serviceRegistrar);
+		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 	}
 }
