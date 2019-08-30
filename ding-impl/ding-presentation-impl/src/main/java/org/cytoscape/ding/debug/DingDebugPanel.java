@@ -138,18 +138,20 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 	
 	
-	private JList<String> getList(FrameType type) {
+	private JList<String> getList(DebugFrameType type) {
 		switch(type) {
 			case BIRDS_EYE_VIEW: return birdList;
+			case MAIN_ANNOTAITONS:
 			case MAIN_FAST: return fastList;
 			case MAIN_SLOW: return slowList;
 			default: return null;
 		}
 	}
 	
-	private DefaultListModel<String> getModel(FrameType type) {
+	private DefaultListModel<String> getModel(DebugFrameType type) {
 		switch(type) {
 			case BIRDS_EYE_VIEW: return birdModel;
+			case MAIN_ANNOTAITONS:
 			case MAIN_FAST: return fastModel;
 			case MAIN_SLOW: return slowModel;
 			default: return null;
@@ -157,11 +159,14 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 
 	@Override
-	public void addFrameTime(FrameType type, long time) {
+	public void addFrameTime(DebugFrameType type, long time) {
 		var model = getModel(type);
 		var list = getList(type);
 		int i = model.size();
-		model.add(i, String.valueOf(time));
+		String message = String.valueOf(time);
+		if(type == DebugFrameType.MAIN_ANNOTAITONS)
+			message = "(annotations) " + message;
+		model.add(i, message);
 		list.ensureIndexIsVisible(i);
 	}
 	

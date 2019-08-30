@@ -6,11 +6,11 @@ public class DebugProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor delegate;
 	private final DebugCallback callback;
-	private final FrameType type;
+	private final DebugFrameType type;
 	
 	private long start;
 	
-	public DebugProgressMonitor(FrameType type, ProgressMonitor delegate, DebugCallback callback) {
+	public DebugProgressMonitor(DebugFrameType type, ProgressMonitor delegate, DebugCallback callback) {
 		this.type = type;
 		this.delegate = ProgressMonitor.notNull(delegate);
 		this.callback = callback;

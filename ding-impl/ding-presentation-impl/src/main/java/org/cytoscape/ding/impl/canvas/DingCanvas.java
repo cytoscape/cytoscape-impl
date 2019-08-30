@@ -51,13 +51,14 @@ public abstract class DingCanvas<T extends NetworkTransform> {
 		transform.setScaleFactor(scaleFactor);
 	}
 	
-	public NetworkTransform getTransform() {
+	public T getTransform() {
 		return transform;
 	}
 	
 	public abstract void paint(ProgressMonitor pm, RenderDetailFlags flags); 
 	
 	public T paintAndGet(ProgressMonitor pm, RenderDetailFlags flags) {
+		pm = ProgressMonitor.notNull(pm);
 		paint(pm, flags);
 		return transform;
 	}

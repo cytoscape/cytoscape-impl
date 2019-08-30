@@ -47,6 +47,7 @@ import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendStore.HandleKey;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation;
@@ -251,7 +252,7 @@ public class InputHandlerGlassPane extends JComponent {
 				deleteSelectedNodesAndEdges();
 			}
 			
-			re.updateView(true);
+			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		@Override
@@ -286,9 +287,8 @@ public class InputHandlerGlassPane extends JComponent {
 
 				re.getTransform().xformImageToNodeCoords(coords);
 				a.setLocation(coords[0], coords[1]);
-				
 				a.update();
-				re.updateView();
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
 			}
 		}
 		
@@ -399,7 +399,7 @@ public class InputHandlerGlassPane extends JComponent {
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
 			re.zoom(e.getWheelRotation());
-			re.updateView(true);
+			re.updateView(UpdateType.ALL_FULL);
 		}
 	}
 
@@ -614,7 +614,7 @@ public class InputHandlerGlassPane extends JComponent {
 			
 			hit = mousePressedCheckHit(e);
 			if(hit) {
-				re.updateView();
+				re.updateView(UpdateType.ALL_FAST);
 				e.consume(); // no selection rectangle or lasso
 			} else if(!isAdditiveSelect(e)) {
 				deselectAllOnRelease = true;
@@ -721,7 +721,7 @@ public class InputHandlerGlassPane extends JComponent {
 			} 
 
 			if(toggle != Toggle.NOCHANGE)
-				re.updateView();
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
 			
 			return toggle;
 		}
@@ -842,7 +842,7 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			mousePressedPoint = null;
-			re.updateView();
+			re.updateView(UpdateType.ALL_FULL);
 			
 			if(annotationMovingEdit != null && moveNodesEdit != null) {
 				CompositeCyEdit compositeEdit = new CompositeCyEdit("Move", registrar);
@@ -891,7 +891,7 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 			}
 			mouseDraggedHandleNodesAndEdges(e);
-			re.updateView();
+			re.updateView(UpdateType.ALL_FULL);
 		}
 
 		private void mouseDraggedHandleNodesAndEdges(MouseEvent e) {
@@ -1041,7 +1041,7 @@ public class InputHandlerGlassPane extends JComponent {
 				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY());
 				resizeAnnotation.setBounds(bounds);
 				resizeAnnotation.update();
-				re.updateView();
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
 				
 			} else if (repositionAnnotation != null) {
 				// MKTODO this is probably broken
@@ -1067,7 +1067,7 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 
 				repositionAnnotation.update();
-				re.updateView();
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
 			}
 		}
 		
@@ -1298,7 +1298,7 @@ public class InputHandlerGlassPane extends JComponent {
 				double deltaY = oldY - newY;
 				
 				re.pan(deltaX, deltaY);
-				re.updateView(false);
+				re.updateView(UpdateType.ALL_FAST);
 			}
 		}
 		
@@ -1311,7 +1311,7 @@ public class InputHandlerGlassPane extends JComponent {
 			mousePressedPoint = null;
 			undoPanEdit = null;
 			
-			re.updateView(true);
+			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		private Cursor createPanCursor() {

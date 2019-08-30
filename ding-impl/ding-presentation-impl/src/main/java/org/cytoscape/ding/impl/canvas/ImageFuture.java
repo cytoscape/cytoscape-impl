@@ -24,6 +24,10 @@ public class ImageFuture {
 		this(future, lastRenderDetail, null);
 	}
 	
+	public ImageFuture(Image image, RenderDetailFlags lastRenderDetail) {
+		this(CompletableFuture.completedFuture(image), lastRenderDetail);
+	}
+	
 	public void cancel() {
 		progressMonitor.cancel();
 	}

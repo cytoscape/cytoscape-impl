@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -24,7 +23,6 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  * Manages what used to be ContentChangedListener and ViewportChangedListener
  *
  */
-@SuppressWarnings("unused")
 public class CompositeImageCanvas {
 	
 	private final DRenderingEngine re;
@@ -140,14 +138,34 @@ public class CompositeImageCanvas {
 		var flags = getRenderDetailFlags();
 		pm.start();
 		
-		for(DingCanvas<NetworkImageBuffer> c : canvasList) {
-			Image canvasImage = c.paintAndGet(new NoOutputProgressMonitor(), flags).getImage();
+		for(var canvas : canvasList) {
+			Image canvasImage = canvas.paintAndGet(null,flags).getImage();
 			overlayImage(image.getImage(), canvasImage);
 		}
 		
 		pm.done();
-		var future = CompletableFuture.completedFuture(image.getImage());
-		return new ImageFuture(future ,flags);
+		return new ImageFuture(image.getImage() ,flags);
+	}
+	
+	/**
+	 * Paints on the current thread and blocks until painting is complete.
+	 * Returns a future that is already complete (isDone() returns true immediatly).
+	 */
+	public ImageFuture paintJustAnnotationsOnCurrentThread(ProgressMonitor pm) {
+		// MKTODO get rid of pm argument, not needed
+		pm = ProgressMonitor.notNull(pm);
+		var flags = getRenderDetailFlags();
+		pm.start();
+		
+		overlayImage(image.getImage(), backgroundColorCanvas.getTransform().getImage());
+		overlayImage(image.getImage(), backgroundAnnotationCanvas.paintAndGet(null,flags).getImage());
+		overlayImage(image.getImage(), edgeCanvas.getTransform().getImage());
+		overlayImage(image.getImage(), nodeCanvas.getTransform().getImage());
+		overlayImage(image.getImage(), foregroundAnnotationCanvas.paintAndGet(null,flags).getImage());
+		overlayImage(image.getImage(), annotationSelectionCanvas.paintAndGet(null,flags).getImage());
+		
+		pm.done();
+		return new ImageFuture(image.getImage(), flags);
 	}
 
 	
@@ -165,10 +183,10 @@ public class CompositeImageCanvas {
 		
 		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
-			DingCanvas<NetworkImageBuffer> c = canvasList.get(i);
+			var canvas = canvasList.get(i);
 			ProgressMonitor subPm = subPms.get(i);
 			f = f.thenApplyAsync(compositeImage -> {
-				Image image = c.paintAndGet(subPm, flags).getImage();
+				Image image = canvas.paintAndGet(subPm, flags).getImage();
 				return overlayImage(compositeImage, image);
 			}, singleThreadExecutor);
 		}

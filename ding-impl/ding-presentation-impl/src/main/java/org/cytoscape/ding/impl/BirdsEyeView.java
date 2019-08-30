@@ -15,8 +15,9 @@ import javax.swing.JComponent;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.CyActivator;
+import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
-import org.cytoscape.ding.debug.FrameType;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.model.CyNetwork;
@@ -140,7 +141,7 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 	
 	private ProgressMonitor getProgressMonitor() {
 		if(CyActivator.DEBUG)
-			return new DebugProgressMonitor(FrameType.BIRDS_EYE_VIEW, null, re.getDebugCallback());
+			return new DebugProgressMonitor(DebugFrameType.BIRDS_EYE_VIEW, null, re.getDebugCallback());
 		return null;
 	}
 	
@@ -200,7 +201,7 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 				double centerY = ((lastYMousePos - halfHeight) / myScaleFactor) + myYCenter;
 				
 				re.setCenter(centerX, centerY);
-				re.updateView(true);
+				re.updateView(UpdateType.ALL_FULL);
 			}
 		}
 
@@ -211,7 +212,7 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 					currMouseButton = 0;
 				}
 			}
-			re.updateView(true);
+			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		@Override
@@ -234,7 +235,7 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 				}
 				if (deltaX != 0 || deltaY != 0) {
 					re.pan(deltaX, deltaY);
-					re.updateView(false);
+					re.updateView(UpdateType.ALL_FAST);
 				}
 			}
 		}

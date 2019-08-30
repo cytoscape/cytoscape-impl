@@ -32,8 +32,8 @@ import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugCallback;
+import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
-import org.cytoscape.ding.debug.FrameType;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
 import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
@@ -97,6 +97,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
 	protected static int DEF_SNAPSHOT_SIZE = 400;
+	
+	public enum UpdateType {
+		ALL_FAST, // Render a fast frame
+		ALL_FULL,  // Render a fast frame, then start rendering a full frame async
+		JUST_ANNOTATIONS // Just render annotations fast
+	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	private final CyEventHelper eventHelper;
@@ -244,7 +250,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		private boolean annotationsLoaded = false;
 		private ImageFuture slowFuture;
 		private ImageFuture fastFuture;
-		private boolean needSlowFrame = true;
+		private UpdateType updateType = UpdateType.ALL_FULL;
 		
 		@Override
 		public void setBounds(int x, int y, int width, int height) {
@@ -268,10 +274,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
 			}, false); // don't set the dirty flag
 			
-			updateView(true);
+			updateView(UpdateType.ALL_FULL);
 		}
 		
-		public void updateView(boolean startRenderSlow) {
+		public void updateView(UpdateType updateType) {
 			// Run this on the EDT so there is no race condition with paint()
 			// Fast painting and slow painting don't happen concurrently.
 			invokeOnEDTAndWait(() -> {
@@ -284,9 +290,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				}
 				
 				// don't render slow frames while panning, only render slow when user releases mouse button
-				if(startRenderSlow) {
-					needSlowFrame = true;
-				}
+				this.updateType = updateType;
 				
 				repaint();
 			});
@@ -325,19 +329,24 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				}
 				
 				// RENDER: fast frame right now
-				var fastPm = debugPm(FrameType.MAIN_FAST, null);
-				fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
+				if(updateType == UpdateType.JUST_ANNOTATIONS) {
+					var fastPm = debugPm(DebugFrameType.MAIN_ANNOTAITONS, null);
+					fastFuture = fastCanvas.paintJustAnnotationsOnCurrentThread(fastPm);
+				} else {
+					var fastPm = debugPm(DebugFrameType.MAIN_FAST, null);
+					fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
+				}
 				future = fastFuture;
 				updateThumbnail(fastFuture);
 
 				// RENDER: start a slow frame if necessary
-				if(needSlowFrame && !sameDetail()) { 
-					var slowPm = debugPm(FrameType.MAIN_SLOW, getInputHandlerGlassPane().createProgressMonitor());
+				if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
+					var slowPm = debugPm(DebugFrameType.MAIN_SLOW, getInputHandlerGlassPane().createProgressMonitor());
 					slowFuture = slowCanvas.startPaintingSequential(slowPm);
 					slowFuture.thenRun(this::repaint);
 					slowFuture.thenRun(() -> updateThumbnail(slowFuture));
 				}
-				needSlowFrame = false;
+				updateType = UpdateType.ALL_FAST;
 			}
 			
 			Image image = future.join();
@@ -353,7 +362,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			super.update(g);
 		}
 		
-		private ProgressMonitor debugPm(FrameType type, ProgressMonitor pm) {
+		private ProgressMonitor debugPm(DebugFrameType type, ProgressMonitor pm) {
 			return CyActivator.DEBUG ? new DebugProgressMonitor(type, pm, debugCallback) : pm;
 		}
 		
@@ -413,22 +422,18 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			updateModel();
 		}
 		if(updateView) {
-			updateView(true);
+			updateView(UpdateType.ALL_FULL);
 		}
 		contentChanged = false;
 	}
 	
 	private void updateModelAndView() {
 		updateModel();
-		updateView(true);
-	}
-	
-	public void updateView() {
-		updateView(true);
+		updateView(UpdateType.ALL_FULL);
 	}
 	
 	
-	public void updateView(boolean startSlowPaint) {
+	public void updateView(UpdateType updateType) {
 		if(contentChanged) {
 			fireContentChanged();
 		}
@@ -439,7 +444,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setContentChanged(false);
 		setTransformChanged(false);
 	
-		renderComponent.updateView(startSlowPaint);
+		renderComponent.updateView(updateType);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
