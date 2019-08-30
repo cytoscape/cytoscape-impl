@@ -135,8 +135,8 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 	public void saveBounds() {
 		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
 		
-		initialBounds = transform.getNodeCoordinates(getBounds().getBounds2D());
-		initialUnion  = transform.getNodeCoordinates(union.getBounds2D());
+//		initialBounds = transform.getNodeCoordinates(getBounds().getBounds2D());
+//		initialUnion  = transform.getNodeCoordinates(union.getBounds2D());
 		
 		initialBoundsMap = new HashMap<>();
 		for(DingAnnotation da : selectedAnnotations) {
@@ -166,7 +166,7 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 			Rectangle2D rect = anchors[pos];
 			if (rect != null && rect.contains(x, y)) {
 				Position p = getPosition(pos);
-				return new AnchorLocation(p, rect.getX(), rect.getY());
+//				return new AnchorLocation(p, rect.getX(), rect.getY());
 			}
 		}
 		
@@ -198,14 +198,14 @@ public class AnnotationSelection extends DingComponent implements Iterable<DingA
 
 		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
 		Point2D nodePt   = transform.getNodeCoordinates(x, y);
-		Point2D offsetPt = transform.getNodeCoordinates(offset);
+//		Point2D offsetPt = transform.getNodeCoordinates(offset);
 		
-		double dx = nodePt.getX() - offsetPt.getX();
-		double dy = nodePt.getY() - offsetPt.getY();
+//		double dx = nodePt.getX() - offsetPt.getX();
+//		double dy = nodePt.getY() - offsetPt.getY();
 		
-		for(DingAnnotation a : annotationsToMove) {
-			a.setLocation(a.getX() + dx, a.getY() + dy);
-		}
+//		for(DingAnnotation a : annotationsToMove) {
+//			a.setLocation(a.getX() + dx, a.getY() + dy);
+//		}
 
 		updateBounds(); // MKTODO is this needed?
 	}

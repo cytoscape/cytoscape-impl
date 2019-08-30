@@ -4,6 +4,7 @@ import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANC
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
 
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -564,7 +565,7 @@ public class NetworkPicker {
 	}
 	
 	
-	public List<DingAnnotation> getAnnotationsAt(CanvasID canvasId, Point2D p) {
+	public List<DingAnnotation> getAnnotationsAt(CanvasID canvasId, Point p) {
 		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, false); // highest z-order first
 		Point2D nodeP = re.getTransform().getNodeCoordinates(p);
 		
@@ -584,14 +585,14 @@ public class NetworkPicker {
 	}
 	
 	
-	public List<DingAnnotation> getAnnotationsAt(Point2D p) {
+	public List<DingAnnotation> getAnnotationsAt(Point p) {
 		List<DingAnnotation> a = getAnnotationsAt(CanvasID.FOREGROUND, p);
 		a.addAll(getAnnotationsAt(CanvasID.BACKGROUND, p));
 		return a;
 	}
 	
 
-	public List<DingAnnotation> getAnnotationsInRectangle(Rectangle2D rect) {
+	public List<DingAnnotation> getAnnotationsInRectangle(Rectangle rect) {
 		Rectangle2D nodeRect = re.getTransform().getNodeCoordinates(rect);
 		List<DingAnnotation> anns = new ArrayList<>();
 		for(DingAnnotation a : re.getCyAnnotator().getAnnotations()) {

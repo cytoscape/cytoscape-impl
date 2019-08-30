@@ -307,8 +307,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public void setTarget(Point2D target) { 
-		// Convert target to node coordinates
-		this.target = re.getTransform().getNodeCoordinates(target); 
+		this.target = target; 
 		// updateBounds();
 		update();
 	}

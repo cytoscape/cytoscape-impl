@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Paint;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.TexturePaint;
 import java.awt.geom.Rectangle2D;
@@ -368,6 +369,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public Rectangle getComponentBounds() {
 		return renderComponent.getBounds();
+	}
+	
+	public Point getComponentCenter() {
+		var bounds = renderComponent.getBounds();
+		int centerX = bounds.x + bounds.width  / 2;
+		int centerY = bounds.y + bounds.height / 2;
+		return new Point(centerX, centerY);
 	}
 	
 	public NetworkPicker getPicker() {

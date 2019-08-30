@@ -66,11 +66,9 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 		canvas = new CompositeImageCanvas(re, lod);
 		
 		re.addTransformChangeListener(t -> {
-			System.out.println("BirdsEyeView.addTransformChangeListener()");
 			repaint();
 		});
 		re.addContentChangeListener(() -> {
-			System.out.println("BirdsEyeView.addContentChangeListener()");
 			contentChanged = true;
 			canvas.setBackgroundPaint(re.getBackgroundColor());
 			repaint();

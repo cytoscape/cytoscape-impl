@@ -343,7 +343,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		return usedForPreviews;
 	}
 
-
 	@Override
 	public void update() {
 		contentChanged();

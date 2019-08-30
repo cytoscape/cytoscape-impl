@@ -70,7 +70,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getTransform().getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 		this.mAnnotation = new BoundedTextAnnotationImpl(re, false);
 		this.create = true;
 
@@ -167,7 +167,8 @@ public class BoundedTextAnnotationDialog extends JDialog {
 			return;
 		}
 
-		mAnnotation.setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
+		var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
+		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
 		mAnnotation.update();
 		cyAnnotator.addAnnotation(mAnnotation);
 

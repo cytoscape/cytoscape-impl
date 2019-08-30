@@ -1,5 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.awt.Point;
+
 /*
  * #%L
  * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
@@ -48,7 +50,8 @@ public class AddAnnotationTaskFactory implements NetworkViewLocationTaskFactory 
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return null;
-		return new TaskIterator(new AddAnnotationTask(re, javaPt, annotationFactory));
+		Point p = new Point((int)javaPt.getX(), (int)javaPt.getY());
+		return new TaskIterator(new AddAnnotationTask(re, p, annotationFactory));
 	}
 
 	@Override

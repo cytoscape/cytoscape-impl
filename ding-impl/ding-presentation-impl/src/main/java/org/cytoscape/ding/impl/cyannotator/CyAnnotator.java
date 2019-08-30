@@ -25,7 +25,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection2;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -69,18 +69,15 @@ import org.slf4j.LoggerFactory;
 public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
 	private static final String ANNOTATION_ATTRIBUTE = "__Annotations";
-	
 	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
 	private static final int MAX_NAME_LENGH = 200;
 
 	private final DRenderingEngine re;
-//	private final AnnotationCanvas foreGroundCanvas;
-//	private final AnnotationCanvas backGroundCanvas;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
-	private final AnnotationSelection annotationSelection;
+	private final AnnotationSelection2 annotationSelection;
 	private AbstractAnnotation resizing;
-	private Rectangle2D resizeBounds;
+	private Rectangle2D resizeBounds; // node coordinates
 	private ArrowAnnotationImpl repositioning;
 	
 	private Set<DingAnnotation> annotationSet = new HashSet<>();
@@ -95,12 +92,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public CyAnnotator(DRenderingEngine re, AnnotationFactoryManager annotationFactoryManager, CyServiceRegistrar registrar) {
 		this.re = re;
 		this.registrar = registrar;
-		
-		// MKTODO shouldn't have direct access to the canvases
-//		this.foreGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.FOREGROUND);
-//		this.backGroundCanvas = re.getAnnotationCanvas(DingAnnotation.CanvasID.BACKGROUND);
 		this.annotationFactoryManager = annotationFactoryManager;
-		this.annotationSelection = new AnnotationSelection(this);
+		this.annotationSelection = new AnnotationSelection2(this);
 	}
 	
 	public void markUndoEdit(String label) {
@@ -134,16 +127,8 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		propChangeSupport.removePropertyChangeListener(propertyName, listener);
 	}
 	
-//	private void initListeners() {
-//		//We also setup this class as a ViewportChangeListener to the current networkview
-//		myViewportChangeListener=new MyViewportChangeListener();
-//		re.addViewportChangeListener(myViewportChangeListener);
-//	}
 	
 	public void dispose() {
-//		re.removeViewportChangeListener(myViewportChangeListener);
-//		foreGroundCanvas.dispose();
-//		backGroundCanvas.dispose();
 	}
 
 	/**
@@ -220,10 +205,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return null;
 	}
 
-//	public void update() {
-//		re.updateView();
-//	}
-
 	public DRenderingEngine getRenderingEngine() {
 		return re;
 	}
@@ -231,23 +212,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public CyServiceRegistrar getRegistrar() {
 		return registrar;
 	}
-	
-//	/**
-// 	 * Find all of our annotations that are at this point.  Return the top annotation
-// 	 * (the one with the lowest Z value) if there are more than one.
-// 	 */
-//	private DingAnnotation getComponentAt(CanvasID cnvs, int x, int y) {
-//		DingAnnotation top = null;
-//		
-//		for (DingAnnotation a : annotationSet) {
-//			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
-//				if (top == null || top.getZOrder() > a.getZOrder()) {
-//					top = a;
-//				}
-//			}
-//		}
-//		return top;
-//	}
 	
 	
 	/**
@@ -277,95 +241,9 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 
-//	/**
-// 	 * Find all of our annotations that are at this point. 
-// 	 */
-//	private List<DingAnnotation> getComponentsAt(AnnotationCanvas cnvs, int x, int y) {
-//		List<DingAnnotation> list = new ArrayList<>();
-//		
-//		// MKTODO it should not be necessary to z-sort, the canvas should return the annotations in z-order
-//		for (DingAnnotation a : annotationSet) {
-//			if (a.getCanvas().equals(cnvs) && a.contains(x, y)) {
-//				// Make sure to find the parent if this is a group
-//				while (a.getGroupParent() != null) {
-//					a = (DingAnnotation) a.getGroupParent();
-//				}
-//
-//				if (!list.contains(a))
-//					list.add(a);
-//			}
-//		}
-//
-//		// Now sort the list by Z order, smallest to largest
-//		Collections.sort(list, new ZComparator(cnvs));
-//		return list;
-//	}
-//
-////	// MKTODO should we do this???
-////	public DingAnnotation getAnnotationAt(Point2D position) {
-////		DingAnnotation a = getAnnotationAt(foreGroundCanvas, position);
-////		if(a == null)
-////			a = getAnnotationAt(backGroundCanvas, position);
-////		return a;
-////	}
-//	
-//	public DingAnnotation getAnnotationAt(AnnotationCanvas canvas, Point2D position) {
-//		DingAnnotation a = getComponentAt(canvas, (int)position.getX(), (int)position.getY());
-//		if(a != null) {
-//			while(a.getGroupParent() != null) {
-//				a = (DingAnnotation)a.getGroupParent();
-//			}
-//		}
-//		return a;
-//	}
-//
-//	public List<DingAnnotation> getAnnotationsAt(Point2D position) {
-//		List<DingAnnotation> a = getComponentsAt(foreGroundCanvas, (int)position.getX(), (int)position.getY());
-//		a.addAll(getComponentsAt(backGroundCanvas, (int)position.getX(), (int)position.getY()));
-//		return a;
-//	}
-//
-//	public List<DingAnnotation> getAnnotationsIn(Rectangle2D rect) {
-//		List<DingAnnotation> anns = new ArrayList<>();
-//		for (Annotation ann: getAnnotations()) {
-//			DingAnnotation d = (DingAnnotation)ann;
-//			Rectangle2D bounds = d.getBounds();
-//			if (d.getGroupParent() == null && rect.contains(bounds))
-//				anns.add(d);
-//		}
-//		return anns;
-//	}
-//	
-//	public List<DingAnnotation> getAnnotationsInPath(GeneralPath path) {
-//		List<DingAnnotation> anns = new ArrayList<>();
-//		for (Annotation ann: getAnnotations()) {
-//			DingAnnotation d = (DingAnnotation)ann;
-//			Rectangle2D bounds = d.getBounds();
-//			if(d.getGroupParent() == null && path.intersects(bounds))
-//				anns.add(d);
-//		}
-//		return anns;
-//	}
-	
-
-//	public void setSelection(AnnotationSelection selection) {
-//		re.setAnnotationSelection(selection);
-//	}
-
-//	public AnnotationCanvas getForeGroundCanvas() {
-//		return foreGroundCanvas;
-//	}
-//
-//	public AnnotationCanvas getBackGroundCanvas() {
-//		return backGroundCanvas;
-//	}
-	
-	
 	public AnnotationTree getAnnotationTree() {
 		return AnnotationTree.buildTree(annotationSet, this);
 	}
-	
-	
 	
 	public void checkCycle() throws IllegalAnnotationStructureException {
 		if(AnnotationTree.containsCycle(annotationSet)) {
@@ -469,7 +347,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public void setSelectedAnnotation(DingAnnotation a, boolean selected) {
 		if (selected) {
-//			requestFocusInWindow(a);
 			annotationSelection.add(a);
 		} else {
 			annotationSelection.remove(a);
@@ -479,15 +356,13 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public void clearSelectedAnnotations() {
 		if(annotationSelection.isEmpty())
 			return;
-		
-		for(DingAnnotation a : annotationSelection) {
+		for(var a : annotationSelection) {
 			a.setSelected(false);
 		}
 		annotationSelection.clear();
-//		re.updateView();
 	}
 
-	public AnnotationSelection getAnnotationSelection() {
+	public AnnotationSelection2 getAnnotationSelection() {
 		return annotationSelection;
 	}
 
@@ -498,7 +373,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		} else {
 			resizing = shape;
 			resizeBounds = shape.getBounds();
-//			requestFocusInWindow(resizing);
 		}
 	}
 
@@ -512,8 +386,6 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 
 	public void positionArrow(ArrowAnnotationImpl arrow) {
 		repositioning = arrow;
-//		if (repositioning != null)
-//			requestFocusInWindow(repositioning);
 	}
 
 	public ArrowAnnotationImpl getRepositioningArrow() {
@@ -748,56 +620,4 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return result;
 	}
 
-//	private void requestFocusInWindow(final Annotation annotation) {
-//		invokeOnEDT(() -> {
-//			if (annotation != null && annotation instanceof DingAnnotation)
-//				((DingAnnotation) annotation).getCanvas().requestFocusInWindow();
-//		});
-//	}
-
-/*
-	private String printCurrentAnnotations() {
-		String result = "Foreground: \n";
-		Component[] annotations=foreGroundCanvas.getComponents();
-		for(int i=0;i<annotations.length;i++){
-			if(annotations[i] instanceof Annotation) {
-				result += "  "+((Annotation)annotations[i]).toString()+"\n";
-			}
-		}
-		annotations=backGroundCanvas.getComponents();
-		result += "Background: \n";
-		for(int i=0;i<annotations.length;i++){
-			if(annotations[i] instanceof Annotation) {
-				result += "  "+((Annotation)annotations[i]).toString()+"\n";
-			}
-		}
-		return result;
-	}
-*/
-
-
-//	class ZComparator implements Comparator<DingAnnotation> {
-//		
-//		final AnnotationCanvas cnvs;
-//		
-//		public ZComparator(AnnotationCanvas c) {
-//			this.cnvs = c;
-//		}
-//		
-//		@Override
-//		public int compare(DingAnnotation o1, DingAnnotation o2) {
-//			int z1 = cnvs.getZOrder(o1);
-//			int z2 = cnvs.getZOrder(o2);
-//			if (z1 < z2) return -1;
-//			if (z1 > z2) return 1;
-//			return 0;
-//		}
-//
-//		public boolean equals(DingAnnotation o1, DingAnnotation o2) {
-//			int z1 = cnvs.getZOrder(o1);
-//			int z2 = cnvs.getZOrder(o2);
-//			if (z1 == z2) return true;
-//			return false;
-//		}
-//	}
 }

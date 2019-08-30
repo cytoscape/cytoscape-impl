@@ -70,7 +70,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getTransform().getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 		this.shapeAnnotation = new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false);
 		this.create = true;
 
@@ -158,7 +158,8 @@ public class ShapeAnnotationDialog extends JDialog {
 			return;
 		}
 		
-		shapeAnnotation.setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
+		var annotationLocation = re.getTransform().getNodeCoordinates(startingLocation);
+		shapeAnnotation.setLocation(annotationLocation.getX(), annotationLocation.getY());
 		shapeAnnotation.update();
 		cyAnnotator.addAnnotation(shapeAnnotation);
 

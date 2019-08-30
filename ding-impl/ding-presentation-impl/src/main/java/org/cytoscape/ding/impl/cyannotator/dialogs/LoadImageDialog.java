@@ -78,7 +78,7 @@ public class LoadImageDialog extends JDialog {
 		this.re = re;
 		this.cgm = cgm;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getTransform().getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 
 		initComponents();
 	}
@@ -151,7 +151,8 @@ public class LoadImageDialog extends JDialog {
 					url, image, re.getZoom(), cgm
 			);
 
-			newOne.setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
+			var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
+			newOne.setLocation(nodePoint.getX(), nodePoint.getY());
 			newOne.update();
 			cyAnnotator.addAnnotation(newOne);
 			

@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl.canvas;
 
 import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.NoninvertibleTransformException;
@@ -130,46 +132,44 @@ public abstract class NetworkTransform {
 	public Rectangle2D getNodeCoordinates(Rectangle2D bounds) {
 		double x1 = bounds.getX();
 		double y1 = bounds.getY();
-		double x2 = bounds.getX()+bounds.getWidth();
-		double y2 = bounds.getY()+bounds.getHeight();
-		
 		double[] p1 = {x1, y1};
 		xformImageToNodeCoords(p1);
 
+		double x2 = bounds.getX()+bounds.getWidth();
+		double y2 = bounds.getY()+bounds.getHeight();
 		double[] p2 = {x2, y2};
 		xformImageToNodeCoords(p2);
 
 		return new Rectangle2D.Double(p1[0], p1[1], p2[0]-p1[0], p2[1]-p1[1]);
 	}
 
-	public Rectangle2D getImageCoordinates(Rectangle2D bounds) {
+	public Rectangle getImageCoordinates(Rectangle2D bounds) {
 		double x1 = bounds.getX();
 		double y1 = bounds.getY();
-		double x2 = bounds.getX()+bounds.getWidth();
-		double y2 = bounds.getY()+bounds.getHeight();
-		
 		double[] p1 = {x1, y1};
 		xformNodeToImageCoords(p1);
 
+		double x2 = bounds.getX()+bounds.getWidth();
+		double y2 = bounds.getY()+bounds.getHeight();
 		double[] p2 = {x2, y2};
 		xformNodeToImageCoords(p2);
 
-		return new Rectangle2D.Double(p1[0], p1[1], p2[0]-p1[0], p2[1]-p1[1]);
+		return new Rectangle((int)p1[0], (int)p1[1], (int)(p2[0]-p1[0]), (int)(p2[1]-p1[1]));
 	}
 
-	public Point2D getNodeCoordinates(int x, int y) {
+	public Point2D getNodeCoordinates(double x, double y) {
 		double[] p1 = {x, y};
 		xformImageToNodeCoords(p1);
 		return new Point2D.Double(p1[0], p1[1]);
 	}
 	
 	public Point2D getNodeCoordinates(Point2D p) {
-		return getNodeCoordinates((int)p.getX(), (int)p.getY());
+		return getNodeCoordinates(p.getX(), p.getY());
 	}
 
-	public Point2D getImageCoordinates(double x, double y) {
+	public Point getImageCoordinates(double x, double y) {
 		double[] p1 = {x, y};
 		xformNodeToImageCoords(p1);
-		return new Point2D.Double(p1[0], p1[1]);
+		return new Point((int)p1[0], (int)p1[1]);
 	}
 }

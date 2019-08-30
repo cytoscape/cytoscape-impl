@@ -65,7 +65,7 @@ public class TextAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getTransform().getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 		this.mAnnotation = new TextAnnotationImpl(re, false);
 		create = true;
 		initComponents();
@@ -153,7 +153,8 @@ public class TextAnnotationDialog extends JDialog {
 		}
 
 		// Apply
-		mAnnotation.setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
+		var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
+		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
 		// We need to have bounds or it won't render
 		mAnnotation.setBounds(mAnnotation.getBounds());
 		mAnnotation.update();

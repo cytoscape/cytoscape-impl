@@ -30,6 +30,7 @@ public class CompositeImageCanvas {
 	private final DRenderingEngine re;
 	
 	// Canvas layers from top to bottom
+	private final AnnotationSelectionCanvas annotationSelectionCanvas;
 	private final AnnotationCanvas<NetworkImageBuffer> foregroundAnnotationCanvas;
 	private final NodeCanvas<NetworkImageBuffer> nodeCanvas;
 	private final EdgeCanvas<NetworkImageBuffer> edgeCanvas;
@@ -51,6 +52,7 @@ public class CompositeImageCanvas {
 		this.image = new NetworkImageBuffer(w, h);
 		
 		canvasList = Arrays.asList(
+			annotationSelectionCanvas = new AnnotationSelectionCanvas(new NetworkImageBuffer(w, h), re),
 			foregroundAnnotationCanvas = new AnnotationCanvas<>(new NetworkImageBuffer(w, h), FOREGROUND, re),
 			nodeCanvas = new NodeCanvas<>(new NetworkImageBuffer(w, h), re),
 			edgeCanvas = new EdgeCanvas<>(new NetworkImageBuffer(w, h), re),
@@ -61,7 +63,7 @@ public class CompositeImageCanvas {
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
-		weights = new double[] {1, 1, 10, 3, 1}; // MKTODO not very elegant
+		weights = new double[] {1, 1, 10, 3, 1, 1}; // MKTODO not very elegant
 	}
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod) {
