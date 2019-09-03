@@ -25,7 +25,7 @@ import javax.swing.event.SwingPropertyChangeSupport;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
-import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection2;
+import org.cytoscape.ding.impl.cyannotator.annotations.AnnotationSelection;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -75,7 +75,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private final DRenderingEngine re;
 	private final AnnotationFactoryManager annotationFactoryManager; 
 	private final CyServiceRegistrar registrar; 
-	private final AnnotationSelection2 annotationSelection;
+	private final AnnotationSelection annotationSelection;
 	private AbstractAnnotation resizing;
 	private Rectangle2D resizeBounds; // node coordinates
 	private ArrowAnnotationImpl repositioning;
@@ -93,7 +93,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		this.re = re;
 		this.registrar = registrar;
 		this.annotationFactoryManager = annotationFactoryManager;
-		this.annotationSelection = new AnnotationSelection2(this);
+		this.annotationSelection = new AnnotationSelection(this);
 	}
 	
 	public void markUndoEdit(String label) {
@@ -362,7 +362,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		annotationSelection.clear();
 	}
 
-	public AnnotationSelection2 getAnnotationSelection() {
+	public AnnotationSelection getAnnotationSelection() {
 		return annotationSelection;
 	}
 
