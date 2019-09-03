@@ -65,6 +65,7 @@ public final class BirdsEyeView extends JComponent implements RenderingEngine<Cy
 		
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		canvas = new CompositeImageCanvas(re, lod);
+		canvas.showAnnotationSelection(false);
 		
 		re.addTransformChangeListener(t -> {
 			repaint();

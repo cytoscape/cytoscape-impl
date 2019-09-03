@@ -356,7 +356,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	public void clearSelectedAnnotations() {
 		if(annotationSelection.isEmpty())
 			return;
-		for(var a : annotationSelection) {
+		for(var a : annotationSelection.getSelectedAnnotations()) {
 			a.setSelected(false);
 		}
 		annotationSelection.clear();

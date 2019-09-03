@@ -144,8 +144,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			case MAIN_ANNOTAITONS:
 			case MAIN_FAST: return fastList;
 			case MAIN_SLOW: return slowList;
-			default: return null;
 		}
+		return null;
 	}
 	
 	private DefaultListModel<String> getModel(DebugFrameType type) {
@@ -154,8 +154,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			case MAIN_ANNOTAITONS:
 			case MAIN_FAST: return fastModel;
 			case MAIN_SLOW: return slowModel;
-			default: return null;
 		}
+		return null;
 	}
 
 	@Override

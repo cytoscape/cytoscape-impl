@@ -880,21 +880,31 @@ public class InputHandlerGlassPane extends JComponent {
 			if(get(SelectionLassoListener.class).isDragging() || get(SelectionRectangleListener.class).isDragging())
 				return;
 			
+			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
+			
+			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
+				mouseDraggedHandleNodesAndEdges(selectedNodes, anchorsToMove, e);
+			}
+			
 			if(!annotationSelection.isEmpty()) {
 				if(annotationSelection.isResizing()) {
 					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
-					return;
 				} else {
 					annotationSelection.moveSelection(e.getX(), e.getY());
 					annotationSelection.setMouseOffset(e.getPoint());
 				}
 			}
-			mouseDraggedHandleNodesAndEdges(e);
-			re.updateView(UpdateType.ALL_FULL);
+			
+			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
+				re.updateView(UpdateType.ALL_FAST);
+			} else {
+				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			}
 		}
 
-		private void mouseDraggedHandleNodesAndEdges(MouseEvent e) {
+		private void mouseDraggedHandleNodesAndEdges(Collection<View<CyNode>> selectedNodes, Set<HandleKey> anchorsToMove, MouseEvent e) {
 			if(moveNodesEdit == null)
 				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
 			
@@ -928,11 +938,6 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 			}
 
-			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			
-			// MKTODO rename to 'handlesToMove'
-			Set<HandleKey> anchorsToMove = re.getBendStore().getSelectedHandles();
-			
 			if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
 				for (View<CyNode> node : selectedNodes) {
 					View<CyNode> mutableNode = re.getViewModel().getNodeView(node.getSUID());

@@ -10,8 +10,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -82,7 +82,8 @@ public class AnnotationSelection2 implements Iterable<DingAnnotation> {
 	}
 	
 	public Collection<DingAnnotation> getSelectedAnnotations() {
-		return Collections.unmodifiableCollection(selectedAnnotations);
+		// This method exists for clients that want to avoid ConcurrentModificationException
+		return new ArrayList<>(selectedAnnotations);
 	}
 	
 	private void saveBounds() {
@@ -145,6 +146,7 @@ public class AnnotationSelection2 implements Iterable<DingAnnotation> {
 			resizeAnnotationRelative((AbstractAnnotation)a, daInitialBounds, savedUnion, newOutlineBounds);
 			a.update();
 		}
+		updateBounds();
 	}
 	
 	private static void resizeAnnotationRelative(AbstractAnnotation da, Rectangle2D daBounds, Rectangle2D initialBounds, Rectangle2D outlineBounds) {
@@ -248,6 +250,7 @@ public class AnnotationSelection2 implements Iterable<DingAnnotation> {
 		for(var a : annotationsToMove) {
 			a.setLocation(a.getX() + dx, a.getY() + dy);
 		}
+		updateBounds();
 	}
 	
 	public void stopMoving() {
@@ -298,19 +301,23 @@ public class AnnotationSelection2 implements Iterable<DingAnnotation> {
 	
 	private Rectangle getShapeImageCoords() {
 		var imageUnion = re.getTransform().getImageCoordinates(union);
-		return new Rectangle(border*4, border*4, imageUnion.width+border*2, imageUnion.height+border*2);
+		return new Rectangle(imageUnion.x - border, imageUnion.y - border, imageUnion.width+border*2, imageUnion.height+border*2);
 	}
 	
 	
 	private void updateAnchors(Rectangle shape) { // shape in image coords
-		anchors.put(Position.NORTH_WEST, new Rectangle(0,                    0,                     border*4, border*4));
-		anchors.put(Position.NORTH,      new Rectangle(shape.width/2,        0,                     border*4, border*4));
-		anchors.put(Position.NORTH_EAST, new Rectangle(shape.width+border*2, 0,                     border*4, border*4));
-		anchors.put(Position.EAST,       new Rectangle(shape.width+border*2, shape.height/2,        border*4, border*4));
-		anchors.put(Position.SOUTH_EAST, new Rectangle(shape.width+border*2, shape.height+border*2, border*4, border*4));
-		anchors.put(Position.SOUTH,      new Rectangle(shape.width/2,        shape.height+border*2, border*4, border*4));
-		anchors.put(Position.SOUTH_WEST, new Rectangle(0,                    shape.height+border*2, border*4, border*4));
-		anchors.put(Position.WEST,       new Rectangle(0,                    shape.height/2,        border*4, border*4));
+		final int s = border*4;
+		anchors.clear();
+		anchors.put(Position.NORTH_WEST, new Rectangle(0,                 0,                  s, s));
+		anchors.put(Position.NORTH,      new Rectangle(shape.width/2+s/2, 0,                  s, s));
+		anchors.put(Position.NORTH_EAST, new Rectangle(shape.width+s,     0,                  s, s));
+		anchors.put(Position.WEST,       new Rectangle(0,                 shape.height/2+s/2, s, s));
+		anchors.put(Position.EAST,       new Rectangle(shape.width+s,     shape.height/2+s/2, s, s));
+		anchors.put(Position.SOUTH_WEST, new Rectangle(0,                 shape.height+s,     s, s));
+		anchors.put(Position.SOUTH,      new Rectangle(shape.width/2+s/2, shape.height+s,     s, s));
+		anchors.put(Position.SOUTH_EAST, new Rectangle(shape.width+s,     shape.height+s,     s, s));
+		
+		anchors.values().forEach(r -> r.translate(shape.x-s, shape.y-s));
 	}       
 	
 	

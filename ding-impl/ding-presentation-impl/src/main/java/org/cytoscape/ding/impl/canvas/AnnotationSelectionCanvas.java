@@ -9,6 +9,7 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 public class AnnotationSelectionCanvas extends DingCanvas<NetworkImageBuffer> {
 
 	private final DRenderingEngine re;
+	private boolean show = true;
 	
 	public AnnotationSelectionCanvas(NetworkImageBuffer transform, DRenderingEngine re) {
 		super(transform);
@@ -16,17 +17,19 @@ public class AnnotationSelectionCanvas extends DingCanvas<NetworkImageBuffer> {
 	}
 	
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
+		if(!show)
+			return;
 		if(pm.isCancelled())
 			return;
 		
 		var selection = re.getCyAnnotator().getAnnotationSelection();
-		if(selection == null || selection.isEmpty())
-			return;
 		
 		Graphics2D g = transform.getGraphics();
-		g.setTransform(transform.getAffineTransform());
-//		g.translate(selection.getX(), selection.getY());
-		selection.paint(g);
+		selection.paint(g);		
 		g.dispose();
+	}
+
+	public void show(boolean show) {
+		this.show = show;
 	}
 }

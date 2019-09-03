@@ -57,6 +57,8 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	}
 	
 	private static Image scaleAndClip(Image image, int w, int h) {
+		if(w <= 0 || h <= 0)
+			return null;
 		final int vw = image.getWidth(null);
 		final int vh = image.getHeight(null);
 		
