@@ -234,13 +234,6 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>com.apple.developer</groupId>
-			<artifactId>AppleJavaExtensions</artifactId>
-			<version>1.6</version>
-			<scope>compile</scope>
-		</dependency>
-		
-		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
