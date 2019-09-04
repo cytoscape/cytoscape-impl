@@ -33,8 +33,8 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
 public class PrintLOD implements GraphLOD {
 	
 	@Override
-	public byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-		return 0;
+	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+		return RenderEdges.TOUCHING_VISIBLE_NODES;
 	}
 
 	@Override

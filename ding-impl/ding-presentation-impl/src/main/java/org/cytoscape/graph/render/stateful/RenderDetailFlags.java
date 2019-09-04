@@ -3,13 +3,9 @@ package org.cytoscape.graph.render.stateful;
 import java.awt.geom.Rectangle2D;
 
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.util.intr.LongHash;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
-import org.cytoscape.view.model.SnapshotEdgeInfo;
-import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * The GraphLOD combined with the number of visible nodes/edges tells us exactly what level of
@@ -29,14 +25,14 @@ public class RenderDetailFlags {
 
 	
 	private final int lodBits;
-	private final int renderEdges;
+	private final RenderEdges renderEdges;
 	
-	private RenderDetailFlags(int lodBits, int renderEdges) {
+	private RenderDetailFlags(int lodBits, RenderEdges renderEdges) {
 		this.lodBits = lodBits;
 		this.renderEdges = renderEdges;
 	}
 	
-	public int renderEdges() {
+	public RenderEdges renderEdges() {
 		return renderEdges;
 	}
 	
@@ -52,67 +48,76 @@ public class RenderDetailFlags {
 		return not(RenderDetailFlags.LOD_HIGH_DETAIL);
 	}
 	
+	
+	public static RenderEdges renderEdges(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
+		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
+		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
+		
+		final int visibleNodeCount = nodeHits.size();
+		final int totalNodeCount = netView.getNodeCount();
+		final int totalEdgeCount = netView.getEdgeCount();
+		
+		return lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
+	}
+	
 	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
-		final int renderNodeCount;
-		final int renderEdgeCount;
 		final int visibleNodeCount = nodeHits.size();
 		final int totalNodeCount = netView.getNodeCount();
 		final int totalEdgeCount = netView.getEdgeCount();
-		final byte renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
+		final RenderEdges renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 		
-		final float[] floatBuff = new float[4];
+		final int renderNodeCount;
+		final int renderEdgeCount;
 		
-		if (renderEdges > 0) {
-			int runningNodeCount = 0;
-			while (nodeHits.hasNext()) {
-				nodeHits.nextExtents(floatBuff);
-				if ((floatBuff[0] != floatBuff[2]) && (floatBuff[1] != floatBuff[3]))
-					runningNodeCount++;
-			}
-
-			renderNodeCount = runningNodeCount;
+		if (renderEdges == RenderEdges.ALL) {
+			renderNodeCount = visibleNodeCount;
 			renderEdgeCount = totalEdgeCount;
-		} else if (renderEdges < 0) {
-			int runningNodeCount = 0;
-			while (nodeHits.hasNext()) {
-				nodeHits.nextExtents(floatBuff);
-				if ((floatBuff[0] != floatBuff[2]) && (floatBuff[1] != floatBuff[3]))
-					runningNodeCount++;
-			}
-
-			renderNodeCount = runningNodeCount;
+		} else if (renderEdges == RenderEdges.NONE) {
+			renderNodeCount = visibleNodeCount;
 			renderEdgeCount = 0;
-		} else {
-			int runningNodeCount = 0;
-			int runningEdgeCount = 0;
-			LongHash nodeBuff = new LongHash();
+		} else { // visible nodes
 			
-			while (nodeHits.hasNext()) {
-				final long nodeSuid = nodeHits.nextExtents(floatBuff);
-
-				if ((floatBuff[0] != floatBuff[2]) && (floatBuff[1] != floatBuff[3]))
-					runningNodeCount++;
-
-				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
-
-				for ( View<CyEdge> e : touchingEdges ) {
-					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
-					boolean isVisible = Boolean.TRUE.equals(e.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
-					if (!isVisible)
-						continue;
-					long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-					if (nodeBuff.get(otherNode) < 0)
-						runningEdgeCount++;
-				}
-				nodeBuff.put(nodeSuid);
+			// Calling getAdjacentEdgeIterable() for every node is too slow, gets called on every frame.
+//			final float[] floatBuff = new float[4];
+//			int runningNodeCount = 0;
+//			int runningEdgeCount = 0;
+//			LongHash nodeBuff = new LongHash();
+//			
+//			while (nodeHits.hasNext()) {
+//				final long nodeSuid = nodeHits.nextExtents(floatBuff);
+//
+//				if ((floatBuff[0] != floatBuff[2]) && (floatBuff[1] != floatBuff[3]))
+//					runningNodeCount++;
+//
+//				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
+//
+//				for ( View<CyEdge> e : touchingEdges ) {
+//					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
+//					boolean isVisible = Boolean.TRUE.equals(e.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
+//					if (!isVisible)
+//						continue;
+//					long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+//					if (nodeBuff.get(otherNode) < 0)
+//						runningEdgeCount++;
+//				}
+//				nodeBuff.put(nodeSuid);
+//			}
+//
+//			renderNodeCount = runningNodeCount;
+//			renderEdgeCount = runningEdgeCount;
+//			nodeBuff.empty();
+			
+			if(visibleNodeCount <= 0) {
+				renderNodeCount = 0;
+				renderEdgeCount = 0;
+			} else {
+				renderNodeCount = visibleNodeCount;
+				// Instead use a simple heuristic, if half the nodes are visible then assume half the edges are visible
+				renderEdgeCount = 2 * (int)(totalEdgeCount * ((double)visibleNodeCount / (double)totalNodeCount));
 			}
-
-			renderNodeCount = runningNodeCount;
-			renderEdgeCount = runningEdgeCount;
-			nodeBuff.empty();
 		}
 		
 		int lodBits = lodToBits(renderNodeCount, renderEdgeCount, lod);
@@ -149,7 +154,7 @@ public class RenderDetailFlags {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + lodBits;
-		result = prime * result + renderEdges;
+		result = prime * result + renderEdges.hashCode();
 		return result;
 	}
 

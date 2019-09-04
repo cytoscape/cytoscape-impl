@@ -46,7 +46,6 @@ import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
-import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -395,7 +394,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return fastCanvas.getTransform();
 	}
 	
-	public GraphLOD getGraphLOD() {
+	public DingGraphLOD getGraphLOD() {
 		return dingGraphLOD;
 	}
 	

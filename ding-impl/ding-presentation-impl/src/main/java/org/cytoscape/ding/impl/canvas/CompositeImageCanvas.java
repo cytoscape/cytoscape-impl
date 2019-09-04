@@ -61,7 +61,7 @@ public class CompositeImageCanvas {
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
-		weights = new double[] {1, 1, 10, 3, 1, 1}; // MKTODO not very elegant
+		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
 	}
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod) {
@@ -135,7 +135,7 @@ public class CompositeImageCanvas {
 	
 	/**
 	 * Paints on the current thread and blocks until painting is complete.
-	 * Returns a future that is already complete (isDone() returns true immediatly).
+	 * Returns a future that is already complete.
 	 */
 	public ImageFuture paintOnCurrentThread(ProgressMonitor pm) {
 		// MKTODO get rid of pm argument, not needed
@@ -154,7 +154,8 @@ public class CompositeImageCanvas {
 	
 	/**
 	 * Paints on the current thread and blocks until painting is complete.
-	 * Returns a future that is already complete (isDone() returns true immediatly).
+	 * Only repaints the annotation layers, the node/edge layer images from the previous frame are reused.
+	 * Returns a future that is already complete.
 	 */
 	public ImageFuture paintJustAnnotationsOnCurrentThread(ProgressMonitor pm) {
 		// MKTODO get rid of pm argument, not needed
@@ -189,7 +190,7 @@ public class CompositeImageCanvas {
 		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
-			ProgressMonitor subPm = subPms.get(i);
+			var subPm = subPms.get(i);
 			f = f.thenApplyAsync(compositeImage -> {
 				Image image = canvas.paintAndGet(subPm, flags).getImage();
 				return overlayImage(compositeImage, image);
@@ -216,9 +217,9 @@ public class CompositeImageCanvas {
 		
 		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
-			DingCanvas<NetworkImageBuffer> c = canvasList.get(i);
-			ProgressMonitor subPm = subPms.get(i);
-			var cf = CompletableFuture.supplyAsync(() -> c.paintAndGet(subPm, flags).getImage(), executor);
+			var canvas = canvasList.get(i);
+			var subPm = subPms.get(i);
+			var cf = CompletableFuture.supplyAsync(() -> canvas.paintAndGet(subPm, flags).getImage(), executor);
 			f = f.thenCombineAsync(cf, this::overlayImage, executor);
 		}
 		f.thenRun(pm::done);

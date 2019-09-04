@@ -65,6 +65,7 @@ import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
@@ -1358,7 +1359,13 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private boolean edgeSelectionEnabled() {
-		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION);
+		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
+			return false;
+		}
+		var snapshot = re.getViewModelSnapshot();
+		var fastLod = re.getGraphLOD().faster();
+		RenderEdges edges = RenderDetailFlags.renderEdges(snapshot, re.getTransform(), fastLod);
+		return edges != RenderEdges.NONE;
 	}
 	
 	private boolean isLODEnabled(int flag) {

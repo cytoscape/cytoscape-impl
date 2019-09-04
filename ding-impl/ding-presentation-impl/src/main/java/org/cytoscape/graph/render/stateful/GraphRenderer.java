@@ -52,6 +52,7 @@ import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.util.intr.LongHash;
@@ -137,7 +138,7 @@ public final class GraphRenderer {
 		// Render the edges first.  No edge shall be rendered twice.  Render edge labels.  
 		// A label is not necessarily on top of every edge; it is only on top of the edge it belongs to.
 
-		if(flags.renderEdges() < 0) {
+		if(flags.renderEdges() == RenderEdges.NONE) {
 			return;
 		}
 		
@@ -153,7 +154,7 @@ public final class GraphRenderer {
 		
 		final SpacialIndex2DEnumerator<Long> nodeHits;
 		Rectangle2D.Float area = grafx.getTransform().getNetworkVisibleAreaNodeCoords();
-		if (flags.renderEdges() > 0)
+		if (flags.renderEdges() == RenderEdges.ALL)
 			// We want to render edges in the same order (back to front) that
 			// we would use to render just edges on visible nodes; this is assuming
 			// that our spacial index has the subquery order-preserving property.

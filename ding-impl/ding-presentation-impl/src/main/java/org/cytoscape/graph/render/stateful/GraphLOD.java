@@ -34,6 +34,13 @@ package org.cytoscape.graph.render.stateful;
  * sense to become familiar with the API cytoscape.render.immed.GraphGraphics.
  */
 public interface GraphLOD {
+	
+	public enum RenderEdges {
+		NONE,
+		TOUCHING_VISIBLE_NODES,
+		ALL
+	}
+	
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
 	 * only those edges which touch a visible node.  By default
@@ -58,8 +65,8 @@ public interface GraphLOD {
 	 *   positive if all edges are to be rendered, or negative if no edges
 	 *   are to be rendered.
 	 */
-	default byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-		return 0;
+	default RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+		return RenderEdges.TOUCHING_VISIBLE_NODES;
 	}
 
 	/**

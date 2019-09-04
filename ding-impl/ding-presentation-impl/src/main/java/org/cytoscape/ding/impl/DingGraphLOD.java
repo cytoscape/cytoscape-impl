@@ -92,7 +92,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	public GraphLOD faster() {
 		return new GraphLOD() {
 			@Override
-			public byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+			public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 				// This is the only difference, we pass renderEdges=false
 				return DingGraphLOD.this.renderEdges(false, visibleNodeCount, totalNodeCount, totalEdgeCount);
 			}
@@ -194,21 +194,21 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	 *         are to be rendered.
 	 */
 	@Override
-	public byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		return renderEdges(true, visibleNodeCount, totalNodeCount, totalEdgeCount);
 	}
 
-	private byte renderEdges(boolean drawEdges, int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+	private RenderEdges renderEdges(boolean drawEdges, int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
 			// Since we don't know the visible edge count, use visible node count as a proxy
 			// System.out.println("DingGraphLOD: renderEdges("+visibleNodeCount+","+totalNodeCount+","+totalEdgeCount+")");
 			// System.out.println("DingGraphLOD: drawEdges = "+drawEdges);
 			if (drawEdges || visibleNodeCount <= Math.max(edgeArrowThreshold, edgeLabelThreshold)/2 ) {
-				return (byte) 0;
+				return RenderEdges.TOUCHING_VISIBLE_NODES;
 			}
-			return (byte) (-1);
+			return RenderEdges.NONE;
 		} else {
-			return (byte) 1;
+			return RenderEdges.ALL;
 		}
 	}
 	
