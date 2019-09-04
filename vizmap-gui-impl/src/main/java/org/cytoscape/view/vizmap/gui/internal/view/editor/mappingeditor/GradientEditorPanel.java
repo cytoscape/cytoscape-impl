@@ -42,12 +42,11 @@ import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.CyColorPaletteChooser;
-import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.util.color.BrewerType;
 import org.cytoscape.util.color.Palette;
 import org.cytoscape.util.color.PaletteType;
-import org.cytoscape.util.color.PaletteProviderManager;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
@@ -225,11 +224,10 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
 		// Currently, there is no mapping.
-		if (mapping.getPointCount() == 0) {
+		if (mapping.getPointCount() == 0)
 			createSimpleGradient();
-		} else {
+		else
 			updateGradient();
-		}
 
 		update();
 	}
@@ -247,7 +245,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		Color equalVal = Color.WHITE;
 		Color greaterVal = previousRange.greaterValue;
 
-		lowerRange = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
+		lowerRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 
 		final T value = NumberConverter.convert(columnType, maxValue);
 		mapping.addPoint(value, lowerRange);
@@ -286,9 +284,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 			getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-			lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-			midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+			lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+			midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+			upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 			// Add three points.
 			mapping.addPoint(
@@ -326,9 +324,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -345,9 +343,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -367,9 +365,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -388,9 +386,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 	
-				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
 	
 				// Add three points.
 				mapping.addPoint(
@@ -414,10 +412,12 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	protected void deleteButtonActionPerformed(final ActionEvent evt) {
 		final int selectedIndex = getSlider().getSelectedIndex();
 
-		if (0 <= selectedIndex) {
+		if (selectedIndex >= 0) {
 			getSlider().getModel().removeThumb(selectedIndex);
+			
 			mapping.removePoint(selectedIndex);
 			updateMap();
+			
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			appMgr.getCurrentNetworkView().updateView();
 			
@@ -435,24 +435,23 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		Color greaterVal = mapping.getPoint(selected).getRange().greaterValue;
 
 		int numPoints = mapping.getAllPoints().size();
+		
 		if (numPoints > 1) {
-			if (selected == 0)
+			if (selected == 0) {
 				greaterVal = newColor;
-			else if (selected == (numPoints - 1))
+			} else if (selected == (numPoints - 1)) {
 				lesserVal = newColor;
-			else {
+			} else {
 				lesserVal = newColor;
 				greaterVal = newColor;
 			}
 		}
 
-		final BoundaryRangeValues<Color> brv = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
-
+		final BoundaryRangeValues<Color> brv = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 		mapping.getPoint(selected).setRange(brv);
 
-		if (numPoints > 1) {
+		if (numPoints > 1)
 			getSlider().repaint();
-		}
 
 		userEdited = true;
 	}
@@ -464,11 +463,13 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		final double minValue = tracer.getMin(type);
 
 		final List<Thumb<Color>> sorted = getSlider().getModel().getSortedThumbs();
+		
 		for (Thumb<Color> t : sorted)
 			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
 
 		// Sort points
-		final SortedMap<Double, ContinuousMappingPoint<T, Color>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<T, Color>>();
+		final SortedMap<Double, ContinuousMappingPoint<T, Color>> sortedPoints = new TreeMap<>();
+		
 		for (final ContinuousMappingPoint<T, Color> point : mapping.getAllPoints()) {
 			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);

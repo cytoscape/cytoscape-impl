@@ -79,8 +79,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			ratio = 50f;
 			// Add new slider at center
 			getSlider().getModel().addThumb(ratio, defValue);
-			newRange = new BoundaryRangeValues<V>(below, defValue, above);
-			
+			newRange = new BoundaryRangeValues<>(below, defValue, above);
 		} else {
 			ratio = 70f;
 			// Add a new thumb with default value
@@ -94,7 +93,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			V equalVal = defValue;
 			V greaterVal = previousRange.greaterValue;
 
-			newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
+			newRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 		}
 
 		mapping.addPoint(maxValue*(ratio/100), newRange);
@@ -116,7 +115,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		if (thumbs.size() == 1) {
 			// Special case: only one handle.
-			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(below, below, above));
+			mapping.getPoint(0).setRange(new BoundaryRangeValues<>(below, below, above));
 			newPosition = ((thumbs.get(0).getPosition() / 100) * valRange) + minValue;
 			mapping.getPoint(0).setValue(newPosition);
 			return;
@@ -145,7 +144,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 				equalVal = t.getObject();
 				greaterVal = thumbs.get(i + 1).getObject();
 			}
-			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+			mapping.getPoint(i).setRange(new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal));
 
 			newPosition = ((t.getPosition() / 100) * valRange) + minValue;
 			mapping.getPoint(i).setValue(newPosition);
@@ -156,7 +155,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	protected void deleteButtonActionPerformed(ActionEvent evt) {
 		final int selectedIndex = getSlider().getSelectedIndex();
 
-		if (0 <= selectedIndex) {
+		if (selectedIndex >= 0) {
 			getSlider().getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
@@ -175,7 +174,6 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
 		
 		getSlider().addMouseListener(new MouseAdapter() {
-
 			// Handle value icon click.
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -228,10 +226,10 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			getSlider().getModel().addThumb(fraction, bound.equalValue);
 		}
 
+		final SortedMap<Double, ContinuousMappingPoint<Number, V>> sortedPoints = new TreeMap<>();
 		
-		final SortedMap<Double, ContinuousMappingPoint<Number, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<Number, V>>();
 		for (final ContinuousMappingPoint<Number, V> point : mapping.getAllPoints()) {
-			final Number val =point.getValue();
+			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);
 		}
 		
@@ -248,7 +246,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		 * get min and max for the value object
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
-		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
+		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<>(mapping, below, above, tracer,
 				defViewPanel.getRenderingEngine());
 
 		getSlider().setThumbRenderer(thumbRend);

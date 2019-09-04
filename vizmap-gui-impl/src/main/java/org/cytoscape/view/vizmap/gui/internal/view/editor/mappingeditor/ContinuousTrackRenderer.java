@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -60,9 +36,32 @@ import org.jdesktop.swingx.multislider.Thumb;
 import org.jdesktop.swingx.multislider.ThumbDataEvent;
 import org.jdesktop.swingx.multislider.ThumbDataListener;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
  * Track renderer for Continuous mapping (Number-to-Number mapping)
- * 
  */
 public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		extends JComponent implements VizMapTrackRenderer {
@@ -94,7 +93,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private boolean dragFlag;
 	private Point curPoint;
 	private JXMultiThumbSlider<V> slider;
-	private CMouseListener listener = null;
+	private CMouseListener listener;
 	private Map<Integer, Point> verticesList;
 	private int selectedIdx = -1;
 	// private Point dragOrigin;
@@ -102,7 +101,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	private String title;
 	private V below;
 	private V above;
-	private List<V> values = new ArrayList<V>();
+	private List<V> values = new ArrayList<>();
 	private Polygon valueArea = new Polygon();
 	private Point belowSquare;
 	private Point aboveSquare;
@@ -187,9 +186,8 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		// get the list of tumbs
 		List<Thumb<V>> stops = slider.getModel().getSortedThumbs();
-
 		int numPoints = stops.size();
-
+		
 		// set up the data for the gradient
 		float[] fractions = new float[numPoints];
 		final Double[] doubleValues = new Double[numPoints];
@@ -385,11 +383,12 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 		for (Integer key : verticesList.keySet()) {
 			Point p = verticesList.get(key);
+			
 			if (clickFlag) {
 				int diffX = Math.abs(p.x - (curPoint.x - 6));
 				int diffY = Math.abs(p.y - (curPoint.y - 12));
 
-				if (((diffX < 6) && (diffY < 6)) || (key == selectedIdx)) {
+				if ((diffX < 6 && diffY < 6) || key == selectedIdx) {
 					g.setColor(FOCUS_COLOR);
 					g.setStroke(new BasicStroke(2.5f));
 				} else {
@@ -442,10 +441,10 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		}
 		
 		if (verticesList == null)
-			verticesList = new HashMap<Integer, Point>();
+			verticesList = new HashMap<>();
 
 		if (valueMap == null)
-			valueMap = new HashMap<Integer, Double>();
+			valueMap = new HashMap<>();
 
 		return this;
 	}
@@ -453,22 +452,22 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	class CMouseMotionListener implements MouseMotionListener {
 		
 		@Override
+		@SuppressWarnings("unchecked")
 		public void mouseDragged(MouseEvent e) {
 			/*
 			 * If user is moving thumbs, update is not necessary!
 			 */
-			if ((e.getY() < THUMB_WIDTH) && (dragFlag == false)) {
+			if (e.getY() < THUMB_WIDTH && !dragFlag)
 				return;
-			}
 
 			dragFlag = true;
-
 			curPoint = e.getPoint();
 
 			// If beyond the bottom line
 			if (clickFlag == true && selectedIdx >= 0 && slider.getModel().getThumbCount() > selectedIdx) {
 				Thumb<V> selectedThumb = slider.getModel().getThumbAt(selectedIdx);
 				V zero = (V) Double.valueOf(0);
+				
 				if (curPoint.getY() >= (trackHeight + 5)) {
 					selectedThumb.setObject(zero);
 
@@ -476,7 +475,6 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				}
 
 				double curY = curPoint.getY();
-
 				V newY = (V) Double.valueOf(((((trackHeight + 5) - curY) * max) / (trackHeight + 5)));
 
 				if (newY.doubleValue() > UPPER_LIMIT)
@@ -496,22 +494,23 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 				int numPoints = cMapping.getAllPoints().size();
 
-				// Update Values which are not accessible from
-				// UI
+				// Update Values which are not accessible from UI
 				if (numPoints > 1) {
-					if (selectedIdx == 0)
+					if (selectedIdx == 0) {
 						greaterVal = newVal;
-					else if (selectedIdx == (numPoints - 1))
+					} else if (selectedIdx == (numPoints - 1)) {
 						lesserVal = newVal;
-					else {
+					} else {
 						lesserVal = newVal;
 						greaterVal = newVal;
 					}
 				}
 
-				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(NumberConverter.convert(
-						vpValueType, lesserVal), NumberConverter.convert(vpValueType, newVal),
-						NumberConverter.convert(vpValueType, greaterVal));
+				BoundaryRangeValues<V> brv = new BoundaryRangeValues<>(
+						NumberConverter.convert(vpValueType, lesserVal),
+						NumberConverter.convert(vpValueType, newVal),
+						NumberConverter.convert(vpValueType, greaterVal)
+				);
 
 				if (point != null)
 					point.setRange(brv);
@@ -527,14 +526,15 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 	}
 
 	class CMouseListener extends MouseAdapter {
+		
 		@Override
+		@SuppressWarnings("unchecked")
 		public void mouseClicked(MouseEvent e) {
 			/*
 			 * Show popup dialog to enter new numerical value.
 			 */
 			if (isPointerInSquare(e) && (e.getClickCount() == 2)) {
-				final String val = JOptionPane.showInputDialog(slider,
-						"Please type new value for this pivot.");
+				final String val = JOptionPane.showInputDialog(slider, "Please type new value for this pivot.");
 
 				if (val == null)
 					return;
@@ -559,25 +559,25 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				V lesserVal = point != null ? point.getRange().lesserValue : newVal;
 				V greaterVal = point != null ? point.getRange().greaterValue : newVal;
 
-				// Update Values which are not accessible from
-				// UI
+				// Update Values which are not accessible from UI
 				int numPoints = cMapping.getAllPoints().size();
+				
 				if (numPoints > 1) {
-					if (selectedIdx == 0)
+					if (selectedIdx == 0) {
 						greaterVal = newVal;
-					else if (selectedIdx == (numPoints - 1))
+					} else if (selectedIdx == (numPoints - 1)) {
 						lesserVal = newVal;
-					else {
+					} else {
 						lesserVal = newVal;
 						greaterVal = newVal;
 					}
 				}
 
-//				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(
-//						lesserVal, newVal, greaterVal);
-				final BoundaryRangeValues<V> brv = new BoundaryRangeValues<V>(NumberConverter.convert(
-						vpValueType, lesserVal), NumberConverter.convert(vpValueType, newVal),
-						NumberConverter.convert(vpValueType, greaterVal));
+				BoundaryRangeValues<V> brv = new BoundaryRangeValues<>(
+						NumberConverter.convert(vpValueType, lesserVal),
+						NumberConverter.convert(vpValueType, newVal),
+						NumberConverter.convert(vpValueType, greaterVal)
+				);
 
 				if (point != null)
 					point.setRange(brv);
@@ -585,13 +585,11 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				repaint();
 				slider.repaint();
 				repaint();
-			} else if ((e.getClickCount() == 2) && (isBelow(e.getPoint()))) {
-				final String val = JOptionPane.showInputDialog(slider,
-						"Please type new value for BELOW:");
+			} else if (e.getClickCount() == 2 && isBelow(e.getPoint())) {
+				final String val = JOptionPane.showInputDialog(slider, "Please type new value for BELOW:");
 
-				if (val == null) {
+				if (val == null)
 					return;
-				}
 
 				try {
 					below = (V) Double.valueOf(val);
@@ -606,25 +604,21 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				BoundaryRangeValues<V> original;
 
 				original = cMapping.getPoint(0).getRange();
-//				brv = new BoundaryRangeValues<V>(newValue, original.equalValue, original.greaterValue);
-				brv = new BoundaryRangeValues<V>(NumberConverter.convert(
-						vpValueType, newValue), NumberConverter.convert(vpValueType, original.equalValue),
-						NumberConverter.convert(vpValueType, original.greaterValue));
+				brv = new BoundaryRangeValues<>(
+						NumberConverter.convert(vpValueType, newValue),
+						NumberConverter.convert(vpValueType, original.equalValue),
+						NumberConverter.convert(vpValueType, original.greaterValue)
+				);
 				cMapping.getPoint(0).setRange(brv);
 
 				slider.repaint();
 				repaint();
-
-				firePropertyChange(
-						ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED, null,
-						below);
+				firePropertyChange(ContinuousMappingEditorPanel.BELOW_VALUE_CHANGED, null, below);
 			} else if ((e.getClickCount() == 2) && (isAbove(e.getPoint()))) {
-				final String val = JOptionPane.showInputDialog(slider,
-						"Please type new value for ABOVE:");
+				final String val = JOptionPane.showInputDialog(slider, "Please type new value for ABOVE:");
 
-				if (val == null) {
+				if (val == null)
 					return;
-				}
 
 				try {
 					above = (V) Double.valueOf(val);
@@ -636,50 +630,39 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				BoundaryRangeValues<V> brv;
 				BoundaryRangeValues<V> original;
 
-				original = cMapping.getPoint(cMapping.getPointCount() - 1)
-						.getRange();
-//				brv = new BoundaryRangeValues<V>(original.lesserValue,original.equalValue, above);
-				brv = new BoundaryRangeValues<V>(NumberConverter.convert(
-						vpValueType, original.lesserValue), NumberConverter.convert(vpValueType, original.equalValue),
-						NumberConverter.convert(vpValueType, above));
+				original = cMapping.getPoint(cMapping.getPointCount() - 1).getRange();
+				brv = new BoundaryRangeValues<>(
+						NumberConverter.convert(vpValueType, original.lesserValue),
+						NumberConverter.convert(vpValueType, original.equalValue),
+						NumberConverter.convert(vpValueType, above)
+				);
 				
 				cMapping.getPoint(cMapping.getPointCount() - 1).setRange(brv);
 
 				slider.repaint();
 				repaint();
-
-				firePropertyChange( ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED, null, above);
+				firePropertyChange(ContinuousMappingEditorPanel.ABOVE_VALUE_CHANGED, null, above);
 			}
 		}
 
 		private boolean isBelow(final Point p) {
-			if (belowSquare == null) {
+			if (belowSquare == null)
 				return false;
-			}
 
 			int diffY = Math.abs(p.y - 12 - belowSquare.y);
 			int diffX = Math.abs(p.x - 6 - belowSquare.x);
 
-			if ((diffX < 6) && (diffY < 6)) {
-				return true;
-			}
-
-			return false;
+			return diffX < 6 && diffY < 6;
 		}
 
 		private boolean isAbove(final Point p) {
-			if (aboveSquare == null) {
+			if (aboveSquare == null)
 				return false;
-			}
 
 			int diffY = Math.abs(p.y - 12 - aboveSquare.y);
 			int diffX = Math.abs(p.x - 6 - aboveSquare.x);
 
-			if ((diffX < 6) && (diffY < 6)) {
-				return true;
-			}
-
-			return false;
+			return diffX < 6 && diffY < 6;
 		}
 
 		@Override
@@ -692,7 +675,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				int diffY = Math.abs((p.y + 12) - curPoint.y);
 				int diffX = Math.abs((p.x + (THUMB_WIDTH / 2)) - curPoint.x);
 
-				if ((diffX < 6) && (diffY < 6)) {
+				if (diffX < 6 && diffY < 6) {
 					selectedIdx = key;
 					clickFlag = true;
 				}
@@ -700,18 +683,15 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 		}
 
 		@Override
-		public void mouseReleased(MouseEvent arg0) {
+		public void mouseReleased(MouseEvent e) {
 			clickFlag = false;
 			updateMax();
 
 			if (slider.getSelectedThumb() == null)
 				slider.repaint();
 
+			dragFlag = false;
 			repaint();
-
-			if (dragFlag == true) {
-				dragFlag = false;
-			}
 		}
 
 		private boolean isPointerInSquare(MouseEvent e) {
@@ -723,7 +703,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 				int diffY = Math.abs((p.y + 12) - curPoint.y);
 				int diffX = Math.abs((p.x + (THUMB_WIDTH / 2)) - curPoint.x);
 
-				if ((diffX < 6) && (diffY < 6)) {
+				if (diffX < 6 && diffY < 6) {
 					selectedIdx = key;
 
 					return true;
@@ -856,9 +836,7 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 			}
 
 			p2.setLocation(newX, 0);
-
 			int newY = trackHeight - (int) ((floatProperty[i] / max) * trackHeight);
-
 			valueArea.reset();
 
 			g.setColor(VALUE_AREA_COLOR);

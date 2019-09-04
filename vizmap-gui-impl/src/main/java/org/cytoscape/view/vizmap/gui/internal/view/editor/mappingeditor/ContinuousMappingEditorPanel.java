@@ -574,11 +574,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton getAddButton() {
 		if (addButton == null) {
 			addButton = new JButton("Add");
-			addButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					addButtonActionPerformed(evt);
-				}
-			});
+			addButton.addActionListener(evt -> addButtonActionPerformed(evt));
 		}
 		
 		return addButton;
@@ -587,12 +583,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton getDeleteButton() {
 		if (deleteButton == null) {
 			deleteButton = new JButton("Delete");
-			deleteButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					deleteButtonActionPerformed(evt);
-				}
-			});
+			deleteButton.addActionListener(evt -> deleteButtonActionPerformed(evt));
 		}
 		
 		return deleteButton;
@@ -601,12 +592,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton getMinMaxButton() {
 		if (minMaxButton == null) {
 			minMaxButton = new JButton("Set Min and Max...");
-			minMaxButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					minMaxButtonActionPerformed(evt);
-				}
-			});
+			minMaxButton.addActionListener(evt -> minMaxButtonActionPerformed(evt));
 		}
 		
 		return minMaxButton;
@@ -751,6 +737,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return -1;
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void updateMap() {
 		final List<Thumb<V>> thumbs = getSlider().getModel().getSortedThumbs();
 		final double min = tracer.getMin(type);
@@ -769,19 +756,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		final int mappingPointCount = mapping.getPointCount();
 		
 		// This should not happen!
-		if(size != mappingPointCount)
-			throw new IllegalStateException("Number of handles ("+size+") is not equal to mapping points ("+mappingPointCount+").");
+		if (size != mappingPointCount)
+			throw new IllegalStateException(
+					"Number of handles (" + size + ") is not equal to mapping points (" + mappingPointCount + ").");
 
 		int i = 0;
+		
 		for (final Thumb<V> handle:thumbs) {
 			final ContinuousMappingPoint<K, V> point = mapping.getPoint(i);
 			final Number handlePosition = ((handle.getPosition() / 100) * range) + min;
-
-			// Debug
-//			System.out.print("@@@@@@@ Index = " + i);
-//			System.out.print(", handle position = " + handlePosition);
-//			System.out.println(", handle Value = " + handle.getObject());
-
+			
 			V lesserVal;
 			V equalVal = handle.getObject();
 			V greaterVal;
