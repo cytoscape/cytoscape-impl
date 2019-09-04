@@ -159,6 +159,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
 		addSlider(50d, convertToValue(5d));
+		update();
 	}
 
 	@Override
@@ -166,11 +167,17 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		final int selectedIndex = getSlider().getSelectedIndex();
 
 		// TODO: Is this correct?
-		if (0 <= selectedIndex) {
-			getSlider().getModel().removeThumb(selectedIndex);
-			mapping.removePoint(selectedIndex);
+		if (selectedIndex >= 0) {
+			if (getSlider().getModel().getThumbCount() > selectedIndex)
+				getSlider().getModel().removeThumb(selectedIndex);
+			
+			if (mapping.getPointCount() > selectedIndex)
+				mapping.removePoint(selectedIndex);
+			
 			initSlider();
 		}
+		
+		update();
 	}
 
 	private void initSlider() {

@@ -231,8 +231,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			updateGradient();
 		}
 
-		getSlider().repaint();
-		repaint();
+		update();
 	}
 
 	private void updateGradient() {
@@ -421,7 +420,8 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			updateMap();
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			appMgr.getCurrentNetworkView().updateView();
-			repaint();
+			
+			update();
 		}
 	}
 

@@ -10,7 +10,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -204,7 +203,30 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initRangeValues();
 		initComponents();
 		setSpinner();
-		getSlider().addMouseListener(new ThumbMouseListener());
+		getSlider().addMouseListener(new MouseAdapter() {
+			/**
+			 * Updates GUI when user moves & releases the handle.
+			 */
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				final int selectedIndex = getSlider().getSelectedIndex();
+				final int tCount = getSlider().getModel().getThumbCount();
+				
+				if (selectedIndex >= 0 && tCount > selectedIndex) {
+					final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
+					final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
+
+					updateMap();
+					
+					// Updates spinner values
+					spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
+					spinnerModel.addChangeListener(new SpinnerChangeListener());
+					getValueSpinner().setModel(spinnerModel);
+				}
+				
+				update();
+			}
+		});
 	}
 
 	public static void setTracer(EditorValueRangeTracer t) {
@@ -273,6 +295,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				.addComponent(getMainPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		update();
 	}
 	
 	private JPanel getMainPanel() {
@@ -622,7 +646,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			valueSpinner = new JSpinner();
 			valueSpinner.setPreferredSize(SPINNER_SIZE);
 			valueSpinner.setMaximumSize(SPINNER_SIZE);
-			valueSpinner.setEnabled(false);
 		}
 		
 		return valueSpinner;
@@ -844,39 +867,27 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	}
 	
 	protected abstract void cancelChanges();
-
-	// End of variables declaration
-	protected class ThumbMouseListener extends MouseAdapter {
+	
+	protected void update() {
+		final int selectedIndex = getSlider().getSelectedIndex();
+		final int tCount = getSlider().getModel().getThumbCount();
 		
-		/**
-		 * Updates GUI when user moves & releases the handle.
-		 */
-		public void mouseReleased(MouseEvent e) {
-			final int selectedIndex = getSlider().getSelectedIndex();
-			final int tCount = getSlider().getModel().getThumbCount();
+		if (selectedIndex >= 0 && tCount > selectedIndex) {
+			getValueSpinner().setEnabled(true);
+			getDeleteButton().setEnabled(true);
+
+			final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
+			V object = handle.getObject();
+			enableValueEditor(object);
+		} else {
+			getValueSpinner().setValue(0);
+			getValueSpinner().setEnabled(false);
 			
-			if ((0 <= selectedIndex) && (tCount> 0)) {
-				final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
-				final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
-
-				updateMap();
-				getSlider().repaint();
-				repaint();
-				
-				// Updates spinner values
-				spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
-				spinnerModel.addChangeListener(new SpinnerChangeListener());
-				getValueSpinner().setModel(spinnerModel);
-				getValueSpinner().setEnabled(true);
-
-				V object = handle.getObject();
-				enableValueEditor(object);
-				
-			} else {
-				getValueSpinner().setEnabled(false);
-				getValueSpinner().setValue(0);
-			}
+			getDeleteButton().setEnabled(false);
 		}
+		
+		getSlider().repaint();
+		repaint();
 	}
 
 	private final class SpinnerChangeListener implements ChangeListener {

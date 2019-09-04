@@ -100,8 +100,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		mapping.addPoint(maxValue*(ratio/100), newRange);
 		updateMap();
 
-		getSlider().repaint();
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -161,7 +160,8 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			getSlider().getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
-			repaint();
+			
+			update();
 		}
 	}
 
