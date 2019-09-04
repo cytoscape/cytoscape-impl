@@ -159,13 +159,19 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 
 	@Override
-	public void addFrameTime(DebugFrameType type, long time) {
+	public void addFrameTime(DebugFrameType type, boolean cancelled, long time) {
 		var model = getModel(type);
 		var list = getList(type);
 		int i = model.size();
-		String message = String.valueOf(time);
+		
+		String message;
 		if(type == DebugFrameType.MAIN_ANNOTAITONS)
-			message = "(annotations) " + message;
+			message = "(annotations) " + time;
+		else if(cancelled)
+			message = "(cancelled) " + time;
+		else
+			message = "" + time;
+		
 		model.add(i, message);
 		list.ensureIndexIsVisible(i);
 	}

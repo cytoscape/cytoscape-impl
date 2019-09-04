@@ -168,7 +168,6 @@ public final class GraphRenderer {
 
 			while (nodeHits.hasNext()) {
 				if(dpm.isCancelled()) {
-					System.out.println("CANCELLED");
 					return;
 				}
 				
@@ -204,7 +203,6 @@ public final class GraphRenderer {
 		} else { // High detail.
 			while (nodeHits.hasNext()) {
 				if(dpm.isCancelled()) {
-					System.out.println("CANCELLED");
 					return;
 				}
 				
@@ -215,7 +213,6 @@ public final class GraphRenderer {
 				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(node);
 				for (View<CyEdge> edge : touchingEdges) {
 					if(dpm.isCancelled()) {
-						System.out.println("CANCELLED");
 						return;
 					}
 					if (!edgeDetails.isVisible(edge))
@@ -316,7 +313,6 @@ public final class GraphRenderer {
 							final int labelCount = edgeDetails.getLabelCount(edge);
 							for (int labelInx = 0; labelInx < labelCount; labelInx++) {
 								if(dpm.isCancelled()) {
-									System.out.println("CANCELLED");
 									return;
 								}
 								

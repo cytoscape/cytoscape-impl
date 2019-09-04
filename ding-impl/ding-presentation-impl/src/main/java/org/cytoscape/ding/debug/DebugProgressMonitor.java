@@ -28,7 +28,7 @@ public class DebugProgressMonitor implements ProgressMonitor {
 		long end = System.currentTimeMillis();
 		long time = end - start;
 		if(callback != null)
-			callback.addFrameTime(type, time);
+			callback.addFrameTime(type, isCancelled(), time);
 	}
 	
 	@Override
