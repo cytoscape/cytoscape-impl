@@ -41,7 +41,9 @@ public abstract class IconUtil {
 	public static final String UNPIN = ")";
 	
 	public static final String GD_HIGH = "$";
-	public static final String GD_LOW = "*";
+	public static final String GD_LOW = "&";
+	
+	public static final String FILE_EXPORT = "+";
 	
 	private IconUtil() {
 		// ...

@@ -32,6 +32,9 @@ public abstract class IconUtil {
 	public static final String NETWORK_TABLE = "\"";
 	public static final String NODE_TABLE = "#";
 	
+	public static final String FILE_EXPORT = "+";
+	public static final String FILE_IMPORT = ",";
+	
 	private IconUtil() {
 		// ...
 	}

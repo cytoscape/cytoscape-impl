@@ -286,9 +286,6 @@ public class CytoscapeDesktop extends JFrame
 
 		setIconImage(Toolkit.getDefaultToolkit().getImage(getClass().getResource(SMALL_ICON)));
 
-		if (MacFullScreenEnabler.supportsNativeFullScreenMode())
-			MacFullScreenEnabler.setEnabled(this, true);
-
 		// Don't automatically close window. Let shutdown.exit(returnVal) handle this
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 

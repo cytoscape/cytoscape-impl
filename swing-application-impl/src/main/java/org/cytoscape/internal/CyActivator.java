@@ -62,7 +62,6 @@ import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.ExportImageAction;
 import org.cytoscape.internal.actions.ExportNetworkAction;
 import org.cytoscape.internal.actions.FullScreenAction;
-import org.cytoscape.internal.actions.FullScreenMacAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
@@ -97,7 +96,6 @@ import org.cytoscape.internal.view.CytoscapeMenuPopulator;
 import org.cytoscape.internal.view.CytoscapeMenus;
 import org.cytoscape.internal.view.CytoscapeToolBar;
 import org.cytoscape.internal.view.GridViewToggleModel;
-import org.cytoscape.internal.view.MacFullScreenEnabler;
 import org.cytoscape.internal.view.NetworkMainPanel;
 import org.cytoscape.internal.view.NetworkMediator;
 import org.cytoscape.internal.view.NetworkSearchBar;
@@ -466,15 +464,11 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, exitAction, CyAction.class);
 		}
 	
-		// Full screen actions.  This is platform dependent
-		FullScreenAction fullScreenAction = null;
-		
-		if (isMac() && MacFullScreenEnabler.supportsNativeFullScreenMode())
-			fullScreenAction = new FullScreenMacAction(cytoscapeDesktop);
-		else
-			fullScreenAction = new FullScreenAction(cytoscapeDesktop);
-		
-		registerService(bc, fullScreenAction, CyAction.class);
+		// Full screen actions. This is platform dependent and is no longer supported on macOS + Java 11.
+		if (!isMac()) {
+			FullScreenAction fullScreenAction = new FullScreenAction(cytoscapeDesktop);
+			registerService(bc, fullScreenAction, CyAction.class);
+		}
 	}
 
 	private void initComponents(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {

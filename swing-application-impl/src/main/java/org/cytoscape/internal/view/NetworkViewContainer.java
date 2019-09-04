@@ -12,7 +12,6 @@ import static org.cytoscape.util.swing.IconManager.ICON_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_CROSSHAIRS;
 import static org.cytoscape.util.swing.IconManager.ICON_EXTERNAL_LINK_SQUARE;
 import static org.cytoscape.util.swing.IconManager.ICON_EYE_SLASH;
-import static org.cytoscape.util.swing.IconManager.ICON_SHARE_SQUARE_O;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -524,9 +523,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 	
 	JButton getExportButton() {
 		if (exportButton == null) {
-			exportButton = new JButton(ICON_SHARE_SQUARE_O);
+			exportButton = new JButton(IconUtil.FILE_EXPORT);
 			exportButton.setToolTipText("Export to File...");
-			styleToolBarButton(exportButton, serviceRegistrar.getService(IconManager.class).getIconFont(22.0f));
+			styleToolBarButton(exportButton,
+					serviceRegistrar.getService(IconManager.class).getIconFont(IconUtil.CY_FONT_NAME, 22.0f));
 		}
 		
 		return exportButton;

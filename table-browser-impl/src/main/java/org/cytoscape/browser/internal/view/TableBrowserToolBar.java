@@ -2,7 +2,12 @@ package org.cytoscape.browser.internal.view;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
-import static org.cytoscape.util.swing.IconManager.*;
+import static org.cytoscape.util.swing.IconManager.ICON_COG;
+import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
+import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
+import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
+import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
+import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.BorderLayout;
@@ -43,8 +48,9 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.CyColumnSelector;
 import org.cytoscape.application.swing.CyColumnPresentationManager;
+import org.cytoscape.application.swing.CyColumnSelector;
+import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.equations.EquationCompiler;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -57,6 +63,7 @@ import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.destroy.DeleteTableTaskFactory;
+import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.task.write.ExportTableTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
@@ -113,6 +120,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton deleteAttributeButton;
 	private JButton deleteTableButton;
 	private JButton fnBuilderButton;
+	private JButton importButton;
 	private JButton exportButton;
 	
 	private final JComboBox<CyTable> tableChooser;
@@ -238,6 +246,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
 		addComponent(getFnBuilderButton(), ComponentPlacement.RELATED);
 //		addComponent(getMapGlobalTableButton(). ComponentPlacement.RELATED);
+		addComponent(getImportButton(), ComponentPlacement.UNRELATED);
 		addComponent(getExportButton(), ComponentPlacement.RELATED);
 		
 		if (tableChooser != null) {
@@ -644,11 +653,27 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	}
 	*/
 	
+	private JButton getImportButton() {
+		if (importButton == null) {
+			importButton = new JButton(IconUtil.FILE_IMPORT);
+			importButton.setToolTipText("Import Table from File...");
+			styleButton(importButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
+			
+			importButton.addActionListener(e -> {
+				LoadTableFileTaskFactory factory = serviceRegistrar.getService(LoadTableFileTaskFactory.class);
+				DialogTaskManager taskManager = serviceRegistrar.getService(DialogTaskManager.class);
+				taskManager.execute(factory.createTaskIterator());
+			});
+		}
+		
+		return importButton;
+	}
+	
 	private JButton getExportButton() {
 		if (exportButton == null) {
-			exportButton = new JButton(ICON_SHARE_SQUARE_O);
+			exportButton = new JButton(IconUtil.FILE_EXPORT);
 			exportButton.setToolTipText("Export Table to File...");
-			styleButton(exportButton, iconMgr.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE));
+			styleButton(exportButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
 			exportButton.addActionListener(e -> {
 				ExportTableTaskFactory factory = serviceRegistrar.getService(ExportTableTaskFactory.class);
