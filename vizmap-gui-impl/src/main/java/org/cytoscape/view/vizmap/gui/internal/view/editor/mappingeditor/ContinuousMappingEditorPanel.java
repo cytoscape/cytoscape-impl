@@ -93,7 +93,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected static final String ABOVE_VALUE_CHANGED = "ABOVE_VALUE_CHANGED";
 
 	private JLabel attrNameLabel;
-	private JLabel handlePositionSpinnerLabel;
+	private JLabel handlePositionLabel;
 
 	private JButton addButton;
 	private JButton colorButton;
@@ -118,14 +118,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton paletteButton;
 	private BelowAndAbovePanel abovePanel;
 	private BelowAndAbovePanel belowPanel;
-	private static String DEFAULT_PALETTE = "ColorBrewer Red-Blue";
 	
 	private JXMultiThumbSlider<V> slider;
 	private JSpinner valueSpinner;
 
 	private JSpinner propertySpinner;
 	private JLabel propertyLabel;
-	private JComponent propertyComponent;
+	private JComponent valueEditor;
 
 	// Only accepts Continuous Mapping
 	protected final ContinuousMapping<K, V> mapping;
@@ -275,7 +274,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		attrNameLabel = new JLabel("Column Name");
 		attrNameLabel.setFont(attrNameLabel.getFont().deriveFont(Font.BOLD, 14));
 		
-		handlePositionSpinnerLabel = new JLabel("Handle Position:");
+		handlePositionLabel = new JLabel("Handle Position:");
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
 		
@@ -442,7 +441,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-									.addComponent(handlePositionSpinnerLabel)
+									.addComponent(handlePositionLabel)
 									.addComponent(getPropertyLabel())
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
@@ -454,14 +453,14 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 											.addComponent(getAddButton())
 											.addComponent(getDeleteButton())
 									)
-									.addComponent(getPropertyComponent())
+									.addComponent(getValueEditor())
 							)
 					)
 					.addComponent(infoLabel)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(handlePositionSpinnerLabel)
+							.addComponent(handlePositionLabel)
 							.addComponent(getValueSpinner(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getMinMaxButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getDeleteButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -469,7 +468,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getPropertyLabel())
-							.addComponent(getPropertyComponent(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getValueEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addComponent(infoLabel)
 			);
@@ -519,7 +518,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			
 			if (Number.class.isAssignableFrom(vpValueType) || Paint.class.isAssignableFrom(vpValueType)) {
 				propertyLabel.setText(type.getDisplayName() + ":");
-				propertyLabel.setLabelFor(getPropertyComponent());
+				propertyLabel.setLabelFor(getValueEditor());
 			} else {
 				propertyLabel.setVisible(false);
 			}
@@ -528,20 +527,20 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return propertyLabel;
 	}
 	
-	private JComponent getPropertyComponent() {
-		if (propertyComponent == null) {
+	private JComponent getValueEditor() {
+		if (valueEditor == null) {
 			if (Number.class.isAssignableFrom(vpValueType)) {
-				propertyComponent = getPropertySpinner();
+				valueEditor = getPropertySpinner();
 			} else if (Paint.class.isAssignableFrom(vpValueType)) {
 				// We use the colorButton for both discrete and color
-				propertyComponent = getColorButton();
+				valueEditor = getColorButton();
 			} else {
-				propertyComponent = new JLabel();
-				propertyComponent.setVisible(false);
+				valueEditor = new JLabel();
+				valueEditor.setVisible(false);
 			}
 		}
 
-		return propertyComponent;
+		return valueEditor;
 	}
 	
 	protected JSpinner getPropertySpinner() {
@@ -819,16 +818,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		mapping.getPoint(0).setValue((K) newVal);
 	}
 
-	private final void enableValueEditor(final V newObject) {
-		if (Number.class.isAssignableFrom(vpValueType)) {
-			getPropertySpinner().setEnabled(true);
-			getPropertySpinner().setValue(newObject);
-		} else if (Paint.class.isAssignableFrom(vpValueType)) {
-			getColorButton().setEnabled(true);
-			setButtonColor((Color) newObject);
-		}
-	}
-
 	protected void setButtonColor(final Color newColor) {
 		getColorButton().setIcon(new ColorIcon(newColor));
 	}
@@ -842,9 +831,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			mapping.addPoint(point.getValue(), point.getRange());
 		}
 
-		if (lastPalette != null) {
+		if (lastPalette != null)
 			savePalette(lastPalette);
-		}
 		
 		cancelChanges();
 		getSlider().repaint();
@@ -859,15 +847,26 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		if (selectedIndex >= 0 && tCount > selectedIndex) {
 			getValueSpinner().setEnabled(true);
 			getDeleteButton().setEnabled(true);
+			getValueEditor().setEnabled(true);
 
 			final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
-			V object = handle.getObject();
-			enableValueEditor(object);
-		} else {
-			getValueSpinner().setValue(0);
-			getValueSpinner().setEnabled(false);
+			V value = handle.getObject();
 			
+			if (Number.class.isAssignableFrom(vpValueType))
+				getPropertySpinner().setValue(value);
+			else if (Paint.class.isAssignableFrom(vpValueType))
+				setButtonColor((Color) value);
+		} else {
+			getValueSpinner().setEnabled(false);
 			getDeleteButton().setEnabled(false);
+			getValueEditor().setEnabled(false);
+			
+			getValueSpinner().setValue(0);
+			
+			if (Number.class.isAssignableFrom(vpValueType))
+				getPropertySpinner().setValue(0);
+			else if (Paint.class.isAssignableFrom(vpValueType))
+				setButtonColor(null);
 		}
 		
 		getSlider().repaint();

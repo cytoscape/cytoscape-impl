@@ -9,8 +9,6 @@ import java.util.TreeMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.SpinnerNumberModel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -92,6 +90,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		return NumberConverter.convert(columnType, value);
 	}
 
+	@SuppressWarnings("rawtypes")
 	public ImageIcon getIcon(final int iconWidth, final int iconHeight) {
 		final TrackRenderer rend = getSlider().getTrackRenderer();
 
@@ -104,6 +103,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 		}
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public ImageIcon getLegend(final int width, final int height) {
 		final ContinuousTrackRenderer<K, V> rend = (ContinuousTrackRenderer) getSlider().getTrackRenderer();
 		rend.getRendererComponent(getSlider());
@@ -239,6 +239,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	}
 
 	@Override
+	@SuppressWarnings("rawtypes")
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
 		final TrackRenderer rend = getSlider().getTrackRenderer();
 
@@ -252,23 +253,13 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	}
 
 	private void setPropertySpinner() {
-		SpinnerNumberModel propertySpinnerModel = new SpinnerNumberModel(0.0d, Double.NEGATIVE_INFINITY,
-				Double.POSITIVE_INFINITY, 0.01d);
-		propertySpinnerModel.addChangeListener(new PropertyValueSpinnerChangeListener(propertySpinnerModel));
-		getPropertySpinner().setModel(propertySpinnerModel);
-	}
-
-	private final class PropertyValueSpinnerChangeListener implements ChangeListener {
-
-		private final SpinnerNumberModel spinnerModel;
-
-		public PropertyValueSpinnerChangeListener(SpinnerNumberModel model) {
-			this.spinnerModel = model;
-		}
-
-		@Override
-		public void stateChanged(ChangeEvent e) {
-			final Number newVal = spinnerModel.getNumber().doubleValue();
+		final SpinnerNumberModel model = new SpinnerNumberModel(0.0d, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+				0.01d);
+		model.addChangeListener(evt -> {
+			if (!getPropertySpinner().isEnabled())
+				return;
+			
+			final Number newVal = model.getNumber().doubleValue();
 			final int selectedIndex = getSlider().getSelectedIndex();
 			V currentValue = getSlider().getModel().getThumbAt(selectedIndex).getObject();
 			
@@ -279,7 +270,8 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 			getSlider().repaint();
 			
 			updateMap();
-		}
+		});
+		getPropertySpinner().setModel(model);
 	}
 
 	@Override

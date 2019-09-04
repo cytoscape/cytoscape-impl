@@ -178,21 +178,20 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		if ((mapping != null) && (mapping.getPointCount() == 0))
 			addButtonActionPerformed(null);
 
-		getColorButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				getAndSetColor();
+		getColorButton().addActionListener(evt -> {
+			int idx = getSlider().getSelectedIndex();
+			
+			if (idx == -1 || idx >= getSlider().getModel().getThumbCount())
+				return;
+			
+			Color oldColor = getSlider().getModel().getThumbAt(idx).getObject();
+			Color newColor = changeThumbColor(oldColor);
+			
+			if (newColor != null) {
+				setColor(newColor);
+				setButtonColor(newColor);
 			}
 		});
-	}
-
-	private void getAndSetColor() {
-		Color oldColor = getSlider().getModel().getThumbAt(getSlider().getSelectedIndex()).getObject();
-		Color newColor = changeThumbColor(oldColor);
-		if (newColor != null) {
-			setColor(newColor);
-			setButtonColor(newColor);
-		}
 	}
 
 	public ImageIcon getLegend(final int width, final int height) {
@@ -205,16 +204,17 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	protected Color changeThumbColor(Color oldColor) {
 		if (currentPalette != null) {
 			PaletteType type = currentPalette.getType();
-
 			CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(type, false);
 			Color newColor = chooser.showDialog(GradientEditorPanel.this, "Set thumb color", currentPalette, oldColor, 9);
 
 			// We'll return the new color, but we need to handle the change in palettes here
 			Palette newPalette = chooser.getSelectedPalette();
+			
 			if (newPalette != null) {
 				currentPalette = newPalette;
 				// TODO: Update palette combo box
 			}
+			
 			return newColor;
 		} else {
 			return (Color) colorEditor.showEditor(null, oldColor);
