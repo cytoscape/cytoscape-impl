@@ -1471,7 +1471,7 @@ public final class GraphGraphics {
 		// ok, now we're drawing a curve
 		//
 
-//		final int edgePtsCount = m_edgePtsCount;
+		final int edgePtsCountToReturn = edgePtsCount;
 
 		// First set the three control points related to point 1.
 		// 6 represents the offset in the buffer.
@@ -1565,7 +1565,8 @@ public final class GraphGraphics {
 			edgePtsBuff[2] = segStartX;
 			edgePtsBuff[3] = segStartY;
 		}
-		return edgePtsCount;
+		
+		return edgePtsCountToReturn;
 	}
 
 	/**
