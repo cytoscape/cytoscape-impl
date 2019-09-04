@@ -553,7 +553,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		for(var l : contentChangeListeners) {
 			l.contentChanged();
 		}
-		fireThumbnailChanged(renderComponent.getImage());
+		fireThumbnailChanged(null);
 	}
 	
 	public void addContentChangeListener(ContentChangeListener l) {
@@ -578,7 +578,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		for(var l : transformChangeListeners) {
 			l.transformChanged(transform);
 		}
-		fireThumbnailChanged(renderComponent.getImage());
+		fireThumbnailChanged(null);
 	}
 	
 	public void addTransformChangeListener(TransformChangeListener l) {

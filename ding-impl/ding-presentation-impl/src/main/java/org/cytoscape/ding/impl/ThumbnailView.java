@@ -31,7 +31,11 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	
 	@Override
 	public void thumbnailChanged(Image image) {
-		thumbnail = scaleAndClip(image, getWidth(), getHeight());
+		if(image == null) {
+			thumbnail = null;
+		} else {
+			thumbnail = scaleAndClip(image, getWidth(), getHeight());
+		}
 		repaint();
 	}
 	
@@ -39,8 +43,7 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	public void setBounds(int x, int y, int width, int height) {
 		if(width != getWidth() || height != getHeight()) {
 			super.setBounds(x, y, width, height);
-			var image = re.getImage();
-			thumbnail = scaleAndClip(image, width, height);
+			thumbnail = null;
 		}
 	}
 	
@@ -51,9 +54,11 @@ public class ThumbnailView extends JComponent implements RenderingEngine<CyNetwo
 	
 	@Override
 	protected void paintComponent(Graphics g) {
-		if(thumbnail != null) {
-			g.drawImage(thumbnail, 0, 0, null);
+		if(thumbnail == null) {
+			Image image = re.getImage();
+			thumbnail = scaleAndClip(image, getWidth(), getHeight());
 		}
+		g.drawImage(thumbnail, 0, 0, null);
 	}
 	
 	private static Image scaleAndClip(Image image, int w, int h) {
