@@ -1,36 +1,10 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.RenderingHints;
-import java.awt.Stroke;
 
 import javax.swing.JComponent;
 import javax.swing.UIManager;
@@ -47,50 +21,57 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 	private final static long serialVersionUID = 1202339877445372L;
 
 	private final Color FOCUS_COLOR = UIManager.getColor("Focus.color");
+	private final Color SELECTION_COLOR = UIManager.getColor("Table.focusCellBackground");
 	private final Color DEFAULT_COLOR = UIManager.getColor("Label.foreground");;
 	private final Color BACKGROUND_COLOR = UIManager.getColor("Table.background");
 
-	private static final Stroke DEF_STROKE = new BasicStroke(1.0f);
-
+	private static final int STROKE_WIDTH = 1;
+	
 	// Keep the last selected thumb.
 	private boolean selected;
 	private int selectedIndex;
 	private int currentIndex;
 
 	public TriangleThumbRenderer() {
-		super();
 		setBackground(BACKGROUND_COLOR);
 	}
 
 	@Override
 	protected void paintComponent(Graphics g) {
-		final Graphics2D g2d = (Graphics2D) g;
+		var color = g.getColor();
+		
+		var g2d = (Graphics2D) g.create();
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-		final Polygon thumb = new Polygon();
-		thumb.addPoint(0, 0);
-		thumb.addPoint(10, 0);
-		thumb.addPoint(5, 10);
-		g.fillPolygon(thumb);
-
-		final Polygon outline = new Polygon();
-		outline.addPoint(0, 0);
-		outline.addPoint(9, 0);
-		outline.addPoint(5, 9);
-
-		g2d.setStroke(DEF_STROKE);
+		
+		int w = getWidth();
+		int h = getHeight();
 		
 		if (selected || selectedIndex == currentIndex)
-			g2d.setColor(FOCUS_COLOR);
+			g2d.setColor(SELECTION_COLOR);
 		else
 			g2d.setColor(DEFAULT_COLOR);
+		
+		// Outer triangle (border)
+		var p1 = new Polygon();
+		p1.addPoint(0, 0);
+		p1.addPoint(w, 0);
+		p1.addPoint(w / 2, h);
+		g2d.fillPolygon(p1);
 
-		g.drawPolygon(outline);
+		// Inner triangle (fill color)
+		var p2 = new Polygon();
+		p2.addPoint(2 * STROKE_WIDTH, STROKE_WIDTH);
+		p2.addPoint(w - 2 * STROKE_WIDTH, STROKE_WIDTH);
+		p2.addPoint(w / 2, h - 2 * STROKE_WIDTH);
+		g2d.setColor(color);
+		g2d.fillPolygon(p2);
+		
+		g2d.dispose();
 	}
 
 	@Override
-	public JComponent getThumbRendererComponent(@SuppressWarnings("rawtypes") final JXMultiThumbSlider slider,
-			int index, boolean selected) {
+	@SuppressWarnings("rawtypes")
+	public JComponent getThumbRendererComponent(JXMultiThumbSlider slider, int index, boolean selected) {
 		// Update state
 		this.selected = selected;
 		this.selectedIndex = slider.getSelectedIndex();
@@ -98,14 +79,15 @@ public final class TriangleThumbRenderer extends JComponent implements ThumbRend
 
 		final Object currentValue = slider.getModel().getThumbAt(index).getObject();
 
-		if (currentValue.getClass() == Color.class)
-			this.setForeground((Color) currentValue);
-		else {
-			if (selected)
-				this.setForeground(FOCUS_COLOR);
+		if (currentValue.getClass() == Color.class) {
+			setForeground((Color) currentValue);
+		} else {
+			if (selected || selectedIndex == currentIndex)
+				setForeground(FOCUS_COLOR);
 			else
-				this.setForeground(DEFAULT_COLOR);
+				setForeground(DEFAULT_COLOR);
 		}
+		
 		return this;
 	}
 }
