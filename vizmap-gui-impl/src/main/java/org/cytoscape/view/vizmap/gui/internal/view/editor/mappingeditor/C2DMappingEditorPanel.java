@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -43,9 +19,32 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.multislider.Thumb;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
- * Continuous Mapping editor for discrete values, such as Font, Shape, Label
- * Position, etc.
+ * Continuous Mapping editor for discrete values, such as Font, Shape, Label Position, etc.
  */
 public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Number, V> {
 	
@@ -97,7 +96,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			newRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 		}
 
-		mapping.addPoint(maxValue*(ratio/100), newRange);
+		mapping.addPoint(maxValue * (ratio / 100), newRange);
 		updateMap();
 
 		update();
@@ -119,6 +118,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			mapping.getPoint(0).setRange(new BoundaryRangeValues<>(below, below, above));
 			newPosition = ((thumbs.get(0).getPosition() / 100) * valRange) + minValue;
 			mapping.getPoint(0).setValue(newPosition);
+			
 			return;
 		}
 
@@ -165,11 +165,11 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initSlider() {
 		getSlider().updateUI();
 
 		final double minValue = tracer.getMin(type);
-		final double maxValue = tracer.getMax(type);
 
 		final C2DMappingEditorPanel<V> parentComponent = this;
 		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
@@ -255,6 +255,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
 		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) getSlider().getTrackRenderer();
 		rend.getRendererComponent(getSlider());
@@ -262,6 +263,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public ImageIcon getLegend(final int width, final int height) {
 
 		if (getSlider().getTrackRenderer() instanceof DiscreteTrackRenderer == false)

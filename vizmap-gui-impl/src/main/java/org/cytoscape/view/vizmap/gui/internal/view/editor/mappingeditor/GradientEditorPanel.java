@@ -1,12 +1,42 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteType;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
+import org.jdesktop.swingx.multislider.Thumb;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,38 +53,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.util.color.BrewerType;
-import org.cytoscape.util.color.Palette;
-import org.cytoscape.util.color.PaletteType;
-import org.cytoscape.util.swing.CyColorPaletteChooser;
-import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
-import org.jdesktop.swingx.multislider.Thumb;
 
 /**
  * Color Gradient Mapping editor.
@@ -92,47 +90,48 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		getIconPanel().setVisible(false);
 
-		getPaletteButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				JButton cb = (JButton)evt.getSource();
+		getPaletteButton().addActionListener(evt -> {
+			// Bring up the palette chooser dialog
+			CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
+			Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
 
-				// Bring up the palette chooser dialog
-				CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
-				Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
+			if (newPalette == null)
+				return;
 
-				if (newPalette == null) return;
-
-				// Get the palette
-				Color[] colors = newPalette.getColors();
-				if (colors.length < 9)
-					colors = newPalette.getColors(9);
-				DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
-				DEF_LOWER_COLOR = colors[colors.length-2];
-				DEF_MID_COLOR = colors[(colors.length-1)/2];
-				DEF_UPPER_COLOR = colors[1];
-				DEF_ABOVE_UPPER_COLOR = colors[0];
-				if (!userEdited) {
+			// Get the palette
+			Color[] colors = newPalette.getColors();
+			
+			if (colors.length < 9)
+				colors = newPalette.getColors(9);
+			
+			DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
+			DEF_LOWER_COLOR = colors[colors.length-2];
+			DEF_MID_COLOR = colors[(colors.length-1)/2];
+			DEF_UPPER_COLOR = colors[1];
+			DEF_ABOVE_UPPER_COLOR = colors[0];
+			
+			if (!userEdited) {
+				setCurrentPalette(newPalette);
+				savePalette(currentPalette);
+				createSimpleGradient();
+			} else if (userEdited) {
+				// error?
+				Object[] options = { "Yes", "No" };
+				int n = JOptionPane.showOptionDialog(
+						null, 
+						"This will reset your current settings. Are you sure you want to continue?", 
+				        "Warning",
+				        JOptionPane.DEFAULT_OPTION,
+				        JOptionPane.WARNING_MESSAGE,
+				        null,
+				        options,
+				        options[1]
+				);
+				
+				if (n == 0) {
 					setCurrentPalette(newPalette);
 					savePalette(currentPalette);
 					createSimpleGradient();
-				} else if (userEdited) {
-					// error?
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							Object[] options = { "Yes", "No" };
-							int n = JOptionPane.showOptionDialog(null, 
-							                                     "This will reset your current settings.  Are you sure you want to continue?", 
-																									 "Warning",
-					   		                                  JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
-					     		                                null, options, options[1]);
-							if (n == 0) {
-								setCurrentPalette(newPalette);
-								savePalette(currentPalette);
-								createSimpleGradient();
-							}
-						}
-					});
 				}
 			}
 		});
@@ -142,8 +141,10 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		*/
 		if (currentPalette != null) {
 			Color[] colors = currentPalette.getColors();
+			
 			if (colors.length < 9)
 				colors = currentPalette.getColors(9);
+			
 			DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
 			DEF_LOWER_COLOR = colors[colors.length-2];
 			DEF_MID_COLOR = colors[(colors.length-1)/2];
@@ -170,15 +171,15 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 					if (e.getClickCount() == 2) {
 						Color oldColor = getSlider().getModel().getThumbAt(getSlider().getSelectedIndex()).getObject();
 						Color newColor = changeThumbColor(oldColor);
-						if (newColor != null) {
+						
+						if (newColor != null)
 							setColor(newColor);
-						}
 					}
 				}
 			}
 		});
 
-		if ((mapping != null) && (mapping.getPointCount() == 0))
+		if (mapping != null && mapping.getPointCount() == 0)
 			addButtonActionPerformed(null);
 
 		getColorButton().addActionListener(evt -> {
@@ -267,6 +268,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		// Clear any existing thumbs
 		final List<Thumb<Color>> sorted = getSlider().getModel().getSortedThumbs();
+		
 		for (Thumb<Color> t : sorted)
 			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
 
@@ -303,7 +305,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				upperRange);
 			initSlider();
 		} else if (minValue>=0) { // all positive values
-
 			// TODO: Provide more bins
 			//
 			if (currentPalette != null && currentPalette.getType() == BrewerType.SEQUENTIAL) {

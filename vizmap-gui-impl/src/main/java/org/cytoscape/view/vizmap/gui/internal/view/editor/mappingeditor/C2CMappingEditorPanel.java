@@ -187,7 +187,7 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	private void initSlider() {
 		getSlider().updateUI();
 
-		final Number minValue = tracer.getMin(type);
+		Number minValue = tracer.getMin(type);
 		Number actualRange = tracer.getRange(type);
 
 		BoundaryRangeValues<V> bound;

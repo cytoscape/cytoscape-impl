@@ -170,13 +170,13 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			EditorManager editorManager,
 			ServicesUtil servicesUtil
 	) {
-		if (mapping == null)
-			throw new NullPointerException("ContinuousMapping should not be null.");
-		if (table == null)
-			throw new NullPointerException("Data table should not be null.");
 		if (style == null)
-			throw new NullPointerException("Visual Style should not be null.");
-
+			throw new IllegalArgumentException("'style' should not be null.");
+		if (mapping == null)
+			throw new IllegalArgumentException("'mapping' should not be null.");
+		if (table == null)
+			throw new IllegalArgumentException("'table' should not be null.");
+		
 		this.mapping = mapping;
 		this.type = mapping.getVisualProperty();
 		this.style = style;
