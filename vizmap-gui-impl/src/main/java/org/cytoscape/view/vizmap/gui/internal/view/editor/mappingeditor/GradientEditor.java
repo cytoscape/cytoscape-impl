@@ -65,8 +65,8 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
 		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		editorPanel = new GradientEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr,
+		VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		editorPanel = new GradientEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager,
 				editorManager.getValueEditor(Paint.class), servicesUtil);
 	}
 }

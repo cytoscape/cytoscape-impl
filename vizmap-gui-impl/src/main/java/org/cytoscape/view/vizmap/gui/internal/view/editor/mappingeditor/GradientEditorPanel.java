@@ -76,11 +76,14 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 	protected final CyColorPaletteChooserFactory paletteChooserFactory;
 
-	// protected Palette currentPalette;
-
-	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping, final CyTable attr,
-			final ValueEditor<Paint> colorEditor, final ServicesUtil servicesUtil) {
-		super(style, mapping, attr, servicesUtil);
+	public GradientEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<T, Color> mapping,
+			CyTable attr,
+			EditorManager editorManager,
+			ValueEditor<Paint> colorEditor,
+			ServicesUtil servicesUtil) {
+		super(style, mapping, attr, editorManager, servicesUtil);
 
 		// TODO: replace this with the new CyColorPaletteChooser
 		this.colorEditor = colorEditor;

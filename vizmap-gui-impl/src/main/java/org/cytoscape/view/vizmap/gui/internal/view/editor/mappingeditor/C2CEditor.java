@@ -60,6 +60,7 @@ public class C2CEditor<K extends Number, V extends Number> extends AbstractConti
 		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		editorPanel = new C2CMappingEditorPanel<K, V>(vmMgr.getCurrentVisualStyle(), mapping, attr, servicesUtil);
+		editorPanel = new C2CMappingEditorPanel<K, V>(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager,
+				servicesUtil);
 	}
 }

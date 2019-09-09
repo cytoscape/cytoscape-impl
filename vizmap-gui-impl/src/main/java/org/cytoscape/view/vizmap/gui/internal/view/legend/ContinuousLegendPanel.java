@@ -88,17 +88,16 @@ public class ContinuousLegendPanel extends AbstractMappingLegendPanel {
 		}
 
 		if (Paint.class.isAssignableFrom(visualProperty.getRange().getType())) {
-			final GradientEditorPanel gPanel = new GradientEditorPanel(style,
-					(ContinuousMapping<Double, Color>) mapping, table, null, servicesUtil);
-			legend = new JLabel(gPanel.getLegend(trackW, 100));
+			var panel = new GradientEditorPanel(style, (ContinuousMapping<Double, Color>) mapping, table, null, null,
+					servicesUtil);
+			legend = new JLabel(panel.getLegend(trackW, 100));
 		} else if (Number.class.isAssignableFrom(visualProperty.getRange().getType())) {
-			final C2CMappingEditorPanel numberPanel = new C2CMappingEditorPanel(style, mapping, table, servicesUtil);
-			legend = new JLabel(numberPanel.getLegend(trackW, 150));
+			var panel = new C2CMappingEditorPanel(style, mapping, table, null, servicesUtil);
+			legend = new JLabel(panel.getLegend(trackW, 150));
 		} else {
 			try {
-				C2DMappingEditorPanel discretePanel = new C2DMappingEditorPanel(style, mapping, table, null, 
-						servicesUtil);
-				legend = new JLabel(discretePanel.getLegend(trackW, 150));
+				var panel = new C2DMappingEditorPanel(style, mapping, table, null, servicesUtil);
+				legend = new JLabel(panel.getLegend(trackW, 150));
 			} catch (Exception ex) {
 				legend = new JLabel("Legend Generator not available");
 			}

@@ -51,13 +51,14 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	
 	private final static long serialVersionUID = 1213748837197780L;
 
-	private final EditorManager editorManager;
-
-	public C2DMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Number, V> mapping, CyTable attr,
-			final EditorManager editorManager, final ServicesUtil servicesUtil) {
-		super(style, mapping, attr, servicesUtil);
-
-		this.editorManager = editorManager;
+	public C2DMappingEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<Number, V> mapping,
+			CyTable attr,
+			EditorManager editorManager,
+			ServicesUtil servicesUtil
+	) {
+		super(style, mapping, attr, editorManager, servicesUtil);
 
 		this.getIconPanel().setVisible(false);
 		this.getBelowPanel().setVisible(false);

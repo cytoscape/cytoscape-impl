@@ -12,6 +12,7 @@ import javax.swing.SpinnerNumberModel;
 
 import org.cytoscape.model.CyTable;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
@@ -63,10 +64,14 @@ public class C2CMappingEditorPanel<K extends Number, V extends Number> extends C
 	private static final Number FIRST_LOCATION = 10d;
 	private static final Number SECOND_LOCATION = 30d;
 
-
-	public C2CMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping, final CyTable attr,
-			final ServicesUtil servicesUtil) {
-		super(style, mapping, attr, servicesUtil);
+	public C2CMappingEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<K, V> mapping,
+			CyTable attr,
+			EditorManager editorManager,
+			ServicesUtil servicesUtil
+	) {
+		super(style, mapping, attr, editorManager, servicesUtil);
 
 		getAbovePanel().setVisible(false);
 		getBelowPanel().setVisible(false);

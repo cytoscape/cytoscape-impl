@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -43,6 +44,8 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
@@ -130,6 +133,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected final ContinuousMapping<K, V> mapping;
 	protected final VisualProperty<V> type;
 	private final WeakReference<CyTable> dataTable;
+	protected final EditorManager editorManager;
 
 	private SpinnerNumberModel spinnerModel;
 
@@ -156,9 +160,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	/**
 	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
+	 * 
+	 * @param editorManager may be null.
 	 */
-	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
-			final CyTable table, final ServicesUtil servicesUtil) {
+	public ContinuousMappingEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<K, V> mapping,
+			CyTable table,
+			EditorManager editorManager,
+			ServicesUtil servicesUtil
+	) {
 		if (mapping == null)
 			throw new NullPointerException("ContinuousMapping should not be null.");
 		if (table == null)
@@ -170,6 +181,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		this.type = mapping.getVisualProperty();
 		this.style = style;
 		this.dataTable = new WeakReference<>(table);
+		this.editorManager = editorManager;
 		this.servicesUtil = servicesUtil;
 		this.original = createCopy(mapping);
 
@@ -472,6 +484,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					)
 					.addComponent(infoLabel)
 			);
+			
+			equalizeSize(getAddButton(), getDeleteButton());
 		}
 		
 		return formPanel;
@@ -570,7 +584,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return colorButton;
 	}
 	
-	private JButton getAddButton() {
+	protected JButton getAddButton() {
 		if (addButton == null) {
 			addButton = new JButton("Add");
 			addButton.addActionListener(evt -> addButtonActionPerformed(evt));
@@ -842,11 +856,19 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	
 	protected void update() {
 		final int selectedIndex = getSlider().getSelectedIndex();
-		final int tCount = getSlider().getModel().getThumbCount();
+		final int count = getSlider().getModel().getThumbCount();
 		
-		if (selectedIndex >= 0 && tCount > selectedIndex) {
+		if (selectedIndex >= 0 && count > selectedIndex) {
+			var editorType = editorManager != null
+					? editorManager.getVisualPropertyEditor(type).getContinuousEditorType()
+					: null;
+			
+			// C2D requires at least 1 handle, and the other types require at least 2
+			getDeleteButton().setEnabled(
+					(editorType == ContinuousEditorType.DISCRETE && count > 1) || 
+					(editorType != ContinuousEditorType.DISCRETE && count > 2)
+			);
 			getValueSpinner().setEnabled(true);
-			getDeleteButton().setEnabled(true);
 			getValueEditor().setEnabled(true);
 
 			final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
@@ -857,8 +879,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			else if (Paint.class.isAssignableFrom(vpValueType))
 				setButtonColor((Color) value);
 		} else {
-			getValueSpinner().setEnabled(false);
 			getDeleteButton().setEnabled(false);
+			getValueSpinner().setEnabled(false);
 			getValueEditor().setEnabled(false);
 			
 			getValueSpinner().setValue(0);
