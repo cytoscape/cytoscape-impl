@@ -60,7 +60,9 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 	private final JLabel namespaceLabel;
 	private final JLabel namespaceIconLabel;
 	private final JLabel nameLabel;
+	private final JLabel pkLabel;
 	private final JLabel sharedLabel;
+	private final JLabel immutableLabel;
 	private final JLabel sortLabel;
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -85,9 +87,17 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		nameLabel.setHorizontalAlignment(JLabel.CENTER);
 		nameLabel.setForeground(UIManager.getColor("TableHeader.foreground"));
 		
-		sharedLabel = new JLabel();
+		pkLabel = new JLabel(IconManager.ICON_KEY);
+		pkLabel.setFont(iconManager.getIconFont(12.0f));
+		pkLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
+		
+		sharedLabel = new JLabel(IconManager.ICON_SITEMAP);
 		sharedLabel.setFont(iconManager.getIconFont(12.0f));
 		sharedLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
+		
+		immutableLabel = new JLabel(IconManager.ICON_LOCK);
+		immutableLabel.setFont(iconManager.getIconFont(14.0f));
+		immutableLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
 		
 		sortLabel = new JLabel(IconManager.ICON_ANGLE_UP);
 		sortLabel.setFont(iconManager.getIconFont(12.0f));
@@ -107,7 +117,11 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		layout.setHorizontalGroup(layout.createSequentialGroup()
 			.addGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addComponent(namespaceIconLabel)
-				.addComponent(sharedLabel)
+				.addGroup(layout.createSequentialGroup()
+						.addComponent(pkLabel)
+						.addComponent(sharedLabel)
+						.addComponent(immutableLabel)
+				)
 			)
 			.addGroup(layout.createParallelGroup(Alignment.CENTER)
 				.addComponent(namespaceLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
@@ -124,7 +138,9 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 			)
 			.addGap(2)
 			.addGroup(layout.createParallelGroup(LEADING, false)
+				.addComponent(pkLabel)
 				.addComponent(sharedLabel)
+				.addComponent(immutableLabel)
 				.addComponent(nameLabel)
 				.addComponent(sortLabel)
 			)
@@ -160,27 +176,30 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		String[] parts = CyColumn.splitColumnName(colName);
 		String namespace = parts[0];
 		
-		if(namespace == null) {
+		if (namespace == null) {
 			namespaceLabel.setVisible(false);
 			namespaceIconLabel.setVisible(false);
 		} else {
 			namespaceLabel.setVisible(true);
 			namespaceLabel.setText(namespace);
-			
+
 			Icon icon = getNamespaceIcon(namespace);
-			if(icon == null) {
+
+			if (icon == null) {
 				namespaceIconLabel.setVisible(false);
 			} else {
 				namespaceIconLabel.setVisible(true);
 				namespaceIconLabel.setIcon(icon);
 			}
 		}
-		
+
 		final Font font = nameLabel.getFont();
 		nameLabel.setFont(colName.equals(CyIdentifiable.SUID) ? font.deriveFont(Font.BOLD) : font.deriveFont(Font.PLAIN));
 		nameLabel.setText(parts[1]);
 		
-		sharedLabel.setText("");
+		pkLabel.setVisible(false);
+		sharedLabel.setVisible(false);
+		immutableLabel.setVisible(false);
 		
 		sortLabel.setText(" ");
 		sortLabel.setForeground(UIManager.getColor("TextField.inactiveForeground"));
@@ -196,23 +215,56 @@ final class BrowserTableHeaderRenderer extends JPanel implements TableCellRender
 		final CyColumn column = model.getDataTable().getColumn(colName);
 		
 		if (column != null) {
-			StringBuilder toolTip = new StringBuilder("<html><div style=\"text-align: center;\">");
+			StringBuilder toolTip = new StringBuilder("<html><div style='text-align: center;'>");
 	
 			if (colName.equals(CyIdentifiable.SUID))
-				toolTip.append("Session-Unique ID (Primary Key)<br />This column is uneditable");
+				toolTip.append("Session-Unique ID");
 			else if (column.getType() == List.class)
-				toolTip.append("<b>").append(column.getName()).append("</b><br />(List of ")
-					.append(getMinimizedType(column.getListElementType().getName())).append("s)");
+				toolTip.append("<b>").append(column.getName())
+					.append("</b><br /><font face='monospace'>(List of ")
+					.append(getMinimizedType(column.getListElementType().getName()))
+					.append("s)</font>");
 			else
-				toolTip.append("<b>").append(column.getName()).append("</b><br />(")
-					.append(getMinimizedType(column.getType().getName())).append(")");
+				toolTip.append("<b>").append(column.getName())
+					.append("</b><br /><font face='monospace'>(")
+					.append(getMinimizedType(column.getType().getName()))
+					.append(")</font>");
 			
-			if (column.getVirtualColumnInfo().isVirtual()) {
-				toolTip.append("<br /><i>Network Collection Column</i></div></html>");
-				sharedLabel.setText(IconManager.ICON_SITEMAP);
-			} else {
-				toolTip.append("</div></html>");
+			toolTip.append("</div>");
+			
+			if (column.getVirtualColumnInfo().isVirtual() || column.isImmutable() || column.isPrimaryKey()) {
+				toolTip.append("<hr noshade />");
+				
+				if (column.isPrimaryKey()) {
+					toolTip.append("<p>- <i>Primary Key</i></p>");
+					pkLabel.setVisible(true);
+				}
+				
+				if (column.getVirtualColumnInfo().isVirtual()) {
+					toolTip.append("<p>- <i>Network Collection Column</i></p>");
+					sharedLabel.setVisible(true);
+				}
+				
+				if (column.isImmutable() || column.isPrimaryKey()) {
+					toolTip.append("<p>- Column cannot be: ");
+					
+					if (column.isImmutable()) {
+						toolTip.append("deleted, renamed");
+						
+						if (column.isPrimaryKey())
+							toolTip.append(",");
+						
+						immutableLabel.setVisible(true);
+					}
+					
+					if (column.isPrimaryKey())
+						toolTip.append(" edited");
+					
+					toolTip.append("</p>");
+				}
 			}
+			
+			toolTip.append("</html>");
 	
 			// Set tool tip if desired
 			setToolTipText(toolTip.toString());
