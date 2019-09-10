@@ -15,6 +15,14 @@ import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 
+/**
+ * Wraps the CyNetworkViewFactory provided by the viewmodel-impl bundle.
+ * Maintains a Map of each DRenderingEngine created for each CyNetworkView.
+ * 
+ * Many methods in the Cytoscape API just pass the instance of CyNetworkView so the corresponding
+ * DRenderingEngine can be looked up here.
+ *
+ */
 public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
 
 	public static final Object ANIMATED_EDGES = new Object();
@@ -45,6 +53,10 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 		this.registrar = registrar;
 	}
 
+	/**
+	 * Get the default config and add a tracked visual property for animated edges. 
+	 * This makes it easy to quickly find the animated edges in DRenderingEngine.
+	 */
 	public static CyNetworkViewConfig getNetworkViewConfig(CyNetworkViewFactoryFactory factoryFactory, DVisualLexicon dVisualLexicon) {
 		CyNetworkViewConfig config = factoryFactory.createConfig(dVisualLexicon);
 		config.addTrackedVisualProperty(ANIMATED_EDGES, DVisualLexicon.EDGE_LINE_TYPE, dVisualLexicon::isAnimated);
@@ -53,6 +65,7 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	
 	@Override
 	public CyNetworkView createNetworkView(CyNetwork network) {
+		// Create a CyNetworkView AND a DRenderingEngine for it.
 		CyNetworkView netView = delegateFactory.createNetworkView(network);
 		
 		DRenderingEngine re = new DRenderingEngine(netView, dingLexicon, annMgr, dingGraphLOD, handleFactory, registrar);

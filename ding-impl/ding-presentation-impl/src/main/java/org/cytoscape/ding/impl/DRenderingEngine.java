@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -91,7 +89,12 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-
+/**
+ * This class acts as a controller for rendering one CyNetworkView.
+ * It initializes all the classes needed for rendering and acts as a bridge
+ * between them.
+ *
+ */
 public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, CyNetworkViewListener {
 
 	private static final Logger logger = LoggerFactory.getLogger(DRenderingEngine.class);
@@ -152,7 +155,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
-	private ExecutorService executor;
 	private DebugCallback debugCallback;
 	
 	public DRenderingEngine(
@@ -169,12 +171,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		this.viewModel = view;
 		this.lexicon = dingLexicon;
 		this.dingGraphLOD = dingGraphLOD;
-		
-		this.executor = Executors.newCachedThreadPool(r -> {
-			Thread thread = Executors.defaultThreadFactory().newThread(r);
-			thread.setName("ding-" + thread.getName());
-			return thread;
-		});
 		
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
@@ -519,9 +515,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return inputHandler;
 	}
 	
-	public ExecutorService getExecutorService() {
-		return executor;
-	}
+//	public ExecutorService getExecutorService() {
+//		return executor;
+//	}
 	
 	/**
 	 * Mainly for using as a parent when showing dialogs and menus.

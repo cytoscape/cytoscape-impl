@@ -93,6 +93,13 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.work.swing.DialogTaskManager;
 
+/**
+ * This is a Swing glass pane that sits above the network canvas and handles all
+ * mouse and keyboard events.
+ * 
+ * The glass pane is also responsible for drawing the selection rectangle and
+ * the small progress bar.
+ */
 @SuppressWarnings("serial")
 public class InputHandlerGlassPane extends JComponent {
 	
