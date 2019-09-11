@@ -117,12 +117,18 @@ public class ContinuousTrackRenderer<K extends Number, V extends Number>
 
 	private final ServicesUtil servicesUtil;
 	
-	public ContinuousTrackRenderer(final VisualStyle style, final ContinuousMapping<K, V> mapping, V below, V above,
-			final EditorValueRangeTracer tracer, final ServicesUtil servicesUtil) {
+	public ContinuousTrackRenderer(
+			VisualStyle style,
+			ContinuousMapping<K, V> mapping,
+			V below,
+			V above,
+			EditorValueRangeTracer tracer,
+			ServicesUtil servicesUtil
+	) {
 		if (mapping == null)
-			throw new NullPointerException("'mapping' must not be null.");
+			throw new IllegalArgumentException("'mapping' must not be null.");
 		if (tracer == null)
-			throw new NullPointerException("'tracer' must not be null.");
+			throw new IllegalArgumentException("'tracer' must not be null.");
 		
 		this.below = below;
 		this.above = above;
