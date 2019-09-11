@@ -89,6 +89,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 		}
 	}
 
+	@Override
 	public GraphLOD faster() {
 		return new GraphLOD() {
 			@Override

@@ -76,7 +76,7 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		BirdsEyeView bev = new BirdsEyeView(re, registrar);
 
 		container.setLayout(new BorderLayout());
-		container.add(bev, BorderLayout.CENTER);
+		container.add(bev.getComponent(), BorderLayout.CENTER);
 
 		// Register this rendering engine as service.
 		registrar.registerService(bev, RenderingEngine.class, new Properties());

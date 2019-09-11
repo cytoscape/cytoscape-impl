@@ -41,6 +41,10 @@ public interface GraphLOD {
 		ALL
 	}
 	
+	default public GraphLOD faster() {
+		return this;
+	}
+	
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
 	 * only those edges which touch a visible node.  By default

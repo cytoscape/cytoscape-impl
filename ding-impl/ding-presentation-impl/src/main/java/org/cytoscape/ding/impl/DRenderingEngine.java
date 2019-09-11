@@ -4,7 +4,6 @@ import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -20,30 +19,27 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.RootPaneContainer;
 import javax.swing.Timer;
 
-import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugCallback;
-import org.cytoscape.ding.debug.DebugFrameType;
-import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
-import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
-import org.cytoscape.ding.impl.canvas.ImageFuture;
 import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
+import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
@@ -124,12 +120,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
-	private CompositeImageCanvas fastCanvas; // treat this as the 'main' canvas
-	private CompositeImageCanvas slowCanvas;
-	
-	private RendererComponent renderComponent;
+	private RenderComponentMain renderComponent;
 	private NetworkPicker picker;
-	private FontMetrics fontMetrics;
 	
 	// Snapshot of current view.  Will be updated by CONTENT_CHANGED event.
 	private BufferedImage snapshotImage;
@@ -141,7 +133,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private boolean largeModel = false;
 	
 	//Flag that indicates that the content has changed and the graph needs to be redrawn.
-	private volatile boolean contentChanged;
+	private volatile boolean contentChanged = true;
 	// State variable for when zooming/panning have changed.
 	private volatile boolean transformChanged;
 
@@ -156,6 +148,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
 	private DebugCallback debugCallback;
+	
+	// This is Ding's own rendering thread. All rendering is single-threaded, but off the EDT
+	private final ExecutorService singleThreadExecutor;
+	
 	
 	public DRenderingEngine(
 			final CyNetworkView view,
@@ -172,6 +168,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		this.lexicon = dingLexicon;
 		this.dingGraphLOD = dingGraphLOD;
 		
+		this.singleThreadExecutor = Executors.newSingleThreadExecutor(r -> {
+			Thread thread = Executors.defaultThreadFactory().newThread(r);
+			thread.setName("ding-" + thread.getName());
+			return thread;
+		});
+		
 		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
 		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
 		
@@ -179,10 +181,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		fastCanvas = new CompositeImageCanvas(this, dingGraphLOD.faster());
-		slowCanvas = new CompositeImageCanvas(this, dingGraphLOD);
-		
-		renderComponent = new RendererComponent();
+		renderComponent = new RenderComponentMain(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
 
 		// Finally, intialize our annotations
@@ -200,7 +199,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
-//		cyAnnotator.loadAnnotations();
+		cyAnnotator.loadAnnotations();
 		
 		coalesceTimer = new CoalesceTimer();
 		
@@ -235,139 +234,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return renderComponent.getImage();
 	}
 	
-	
-	/**
-	 * This is the interface between the renderer and Swing.
-	 */
-	@SuppressWarnings("serial")
-	private class RendererComponent extends JComponent {
-		
-		private boolean annotationsLoaded = false;
-		private ImageFuture slowFuture;
-		private ImageFuture fastFuture;
-		private UpdateType updateType = UpdateType.ALL_FULL;
-		
-		@Override
-		public void setBounds(int x, int y, int width, int height) {
-			if(width == getWidth() && height == getHeight())
-				return;
-			
-			super.setBounds(x, y, width, height);
-			fastCanvas.setViewport(width, height);
-			slowCanvas.setViewport(width, height);
-			setTransformChanged();
-			
-			// If this is the first call to setBounds, load any annotations
-			if(!annotationsLoaded) {
-				annotationsLoaded = true;
-				// MKTODO we should not load annotations here!
-				cyAnnotator.loadAnnotations();
-			}
-			
-			getViewModel().batch(netView -> {
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) width);
-				netView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT, (double) height);
-			}, false); // don't set the dirty flag
-			
-			updateView(UpdateType.ALL_FULL);
-		}
-		
-		public void updateView(UpdateType updateType) {
-			// Run this on the EDT so there is no race condition with paint()
-			// Fast painting and slow painting don't happen concurrently.
-			invokeOnEDTAndWait(() -> {
-				if(slowFuture != null) {
-					slowFuture.cancel();
-				}
-				if(fastFuture != null) {
-					fastFuture.cancel();
-					fastFuture = null;
-				}
-				
-				// don't render slow frames while panning, only render slow when user releases mouse button
-				this.updateType = updateType;
-				
-				repaint();
-			});
-		}
-		
-		public Image getImage() {
-			Image[] image = { null };
-			invokeOnEDTAndWait(() -> {
-				ImageFuture future;
-				if(slowFuture != null && slowFuture.isReady()) {
-					future = slowFuture;
-				} else if(fastFuture != null && fastFuture.isReady()) {
-					future = fastFuture;
-				} else {
-					future = fastCanvas.paintOnCurrentThread(null);
-				}
-				image[0] = future.join(); // in all cases the future will be ready here
-			});
-			return image[0];
-		}
-		
-		@Override
-		public void paintComponent(Graphics g) {
-			super.paintComponent(g);
-			ImageFuture future;
-			
-			if(slowFuture != null && slowFuture.isReady()) {
-				future = slowFuture;
-			} else if(fastFuture != null) {
-				future = fastFuture;
-			} else {
-				if(slowFuture != null) {
-					slowFuture.cancel();
-					slowFuture.join(); // make sure its cancelled
-					slowFuture = null;
-				}
-				
-				// RENDER: fast frame right now
-				if(updateType == UpdateType.JUST_ANNOTATIONS) {
-					var fastPm = debugPm(DebugFrameType.MAIN_ANNOTAITONS, null);
-					fastFuture = fastCanvas.paintJustAnnotationsOnCurrentThread(fastPm);
-				} else {
-					var fastPm = debugPm(DebugFrameType.MAIN_FAST, null);
-					fastFuture = fastCanvas.paintOnCurrentThread(fastPm);
-				}
-				future = fastFuture;
-				updateThumbnail(fastFuture);
-
-				// RENDER: start a slow frame if necessary
-				if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
-					var slowPm = debugPm(DebugFrameType.MAIN_SLOW, getInputHandlerGlassPane().createProgressMonitor());
-					slowFuture = slowCanvas.startPaintingSequential(slowPm);
-					slowFuture.thenRun(this::repaint);
-					slowFuture.thenRun(() -> updateThumbnail(slowFuture));
-				}
-				updateType = UpdateType.ALL_FAST;
-			}
-			
-			Image image = future.join();
-			picker.setRenderDetailFlags(future.getLastRenderDetail());
-			g.drawImage(image, 0, 0, null);
-		}
-		
-		@Override
-		public void update(Graphics g) {
-			if(fontMetrics == null) {
-				fontMetrics = g.getFontMetrics(); // needed to compute label widths
-			}
-			super.update(g);
-		}
-		
-		private ProgressMonitor debugPm(DebugFrameType type, ProgressMonitor pm) {
-			return CyActivator.DEBUG ? new DebugProgressMonitor(type, pm, debugCallback) : pm;
-		}
-		
-		private boolean sameDetail() {
-			return fastFuture.getLastRenderDetail().equals(slowCanvas.getRenderDetailFlags());
-		}
-		
-		private void updateThumbnail(ImageFuture future) {
-			fireThumbnailChanged(future.join());
-		}
+	public ExecutorService getSingleThreadExecutorService() {
+		return singleThreadExecutor;
 	}
 	
 	
@@ -387,10 +255,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	public NetworkTransform getTransform() {
-		return fastCanvas.getTransform();
+		return renderComponent.getTransform();
 	}
 	
-	public DingGraphLOD getGraphLOD() {
+	public GraphLOD getGraphLOD() {
 		return dingGraphLOD;
 	}
 	
@@ -429,17 +297,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	
 	public void updateView(UpdateType updateType) {
+		renderComponent.updateView(updateType);
+		
 		if(contentChanged) {
 			fireContentChanged();
 		}
 		if(transformChanged) {
 			fireTransformChanged();
 		}
-		
 		setContentChanged(false);
 		setTransformChanged(false);
-	
-		renderComponent.updateView(updateType);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
@@ -452,8 +319,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
-		fastCanvas.setBackgroundPaint(backgroundPaint);
-		slowCanvas.setBackgroundPaint(backgroundPaint);
+		renderComponent.setBackgroundPaint(backgroundPaint);
 		
 		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		bendStore.updateSelectedEdges(selectedEdges);
@@ -471,24 +337,21 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
-		slowCanvas.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
+		renderComponent.setLOD(hd ? dingGraphLODAll : dingGraphLOD);
 		
 		// update view (for example if "fit selected" was run)
 		double x = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION);
 		double y = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION);
-		slowCanvas.setCenter(x, y);
-		fastCanvas.setCenter(x, y);
+		renderComponent.setCenter(x, y);
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
-		slowCanvas.setScaleFactor(scaleFactor);
-		fastCanvas.setScaleFactor(scaleFactor);
+		renderComponent.setScaleFactor(scaleFactor);
 		
 		setContentChanged(true);
 	}
 	
-	
 	public Color getBackgroundColor() {
-		return fastCanvas.getBackgroundPaint();
+		return renderComponent.getBackgroundPaint();
 	}
 	
 //	private void advanceAnimatedEdges() {
@@ -515,10 +378,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return inputHandler;
 	}
 	
-//	public ExecutorService getExecutorService() {
-//		return executor;
-//	}
-	
 	/**
 	 * Mainly for using as a parent when showing dialogs and menus.
 	 */
@@ -534,7 +393,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public EdgeDetails getEdgeDetails() {
 		return edgeDetails;
 	}
-	
 	
 	
 	public void setContentChanged() {
@@ -570,9 +428,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private void fireTransformChanged() {
 		// MKTODO should we use an immutable copy of the transform here?, do we even need to pass the transform to the listener?
-		var transform = fastCanvas.getTransform();
 		for(var l : transformChangeListeners) {
-			l.transformChanged(transform);
+			l.transformChanged();
 		}
 		fireThumbnailChanged(null);
 	}
@@ -593,7 +450,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		thumbnailChangeListeners.remove(l);
 	}
 	
-	private void fireThumbnailChanged(Image image) {
+	void fireThumbnailChanged(Image image) {
 		for(var l : thumbnailChangeListeners) {
 			l.thumbnailChanged(image);
 		}
@@ -613,14 +470,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	public void setZoom(double zoom) {
 		synchronized (dingLock) {
-			slowCanvas.setScaleFactor(checkZoom(zoom, slowCanvas.getTransform().getScaleFactor()));
-			fastCanvas.setScaleFactor(checkZoom(zoom, fastCanvas.getTransform().getScaleFactor()));
+			renderComponent.setScaleFactor(checkZoom(zoom, renderComponent.getTransform().getScaleFactor()));
 			fireTransformChanged();
 		}
 	}
 	
 	public double getZoom() {
-		return slowCanvas.getTransform().getScaleFactor();
+		return renderComponent.getTransform().getScaleFactor();
 	}
 	
 	private void fitContent(final boolean updateView) {
@@ -632,7 +488,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			if(netViewSnapshot.getNodeCount() == 0)
 				return;
 			
-			NetworkTransform transform = fastCanvas.getTransform();
+			NetworkTransform transform = renderComponent.getTransform();
 			if(transform.getWidth() == 0 || transform.getHeight() == 0)
 				return;
 			
@@ -685,7 +541,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		else
 			return;
 		
-		double scaleFactor = fastCanvas.getTransform().getScaleFactor() * factor;
+		double scaleFactor = renderComponent.getTransform().getScaleFactor() * factor;
 		setZoom(scaleFactor);
 		
 		getViewModel().batch(netView -> {
@@ -697,7 +553,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public void pan(double deltaX, double deltaY) {
 		synchronized (dingLock) {
-			NetworkTransform transform = fastCanvas.getTransform();
+			NetworkTransform transform = renderComponent.getTransform();
 			double x = transform.getCenterX() + deltaX;
 			double y = transform.getCenterY() + deltaY;
 			setCenter(x, y);
@@ -706,13 +562,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	public void setCenter(double x, double y) {
 		synchronized (dingLock) {
-			fastCanvas.setCenter(x,y);
-			slowCanvas.setCenter(x,y);
+			renderComponent.setCenter(x,y);
 			
 			// Update view model
 			// TODO: don't do it from here?
 			getViewModel().batch(netView -> {
-				NetworkTransform transform = fastCanvas.getTransform();
+				NetworkTransform transform = renderComponent.getTransform();
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, transform.getCenterX());
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, transform.getCenterY());
 			}, false); // don't set the dirty flag
@@ -764,7 +619,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		float yMinF = yMin;
 
 		netViewSnapshot.getMutableNetworkView().batch(netView -> {
-			NetworkTransform transform = fastCanvas.getTransform();
+			NetworkTransform transform = renderComponent.getTransform();
 			if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION)) {
 				double zoom = Math.min(((double) transform.getWidth()) / (((double) xMaxF) - ((double) xMinF)),
 						((double) transform.getHeight()) / (((double) yMaxF) - ((double) yMinF)));
@@ -790,6 +645,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	
 	private int getLabelWidth(View<CyNode> nodeView) {
+		var fontMetrics = renderComponent.getFontMetrics();
 		if (nodeView == null || fontMetrics == null)
 			return 0;
 
@@ -817,7 +673,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		((Graphics2D) g).translate(pageFormat.getImageableX(), pageFormat.getImageableY());
 
 		// make sure the whole image on the screen will fit to the printable area of the paper
-		var transform = fastCanvas.getTransform();
+		var transform = renderComponent.getTransform();
 		double image_scale = Math.min(pageFormat.getImageableWidth()  / transform.getWidth(),
 									  pageFormat.getImageableHeight() / transform.getHeight());
 
@@ -859,7 +715,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void print(Graphics g) {
 		boolean transparent = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
 		
-		var transform = fastCanvas.getTransform();
+		var transform = renderComponent.getTransform();
 		Color bg = transparent ? null : getBackgroundColor();
 		
 		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, dingGraphLOD, transform);
@@ -992,8 +848,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			coalesceTimer.shutdown();
 			cyAnnotator.dispose();
 			serviceRegistrar.unregisterAllServices(cyAnnotator);
-			fastCanvas.dispose();
-			slowCanvas.dispose();
+			renderComponent.dispose();
 		}
 	}
 
@@ -1001,6 +856,5 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public String getRendererId() {
 		return DingRenderer.ID;
 	}
-	
 	
 }

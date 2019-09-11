@@ -26,7 +26,6 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void done() {
-		wrapped.done();
 	}
 
 }

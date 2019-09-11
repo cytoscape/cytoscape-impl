@@ -11,8 +11,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
@@ -40,8 +40,6 @@ public class CompositeImageCanvas {
 	
 	private final List<DingCanvas<NetworkImageBuffer>> canvasList;
 	private final double[] weights;
-	
-	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 	
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
@@ -85,10 +83,6 @@ public class CompositeImageCanvas {
 		return image;
 	}
 	
-	public Image getImage() {
-		return image.getImage();
-	}
-	
 	public void setBackgroundPaint(Paint paint) {
 		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
 		backgroundColorCanvas.setColor(color);
@@ -128,104 +122,89 @@ public class CompositeImageCanvas {
 		return composite;
 	}
 	
-	
-	public ImageFuture paintOnCurrentThread() {
-		return paintOnCurrentThread(null);
-	}
-	
-	/**
-	 * Paints on the current thread and blocks until painting is complete.
-	 * Returns a future that is already complete.
-	 */
-	public ImageFuture paintOnCurrentThread(ProgressMonitor pm) {
-		// MKTODO get rid of pm argument, not needed
-		pm = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
-		pm.start();
-		
-		for(var canvas : canvasList) {
-			Image canvasImage = canvas.paintAndGet(null,flags).getImage();
-			overlayImage(image.getImage(), canvasImage);
-		}
-		
-		pm.done();
-		return new ImageFuture(image.getImage() ,flags);
-	}
-	
-	/**
-	 * Paints on the current thread and blocks until painting is complete.
-	 * Only repaints the annotation layers, the node/edge layer images from the previous frame are reused.
-	 * Returns a future that is already complete.
-	 */
-	public ImageFuture paintJustAnnotationsOnCurrentThread(ProgressMonitor pm) {
-		// MKTODO get rid of pm argument, not needed
-		pm = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
-		pm.start();
-		
-		overlayImage(image.getImage(), backgroundColorCanvas.getTransform().getImage());
-		overlayImage(image.getImage(), backgroundAnnotationCanvas.paintAndGet(null,flags).getImage());
-		overlayImage(image.getImage(), edgeCanvas.getTransform().getImage());
-		overlayImage(image.getImage(), nodeCanvas.getTransform().getImage());
-		overlayImage(image.getImage(), foregroundAnnotationCanvas.paintAndGet(null,flags).getImage());
-		overlayImage(image.getImage(), annotationSelectionCanvas.paintAndGet(null,flags).getImage());
-		
-		pm.done();
-		return new ImageFuture(image.getImage(), flags);
-	}
-
-	
 	/**
 	 * Starts painting on a single separate thread. 
 	 * Each layer of the canvas is painted sequentially in order. 
 	 * Returns an ImageFuture that represents the result of the painting.
 	 * To get the Image buffer from the ImageFuture call future.join().
 	 */
-	public ImageFuture startPaintingSequential(ProgressMonitor pm) {
-		pm = ProgressMonitor.notNull(pm);
+	public ImageFuture paintAsync(ProgressMonitor progressMonitor, Executor executor) {
+		var pm = ProgressMonitor.notNull(progressMonitor);
 		var flags = getRenderDetailFlags();
+		var future = CompletableFuture.supplyAsync(() -> paint(pm, flags, x -> true), executor);
+		return new ImageFuture(future, flags, pm);
+	}
+	
+	private ImageFuture paintSync(ProgressMonitor progressMonitor, Predicate<DingCanvas<?>> shouldRepaint) {
+		var pm = ProgressMonitor.notNull(progressMonitor);
+		var flags = getRenderDetailFlags();
+		var image = paint(pm, flags, shouldRepaint);
+		return new ImageFuture(image, flags, pm);
+	}
+	
+	public ImageFuture paintSync(ProgressMonitor pm) {
+		return paintSync(pm, c -> true);
+	}
+	
+	public ImageFuture paintSyncJustAnnotations(ProgressMonitor pm) {
+		return paintSync(pm, c -> 
+			c == backgroundAnnotationCanvas || 
+			c == foregroundAnnotationCanvas || 
+			c == annotationSelectionCanvas
+		);
+	}
+	
+	private Image paint(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> shouldRepaint) {
 		var subPms = pm.split(weights);
 		pm.start();
 		
-		var f = CompletableFuture.completedFuture(image.getImage());
 		for(int i = 0; i < canvasList.size(); i++) {
 			var canvas = canvasList.get(i);
 			var subPm = subPms.get(i);
-			f = f.thenApplyAsync(compositeImage -> {
-				Image image = canvas.paintAndGet(subPm, flags).getImage();
-				return overlayImage(compositeImage, image);
-			}, singleThreadExecutor);
+			
+			Image canvasImage;
+			if(shouldRepaint.test(canvas)) {
+				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
+			} else {
+				canvasImage = canvas.getTransform().getImage();
+			}
+				
+			overlayImage(image.getImage(), canvasImage);
 		}
-		f.thenRun(pm::done);
 		
-		return new ImageFuture(f, flags, pm);
+		pm.done();
+		return image.getImage();
 	}
 	
 	
-	/**
-	 * Starts painting using a thread pool provided by the given ExecutorService. 
-	 * Each layer of the canvas is painted concurrently.
-	 * Returns an ImageFuture that represents the result of the painting.
-	 * To get the Image buffer from the ImageFuture call future.join().
-	 */
-	public ImageFuture startPaintingConcurrent(ProgressMonitor pm, ExecutorService executor) {
-		pm = ProgressMonitor.notNull(pm);
-		var flags = getRenderDetailFlags();
-		var subPms = pm.split(weights);
-		
-		pm.start();
-		
-		var f = CompletableFuture.completedFuture(image.getImage());
-		for(int i = 0; i < canvasList.size(); i++) {
-			var canvas = canvasList.get(i);
-			var subPm = subPms.get(i);
-			var cf = CompletableFuture.supplyAsync(() -> canvas.paintAndGet(subPm, flags).getImage(), executor);
-			f = f.thenCombineAsync(cf, this::overlayImage, executor);
-		}
-		f.thenRun(pm::done);
-		
-		return new ImageFuture(f, flags, pm);
-	}
+//	/**
+//	 * Starts painting using a thread pool provided by the given ExecutorService. 
+//	 * Each layer of the canvas is painted concurrently.
+//	 * Returns an ImageFuture that represents the result of the painting.
+//	 * To get the Image buffer from the ImageFuture call future.join().
+//	 * 
+//	 * NOTE: Not currently being used. Need to revisit locks and other concurrency controls
+//	 * if we want to render in parallel. It doesn't work properly at the moment and
+//	 * results in flicker and strange behaviour.
+//	 */
+//	private ImageFuture startPaintingConcurrent(ProgressMonitor pm, ExecutorService executor) {
+//		pm = ProgressMonitor.notNull(pm);
+//		var flags = getRenderDetailFlags();
+//		var subPms = pm.split(weights);
+//		
+//		pm.start();
+//		
+//		var f = CompletableFuture.completedFuture(image.getImage());
+//		for(int i = 0; i < canvasList.size(); i++) {
+//			var canvas = canvasList.get(i);
+//			var subPm = subPms.get(i);
+//			var cf = CompletableFuture.supplyAsync(() -> canvas.paintAndGet(subPm, flags).getImage(), executor);
+//			f = f.thenCombineAsync(cf, this::overlayImage, executor);
+//		}
+//		f.thenRun(pm::done);
+//		
+//		return new ImageFuture(f, flags, pm);
+//	}
 	
 
 }

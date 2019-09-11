@@ -251,16 +251,17 @@ public class InputHandlerGlassPane extends JComponent {
 				} else if(nodeSelectionEnabled()) {
 					moveNodesAndHandles(e);
 				}
+				re.updateView(UpdateType.ALL_FULL);
 			} else if(code == VK_ESCAPE) {
 				cancelAddingEdge();
 				if(annotationSelectionEnabled()) {
 					cancelAnnotations();
 				}
+				re.updateView(UpdateType.ALL_FULL);
 			} else if(code == VK_BACK_SPACE) {
 				deleteSelectedNodesAndEdges();
+				re.updateView(UpdateType.ALL_FULL);
 			}
-			
-			re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		@Override

@@ -15,6 +15,11 @@ public class BirdsEyeViewLOD implements GraphLOD {
 		this.source = source;
 	}
 
+	@Override
+	public GraphLOD faster() {
+		return new BirdsEyeViewLOD(source.faster());
+	}
+	
 	public RenderEdges renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		return source.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 	}

@@ -1,6 +1,7 @@
 package org.cytoscape.ding.debug;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
+import org.cytoscape.ding.internal.util.ViewUtil;
 
 public class DebugProgressMonitor implements ProgressMonitor {
 
@@ -25,10 +26,14 @@ public class DebugProgressMonitor implements ProgressMonitor {
 	@Override
 	public void done() {
 		delegate.done();
-		long end = System.currentTimeMillis();
-		long time = end - start;
-		if(callback != null)
-			callback.addFrameTime(type, isCancelled(), time);
+		if(callback != null) {
+			long end = System.currentTimeMillis();
+			long time = end - start;
+			boolean cancelled = isCancelled();
+			ViewUtil.invokeOnEDT(() -> {
+				callback.addFrameTime(type, cancelled, time);
+			});
+		}
 	}
 	
 	@Override
