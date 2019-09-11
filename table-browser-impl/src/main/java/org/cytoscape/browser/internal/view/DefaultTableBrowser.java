@@ -244,8 +244,7 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 				ignoreSetCurrentTable = false;
 			}
 			
-			if (currentTable != null)
-				serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
+			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
 			
 			showSelectedTable();
 			changeSelectionMode();

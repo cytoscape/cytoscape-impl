@@ -81,7 +81,7 @@ public class TableBrowserMediator implements CytoPanelComponentSelectedListener 
 		else if (comp.equals(globalTableBrowser.getComponent()))
 			table = globalTableBrowser.getCurrentTable();
 		
-		if (table != null && table.isPublic())
+		if (table == null || table.isPublic())
 			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
 }
