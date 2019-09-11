@@ -13,6 +13,8 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+import org.cytoscape.ding.impl.canvas.RenderComponent;
+import org.cytoscape.ding.impl.canvas.BirdsEyeViewRenderComponent;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -36,7 +38,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork> {
 		this.re = re;
 		
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
-		renderComponent = new RenderComponentBirdsEyeView(re, lod);
+		renderComponent = new BirdsEyeViewRenderComponent(re, lod);
 		renderComponent.showAnnotationSelection(false);
 		
 		var mouseListener = new InnerMouseListener();

@@ -34,6 +34,7 @@ import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
 import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
+import org.cytoscape.ding.impl.canvas.MainRenderComponent;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
@@ -120,7 +121,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
-	private RenderComponentMain renderComponent;
+	private MainRenderComponent renderComponent;
 	private NetworkPicker picker;
 	
 	// Snapshot of current view.  Will be updated by CONTENT_CHANGED event.
@@ -181,7 +182,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		edgeDetails = new DEdgeDetails(this);
 		printLOD = new PrintLOD();
 		
-		renderComponent = new RenderComponentMain(this, dingGraphLOD);
+		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
 
 		// Finally, intialize our annotations

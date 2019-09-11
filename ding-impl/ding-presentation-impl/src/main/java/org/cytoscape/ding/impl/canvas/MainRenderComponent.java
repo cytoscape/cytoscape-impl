@@ -1,21 +1,22 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 
 import org.cytoscape.ding.debug.DebugFrameType;
+import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
-import org.cytoscape.ding.impl.canvas.ImageFuture;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 @SuppressWarnings("serial")
-public class RenderComponentMain extends RenderComponent {
+public class MainRenderComponent extends RenderComponent {
 
 	private FontMetrics fontMetrics;
 	
-	public RenderComponentMain(DRenderingEngine re, DingGraphLOD lod) {
+	public MainRenderComponent(DRenderingEngine re, DingGraphLOD lod) {
 		super(re, lod);
 	}
 	

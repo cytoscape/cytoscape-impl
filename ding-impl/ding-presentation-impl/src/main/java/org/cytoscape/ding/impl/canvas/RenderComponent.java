@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
 
@@ -12,10 +12,8 @@ import javax.swing.JComponent;
 import org.cytoscape.ding.CyActivator;
 import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
-import org.cytoscape.ding.impl.canvas.CompositeImageCanvas;
-import org.cytoscape.ding.impl.canvas.ImageFuture;
-import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;

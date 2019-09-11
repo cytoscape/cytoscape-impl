@@ -1,4 +1,4 @@
-package org.cytoscape.ding.impl;
+package org.cytoscape.ding.impl.canvas;
 
 import java.awt.Color;
 import java.awt.Dimension;
@@ -7,20 +7,21 @@ import java.awt.Graphics;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.debug.DebugFrameType;
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.work.NoOutputProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 
 @SuppressWarnings("serial")
-public class RenderComponentBirdsEyeView extends RenderComponent {
+public class BirdsEyeViewRenderComponent extends RenderComponent {
 
 	private static final Dimension MIN_SIZE = new Dimension(180, 180);
 	
 	private final Color VIEW_WINDOW_COLOR;
 	private final Color VIEW_WINDOW_BORDER_COLOR;
 	
-	public RenderComponentBirdsEyeView(DRenderingEngine re, GraphLOD lod) {
+	public BirdsEyeViewRenderComponent(DRenderingEngine re, GraphLOD lod) {
 		super(re, lod);
 		
 		setPreferredSize(MIN_SIZE);
