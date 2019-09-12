@@ -20,8 +20,6 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.events.SetCurrentNetworkEvent;
-import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.browser.internal.util.IconUtil;
 import org.cytoscape.browser.internal.view.BrowserTableModel.ViewMode;
 import org.cytoscape.model.CyEdge;
@@ -69,8 +67,8 @@ import org.cytoscape.util.swing.TextIcon;
  */
 
 @SuppressWarnings("serial")
-public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurrentNetworkListener,
-		TableAddedListener, TableAboutToBeDeletedListener, ColumnCreatedListener, ColumnDeletedListener {
+public class DefaultTableBrowser extends AbstractTableBrowser
+		implements TableAddedListener, TableAboutToBeDeletedListener, ColumnCreatedListener, ColumnDeletedListener {
 
 	private JPopupMenu displayMode;
 	private JComboBox<CyTable> tableChooser;
@@ -209,49 +207,6 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 	}
 
 	@Override
-	public void handleEvent(final SetCurrentNetworkEvent e) {
-		final CyNetwork currentNetwork = e.getNetwork();
-		
-		invokeOnEDTAndWait(() -> {
-			if (currentNetwork != null) {
-				if (objType == CyNode.class) {
-					currentTable = currentNetwork.getDefaultNodeTable();
-				} else if (objType == CyEdge.class) {
-					currentTable = currentNetwork.getDefaultEdgeTable();
-				} else {
-					currentTable = currentNetwork.getDefaultNetworkTable();
-				}
-				currentTableType = objType;
-			} else {
-				currentTable = null;
-				currentTableType = null;
-			}
-	
-			final Set<CyTable> tables = getPublicTables(currentNetwork);
-			ignoreSetCurrentTable = true;
-			
-			try {
-				getTableChooser().removeAllItems();
-				
-				if (currentTable != null) {
-					for (final CyTable tbl : tables)
-						getTableChooser().addItem(tbl);
-					
-					getToolBar().updateEnableState(getTableChooser());
-					getTableChooser().setSelectedItem(currentTable);
-				}
-			} finally {
-				ignoreSetCurrentTable = false;
-			}
-			
-			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(currentTable);
-			
-			showSelectedTable();
-			changeSelectionMode();
-		});
-	}
-	
-	@Override
 	public void handleEvent(final TableAddedEvent e) {
 		final CyTable newTable = e.getTable();
 
@@ -300,6 +255,42 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 			getToolBar().updateEnableState();
 	}
 	
+	public void update(CyNetwork network) {
+		if (network != null) {
+			if (objType == CyNode.class)
+				currentTable = network.getDefaultNodeTable();
+			else if (objType == CyEdge.class)
+				currentTable = network.getDefaultEdgeTable();
+			else
+				currentTable = network.getDefaultNetworkTable();
+			
+			currentTableType = objType;
+		} else {
+			currentTable = null;
+			currentTableType = null;
+		}
+
+		final Set<CyTable> tables = getPublicTables(network);
+		ignoreSetCurrentTable = true;
+		
+		try {
+			getTableChooser().removeAllItems();
+			
+			if (currentTable != null) {
+				for (final CyTable tbl : tables)
+					getTableChooser().addItem(tbl);
+				
+				getToolBar().updateEnableState(getTableChooser());
+				getTableChooser().setSelectedItem(currentTable);
+			}
+		} finally {
+			ignoreSetCurrentTable = false;
+		}
+		
+		showSelectedTable();
+		changeSelectionMode();
+	}
+	
 	private JComboBox<CyTable> getTableChooser() {
 		if (tableChooser == null) {
 			tableChooser = new JComboBox<>(new DefaultComboBoxModel<CyTable>());
@@ -333,12 +324,12 @@ public class DefaultTableBrowser extends AbstractTableBrowser implements SetCurr
 		return tableChooser;
 	}
 	
-	private Set<CyTable> getPublicTables(CyNetwork currentNetwork) {
+	private Set<CyTable> getPublicTables(CyNetwork network) {
 		final Set<CyTable> tables = new LinkedHashSet<>();
-		if (currentNetwork == null) return tables;
+		if (network == null) return tables;
 		
 		final CyNetworkTableManager netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
-		final Map<String, CyTable> map = netTableManager.getTables(currentNetwork, objType);
+		final Map<String, CyTable> map = netTableManager.getTables(network, objType);
 		
 		if (showPrivateTables()) {
 			tables.addAll(map.values());
