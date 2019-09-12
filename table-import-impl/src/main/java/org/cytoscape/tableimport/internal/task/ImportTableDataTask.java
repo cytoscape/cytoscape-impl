@@ -338,9 +338,15 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		this.source2targetColumnMap = new HashMap<>();
 		this.mappedTables = new ArrayList<>();
 
+		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
+		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		
-		if (netMgr.getNetworkSet().size() > 0) {
+		final CyTable currTable = appMgr.getCurrentTable();
+		TableType tableType = currTable != null ? TableType.fromType(netTblMgr.getTableType(currTable)) : null;
+		final boolean isCurrTableGlobal = currTable != null && tableType == null;
+		
+		if (!isCurrTableGlobal && !netMgr.getNetworkSet().isEmpty()) {
 			setWhereImportTable(new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE));
 			getWhereImportTable().setSelectedValue(NETWORK_COLLECTION);
 			networksPresent = true;
@@ -360,9 +366,6 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			newTableName = globalTable.getTitle();
 		}
 		
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
-		
 		if (networksPresent) {
 			final List<TableType> options = new ArrayList<>();
 			
@@ -370,12 +373,9 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 				options.add(type);
 			
 			final CyNetwork currNet = appMgr.getCurrentNetwork();
-			final CyTable currTable = appMgr.getCurrentTable();
 			
 			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
-			
-			TableType tableType = currTable != null ? TableType.fromType(netTblMgr.getTableType(currTable)) : null;
 			
 			if (tableType == null)
 				tableType = TableType.NODE_ATTR;
