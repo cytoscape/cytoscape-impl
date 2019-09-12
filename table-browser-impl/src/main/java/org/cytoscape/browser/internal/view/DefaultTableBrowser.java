@@ -99,6 +99,11 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 	}
 	
 	@Override
+	public String getIdentifier() {
+		return "org.cytoscape." + objType.getSimpleName().replace("Cy", "") + "Tables";
+	}
+	
+	@Override
 	public Icon getIcon() {
 		if (icon == null) {
 			String text = null;

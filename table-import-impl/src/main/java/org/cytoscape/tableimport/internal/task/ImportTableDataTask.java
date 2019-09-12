@@ -22,7 +22,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -340,13 +339,8 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
 		final CyNetworkManager netMgr = serviceRegistrar.getService(CyNetworkManager.class);
-		final CyNetworkTableManager netTblMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
 		
-		final CyTable currTable = appMgr.getCurrentTable();
-		TableType tableType = currTable != null ? TableType.fromType(netTblMgr.getTableType(currTable)) : null;
-		final boolean isCurrTableGlobal = currTable != null && tableType == null;
-		
-		if (!isCurrTableGlobal && !netMgr.getNetworkSet().isEmpty()) {
+		if (!netMgr.getNetworkSet().isEmpty()) {
 			setWhereImportTable(new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE));
 			getWhereImportTable().setSelectedValue(NETWORK_COLLECTION);
 			networksPresent = true;
@@ -367,6 +361,7 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		}
 		
 		if (networksPresent) {
+			final TableType tableType = tableImportContext.getTableType();
 			final List<TableType> options = new ArrayList<>();
 			
 			for (TableType type : TableType.values())
@@ -377,11 +372,12 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			dataTypeTargetForNetworkCollection = new ListSingleSelection<>(options);
 			dataTypeTargetForNetworkList = new ListSingleSelection<>(options);
 			
-			if (tableType == null)
-				tableType = TableType.NODE_ATTR;
-			
-			dataTypeTargetForNetworkCollection.setSelectedValue(tableType);
-			dataTypeTargetForNetworkList.setSelectedValue(tableType);
+			if (tableType == null) {
+				getWhereImportTable().setSelectedValue(UNASSIGNED_TABLE);
+			} else {
+				dataTypeTargetForNetworkCollection.setSelectedValue(tableType);
+				dataTypeTargetForNetworkList.setSelectedValue(tableType);
+			}
 	
 			for (CyNetwork net : netMgr.getNetworkSet()) {
 				final String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
