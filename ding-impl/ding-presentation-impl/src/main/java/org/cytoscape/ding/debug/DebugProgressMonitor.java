@@ -2,6 +2,7 @@ package org.cytoscape.ding.debug;
 
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
 public class DebugProgressMonitor implements ProgressMonitor {
 
@@ -26,12 +27,16 @@ public class DebugProgressMonitor implements ProgressMonitor {
 	@Override
 	public void done() {
 		delegate.done();
+	}
+	
+	public void done(RenderDetailFlags flags) {
+		done();
 		if(callback != null) {
 			long end = System.currentTimeMillis();
 			long time = end - start;
 			boolean cancelled = isCancelled();
 			ViewUtil.invokeOnEDT(() -> {
-				callback.addFrameTime(type, cancelled, time);
+				callback.addFrame(type, cancelled, flags.getVisibleNodeCount(), flags.getEstimatedEdgeCount(), time);
 			});
 		}
 	}

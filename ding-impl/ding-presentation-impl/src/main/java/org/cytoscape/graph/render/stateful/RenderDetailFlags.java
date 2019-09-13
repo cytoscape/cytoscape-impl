@@ -2,10 +2,14 @@ package org.cytoscape.graph.render.stateful;
 
 import java.awt.geom.Rectangle2D;
 
+import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
+import org.cytoscape.util.intr.LongHash;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
+import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 /**
  * The GraphLOD combined with the number of visible nodes/edges tells us exactly what level of
@@ -26,14 +30,26 @@ public class RenderDetailFlags {
 	
 	private final int lodBits;
 	private final RenderEdges renderEdges;
+	private final int nodeCount;
+	private final int edgeCountEstimate;
 	
-	private RenderDetailFlags(int lodBits, RenderEdges renderEdges) {
+	private RenderDetailFlags(int lodBits, RenderEdges renderEdges, int nodeCount, int edgeCountEstimate) {
 		this.lodBits = lodBits;
 		this.renderEdges = renderEdges;
+		this.nodeCount = nodeCount;
+		this.edgeCountEstimate = edgeCountEstimate;
 	}
 	
 	public RenderEdges renderEdges() {
 		return renderEdges;
+	}
+	
+	public int getVisibleNodeCount() {
+		return nodeCount;
+	}
+	
+	public int getEstimatedEdgeCount() {
+		return edgeCountEstimate;
 	}
 	
 	public boolean not(int flag) {
@@ -60,6 +76,7 @@ public class RenderDetailFlags {
 		return lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 	}
 	
+	
 	public static RenderDetailFlags create(CyNetworkViewSnapshot netView, NetworkTransform transform, GraphLOD lod) {
 		Rectangle2D.Float area = transform.getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
@@ -69,59 +86,56 @@ public class RenderDetailFlags {
 		final int totalEdgeCount = netView.getEdgeCount();
 		final RenderEdges renderEdges = lod.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 		
-		final int renderNodeCount;
-		final int renderEdgeCount;
-		
-		if (renderEdges == RenderEdges.ALL) {
-			renderNodeCount = visibleNodeCount;
+		int renderEdgeCount;
+		if(renderEdges == RenderEdges.ALL)
 			renderEdgeCount = totalEdgeCount;
-		} else if (renderEdges == RenderEdges.NONE) {
-			renderNodeCount = visibleNodeCount;
+		else if(renderEdges == RenderEdges.NONE)
 			renderEdgeCount = 0;
-		} else { // visible nodes
-			
-			// Calling getAdjacentEdgeIterable() for every node is too slow, gets called on every frame.
-//			final float[] floatBuff = new float[4];
-//			int runningNodeCount = 0;
-//			int runningEdgeCount = 0;
-//			LongHash nodeBuff = new LongHash();
-//			
-//			while (nodeHits.hasNext()) {
-//				final long nodeSuid = nodeHits.nextExtents(floatBuff);
-//
-//				if ((floatBuff[0] != floatBuff[2]) && (floatBuff[1] != floatBuff[3]))
-//					runningNodeCount++;
-//
-//				Iterable<View<CyEdge>> touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
-//
-//				for ( View<CyEdge> e : touchingEdges ) {
-//					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(e);
-//					boolean isVisible = Boolean.TRUE.equals(e.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
-//					if (!isVisible)
-//						continue;
-//					long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
-//					if (nodeBuff.get(otherNode) < 0)
-//						runningEdgeCount++;
-//				}
-//				nodeBuff.put(nodeSuid);
-//			}
-//
-//			renderNodeCount = runningNodeCount;
-//			renderEdgeCount = runningEdgeCount;
-//			nodeBuff.empty();
-			
-			if(visibleNodeCount <= 0) {
-				renderNodeCount = 0;
-				renderEdgeCount = 0;
-			} else {
-				renderNodeCount = visibleNodeCount;
-				// Instead use a simple heuristic, if half the nodes are visible then assume half the edges are visible
-				renderEdgeCount = 2 * (int)(totalEdgeCount * ((double)visibleNodeCount / (double)totalNodeCount));
-			}
-		}
+		else // visible nodes
+			renderEdgeCount = estimateEdgeCount(totalNodeCount, visibleNodeCount, totalEdgeCount);
 		
-		int lodBits = lodToBits(renderNodeCount, renderEdgeCount, lod);
-		return new RenderDetailFlags(lodBits, renderEdges);
+		int lodBits = lodToBits(visibleNodeCount, renderEdgeCount, lod);
+		return new RenderDetailFlags(lodBits, renderEdges, visibleNodeCount, renderEdgeCount);
+	}
+	
+	
+	private static int estimateEdgeCount(int totalNodeCount, int visibleNodeCount, int totalEdgeCount) {
+		if(visibleNodeCount <= 0) {
+			return 0;
+		} else {
+			// Use a simple heuristic, if half the nodes are visible then assume half the edges are visible
+			int value = 2 * (int)(totalEdgeCount * ((double)visibleNodeCount / (double)totalNodeCount));
+			return value;
+		}
+	}
+	
+	public static int countEdges(DRenderingEngine re) {
+		// Note: calling getAdjacentEdgeIterable() for every node on every frame is very slow
+		CyNetworkViewSnapshot netView = re.getViewModelSnapshot();
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
+		SpacialIndex2DEnumerator<Long> nodeHits = netView.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
+		
+		int edgeCount = 0;
+		LongHash nodeBuff = new LongHash();
+		
+		while(nodeHits.hasNext()) {
+			long nodeSuid = nodeHits.next();
+			var touchingEdges = netView.getAdjacentEdgeIterable(nodeSuid);
+
+			for(var edge : touchingEdges) {
+				boolean isVisible = Boolean.TRUE.equals(edge.getVisualProperty(BasicVisualLexicon.EDGE_VISIBLE));
+				if(!isVisible)
+					continue;
+				
+				SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
+				long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+				if(nodeBuff.get(otherNode) < 0)
+					edgeCount++;
+			}
+			nodeBuff.put(nodeSuid);
+		}
+
+		return edgeCount;
 	}
 	
 	

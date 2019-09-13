@@ -14,6 +14,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
+import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
@@ -172,7 +173,11 @@ public class CompositeImageCanvas {
 			overlayImage(image.getImage(), canvasImage);
 		}
 		
-		pm.done();
+		if(pm instanceof DebugProgressMonitor)
+			((DebugProgressMonitor)pm).done(flags);
+		else
+			pm.done();
+		
 		return image.getImage();
 	}
 	

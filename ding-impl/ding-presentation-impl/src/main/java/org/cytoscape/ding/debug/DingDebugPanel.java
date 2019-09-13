@@ -14,6 +14,7 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -26,6 +27,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private DRenderingEngine re;
 	
 	private JLabel networkNameLabel;
+	private JLabel edgeCountLabel;
 	private FramePanel fastPanel;
 	private FramePanel slowPanel;
 	private FramePanel fastBirdPanel;
@@ -39,6 +41,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 
 	private void createContents() {
 		networkNameLabel = new JLabel("Network Name");
+		edgeCountLabel = new JLabel("-");
 		
 		fastPanel = new FramePanel("Main Fast (on EDT)");
 		slowPanel = new FramePanel("Main Slow (Async)");
@@ -47,6 +50,9 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		
 		JButton clearButton = new JButton("Clear");
 		clearButton.addActionListener(e -> clear());
+		
+		JButton edgeButton = new JButton("Count Edges");
+		edgeButton.addActionListener(e -> countEdges());
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -63,7 +69,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 				.addComponent(fastBirdPanel)
 				.addComponent(slowBirdPanel)
 			)
-			.addComponent(clearButton)
+			.addGroup(layout.createParallelGroup()
+				.addComponent(clearButton)
+				.addComponent(edgeButton)
+				.addComponent(edgeCountLabel)
+			)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
@@ -78,7 +88,12 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 					.addComponent(slowBirdPanel)
 				)
 			)
-			.addComponent(clearButton)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(clearButton)
+				.addGap(40)
+				.addComponent(edgeButton)
+				.addComponent(edgeCountLabel)
+			)
 		);
 	}
 	
@@ -87,6 +102,13 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		slowPanel.clear();
 		fastBirdPanel.clear();
 		slowBirdPanel.clear();
+	}
+	
+	private void countEdges() {
+		String text = "-";
+		if(re != null)
+			text = "" + RenderDetailFlags.countEdges(re);
+		edgeCountLabel.setText(text);
 	}
 	
 	@Override
@@ -121,16 +143,9 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 	
 	@Override
-	public void addFrameTime(DebugFrameType type, boolean cancelled, long time) {
-		String message;
-		if(type == DebugFrameType.MAIN_ANNOTAITONS)
-			message = "(annotations) " + time;
-		else if(cancelled)
-			message = "(cancelled) " + time;
-		else
-			message = "" + time;
-		
-		getPanel(type).addMessage(message);
+	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
+		DebugEntry entry = new DebugEntry(time, cancelled, type == DebugFrameType.MAIN_ANNOTAITONS, nodeCount, edgeCountEstimate);
+		getPanel(type).addEntry(entry);
 	}
 	
 	@Override
