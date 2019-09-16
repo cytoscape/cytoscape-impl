@@ -5,8 +5,8 @@ import java.awt.Graphics;
 
 import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+import org.cytoscape.ding.impl.DingGraphLOD;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -26,8 +26,6 @@ public class MainRenderComponent extends RenderComponent {
 			return;
 		
 		super.setBounds(x, y, width, height);
-		
-		re.setTransformChanged();
 		
 		re.getViewModel().batch(netView -> {
 			netView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,  (double) width);

@@ -134,11 +134,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	//Flag that indicates that the content has changed and the graph needs to be redrawn.
 	private volatile boolean contentChanged = true;
-	// State variable for when zooming/panning have changed.
-	private volatile boolean transformChanged;
 
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
-	private final List<TransformChangeListener> transformChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
 //	private Timer animationTimer;
@@ -203,6 +200,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());
 		checkDirtyTimer.setRepeats(true);
 		checkDirtyTimer.start();
+		
+		renderComponent.addTransformChangeListener(() -> {
+			fireThumbnailChanged(null);
+		});
 	}
 	
 	
@@ -298,11 +299,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		if(contentChanged) {
 			fireContentChanged();
 		}
-		if(transformChanged) {
-			fireTransformChanged();
-		}
 		setContentChanged(false);
-		setTransformChanged(false);
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
@@ -413,29 +410,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void removeContentChangeListener(ContentChangeListener l) {
 		contentChangeListeners.remove(l);
 	}
-
-	public void setTransformChanged() {
-		setTransformChanged(true);
-	}
-	
-	private void setTransformChanged(boolean b) {
-		this.transformChanged = b;
-	}
-	
-	private void fireTransformChanged() {
-		// MKTODO should we use an immutable copy of the transform here?, do we even need to pass the transform to the listener?
-		for(var l : transformChangeListeners) {
-			l.transformChanged();
-		}
-		fireThumbnailChanged(null);
-	}
 	
 	public void addTransformChangeListener(TransformChangeListener l) {
-		transformChangeListeners.add(l);
+		renderComponent.addTransformChangeListener(l);
 	}
 	
 	public void removeTransformChangeListener(TransformChangeListener l) {
-		transformChangeListeners.remove(l);
+		renderComponent.removeTransformChangeListener(l);
 	}
 	
 	public void addThumbnailChangeListener(ThumbnailChangeListener l) {
@@ -451,8 +432,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			l.thumbnailChanged(image);
 		}
 	}
-	
 
+	
 	public PrintLOD getPrintLOD() {
 		return printLOD;
 	}
@@ -463,7 +444,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void setZoom(double zoom) {
 		synchronized (dingLock) {
 			renderComponent.setScaleFactor(checkZoom(zoom, renderComponent.getTransform().getScaleFactor()));
-			fireTransformChanged();
 		}
 	}
 	
@@ -558,8 +538,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, transform.getCenterX());
 				netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, transform.getCenterY());
 			}, false); // don't set the dirty flag
-			
-			setTransformChanged();
 		}
 	}
 
@@ -680,7 +658,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	@Override
 	public void printCanvas(Graphics g) {
 		final boolean contentChanged = this.contentChanged;
-		final boolean transformChanged = this.transformChanged;
 		
 		// Check properties related to printing:
 		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
@@ -693,7 +670,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// therefore it should not flag the Graph View as updated, because the actual view canvas
 		// may still have to be redrawn after this).
 		setContentChanged(contentChanged);
-		setTransformChanged(transformChanged);
 	}
 	
 	/**

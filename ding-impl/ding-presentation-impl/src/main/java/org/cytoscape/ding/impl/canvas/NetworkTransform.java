@@ -8,6 +8,10 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.NoninvertibleTransformException;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.cytoscape.ding.impl.TransformChangeListener;
 
 public abstract class NetworkTransform {
 	
@@ -20,6 +24,8 @@ public abstract class NetworkTransform {
 	
 	private final AffineTransform xform = new AffineTransform();
 	private final Rectangle2D.Float area = new Rectangle2D.Float();
+	
+	private final List<TransformChangeListener> transformChangeListeners = new CopyOnWriteArrayList<>();
 	
 	public NetworkTransform(int width, int height) {
 		this.width = width;
@@ -36,21 +42,7 @@ public abstract class NetworkTransform {
 		updateTransform();
 	}
 	
-	private void updateTransform() {
-		xform.setToTranslation(0.5d * width, 0.5d * height);
-		xform.scale(scaleFactor, scaleFactor);
-		xform.translate(-x, -y);
-		
-		// Define the visible window in node coordinate space.
-		float xMin = (float) (x - ((0.5d * width)  / scaleFactor));
-		float yMin = (float) (y - ((0.5d * height) / scaleFactor));
-		float xMax = (float) (x + ((0.5d * width)  / scaleFactor)); 
-		float yMax = (float) (y + ((0.5d * height) / scaleFactor));
-		area.setRect(xMin, yMin, xMax - xMin, yMax - yMin);
-	}
-	
 	public abstract Graphics2D getGraphics();
-	
 	
 	public int getWidth() {
 		return width;
@@ -96,6 +88,36 @@ public abstract class NetworkTransform {
 			this.width = width;
 			this.height = height;
 			updateTransform();
+		}
+	}
+	
+	private void updateTransform() {
+		xform.setToTranslation(0.5d * width, 0.5d * height);
+		xform.scale(scaleFactor, scaleFactor);
+		xform.translate(-x, -y);
+		
+		// Define the visible window in node coordinate space.
+		float xMin = (float) (x - ((0.5d * width)  / scaleFactor));
+		float yMin = (float) (y - ((0.5d * height) / scaleFactor));
+		float xMax = (float) (x + ((0.5d * width)  / scaleFactor)); 
+		float yMax = (float) (y + ((0.5d * height) / scaleFactor));
+		area.setRect(xMin, yMin, xMax - xMin, yMax - yMin);
+		
+		fireTransformChanged();
+	}
+
+	
+	public void addTransformChangeListener(TransformChangeListener l) {
+		transformChangeListeners.add(l);
+	}
+	
+	public void removeTransformChangeListener(TransformChangeListener l) {
+		transformChangeListeners.remove(l);
+	}
+	
+	private void fireTransformChanged() {
+		for(var l : transformChangeListeners) {
+			l.transformChanged();
 		}
 	}
 	

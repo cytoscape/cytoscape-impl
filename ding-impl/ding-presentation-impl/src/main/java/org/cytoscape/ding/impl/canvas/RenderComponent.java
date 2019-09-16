@@ -14,6 +14,7 @@ import org.cytoscape.ding.debug.DebugFrameType;
 import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
+import org.cytoscape.ding.impl.TransformChangeListener;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -60,6 +61,14 @@ public abstract class RenderComponent extends JComponent {
 	
 	public NetworkTransform getTransform() {
 		return fastCanvas.getTransform();
+	}
+	
+	public void addTransformChangeListener(TransformChangeListener l) {
+		fastCanvas.getTransform().addTransformChangeListener(l);
+	}
+	
+	public void removeTransformChangeListener(TransformChangeListener l) {
+		fastCanvas.getTransform().removeTransformChangeListener(l);
 	}
 	
 	public void setBackgroundPaint(Paint backgroundPaint) {
