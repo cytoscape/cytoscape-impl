@@ -456,30 +456,32 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		eventHelper.flushPayloadEvents();
 
 		synchronized (dingLock) {
-			// make sure we use the latest snapshot
-			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
+			// make sure we use the latest snapshot, don't wait for timer to check dirty flag
+			CyNetworkViewSnapshot netViewSnapshot = getViewModel().createSnapshot();
 			if(netViewSnapshot.getNodeCount() == 0)
 				return;
 			
+			if(!renderComponent.isInitialized())
+				return;
 			NetworkTransform transform = renderComponent.getTransform();
 			if(transform.getWidth() == 0 || transform.getHeight() == 0)
 				return;
 			
-			final double[] extentsBuff = new double[4];
-			netViewSnapshot.getSpacialIndex2D().getMBR(extentsBuff); // extents of the network
-			cyAnnotator.adjustBoundsToIncludeAnnotations(extentsBuff); // extents of the annotation canvases
+			double[] extents = new double[4];
+			netViewSnapshot.getSpacialIndex2D().getMBR(extents); // extents of the network
+			cyAnnotator.adjustBoundsToIncludeAnnotations(extents); // extents of the annotation canvases
 
 			netViewSnapshot.getMutableNetworkView().batch(netView -> {
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION))
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extentsBuff[0] + extentsBuff[2]) / 2.0d);
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION, (extents[0] + extents[2]) / 2.0d);
 				
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION))
-					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extentsBuff[1] + extentsBuff[3]) / 2.0d);
+					netView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION, (extents[1] + extents[3]) / 2.0d);
 	
 				if (!netView.isValueLocked(BasicVisualLexicon.NETWORK_SCALE_FACTOR)) {
 					// Apply a factor 0.98 to zoom, so that it leaves a small border around the network and any annotations.
-					final double zoom = Math.min(((double) transform.getWidth())  /  (extentsBuff[2] - extentsBuff[0]), 
-					                             ((double) transform.getHeight()) /  (extentsBuff[3] - extentsBuff[1])) * 0.98;
+					final double zoom = Math.min(((double) transform.getWidth())  /  (extents[2] - extents[0]), 
+					                             ((double) transform.getHeight()) /  (extents[3] - extents[1])) * 0.98;
 					// Update view model.  Zoom Level should be modified.
 					netView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR, zoom);
 				}

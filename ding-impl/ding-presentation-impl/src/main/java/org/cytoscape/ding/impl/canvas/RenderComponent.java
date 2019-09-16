@@ -34,11 +34,15 @@ public abstract class RenderComponent extends JComponent {
 	private ImageFuture fastFuture;
 	private UpdateType updateType = UpdateType.ALL_FULL;
 	
+	private boolean initialized = false;
 	
 	public RenderComponent(DRenderingEngine re, GraphLOD lod) {
 		this.re = re;
-		fastCanvas = new CompositeImageCanvas(re, lod.faster());
-		slowCanvas = new CompositeImageCanvas(re, lod);
+		
+		// MKTODO This is a hack, we don't know what the size of the buffer should be until setBounds() is called.
+		// Unfortunately its possible for fitContent() to be called before setBounds() is called.
+		fastCanvas = new CompositeImageCanvas(re, lod.faster(), 1, 1);
+		slowCanvas = new CompositeImageCanvas(re, lod, 1, 1);
 	}
 	
 	
@@ -49,14 +53,19 @@ public abstract class RenderComponent extends JComponent {
 	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
-		if(width == getWidth() && height == getHeight())
+		initialized = true;
+		if(width == getWidth() && height == getHeight()) {
 			return;
-		
+		}
 		super.setBounds(x, y, width, height);
 		fastCanvas.setViewport(width, height);
 		slowCanvas.setViewport(width, height);
 		
 		updateView(UpdateType.ALL_FULL);
+	}
+	
+	public boolean isInitialized() {
+		return initialized;
 	}
 	
 	public NetworkTransform getTransform() {

@@ -63,9 +63,6 @@ public class CompositeImageCanvas {
 		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
 	}
 	
-	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod) {
-		this(re, lod, 1, 1); // MKTODO does this make sense?
-	}
 	
 	// Kind of hackey, we don't want the annotation selection to show up in the brids-eye-view
 	public void showAnnotationSelection(boolean show) {
