@@ -23,6 +23,7 @@ import static org.cytoscape.work.ServiceProperties.TOOL_BAR_GRAVITY;
 import java.awt.Font;
 import java.util.Properties;
 
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.io.read.InputStreamTaskFactory;
 import org.cytoscape.io.util.StreamUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
@@ -278,6 +279,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND_EXAMPLE_JSON, "{\"mappedTables\": [101,102]}");
 			registerService(bc, factory, TaskFactory.class, props);
 			registerService(bc, factory, LoadTableFileTaskFactory.class, props);
+			registerService(bc, factory, CytoPanelComponentSelectedListener.class);
 		}
 		{
 			LoadTableURLTaskFactoryImpl factory = new LoadTableURLTaskFactoryImpl(tableImportContext, serviceRegistrar);

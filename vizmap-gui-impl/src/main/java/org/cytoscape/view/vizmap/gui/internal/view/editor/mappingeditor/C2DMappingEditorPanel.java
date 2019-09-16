@@ -1,29 +1,5 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
-/*
- * #%L
- * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -43,21 +19,45 @@ import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
 import org.jdesktop.swingx.multislider.Thumb;
 
+/*
+ * #%L
+ * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
- * Continuous Mapping editor for discrete values, such as Font, Shape, Label
- * Position, etc.
+ * Continuous Mapping editor for discrete values, such as Font, Shape, Label Position, etc.
  */
 public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Number, V> {
 	
 	private final static long serialVersionUID = 1213748837197780L;
 
-	private final EditorManager editorManager;
-
-	public C2DMappingEditorPanel(final VisualStyle style, final ContinuousMapping<Number, V> mapping, CyTable attr,
-			final EditorManager editorManager, final ServicesUtil servicesUtil) {
-		super(style, mapping, attr, servicesUtil);
-
-		this.editorManager = editorManager;
+	public C2DMappingEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<Number, V> mapping,
+			CyTable attr,
+			EditorManager editorManager,
+			ServicesUtil servicesUtil
+	) {
+		super(style, mapping, attr, editorManager, servicesUtil);
 
 		this.getIconPanel().setVisible(false);
 		this.getBelowPanel().setVisible(false);
@@ -79,8 +79,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			ratio = 50f;
 			// Add new slider at center
 			getSlider().getModel().addThumb(ratio, defValue);
-			newRange = new BoundaryRangeValues<V>(below, defValue, above);
-			
+			newRange = new BoundaryRangeValues<>(below, defValue, above);
 		} else {
 			ratio = 70f;
 			// Add a new thumb with default value
@@ -94,14 +93,13 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			V equalVal = defValue;
 			V greaterVal = previousRange.greaterValue;
 
-			newRange = new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal);
+			newRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 		}
 
-		mapping.addPoint(maxValue*(ratio/100), newRange);
+		mapping.addPoint(maxValue * (ratio / 100), newRange);
 		updateMap();
 
-		getSlider().repaint();
-		repaint();
+		update();
 	}
 	
 	@Override
@@ -117,9 +115,10 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 
 		if (thumbs.size() == 1) {
 			// Special case: only one handle.
-			mapping.getPoint(0).setRange(new BoundaryRangeValues<V>(below, below, above));
+			mapping.getPoint(0).setRange(new BoundaryRangeValues<>(below, below, above));
 			newPosition = ((thumbs.get(0).getPosition() / 100) * valRange) + minValue;
 			mapping.getPoint(0).setValue(newPosition);
+			
 			return;
 		}
 
@@ -146,7 +145,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 				equalVal = t.getObject();
 				greaterVal = thumbs.get(i + 1).getObject();
 			}
-			mapping.getPoint(i).setRange(new BoundaryRangeValues<V>(lesserVal, equalVal, greaterVal));
+			mapping.getPoint(i).setRange(new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal));
 
 			newPosition = ((t.getPosition() / 100) * valRange) + minValue;
 			mapping.getPoint(i).setValue(newPosition);
@@ -157,25 +156,25 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	protected void deleteButtonActionPerformed(ActionEvent evt) {
 		final int selectedIndex = getSlider().getSelectedIndex();
 
-		if (0 <= selectedIndex) {
+		if (selectedIndex >= 0) {
 			getSlider().getModel().removeThumb(selectedIndex);
 			mapping.removePoint(selectedIndex);
 			updateMap();
-			repaint();
+			
+			update();
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initSlider() {
 		getSlider().updateUI();
 
 		final double minValue = tracer.getMin(type);
-		final double maxValue = tracer.getMax(type);
 
 		final C2DMappingEditorPanel<V> parentComponent = this;
 		final DefaultViewPanel defViewPanel = servicesUtil.get(DefaultViewPanel.class);
 		
 		getSlider().addMouseListener(new MouseAdapter() {
-
 			// Handle value icon click.
 			@Override
 			public void mouseClicked(MouseEvent e) {
@@ -228,10 +227,10 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 			getSlider().getModel().addThumb(fraction, bound.equalValue);
 		}
 
+		final SortedMap<Double, ContinuousMappingPoint<Number, V>> sortedPoints = new TreeMap<>();
 		
-		final SortedMap<Double, ContinuousMappingPoint<Number, V>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<Number, V>>();
 		for (final ContinuousMappingPoint<Number, V> point : mapping.getAllPoints()) {
-			final Number val =point.getValue();
+			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);
 		}
 		
@@ -248,7 +247,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		 * get min and max for the value object
 		 */
 		TriangleThumbRenderer thumbRend = new TriangleThumbRenderer();
-		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<Number, V>(mapping, below, above, tracer,
+		DiscreteTrackRenderer<Number, V> dRend = new DiscreteTrackRenderer<>(mapping, below, above, tracer,
 				defViewPanel.getRenderingEngine());
 
 		getSlider().setThumbRenderer(thumbRend);
@@ -256,6 +255,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public ImageIcon drawIcon(int iconWidth, int iconHeight, boolean detail) {
 		DiscreteTrackRenderer<Number, V> rend = (DiscreteTrackRenderer<Number, V>) getSlider().getTrackRenderer();
 		rend.getRendererComponent(getSlider());
@@ -263,6 +263,7 @@ public class C2DMappingEditorPanel<V> extends ContinuousMappingEditorPanel<Numbe
 		return rend.getTrackGraphicIcon(iconWidth, iconHeight);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public ImageIcon getLegend(final int width, final int height) {
 
 		if (getSlider().getTrackRenderer() instanceof DiscreteTrackRenderer == false)

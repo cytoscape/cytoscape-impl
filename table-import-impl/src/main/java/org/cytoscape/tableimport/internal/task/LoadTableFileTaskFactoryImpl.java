@@ -2,9 +2,14 @@ package org.cytoscape.tableimport.internal.task;
 
 import java.io.File;
 
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.io.read.CyTableReaderManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.task.ImportTableDataTask.TableType;
 import org.cytoscape.task.read.LoadTableFileTaskFactory;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
@@ -33,7 +38,8 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements LoadTableFileTaskFactory {
+public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory
+		implements LoadTableFileTaskFactory, CytoPanelComponentSelectedListener {
 
 	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
@@ -54,5 +60,23 @@ public class LoadTableFileTaskFactoryImpl extends AbstractTaskFactory implements
 		final CyTableReader reader = tableReaderMgr.getReader(file.toURI(), file.toURI().toString());
 
 		return new TaskIterator(new CombineTableReaderAndMappingTask(reader, tableImportContext, serviceRegistrar));
+	}
+
+	@Override
+	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
+		CytoPanel cytoPanel = evt.getCytoPanel();
+		int idx = evt.getSelectedIndex();
+		
+		if (cytoPanel.getCytoPanelName() != CytoPanelName.SOUTH || idx < 0 || idx >= cytoPanel.getCytoPanelComponentCount())
+			return;
+		
+		if (idx == cytoPanel.indexOfComponent("org.cytoscape.NodeTables"))
+			tableImportContext.setTableType(TableType.NODE_ATTR);
+		else if (idx == cytoPanel.indexOfComponent("org.cytoscape.EdgeTables"))
+			tableImportContext.setTableType(TableType.EDGE_ATTR);
+		else if (idx == cytoPanel.indexOfComponent("org.cytoscape.NetworkTables"))
+			tableImportContext.setTableType(TableType.NETWORK_ATTR);
+		else if (idx == cytoPanel.indexOfComponent("org.cytoscape.UnassignedTables"))
+			tableImportContext.setTableType(null);
 	}
 }

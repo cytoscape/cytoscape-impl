@@ -5,10 +5,10 @@ import static org.cytoscape.work.ServiceProperties.TITLE;
 import java.awt.event.ActionListener;
 import java.util.Properties;
 
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
-import org.cytoscape.browser.internal.view.AbstractTableBrowser;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
 import org.cytoscape.browser.internal.view.PopupMenuHelper;
@@ -61,10 +61,10 @@ public class CyActivator extends AbstractCyActivator {
 
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
-		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
+		GlobalTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
 		
 		registerAllServices(bc, nodeTableBrowser);
 		registerAllServices(bc, edgeTableBrowser);
@@ -97,6 +97,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		TableBrowserMediator mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser,
 				networkTableBrowser, globalTableBrowser, serviceRegistrar);
+		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 	}
 }

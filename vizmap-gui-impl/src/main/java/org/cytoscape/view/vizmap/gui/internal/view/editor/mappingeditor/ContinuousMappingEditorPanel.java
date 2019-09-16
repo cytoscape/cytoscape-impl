@@ -2,6 +2,7 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static org.cytoscape.util.swing.LookAndFeelUtil.equalizeSize;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -10,7 +11,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
@@ -44,6 +44,8 @@ import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.vizmap.VisualMappingFunctionFactory;
 import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.editor.ContinuousEditorType;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
 import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
 import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
 import org.cytoscape.view.vizmap.gui.internal.util.VisualPropertyUtil;
@@ -94,7 +96,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	protected static final String ABOVE_VALUE_CHANGED = "ABOVE_VALUE_CHANGED";
 
 	private JLabel attrNameLabel;
-	private JLabel handlePositionSpinnerLabel;
+	private JLabel handlePositionLabel;
 
 	private JButton addButton;
 	private JButton colorButton;
@@ -119,19 +121,19 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton paletteButton;
 	private BelowAndAbovePanel abovePanel;
 	private BelowAndAbovePanel belowPanel;
-	private static String DEFAULT_PALETTE = "ColorBrewer Red-Blue";
 	
 	private JXMultiThumbSlider<V> slider;
 	private JSpinner valueSpinner;
 
 	private JSpinner propertySpinner;
 	private JLabel propertyLabel;
-	private JComponent propertyComponent;
+	private JComponent valueEditor;
 
 	// Only accepts Continuous Mapping
 	protected final ContinuousMapping<K, V> mapping;
 	protected final VisualProperty<V> type;
 	private final WeakReference<CyTable> dataTable;
+	protected final EditorManager editorManager;
 
 	private SpinnerNumberModel spinnerModel;
 
@@ -158,20 +160,28 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 
 	/**
 	 * Creates new form ContinuousMapperEditorPanel Accepts only one visual property type T.
+	 * 
+	 * @param editorManager may be null.
 	 */
-	public ContinuousMappingEditorPanel(final VisualStyle style, final ContinuousMapping<K, V> mapping,
-			final CyTable table, final ServicesUtil servicesUtil) {
-		if (mapping == null)
-			throw new NullPointerException("ContinuousMapping should not be null.");
-		if (table == null)
-			throw new NullPointerException("Data table should not be null.");
+	public ContinuousMappingEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<K, V> mapping,
+			CyTable table,
+			EditorManager editorManager,
+			ServicesUtil servicesUtil
+	) {
 		if (style == null)
-			throw new NullPointerException("Visual Style should not be null.");
-
+			throw new IllegalArgumentException("'style' should not be null.");
+		if (mapping == null)
+			throw new IllegalArgumentException("'mapping' should not be null.");
+		if (table == null)
+			throw new IllegalArgumentException("'table' should not be null.");
+		
 		this.mapping = mapping;
 		this.type = mapping.getVisualProperty();
 		this.style = style;
 		this.dataTable = new WeakReference<>(table);
+		this.editorManager = editorManager;
 		this.servicesUtil = servicesUtil;
 		this.original = createCopy(mapping);
 
@@ -204,7 +214,30 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		initRangeValues();
 		initComponents();
 		setSpinner();
-		getSlider().addMouseListener(new ThumbMouseListener());
+		getSlider().addMouseListener(new MouseAdapter() {
+			/**
+			 * Updates GUI when user moves & releases the handle.
+			 */
+			@Override
+			public void mouseReleased(MouseEvent evt) {
+				final int selectedIndex = getSlider().getSelectedIndex();
+				final int tCount = getSlider().getModel().getThumbCount();
+				
+				if (selectedIndex >= 0 && tCount > selectedIndex) {
+					final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
+					final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
+
+					updateMap();
+					
+					// Updates spinner values
+					spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
+					spinnerModel.addChangeListener(new SpinnerChangeListener());
+					getValueSpinner().setModel(spinnerModel);
+				}
+				
+				update();
+			}
+		});
 	}
 
 	public static void setTracer(EditorValueRangeTracer t) {
@@ -253,7 +286,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		attrNameLabel = new JLabel("Column Name");
 		attrNameLabel.setFont(attrNameLabel.getFont().deriveFont(Font.BOLD, 14));
 		
-		handlePositionSpinnerLabel = new JLabel("Handle Position:");
+		handlePositionLabel = new JLabel("Handle Position:");
 		
 		final JPanel buttonPanel = LookAndFeelUtil.createOkCancelPanel(getOkButton(), getCancelButton());
 		
@@ -273,6 +306,8 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 				.addComponent(getMainPanel(), DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 				.addComponent(buttonPanel, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 		);
+		
+		update();
 	}
 	
 	private JPanel getMainPanel() {
@@ -418,7 +453,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			layout.setHorizontalGroup(layout.createParallelGroup(Alignment.CENTER, true)
 					.addGroup(layout.createSequentialGroup()
 							.addGroup(layout.createParallelGroup(Alignment.TRAILING, true)
-									.addComponent(handlePositionSpinnerLabel)
+									.addComponent(handlePositionLabel)
 									.addComponent(getPropertyLabel())
 							)
 							.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
@@ -430,14 +465,14 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 											.addComponent(getAddButton())
 											.addComponent(getDeleteButton())
 									)
-									.addComponent(getPropertyComponent())
+									.addComponent(getValueEditor())
 							)
 					)
 					.addComponent(infoLabel)
 			);
 			layout.setVerticalGroup(layout.createSequentialGroup()
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
-							.addComponent(handlePositionSpinnerLabel)
+							.addComponent(handlePositionLabel)
 							.addComponent(getValueSpinner(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getMinMaxButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 							.addComponent(getDeleteButton(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
@@ -445,10 +480,12 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 					)
 					.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 							.addComponent(getPropertyLabel())
-							.addComponent(getPropertyComponent(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+							.addComponent(getValueEditor(), PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 					)
 					.addComponent(infoLabel)
 			);
+			
+			equalizeSize(getAddButton(), getDeleteButton());
 		}
 		
 		return formPanel;
@@ -495,7 +532,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			
 			if (Number.class.isAssignableFrom(vpValueType) || Paint.class.isAssignableFrom(vpValueType)) {
 				propertyLabel.setText(type.getDisplayName() + ":");
-				propertyLabel.setLabelFor(getPropertyComponent());
+				propertyLabel.setLabelFor(getValueEditor());
 			} else {
 				propertyLabel.setVisible(false);
 			}
@@ -504,20 +541,20 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return propertyLabel;
 	}
 	
-	private JComponent getPropertyComponent() {
-		if (propertyComponent == null) {
+	private JComponent getValueEditor() {
+		if (valueEditor == null) {
 			if (Number.class.isAssignableFrom(vpValueType)) {
-				propertyComponent = getPropertySpinner();
+				valueEditor = getPropertySpinner();
 			} else if (Paint.class.isAssignableFrom(vpValueType)) {
 				// We use the colorButton for both discrete and color
-				propertyComponent = getColorButton();
+				valueEditor = getColorButton();
 			} else {
-				propertyComponent = new JLabel();
-				propertyComponent.setVisible(false);
+				valueEditor = new JLabel();
+				valueEditor.setVisible(false);
 			}
 		}
 
-		return propertyComponent;
+		return valueEditor;
 	}
 	
 	protected JSpinner getPropertySpinner() {
@@ -547,14 +584,10 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return colorButton;
 	}
 	
-	private JButton getAddButton() {
+	protected JButton getAddButton() {
 		if (addButton == null) {
 			addButton = new JButton("Add");
-			addButton.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent evt) {
-					addButtonActionPerformed(evt);
-				}
-			});
+			addButton.addActionListener(evt -> addButtonActionPerformed(evt));
 		}
 		
 		return addButton;
@@ -563,12 +596,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton getDeleteButton() {
 		if (deleteButton == null) {
 			deleteButton = new JButton("Delete");
-			deleteButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					deleteButtonActionPerformed(evt);
-				}
-			});
+			deleteButton.addActionListener(evt -> deleteButtonActionPerformed(evt));
 		}
 		
 		return deleteButton;
@@ -577,12 +605,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 	private JButton getMinMaxButton() {
 		if (minMaxButton == null) {
 			minMaxButton = new JButton("Set Min and Max...");
-			minMaxButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent evt) {
-					minMaxButtonActionPerformed(evt);
-				}
-			});
+			minMaxButton.addActionListener(evt -> minMaxButtonActionPerformed(evt));
 		}
 		
 		return minMaxButton;
@@ -622,7 +645,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			valueSpinner = new JSpinner();
 			valueSpinner.setPreferredSize(SPINNER_SIZE);
 			valueSpinner.setMaximumSize(SPINNER_SIZE);
-			valueSpinner.setEnabled(false);
 		}
 		
 		return valueSpinner;
@@ -728,6 +750,7 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		return -1;
 	}
 	
+	@SuppressWarnings("unchecked")
 	protected void updateMap() {
 		final List<Thumb<V>> thumbs = getSlider().getModel().getSortedThumbs();
 		final double min = tracer.getMin(type);
@@ -746,19 +769,16 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		final int mappingPointCount = mapping.getPointCount();
 		
 		// This should not happen!
-		if(size != mappingPointCount)
-			throw new IllegalStateException("Number of handles ("+size+") is not equal to mapping points ("+mappingPointCount+").");
+		if (size != mappingPointCount)
+			throw new IllegalStateException(
+					"Number of handles (" + size + ") is not equal to mapping points (" + mappingPointCount + ").");
 
 		int i = 0;
+		
 		for (final Thumb<V> handle:thumbs) {
 			final ContinuousMappingPoint<K, V> point = mapping.getPoint(i);
 			final Number handlePosition = ((handle.getPosition() / 100) * range) + min;
-
-			// Debug
-//			System.out.print("@@@@@@@ Index = " + i);
-//			System.out.print(", handle position = " + handlePosition);
-//			System.out.println(", handle Value = " + handle.getObject());
-
+			
 			V lesserVal;
 			V equalVal = handle.getObject();
 			V greaterVal;
@@ -812,16 +832,6 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 		mapping.getPoint(0).setValue((K) newVal);
 	}
 
-	private final void enableValueEditor(final V newObject) {
-		if (Number.class.isAssignableFrom(vpValueType)) {
-			getPropertySpinner().setEnabled(true);
-			getPropertySpinner().setValue(newObject);
-		} else if (Paint.class.isAssignableFrom(vpValueType)) {
-			getColorButton().setEnabled(true);
-			setButtonColor((Color) newObject);
-		}
-	}
-
 	protected void setButtonColor(final Color newColor) {
 		getColorButton().setIcon(new ColorIcon(newColor));
 	}
@@ -835,48 +845,54 @@ public abstract class ContinuousMappingEditorPanel<K extends Number, V> extends 
 			mapping.addPoint(point.getValue(), point.getRange());
 		}
 
-		if (lastPalette != null) {
+		if (lastPalette != null)
 			savePalette(lastPalette);
-		}
 		
 		cancelChanges();
 		getSlider().repaint();
 	}
 	
 	protected abstract void cancelChanges();
-
-	// End of variables declaration
-	protected class ThumbMouseListener extends MouseAdapter {
+	
+	protected void update() {
+		final int selectedIndex = getSlider().getSelectedIndex();
+		final int count = getSlider().getModel().getThumbCount();
 		
-		/**
-		 * Updates GUI when user moves & releases the handle.
-		 */
-		public void mouseReleased(MouseEvent e) {
-			final int selectedIndex = getSlider().getSelectedIndex();
-			final int tCount = getSlider().getModel().getThumbCount();
+		if (selectedIndex >= 0 && count > selectedIndex) {
+			var editorType = editorManager != null
+					? editorManager.getVisualPropertyEditor(type).getContinuousEditorType()
+					: null;
 			
-			if ((0 <= selectedIndex) && (tCount> 0)) {
-				final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
-				final Double handlePosition = ((handle.getPosition() / 100) * tracer.getRange(type)) + tracer.getMin(type);
+			// C2D requires at least 1 handle, and the other types require at least 2
+			getDeleteButton().setEnabled(
+					(editorType == ContinuousEditorType.DISCRETE && count > 1) || 
+					(editorType != ContinuousEditorType.DISCRETE && count > 2)
+			);
+			getValueSpinner().setEnabled(true);
+			getValueEditor().setEnabled(true);
 
-				updateMap();
-				getSlider().repaint();
-				repaint();
-				
-				// Updates spinner values
-				spinnerModel = new SpinnerNumberModel(handlePosition.doubleValue(), Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, 0.01d);
-				spinnerModel.addChangeListener(new SpinnerChangeListener());
-				getValueSpinner().setModel(spinnerModel);
-				getValueSpinner().setEnabled(true);
-
-				V object = handle.getObject();
-				enableValueEditor(object);
-				
-			} else {
-				getValueSpinner().setEnabled(false);
-				getValueSpinner().setValue(0);
-			}
+			final Thumb<V> handle = getSlider().getModel().getThumbAt(selectedIndex);
+			V value = handle.getObject();
+			
+			if (Number.class.isAssignableFrom(vpValueType))
+				getPropertySpinner().setValue(value);
+			else if (Paint.class.isAssignableFrom(vpValueType))
+				setButtonColor((Color) value);
+		} else {
+			getDeleteButton().setEnabled(false);
+			getValueSpinner().setEnabled(false);
+			getValueEditor().setEnabled(false);
+			
+			getValueSpinner().setValue(0);
+			
+			if (Number.class.isAssignableFrom(vpValueType))
+				getPropertySpinner().setValue(0);
+			else if (Paint.class.isAssignableFrom(vpValueType))
+				setButtonColor(null);
 		}
+		
+		getSlider().repaint();
+		repaint();
 	}
 
 	private final class SpinnerChangeListener implements ChangeListener {

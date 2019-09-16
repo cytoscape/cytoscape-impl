@@ -1,12 +1,25 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
+import java.awt.Color;
+import java.awt.Paint;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,19 +36,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Color;
-import java.awt.Paint;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class GradientEditor extends AbstractContinuousMappingEditor<Double, Color> {
 
@@ -65,8 +65,8 @@ public class GradientEditor extends AbstractContinuousMappingEditor<Double, Colo
 		final CyNetworkTableManager netTblMgr = servicesUtil.get(CyNetworkTableManager.class);
 		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		
-		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		editorPanel = new GradientEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr,
+		VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
+		editorPanel = new GradientEditorPanel(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager,
 				editorManager.getValueEditor(Paint.class), servicesUtil);
 	}
 }

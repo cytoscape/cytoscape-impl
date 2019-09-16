@@ -530,6 +530,8 @@ public final class BrowserTableModel extends AbstractTableModel
 			return true;
 		if (columnType == Integer.class && (eqnType == Long.class || eqnType == Double.class))
 			return true;
+		if (columnType == Long.class && (eqnType == Integer.class || eqnType == Double.class))
+			return true;
 		if (columnType == Double.class && eqnType == Long.class)
 			return true;
 		if (columnType == Boolean.class && (eqnType == Long.class || eqnType == Double.class))

@@ -37,7 +37,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -82,6 +82,11 @@ public class GlobalTableBrowser extends AbstractTableBrowser
 		setToolBar(new TableBrowserToolBar(serviceRegistrar, tableChooser, null));
 	}
 
+	@Override
+	public String getIdentifier() {
+		return "org.cytoscape.UnassignedTables";
+	}
+	
 	@Override
 	public void actionPerformed(final ActionEvent e) {
 		final CyTable table = (CyTable) tableChooser.getSelectedItem();

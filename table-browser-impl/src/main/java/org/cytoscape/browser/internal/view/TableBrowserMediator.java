@@ -1,12 +1,18 @@
 package org.cytoscape.browser.internal.view;
 
+import static org.cytoscape.browser.internal.util.ViewUtil.invokeOnEDTAndWait;
+
 import java.awt.Component;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
 
@@ -34,20 +40,20 @@ import org.cytoscape.service.util.CyServiceRegistrar;
  * #L%
  */
 
-public class TableBrowserMediator implements CytoPanelComponentSelectedListener {
+public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPanelComponentSelectedListener {
 
-	private final AbstractTableBrowser nodeTableBrowser;
-	private final AbstractTableBrowser edgeTableBrowser;
-	private final AbstractTableBrowser networkTableBrowser;
-	private final AbstractTableBrowser globalTableBrowser;
+	private final DefaultTableBrowser nodeTableBrowser;
+	private final DefaultTableBrowser edgeTableBrowser;
+	private final DefaultTableBrowser networkTableBrowser;
+	private final GlobalTableBrowser globalTableBrowser;
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public TableBrowserMediator(
-			AbstractTableBrowser nodeTableBrowser,
-			AbstractTableBrowser edgeTableBrowser,
-			AbstractTableBrowser networkTableBrowser,
-			AbstractTableBrowser globalTableBrowser,
+			DefaultTableBrowser nodeTableBrowser,
+			DefaultTableBrowser edgeTableBrowser,
+			DefaultTableBrowser networkTableBrowser,
+			GlobalTableBrowser globalTableBrowser,
 			CyServiceRegistrar serviceRegistrar
 	) {
 		this.nodeTableBrowser = nodeTableBrowser;
@@ -57,6 +63,36 @@ public class TableBrowserMediator implements CytoPanelComponentSelectedListener 
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	@Override
+	public void handleEvent(SetCurrentNetworkEvent evt) {
+		CyNetwork network = evt.getNetwork();
+		
+		invokeOnEDTAndWait(() -> {
+			// Update UI
+			nodeTableBrowser.update(network);
+			edgeTableBrowser.update(network);
+			networkTableBrowser.update(network);
+			
+			// Get the new current table
+			CytoPanel cytoPanel = serviceRegistrar.getService(CySwingApplication.class).getCytoPanel(CytoPanelName.SOUTH);
+			Component comp = cytoPanel.getSelectedComponent();
+			CyTable table = null;
+			
+			if (nodeTableBrowser.getComponent() == comp)
+				table = nodeTableBrowser.getCurrentTable();
+			else if (edgeTableBrowser.getComponent() == comp)
+				table = edgeTableBrowser.getCurrentTable();
+			else if (networkTableBrowser.getComponent() == comp)
+				table = networkTableBrowser.getCurrentTable();
+			else if (globalTableBrowser.getComponent() == comp)
+				table = globalTableBrowser.getCurrentTable();
+			
+			// Update the CyApplicationManager
+			if (table == null || table.isPublic())
+				serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
+		});
+	}
+	
 	@Override
 	public void handleEvent(CytoPanelComponentSelectedEvent evt) {
 		CytoPanel cytoPanel = evt.getCytoPanel();
@@ -81,7 +117,7 @@ public class TableBrowserMediator implements CytoPanelComponentSelectedListener 
 		else if (comp.equals(globalTableBrowser.getComponent()))
 			table = globalTableBrowser.getCurrentTable();
 		
-		if (table != null && table.isPublic())
+		if (table == null || table.isPublic())
 			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
 	}
 }
