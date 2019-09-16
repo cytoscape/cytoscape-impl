@@ -3,6 +3,7 @@ package org.cytoscape.ding.debug;
 import java.awt.Component;
 
 import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -14,13 +15,16 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
+import org.cytoscape.ding.impl.TransformChangeListener;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
 
 @SuppressWarnings("serial")
-public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugCallback, SetCurrentNetworkViewListener {
+public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugCallback, TransformChangeListener, SetCurrentNetworkViewListener {
 
 	private final CyServiceRegistrar registrar;
 	
@@ -28,6 +32,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	
 	private JLabel networkNameLabel;
 	private JLabel edgeCountLabel;
+	
+	private JLabel transformViewLabel;
+	private JLabel transformCntrLabel;
+	private JLabel transformZoomLabel;
+	
 	private FramePanel fastPanel;
 	private FramePanel slowPanel;
 	private FramePanel fastBirdPanel;
@@ -41,7 +50,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 
 	private void createContents() {
 		networkNameLabel = new JLabel("Network Name");
-		edgeCountLabel = new JLabel("-");
+		transformViewLabel = new JLabel("");
+		transformCntrLabel = new JLabel("");
+		transformZoomLabel = new JLabel("");
+		edgeCountLabel = new JLabel("");
+		LookAndFeelUtil.makeSmall(transformViewLabel, transformCntrLabel, transformZoomLabel);
 		
 		fastPanel = new FramePanel("Main Fast (on EDT)");
 		slowPanel = new FramePanel("Main Slow (Async)");
@@ -50,9 +63,9 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		
 		JButton clearButton = new JButton("Clear");
 		clearButton.addActionListener(e -> clear());
-		
 		JButton edgeButton = new JButton("Count Edges");
 		edgeButton.addActionListener(e -> countEdges());
+		LookAndFeelUtil.makeSmall(edgeButton, edgeCountLabel);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -61,6 +74,13 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		
 		layout.setVerticalGroup(layout.createSequentialGroup()
 			.addComponent(networkNameLabel)
+			.addComponent(transformViewLabel)
+			.addComponent(transformCntrLabel)
+			.addComponent(transformZoomLabel)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(edgeButton)
+				.addComponent(edgeCountLabel)
+			)
 			.addGroup(layout.createParallelGroup()
 				.addComponent(fastPanel)
 				.addComponent(slowPanel)
@@ -69,15 +89,18 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 				.addComponent(fastBirdPanel)
 				.addComponent(slowBirdPanel)
 			)
-			.addGroup(layout.createParallelGroup()
-				.addComponent(clearButton)
-				.addComponent(edgeButton)
-				.addComponent(edgeCountLabel)
-			)
+			.addComponent(clearButton)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
 			.addComponent(networkNameLabel)
+			.addComponent(transformViewLabel)
+			.addComponent(transformCntrLabel)
+			.addComponent(transformZoomLabel)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(edgeButton)
+				.addComponent(edgeCountLabel)
+			)
 			.addGroup(layout.createSequentialGroup()
 				.addGroup(layout.createParallelGroup()
 					.addComponent(fastPanel)
@@ -88,12 +111,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 					.addComponent(slowBirdPanel)
 				)
 			)
-			.addGroup(layout.createSequentialGroup()
-				.addComponent(clearButton)
-				.addGap(40)
-				.addComponent(edgeButton)
-				.addComponent(edgeCountLabel)
-			)
+			.addComponent(clearButton)
 		);
 	}
 	
@@ -111,11 +129,19 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		edgeCountLabel.setText(text);
 	}
 	
+	private void updateTransform(NetworkTransform t) {
+		transformViewLabel.setText(String.format("Viewport - w:%d h:%d",           t.getWidth(), t.getHeight()));
+		transformCntrLabel.setText(String.format("Network Center - x:%.4f y:%.4f", t.getCenterX(), t.getCenterY()));
+		transformZoomLabel.setText(String.format("Zoom - %.4f",                    t.getScaleFactor()));
+	}
+	
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		clear();
-		if(re != null)
+		if(re != null) {
 			re.setDebugCallback(null);
+			re.removeTransformChangeListener(this);
+		}
 		
 		CyNetworkView netView = e.getNetworkView();
 		if(netView != null) {
@@ -125,8 +151,10 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 			
 			DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
 			re = dingRenderer.getRenderingEngine(netView);
-			if(re != null)
+			if(re != null) {
 				re.setDebugCallback(this);
+				re.addTransformChangeListener(this);
+			}
 		}
 	}
 	
@@ -149,6 +177,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 	
 	@Override
+	public void transformChanged() {
+		updateTransform(re.getTransform());
+	}
+	
+	@Override
 	public Component getComponent() {
 		return this;
 	}
@@ -167,5 +200,4 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	public Icon getIcon() {
 		return null;
 	}
-
 }
