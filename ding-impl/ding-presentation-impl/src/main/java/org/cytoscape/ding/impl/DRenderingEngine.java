@@ -32,9 +32,9 @@ import org.cytoscape.ding.PrintLOD;
 import org.cytoscape.ding.debug.DebugCallback;
 import org.cytoscape.ding.icon.VisualPropertyIconFactory;
 import org.cytoscape.ding.impl.canvas.CompositeGraphicsCanvas;
+import org.cytoscape.ding.impl.canvas.MainRenderComponent;
 import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
-import org.cytoscape.ding.impl.canvas.MainRenderComponent;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.internal.util.CoalesceTimer;
@@ -131,7 +131,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 	private final Properties props;
 	private final CyAnnotator cyAnnotator;
-	private boolean largeModel = false;
 	
 	//Flag that indicates that the content has changed and the graph needs to be redrawn.
 	private volatile boolean contentChanged = true;
@@ -193,10 +192,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		addContentChangeListener(() -> {
 			latest = false;
 		});
-
-		var snapshot = view.createSnapshot();
-		if(!dingGraphLOD.detail(snapshot.getNodeCount(), snapshot.getEdgeCount()))
-			largeModel = true;
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
@@ -458,10 +453,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 	
 
-	public boolean isLargeModel() {
-		return largeModel;
-	}
-	
 	public PrintLOD getPrintLOD() {
 		return printLOD;
 	}
@@ -480,12 +471,13 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return renderComponent.getTransform().getScaleFactor();
 	}
 	
-	private void fitContent(final boolean updateView) {
+	@Override
+	public void handleFitContent() {
 		eventHelper.flushPayloadEvents();
 
 		synchronized (dingLock) {
 			// make sure we use the latest snapshot
-			CyNetworkViewSnapshot netViewSnapshot = viewModel.createSnapshot();
+			CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 			if(netViewSnapshot.getNodeCount() == 0)
 				return;
 			
@@ -515,13 +507,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 		
 		// MKTODO is this necessary, the timer will check the dirty flag
-		if (updateView)
-			updateModelAndView();
-	}
-	
-	@Override
-	public void handleFitContent() {
-		fitContent(/* updateView = */ true);
+		updateModelAndView();
 	}
 	
 	@Override
@@ -740,7 +726,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		invokeOnEDTAndWait(() -> {
 			// MKTODO copy-pasted from fitContent()
 			double[] extents = new double[4];
-			viewModel.createSnapshot().getSpacialIndex2D().getMBR(extents); // extents of the network
+			getViewModelSnapshot().getSpacialIndex2D().getMBR(extents); // extents of the network
 			cyAnnotator.adjustBoundsToIncludeAnnotations(extents); // extents of the annotation canvases
 			double xCenter = (extents[0] + extents[2]) / 2.0d;
 			double yCenter = (extents[1] + extents[3]) / 2.0d;

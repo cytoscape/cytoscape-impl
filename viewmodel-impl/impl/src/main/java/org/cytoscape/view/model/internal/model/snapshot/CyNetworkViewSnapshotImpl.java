@@ -3,6 +3,7 @@ package org.cytoscape.view.model.internal.model.snapshot;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -51,8 +52,8 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	// Store of immutable node/edge objects
 	// MKTODO these objects probably won't change much between snapshots, they don't actually store the VPs,
 	// come up with a strategy to reuse them between snapshots.
-	private final java.util.Map<Long,CyNodeViewSnapshotImpl> snapshotNodeViews = new java.util.HashMap<>();
-	private final java.util.Map<Long,CyEdgeViewSnapshotImpl> snapshotEdgeViews = new java.util.HashMap<>();
+	private final java.util.Map<Long,CyNodeViewSnapshotImpl> snapshotNodeViews = new ConcurrentHashMap<>();
+	private final java.util.Map<Long,CyEdgeViewSnapshotImpl> snapshotEdgeViews = new ConcurrentHashMap<>();
 	
 	
 	public CyNetworkViewSnapshotImpl(
@@ -133,29 +134,21 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	 */
 	protected CyNodeViewSnapshotImpl getSnapshotNodeView(CyNodeViewImpl mutableNodeView) {
 		Long suid = mutableNodeView.getSUID();
-		if(snapshotNodeViews.containsKey(suid)) {
-			return snapshotNodeViews.get(suid);
-		}
-		
-		CyNodeViewSnapshotImpl view = null;
-		if(isNodeVisible(suid)) {
+		var view = snapshotNodeViews.get(suid);
+		if(view == null && isNodeVisible(suid)) {
 			view = new CyNodeViewSnapshotImpl(this, mutableNodeView);
+			snapshotNodeViews.put(suid, view);
 		}
-		snapshotNodeViews.put(suid, view); // maps to null if not visible
 		return view;
 	}
 	
 	protected CyEdgeViewSnapshotImpl getSnapshotEdgeView(CyEdgeViewImpl mutableEdgeView) {
 		Long suid = mutableEdgeView.getSUID();
-		if(snapshotEdgeViews.containsKey(suid)) {
-			return snapshotEdgeViews.get(suid);
-		}
-		
-		CyEdgeViewSnapshotImpl view = null;
-		if(isEdgeVisible(mutableEdgeView)) {
+		var view = snapshotEdgeViews.get(suid);
+		if(view == null && isEdgeVisible(mutableEdgeView)) {
 			view = new CyEdgeViewSnapshotImpl(this, mutableEdgeView);
+			snapshotEdgeViews.put(suid, view);
 		}
-		snapshotEdgeViews.put(suid, view); // maps to null if not visible
 		return view;
 	}
 	
