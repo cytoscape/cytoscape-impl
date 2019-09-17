@@ -5,7 +5,6 @@ import java.awt.geom.Rectangle2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
-import org.cytoscape.ding.impl.work.DiscreteProgressMonitor;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
@@ -59,9 +58,9 @@ public class AnnotationCanvas<T extends NetworkTransform> extends DingCanvas<T> 
 		g.setTransform(transform.getAffineTransform());
 		
 		Rectangle2D visibleArea = transform.getNetworkVisibleAreaNodeCoords();
-		var annotations = re.getCyAnnotator().getAnnotations(canvasID);
 		
-		DiscreteProgressMonitor dpm = pm.toDiscrete(annotations.size());
+		var annotations = re.getCyAnnotator().getAnnotations(canvasID);
+		var dpm = pm.toDiscrete(annotations.size());
 		
 		for(DingAnnotation a : annotations) {
 			if(dpm.isCancelled()) {

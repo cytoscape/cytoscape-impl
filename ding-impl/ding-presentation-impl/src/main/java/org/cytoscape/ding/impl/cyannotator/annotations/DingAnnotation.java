@@ -38,7 +38,8 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 public interface DingAnnotation extends Annotation {
 	
 	public static enum CanvasID {
-		FOREGROUND, BACKGROUND;
+		FOREGROUND, 
+		BACKGROUND;
 		
 		public String toArgName() {
 			return this == BACKGROUND ? Annotation.BACKGROUND : Annotation.FOREGROUND;
@@ -59,10 +60,6 @@ public interface DingAnnotation extends Annotation {
 	
 	CyAnnotator getCyAnnotator();
 
-//	void moveAnnotationRelative(Point2D location);
-
-//	void drawAnnotation(Graphics g, double x, double y, double scaleFactor);
-
 	boolean isUsedForPreviews();
 
 	void contentChanged();
@@ -81,15 +78,6 @@ public interface DingAnnotation extends Annotation {
 
 	GroupAnnotation getGroupParent();
 
-	// Drag support
-//	void setOffset(Point2D offset);
-
-//	Point2D getOffset();
-
-//	void saveBounds();
-
-//	Rectangle2D getInitialBounds();
-	
 	Class<? extends Annotation> getType();
 	
 	void addPropertyChangeListener(String propertyName, PropertyChangeListener listener);
@@ -141,21 +129,4 @@ public interface DingAnnotation extends Annotation {
 	default Rectangle2D getBounds() {
 		return new Rectangle2D.Double(getX(), getY(), getWidth(), getHeight());
 	}
-	
-	
-//	Rectangle getBounds();
-
-//	int getX();
-//
-//	int getY();
-//
-//	int getWidth();
-//
-//	int getHeight();
-//
-//	void setLocation(int x, int y);
-//
-//	Point getLocation();
-//
-//	void setBounds(int i, int j, int width, int height);
 }

@@ -9,7 +9,6 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
 import java.net.URI;
 import java.net.URL;
@@ -57,13 +56,11 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	
 	private BufferedImage image;
 	private	URL url;
 
-	private BufferedImage resizedImage;
 	private float opacity = 1.0f;
 	private int brightness;
 	private int contrast;
@@ -84,7 +81,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	public ImageAnnotationImpl(ImageAnnotationImpl c, boolean usedForPreviews) { 
 		super((ShapeAnnotationImpl) c, 0, 0, usedForPreviews);
-		
 		this.image = c.image;
 		this.customGraphicsManager = c.customGraphicsManager;
 		this.width = image.getWidth();
@@ -113,7 +109,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		this.width = image.getWidth();
 		this.height = image.getHeight();
 		this.url = url;
-		resizedImage = resizeImage((int) width, (int) height);
 		final Long id = customGraphicsManager.getNextAvailableID();
 		this.cg = new URLImageCustomGraphics<>(id, url.toString(), image);
 		customGraphicsManager.addCustomGraphics(cg, url);
@@ -138,7 +133,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		contrast = ViewUtils.getInteger(argMap, CONTRAST, 0);
 
 		this.image = null;
-		this.resizedImage = null;
 
 		if (!argMap.containsKey(URL))
 			return;
@@ -152,7 +146,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 				this.image = ImageUtil.toBufferedImage(cg.getRenderedImage());
 				customGraphicsManager.addCustomGraphics(cg, this.url);
 				customGraphicsManager.setUsedInCurrentSession(cg, true);
-				resizedImage = resizeImage((int) image.getWidth(), (int) image.getHeight());
 			}
 			
 			name = getDefaultName();
@@ -198,7 +191,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			logger.warn("Unable to restore image '"+this.url+"'",e);
 			return;
 		}
-		resizedImage = resizeImage((int) width, (int) height);
 	}
 
 	@Override
@@ -214,17 +206,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			this.image = ((VolatileImage)image).getSnapshot();
 		else
 			return;
-
-		this.width=this.image.getWidth();
-		this.height=this.image.getHeight();
 		
-		int width = (int)this.image.getWidth();
-		int height = (int)this.image.getHeight();
-		if (resizedImage != null) {
-			width = (int)resizedImage.getWidth();
-			height = (int)resizedImage.getHeight();
-		}
-		resizedImage=resizeImage((int)width, (int)height);
 		update();
 	}
 
@@ -243,7 +225,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageOpacity(float opacity) {
 		this.opacity = opacity;
-		resizedImage = null;
 		update();
 	}
 
@@ -255,7 +236,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageBrightness(int brightness) {
 		this.brightness = brightness;
-		resizedImage = null;
 		update();
 	}
 
@@ -267,7 +247,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public void setImageContrast(int contrast) {
 		this.contrast = contrast;
-		resizedImage = null;
 		update();
 	}
 
@@ -283,14 +262,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	@Override
 	public List<String> getSupportedShapes() {
 		return Collections.singletonList(ShapeType.RECTANGLE.shapeName());
-	}
-
-	@Override
-	public void setSize(double width, double height) {
-		super.setSize(width, height);
-
-		// Resize the image
-		resizedImage = resizeImage((int) width, (int) height);
 	}
 
 	@Override
@@ -343,64 +314,6 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 		return super.getDefaultName();
 	}
 	
-	//Returns a resizeImaged high quality BufferedImage
-	private BufferedImage resizeImage(int width, int height) {
-		if (image == null) {
-			if (width == 0) width = 1;
-			if (height == 0) height = 1;
-			return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		}
-
-		int type = image.getType() == 0? BufferedImage.TYPE_INT_RGB : image.getType();
-		if(height==0)
-			height++;
-		if(width==0)
-			width++;
-
-		BufferedImage adjustedImage = image;
-
-		// Handle image adjustments
-		if (contrast != 0 || brightness != 0) {
-			BufferedImage source = image;
-			// This only works for RGB
-			if (type != BufferedImage.TYPE_INT_RGB) {
-				BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), 
-				                                           BufferedImage.TYPE_INT_RGB);
-				Graphics2D g = rgbImage.createGraphics();
-				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null); // TODO
-				source = rgbImage;
-			}
-			adjustedImage = new BufferedImage(image.getWidth(), image.getHeight(), 
-				                                BufferedImage.TYPE_INT_RGB);
-
-			// Do Brightness first...
-			// offset goes from -255 - 255 for RGB
-			float offset = (float)brightness*255.0f/100.0f;
-			RescaleOp op = new RescaleOp(1.0f, offset, null);
-			op.filter(source, adjustedImage);
-
-			float scaleFactor = 1.0f;
-			// scaleFactor goes from 0-4.0 with a 
-			if (contrast <= 0) {
-				scaleFactor = 1.0f + ((float)contrast)/100.0f;
-			} else
-				scaleFactor = 1.0f + ((float)contrast)*3.0f/100.0f;
-		
-			op = new RescaleOp(scaleFactor, 0.0f, null);
-			op.filter(adjustedImage, adjustedImage);
-		}
-
-		BufferedImage newImage = new BufferedImage(width, height, type);
-		Graphics2D g = newImage.createGraphics();
-		g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-		g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
-		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
-
-		g.drawImage(adjustedImage, 0, 0, width, height, null);
-		g.dispose();
-		return newImage;
-	}
-
 	public void dropImage() {
 		customGraphicsManager.setUsedInCurrentSession(cg, false);
 	}
@@ -412,29 +325,19 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 
 	@Override
-	public void paint(Graphics g) {				
-		Graphics2D g2=(Graphics2D)g;
-
-		if (image == null)
-			return;
-
-		// Get the stroke
-		int border = (int)Math.round(getBorderWidth()*getZoom());
-
-		// Calculate the new width & height
-		double width = getWidth()-border;
-		double height = getHeight()-border;
-
-		if (resizedImage == null || resizedImage.getWidth() != width || resizedImage.getHeight() != height)
-			resizedImage = resizeImage((int)width, (int)height);
-
-		int x = 0;
-		int y = 0;
-
-		AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity);
-		g2.setComposite(ac);
-		g2.drawImage(resizedImage, x+border+1, y+border+1, null);
-		super.paint(g);
+	public void paint(Graphics graphics) {	
+		if(image != null) {
+			Graphics2D g = (Graphics2D)graphics.create();
+	
+			g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+			g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
+			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
+	
+			g.drawImage(image, (int)getX(), (int)getY(), (int)getWidth(), (int)getHeight(), null);
+			g.dispose();
+		}
+		super.paint(graphics); // draw the border over top
 	}
 
 }

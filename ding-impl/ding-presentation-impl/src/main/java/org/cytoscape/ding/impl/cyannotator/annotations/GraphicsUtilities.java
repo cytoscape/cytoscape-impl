@@ -76,18 +76,18 @@ class GraphicsUtilities {
 	static public Shape getShape(String shapeName, double x, double y, double width, double height) {
 		ShapeType shapeType = getShapeType(shapeName);
 		switch (shapeType) {
-		case RECTANGLE: return rectangleShape(x, y, width, height);
-		case ROUNDEDRECTANGLE: return roundedRectangleShape(x, y, width, height);
-		case ELLIPSE: return ellipseShape(x, y, width, height);
-		case STAR5: return starShape(5, x, y, width, height); // 5 pointed star
-		case STAR6: return starShape(6, x, y, width, height); // 6 pointed star
-		case TRIANGLE: return regularPolygon(3, x, y, width, height); // Triangle
-		case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
-		case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
-		case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon added 3.6
-		case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram added 3.7
-		case CUSTOM: return null;
-		default: return rectangleShape(x, y, width, height);
+			case RECTANGLE: return rectangleShape(x, y, width, height);
+			case ROUNDEDRECTANGLE: return roundedRectangleShape(x, y, width, height);
+			case ELLIPSE: return ellipseShape(x, y, width, height);
+			case STAR5: return starShape(5, x, y, width, height); // 5 pointed star
+			case STAR6: return starShape(6, x, y, width, height); // 6 pointed star
+			case TRIANGLE: return regularPolygon(3, x, y, width, height); // Triangle
+			case PENTAGON: return regularPolygon(5, x, y, width, height); // Pentagon
+			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
+			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon added 3.6
+			case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram added 3.7
+			case CUSTOM: return null;
+			default: return rectangleShape(x, y, width, height);
 		}
 	}
 
@@ -123,21 +123,13 @@ class GraphicsUtilities {
 		return supportedShapeNames;
 	}
 
-	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get
-	// the
-	// shape itself, colors, strokes, etc.
-	static public void drawShape(Graphics g, double x, double y, double width, double height,
-			ShapeAnnotation annotation, boolean isPrinting) {
+	// Given a position and a size, draw a shape. We use the ShapeAnnotation to get the shape itself, colors, strokes, etc.
+	static public void drawShape(Graphics g, double x, double y, double width, double height, ShapeAnnotation annotation, boolean isPrinting) {
 		Graphics2D g2 = (Graphics2D) g;
 
-		// System.out.println("drawShape: ("+x+","+y+","+width+"x"+height+")");
-
-		// Get the stroke
 		float border = (float) (annotation.getBorderWidth() * annotation.getZoom());
-		// if (!isPrinting && border < 1.0f) border = 1.0f;
-		// System.out.println("Border width = "+border+", isPrinting = "+isPrinting);
 
-		Shape shape = null;
+		Shape shape;
 		if (annotation.getShapeType().equals(ShapeType.CUSTOM.shapeName())) {
 			final double destX = x + border;
 			final double destY = y + border;
@@ -158,11 +150,8 @@ class GraphicsUtilities {
 			transform.translate(-originalBounds.getX(), -originalBounds.getY());
 			shape = transform.createTransformedShape(shape);
 		} else {
-			// Get the shape
-			shape = getShape(annotation.getShapeType(), x + border, y + border, width - border, height - border);
+			shape = getShape(annotation.getShapeType(), x, y, width, height);
 		}
-
-		// System.out.println("drawShape: shape = " + serializeShape(shape));
 
 		// Set our fill color
 		if (annotation.getFillColor() != null) {
@@ -182,26 +171,16 @@ class GraphicsUtilities {
 
 		if (border > 0.0f) { // only paint a border if the border thickness is greater than zero
 			float opacity = clamp((float) (((ShapeAnnotationImpl) annotation).getBorderOpacity() / 100.0), 0.0f, 1.0f);
-			final Composite originalComposite = g2.getComposite();
+			Composite originalComposite = g2.getComposite();
 
-			if (annotation.getBorderColor() != null && !annotation.isSelected()) {
-				// System.out.println("drawShape: border color = "+annotation.getBorderColor());
-				g2.setPaint(annotation.getBorderColor());
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-				g2.setStroke(new BasicStroke(border));
-				g2.draw(shape);
-			} else if (annotation.isSelected()) {
-				// Create a yellow border around the shape
-				BasicStroke stroke = new BasicStroke(border);
-				Shape strokedShape = stroke.createStrokedShape(shape);
-				g2.setPaint(Color.YELLOW);
-				g2.draw(strokedShape);
-			} else {
-				g2.setPaint(Color.BLACK);
-				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-				g2.setStroke(new BasicStroke(border));
-				g2.draw(shape);
-			}
+			Paint color = annotation.getBorderColor();
+			if(color == null)
+				color = Color.BLACK;
+			
+			g2.setPaint(color);
+			g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+			g2.setStroke(new BasicStroke(border));
+			g2.draw(shape);
 
 			g2.setComposite(originalComposite);
 		}
