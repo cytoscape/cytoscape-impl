@@ -72,6 +72,10 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		selectedAnnotations.clear();
 		updateBounds();
 	}
+	
+	public boolean contains(DingAnnotation a) {
+		return selectedAnnotations.contains(a);
+	}
 
 	@Override
 	public Iterator<DingAnnotation> iterator() {

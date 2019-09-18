@@ -24,6 +24,7 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  * Manages what used to be ContentChangedListener and ViewportChangedListener
  *
  */
+@SuppressWarnings("unused")
 public class CompositeImageCanvas {
 	
 	private final DRenderingEngine re;
@@ -46,15 +47,15 @@ public class CompositeImageCanvas {
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
 		this.lod = lod;
-		this.image = new NetworkImageBuffer(w, h);
+		this.image = newBuffer(w, h);
 		
 		canvasList = Arrays.asList(
-			annotationSelectionCanvas = new AnnotationSelectionCanvas(new NetworkImageBuffer(w, h), re),
-			foregroundAnnotationCanvas = new AnnotationCanvas<>(new NetworkImageBuffer(w, h), FOREGROUND, re),
-			nodeCanvas = new NodeCanvas<>(new NetworkImageBuffer(w, h), re),
-			edgeCanvas = new EdgeCanvas<>(new NetworkImageBuffer(w, h), re),
-			backgroundAnnotationCanvas = new AnnotationCanvas<>(new NetworkImageBuffer(w, h), BACKGROUND, re),
-			backgroundColorCanvas = new ColorCanvas<>(new NetworkImageBuffer(w, h), null)
+			annotationSelectionCanvas = new AnnotationSelectionCanvas(newBuffer(w, h), re),
+			foregroundAnnotationCanvas = new AnnotationCanvas<>(newBuffer(w, h), re, FOREGROUND),
+			nodeCanvas = new NodeCanvas<>(newBuffer(w, h), re),
+			edgeCanvas = new EdgeCanvas<>(newBuffer(w, h), re),
+			backgroundAnnotationCanvas = new AnnotationCanvas<>(newBuffer(w, h), re, BACKGROUND),
+			backgroundColorCanvas = new ColorCanvas<>(newBuffer(w, h), null)
 		);
 		
 		// Must paint over top of each other in reverse order
@@ -63,10 +64,15 @@ public class CompositeImageCanvas {
 		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
 	}
 	
+	private static NetworkImageBuffer newBuffer(int w, int h) {
+		return new NetworkImageBuffer(w, h);
+	}
 	
 	// Kind of hackey, we don't want the annotation selection to show up in the brids-eye-view
 	public void showAnnotationSelection(boolean show) {
 		annotationSelectionCanvas.show(show);
+		foregroundAnnotationCanvas.setShowSelection(show);
+		backgroundAnnotationCanvas.setShowSelection(show);
 	}
 	
 	public void dispose() {

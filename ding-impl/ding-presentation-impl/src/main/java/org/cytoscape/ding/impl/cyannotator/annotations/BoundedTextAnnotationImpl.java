@@ -227,8 +227,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 //	}
 
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paint(Graphics g, boolean showSelection) {
+		super.paint(g, showSelection);
 
 		Graphics2D g2=(Graphics2D)g;
 		g2.setColor(textColor);

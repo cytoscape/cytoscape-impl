@@ -325,7 +325,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 
 	@Override
-	public void paint(Graphics graphics) {	
+	public void paint(Graphics graphics, boolean showSelection) {	
 		if(image != null) {
 			Graphics2D g = (Graphics2D)graphics.create();
 	
@@ -337,7 +337,7 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			g.drawImage(image, (int)getX(), (int)getY(), (int)getWidth(), (int)getHeight(), null);
 			g.dispose();
 		}
-		super.paint(graphics); // draw the border over top
+		super.paint(graphics, showSelection); // draw the border over top
 	}
 
 }

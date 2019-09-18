@@ -25,10 +25,10 @@ public class CompositeGraphicsCanvas {
 		var pm = new NoOutputProgressMonitor();
 		
 		var canvasList = Arrays.asList(
-			new AnnotationCanvas<>(transform, FOREGROUND, re),
+			new AnnotationCanvas<>(transform, re, FOREGROUND, false),
 			new NodeCanvas<>(transform, re),
 			new EdgeCanvas<>(transform, re),
-			new AnnotationCanvas<>(transform, BACKGROUND, re),
+			new AnnotationCanvas<>(transform, re, BACKGROUND, false),
 			new ColorCanvas<>(transform, bgPaint)
 		);
 		Collections.reverse(canvasList);

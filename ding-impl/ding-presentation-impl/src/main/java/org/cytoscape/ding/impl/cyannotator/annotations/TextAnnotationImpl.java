@@ -258,11 +258,11 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	
 	
 	@Override
-	public void paint(Graphics graphics) {
+	public void paint(Graphics graphics, boolean showSelection) {
 		if (text == null || textColor == null || font == null) 
 			return;
 
-		super.paint(graphics);
+		super.paint(graphics, showSelection);
 		Graphics2D g = (Graphics2D)graphics.create();
 
 		g.setPaint(textColor);
@@ -278,21 +278,14 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		float ascent = font.getLineMetrics(text , new FontRenderContext(null, true, true)).getAscent();
 		g.drawString(text, (float)getX(), (float)getY()+ascent);
 
-		if(isSelected()) {
+		if(showSelection && isSelected()) {
 			g.setColor(Color.GRAY);
 			g.setStroke(new EqualDashStroke(2.0f));
 			g.draw(getBounds());
 		}
+		
 		g.setComposite(originalComposite);
 		g.dispose();
-	}
-
-	@Override
-	public void print(Graphics g) {
-		boolean saveSelected = isSelected();
-		selected = false;
-		paint(g);
-		selected = saveSelected;
 	}
 	
 	@Override

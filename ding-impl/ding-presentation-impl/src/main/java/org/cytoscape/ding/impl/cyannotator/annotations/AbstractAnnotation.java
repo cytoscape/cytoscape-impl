@@ -362,7 +362,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	// Component overrides
 	@Override
-	public void paint(Graphics g) {
+	public void paint(Graphics g, boolean showSelected) {
 		Graphics2D g2 = (Graphics2D)g;
 
 		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */

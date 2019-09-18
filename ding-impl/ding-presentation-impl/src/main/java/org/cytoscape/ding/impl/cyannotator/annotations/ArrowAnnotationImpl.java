@@ -50,7 +50,6 @@ import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnnotation {
 	
 	private Paint lineColor = Color.BLACK; // These are paint's so we can do gradients
@@ -428,77 +427,14 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	public List<String> getSupportedArrows() {
 		return GraphicsUtilities.getSupportedArrowTypeNames();
 	}
-    
-//	@Override
-//	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-//		super.drawAnnotation(g, x, y, scaleFactor);
-//
-//		// Draw the line
-//		Graphics2D g2 = (Graphics2D)g;
-//
-//		boolean saveSelected = isSelected();
-//		selected = false;
-//
-//		double scale = scaleFactor/getZoom();
-//
-//		// Get the stroke
-//		double border = lineWidth*scale;
-//		if (border < 1.0) border = 1.0;
-//		g2.setPaint(lineColor);
-//		g2.setStroke(new BasicStroke((float)border));
-//		
-//		Line2D relativeLine = getRelativeLine(arrowLine, 
-//		                                      x*scaleFactor, y*scaleFactor, scale, border);
-//
-//		if (relativeLine != null) {
-//			// Handle opacity
-//			if (lineColor instanceof Color) {
-//				int alpha = ((Color)lineColor).getAlpha();
-//				float opacity = (float)alpha/(float)255;
-//				final Composite originalComposite = g2.getComposite();
-//				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-//				g2.draw(relativeLine);
-//				g2.setComposite(originalComposite);
-//			} else {
-//				g2.draw(relativeLine);
-//			}
-//		}
-//
-//		// Add the head
-//		if (sourceType != ArrowType.NONE) {
-//			Paint color = sourceColor;
-//			if (color == null)
-//				color = lineColor;
-//
-//			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.SOURCE, color, sourceSize*10.0*scaleFactor, sourceType);
-//		}
-//
-//		if (targetType != ArrowType.NONE) {
-//			Paint color = targetColor;
-//			if (color == null)
-//				color = lineColor;
-//
-//			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, color, targetSize*10.0*scaleFactor, targetType);
-//		}
-//
-//		selected = saveSelected;
-//	}
 
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paint(Graphics g, boolean showSelected) {
+		super.paint(g, showSelected);
 //		if (canvas.isPrinting())
 //			drawArrow(g, true);
 //		else
 			drawArrow(g, false);
-	}
-
-	@Override
-	public void print(Graphics g) {
-		boolean saveSelected = isSelected();
-		selected = false;
-		paint(g);
-		selected = saveSelected;
 	}
 
 	public void drawArrow(Graphics g, boolean isPrinting) {

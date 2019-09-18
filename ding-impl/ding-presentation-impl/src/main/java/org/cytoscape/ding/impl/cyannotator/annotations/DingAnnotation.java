@@ -67,12 +67,8 @@ public interface DingAnnotation extends Annotation {
 	JDialog getModifyDialog();
 
 	// Overrides of Component
-	void paint(Graphics g);
+	void paint(Graphics g, boolean showSelected);
 	
-	default void print(Graphics g) {
-		paint(g);
-	}
-
 	// Group support
 	void setGroupParent(GroupAnnotation parent);
 

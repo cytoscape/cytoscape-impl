@@ -36,15 +36,25 @@ public class AnnotationCanvas<T extends NetworkTransform> extends DingCanvas<T> 
 	
 	private final DingAnnotation.CanvasID canvasID;
 	private final DRenderingEngine re;
+	private boolean showSelection = true;
 	
-	public AnnotationCanvas(T t, DingAnnotation.CanvasID canvasID, DRenderingEngine re) {
+	public AnnotationCanvas(T t, DRenderingEngine re, DingAnnotation.CanvasID canvasID) {
 		super(t);
 		this.re = re;
 		this.canvasID = canvasID;
 	}
 
+	public AnnotationCanvas(T t, DRenderingEngine re, DingAnnotation.CanvasID canvasID, boolean showSelection) {
+		this(t, re, canvasID);
+		this.showSelection = showSelection;
+	}
+
 	public DingAnnotation.CanvasID getCanvasID() {
 		return canvasID;
+	}
+	
+	public void setShowSelection(boolean showSelection) {
+		this.showSelection = showSelection;
 	}
 
 	@Override
@@ -67,7 +77,7 @@ public class AnnotationCanvas<T extends NetworkTransform> extends DingCanvas<T> 
 				return;
 			}
 			if(visibleArea.intersects(a.getBounds())) {
-				a.paint(g);
+				a.paint(g, showSelection);
 			}
 			dpm.increment();
 		}

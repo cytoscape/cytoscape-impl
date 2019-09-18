@@ -236,8 +236,8 @@ public class ShapeAnnotationImpl extends AbstractAnnotation implements ShapeAnno
 	}
 
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paint(Graphics g, boolean showSelection) {
+		super.paint(g, showSelection);
 
 		// MKTODO
 //		if (canvas.isPrinting())

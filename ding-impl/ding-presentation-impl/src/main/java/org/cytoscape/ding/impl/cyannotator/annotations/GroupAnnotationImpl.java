@@ -328,15 +328,15 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 	final static float dash1[] = {10.0f};
 
 	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
+	public void paint(Graphics g, boolean showSelected) {
+		super.paint(g, showSelected);
 		// MKTODO
 //		if (!canvas.isPrinting())
 			updateBounds();
 		
 		Graphics2D g2 = (Graphics2D) g;
 		
-		if (isSelected() /* && !canvas.isPrinting() */) {
+		if (showSelected && isSelected() /* && !canvas.isPrinting() */) {
 			g2.setColor(Color.YELLOW);
 			g2.setStroke(new BasicStroke(2.0f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash1, 0.0f));
 			g2.drawRect(0, 0, (int)getWidth(), (int)getHeight());
