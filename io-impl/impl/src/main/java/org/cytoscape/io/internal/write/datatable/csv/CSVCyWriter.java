@@ -52,17 +52,26 @@ public class CSVCyWriter implements CyWriter {
 	private final boolean writeSchema;
 	private boolean isCanceled;
 	private final boolean handleEquations;
+	private final boolean includePrimaryKeyColumn;
 	private final boolean includeVirtualColumns;
 	private final CyFileFilter fileFilter;
 	private String encoding;
 
-	public CSVCyWriter(final OutputStream outputStream, final CyTable table,final CyFileFilter fileFilter,
-			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns, final String encoding)
-	{
-		this.outputStream    = outputStream;
-		this.table           = table;
-		this.writeSchema     = writeSchema;
+	public CSVCyWriter(
+			OutputStream outputStream,
+			CyTable table,
+			CyFileFilter fileFilter,
+			boolean writeSchema,
+			boolean handleEquations,
+			boolean includePrimaryKeyColumn,
+			boolean includeVirtualColumns,
+			String encoding
+	) {
+		this.outputStream = outputStream;
+		this.table = table;
+		this.writeSchema = writeSchema;
 		this.handleEquations = handleEquations;
+		this.includePrimaryKeyColumn = includePrimaryKeyColumn;
 		this.includeVirtualColumns = includeVirtualColumns;
 		this.encoding = encoding;
 		this.fileFilter = fileFilter;
@@ -80,10 +89,10 @@ public class CSVCyWriter implements CyWriter {
 		try {
 			List<CyColumn> columns = new ArrayList<CyColumn>();
 			for (CyColumn column : table.getColumns()) {
-				if (column.getVirtualColumnInfo().isVirtual()) {
-					if (!includeVirtualColumns)
-						continue;
-				}
+				if (column.isPrimaryKey() && !includePrimaryKeyColumn)
+					continue;
+				if (column.getVirtualColumnInfo().isVirtual() && !includeVirtualColumns)
+					continue;
 				columns.add(column);
 			}
 			taskMonitor.setProgress(0.2);

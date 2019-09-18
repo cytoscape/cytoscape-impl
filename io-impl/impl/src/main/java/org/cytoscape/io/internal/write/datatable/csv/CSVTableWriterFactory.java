@@ -37,21 +37,28 @@ import org.cytoscape.model.CyTable;
 public class CSVTableWriterFactory extends AbstractCyWriterFactory implements CyTableWriterFactory {
 	private final boolean writeSchema;
 	private final boolean handleEquations;
+	private final boolean includePrimaryKeyColumn;
 	private final boolean includeVirtualColumns;
 	private final CyFileFilter fileFilter;
 
-	public CSVTableWriterFactory(final CyFileFilter fileFilter, final boolean writeSchema,
-				     final boolean handleEquations, final boolean includeVirtualColumns)
-	{
+	public CSVTableWriterFactory(
+			CyFileFilter fileFilter,
+			boolean writeSchema,
+			boolean handleEquations,
+			boolean includePrimaryKeyColumn,
+			boolean includeVirtualColumns
+	) {
 		super(fileFilter);
-		this.writeSchema     = writeSchema;
+		this.writeSchema = writeSchema;
 		this.handleEquations = handleEquations;
+		this.includePrimaryKeyColumn = includePrimaryKeyColumn;
 		this.includeVirtualColumns = includeVirtualColumns;
 		this.fileFilter = fileFilter;
 	}
 	
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
-		return new CSVCyWriter(outputStream, table,fileFilter, writeSchema, handleEquations, includeVirtualColumns, "UTF-8");
+		return new CSVCyWriter(outputStream, table, fileFilter, writeSchema, handleEquations, includePrimaryKeyColumn,
+				includeVirtualColumns, "UTF-8");
 	}
 }
