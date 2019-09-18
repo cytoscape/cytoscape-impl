@@ -56,6 +56,7 @@ import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
 /**
@@ -170,7 +171,10 @@ public final class TypeUtil {
 				final String name = model.getColumnName(i);
 				final AttributeDataType dataType = dataTypes[i];
 				
-				if (importType == NETWORK_IMPORT) {
+				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) {
+					// Columns called SUID are ignored by default
+					types[i] = NONE;
+				} else if (importType == NETWORK_IMPORT) {
 					if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
 						srcFound = true;
 						types[i] = SOURCE;
@@ -212,6 +216,11 @@ public final class TypeUtil {
 		if (importType == TABLE_IMPORT && !keyFound) {
 			// Just use the first String or Integer column as key then...
 			for (int i = 0; i < types.length; i++) {
+				final String name = model.getColumnName(i);
+				
+				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) // Columns called SUID are ignored by default
+					continue;
+				
 				if (dataTypes[i] == TYPE_STRING || dataTypes[i] == TYPE_INTEGER || dataTypes[i] == TYPE_LONG) {
 					types[i] = KEY;
 					break;
