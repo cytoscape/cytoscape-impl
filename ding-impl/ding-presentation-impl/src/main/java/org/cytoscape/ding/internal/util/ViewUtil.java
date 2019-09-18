@@ -4,6 +4,7 @@ import java.awt.Cursor;
 import java.awt.Window;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 
 import javax.swing.FocusManager;
 import javax.swing.SwingUtilities;
@@ -39,6 +40,11 @@ import org.slf4j.Logger;
 
 public final class ViewUtil {
 
+	
+	public static String toString(Rectangle2D r) {
+		return String.format("(x:%.3f, y:%.3f, w:%.3f, h:%.3f)", r.getX(), r.getY(), r.getWidth(), r.getHeight());
+	}
+	
 	/**
 	 * Utility method that invokes the code in Runnable.run on the AWT Event Dispatch Thread.
 	 * @param runnable

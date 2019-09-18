@@ -1,13 +1,9 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
-import static org.cytoscape.view.presentation.property.values.Position.EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.NORTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_EAST;
-import static org.cytoscape.view.presentation.property.values.Position.SOUTH_WEST;
-import static org.cytoscape.view.presentation.property.values.Position.WEST;
+import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isEast;
+import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isNorth;
+import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isSouth;
+import static org.cytoscape.ding.impl.cyannotator.annotations.AnchorLocation.isWest;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
@@ -335,20 +331,4 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
 	}
 	
-	
-	private static boolean isNorth(Position position) {
-		return position == NORTH || position == NORTH_EAST || position == NORTH_WEST;
-	}
-	
-	private static boolean isSouth(Position position) {
-		return position == SOUTH || position == SOUTH_EAST || position == SOUTH_WEST;
-	}
-	
-	private static boolean isWest(Position position) {
-		return position == WEST || position == NORTH_WEST || position == SOUTH_WEST;
-	}
-	
-	private static boolean isEast(Position position) {
-		return position == EAST || position == NORTH_EAST || position == SOUTH_EAST;
-	}
 }

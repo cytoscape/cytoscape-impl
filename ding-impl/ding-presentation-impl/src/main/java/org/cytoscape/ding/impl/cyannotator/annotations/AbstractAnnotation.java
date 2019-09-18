@@ -154,6 +154,14 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		this.y = y;
 	}
 	
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
+	}
+	
 	@Override
 	public double getWidth() {
 		return width;
@@ -169,6 +177,10 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		this.y = bounds.getY();
 		this.width = bounds.getWidth();
 		this.height = bounds.getHeight();
+	}
+	
+	public Rectangle2D getBounds() {
+		return new Rectangle2D.Double(x, y, width, height);
 	}
 	
 	public void setSize(double width, double height) {

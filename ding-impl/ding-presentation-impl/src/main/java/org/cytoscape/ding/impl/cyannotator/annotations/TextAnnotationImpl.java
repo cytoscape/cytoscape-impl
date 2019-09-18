@@ -1,13 +1,13 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -15,35 +15,11 @@ import javax.swing.JDialog;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.dialogs.TextAnnotationDialog;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
+import org.cytoscape.ding.impl.strokes.EqualDashStroke;
 import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.TextAnnotation;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-@SuppressWarnings("serial")
 public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnotation {
 	
 	private static final String DEF_TEXT = "Text";
@@ -111,8 +87,8 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 	}
 
 	@Override
-	public Map<String, String> getArgMap() {
-		Map<String, String> argMap = super.getArgMap();
+	public Map<String,String> getArgMap() {
+		var argMap = super.getArgMap();
 		argMap.put(TYPE, TextAnnotation.class.getName());
 		argMap.put(TEXT, this.text);
 		argMap.put(COLOR, ViewUtils.convertColor(this.textColor));
@@ -197,31 +173,18 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 
 	@Override
 	public void setFontSize(double size) {
-		this.fontSize = (float) size;
-		font = font.deriveFont((float) (fontSize));
+		this.fontSize = (float)size;
+		font = font.deriveFont((float)fontSize);
 		if (!usedForPreviews)
 			setSize(getAnnotationWidth(), getAnnotationHeight());
 		update();
 	}
 
-	public void setFontSizeRelative(double factor) {
-		if (savedFontSize != 0.0) {
-			setFontSize(savedFontSize*factor);
-		} else {
-			setFontSize(fontSize*factor);
-		}
-	}
 
 	@Override
 	public double getFontSize() {
 		return this.fontSize;
 	}
-
-//	@Override
-//	public void saveBounds() {
-//		super.saveBounds();
-//		savedFontSize = fontSize;
-//	}
 
 	@Override
 	public void setFontStyle(int style) {
@@ -268,89 +231,60 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		return new TextAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
-	
-//	@Override
-//	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-//		super.resizeAnnotationRelative(initialBounds, outlineBounds);
-//		// XXX This doesn't work!  Need to preserve font size in order for this to work right
-//		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-//		setFontSizeRelative(deltaW);
-//	}
-//	
-//	@Override
-//	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-//		if (text == null) return;
-//		super.drawAnnotation(g, x, y, scaleFactor);
-//
-//		Graphics2D g2 = (Graphics2D) g;
-//		// System.out.println("drawAnnotation: setting text color to: "+textColor);
-//		g2.setPaint(textColor);
-//		// Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-//		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-//		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-//
-//		int width = (int)((double)getWidth()*scaleFactor/getZoom());
-//		int halfWidth = (width-fontMetrics.stringWidth(text))/2;
-//
-//		// Note, this is + because we start at the baseline
-//		int height = (int)((double)getHeight()*scaleFactor/getZoom());
-//		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
-//
-//		int xLoc = (int)(x*scaleFactor + halfWidth);
-//		int yLoc = (int)(y*scaleFactor + halfHeight);
-//
-//		g2.setFont(tFont);
-//
-//		// Handle opacity
-//		int alpha = textColor.getAlpha();
-//		float opacity = (float)alpha/(float)255;
-//		final Composite originalComposite = g2.getComposite();
-//		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-//		g2.drawString(text, xLoc, yLoc);
-//		g2.setComposite(originalComposite);
-//	}
-
-//	@Override
-//	public Rectangle getBounds() {
-//		return new Rectangle(getX(), getY(), getAnnotationWidth(), getAnnotationHeight());
-//	}
-
 	@Override
-	public void paint(Graphics g) {
-		if (text == null) return;
-		super.paint(g);
+	public void setBounds(Rectangle2D newBounds) {
+		if(newBounds.getWidth() == 0 || newBounds.getHeight() == 0)
+			return;
+			
+		Rectangle2D initialBounds = getBounds();
 
-		if (text == null || textColor == null || font == null) return;
+		if(initialBounds.getWidth() != 0) {
+			double factor = newBounds.getWidth() / initialBounds.getWidth();
+			
+			double fontSize;
+			if(savedFontSize != 0.0)
+				fontSize = (this.savedFontSize * factor);
+			else
+				fontSize = (this.fontSize * factor);
+			
+			
+			this.fontSize = (float) fontSize;
+			this.font = font.deriveFont((float)fontSize);
+		}
+		
+		super.setBounds(newBounds);
+		update();
+	}
+	
+	
+	@Override
+	public void paint(Graphics graphics) {
+		if (text == null || textColor == null || font == null) 
+			return;
 
-		Graphics2D g2=(Graphics2D)g;
+		super.paint(graphics);
+		Graphics2D g = (Graphics2D)graphics.create();
 
-		g2.setPaint(textColor);
-		g2.setFont(font);
+		g.setPaint(textColor);
+		g.setFont(font);
+		g.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
 		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g2.getComposite();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+		final Composite originalComposite = g.getComposite();
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
 
-		int halfWidth  = (int)((double)getWidth()-getTextWidth())/2;
-		int halfHeight = (int)((double)getHeight()+getTextHeight()/2.0)/2; // Note, this is + because we start at the baseline
+		float ascent = font.getLineMetrics(text , new FontRenderContext(null, true, true)).getAscent();
+		g.drawString(text, (float)getX(), (float)getY()+ascent);
 
-		if(usedForPreviews) {
-			g2.drawString(text, halfWidth, halfHeight);
-			return;
+		if(isSelected()) {
+			g.setColor(Color.GRAY);
+			g.setStroke(new EqualDashStroke(2.0f));
+			g.draw(getBounds());
 		}
-
-		g2.drawString(text, halfWidth, halfHeight);
-
-		if (isSelected()) {
-      //Selected Annotations will have a yellow border
-			g2.setColor(Color.YELLOW);
-			g2.setStroke(new BasicStroke(2.0f));
-			// g2.drawRect(getX()-4, getY()-4, getTextWidth(g2)+8, getTextHeight(g2)+8);
-			g2.drawRect(0, 0, getAnnotationWidth(), getAnnotationHeight());
-		}
-		g2.setComposite(originalComposite);
+		g.setComposite(originalComposite);
+		g.dispose();
 	}
 
 	@Override
@@ -366,37 +300,23 @@ public class TextAnnotationImpl extends AbstractAnnotation implements TextAnnota
 		return text != null ? text : DEF_TEXT;
 	}
 
-	int getAnnotationWidth() {
-		return (int) (getTextWidth() + 1.0);
+	private double getAnnotationWidth() {
+		return getTextWidth() + 1.0;
 	}
 
-	int getAnnotationHeight() {
-		return (int)(getTextHeight()+1.0);
+	private double getAnnotationHeight() {
+		return getTextHeight() + 1.0;
 	}
 
 	double getTextWidth() {
-		if (text == null) return 0.0;
+		if (text == null) 
+			return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
-/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.stringWidth(text);
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(text.length()*fontSize);
-*/
 	}
 
 	double getTextHeight() {
-		if (text == null) return 0.0;
+		if (text == null) 
+			return 0.0;
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
-/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.getHeight();
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(fontSize*1.5);
-*/
 	}
 }
