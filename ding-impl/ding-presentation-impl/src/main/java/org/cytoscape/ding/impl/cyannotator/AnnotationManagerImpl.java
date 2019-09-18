@@ -145,15 +145,10 @@ public class AnnotationManagerImpl implements AnnotationManager {
 
 				List<DingAnnotation> arrows = getArrows(dingAnnotations);
 				
-//				AnnotationCanvas canvas = re.getAnnotationCanvas(canvasId);
-//				canvas.removeAnnotations(arrows);
-//				canvas.removeAnnotations(dingAnnotations);
-
 				re.getCyAnnotator().removeAnnotations(arrows);
 				re.getCyAnnotator().removeAnnotations(dingAnnotations);
 			});
 			
-//			re.updateView();
 		});
 		
 		

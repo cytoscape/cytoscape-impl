@@ -191,6 +191,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 				logger.error("Annotations were not loaded correctly.", e);
 			} finally {
 				loading = false;
+				re.setContentChanged();
 				propChangeSupport.firePropertyChange("annotations", Collections.emptySet(), new HashSet<>(annotationSet));
 			}
 		});
@@ -282,6 +283,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
+			re.setContentChanged();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -302,6 +304,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		getAnnotationTree().resetZOrder();
 		
 		if (!loading) {
+			re.setContentChanged();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -314,6 +317,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		annotationSelection.remove(annotation);
 		
 		if (changed && !loading) {
+			re.setContentChanged();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}
@@ -330,6 +334,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		}
 		
 		if (changed && !loading) {
+			re.setContentChanged();
 			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
 		}
 	}

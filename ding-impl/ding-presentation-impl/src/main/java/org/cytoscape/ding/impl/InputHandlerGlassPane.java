@@ -1023,6 +1023,7 @@ public class InputHandlerGlassPane extends JComponent {
 					mousePressedCallback.run();
 				}
 				createAnnotation(annotationFactory, e.getPoint());
+				e.consume();
 			}
 			annotationFactory = null;
 			mousePressedCallback = null;
@@ -1279,6 +1280,7 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
+			System.out.println("here 1");
 			changeCursor(panCursor);
 			mousePressedPoint = e.getPoint();
 			e.consume();
@@ -1321,6 +1323,7 @@ public class InputHandlerGlassPane extends JComponent {
 			if(undoPanEdit != null)
 				undoPanEdit.post();
 			
+			System.out.println("here 2");
 			changeCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			mousePressedPoint = null;
 			undoPanEdit = null;
