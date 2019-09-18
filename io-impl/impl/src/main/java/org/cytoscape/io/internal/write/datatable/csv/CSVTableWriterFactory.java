@@ -1,12 +1,20 @@
 package org.cytoscape.io.internal.write.datatable.csv;
 
+import java.io.OutputStream;
+
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
+import org.cytoscape.io.write.CyTableWriterFactory;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyTable;
+
 /*
  * #%L
  * Cytoscape IO Impl (io-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,17 +32,8 @@ package org.cytoscape.io.internal.write.datatable.csv;
  * #L%
  */
 
-
-import java.io.OutputStream;
-
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.internal.write.AbstractCyWriterFactory;
-import org.cytoscape.io.write.CyTableWriterFactory;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyTable;
-
-
 public class CSVTableWriterFactory extends AbstractCyWriterFactory implements CyTableWriterFactory {
+	
 	private final boolean writeSchema;
 	private final boolean handleEquations;
 	private final boolean includePrimaryKeyColumn;
@@ -55,7 +54,7 @@ public class CSVTableWriterFactory extends AbstractCyWriterFactory implements Cy
 		this.includeVirtualColumns = includeVirtualColumns;
 		this.fileFilter = fileFilter;
 	}
-	
+
 	@Override
 	public CyWriter createWriter(OutputStream outputStream, CyTable table) {
 		return new CSVCyWriter(outputStream, table, fileFilter, writeSchema, handleEquations, includePrimaryKeyColumn,
