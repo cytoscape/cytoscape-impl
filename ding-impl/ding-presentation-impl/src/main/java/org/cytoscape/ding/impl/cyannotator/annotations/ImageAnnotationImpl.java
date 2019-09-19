@@ -9,6 +9,7 @@ import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.RescaleOp;
 import java.awt.image.VolatileImage;
 import java.net.URI;
 import java.net.URL;
@@ -59,6 +60,7 @@ import org.slf4j.LoggerFactory;
 public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnnotation {
 	
 	private BufferedImage image;
+	private BufferedImage modifiedImage;
 	private	URL url;
 
 	private float opacity = 1.0f;
@@ -235,8 +237,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImageBrightness(int brightness) {
-		this.brightness = brightness;
-		update();
+		if(this.brightness != brightness) {
+			this.brightness = brightness;
+			this.modifiedImage = null;
+			update();
+		}
 	}
 
 	@Override
@@ -246,8 +251,11 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 
 	@Override
 	public void setImageContrast(int contrast) {
-		this.contrast = contrast;
-		update();
+		if(this.contrast != contrast) {
+			this.contrast = contrast;
+			this.modifiedImage = null;
+			update();
+		}
 	}
 
 	@Override
@@ -324,8 +332,39 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 	}
 
 
+	private Image getModifiedImage() {
+		if(image == null)
+			return null;
+		
+		if(modifiedImage == null) {
+			if(brightness == 0 && contrast == 0) {
+				modifiedImage = image;
+			} else {
+				BufferedImage rgbImage = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_RGB);
+				Graphics2D g = rgbImage.createGraphics();
+				g.drawImage(image, 0, 0, image.getWidth(), image.getHeight(), null);
+				modifiedImage = rgbImage;
+				g.dispose();
+
+				float offset = (float)brightness*255.0f/100.0f;
+				float scaleFactor = 1.0f;
+				// scaleFactor goes from 0 - 4.0 with a 
+				if(contrast <= 0)
+					scaleFactor = 1.0f + ((float)contrast)/100.0f;
+				else
+					scaleFactor = 1.0f + ((float)contrast)*3.0f/100.0f;
+				
+				RescaleOp op = new RescaleOp(scaleFactor, offset, null);
+				op.filter(modifiedImage, modifiedImage);
+			}
+		}
+		return modifiedImage;
+	}
+	
+	
 	@Override
-	public void paint(Graphics graphics, boolean showSelection) {	
+	public void paint(Graphics graphics, boolean showSelection) {
+		Image image = getModifiedImage();
 		if(image != null) {
 			Graphics2D g = (Graphics2D)graphics.create();
 	

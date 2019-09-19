@@ -1,7 +1,20 @@
 package org.cytoscape.ding.impl.cyannotator.dialogs;
 
-import javax.swing.JPanel;
+import static javax.swing.GroupLayout.DEFAULT_SIZE;
+import static javax.swing.GroupLayout.PREFERRED_SIZE;
+import static javax.swing.GroupLayout.Alignment.LEADING;
+import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 
+import java.awt.Color;
+
+import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+
+import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 
 /*
@@ -31,58 +44,57 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 @SuppressWarnings("serial")
 public class PreviewPanel extends JPanel {
 	
-	private final DingAnnotation annotation;
+	private final AbstractAnnotation annotation;
 
-	public PreviewPanel(DingAnnotation annotation) {
+	public PreviewPanel(AbstractAnnotation annotation) {
 		this.annotation = annotation;
-//		
-//		final Color background = (Color) annotation.getCyAnnotator().getRenderingEngine().getBackgroundPaint();
-//		
-//		final JComponent c = annotation.getComponent();
-//		c.setOpaque(false);
-//		c.setBackground(new Color(255, 255, 255, 0)); // Make the component background transparent
-//
-//		final JLabel label = new JLabel("Preview:");
-//		makeSmall(label);
-//		
-//		final JPanel panel = new JPanel();
-//		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
-//		panel.setBackground(background); // Set our background to match
-//		
-//		{
-//			final GroupLayout layout = new GroupLayout(panel);
-//			panel.setLayout(layout);
-//			layout.setAutoCreateContainerGaps(false);
-//			layout.setAutoCreateGaps(false);
-//			
-//			layout.setHorizontalGroup(layout.createSequentialGroup()
-//					.addGap(10, 20, Short.MAX_VALUE)
-//					.addComponent(c, c.getWidth(), c.getWidth(), PREFERRED_SIZE)
-//					.addGap(10, 20, Short.MAX_VALUE)
-//			);
-//			layout.setVerticalGroup(layout.createSequentialGroup()
-//					.addGap(10, 20, Short.MAX_VALUE)
-//					.addComponent(c, c.getHeight(), c.getHeight(), PREFERRED_SIZE)
-//					.addGap(10, 20, Short.MAX_VALUE)
-//			);
-//		}
-//		
-//		final GroupLayout layout = new GroupLayout(this);
-//		setLayout(layout);
-//		layout.setAutoCreateContainerGaps(true);
-//		layout.setAutoCreateGaps(true);
-//		
-//		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
-//				.addComponent(label)
-//				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-//		);
-//		layout.setVerticalGroup(layout.createSequentialGroup()
-//				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
-//				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
-//		);
-//		
-//		add(c);
-//		repaint();
+		
+		Color background = (Color) annotation.getCyAnnotator().getRenderingEngine().getBackgroundColor();
+		
+		JComponent c = new AnnotationComponent(annotation);
+		c.setOpaque(false);
+		c.setBackground(new Color(255, 255, 255, 0)); // Make the component background transparent
+
+		final JLabel label = new JLabel("Preview:");
+		makeSmall(label);
+		
+		final JPanel panel = new JPanel();
+		panel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
+		panel.setBackground(background); // Set our background to match
+		
+		{
+			final GroupLayout layout = new GroupLayout(panel);
+			panel.setLayout(layout);
+			layout.setAutoCreateContainerGaps(false);
+			layout.setAutoCreateGaps(false);
+			
+			layout.setHorizontalGroup(layout.createSequentialGroup()
+					.addGap(10, 20, Short.MAX_VALUE)
+					.addComponent(c, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(10, 20, Short.MAX_VALUE)
+			);
+			layout.setVerticalGroup(layout.createSequentialGroup()
+					.addGap(10, 20, Short.MAX_VALUE)
+					.addComponent(c, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(10, 20, Short.MAX_VALUE)
+			);
+		}
+		
+		final GroupLayout layout = new GroupLayout(this);
+		setLayout(layout);
+		layout.setAutoCreateContainerGaps(true);
+		layout.setAutoCreateGaps(true);
+		
+		layout.setHorizontalGroup(layout.createParallelGroup(LEADING, true)
+				.addComponent(label)
+				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addComponent(label, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				.addComponent(panel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
+		);
+		
+		repaint();
 	}
 
 	public DingAnnotation getAnnotation() {
