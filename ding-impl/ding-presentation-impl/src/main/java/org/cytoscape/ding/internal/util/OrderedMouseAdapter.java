@@ -20,11 +20,9 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
 
 	private final List<MouseAdapter> listeners = new ArrayList<>();
 	
-	public OrderedMouseAdapter() { 
-	}
 
 	public OrderedMouseAdapter(MouseAdapter ... adapters) {
-		for(MouseAdapter a : adapters) {
+		for(var a : adapters) {
 			add(a);
 		}
 	}
@@ -34,9 +32,9 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
 	}
 	
 	public <T> T get(Class<T> type) {
-		for(MouseAdapter a : listeners) {
-			if(type.isAssignableFrom(a.getClass())) {
-				return type.cast(a);
+		for(var l : listeners) {
+			if(type.isAssignableFrom(l.getClass())) {
+				return type.cast(l);
 			}
 		}
 		return null;
@@ -79,10 +77,10 @@ public class OrderedMouseAdapter implements MouseListener, MouseMotionListener {
 
 	
 	private void fire(MouseEvent e, BiConsumer<MouseAdapter,MouseEvent> consumer) {
-		for(MouseAdapter m : listeners) {
+		for(var l : listeners) {
 			if(e.isConsumed())
 				return;
-			consumer.accept(m, e);
+			consumer.accept(l, e);
 		}
 	}
 

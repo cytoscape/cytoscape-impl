@@ -127,7 +127,7 @@ public class InputHandlerGlassPane extends JComponent {
         	new AddAnnotationListener(),
         	new SelectionLassoListener(),
         	new SelectionRectangleListener(),
-        	new PanListener() // panning only happens if no node/edge/annotation/handle is selected, so it needs to go after
+        	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
         
 		addMouseListener(orderedMouseAdapter);
@@ -893,17 +893,21 @@ public class InputHandlerGlassPane extends JComponent {
 			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
-			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
-				mouseDraggedHandleNodesAndEdges(selectedNodes, anchorsToMove, e);
-			}
+			
 			
 			if(!annotationSelection.isEmpty()) {
 				if(annotationSelection.isResizing()) {
 					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
+					re.updateView(UpdateType.JUST_ANNOTATIONS);
+					return;
 				} else {
 					annotationSelection.moveSelection(e.getX(), e.getY());
 					annotationSelection.setMouseOffset(e.getPoint());
 				}
+			}
+			
+			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
+				mouseDraggedHandleNodesAndEdges(selectedNodes, anchorsToMove, e);
 			}
 			
 			if(!selectedNodes.isEmpty() || !anchorsToMove.isEmpty()) {
