@@ -1,30 +1,5 @@
 package org.cytoscape.io.internal.write.datatable.csv;
 
-/*
- * #%L
- * Cytoscape IO Impl (io-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
@@ -44,25 +19,58 @@ import org.cytoscape.work.TaskMonitor;
 
 import au.com.bytecode.opencsv.CSVWriter;
 
+/*
+ * #%L
+ * Cytoscape IO Impl (io-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class CSVCyWriter implements CyWriter {
+	
 	private static final int SCHEMA_VERSION = 1;
 	private final OutputStream outputStream;
 	private final CyTable table;
 	private final boolean writeSchema;
 	private boolean isCanceled;
 	private final boolean handleEquations;
+	private final boolean includePrimaryKeyColumn;
 	private final boolean includeVirtualColumns;
 	private final CyFileFilter fileFilter;
 	private String encoding;
 
-	public CSVCyWriter(final OutputStream outputStream, final CyTable table,final CyFileFilter fileFilter,
-			   final boolean writeSchema, final boolean handleEquations, final boolean includeVirtualColumns, final String encoding)
-	{
-		this.outputStream    = outputStream;
-		this.table           = table;
-		this.writeSchema     = writeSchema;
+	public CSVCyWriter(
+			OutputStream outputStream,
+			CyTable table,
+			CyFileFilter fileFilter,
+			boolean writeSchema,
+			boolean handleEquations,
+			boolean includePrimaryKeyColumn,
+			boolean includeVirtualColumns,
+			String encoding
+	) {
+		this.outputStream = outputStream;
+		this.table = table;
+		this.writeSchema = writeSchema;
 		this.handleEquations = handleEquations;
+		this.includePrimaryKeyColumn = includePrimaryKeyColumn;
 		this.includeVirtualColumns = includeVirtualColumns;
 		this.encoding = encoding;
 		this.fileFilter = fileFilter;
@@ -74,46 +82,52 @@ public class CSVCyWriter implements CyWriter {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
-		taskMonitor.setProgress(0.0);
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setProgress(0.0);
 		CSVWriter writer = new CSVWriter(new OutputStreamWriter(outputStream, encoding), ',', '"', "\r\n");
+
 		try {
-			List<CyColumn> columns = new ArrayList<CyColumn>();
+			List<CyColumn> columns = new ArrayList<>();
+
 			for (CyColumn column : table.getColumns()) {
-				if (column.getVirtualColumnInfo().isVirtual()) {
-					if (!includeVirtualColumns)
-						continue;
-				}
+				if (column.isPrimaryKey() && !includePrimaryKeyColumn)
+					continue;
+				if (column.getVirtualColumnInfo().isVirtual() && !includeVirtualColumns)
+					continue;
+				
 				columns.add(column);
 			}
-			taskMonitor.setProgress(0.2);
+
+			tm.setProgress(0.2);
 			Collections.sort(columns, new Comparator<CyColumn>() {
 				@Override
 				public int compare(CyColumn o1, CyColumn o2) {
 					// First column should be primary key
-					if (o1.isPrimaryKey()) {
+					if (o1.isPrimaryKey())
 						return -1;
-					}
-					if (o2.isPrimaryKey()) {
+					if (o2.isPrimaryKey())
 						return 1;
-					}
 					return o1.getName().compareToIgnoreCase(o2.getName());
 				}
 			});
-			taskMonitor.setProgress(0.4);
-			if (writeSchema) {
+
+			tm.setProgress(0.4);
+
+			if (writeSchema)
 				writeVersion(writer);
-			}
+
 			writeHeader(writer, columns);
-			if (writeSchema) {
+
+			if (writeSchema)
 				writeSchema(writer, columns);
-			}
-			taskMonitor.setProgress(0.6);
+
+			tm.setProgress(0.6);
 			writeValues(writer, columns);
 		} finally {
 			writer.flush();
 		}
-		taskMonitor.setProgress(1.0);
+
+		tm.setProgress(1.0);
 	}
 
 	private void writeVersion(CSVWriter writer) {
@@ -123,32 +137,37 @@ public class CSVCyWriter implements CyWriter {
 	private void writeSchema(CSVWriter writer, List<CyColumn> columns) {
 		String[] types = new String[columns.size()];
 		String[] options = new String[columns.size()];
+
 		for (int i = 0; i < columns.size(); i++) {
 			CyColumn column = columns.get(i);
 			Class<?> type = column.getType();
-			if (List.class.isAssignableFrom(type)) {
+
+			if (List.class.isAssignableFrom(type))
 				types[i] = String.format("%s<%s>", List.class.getCanonicalName(), column.getListElementType().getCanonicalName());
-			} else {
+			else
 				types[i] = type.getCanonicalName();
-			}
+
 			options[i] = column.isImmutable() ? "" : "mutable";
 		}
+
 		writer.writeNext(types);
 		writer.writeNext(options);
-		
+
 		String[] values = new String[2];
 		values[0] = table.getTitle();
 
 		StringBuilder builder = new StringBuilder();
-		if (table.isPublic()) {
+
+		if (table.isPublic())
 			builder.append("public");
-		}
+
 		if (table.getMutability() == Mutability.MUTABLE) {
-			if (builder.length() > 0) {
+			if (builder.length() > 0)
 				builder.append(",");
-			}
+
 			builder.append("mutable");
 		}
+
 		values[1] = builder.toString();
 		writer.writeNext(values);
 	}
@@ -160,6 +179,7 @@ public class CSVCyWriter implements CyWriter {
 
 			String[] values = new String[columns.size()];
 			int index = 0;
+
 			for (CyColumn column : columns) {
 				if (handleEquations) {
 					final Object rawValue = row.getRaw(column.getName());
@@ -170,44 +190,48 @@ public class CSVCyWriter implements CyWriter {
 				}
 
 				Class<?> type = column.getType();
+
 				if (type.equals(List.class)) {
 					StringBuilder builder = new StringBuilder();
 					boolean first = true;
 					List<?> list = row.getList(column.getName(), column.getListElementType());
+
 					if (list != null) {
 						for (Object value : list) {
 							if (!first) {
-								if(fileFilter.getExtensions().contains("csv"))
+								if (fileFilter.getExtensions().contains("csv"))
 									builder.append("|");
 								else
 									builder.append("\r");
 							}
-							if (value != null) {
+
+							if (value != null)
 								builder.append(value);
-							}
+
 							first = false;
 						}
+
 						values[index] = builder.toString();
 					}
 				} else {
 					Object value = row.get(column.getName(), type);
-					if (value != null) {
-						values[index] = value.toString();
-					} else {
-						values[index] = null;
-					}
+					values[index] = value != null ? value.toString() : null;
 				}
+
 				index++;
 			}
+
 			writer.writeNext(values);
 		}
 	}
 
 	private void writeHeader(CSVWriter writer, List<CyColumn> columns) {
 		String[] values = new String[columns.size()];
+		
 		for (int i = 0; i < columns.size(); i++) {
 			values[i] = columns.get(i).getName();
 		}
+		
 		writer.writeNext(values);
 	}
 }
