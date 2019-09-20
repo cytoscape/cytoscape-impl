@@ -271,7 +271,8 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 		Object source = evt.getSource();
 		
 		if (source.equals(cyAnnotator)) {
-			if ("annotations".equals(evt.getPropertyName())) {
+			switch(evt.getPropertyName()) {
+			case CyAnnotator.PROP_ANNOTATIONS:
 				// First remove property listeners from deleted annotations and add them to the new ones
 				Set<Annotation> oldList = mainPanel.getAllAnnotations();
 				List<DingAnnotation> newList = cyAnnotator.getAnnotations();
@@ -280,10 +281,12 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 				addPropertyListeners((Collection<Annotation>) evt.getNewValue());
 				// Now update the UI
 				invokeOnEDT(() -> mainPanel.update(re));
-			} else if ("annotationsReordered".equals(evt.getPropertyName())) {
+				break;
+			case CyAnnotator.PROP_REORDERED:
 				if (re != null && re.equals(mainPanel.getRenderingEngine())) {
 					invokeOnEDT(() -> mainPanel.updateAnnotationsOrder());
 				}
+				break;
 			}
 		} else if (source instanceof Annotation) {
 			if ("selected".equals(evt.getPropertyName()) && !ignoreSelectedPropChangeEvents) {
@@ -425,16 +428,16 @@ public class AnnotationMediator implements CyStartListener, CyShutdownListener, 
 			return;
 		
 		removePropertyListeners(re);
-		re.getCyAnnotator().addPropertyChangeListener("annotations", this);
-		re.getCyAnnotator().addPropertyChangeListener("annotationsReordered", this);
+		re.getCyAnnotator().addPropertyChangeListener(CyAnnotator.PROP_ANNOTATIONS, this);
+		re.getCyAnnotator().addPropertyChangeListener(CyAnnotator.PROP_REORDERED, this);
 	}
 	
 	private void removePropertyListeners(DRenderingEngine re) {
 		if (re == null || re.getCyAnnotator() == null)
 			return;
 		
-		re.getCyAnnotator().removePropertyChangeListener("annotations", this);
-		re.getCyAnnotator().removePropertyChangeListener("annotationsReordered", this);
+		re.getCyAnnotator().removePropertyChangeListener(CyAnnotator.PROP_ANNOTATIONS, this);
+		re.getCyAnnotator().removePropertyChangeListener(CyAnnotator.PROP_REORDERED, this);
 	}
 	
 	private void addPropertyListeners(Collection<? extends Annotation> list) {

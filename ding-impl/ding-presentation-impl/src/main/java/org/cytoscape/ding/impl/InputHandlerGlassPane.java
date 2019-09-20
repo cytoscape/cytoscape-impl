@@ -431,6 +431,7 @@ public class InputHandlerGlassPane extends JComponent {
 			if(isSingleRightClick(e)) {
 				showContextMenu(e.getPoint());
 				e.consume();
+				get(AddAnnotationListener.class).cancel();
 			}
 		}
 		
@@ -1020,6 +1021,14 @@ public class InputHandlerGlassPane extends JComponent {
 			this.mousePressedCallback = mousePressedCallback;
 		}
 		
+		public void cancel() {
+			if(annotationFactory != null) {
+				cyAnnotator.fireAnnotations(); // tell the Annotation panel that we cancelled
+			}
+			this.annotationFactory = null;
+			this.mousePressedCallback = null;
+		}
+		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(annotationFactory != null && isSingleLeftClick(e)) {
@@ -1038,7 +1047,6 @@ public class InputHandlerGlassPane extends JComponent {
 				return;
 			var task = new AddAnnotationTask(re, point, f);
 			registrar.getService(DialogTaskManager.class).execute(new TaskIterator(task));
-			
 		}
 		
 		@Override

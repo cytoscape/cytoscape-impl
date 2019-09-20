@@ -68,6 +68,9 @@ import org.slf4j.LoggerFactory;
 
 public class CyAnnotator implements SessionAboutToBeSavedListener {
 	
+	public static final String PROP_ANNOTATIONS = "annotations";
+	public static final String PROP_REORDERED   = "annotationsReordered";
+	
 	private static final String ANNOTATION_ATTRIBUTE = "__Annotations";
 	private static final String DEF_ANNOTATION_NAME_PREFIX = "Annotation";
 	private static final int MAX_NAME_LENGH = 200;
@@ -192,7 +195,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 			} finally {
 				loading = false;
 				re.setContentChanged();
-				propChangeSupport.firePropertyChange("annotations", Collections.emptySet(), new HashSet<>(annotationSet));
+				propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, Collections.emptySet(), new HashSet<>(annotationSet));
 			}
 		});
 	}
@@ -284,7 +287,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		if (!loading) {
 			re.setContentChanged();
-			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
 	
@@ -305,7 +308,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		if (!loading) {
 			re.setContentChanged();
-			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
 
@@ -318,7 +321,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		if (changed && !loading) {
 			re.setContentChanged();
-			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
 
@@ -335,7 +338,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		
 		if (changed && !loading) {
 			re.setContentChanged();
-			propChangeSupport.firePropertyChange("annotations", oldValue, new HashSet<>(annotationSet));
+			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, oldValue, new HashSet<>(annotationSet));
 		}
 	}
 	
@@ -483,7 +486,11 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void fireAnnotationsReordered() {
-		propChangeSupport.firePropertyChange("annotationsReordered", null, null);
+		propChangeSupport.firePropertyChange(PROP_REORDERED, null, null);
+	}
+	
+	public void fireAnnotations() {
+		propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, null, null);
 	}
 
 	private void loadRegularAnnotations(
