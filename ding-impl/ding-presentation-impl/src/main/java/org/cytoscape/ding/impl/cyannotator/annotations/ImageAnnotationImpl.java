@@ -373,7 +373,13 @@ public class ImageAnnotationImpl extends ShapeAnnotationImpl implements ImageAnn
 			g.setRenderingHint(RenderingHints.KEY_RENDERING,RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,RenderingHints.VALUE_ANTIALIAS_ON);
 	
-			g.drawImage(image, (int)getX(), (int)getY(), (int)getWidth(), (int)getHeight(), null);
+			g.drawImage(image, 
+					Math.round((float)getX()), 
+					Math.round((float)getY()), 
+					Math.round((float)getWidth()),
+					Math.round((float)getHeight()), 
+					null);
+			
 			g.dispose();
 		}
 		super.paint(graphics, showSelection); // draw the border over top
