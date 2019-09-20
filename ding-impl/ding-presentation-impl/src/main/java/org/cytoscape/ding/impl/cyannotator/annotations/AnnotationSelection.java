@@ -259,6 +259,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		
 		for(var a : annotationsToMove) {
 			a.setLocation(a.getX() + dx, a.getY() + dy);
+			a.update();
 		}
 		updateBounds();
 	}

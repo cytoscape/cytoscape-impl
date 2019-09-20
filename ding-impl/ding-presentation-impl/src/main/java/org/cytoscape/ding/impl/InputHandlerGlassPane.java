@@ -894,8 +894,6 @@ public class InputHandlerGlassPane extends JComponent {
 			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
-			
-			
 			if(!annotationSelection.isEmpty()) {
 				if(annotationSelection.isResizing()) {
 					annotationSelection.resizeAnnotationsRelative(e.getX(), e.getY());
