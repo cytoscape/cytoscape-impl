@@ -233,6 +233,9 @@ public class LinkOut implements PropertyUpdatedListener {
 	}
 
 	public void  removeCommanLineLinkOut (CyProperty<Properties> commandline, Map<?, ?> p ){
+		if (!"commandline.props".equals(p.get("cyPropertyName")))
+			return;
+
 		Properties props = commandline.getProperties();
 		try {
 			for (Object pk : props.keySet()) {
