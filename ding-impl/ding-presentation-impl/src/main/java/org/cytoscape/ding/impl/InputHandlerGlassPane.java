@@ -109,7 +109,9 @@ public class InputHandlerGlassPane extends JComponent {
 	private final DRenderingEngine re;
 	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
+	private final PopupMenuHelper popupMenuHelper;
 	private final JProgressBar progressBar;
+	
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
 		this.registrar = registrar;
@@ -136,6 +138,7 @@ public class InputHandlerGlassPane extends JComponent {
         addMouseWheelListener(new CanvasMouseWheelListener());
         setFocusable(true); // key listener needs the focus
         
+        this.popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
         this.progressBar = addProgressBar();
 	}
 	
@@ -424,8 +427,6 @@ public class InputHandlerGlassPane extends JComponent {
 	
 	private class ContextMenuListener extends MouseAdapter {
 		
-		private final PopupMenuHelper popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
-		
 		@Override
 		public void mousePressed(MouseEvent e) {
 			if(isSingleRightClick(e)) {
@@ -462,10 +463,21 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		@Override
 		public void mouseClicked(MouseEvent e) {
-			if(annotationSelectionEnabled() && isDoubleLeftClick(e)) {
-				DingAnnotation annotation = re.getPicker().getAnnotationAt(e.getPoint());
-				if(annotation != null) {
-					editAnnotation(annotation, e.getPoint());
+			if(isDoubleLeftClick(e)) {
+				NetworkPicker picker = re.getPicker();
+				if(annotationSelectionEnabled()) {
+					DingAnnotation annotation = picker.getAnnotationAt(e.getPoint());
+					if(annotation != null) {
+						editAnnotation(annotation, e.getPoint());
+						e.consume();
+						return;
+					}
+				}
+				
+				// MKTODO this is a hack to get groups to expand/collapse on double click
+				View<CyNode> node = picker.getNodeAt(e.getPoint());
+				if(node != null) {
+					popupMenuHelper.createNodeViewMenu(node, e.getX(), e.getY(), PopupMenuHelper.ACTION_OPEN);
 				}
 			}
 		}
