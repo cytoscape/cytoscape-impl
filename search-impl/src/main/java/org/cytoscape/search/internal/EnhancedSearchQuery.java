@@ -91,21 +91,23 @@ public class EnhancedSearchQuery {
 		// CustomMultiFieldQueryParser is used to support range queries on numerical attribute fields.
 		QueryParser queryParser = new CustomMultiFieldQueryParser(attFields, new CaseInsensitiveWhitespaceAnalyzer());
 
-		SearchResults results;
 		try {
 			// Execute query
 			Query query = queryParser.parse(queryString);
 			IdentifiersCollector hitCollector = new IdentifiersCollector(searcher);
 			searcher.search(query, hitCollector);		    
-			results = SearchResults.results(hitCollector.getNodeHits(), hitCollector.getEdgeHits());
+			this.results = SearchResults.results(hitCollector.getNodeHits(), hitCollector.getEdgeHits());
 		} catch (ParseException pe) {
-			//int column = pe.currentToken.next.beginColumn;
-			results = SearchResults.syntaxError();
+			if (pe.getMessage() != null && pe.getMessage().endsWith("too many boolean clauses")){
+				this.results = SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
+			} else {
+				this.results = SearchResults.syntaxError();
+			}
+			logger.error(pe.getMessage(), pe);
 		} catch (Exception e) {
-			results = SearchResults.fatalError();
+			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
 		}
-		this.results = results;
 	}
 	
 	public SearchResults getResults() {

@@ -50,6 +50,8 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 		super(Version.LUCENE_30,attrFields.getFields(), analyzer);
 		this.attrFields = attrFields;
 		setAllowLeadingWildcard(true);
+		// a workaround to avoid a TooManyClauses exception.
+		BooleanQuery.setMaxClauseCount(5120); // 5 * 1024
 	}
 
 	protected Query getFieldQuery(String field, String queryText) throws ParseException {
@@ -92,11 +94,6 @@ public class CustomMultiFieldQueryParser extends MultiFieldQueryParser {
 	}
 
 	protected Query getRangeQuery(String field, String part1, String part2, boolean inclusive) throws ParseException {
-		
-		// a workaround to avoid a TooManyClauses exception.
-		// Temporary until RangeFilter is implemented.
-		BooleanQuery.setMaxClauseCount(5120); // 5 * 1024		
-		
 		if (attrFields.getType(field) == Integer.class) {
 			try {
 				

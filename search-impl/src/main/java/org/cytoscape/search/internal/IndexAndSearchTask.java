@@ -48,6 +48,7 @@ import org.slf4j.LoggerFactory;
 public class IndexAndSearchTask extends AbstractNetworkTask implements ObservableTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	private static final int MAX_QUERY_LEN = 65536;
 	
 	private final EnhancedSearch enhancedSearch;
 	private final String query;
@@ -71,6 +72,15 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		// Give the task a title.
 		taskMonitor.setTitle("Searching the network");
 
+		if (cancelled)
+			return;
+
+		if (query.length() > IndexAndSearchTask.MAX_QUERY_LEN) {
+			this.results = SearchResults.syntaxError("At " + query.length() + " characters query string is too large");
+			logger.error(this.results.getErrorMessage());
+			return;
+		}
+
 		// Index the given network or use existing index
 		RAMDirectory idx = null;
 		final Status status = enhancedSearch.getNetworkIndexStatus(network);
@@ -79,9 +89,11 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 			idx = enhancedSearch.getNetworkIndex(network);
 		} else {
 			taskMonitor.setStatusMessage("Indexing network");
+			long startTime = System.currentTimeMillis();
 			idx = EnhancedSearchIndex.buildIndex(network, taskMonitor);
 			enhancedSearch.setNetworkIndex(network, idx);
 			EnhancedSearchPlugin.attributeChanged = false;
+			taskMonitor.setStatusMessage("Indexing completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		}
 
 		if (cancelled)
@@ -89,8 +101,10 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 
 		// Execute query
 		taskMonitor.setStatusMessage("Executing query");
+		long startTime = System.currentTimeMillis();
 		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx);
 		queryHandler.executeQuery(query);
+		taskMonitor.setStatusMessage("Executing query completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		results = queryHandler.getResults();
 		
 		if (cancelled)
@@ -138,7 +152,8 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 			taskMonitor.setProgress(1.0);
 			return;
 		}
-
+		taskMonitor.setStatusMessage("Unsetting any existing network selections");
+		long startTime = System.currentTimeMillis();
 		List<CyNode> nodeList = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
 		for (CyNode n : nodeList)
 			network.getRow(n).set(CyNetwork.SELECTED,false);
@@ -146,7 +161,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		List<CyEdge> edgeList = CyTableUtil.getEdgesInState(network, CyNetwork.SELECTED, true);
 		for (CyEdge e : edgeList)
 			network.getRow(e).set(CyNetwork.SELECTED, false);
-
+		taskMonitor.setStatusMessage("Unsetting any existing network selections completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
 
 		List<String> nodeHits = results.getNodeHits();
@@ -155,6 +170,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		final Iterator<String> nodeIt = nodeHits.iterator();
 		int numCompleted = 0;
 
+		startTime = System.currentTimeMillis();
 		while (nodeIt.hasNext() && !cancelled) {
 			int currESPIndex = Integer.parseInt(nodeIt.next().toString());
 			CyNode currNode = network.getNode(currESPIndex);
@@ -181,6 +197,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 
 			taskMonitor.setProgress(++numCompleted / edgeHitCount);
 		}
+		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 	}
 	
 	@Override

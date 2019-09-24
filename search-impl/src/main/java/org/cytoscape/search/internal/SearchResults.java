@@ -10,27 +10,37 @@ public class SearchResults {
 	}
 	
 	private final Status status;
+	private final String errorMessage;
 	private final List<String> nodeHits;
 	private final List<String> edgeHits;
 
 	
-	private SearchResults(Status status, List<String> nodeHits, List<String> edgeHits) {
+	private SearchResults(Status status, final String errorMessage, List<String> nodeHits, List<String> edgeHits) {
 		this.status = status;
-		this.nodeHits = nodeHits == null ? Collections.emptyList() : nodeHits;
-		this.edgeHits = edgeHits == null ? Collections.emptyList() : edgeHits;
+		this.errorMessage = errorMessage;
+		this.nodeHits = nodeHits == null ? Collections.<String>emptyList() : nodeHits;
+		this.edgeHits = edgeHits == null ? Collections.<String>emptyList() : edgeHits;
 	}
 	
 	
 	public static SearchResults syntaxError() {
-		return new SearchResults(Status.ERROR_SYNTAX, null, null);
+		return new SearchResults(Status.ERROR_SYNTAX, null, null, null);
 	}
-	
+
+	public static SearchResults syntaxError(final String errorMessage) {
+		return new SearchResults(Status.ERROR_SYNTAX, errorMessage, null, null);
+	}
+
 	public static SearchResults fatalError() {
-		return new SearchResults(Status.ERROR_FATAL, null, null);
+		return new SearchResults(Status.ERROR_FATAL, null, null, null);
 	}
-	
+
+	public static SearchResults fatalError(final String errorMessage) {
+		return new SearchResults(Status.ERROR_FATAL, errorMessage, null, null);
+	}
+
 	public static SearchResults results(List<String> nodeHits, List<String> edgeHits) {
-		return new SearchResults(Status.SUCCESS, nodeHits, edgeHits);
+		return new SearchResults(Status.SUCCESS, null, nodeHits, edgeHits);
 	}
 	
 	public boolean isError() {
@@ -41,6 +51,14 @@ public class SearchResults {
 		return status;
 	}
 	
+	/**
+	 * Returns error message if any
+	 * @return Error message or null if no error
+	 */
+	public String getErrorMessage(){
+		return errorMessage;
+	}
+
 	public int getNodeHitCount() {
 		return nodeHits.size();
 	}

@@ -121,7 +121,11 @@ public class EnhancedSearchPanel extends JPanel {
 		
 		if(results.getStatus() == Status.ERROR_SYNTAX) {
 			label.setForeground(Color.RED);
-			label.setText("   Cannot execute search query   ");
+			if (results.getErrorMessage() != null) {
+				label.setText("   " + results.getErrorMessage() + "   ");
+			} else {
+				label.setText("   Cannot execute search query   ");
+			}
 		} else if(results.getStatus() == Status.ERROR_FATAL) {
 			label.setForeground(Color.RED);
 			label.setText("   Query execution error   ");
