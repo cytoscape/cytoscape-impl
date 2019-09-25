@@ -35,7 +35,7 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.syntaxError();
 		assertEquals(sr.getStatus(), SearchResults.Status.ERROR_SYNTAX);
 		assertTrue(sr.isError());
-		assertNull(sr.getErrorMessage());
+		assertEquals("Cannot execute search query", sr.getMessage());
 		assertEquals(0, sr.getEdgeHitCount());
 		assertEquals(0, sr.getNodeHitCount());
 		assertEquals(0, sr.getNodeHits().size());
@@ -47,7 +47,7 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.syntaxError("some error");
 		assertEquals(sr.getStatus(), SearchResults.Status.ERROR_SYNTAX);
 		assertTrue(sr.isError());
-		assertEquals("some error", sr.getErrorMessage());
+		assertEquals("some error", sr.getMessage());
 		assertEquals(0, sr.getEdgeHitCount());
 		assertEquals(0, sr.getNodeHitCount());
 		assertEquals(0, sr.getNodeHits().size());
@@ -59,7 +59,7 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.fatalError();
 		assertEquals(sr.getStatus(), SearchResults.Status.ERROR_FATAL);
 		assertTrue(sr.isError());
-		assertNull(sr.getErrorMessage());
+		assertEquals("Query execution error", sr.getMessage());
 		assertEquals(0, sr.getEdgeHitCount());
 		assertEquals(0, sr.getNodeHitCount());
 		assertEquals(0, sr.getNodeHits().size());
@@ -71,7 +71,7 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.fatalError("some error");
 		assertEquals(sr.getStatus(), SearchResults.Status.ERROR_FATAL);
 		assertTrue(sr.isError());
-		assertEquals("some error", sr.getErrorMessage());
+		assertEquals("some error", sr.getMessage());
 		assertEquals(0, sr.getEdgeHitCount());
 		assertEquals(0, sr.getNodeHitCount());
 		assertEquals(0, sr.getNodeHits().size());
@@ -83,7 +83,7 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.results(null, null);
 		assertEquals(sr.getStatus(), SearchResults.Status.SUCCESS);
 		assertFalse(sr.isError());
-		assertNull(sr.getErrorMessage());
+		assertEquals("Selected 0 nodes and 0 edges", sr.getMessage());
 		assertEquals(0, sr.getEdgeHitCount());
 		assertEquals(0, sr.getNodeHitCount());
 		assertEquals(0, sr.getNodeHits().size());
@@ -91,7 +91,24 @@ public class SearchResultsTest {
 	}
 	
 	@Test
-	public void testResults() {
+	public void testResultsOneNodeOneEdge() {
+		ArrayList<String> nodes = new ArrayList<String>();
+		nodes.add("node1");
+		ArrayList<String> edges = new ArrayList<String>();
+		edges.add("edge1");
+		
+		SearchResults sr = SearchResults.results(nodes, edges);
+		assertEquals(sr.getStatus(), SearchResults.Status.SUCCESS);
+		assertFalse(sr.isError());
+		assertEquals("Selected 1 node and 1 edge", sr.getMessage());
+		assertEquals(1, sr.getEdgeHitCount());
+		assertEquals(1, sr.getNodeHitCount());
+		assertEquals(1, sr.getNodeHits().size());
+		assertEquals(1, sr.getEdgeHits().size());
+	}
+	
+	@Test
+	public void testResultsOneNodeTwoEdges() {
 		ArrayList<String> nodes = new ArrayList<String>();
 		nodes.add("node1");
 		ArrayList<String> edges = new ArrayList<String>();
@@ -101,12 +118,28 @@ public class SearchResultsTest {
 		SearchResults sr = SearchResults.results(nodes, edges);
 		assertEquals(sr.getStatus(), SearchResults.Status.SUCCESS);
 		assertFalse(sr.isError());
-		assertNull(sr.getErrorMessage());
+		assertEquals("Selected 1 node and 2 edges", sr.getMessage());
 		assertEquals(2, sr.getEdgeHitCount());
 		assertEquals(1, sr.getNodeHitCount());
 		assertEquals(1, sr.getNodeHits().size());
 		assertEquals(2, sr.getEdgeHits().size());
 	}
 	
+	@Test
+	public void testResultsTwoNodesOneEdge() {
+		ArrayList<String> nodes = new ArrayList<String>();
+		nodes.add("node1");
+		nodes.add("node2");
+		ArrayList<String> edges = new ArrayList<String>();
+		edges.add("edge1");
 
+		SearchResults sr = SearchResults.results(nodes, edges);
+		assertEquals(sr.getStatus(), SearchResults.Status.SUCCESS);
+		assertFalse(sr.isError());
+		assertEquals("Selected 2 nodes and 1 edge", sr.getMessage());
+		assertEquals(1, sr.getEdgeHitCount());
+		assertEquals(2, sr.getNodeHitCount());
+		assertEquals(2, sr.getNodeHits().size());
+		assertEquals(1, sr.getEdgeHits().size());
+	}
 }

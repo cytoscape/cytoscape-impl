@@ -77,7 +77,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 
 		if (query.length() > IndexAndSearchTask.MAX_QUERY_LEN) {
 			this.results = SearchResults.syntaxError("At " + query.length() + " characters query string is too large");
-			logger.error(this.results.getErrorMessage());
+			logger.error(this.results.getMessage());
 			return;
 		}
 
