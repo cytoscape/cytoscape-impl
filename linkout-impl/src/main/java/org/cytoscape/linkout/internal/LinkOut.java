@@ -233,7 +233,37 @@ public class LinkOut implements PropertyUpdatedListener {
 	}
 
 	public void  removeCommanLineLinkOut (CyProperty<Properties> commandline, Map<?, ?> p ){
-		//do nothing
+		if (!"commandline.props".equals(p.get("cyPropertyName")))
+			return;
+
+		Properties props = commandline.getProperties();
+		try {
+			for (Object pk : props.keySet()) {
+				String propKey = pk.toString();
+				Properties dict = createProperties(propKey, EDGEMARKER);
+				if (!cpropKey2EdgeVTF.containsKey(propKey))
+					continue;
+				EdgeViewTaskFactory evtf = cpropKey2EdgeVTF.get(propKey);
+				registrar.unregisterService(evtf, EdgeViewTaskFactory.class);
+				cpropKey2EdgeVTF.remove(propKey);
+			}
+		} catch (Exception e) {
+			logger.warn("Problem processing edge URLs", e);
+		}
+		
+		try {
+			for (Object pk : props.keySet()) {
+				String propKey = pk.toString();
+				Properties dict = createProperties(propKey, NODEMARKER);
+				if (!cpropKey2NodeVTF.containsKey(propKey))
+					continue;
+				NodeViewTaskFactory evtf = cpropKey2NodeVTF.get(propKey);
+				registrar.unregisterService(evtf, NodeViewTaskFactory.class);
+				cpropKey2NodeVTF.remove(propKey);
+			}
+		} catch (Exception e) {
+			logger.warn("Problem processing node URLs", e);
+		}
 	}
 
 	@Override
