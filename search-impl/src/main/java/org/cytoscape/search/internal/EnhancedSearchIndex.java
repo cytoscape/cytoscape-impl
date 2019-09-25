@@ -29,6 +29,7 @@ package org.cytoscape.search.internal;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -48,9 +49,23 @@ import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.cytoscape.work.TaskMonitor;
 
 
-public class EnhancedSearchIndex {
-	
-	private EnhancedSearchIndex() { }
+public class EnhancedSearchIndex implements Callable {
+
+	private CyNetwork network;
+	private TaskMonitor taskMonitor;
+	protected EnhancedSearchIndex(CyNetwork network, TaskMonitor taskMonitor) {
+		this.network = network;
+		this.taskMonitor = taskMonitor;
+	}
+
+	/**
+	 * Lets search be called from an ExecutorService
+	 */
+	@Override
+	public RAMDirectory call() throws Exception {
+		RAMDirectory idx = EnhancedSearchIndex.buildIndex(this.network, this.taskMonitor);
+		return idx;
+	}
 	
 
 	public static RAMDirectory buildIndex(CyNetwork network, TaskMonitor taskMonitor) {

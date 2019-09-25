@@ -117,6 +117,9 @@ public class EnhancedSearchPanel extends JPanel {
 
 	
 	private void showPopup(SearchResults results) {
+		if (results == null) {
+			return;
+		}
 		JLabel label = new JLabel();
 		
 		if(results.isError()) {

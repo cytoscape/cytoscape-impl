@@ -3,7 +3,10 @@ package org.cytoscape.search.internal;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import org.apache.lucene.store.RAMDirectory;
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
@@ -48,11 +51,22 @@ import org.slf4j.LoggerFactory;
 public class IndexAndSearchTask extends AbstractNetworkTask implements ObservableTask {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
+	
+	/**
+	 * Maximum length in characters a query can be
+	 */
 	private static final int MAX_QUERY_LEN = 65536;
+	
+	/**
+	 * Time to sleep in milliseconds while waiting for index
+	 * building and search query threads to complete
+	 */
+	private static final long SLEEP_TIME = 1000;
 	
 	private final EnhancedSearch enhancedSearch;
 	private final String query;
 	private SearchResults results;
+
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -67,6 +81,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
+	
 	@Override
 	public void run(final TaskMonitor taskMonitor) {
 		// Give the task a title.
@@ -90,7 +105,13 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		} else {
 			taskMonitor.setStatusMessage("Indexing network");
 			long startTime = System.currentTimeMillis();
-			idx = EnhancedSearchIndex.buildIndex(network, taskMonitor);
+			idx = this.getIndex(network, taskMonitor);
+			if (cancelled)
+				return;
+			if (idx == null) {
+				results = SearchResults.fatalError("Error building index");
+				return;
+			}
 			enhancedSearch.setNetworkIndex(network, idx);
 			EnhancedSearchPlugin.attributeChanged = false;
 			taskMonitor.setStatusMessage("Indexing completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
@@ -102,17 +123,78 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		// Execute query
 		taskMonitor.setStatusMessage("Executing query");
 		long startTime = System.currentTimeMillis();
-		EnhancedSearchQuery queryHandler = new EnhancedSearchQuery(network, idx);
-		queryHandler.executeQuery(query);
-		taskMonitor.setStatusMessage("Executing query completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
-		results = queryHandler.getResults();
-		
+		this.executeQuery(network, idx);
 		if (cancelled)
 			return;
+
+		taskMonitor.setStatusMessage("Executing query completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		
 		if(!results.isError()) {
 			showResults(results, taskMonitor);
 			updateView();
+		}
+	}
+	
+	/**
+	 * Runs search under another thread so this task can be easily cancelled
+	 * @param network
+	 * @param idx
+	 */
+	private void executeQuery(CyNetwork network, RAMDirectory idx) {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		Future<SearchResults> futureTask = executor.submit(new EnhancedSearchQuery(network, idx, query));
+		
+		try {
+			while(futureTask.isDone() == false) {
+				if (cancelled) {
+					futureTask.cancel(true);
+					return;
+				}
+				try {
+					Thread.sleep(SLEEP_TIME);
+				} catch(InterruptedException ie) {
+					// do nothing
+				}
+			}
+			results = futureTask.get();
+		} catch(InterruptedException ie) {
+			results = null;
+		} catch(ExecutionException ee) {
+			results = null;
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+	/**
+	 * Creates Lucene index under another thread so this task can be easily cancelled
+	 * @param network Network to index
+	 * @param taskMonitor Monitor used to report progress
+	 * @return
+	 */
+	private RAMDirectory getIndex(CyNetwork network, TaskMonitor taskMonitor) {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
+		
+		Future<RAMDirectory> futureTask = executor.submit(new EnhancedSearchIndex(network, taskMonitor));
+		
+		try {
+			while(futureTask.isDone() == false) {
+				if (cancelled) {
+					futureTask.cancel(true);
+					return null;
+				}
+				try {
+					Thread.sleep(SLEEP_TIME);
+				} catch(InterruptedException ie) {
+					// do nothing
+				}
+			}
+			return futureTask.get();
+		} catch(InterruptedException ie) {
+			return null;
+		} catch(ExecutionException ee) {
+			return null;
+		} finally {
+			executor.shutdownNow();
 		}
 	}
 
@@ -162,7 +244,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 		for (CyEdge e : edgeList)
 			network.getRow(e).set(CyNetwork.SELECTED, false);
 		taskMonitor.setStatusMessage("Unsetting any existing network selections completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges");
+		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and " + edgeHitCount + " edges");
 
 		List<String> nodeHits = results.getNodeHits();
 		List<String> edgeHits = results.getEdgeHits();
@@ -197,7 +279,7 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 
 			taskMonitor.setProgress(++numCompleted / edgeHitCount);
 		}
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " and " + edgeHitCount + " edges completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
+		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and " + edgeHitCount + " edges completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 	}
 	
 	@Override

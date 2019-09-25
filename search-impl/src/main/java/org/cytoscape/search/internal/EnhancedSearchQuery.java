@@ -3,6 +3,7 @@ package org.cytoscape.search.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -47,18 +48,30 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class EnhancedSearchQuery {
-	
+public class EnhancedSearchQuery implements Callable {
+
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;
 	private SearchResults results;
 	private Searcher searcher;
+	private final String query;
 
-	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index) {
+	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index, final String query) {
 		this.network = network;
 		this.idx = index;
+		this.query = query;
+	}
+
+	/**
+	 * Lets query be called from an ExecutorService
+	 * @return results of query
+	 */
+	@Override
+	public SearchResults call() throws Exception {
+		this.executeQuery(query);
+		return results;
 	}
 
 	public void executeQuery(String queryString) {
