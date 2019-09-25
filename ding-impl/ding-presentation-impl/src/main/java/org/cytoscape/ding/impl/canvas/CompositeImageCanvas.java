@@ -43,6 +43,7 @@ public class CompositeImageCanvas {
 	private final List<DingCanvas<NetworkImageBuffer>> canvasList;
 	private final double[] weights;
 	
+	private final Executor executor;
 	
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
@@ -62,6 +63,8 @@ public class CompositeImageCanvas {
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
 		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
+		
+		this.executor = re.getSingleThreadExecutorService();
 	}
 	
 	private static NetworkImageBuffer newBuffer(int w, int h) {
@@ -132,33 +135,26 @@ public class CompositeImageCanvas {
 	 * Returns an ImageFuture that represents the result of the painting.
 	 * To get the Image buffer from the ImageFuture call future.join().
 	 */
-	public ImageFuture paintAsync(ProgressMonitor progressMonitor, Executor executor) {
-		var pm = ProgressMonitor.notNull(progressMonitor);
+	private ImageFuture paint(ProgressMonitor pm, Predicate<DingCanvas<?>> shouldRepaint) {
+		var pm2 = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
-		var future = CompletableFuture.supplyAsync(() -> paint(pm, flags, x -> true), executor);
-		return new ImageFuture(future, flags, pm);
+		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, shouldRepaint), executor);
+		return new ImageFuture(future, flags, pm2);
 	}
 	
-	private ImageFuture paintSync(ProgressMonitor progressMonitor, Predicate<DingCanvas<?>> shouldRepaint) {
-		var pm = ProgressMonitor.notNull(progressMonitor);
-		var flags = getRenderDetailFlags();
-		var image = paint(pm, flags, shouldRepaint);
-		return new ImageFuture(image, flags, pm);
+	public ImageFuture paint(ProgressMonitor pm) {
+		return paint(pm, null);
 	}
 	
-	public ImageFuture paintSync(ProgressMonitor pm) {
-		return paintSync(pm, c -> true);
-	}
-	
-	public ImageFuture paintSyncJustAnnotations(ProgressMonitor pm) {
-		return paintSync(pm, c -> 
+	public ImageFuture paintJustAnnotations(ProgressMonitor pm) {
+		return paint(pm, c -> 
 			c == backgroundAnnotationCanvas || 
 			c == foregroundAnnotationCanvas || 
 			c == annotationSelectionCanvas
 		);
 	}
 	
-	private Image paint(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> shouldRepaint) {
+	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> shouldRepaint) {
 		var subPms = pm.split(weights);
 		pm.start();
 		
@@ -167,7 +163,7 @@ public class CompositeImageCanvas {
 			var subPm = subPms.get(i);
 			
 			Image canvasImage;
-			if(shouldRepaint.test(canvas)) {
+			if(shouldRepaint == null || shouldRepaint.test(canvas)) {
 				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
 			} else {
 				canvasImage = canvas.getTransform().getImage();

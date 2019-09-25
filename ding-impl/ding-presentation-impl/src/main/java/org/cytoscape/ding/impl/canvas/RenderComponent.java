@@ -130,7 +130,7 @@ public abstract class RenderComponent extends JComponent {
 			} else if(fastFuture != null && fastFuture.isReady()) {
 				future = fastFuture;
 			} else {
-				future = fastCanvas.paintSync(null);
+				future = fastCanvas.paint(null);
 			}
 			image[0] = future.join(); 
 		});
@@ -156,19 +156,21 @@ public abstract class RenderComponent extends JComponent {
 			// RENDER: fast frame right now
 			if(updateType == UpdateType.JUST_ANNOTATIONS) {
 				var fastPm = debugPm(UpdateType.JUST_ANNOTATIONS, null);
-				fastFuture = fastCanvas.paintSyncJustAnnotations(fastPm);
+				fastFuture = fastCanvas.paintJustAnnotations(fastPm);
+				fastFuture.join();
 			} else {
 				var fastPm = debugPm(UpdateType.ALL_FAST, null);
-				fastFuture = fastCanvas.paintSync(fastPm);
+				fastFuture = fastCanvas.paint(fastPm);
+				fastFuture.join();
 			}
+			
 			future = fastFuture;
 			updateThumbnail(fastFuture);
 
 			// RENDER: start a slow frame if necessary
 			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(UpdateType.ALL_FULL, getSlowProgressMonitor());
-				var executor = re.getSingleThreadExecutorService();
-				slowFuture = slowCanvas.paintAsync(slowPm, executor);
+				slowFuture = slowCanvas.paint(slowPm);
 				slowFuture.thenRun(this::repaint);
 				slowFuture.thenAccept(this::updateThumbnail);
 			}
