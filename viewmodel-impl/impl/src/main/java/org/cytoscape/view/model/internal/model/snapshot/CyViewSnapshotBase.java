@@ -132,10 +132,14 @@ public abstract class CyViewSnapshotBase<M> implements View<M> {
 	}
 	
 	@Override
-	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
+	public void batch(Consumer<View<M>> viewConsumer) {
 		throw new UnsupportedOperationException("Cannot modify view snapshot");
 	}
 	
+	@Override
+	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
+		throw new UnsupportedOperationException("Cannot modify view snapshot");
+	}
 	
 	@Override
 	public int hashCode() {
