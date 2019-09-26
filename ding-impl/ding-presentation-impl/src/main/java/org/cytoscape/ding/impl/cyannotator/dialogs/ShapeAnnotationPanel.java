@@ -34,6 +34,7 @@ import static org.cytoscape.util.swing.LookAndFeelUtil.makeSmall;
 import java.awt.Color;
 import java.awt.Paint;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractListModel;
@@ -55,6 +56,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.ShapeAnnotationImpl;
 import org.cytoscape.util.swing.ColorButton;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.presentation.annotations.ShapeAnnotation;
+import org.cytoscape.view.presentation.annotations.ShapeAnnotation.ShapeType;
 
 @SuppressWarnings("serial")
 public class ShapeAnnotationPanel extends JPanel {
@@ -92,8 +94,13 @@ public class ShapeAnnotationPanel extends JPanel {
 		final JLabel label6 = new JLabel("Border Width:");
 
 		shapeList = new JList<>();
-		shapeList.setModel(new AbstractListModel<String>() {
-			List<String> typeList = annotation.getSupportedShapes();
+		shapeList.setModel(new AbstractListModel<>() {
+			List<String> typeList; 
+			{
+				typeList = new ArrayList<>(annotation.getSupportedShapes());
+				// currently no support in UI for creating a custom shape
+				typeList.remove(ShapeType.CUSTOM.shapeName()); 
+			}
 			@Override public int getSize() { return typeList.size(); }
 			@Override public String getElementAt(int i) { return typeList.get(i); }
 		});
