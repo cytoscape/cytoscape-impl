@@ -354,7 +354,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 	void update(DRenderingEngine re) {
 		this.re = re;
 		
-		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		
 		// Always clear the toggle button selection when annotations are added or removed
 		clearAnnotationButtonSelection();
@@ -440,7 +440,7 @@ public class AnnotationMainPanel extends JPanel implements CytoPanelComponent2 {
 		Collection<Annotation> selectedAnnotations = getSelectedAnnotations();
 		
 		// Update all annotation trees, because an annotation may have been moved to another layer
-		final List<Annotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
+		final List<DingAnnotation> annotations = re != null ? re.getCyAnnotator().getAnnotations() : Collections.emptyList();
 		{
 			AnnotationTree annotationTree = AnnotationTree.buildTree(annotations, re.getCyAnnotator());
 			getBackgroundLayerPanel().update(annotationTree, Annotation.BACKGROUND);

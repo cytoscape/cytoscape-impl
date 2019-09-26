@@ -3,6 +3,8 @@ package org.cytoscape.tableimport.internal.task;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
+import org.cytoscape.tableimport.internal.task.ImportTableDataTask.TableType;
+
 /*
  * #%L
  * Cytoscape Table Import Impl (table-import-impl)
@@ -30,6 +32,7 @@ import java.beans.PropertyChangeSupport;
 public class TableImportContext {
 
 	private boolean keyRequired = true;
+	private TableType tableType;
 	
 	private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
 	
@@ -42,6 +45,14 @@ public class TableImportContext {
 			this.keyRequired = keyRequired;
 			changes.firePropertyChange("keyRequired", !keyRequired, keyRequired);
 		}
+	}
+	
+	public TableType getTableType() {
+		return tableType;
+	}
+	
+	public void setTableType(TableType tableType) {
+		this.tableType = tableType;
 	}
 	
 	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {

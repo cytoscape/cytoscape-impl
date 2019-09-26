@@ -1,38 +1,10 @@
 package org.cytoscape.graph.render.immed;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Composite;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Paint;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -49,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrowShort;
@@ -127,9 +100,9 @@ import org.cytoscape.view.presentation.property.values.ArrowShape;
  */
 public final class GraphGraphics {
 
-	/**
-	 * Node shape constants
-	 */
+	private static final boolean debug = false;
+	
+	// Node shape constants
 	public static final byte SHAPE_RECTANGLE = 0;
 	public static final byte SHAPE_DIAMOND = 1;
 	public static final byte SHAPE_ELLIPSE = 2;
@@ -142,34 +115,31 @@ public final class GraphGraphics {
 
 	// package scoped for unit testing
 	static final byte s_last_shape = SHAPE_VEE;
-
-	private static final Map<Byte,NodeShape> nodeShapes;
-
-	/**
-	 * This value is currently 100.
-	 */
 	public static final int CUSTOM_SHAPE_MAX_VERTICES = 100;
-
-	// The way to access all Arrow objects.
-	private static final Map<ArrowShape, Arrow> arrows;
-
-	/**
-	 * This value is currently 64.
-	 */
 	public static final int MAX_EDGE_ANCHORS = 64;
-
+	private static final float DEF_SHAPE_SIZE = 32;
 	/*
 	 * A constant for controlling how cubic Bezier curves are drawn; This
 	 * particular constant results in elliptical-looking curves.
 	 */
 	private static final double CURVE_ELLIPTICAL = (4.0d * (Math.sqrt(2.0d) - 1.0d)) / 3.0d;
-
+	private static final Paint CLEAR_PAINT = new Color(0, 0, 0, 0);
+	
+	// This member variable only to be used from within defineCustomNodeShape().
+	private byte m_lastCustomShapeType = s_last_shape;
+	
+	// package scoped for unit testing
+	static final EdgeAnchors m_noAnchors = new EdgeAnchors() {
+		public final int numAnchors() { return 0; }
+		public final void getAnchor(final int inx, final float[] arr) { }
+	};
+		
 	// Mapping from node to its border stroke object.
-	private static final Map<Float,Stroke> borderStrokes = new HashMap<Float,Stroke>();
-
+	private static final Map<Float,Stroke> borderStrokes = new HashMap<>();
+	private static final Map<Byte,NodeShape> nodeShapes;
+	private static final Map<ArrowShape, Arrow> arrows;
 	static {		
 		nodeShapes = new HashMap<>();
-
 		nodeShapes.put(SHAPE_RECTANGLE, new RectangleNodeShape()); 
 		nodeShapes.put(SHAPE_ELLIPSE, new EllipseNodeShape()); 
 		nodeShapes.put(SHAPE_ROUNDED_RECTANGLE, new RoundedRectangleNodeShape()); 
@@ -181,7 +151,6 @@ public final class GraphGraphics {
 		nodeShapes.put(SHAPE_VEE, new VeeNodeShape());
 
 		arrows = new HashMap<>();
-
 		arrows.put(ArrowShapeVisualProperty.NONE, new NoArrow());
 		arrows.put(ArrowShapeVisualProperty.DELTA, new DeltaArrow());
 		arrows.put(ArrowShapeVisualProperty.CIRCLE, new DiscArrow());
@@ -195,7 +164,6 @@ public final class GraphGraphics {
 		arrows.put(ArrowShapeVisualProperty.ARROW_SHORT, new ArrowheadArrowShort());
 		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_1, new DiamondArrowShort1());
 		arrows.put(ArrowShapeVisualProperty.DIAMOND_SHORT_2, new DiamondArrowShort2());
-		
 		// added v3.6
 		arrows.put(ArrowShapeVisualProperty.OPEN_CIRCLE, new DiscArrow());
 		arrows.put(ArrowShapeVisualProperty.OPEN_DELTA, new DeltaArrow());
@@ -206,50 +174,29 @@ public final class GraphGraphics {
 		arrows.put(ArrowShapeVisualProperty.OPEN_SQUARE, new SquareArrow());
 		arrows.put(ArrowShapeVisualProperty.CROSS_DELTA, new CrossDeltaArrow());
 		arrows.put(ArrowShapeVisualProperty.CROSS_OPEN_DELTA, new CrossDeltaArrow());
-
 	}
 
-	private static final float DEF_SHAPE_SIZE = 32;
 
-	/** 
-	 * The image that was passed into the constructor.
-	 */
-	public final Image image;
-	
-	private final boolean m_debug;
-	private final AffineTransform m_currXform = new AffineTransform();
-	private final AffineTransform m_currNativeXform = new AffineTransform();
+	// Cached data, and objects that can be reused
 	private final AffineTransform m_xformUtil = new AffineTransform();
-//	private final Arc2D.Double m_arc2d = new Arc2D.Double();
-//	private final Ellipse2D.Double m_ellp2d = new Ellipse2D.Double();
 	private final GeneralPath m_path2d = new GeneralPath();
 	private final GeneralPath m_path2dPrime = new GeneralPath();
 	private final Line2D.Double m_line2d = new Line2D.Double();
 	private final double[] m_ptsBuff = new double[4];
-
-	// package scoped for unit testing
-	final EdgeAnchors m_noAnchors = new EdgeAnchors() {
-		public final int numAnchors() { return 0; }
-		public final void getAnchor(final int inx, final float[] arr) { }
-	};
-
 	private final double[] m_edgePtsBuff = new double[(MAX_EDGE_ANCHORS + 1) * 6];
-	private int m_edgePtsCount; // Number of points stored in m_edgePtsBuff.
-	private Graphics2D m_g2d;
-	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
-	private boolean m_cleared;
-	private boolean m_clear;
-
-	// This member variable only to be used from within defineCustomNodeShape().
-	private byte m_lastCustomShapeType = s_last_shape;
-
 	// This is only used by computeCubicPolyEdgePath().
 	private final float[] m_floatBuff = new float[2];
-
 	// This member variable shall only be used from within drawTextFull().
 	private char[] m_charBuff = new char[20];
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
-
+	
+	
+	private final NetworkTransform transform;
+	
+	private Graphics2D m_g2d;
+	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
+	private final AffineTransform m_currNativeXform = new AffineTransform();
+	
 	/**
 	 * All rendering operations will be performed on the specified image. No
 	 * rendering operations are performed as a result of calling this
@@ -282,12 +229,14 @@ public final class GraphGraphics {
 	 *            if this is true, we will clear the image before drawing.  This should
 	 *            only ever be false when we're printing....
 	 */
-	public GraphGraphics(final Image image, final boolean debug, final boolean clear) {
-		this.image = image;
-		m_debug = debug;
-		m_clear = clear;
+	public GraphGraphics(NetworkTransform transform) {
+		this.transform = transform;
 		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
-		m_cleared = false;
+		initialize(CLEAR_PAINT);
+	}
+	
+	public NetworkTransform getTransform() {
+		return transform;
 	}
 
 	/**
@@ -329,130 +278,50 @@ public final class GraphGraphics {
 	 * @exception IllegalArgumentException
 	 *                if scaleFactor is not positive.
 	 */
-	public final void clear(final Paint bgPaint, final double xCenter,
-			final double yCenter, final double scaleFactor) {
-		if (m_debug) {
-			checkDispatchThread();
-
-			if (!(scaleFactor > 0.0d)) {
-				throw new IllegalArgumentException(
-						"scaleFactor is not positive");
-			}
-		}
-
+	private final void initialize(Paint bgPaint) {
 		if (m_gMinimal != null) {
 			m_gMinimal.dispose();
 			m_gMinimal = null;
 		}
-
 		if (m_g2d != null) {
 			m_g2d.dispose();
 		}
 
-		m_g2d = (Graphics2D) image.getGraphics();
+		m_g2d = transform.getGraphics();
 
-
-		if (m_clear) {
-			final Composite origComposite = m_g2d.getComposite();
-			m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
-			m_g2d.setPaint(bgPaint);
-			m_g2d.fillRect(0, 0, image.getWidth(null), image.getHeight(null));
-			m_g2d.setComposite(origComposite);
-		}
+//		final Composite origComposite = m_g2d.getComposite();
+//		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
+//		m_g2d.setPaint(bgPaint);
+//		m_g2d.fillRect(0, 0, transform.getWidth(), transform.getHeight());
+//		m_g2d.setComposite(origComposite);
 		
 		// For detailed view, render high quality image as much as possible.
 		
 		// Antialiasing is ON
-		m_g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_ON);
+		m_g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		
 		// Rendering quality is HIGH.
-		m_g2d.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_QUALITY);
+		m_g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		
 		// High quality alpha blending is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
+		m_g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
 		
 		// High quality color rendering is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-				RenderingHints.VALUE_COLOR_RENDER_QUALITY);
-		
-		m_g2d.setRenderingHint(RenderingHints.KEY_DITHERING,
-				RenderingHints.VALUE_DITHER_ENABLE);
-		
-		m_g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_BICUBIC);
+		m_g2d.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+		m_g2d.setRenderingHint(RenderingHints.KEY_DITHERING, RenderingHints.VALUE_DITHER_ENABLE);
+		m_g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
 		
 		// Text antialiasing is ON.
-		m_g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-				RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-				RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-		m_g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL,
-				RenderingHints.VALUE_STROKE_PURE);
+		m_g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		m_g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		m_g2d.setRenderingHint(RenderingHints.KEY_STROKE_CONTROL, RenderingHints.VALUE_STROKE_PURE);
 		
 		m_g2d.setStroke(new BasicStroke(0.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 
-		setTransform(xCenter, yCenter, scaleFactor);
-		m_g2d.transform(m_currXform);
-		m_currNativeXform.setTransform(m_g2d.getTransform());
-		m_cleared = true;
+		m_g2d.transform(getTransform().getAffineTransform());
+		m_currNativeXform.setTransform(m_g2d.getTransform()); // save the current transform
 	}
 
-	public void setTransform(double xCenter, double yCenter, double scaleFactor) {
-		m_currXform.setToTranslation(0.5d * image.getWidth(null), 0.5d * image.getHeight(null));
-		m_currXform.scale(scaleFactor, scaleFactor);
-		m_currXform.translate(-xCenter, -yCenter);
-	}
-
-	/**
-	 * Uses the current transform to map the specified image coordinates to node
-	 * coordinates. The transform used is defined by the last call to clear().
-	 * It does not make sense to call this method if clear() has not been called
-	 * at least once previously, and this method will cause errors in this case.
-	 * 
-	 * @param coords
-	 *            an array of length [at least] two which acts both as the input
-	 *            and as the output of this method; coords[0] is the input X
-	 *            coordinate in the image coordinate system and is written as
-	 *            the X coordinate in the node coordinate system by this method;
-	 *            coords[1] is the input Y coordinate in the image coordinate
-	 *            system and is written as the Y coordinate in the node
-	 *            coordinate system by this method; the exact transform which
-	 *            takes place is defined by the previous call to the clear()
-	 *            method.
-	 */
-	public final void xformImageToNodeCoords(final double[] coords) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
-
-		try {
-			m_currXform.inverseTransform(coords, 0, coords, 0, 1);
-		} catch (java.awt.geom.NoninvertibleTransformException e) {
-			throw new RuntimeException("noninvertible matrix - cannot happen");
-		}
-	}
-	
-	public final void xformNodetoImageCoords(final double[] coords) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
-
-		m_currXform.transform(coords, 0, coords, 0, 1);
-	}
-
-	/**
-	 * Called to get the current AffineTransform Matrix.
-	 * 
-	 * @return AffineTransform
-	 */
-	public final AffineTransform getTransform() {
-		return m_currXform;
-	}
 
 	/**
 	 * This is the method that will render a node very quickly. The node shape
@@ -483,12 +352,9 @@ public final class GraphGraphics {
 	 */
 	public final void drawNodeLow(final float xMin, final float yMin,
 			final float xMax, final float yMax, final Color fillColor) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
+		if (debug) {
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
-
 			if (fillColor.getAlpha() != 255) {
 				throw new IllegalArgumentException("fillColor is not opaque");
 			}
@@ -504,7 +370,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = yMin;
 		m_ptsBuff[2] = xMax;
 		m_ptsBuff[3] = yMax;
-		m_currXform.transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		// Here, double values outside of the range of ints will be cast to
 		// the nearest int without overflow.
@@ -512,6 +378,7 @@ public final class GraphGraphics {
 		final int yNot = (int) m_ptsBuff[1];
 		final int xOne = (int) m_ptsBuff[2];
 		final int yOne = (int) m_ptsBuff[3];
+
 		m_gMinimal.setColor(fillColor);
 		m_gMinimal.fillRect(xNot, yNot, Math.max(1, xOne - xNot), // Overflow will
 		                                Math.max(1, yOne - yNot)); // be problem.
@@ -521,17 +388,12 @@ public final class GraphGraphics {
 	 * Sets m_gMinimal.
 	 */
 	private final void makeMinimalGraphics() {
-		m_gMinimal = (Graphics2D) image.getGraphics();
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING,
-				RenderingHints.VALUE_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING,
-		 		RenderingHints.VALUE_COLOR_RENDER_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
-				RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-				RenderingHints.VALUE_ANTIALIAS_OFF);
-		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+		m_gMinimal = transform.getGraphics();
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+		m_gMinimal.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
 	}
 
 	/**
@@ -600,22 +462,15 @@ public final class GraphGraphics {
 			final float yMin, final float xMax, final float yMax,
 			final Paint fillPaint, final float borderWidth, final Stroke borderStroke,
 			final Paint borderPaint) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
+		if (debug) {
 			checkOrder(xMin,xMax,"x");
 			checkOrder(yMin,yMax,"y");
-
 			if (!(borderWidth >= 0.0f)) {
-				throw new IllegalArgumentException(
-						"borderWidth not zero or positive");
+				throw new IllegalArgumentException("borderWidth not zero or positive");
 			}
-
-			if (!((6.0d * borderWidth) <= Math.min(((double) xMax) - xMin,
-					((double) yMax) - yMin))) {
+			if (!((6.0d * borderWidth) <= Math.min(((double) xMax) - xMin, ((double) yMax) - yMin))) {
 				throw new IllegalArgumentException(
-						"borderWidth is not less than the minimum of node width and node "
-								+ "height divided by six");
+						"borderWidth is not less than the minimum of node width and node height divided by six");
 			}
 		}
 
@@ -663,15 +518,7 @@ public final class GraphGraphics {
 	 *            path's coordinate system is the node coordinate system; the
 	 *            computed path is closed.
 	 */
-	public final void getNodeShape(final byte nodeShape, final float xMin,
-			final float yMin, final float xMax, final float yMax,
-			final GeneralPath path) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkOrder(xMin,xMax,"x");
-			checkOrder(yMin,yMax,"y");
-		}
-
+	public static void getNodeShape(byte nodeShape, float xMin, float yMin, float xMax, float yMax, GeneralPath path) {
 		path.reset();
 		path.append(getShape(nodeShape, xMin, yMin, xMax, yMax), false);
 	}
@@ -727,12 +574,7 @@ public final class GraphGraphics {
 	 *                little over one hundered custom node shapes can be
 	 *                defined.
 	 */
-	public final byte defineCustomNodeShape(final float[] coords,
-			final int offset, final int vertexCount) {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
+	public final byte defineCustomNodeShape(final float[] coords, final int offset, final int vertexCount) {
 		if (vertexCount > CUSTOM_SHAPE_MAX_VERTICES) {
 			throw new IllegalArgumentException( "too many vertices (greater than "
 							+ CUSTOM_SHAPE_MAX_VERTICES + ")");
@@ -840,10 +682,6 @@ public final class GraphGraphics {
 	 * Determines whether the specified shape is a custom defined node shape.
 	 */
 	public final boolean customNodeShapeExists(final byte shape) {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		return (shape > s_last_shape) && (shape <= m_lastCustomShapeType);
 	}
 
@@ -853,10 +691,6 @@ public final class GraphGraphics {
 	 * @return DOCUMENT ME!
 	 */
 	public final byte[] getCustomNodeShapes() {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		final byte[] returnThis = new byte[m_lastCustomShapeType - s_last_shape];
 
 		for (int i = 0; i < returnThis.length; i++) {
@@ -873,10 +707,6 @@ public final class GraphGraphics {
 	 * custom shape.
 	 */
 	public final float[] getCustomNodeShape(final byte customShape) {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		if ( !customNodeShapeExists(customShape) )
 			return null;
 
@@ -895,10 +725,6 @@ public final class GraphGraphics {
 	 *                this GraphGraphics.
 	 */
 	public final void importCustomNodeShapes(final GraphGraphics grafx) {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		// I define this error check outside the scope of m_debug because
 		// clobbering existing custom node shape definitions could be major.
 		if (m_lastCustomShapeType != s_last_shape) {
@@ -912,13 +738,9 @@ public final class GraphGraphics {
 		}
 	}
 
-	private final Shape getShape(final byte nodeShape, final float xMin,
-			final float yMin, final float xMax, final float yMax) {
+	private static Shape getShape(byte nodeShape, float xMin, float yMin, float xMax, float yMax) {
 		NodeShape ns = nodeShapes.get(nodeShape);
-		if ( ns != null )
-			return ns.getShape(xMin,yMin,xMax,yMax);
-		else
-			return null;
+		return ns == null ? null : ns.getShape(xMin, yMin, xMax, yMax);
 	}
 
 	/**
@@ -927,7 +749,7 @@ public final class GraphGraphics {
 	 * @return A map of node shape bytes to Shape objects.
 	 */
 	public static Map<Byte, Shape> getNodeShapes() {
-		final Map<Byte, Shape> shapeMap = new HashMap<Byte, Shape>();
+		final Map<Byte, Shape> shapeMap = new HashMap<>();
 
 		for ( NodeShape ns : nodeShapes.values() ) {
 			final Shape shape = ns.getShape(0f, 0f, DEF_SHAPE_SIZE, DEF_SHAPE_SIZE);
@@ -975,12 +797,8 @@ public final class GraphGraphics {
 	 * @exception IllegalArgumentException
 	 *                if edgeColor is not opaque.
 	 */
-	public final void drawEdgeLow(final float x0, final float y0,
-			final float x1, final float y1, final Color edgeColor) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-
+	public final void drawEdgeLow(final float x0, final float y0, final float x1, final float y1, final Color edgeColor) {
+		if (debug) {
 			if (edgeColor.getAlpha() != 255) {
 				throw new IllegalArgumentException("edgeColor is not opaque");
 			}
@@ -1002,7 +820,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = y0;
 		m_ptsBuff[2] = x1;
 		m_ptsBuff[3] = y1;
-		m_currXform.transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		final int xNot = (int) m_ptsBuff[0];
 		final int yNot = (int) m_ptsBuff[1];
@@ -1166,25 +984,23 @@ public final class GraphGraphics {
 			anchors = m_noAnchors;
 		}
 
-		if (m_debug) {
-			edgeFullDebug(arrow0Type, arrow0Size, arrow1Type, arrow1Size,
-					edgeStroke, edgeThickness, anchors);
+		if (debug) {
+			edgeFullDebug(arrow0Type, arrow0Size, arrow1Type, arrow1Size, edgeStroke, edgeThickness, anchors);
 		}
 
-		if (!computeCubicPolyEdgePath(arrow0Type,
+		final int edgePtsCount = computeCubicPolyEdgePath(m_edgePtsBuff, m_floatBuff, arrow0Type,
 				(arrow0Type == ArrowShapeVisualProperty.NONE) ? 0.0f : arrow0Size, arrow1Type,
 				(arrow1Type == ArrowShapeVisualProperty.NONE) ? 0.0f : arrow1Size, x0, y0,
-				anchors, x1, y1, curveFactor)) {
-			// After filtering duplicate start and end points, there are less
-			// than 3 total.
-			if (m_edgePtsCount == 2) { // Draw an ordinary edge.
+				anchors, x1, y1, curveFactor);
+		
+		if (edgePtsCount < 3) {
+			if (edgePtsCount == 2) { // Draw an ordinary edge.
 				drawSimpleEdgeFull(arrow0Type, arrow0Size, arrow0Paint,
 						arrow1Type, arrow1Size, arrow1Paint,
 						(float) m_edgePtsBuff[0], (float) m_edgePtsBuff[1],
 						(float) m_edgePtsBuff[2], (float) m_edgePtsBuff[3],
 						edgeThickness, edgeStroke, edgePaint );
 			}
-
 			return;
 		}
 
@@ -1198,7 +1014,7 @@ public final class GraphGraphics {
 		m_path2d.moveTo((float) m_edgePtsBuff[2], (float) m_edgePtsBuff[3]);
 
 		int inx = 4;
-		final int count = ((m_edgePtsCount - 1) * 6) - 2;
+		final int count = ((edgePtsCount - 1) * 6) - 2;
 
 		while (inx < count) {
 			m_path2d.curveTo((float) m_edgePtsBuff[inx++],
@@ -1230,10 +1046,8 @@ public final class GraphGraphics {
 		final double cosTheta0 = dx0 / len0;
 		final double sinTheta0 = dy0 / len0;
 
-		final double dx1 = m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 2]
-				- m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 6];
-		final double dy1 = m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 1]
-				- m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 5];
+		final double dx1 = m_edgePtsBuff[((edgePtsCount - 1) * 6) - 2] - m_edgePtsBuff[((edgePtsCount - 1) * 6) - 6];
+		final double dy1 = m_edgePtsBuff[((edgePtsCount - 1) * 6) - 1] - m_edgePtsBuff[((edgePtsCount - 1) * 6) - 5];
 		final double len1 = Math.sqrt((dx1 * dx1) + (dy1 * dy1));
 		final double cosTheta1 = dx1 / len1;
 		final double sinTheta1 = dy1 / len1;
@@ -1243,11 +1057,9 @@ public final class GraphGraphics {
 		if ( edgeStroke instanceof BasicStroke ) {
 
 			// Render arrow cap at origin of poly path.
-			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type,
-					((double) arrow0Size) / edgeThickness);
+			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type, ((double) arrow0Size) / edgeThickness);
 			if (arrow0Cap != null) {
-				m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0,
-						cosTheta0, m_edgePtsBuff[2], m_edgePtsBuff[3]);
+				m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0, cosTheta0, m_edgePtsBuff[2], m_edgePtsBuff[3]);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
@@ -1256,18 +1068,16 @@ public final class GraphGraphics {
 			}
 	
 			// Render arrow cap at end of poly path.
-			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type,
-					((double) arrow1Size) / edgeThickness);
+			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type, ((double) arrow1Size) / edgeThickness);
 	
 			if (arrow1Cap != null) {
-				m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1,
-						cosTheta1,
-						m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 4],
-						m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 3]);
+				m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1, cosTheta1,
+						m_edgePtsBuff[((edgePtsCount - 1) * 6) - 4],
+						m_edgePtsBuff[((edgePtsCount - 1) * 6) - 3]);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
-					m_g2d.fill(arrow1Cap);
+				m_g2d.fill(arrow1Cap);
 				m_g2d.setTransform(m_currNativeXform);
 			}
 		}
@@ -1276,8 +1086,7 @@ public final class GraphGraphics {
 		final Shape arrow0 = computeUntransformedArrow(arrow0Type);
 
 		if (arrow0 != null) {
-			m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0,
-					cosTheta0, m_edgePtsBuff[0], m_edgePtsBuff[1]);
+			m_xformUtil.setTransform(cosTheta0, sinTheta0, -sinTheta0, cosTheta0, m_edgePtsBuff[0], m_edgePtsBuff[1]);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
@@ -1290,7 +1099,7 @@ public final class GraphGraphics {
 				m_g2d.setStroke(new BasicStroke(0.25f));
 				m_g2d.draw(arrow0);
 			}
-		m_g2d.setTransform(m_currNativeXform);
+			m_g2d.setTransform(m_currNativeXform);
 		}
 
 		// Render arrow at end of poly path.
@@ -1299,8 +1108,8 @@ public final class GraphGraphics {
 		if (arrow1 != null) {
 				
 			m_xformUtil.setTransform(cosTheta1, sinTheta1, -sinTheta1, cosTheta1,
-				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 2],
-				m_edgePtsBuff[((m_edgePtsCount - 1) * 6) - 1]);
+				m_edgePtsBuff[((edgePtsCount - 1) * 6) - 2],
+				m_edgePtsBuff[((edgePtsCount - 1) * 6) - 1]);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow1Size, arrow1Size);
 			m_g2d.setPaint(arrow1Paint);
@@ -1322,8 +1131,6 @@ public final class GraphGraphics {
 			final Stroke edgeStroke,
 			final float edgeThickness, 
 			final EdgeAnchors anchors) {
-		checkDispatchThread();
-		checkCleared();
 		if (!(edgeThickness >= 0.0f)) {
 			throw new IllegalArgumentException("edgeThickness < 0");
 		}
@@ -1418,12 +1225,10 @@ public final class GraphGraphics {
 	
 		if ( simpleSegment < 0 && edgeStroke instanceof BasicStroke ) { 
 			// Arrow cap at point 0.
-			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type,
-					((double) arrow0Size) / edgeThickness);
+			final Shape arrow0Cap = computeUntransformedArrowCap(arrow0Type, ((double) arrow0Size) / edgeThickness);
 
 			if (arrow0Cap != null) {
-				m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta,
-						cosTheta, x0Adj, y0Adj);
+				m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta, cosTheta, x0Adj, y0Adj);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
@@ -1432,13 +1237,10 @@ public final class GraphGraphics {
 			}
 
 			// Arrow cap at point 1.
-			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type,
-					((double) arrow1Size) / edgeThickness);
+			final Shape arrow1Cap = computeUntransformedArrowCap(arrow1Type, ((double) arrow1Size) / edgeThickness);
 
 			if (arrow1Cap != null) {
-
-					m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
-						-cosTheta, x1Adj, y1Adj);
+				m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta, -cosTheta, x1Adj, y1Adj);
 				m_g2d.transform(m_xformUtil);
 				m_g2d.scale(edgeThickness, edgeThickness);
 				// The paint is already set to edge paint.
@@ -1451,8 +1253,7 @@ public final class GraphGraphics {
 		final Shape arrow0 = computeUntransformedArrow(arrow0Type);
 
 		if (arrow0 != null) {
-			m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta,
-					cosTheta, x0, y0);
+			m_xformUtil.setTransform(cosTheta, sinTheta, -sinTheta, cosTheta, x0, y0);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow0Size, arrow0Size);
 			m_g2d.setPaint(arrow0Paint);
@@ -1473,8 +1274,7 @@ public final class GraphGraphics {
 		final Shape arrow1 = computeUntransformedArrow(arrow1Type);
 
 		if (arrow1 != null) {
-			m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta,
-					-cosTheta, x1, y1);
+			m_xformUtil.setTransform(-cosTheta, -sinTheta, sinTheta, -cosTheta, x1, y1);
 			m_g2d.transform(m_xformUtil);
 			m_g2d.scale(arrow1Size, arrow1Size);
 			m_g2d.setPaint(arrow1Paint);
@@ -1488,7 +1288,7 @@ public final class GraphGraphics {
 					m_g2d.setStroke(new BasicStroke(0.1f));
 				m_g2d.draw(arrow1);
 			}
-		m_g2d.setTransform(m_currNativeXform);
+			m_g2d.setTransform(m_currNativeXform);
 		}
 	}
 
@@ -1533,69 +1333,51 @@ public final class GraphGraphics {
 	 *                if any one of the edge arrow criteria specified in
 	 *                drawEdgeFull() is not satisfied.
 	 */
-	public final boolean getEdgePath(final ArrowShape arrow0Type,
-			final float arrow0Size, final ArrowShape arrow1Type,
-			final float arrow1Size, final float x0, final float y0,
-			EdgeAnchors anchors, final float x1, final float y1,
-			final GeneralPath path) {
+	// MKTODO does this still need to be static after the refactoring???
+	public static boolean getEdgePath(ArrowShape arrow0Type, float arrow0Size, ArrowShape arrow1Type,
+			float arrow1Size, float x0, float y0, EdgeAnchors anchors, float x1, float y1, GeneralPath path) {
 		final double curveFactor = CURVE_ELLIPTICAL;
 
 		if (anchors == null) {
 			anchors = m_noAnchors;
 		}
 
-		if (m_debug) {
-			checkDispatchThread();
-
-			if ( !arrows.containsKey( arrow0Type ) )
-				throw new IllegalArgumentException("arrow0Type is not recognized");
-
-			if ( !arrows.containsKey( arrow1Type ) )
-				throw new IllegalArgumentException("arrow1Type is not recognized");
-
-			if (anchors.numAnchors() > MAX_EDGE_ANCHORS) {
-				throw new IllegalArgumentException("at most MAX_EDGE_ANCHORS ("
-						+ MAX_EDGE_ANCHORS + ") edge anchors can be specified");
-			}
-		}
-
 		ArrowShape arrow0 = arrow0Type;
 		ArrowShape arrow1 = arrow1Type;
 
-		if (!computeCubicPolyEdgePath(arrow0, (arrow0 == ArrowShapeVisualProperty.NONE) ? 0.0f
+		final double[] edgePtsBuff = new double[(MAX_EDGE_ANCHORS + 1) * 6];
+		final float[] floatBuff = new float[2];
+		
+		int edgePtsCount = computeCubicPolyEdgePath(edgePtsBuff, floatBuff, arrow0, (arrow0 == ArrowShapeVisualProperty.NONE) ? 0.0f
 				: arrow0Size, arrow1, (arrow1 == ArrowShapeVisualProperty.NONE) ? 0.0f
-				: arrow1Size, x0, y0, anchors, x1, y1, curveFactor)) {
-			// After filtering duplicate start and end points, there are less
-			// then
-			// 3 total.
-			if (m_edgePtsCount == 2) {
+				: arrow1Size, x0, y0, anchors, x1, y1, curveFactor);
+		
+		if (edgePtsCount < 3) {
+			// After filtering duplicate start and end points, there are less then 3 total.
+			if (edgePtsCount == 2) {
 				path.reset();
-				path.moveTo((float) m_edgePtsBuff[0], (float) m_edgePtsBuff[1]);
-				path.lineTo((float) m_edgePtsBuff[2], (float) m_edgePtsBuff[3]);
-
+				path.moveTo((float) edgePtsBuff[0], (float) edgePtsBuff[1]);
+				path.lineTo((float) edgePtsBuff[2], (float) edgePtsBuff[3]);
 				return true;
 			}
-
 			return false;
 		}
 
 		path.reset();
-		path.moveTo((float) m_edgePtsBuff[0], (float) m_edgePtsBuff[1]);
-		path.lineTo((float) m_edgePtsBuff[2], (float) m_edgePtsBuff[3]);
+		path.moveTo((float) edgePtsBuff[0], (float) edgePtsBuff[1]);
+		path.lineTo((float) edgePtsBuff[2], (float) edgePtsBuff[3]);
 
 		int inx = 4;
-		final int count = ((m_edgePtsCount - 1) * 6) - 2;
+		final int count = ((edgePtsCount - 1) * 6) - 2;
 
 		while (inx < count) {
-			path.curveTo((float) m_edgePtsBuff[inx++],
-					(float) m_edgePtsBuff[inx++], (float) m_edgePtsBuff[inx++],
-					(float) m_edgePtsBuff[inx++], (float) m_edgePtsBuff[inx++],
-					(float) m_edgePtsBuff[inx++]);
+			path.curveTo((float) edgePtsBuff[inx++],
+					(float) edgePtsBuff[inx++], (float) edgePtsBuff[inx++],
+					(float) edgePtsBuff[inx++], (float) edgePtsBuff[inx++],
+					(float) edgePtsBuff[inx++]);
 		}
 
-		path.lineTo((float) m_edgePtsBuff[count],
-				(float) m_edgePtsBuff[count + 1]);
-
+		path.lineTo((float) edgePtsBuff[count], (float) edgePtsBuff[count + 1]);
 		return true;
 	}
 
@@ -1605,10 +1387,7 @@ public final class GraphGraphics {
 	 */
 	private final Shape computeUntransformedArrow(final ArrowShape arrowType) {
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getArrowShape();
-		else
-			return null;
+		return a == null ? null : a.getArrowShape();
 	}
 
 	/*
@@ -1618,10 +1397,7 @@ public final class GraphGraphics {
 	 */
 	private final Shape computeUntransformedArrowCap(final ArrowShape arrowType, final double ratio) {
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getCapShape(ratio);
-		else
-			return null;
+		return a == null ? null : a.getCapShape(ratio);
 	}
 
 	/*
@@ -1629,195 +1405,168 @@ public final class GraphGraphics {
 	 */
 	private final static double getT(final ArrowShape arrowType) { 
 		Arrow a = arrows.get(arrowType);
-		if ( a != null )
-			return a.getTOffset();
-		else
-			return 0.125;
+		return a == null ? 0.125 : a.getTOffset();
 	}
 
 	/*
 	 * If arrow0Type is NONE, arrow0Size should be zero. If arrow1Type is
 	 * NONE, arrow1Size should be zero.
 	 */
-	private final boolean computeCubicPolyEdgePath(final ArrowShape arrow0Type,
-			final float arrow0Size, final ArrowShape arrow1Type,
-			final float arrow1Size, final float x0, final float y0,
-			final EdgeAnchors anchors, final float x1, final float y1,
-			final double curveFactor) {
+	private static int computeCubicPolyEdgePath(double[] edgePtsBuff, float[] floatBuff,
+			ArrowShape arrow0Type, float arrow0Size, ArrowShape arrow1Type, float arrow1Size, float x0, float y0,
+			EdgeAnchors anchors, float x1, float y1, double curveFactor) {
+		
 		final int numAnchors = anchors.numAnchors();
+		
 		// add the start point to the edge points buffer
-		m_edgePtsBuff[0] = x0;
-		m_edgePtsBuff[1] = y0;
-		m_edgePtsCount = 1;
+		edgePtsBuff[0] = x0;
+		edgePtsBuff[1] = y0;
+		int edgePtsCount = 1;
 
 		int anchorInx = 0;
 
 		// finds the first anchor point other than the start point and
 		// add it to the edge points buffer
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff);
-
-			if (!((m_floatBuff[0] == x0) && (m_floatBuff[1] == y0))) {
-				m_edgePtsBuff[2] = m_floatBuff[0];
-				m_edgePtsBuff[3] = m_floatBuff[1];
-				m_edgePtsCount = 2;
-
+			anchors.getAnchor(anchorInx++, floatBuff);
+			if (!((floatBuff[0] == x0) && (floatBuff[1] == y0))) {
+				edgePtsBuff[2] = floatBuff[0];
+				edgePtsBuff[3] = floatBuff[1];
+				edgePtsCount = 2;
 				break;
 			}
 		}
 
 		// now fill edge points buffer with all subsequent anchors
 		while (anchorInx < numAnchors) {
-			anchors.getAnchor(anchorInx++, m_floatBuff);
+			anchors.getAnchor(anchorInx++, floatBuff);
 			// Duplicate anchors are allowed.
-			m_edgePtsBuff[m_edgePtsCount * 2] = m_floatBuff[0];
-			m_edgePtsBuff[(m_edgePtsCount * 2) + 1] = m_floatBuff[1];
-			m_edgePtsCount++;
+			edgePtsBuff[edgePtsCount * 2] = floatBuff[0];
+			edgePtsBuff[edgePtsCount * 2 + 1] = floatBuff[1];
+			edgePtsCount++;
 		}
 
 		// now add the end point to the buffer
-		m_edgePtsBuff[m_edgePtsCount * 2] = x1;
-		m_edgePtsBuff[(m_edgePtsCount * 2) + 1] = y1;
-		m_edgePtsCount++;
+		edgePtsBuff[edgePtsCount * 2] = x1;
+		edgePtsBuff[edgePtsCount * 2 + 1] = y1;
+		edgePtsCount++;
 
 		// remove duplicate end points from edge buffer
-		while (m_edgePtsCount > 1) {
+		while (edgePtsCount > 1) {
 			// second-to-last X coord and  second-to-last Y coord.
-			if ((m_edgePtsBuff[(m_edgePtsCount * 2) - 2] == m_edgePtsBuff[(m_edgePtsCount * 2) - 4]) 
-					&& (m_edgePtsBuff[(m_edgePtsCount * 2) - 1] == m_edgePtsBuff[(m_edgePtsCount * 2) - 3])) { 
-				m_edgePtsCount--;
+			if ((edgePtsBuff[edgePtsCount * 2 - 2] == edgePtsBuff[edgePtsCount * 2 - 4]) 
+					&& (edgePtsBuff[edgePtsCount * 2 - 1] == edgePtsBuff[edgePtsCount * 2 - 3])) { 
+				edgePtsCount--;
 			} else {
 				break;
 			}
 		}
 
 		// no anchors, just a straight line to draw 
-		if (m_edgePtsCount < 3) {
-			return false;
+		if (edgePtsCount < 3) {
+			return edgePtsCount;
 		}
 
 		//
 		// ok, now we're drawing a curve
 		//
 
-		final int edgePtsCount = m_edgePtsCount;
+		final int edgePtsCountToReturn = edgePtsCount;
 
 		// First set the three control points related to point 1.
 		// 6 represents the offset in the buffer.
 		{ 
-			m_edgePtsCount--;
+			edgePtsCount--;
 			// set first control point
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 2] = m_edgePtsBuff[m_edgePtsCount * 2];
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 1] = m_edgePtsBuff[(m_edgePtsCount * 2) + 1];
+			edgePtsBuff[(edgePtsCount * 6) - 2] = edgePtsBuff[edgePtsCount * 2];
+			edgePtsBuff[(edgePtsCount * 6) - 1] = edgePtsBuff[edgePtsCount * 2 + 1];
 
-			double dx = m_edgePtsBuff[(m_edgePtsCount * 2) - 2]
-					- m_edgePtsBuff[m_edgePtsCount * 2];
-			double dy = m_edgePtsBuff[(m_edgePtsCount * 2) - 1]
-					- m_edgePtsBuff[(m_edgePtsCount * 2) + 1];
+			double dx = edgePtsBuff[edgePtsCount * 2 - 2] - edgePtsBuff[edgePtsCount * 2];
+			double dy = edgePtsBuff[edgePtsCount * 2 - 1] - edgePtsBuff[edgePtsCount * 2 + 1];
 			double len = Math.sqrt((dx * dx) + (dy * dy));
 			// Normalized.
 			dx /= len;
 			dy /= len; 
 
 			// set second control point
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 4] = m_edgePtsBuff[(m_edgePtsCount * 6) - 2]
-					+ (dx * arrow1Size * getT(arrow1Type));
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 3] = m_edgePtsBuff[(m_edgePtsCount * 6) - 1]
-					+ (dy * arrow1Size * getT(arrow1Type));
+			edgePtsBuff[edgePtsCount * 6 - 4] = edgePtsBuff[edgePtsCount * 6 - 2] + (dx * arrow1Size * getT(arrow1Type));
+			edgePtsBuff[edgePtsCount * 6 - 3] = edgePtsBuff[edgePtsCount * 6 - 1] + (dy * arrow1Size * getT(arrow1Type));
 
 			// one candidate point is offset by the arrow (candX1) and 
 			// the other is offset by the curvefactor (candX2)
-			double candX1 = m_edgePtsBuff[(m_edgePtsCount * 6) - 4]
-					+ (dx * 2.0d * arrow1Size);
-			double candX2 = m_edgePtsBuff[(m_edgePtsCount * 6) - 4]
-					+ (curveFactor * (m_edgePtsBuff[(m_edgePtsCount * 2) - 2] - m_edgePtsBuff[(m_edgePtsCount * 6) - 4]));
+			double candX1 = edgePtsBuff[edgePtsCount * 6 - 4] + (dx * 2.0d * arrow1Size);
+			double candX2 = edgePtsBuff[edgePtsCount * 6 - 4] + (curveFactor * (edgePtsBuff[edgePtsCount * 2 - 2] - edgePtsBuff[edgePtsCount * 6 - 4]));
 
 			// set third control point X coord
 			// choose the candidate with max offset
-			if (Math.abs(candX1 - m_edgePtsBuff[m_edgePtsCount * 2]) > Math
-					.abs(candX2 - m_edgePtsBuff[m_edgePtsCount * 2])) {
-				m_edgePtsBuff[(m_edgePtsCount * 6) - 6] = candX1;
+			if (Math.abs(candX1 - edgePtsBuff[edgePtsCount * 2]) > Math.abs(candX2 - edgePtsBuff[edgePtsCount * 2])) {
+				edgePtsBuff[(edgePtsCount * 6) - 6] = candX1;
 			} else {
-				m_edgePtsBuff[(m_edgePtsCount * 6) - 6] = candX2;
+				edgePtsBuff[(edgePtsCount * 6) - 6] = candX2;
 			}
 
 			// one candidate point is offset by the arrow (candY1) and 
 			// the other is offset by the curvefactor (candY2)
-			double candY1 = m_edgePtsBuff[(m_edgePtsCount * 6) - 3]
-					+ (dy * 2.0d * arrow1Size);
-			double candY2 = m_edgePtsBuff[(m_edgePtsCount * 6) - 3]
-					+ (curveFactor * (m_edgePtsBuff[(m_edgePtsCount * 2) - 1] - m_edgePtsBuff[(m_edgePtsCount * 6) - 3]));
+			double candY1 = edgePtsBuff[edgePtsCount * 6 - 3] + (dy * 2.0d * arrow1Size);
+			double candY2 = edgePtsBuff[edgePtsCount * 6 - 3] + (curveFactor * (edgePtsBuff[edgePtsCount * 2 - 1] - edgePtsBuff[edgePtsCount * 6 - 3]));
 
 			// set third control point Y coord
 			// choose the candidate with max offset
-			if (Math.abs(candY1 - m_edgePtsBuff[(m_edgePtsCount * 2) + 1]) > Math
-					.abs(candY2 - m_edgePtsBuff[(m_edgePtsCount * 2) + 1])) {
-				m_edgePtsBuff[(m_edgePtsCount * 6) - 5] = candY1;
+			if (Math.abs(candY1 - edgePtsBuff[edgePtsCount * 2 + 1]) > Math.abs(candY2 - edgePtsBuff[edgePtsCount * 2 + 1])) {
+				edgePtsBuff[edgePtsCount * 6 - 5] = candY1;
 			} else {
-				m_edgePtsBuff[(m_edgePtsCount * 6) - 5] = candY2;
+				edgePtsBuff[edgePtsCount * 6 - 5] = candY2;
 			}
 		}
 
 		// Next set the control point for each edge anchor. 
-		while (m_edgePtsCount > 2) {
-			m_edgePtsCount--;
+		while (edgePtsCount > 2) {
+			edgePtsCount--;
 
-			final double midX = (m_edgePtsBuff[(m_edgePtsCount * 2) - 2] + m_edgePtsBuff[m_edgePtsCount * 2]) / 2.0d;
-			final double midY = (m_edgePtsBuff[(m_edgePtsCount * 2) - 1] + m_edgePtsBuff[(m_edgePtsCount * 2) + 1]) / 2.0d;
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 2] = midX
-					+ ((m_edgePtsBuff[m_edgePtsCount * 2] - midX) * curveFactor);
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 1] = midY
-					+ ((m_edgePtsBuff[(m_edgePtsCount * 2) + 1] - midY) * curveFactor);
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 4] = midX;
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 3] = midY;
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 6] = midX
-					+ ((m_edgePtsBuff[(m_edgePtsCount * 2) - 2] - midX) * curveFactor);
-			m_edgePtsBuff[(m_edgePtsCount * 6) - 5] = midY
-					+ ((m_edgePtsBuff[(m_edgePtsCount * 2) - 1] - midY) * curveFactor);
+			final double midX = (edgePtsBuff[edgePtsCount * 2 - 2] + edgePtsBuff[edgePtsCount * 2]) / 2.0d;
+			final double midY = (edgePtsBuff[edgePtsCount * 2 - 1] + edgePtsBuff[edgePtsCount * 2 + 1]) / 2.0d;
+			edgePtsBuff[edgePtsCount * 6 - 2] = midX + ((edgePtsBuff[edgePtsCount * 2] - midX) * curveFactor);
+			edgePtsBuff[edgePtsCount * 6 - 1] = midY + ((edgePtsBuff[edgePtsCount * 2 + 1] - midY) * curveFactor);
+			edgePtsBuff[edgePtsCount * 6 - 4] = midX;
+			edgePtsBuff[edgePtsCount * 6 - 3] = midY;
+			edgePtsBuff[edgePtsCount * 6 - 6] = midX + ((edgePtsBuff[edgePtsCount * 2 - 2] - midX) * curveFactor);
+			edgePtsBuff[edgePtsCount * 6 - 5] = midY + ((edgePtsBuff[edgePtsCount * 2 - 1] - midY) * curveFactor);
 		}
 
 		{ // Last set the three control points related to point 0.
 
-			double dx = m_edgePtsBuff[2] - m_edgePtsBuff[0];
-			double dy = m_edgePtsBuff[3] - m_edgePtsBuff[1];
+			double dx = edgePtsBuff[2] - edgePtsBuff[0];
+			double dy = edgePtsBuff[3] - edgePtsBuff[1];
 			double len = Math.sqrt((dx * dx) + (dy * dy));
 			// Normalized.
 			dx /= len;
 			dy /= len; 
 
-			double segStartX = m_edgePtsBuff[0]
-					+ (dx * arrow0Size * getT(arrow0Type));
-			double segStartY = m_edgePtsBuff[1]
-					+ (dy * arrow0Size * getT(arrow0Type));
+			double segStartX = edgePtsBuff[0] + (dx * arrow0Size * getT(arrow0Type));
+			double segStartY = edgePtsBuff[1] + (dy * arrow0Size * getT(arrow0Type));
 			double candX1 = segStartX + (dx * 2.0d * arrow0Size);
-			double candX2 = segStartX
-					+ (curveFactor * (m_edgePtsBuff[2] - segStartX));
+			double candX2 = segStartX + (curveFactor * (edgePtsBuff[2] - segStartX));
 
-			if (Math.abs(candX1 - m_edgePtsBuff[0]) > Math.abs(candX2
-					- m_edgePtsBuff[0])) {
-				m_edgePtsBuff[4] = candX1;
+			if (Math.abs(candX1 - edgePtsBuff[0]) > Math.abs(candX2 - edgePtsBuff[0])) {
+				edgePtsBuff[4] = candX1;
 			} else {
-				m_edgePtsBuff[4] = candX2;
+				edgePtsBuff[4] = candX2;
 			}
 
 			double candY1 = segStartY + (dy * 2.0d * arrow0Size);
-			double candY2 = segStartY
-					+ (curveFactor * (m_edgePtsBuff[3] - segStartY));
+			double candY2 = segStartY + (curveFactor * (edgePtsBuff[3] - segStartY));
 
-			if (Math.abs(candY1 - m_edgePtsBuff[1]) > Math.abs(candY2
-					- m_edgePtsBuff[1])) {
-				m_edgePtsBuff[5] = candY1;
+			if (Math.abs(candY1 - edgePtsBuff[1]) > Math.abs(candY2 - edgePtsBuff[1])) {
+				edgePtsBuff[5] = candY1;
 			} else {
-				m_edgePtsBuff[5] = candY2;
+				edgePtsBuff[5] = candY2;
 			}
 
-			m_edgePtsBuff[2] = segStartX;
-			m_edgePtsBuff[3] = segStartY;
+			edgePtsBuff[2] = segStartX;
+			edgePtsBuff[3] = segStartY;
 		}
-
-		m_edgePtsCount = edgePtsCount;
-
-		return true;
+		
+		return edgePtsCountToReturn;
 	}
 
 	/**
@@ -1869,24 +1618,10 @@ public final class GraphGraphics {
 	 *                nodeShape is neither one of the SHAPE_* constants nor a
 	 *                previously defined custom node shape.
 	 */
-	public final boolean computeEdgeIntersection(final byte nodeShape,
-			final float xMin, final float yMin, final float xMax,
-			final float yMax, final float offset, final float ptX,
-			final float ptY, final float[] returnVal) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkOrder(xMin,xMax,"x");
-			checkOrder(yMin,yMax,"y");
-			if (offset < 0.0f) {
-				throw new IllegalArgumentException("offset < 0");
-			}
-		}
-
+	public static final boolean computeEdgeIntersection(byte nodeShape, float xMin, float yMin, float xMax,
+			float yMax, float offset, float ptX, float ptY, float[] returnVal) {
 		NodeShape ns = nodeShapes.get(nodeShape);
-		if (ns == null)
-			return false;
-		else
-			return ns.computeEdgeIntersection( xMin, yMin, xMax, yMax, ptX, ptY, returnVal);
+		return ns == null ? false : ns.computeEdgeIntersection(xMin, yMin, xMax, yMax, ptX, ptY, returnVal);
 	}
 
 	/**
@@ -1921,9 +1656,7 @@ public final class GraphGraphics {
 	 */
 	public final void drawTextLow(final Font font, final String text,
 			final float xCenter, final float yCenter, final Color color) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
+		if (debug) {
 			if (color.getAlpha() != 255) {
 				throw new IllegalStateException("color is not opaque");
 			}
@@ -1935,7 +1668,7 @@ public final class GraphGraphics {
 
 		m_ptsBuff[0] = xCenter;
 		m_ptsBuff[1] = yCenter;
-		m_currXform.transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
+		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
 		m_gMinimal.setFont(font);
 
 		final FontMetrics fMetrics = m_gMinimal.getFontMetrics();
@@ -1943,8 +1676,7 @@ public final class GraphGraphics {
 		m_gMinimal.drawString(
 						text,
 						(int) ((-0.5d * fMetrics.stringWidth(text)) + m_ptsBuff[0]),
-						(int) ((0.5d * fMetrics.getHeight())
-								- fMetrics.getDescent() + m_ptsBuff[1]));
+						(int) ((0.5d * fMetrics.getHeight()) - fMetrics.getDescent() + m_ptsBuff[1]));
 	}
 
 	/**
@@ -1955,14 +1687,9 @@ public final class GraphGraphics {
 	 * between frames no matter what scaling factor is specified in clear().
 	 */
 	public final FontRenderContext getFontRenderContextLow() {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		if (m_gMinimal == null) {
 			makeMinimalGraphics();
 		}
-
 		return m_gMinimal.getFontRenderContext();
 	}
 
@@ -2023,9 +1750,7 @@ public final class GraphGraphics {
 	public final void drawTextFull(final Font font, final double scaleFactor,
 			final String text, final float xCenter, final float yCenter,
 			final float theta, final Paint paint, final boolean drawTextAsShape) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
+		if (debug) {
 			if (scaleFactor < 0.0) {
 				throw new IllegalArgumentException("scaleFactor must be positive");
 			}
@@ -2080,20 +1805,11 @@ public final class GraphGraphics {
 	 * transform.
 	 */
 	public final FontRenderContext getFontRenderContextFull() {
-		if (m_debug) {
-			checkDispatchThread();
-		}
-
 		return m_fontRenderContextFull;
 	}
 
 	public final void drawCustomGraphicImage(final Shape shape,
 			final float xOffset, final float yOffset, final TexturePaint paint) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
-
 		m_g2d.translate(xOffset, yOffset);
 		if(paint instanceof TexturePaint) {
 			final BufferedImage bImg = ((TexturePaint) paint).getImage();
@@ -2123,10 +1839,6 @@ public final class GraphGraphics {
 	public final void drawCustomGraphicFull(final CyNetworkView netView, final View<CyNode> node,
 											final Shape nodeShape, final CustomGraphicLayer cg,
 	                                        final float xOffset, final float yOffset) {
-		if (m_debug) {
-			checkDispatchThread();
-			checkCleared();
-		}
 
 		m_g2d.translate(xOffset, yOffset);
 		
@@ -2175,22 +1887,10 @@ public final class GraphGraphics {
 		return s; 
 	}
 
-	private void checkDispatchThread() {
-		if (!EventQueue.isDispatchThread()) 
-			throw new IllegalStateException( "calling thread is not AWT event dispatcher");
-	}
-
-	private void checkCleared() {
-		if (!m_cleared) 
-			throw new IllegalStateException( "clear() has not been called previously");
-	}
 
 	private void checkOrder(float min, float max, String id) {
 		if (!(min < max)) 
 			throw new IllegalArgumentException( id + "Min not less than " + id + "Max");
 	}
 	
-	public boolean isInitialized() {
-		return m_cleared;
-	}
 }

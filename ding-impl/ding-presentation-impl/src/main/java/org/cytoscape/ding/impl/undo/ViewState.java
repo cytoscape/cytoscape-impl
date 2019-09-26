@@ -77,7 +77,7 @@ public class ViewState {
 		savedObjs = whatToSave;
 
 		// record the state of the view
-		center = re.getCenter();
+		center = re.getTransform().getCenter();
 		scaleFactor = re.getZoom();
 		NodeDetails nodeDetails = re.getNodeDetails();
 
@@ -213,7 +213,9 @@ public class ViewState {
 
 		re.setZoom(scaleFactor);
 		re.setCenter(center.getX(), center.getY());
-		re.updateView();
+		
+		// MKTODO
+		//re.updateView();
 
 		if (anchors != null) {
 			for(View<CyEdge> e: anchors.keySet()) {

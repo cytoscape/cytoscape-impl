@@ -42,7 +42,7 @@ import javax.swing.border.Border;
 import javax.swing.table.TableModel;
 
 import org.cytoscape.application.CyUserLog;
-import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelComponent2;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.browser.internal.io.TableColumnStatFileIO;
 import org.cytoscape.browser.internal.util.TableColumnStat;
@@ -73,7 +73,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -96,7 +96,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("serial")
 public abstract class AbstractTableBrowser extends JPanel
-										   implements CytoPanelComponent, ActionListener, SessionLoadedListener,
+										   implements CytoPanelComponent2, ActionListener, SessionLoadedListener,
 										   			  SessionAboutToBeSavedListener{
 
 	private final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
@@ -173,6 +173,10 @@ public abstract class AbstractTableBrowser extends JPanel
 					serviceRegistrar.getService(IconManager.class).getIconFont(14.0f), 16, 16);
 		
 		return icon;
+	}
+	
+	public CyTable getCurrentTable() {
+		return currentTable;
 	}
 	
 	/**

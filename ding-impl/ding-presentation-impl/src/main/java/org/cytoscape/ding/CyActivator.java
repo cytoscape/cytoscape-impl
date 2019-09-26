@@ -10,10 +10,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.cytoscape.application.NetworkViewRenderer;
+import org.cytoscape.application.events.SetCurrentNetworkViewListener;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.CyEdgeViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNetworkViewContextMenuFactory;
 import org.cytoscape.application.swing.CyNodeViewContextMenuFactory;
+import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.ding.action.GraphicsDetailAction;
 import org.cytoscape.ding.customgraphics.CustomGraphicsManager;
 import org.cytoscape.ding.customgraphics.CustomGraphicsTranslator;
@@ -25,6 +27,7 @@ import org.cytoscape.ding.customgraphics.vector.GradientRoundRectangleFactory;
 import org.cytoscape.ding.customgraphicsmgr.internal.CustomGraphicsManagerImpl;
 import org.cytoscape.ding.customgraphicsmgr.internal.action.CustomGraphicsManagerAction;
 import org.cytoscape.ding.customgraphicsmgr.internal.ui.CustomGraphicsBrowser;
+import org.cytoscape.ding.debug.DingDebugPanel;
 import org.cytoscape.ding.dependency.CustomGraphicsSizeDependencyFactory;
 import org.cytoscape.ding.dependency.EdgeColorDependencyFactory;
 import org.cytoscape.ding.dependency.NodeSizeDependencyFactory;
@@ -123,18 +126,26 @@ import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
 	
+	public static final boolean DEBUG = false;
+	
 	private CustomGraphicsManager cgManager;
 	private CyCustomGraphics2Manager cg2Manager;
 	private CustomGraphicsBrowser cgBrowser;
 	
 	@Override
 	public void start(BundleContext bc) {
-		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		
 		startCustomGraphicsMgr(bc, serviceRegistrar);
 		startCharts(bc, serviceRegistrar);
 		startGradients(bc, serviceRegistrar);
 		startPresentationImpl(bc, serviceRegistrar);
+		
+		if(DEBUG) {
+			DingDebugPanel debugPanel = new DingDebugPanel(serviceRegistrar);
+			registerService(bc, debugPanel, CytoPanelComponent.class);
+			registerService(bc, debugPanel, SetCurrentNetworkViewListener.class);
+		}
 	}
 
 	private void startPresentationImpl(final BundleContext bc, final CyServiceRegistrar serviceRegistrar) {

@@ -80,7 +80,6 @@ public class GroupAnnotationsTask extends AbstractTask {
 			}
 			
 			GroupAnnotationImpl newGroup = new GroupAnnotationImpl(re, Collections.emptyMap());
-			newGroup.addComponent(null); // Need to add this first so we can update things appropriately
 
 			// Now, add all of the children--do not iterate AnnotationSelection directly or that can throw
 			// ConcurrentModifcationExceptions

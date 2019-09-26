@@ -1,36 +1,6 @@
 package org.cytoscape.ding.impl;
 
-/*
- * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.graph.render.stateful.GraphLOD;
-import org.cytoscape.property.CyProperty;
-import org.cytoscape.property.PropertyUpdatedEvent;
-import org.cytoscape.property.PropertyUpdatedListener;
 
 /**
  * Level of Details object for Ding.
@@ -38,22 +8,19 @@ import org.cytoscape.property.PropertyUpdatedListener;
  * TODO: design and implement event/listeners for this.
  * 
  */
-public class BirdsEyeViewLOD extends GraphLOD {
-	private GraphLOD source;
+public class BirdsEyeViewLOD implements GraphLOD {
+	private final GraphLOD source;
 
 	public BirdsEyeViewLOD(GraphLOD source) {
 		this.source = source;
 	}
 
-	public boolean getDrawEdges() { 
-		return source.getDrawEdges(); 
+	@Override
+	public GraphLOD faster() {
+		return new BirdsEyeViewLOD(source.faster());
 	}
-
-	public void setDrawEdges(boolean drawEdges) { 
-		source.setDrawEdges(drawEdges); 
-	}
-
-	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
+	
+	public RenderEdges renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
 		return source.renderEdges(visibleNodeCount, totalNodeCount, totalEdgeCount);
 	}
 

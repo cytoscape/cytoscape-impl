@@ -26,6 +26,7 @@ package org.cytoscape.ding.impl;
 
 
 import java.awt.BorderLayout;
+import java.util.Properties;
 
 import javax.swing.JComponent;
 
@@ -61,29 +62,24 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 	@Override
 	public RenderingEngine<CyNetwork> createRenderingEngine(final Object visualizationContainer, final View<CyNetwork> view) {
 		if (visualizationContainer == null)
-			throw new IllegalArgumentException(
-					"Visualization container is null.  This should be an JComponent for this rendering engine.");
+			throw new IllegalArgumentException("Visualization container is null. This should be an JComponent for this rendering engine.");
 		if (view == null)
 			throw new IllegalArgumentException("View Model is null.");
-
-		// Check data type compatibility.
-		
 		if (!(visualizationContainer instanceof JComponent) || !(view instanceof CyNetworkView))
-			throw new IllegalArgumentException("Visualization Container object is not of type Component, "
-					+ "which is invalid for this implementation of PresentationFactory");
+			throw new IllegalArgumentException("Visualization Container object is not of type Component, which is invalid for this implementation of PresentationFactory");
 		
 		logger.debug("Start adding BEV.");
 		final JComponent container = (JComponent) visualizationContainer;
 		
 		// Create instance of an engine.
 		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
-		final BirdsEyeView bev = new BirdsEyeView(re, registrar);
+		BirdsEyeView bev = new BirdsEyeView(re, registrar);
 
 		container.setLayout(new BorderLayout());
-		container.add(bev, BorderLayout.CENTER);
+		container.add(bev.getComponent(), BorderLayout.CENTER);
 
 		// Register this rendering engine as service.
-		bev.registerServices();
+		registrar.registerService(bev, RenderingEngine.class, new Properties());
 
 		logger.debug("Bird's Eye View had been set to the component.  Network Model = " + view.getModel().getSUID());
 		return bev;

@@ -94,38 +94,40 @@ public abstract class AbstractApplyHandler<T extends CyIdentifiable> implements 
 		if (updateDependencyMaps)
 			updateDependencyMaps();
 		
-		// Clear visual properties first
-		view.clearVisualProperties();
-		
-		// Get current Visual Lexicon
-		final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
-		final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
-				.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
-				.getVisualLexicon();
-		
-		final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
-		descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
-		
-		while (!descendants.isEmpty()) {
-			final VisualLexiconNode node = descendants.pop();
-			final VisualProperty<?> vp = node.getVisualProperty();
+		view.batch(v -> {
+			// Clear visual properties first
+			view.clearVisualProperties();
 			
-			if (vp.getTargetDataType() != targetDataType)
-				continue; // Because NETWORK has node/edge properties as descendants as well
+			// Get current Visual Lexicon
+			final CyApplicationManager appMgr = serviceRegistrar.getService(CyApplicationManager.class);
+			final VisualLexicon lexicon = appMgr.getCurrentNetworkViewRenderer()
+					.getRenderingEngineFactory(NetworkViewRenderer.DEFAULT_CONTEXT)
+					.getVisualLexicon();
 			
-			final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
-			final Object value = mapping != null ? mapping.getMappedValue(row) : null;
+			final LinkedList<VisualLexiconNode> descendants = new LinkedList<VisualLexiconNode>();
+			descendants.addAll(lexicon.getVisualLexiconNode(rootVisualProperty).getChildren());
 			
-			if (value == null) {
-				// Apply the default value...
-				applyDefaultValue(view, vp, lexicon);
-			} else {
-				// Apply the mapped value...
-				applyMappedValue(view, vp, value);
+			while (!descendants.isEmpty()) {
+				final VisualLexiconNode node = descendants.pop();
+				final VisualProperty<?> vp = node.getVisualProperty();
+				
+				if (vp.getTargetDataType() != targetDataType)
+					continue; // Because NETWORK has node/edge properties as descendants as well
+				
+				final VisualMappingFunction<?, ?> mapping = style.getVisualMappingFunction(vp);
+				final Object value = mapping != null ? mapping.getMappedValue(row) : null;
+				
+				if (value == null) {
+					// Apply the default value...
+					applyDefaultValue(view, vp, lexicon);
+				} else {
+					// Apply the mapped value...
+					applyMappedValue(view, vp, value);
+				}
+				
+				descendants.addAll(node.getChildren());
 			}
-			
-			descendants.addAll(node.getChildren());
-		}
+		});
 	}
 
 	private void applyDefaultValue(final View<T> view, final VisualProperty<?> vp, final VisualLexicon lexicon) {

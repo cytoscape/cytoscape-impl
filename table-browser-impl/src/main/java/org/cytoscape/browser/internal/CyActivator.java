@@ -1,12 +1,41 @@
 package org.cytoscape.browser.internal;
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
+import java.awt.event.ActionListener;
+import java.util.Properties;
+
+import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
+import org.cytoscape.browser.internal.view.DefaultTableBrowser;
+import org.cytoscape.browser.internal.view.GlobalTableBrowser;
+import org.cytoscape.browser.internal.view.PopupMenuHelper;
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.events.RowsDeletedListener;
+import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.TableAboutToBeDeletedListener;
+import org.cytoscape.model.events.TableAddedListener;
+import org.cytoscape.model.events.TablePrivacyChangedListener;
+import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeSavedListener;
+import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.task.TableCellTaskFactory;
+import org.cytoscape.task.TableColumnTaskFactory;
+import org.osgi.framework.BundleContext;
+
 /*
  * #%L
  * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,33 +53,6 @@ package org.cytoscape.browser.internal;
  * #L%
  */
 
-import static org.cytoscape.work.ServiceProperties.TITLE;
-
-import java.awt.event.ActionListener;
-import java.util.Properties;
-
-import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
-import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
-import org.cytoscape.browser.internal.view.AbstractTableBrowser;
-import org.cytoscape.browser.internal.view.DefaultTableBrowser;
-import org.cytoscape.browser.internal.view.GlobalTableBrowser;
-import org.cytoscape.browser.internal.view.PopupMenuHelper;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.events.RowsDeletedListener;
-import org.cytoscape.model.events.RowsSetListener;
-import org.cytoscape.model.events.TableAboutToBeDeletedListener;
-import org.cytoscape.model.events.TableAddedListener;
-import org.cytoscape.model.events.TablePrivacyChangedListener;
-import org.cytoscape.service.util.AbstractCyActivator;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.events.SessionAboutToBeSavedListener;
-import org.cytoscape.session.events.SessionLoadedListener;
-import org.cytoscape.task.TableCellTaskFactory;
-import org.cytoscape.task.TableColumnTaskFactory;
-import org.osgi.framework.BundleContext;
-
 public class CyActivator extends AbstractCyActivator {
 	
 	@Override
@@ -59,24 +61,23 @@ public class CyActivator extends AbstractCyActivator {
 
 		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
-		AbstractTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
-		AbstractTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
+		DefaultTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
+		GlobalTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
 		
-		registerAllServices(bc, nodeTableBrowser, new Properties());
-		registerAllServices(bc, edgeTableBrowser, new Properties());
-		registerAllServices(bc, networkTableBrowser, new Properties());
+		registerAllServices(bc, nodeTableBrowser);
+		registerAllServices(bc, edgeTableBrowser);
+		registerAllServices(bc, networkTableBrowser);
 
-		final Properties globalTableProp = new Properties();
-		registerService(bc, globalTableBrowser, ActionListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionLoadedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TableAddedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, RowsSetListener.class, globalTableProp);
-		registerService(bc, globalTableBrowser, RowsDeletedListener.class, globalTableProp);
+		registerService(bc, globalTableBrowser, ActionListener.class);
+		registerService(bc, globalTableBrowser, SessionLoadedListener.class);
+		registerService(bc, globalTableBrowser, SessionAboutToBeSavedListener.class);
+		registerService(bc, globalTableBrowser, TableAboutToBeDeletedListener.class);
+		registerService(bc, globalTableBrowser, TableAddedListener.class);
+		registerService(bc, globalTableBrowser, TablePrivacyChangedListener.class);
+		registerService(bc, globalTableBrowser, RowsSetListener.class);
+		registerService(bc, globalTableBrowser, RowsDeletedListener.class);
 
 		registerServiceListener(bc, popupMenuHelper::addTableColumnTaskFactory, popupMenuHelper::removeTableColumnTaskFactory, TableColumnTaskFactory.class);
 		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
@@ -93,5 +94,10 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(TITLE, "Format Column...");
 			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
 		}
+		
+		TableBrowserMediator mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser,
+				networkTableBrowser, globalTableBrowser, serviceRegistrar);
+		registerService(bc, mediator, SetCurrentNetworkListener.class);
+		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 	}
 }

@@ -63,9 +63,9 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	// Key is SUID of View object
 	private Map<Long,Set<CyEdgeViewImpl>> adjacentEdgeMap = HashMap.empty();
 	
-	protected final ViewLock nodeLock = new ViewLock();
-	protected final ViewLock edgeLock = new ViewLock();
-	protected final ViewLock netLock  = new ViewLock();
+	protected final ViewLock netLock;
+	protected final ViewLock nodeLock;
+	protected final ViewLock edgeLock;
 	
 	protected final VPStore nodeVPs;
 	protected final VPStore edgeVPs;
@@ -79,6 +79,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.eventHelper = registrar.getService(CyEventHelper.class);
 		this.rendererId = rendererId;
 		this.visualLexicon = visualLexicon;
+		
+		this.netLock  = new ViewLock(null);
+		this.nodeLock = new ViewLock(netLock);
+		this.edgeLock = new ViewLock(netLock);
 		
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);

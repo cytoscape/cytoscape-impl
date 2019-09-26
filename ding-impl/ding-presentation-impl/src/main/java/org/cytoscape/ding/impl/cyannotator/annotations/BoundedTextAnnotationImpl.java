@@ -4,12 +4,10 @@ import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.font.FontRenderContext;
-import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.JDialog;
@@ -46,7 +44,6 @@ import org.cytoscape.view.presentation.annotations.TextAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
 public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl 
                                        implements BoundedTextAnnotation, TextAnnotation {
 	
@@ -68,8 +65,7 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 		this.font = new Font("Arial", Font.PLAIN, initialFontSize);
 		this.fontSize = (float) initialFontSize;
 		this.text = DEF_TEXT;
-		Graphics2D graphics = (Graphics2D) this.getGraphics();
-		super.setSize(getTextWidth(graphics) + 4, getTextHeight(graphics) + 4);
+		super.setSize(getTextWidth() + 4, getTextHeight() + 4);
 	}
 
 	public BoundedTextAnnotationImpl(DRenderingEngine re, double width, double height) {
@@ -118,9 +114,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			name = text.trim();
 		
 		if (!argMap.containsKey(BoundedTextAnnotation.WIDTH)) {
-			Graphics2D graphics = (Graphics2D) this.getGraphics();
-			double width = getTextWidth(graphics) + 8;
-			double height = getTextHeight(graphics) + 8;
+			double width = getTextWidth() + 8;
+			double height = getTextHeight() + 8;
 			super.setSize(width, height);
 		}
 	}
@@ -141,8 +136,8 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 	
 	@Override
-	public Map<String, String> getArgMap() {
-		Map<String, String> argMap = super.getArgMap();
+	public Map<String,String> getArgMap() {
+		var argMap = super.getArgMap();
 		argMap.put(TYPE, BoundedTextAnnotation.class.getName());
 		argMap.put(TEXT, this.text);
 		argMap.put(COLOR, ViewUtils.convertColor((Paint) this.textColor));
@@ -154,27 +149,26 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 
 	@Override
 	public void fitShapeToText() {
-		Graphics2D graphics = (Graphics2D)this.getGraphics();
-		double width = getTextWidth(graphics)+8;
-		double height = getTextHeight(graphics)+8;
+		double width = getTextWidth()+8;
+		double height = getTextHeight()+8;
 		shapeIsFit = true;
 
 		// Different depending on the type...
 		ShapeType shapeType = getShapeTypeInt();
 		switch (shapeType) {
 		case ELLIPSE:
-			width = getTextWidth(graphics)*3/2+8;
-			height = getTextHeight(graphics)*2;
+			width = getTextWidth()*3/2+8;
+			height = getTextHeight()*2;
 			break;
 		case TRIANGLE:
-			width = getTextWidth(graphics)*3/2+8;
-			height = getTextHeight(graphics)*2;
+			width = getTextWidth()*3/2+8;
+			height = getTextHeight()*2;
 			break;
 		case PENTAGON:
 		case HEXAGON:
 		case STAR5:
 		case STAR6:
-			width = getTextWidth(graphics)*9/7+8;
+			width = getTextWidth()*9/7+8;
 			height = width;
 			break;
 		}
@@ -189,95 +183,27 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 	}
 	
 	@Override
-	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		super.resizeAnnotationRelative(initialBounds, outlineBounds);
-		// XXX This doesn't work!  Need to preserve font size in order for this to work right
-		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-		setFontSizeRelative(deltaW);
-	}
-	
-	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-		super.drawAnnotation(g, x, y, scaleFactor);
+	public void paint(Graphics graphics, boolean showSelection) {
+		super.paint(graphics, showSelection);
 
-		if (text == null || textColor == null || font == null) return;
-
-		// For now, we put the text in the middle of the shape.  At some point, we may
-		// want to add other options
-		Graphics2D g2 = (Graphics2D) g;
-		g2.setColor(textColor);
-
-		int width = (int)((double)getWidth()*scaleFactor/getZoom());
-		int height = (int)((double)getHeight()*scaleFactor/getZoom());
-		Font tFont = font.deriveFont(((float)(scaleFactor/getZoom()))*font.getSize2D());
-		FontMetrics fontMetrics=g.getFontMetrics(tFont);
-
-		int halfWidth = (width-(int)(fontMetrics.stringWidth(text)))/2;
-
-		// Note, this is + because we start at the baseline
-		// int halfHeight = ((int)(getHeight()*scaleFactor)+fontMetrics.getHeight()/2)/2;
-		int halfHeight = (height+fontMetrics.getHeight()/2)/2;
-
-		int xLoc = (int)(x*scaleFactor) + halfWidth;
-		int yLoc = (int)(y*scaleFactor) + halfHeight;
-
-		g2.setFont(tFont);
+		Graphics2D g = (Graphics2D)graphics.create();
+		g.setColor(textColor);
+		g.setFont(font);
+		g.setClip(getBounds());
 
 		// Handle opacity
 		int alpha = textColor.getAlpha();
 		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g2.getComposite();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-		g2.drawString(text, xLoc, yLoc);
-		g2.setComposite(originalComposite);
+		final Composite originalComposite = g.getComposite();
+		g.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
+
+		int halfWidth  = (int)(getWidth() - getTextWidth())/2;
+		int halfHeight = (int)(getHeight() + getTextHeight()/2)/2; // Note, this is + because we start at the baseline
+
+		g.drawString(text, (int)getX() + halfWidth, (int)getY() + halfHeight);
+		g.setComposite(originalComposite);
 	}
 
-	@Override
-	public void paint(Graphics g) {
-		super.paint(g);
-
-		Graphics2D g2=(Graphics2D)g;
-		g2.setColor(textColor);
-		g2.setFont(font);
-
-		// Handle opacity
-		int alpha = textColor.getAlpha();
-		float opacity = (float)alpha/(float)255;
-		final Composite originalComposite = g2.getComposite();
-		g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-
-		int halfWidth = (int)(getWidth()-getTextWidth(g2))/2;
-		int halfHeight = (int)(getHeight()+getTextHeight(g2)/2)/2; // Note, this is + because we start at the baseline
-
-		if(usedForPreviews) {
-			g2.drawString(text, halfWidth, halfHeight);
-			g2.setComposite(originalComposite);
-			return;
-		}
-
-		g2.drawString(text, halfWidth, halfHeight);
-		g2.setComposite(originalComposite);
-	}
-
-	@Override
-	public void setSpecificZoom(double zoom) {
-		if (zoom == getSpecificZoom())
-			return;
-
-		fontSize = (float) ((zoom / getSpecificZoom()) * fontSize);
-		font = font.deriveFont(fontSize);
-		super.setSpecificZoom(zoom);
-	}
-
-	@Override
-	public void setZoom(double zoom) {
-		if (zoom == getZoom())
-			return;
-
-		fontSize = (float) ((zoom / getZoom()) * fontSize);
-		font = font.deriveFont(fontSize);
-		super.setZoom(zoom);
-	}
 
 	@Override
 	public void setText(String text) {
@@ -323,25 +249,25 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			updateBounds();
 		update();
 	}
-
-	public void setFontSizeRelative(double factor) {
-		if (savedFontSize != 0.0) {
-			setFontSize(savedFontSize*factor, false);
-		} else {
-			setFontSize(fontSize*factor, false);
-		}
-	}
+//
+//	public void setFontSizeRelative(double factor) {
+//		if (savedFontSize != 0.0) {
+//			setFontSize(savedFontSize*factor, false);
+//		} else {
+//			setFontSize(fontSize*factor, false);
+//		}
+//	}
 
 	@Override
 	public double getFontSize() {
 		return this.fontSize;
 	}
 
-	@Override
-	public void saveBounds() {
-		super.saveBounds();
-		savedFontSize = fontSize;
-	}
+//	@Override
+//	public void saveBounds() {
+//		super.saveBounds();
+//		savedFontSize = fontSize;
+//	}
 
 	@Override
 	public void setFontStyle(int style) {
@@ -389,33 +315,17 @@ public class BoundedTextAnnotationImpl extends ShapeAnnotationImpl
 			return;
 		}
 		// Our bounds should be the larger of the shape or the text
-		double xBound = Math.max(getTextWidth((Graphics2D) this.getGraphics()), shapeWidth);
-		double yBound = Math.max(getTextHeight((Graphics2D) this.getGraphics()), shapeHeight);
+		double xBound = Math.max(getTextWidth(),  width);
+		double yBound = Math.max(getTextHeight(), height);
 		setSize(xBound + 4, yBound + 4);
 	}
 
-	double getTextWidth(Graphics2D g2) {
+	double getTextWidth() {
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getWidth();
-		/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.stringWidth(text);
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(text.length()*fontSize);
-		*/
 	}
 
-	double getTextHeight(Graphics2D g2) {
+	double getTextHeight() {
 		return font.getStringBounds(text, new FontRenderContext(null, true, true)).getHeight();
-		/*
-		if (g2 != null) {
-			FontMetrics fontMetrics=g2.getFontMetrics(font);
-			return fontMetrics.getHeight();
-		}
-		// If we don't have a graphics context, yet, make some assumptions
-		return (int)(fontSize*1.5);
-		*/
 	}
 
 	Font getArgFont(Map<String, String> argMap) {

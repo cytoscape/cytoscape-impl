@@ -32,7 +32,7 @@ import org.cytoscape.equations.ArgType;
 
 public class Value extends AbstractFunction {
 	public Value() {
-		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.STRING, "text_or_number", "A number or a string representing a number.") });
+		super(new ArgDescriptor[] { new ArgDescriptor(ArgType.ANY, "text_or_number", "A number or a string representing a number.") });
 	}
 
 	/**

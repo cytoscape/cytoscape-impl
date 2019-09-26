@@ -70,7 +70,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 		this.shapeAnnotation = new ShapeAnnotationImpl(re, CREATE_WIDTH, CREATE_HEIGHT, false);
 		this.create = true;
 
@@ -96,7 +96,7 @@ public class ShapeAnnotationDialog extends JDialog {
 		
 		// Create the preview panel
 		preview = new ShapeAnnotationImpl(shapeAnnotation, 150, 150, true);
-		preview.getComponent().setSize(152, 152);
+		preview.setSize(152, 152);
 		final PreviewPanel previewPanel = new PreviewPanel(preview);
 
 		shapeAnnotationPanel = new ShapeAnnotationPanel(shapeAnnotation, previewPanel);
@@ -158,21 +158,17 @@ public class ShapeAnnotationDialog extends JDialog {
 			return;
 		}
 		
-		shapeAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
-		shapeAnnotation.addComponent(null);
+		var annotationLocation = re.getTransform().getNodeCoordinates(startingLocation);
+		shapeAnnotation.setLocation(annotationLocation.getX(), annotationLocation.getY());
 		shapeAnnotation.update();
 		cyAnnotator.addAnnotation(shapeAnnotation);
 
-		// Update the canvas
-		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
-
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(shapeAnnotation);
-		
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = shapeAnnotation.getComponent().getLocationOnScreen();
+			Point start = re.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
 			robot.mouseMove((int)start.getX()+CREATE_WIDTH, (int)start.getY()+CREATE_HEIGHT);
 		} catch (Exception e) {}

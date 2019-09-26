@@ -36,26 +36,18 @@ public class DingThumbnailRenderingEngineFactory implements RenderingEngineFacto
 			throw new IllegalArgumentException("View Model is null.");
 
 		// Check data type compatibility.
-		
 		if (!(visualizationContainer instanceof JComponent) || !(view instanceof CyNetworkView))
 			throw new IllegalArgumentException("Visualization Container object is not of type Component, "
 					+ "which is invalid for this implementation of PresentationFactory");
 		
 		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
 		
-		final JComponent container = (JComponent) visualizationContainer;
+		JComponent container = (JComponent) visualizationContainer;
+		ThumbnailView tv = new ThumbnailView(re);
 		
-		// Create instance of an engine.
-		final ThumbnailView bev = new ThumbnailView(re, registrar);
-		
-		bev.registerServices();
-
 		container.setLayout(new BorderLayout());
-		container.add(bev, BorderLayout.CENTER);
-
-		// Register this rendering engine as service.
-
-		return bev;
+		container.add(tv, BorderLayout.CENTER);
+		return tv;
 	}
 
 	@Override

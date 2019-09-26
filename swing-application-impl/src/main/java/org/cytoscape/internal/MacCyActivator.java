@@ -1,5 +1,6 @@
 package org.cytoscape.internal;
 
+import java.awt.Desktop;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -12,8 +13,6 @@ import org.cytoscape.internal.view.help.AboutDialog;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.osgi.framework.BundleContext;
-
-import com.apple.eawt.Application;
 
 /*
  * #%L
@@ -54,14 +53,15 @@ public class MacCyActivator extends AbstractCyActivator {
 		};
 		registerService(context, listener, CyShutdownListener.class);
 		
-		Application application = Application.getApplication();
-		application.setQuitHandler((evt, response) -> {
+		Desktop desktop = Desktop.getDesktop();
+		
+		desktop.setQuitHandler((evt, response) -> {
 			shutdown.exit(0);
 			
 			if (lastShutdownEvent[0] != null && !lastShutdownEvent[0].actuallyShutdown())
 				response.cancelQuit();
 		});
-		application.setAboutHandler(evt -> {
+		desktop.setAboutHandler(evt -> {
 			SwingUtilities.invokeLater(() -> {
 				if (aboutDialog == null) { // Prevents more than one about dialog
 					aboutDialog = new AboutDialog(serviceRegistrar);

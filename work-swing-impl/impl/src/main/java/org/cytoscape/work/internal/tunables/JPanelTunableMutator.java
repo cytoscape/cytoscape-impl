@@ -20,6 +20,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.util.swing.BasicCollapsiblePanel;
@@ -421,10 +422,15 @@ public class JPanelTunableMutator extends AbstractTunableInterceptor<GUITunableH
 				if (displayState.equalsIgnoreCase("uncollapsed"))
 					cp.setCollapsed(false);	
 			
-				cp.addPropertyChangeListener(new PropertyChangeListener() {
-					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						repackEnclosingDialog(cp);
+				// We need to set this up a bit later to avoid an IllegalStateException
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						cp.addPropertyChangeListener(new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								repackEnclosingDialog(cp);
+							}
+						});
 					}
 				});
 				

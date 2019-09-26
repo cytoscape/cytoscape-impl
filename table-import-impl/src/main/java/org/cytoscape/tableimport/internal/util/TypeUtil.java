@@ -1,29 +1,5 @@
 package org.cytoscape.tableimport.internal.util;
 
-/*
- * #%L
- * Cytoscape Table Import Impl (table-import-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_BOOLEAN;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_FLOATING;
 import static org.cytoscape.tableimport.internal.util.AttributeDataType.TYPE_INTEGER;
@@ -59,11 +35,33 @@ import java.util.regex.Pattern;
 
 import javax.swing.table.TableModel;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 
-/**
- *
+/*
+ * #%L
+ * Cytoscape Table Import Impl (table-import-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
  */
+
 public final class TypeUtil {
 
 	/**
@@ -173,7 +171,10 @@ public final class TypeUtil {
 				final String name = model.getColumnName(i);
 				final AttributeDataType dataType = dataTypes[i];
 				
-				if (importType == NETWORK_IMPORT) {
+				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) {
+					// Columns called SUID are ignored by default
+					types[i] = NONE;
+				} else if (importType == NETWORK_IMPORT) {
 					if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
 						srcFound = true;
 						types[i] = SOURCE;
@@ -215,6 +216,11 @@ public final class TypeUtil {
 		if (importType == TABLE_IMPORT && !keyFound) {
 			// Just use the first String or Integer column as key then...
 			for (int i = 0; i < types.length; i++) {
+				final String name = model.getColumnName(i);
+				
+				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) // Columns called SUID are ignored by default
+					continue;
+				
 				if (dataTypes[i] == TYPE_STRING || dataTypes[i] == TYPE_INTEGER || dataTypes[i] == TYPE_LONG) {
 					types[i] = KEY;
 					break;
@@ -247,6 +253,7 @@ public final class TypeUtil {
 		COLUMN_LOOP:
 		for (int col = 0; col < model.getColumnCount(); col++) {
 			AttributeDataType dt = dataTypes[col];
+			
 			for (int row = 0; row < rowCount; row++) {
 				final String val = (String) model.getValueAt(row, col);
 				
@@ -320,6 +327,7 @@ public final class TypeUtil {
 	
 	public static SourceColumnSemantic[] parseColumnTypeList(final String strList) {
 		final List<SourceColumnSemantic> typeList = new ArrayList<>();
+		
 		if (strList != null) {
 			final String[] tokens = getCSV(strList);
 			
@@ -366,6 +374,7 @@ public final class TypeUtil {
 				typeList.add(dataType);
 			}
 		}
+		
 		return typeList.toArray(new SourceColumnSemantic[typeList.size()]);
 	}
 
@@ -505,9 +514,9 @@ public final class TypeUtil {
 	}
 	
 	private static boolean isNaN(final String val){
-		if (val != null){
+		if (val != null)
 			return val.equals("NA") || val.equals("#NUM!") || val.equals("NaN");
-		}
+		
 		return false;
 	}
 
@@ -515,6 +524,7 @@ public final class TypeUtil {
 		if (val != null) {
 			if (isNaN(val))
 				return true;
+			
 			try {
 				final long n = Long.parseLong(val.trim());
 				return n <= Integer.MAX_VALUE && n >= Integer.MIN_VALUE;
@@ -529,6 +539,7 @@ public final class TypeUtil {
 		if (val != null) {
 			if (isNaN(val))
 				return true;
+			
 			try {
 				Long.parseLong(val.trim());
 				return true;
@@ -542,6 +553,7 @@ public final class TypeUtil {
 	private static boolean isDouble(String val, Character decimalSeparator) {
 		if (val != null) {
 			val = val.trim();
+			
 			if (isNaN(val))
 				return true;
 //			try {

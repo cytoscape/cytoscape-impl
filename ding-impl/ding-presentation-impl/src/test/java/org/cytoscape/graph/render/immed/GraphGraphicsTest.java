@@ -2,11 +2,11 @@ package org.cytoscape.graph.render.immed;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.util.Random;
 
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TestUtils;
+import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 
@@ -52,7 +52,7 @@ public class GraphGraphicsTest extends TestCase {
 	OldGraphGraphics oldGraphGraphics;
 	int numNodes; 
 	int numEdges;
-	BufferedImage image;
+	NetworkImageBuffer image;
 	int canvasSize = 1000;
 	int numTests = 20;
 
@@ -68,10 +68,9 @@ public class GraphGraphicsTest extends TestCase {
 	}
 
 	public void setUp() {
-		image = new BufferedImage(canvasSize,canvasSize,BufferedImage.TYPE_INT_ARGB);
-		currentGraphGraphics = new GraphGraphics(image,false,true);
-		currentGraphGraphics.clear(Color.white,0,0,1.0);
-		oldGraphGraphics = new OldGraphGraphics(image,false);
+		image = new NetworkImageBuffer(canvasSize, canvasSize);
+		currentGraphGraphics = new GraphGraphics(image);
+		oldGraphGraphics = new OldGraphGraphics(image.getImage(),false);
 		oldGraphGraphics.clear(Color.white,0,0,1.0);
 	}
 

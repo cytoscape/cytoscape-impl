@@ -68,7 +68,7 @@ public class ImageAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getTransform().getCenter();
 		this.annotation = new ImageAnnotationImpl(re, false);
 		this.create = true;
 
@@ -165,19 +165,15 @@ public class ImageAnnotationDialog extends JDialog {
 		}
 
 		annotation.setImage(preview.getImageURL());
-		annotation.getComponent().setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
-		annotation.addComponent(null);
+		annotation.setLocation((int) startingLocation.getX(), (int) startingLocation.getY());
 		cyAnnotator.addAnnotation(annotation);
-
-		// Update the canvas
-		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(annotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = annotation.getComponent().getLocationOnScreen();
+			Point start = re.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
 			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {

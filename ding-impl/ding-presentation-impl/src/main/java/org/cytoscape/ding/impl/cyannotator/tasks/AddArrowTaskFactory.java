@@ -30,7 +30,6 @@ import java.awt.geom.Point2D;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
-import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.ArrowAnnotationImpl;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.task.NetworkViewLocationTaskFactory;
@@ -63,8 +62,7 @@ public class AddArrowTaskFactory implements NetworkViewLocationTaskFactory {
 		DRenderingEngine re = dingRenderer.getRenderingEngine(networkView);
 		if(re == null)
 			return false;
-		CyAnnotator cyAnnotator = re.getCyAnnotator();
-		DingAnnotation annotation = cyAnnotator.getAnnotationAt(javaPt);
+		DingAnnotation annotation = re.getPicker().getAnnotationAt(javaPt);
 		if (annotation == null || annotation instanceof ArrowAnnotationImpl) 
 			return false;
 		return true;

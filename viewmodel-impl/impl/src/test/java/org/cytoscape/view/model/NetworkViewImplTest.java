@@ -7,13 +7,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -22,22 +20,16 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
-import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.events.ViewChangedEvent;
-import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
-import org.cytoscape.view.model.internal.CyNetworkViewFactoryFactoryImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.VPStore;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
-import org.cytoscape.view.presentation.property.NullVisualProperty;
 import org.junit.Test;
 
 public class NetworkViewImplTest {
@@ -57,30 +49,8 @@ public class NetworkViewImplTest {
 		return network;
 	}
 	
-	private static CyNetworkViewImpl createNetworkView(CyNetwork network) {
-		return createNetworkView(network, null);
-	}
-			
-	private static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
-		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
-		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
-		
-		CyServiceRegistrar registrar = mock(CyServiceRegistrar.class);
-		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
-		
-		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
-		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
-		if(configExtender != null) {
-			configExtender.accept(config);
-		}
-		
-		CyNetworkViewFactory viewFactory = factoryFactory.createNetworkViewFactory(lexicon, "test", config);
-		CyNetworkViewImpl networkView = (CyNetworkViewImpl) viewFactory.createNetworkView(network);
-		return networkView;
-	}
-	
 	private CyNetworkViewImpl createSquareTestNetworkView() {
-		return createNetworkView(createSquareTestNetwork());
+		return NetworkViewTestUtils.createNetworkView(createSquareTestNetwork());
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -293,7 +263,7 @@ public class NetworkViewImplTest {
 	@Test
 	public void testVisualPropertiesParallel() throws Exception {
 		CyNetwork network = networkSupport.getNetwork();
-		CyNetworkViewImpl netView = createNetworkView(network);
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, null);
 		final int numTasks = 1000;
 		
 		{
@@ -349,30 +319,6 @@ public class NetworkViewImplTest {
 	}
 	
 	
-	@Test
-	public void testDirtyFlag() throws Exception {
-		CyNetwork network = networkSupport.getNetwork();
-		CyNetworkViewImpl netView = createNetworkView(network);
-		
-		netView.setVisualProperty(NODE_PAINT, Color.BLUE);
-		assertTrue(netView.isDirty());
-		
-		netView.createSnapshot();
-		assertFalse(netView.isDirty());
-		
-		netView.batch(nv -> {
-			nv.setVisualProperty(NODE_PAINT, Color.RED);
-			nv.setVisualProperty(NODE_PAINT, Color.BLUE);
-		}, false);
-		assertFalse(netView.isDirty());
-		
-		netView.batch(nv -> {
-			nv.setVisualProperty(NODE_PAINT, Color.RED);
-			nv.setVisualProperty(NODE_PAINT, Color.BLUE);
-		});
-		assertTrue(netView.isDirty());
-	}
-	
 	
 	@Test
 	public void testAdjacentEdges() {
@@ -387,7 +333,7 @@ public class NetworkViewImplTest {
 		CyEdge e4 = network.addEdge(n4, n1, false);
 		CyEdge e5 = network.addEdge(n1, n3, false);
 		
-		CyNetworkViewImpl netView = createNetworkView(network);
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network);
 		
 		{
 			CyNetworkViewSnapshot snapshot = netView.createSnapshot();
@@ -526,7 +472,7 @@ public class NetworkViewImplTest {
 		final String NODE_LABEL_IS_CCC = "nodeLabel.ccc";
 		
 		CyNetwork network = createSquareTestNetwork();
-		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, config -> {
 			config.addTrackedVisualProperty(NODE_LABEL_STARTS_WITH_A, NODE_LABEL, v -> v.startsWith("A"));
 			config.addTrackedVisualProperty(NODE_LABEL_IS_CCC, NODE_LABEL, "CCC");
 		});
@@ -569,7 +515,7 @@ public class NetworkViewImplTest {
 	public void testRemovingANodeRemovesItsVPs() {
 		final String NODE_LABEL_STARTS_WITH_A = "nodeLabel.starta";
 		CyNetwork network = createSquareTestNetwork();
-		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, config -> {
 			config.addTrackedVisualProperty(NODE_LABEL_STARTS_WITH_A, NODE_LABEL, v -> v.startsWith("A"));
 		});
 		
@@ -597,7 +543,7 @@ public class NetworkViewImplTest {
 		final String EDGE_LABEL_IS_CCC = "edgeLabel.ccc";
 		
 		CyNetwork network = createSquareTestNetwork();
-		CyNetworkViewImpl netView = createNetworkView(network, config -> {
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, config -> {
 			config.addTrackedVisualProperty(EDGE_LABEL_STARTS_WITH_A, EDGE_LABEL, v -> v.startsWith("A"));
 			config.addTrackedVisualProperty(EDGE_LABEL_IS_CCC, EDGE_LABEL, "CCC");
 		});

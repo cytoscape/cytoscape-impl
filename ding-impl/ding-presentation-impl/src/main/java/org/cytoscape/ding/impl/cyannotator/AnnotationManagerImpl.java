@@ -14,11 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
-import org.cytoscape.ding.impl.DRenderingEngine.Canvas;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -68,7 +67,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	
 	@Override
 	public void addAnnotations(Collection<? extends Annotation> annotations) {
-		Map<CyNetworkView,Map<Canvas,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
+		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, false);
 		if (annotationsByView.isEmpty())
 			return;
 		
@@ -93,14 +92,15 @@ public class AnnotationManagerImpl implements AnnotationManager {
 				// before the groups are added it can lead to bad things happening.
 				List<DingAnnotation> all = new ArrayList<>();
 				
-				if(annotationsByCanvas.containsKey(Canvas.FOREGROUND_CANVAS)) {
-					List<DingAnnotation> foregroundAnnotations = annotationsByCanvas.get(Canvas.FOREGROUND_CANVAS);
-					((ArbitraryGraphicsCanvas)re.getCanvas(Canvas.FOREGROUND_CANVAS)).addAnnotations(foregroundAnnotations);
+				if(annotationsByCanvas.containsKey(CanvasID.FOREGROUND)) {
+					List<DingAnnotation> foregroundAnnotations = annotationsByCanvas.get(CanvasID.FOREGROUND);
+//					re.getAnnotationCanvas(CanvasID.FOREGROUND).addAnnotations(foregroundAnnotations);
+//					re.getCyAnnotator().addAnnotations(annotations);
 					all.addAll(foregroundAnnotations);
 				}
-				if(annotationsByCanvas.containsKey(Canvas.BACKGROUND_CANVAS)) {
-					List<DingAnnotation> backgroundAnnotations = annotationsByCanvas.get(Canvas.BACKGROUND_CANVAS);
-					((ArbitraryGraphicsCanvas)re.getCanvas(Canvas.BACKGROUND_CANVAS)).addAnnotations(backgroundAnnotations);
+				if(annotationsByCanvas.containsKey(CanvasID.BACKGROUND)) {
+					List<DingAnnotation> backgroundAnnotations = annotationsByCanvas.get(CanvasID.BACKGROUND);
+//					re.getAnnotationCanvas(CanvasID.BACKGROUND).addAnnotations(backgroundAnnotations);
 					all.addAll(backgroundAnnotations);
 				}
 				
@@ -126,36 +126,32 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	@Override
 	public void removeAnnotations(Collection<? extends Annotation> annotations) {
 		// throws IllegalAnnotationStructureException
-		Map<CyNetworkView,Map<Canvas,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
+		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> annotationsByView = groupByViewAndCanvasAndFlatten(annotations, true);
 		if (annotationsByView.isEmpty())
 			return;
 		
 		DingRenderer dingRenderer = serviceRegistrar.getService(DingRenderer.class);
 		
-		invokeOnEDTAndWait(() -> {
-			annotationsByView.forEach((view, annotationsByCanvas) -> {
-				annotationsByCanvas.forEach((canvasId, dingAnnotations) -> {
-					DRenderingEngine re = dingRenderer.getRenderingEngine(view);
-					
-					// The following code is a batch version of Annotation.removeAnnotation()
-					for (DingAnnotation a : dingAnnotations) {
-						GroupAnnotation parent = a.getGroupParent();
-						if (parent != null)
-							parent.removeMember(a);
-					}
+		annotationsByView.forEach((view, annotationsByCanvas) -> {
+			DRenderingEngine re = dingRenderer.getRenderingEngine(view);
+			
+			annotationsByCanvas.forEach((canvasId, dingAnnotations) -> {
+				// The following code is a batch version of Annotation.removeAnnotation()
+				for (DingAnnotation a : dingAnnotations) {
+					GroupAnnotation parent = a.getGroupParent();
+					if (parent != null)
+						parent.removeMember(a);
+				}
 
-					List<DingAnnotation> arrows = getArrows(dingAnnotations);
-					
-					ArbitraryGraphicsCanvas canvas = (ArbitraryGraphicsCanvas)re.getCanvas(canvasId);
-					canvas.removeAnnotations(arrows);
-					canvas.removeAnnotations(dingAnnotations);
-					canvas.repaint();
-
-					re.getCyAnnotator().removeAnnotations(arrows);
-					re.getCyAnnotator().removeAnnotations(dingAnnotations);
-				});
+				List<DingAnnotation> arrows = getArrows(dingAnnotations);
+				
+				re.getCyAnnotator().removeAnnotations(arrows);
+				re.getCyAnnotator().removeAnnotations(dingAnnotations);
 			});
+			
 		});
+		
+		
 		
 		// TODO
 //		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
@@ -165,8 +161,8 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	}
 	
 	
-	private Map<CyNetworkView,Map<Canvas,List<DingAnnotation>>> groupByViewAndCanvasAndFlatten(Collection<? extends Annotation> annotations, boolean incudeExisting) {
-		Map<CyNetworkView,Map<Canvas,List<DingAnnotation>>> map = new HashMap<>();
+	private Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> groupByViewAndCanvasAndFlatten(Collection<? extends Annotation> annotations, boolean incudeExisting) {
+		Map<CyNetworkView,Map<CanvasID,List<DingAnnotation>>> map = new HashMap<>();
 		
 		groupByView(annotations).forEach((view, as) -> {
 			Set<DingAnnotation> flattened = flattenAnnotations(view, as, incudeExisting);
@@ -184,7 +180,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 			.collect(groupingBy(da -> da.getNetworkView()));
 	}
 	
-	private Map<Canvas,List<DingAnnotation>> groupByCanvas(CyNetworkView view, Collection<DingAnnotation> dingAnnotations) {
+	private Map<CanvasID,List<DingAnnotation>> groupByCanvas(CyNetworkView view, Collection<DingAnnotation> dingAnnotations) {
 		return dingAnnotations.stream().collect(groupingBy(da -> getCanvas(view, da)));
 	}
 	
@@ -213,8 +209,8 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	}
 	
 
-	private static Canvas getCanvas(CyNetworkView view, DingAnnotation annotation) {
-		return annotation.getCanvas() == null ? Canvas.FOREGROUND_CANVAS : annotation.getCanvas().getCanvasId();
+	private static CanvasID getCanvas(CyNetworkView view, DingAnnotation annotation) {
+		return annotation.getCanvas() == null ? CanvasID.FOREGROUND : annotation.getCanvas();
 	}
 	
 	private static List<DingAnnotation> getArrows(Collection<DingAnnotation> annotations) {
@@ -225,7 +221,7 @@ public class AnnotationManagerImpl implements AnnotationManager {
 	public List<Annotation> getAnnotations(CyNetworkView networkView) {
 		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(networkView);
 		if(re != null)
-			return re.getCyAnnotator().getAnnotations();
+			return new ArrayList<>(re.getCyAnnotator().getAnnotations()); // just to shut up the type checker
 		return Collections.emptyList();
 	}
 }

@@ -1,14 +1,13 @@
 package org.cytoscape.ding.impl.cyannotator.annotations;
 
 import java.awt.AlphaComposite;
-import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,15 +15,13 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.swing.JComponent;
 import javax.swing.JDialog;
 
-import org.cytoscape.ding.impl.ArbitraryGraphicsCanvas;
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.utils.ViewUtils;
-import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.ArrowAnnotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 
@@ -52,35 +49,36 @@ import org.cytoscape.view.presentation.annotations.GroupAnnotation;
  * #L%
  */
 
-@SuppressWarnings("serial")
-public abstract class AbstractAnnotation extends JComponent implements DingAnnotation {
+public abstract class AbstractAnnotation implements DingAnnotation {
 	
-	protected boolean selected;
-
-	private double globalZoom = 1.0;
-	private double myZoom = 1.0;
-
-	private DRenderingEngine.Canvas canvasName;
-	private UUID uuid = UUID.randomUUID();
-
-	private Set<ArrowAnnotation> arrowList = new HashSet<>();
-
-	protected final boolean usedForPreviews;
-	protected DRenderingEngine re;
-	protected ArbitraryGraphicsCanvas canvas;
-	protected GroupAnnotationImpl parent;
-	protected CyAnnotator cyAnnotator;
-	protected String name;
-	protected Point2D offset; // Offset in node coordinates
-	protected Rectangle2D initialBounds;
-
 	protected static final String ID = "id";
 	protected static final String TYPE = "type";
 	protected static final String ANNOTATION_ID = "uuid";
 	protected static final String PARENT_ID = "parent";
+	
+	
+	protected final CyAnnotator cyAnnotator;
+	private UUID uuid = UUID.randomUUID();
+	
+	protected boolean selected;
 
-	protected Map<String, String> savedArgMap;
-	protected double zOrder;
+	private Set<ArrowAnnotation> arrowList = new HashSet<>();
+	protected final boolean usedForPreviews;
+	protected DRenderingEngine re;
+	protected CanvasID canvas;
+	protected GroupAnnotationImpl groupParent;
+	protected String name;
+	
+	// location in node coordinates
+	protected double x;
+	protected double y;
+	protected double width;
+	protected double height;
+	
+	protected int zOrder;
+	
+	
+	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
 	/**
 	 * This constructor is used to create an empty annotation
@@ -92,30 +90,30 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		this.re = re;
 		this.cyAnnotator = re == null ? null : re.getCyAnnotator();
 		this.usedForPreviews = usedForPreviews;
-		this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS));
-		this.canvasName = DRenderingEngine.Canvas.FOREGROUND_CANVAS;
-		this.globalZoom = re.getZoom();
-		name = getDefaultName();
+		this.canvas = CanvasID.FOREGROUND;
+		this.name = getDefaultName();
 	}
 
 	protected AbstractAnnotation(AbstractAnnotation c, boolean usedForPreviews) {
 		this(c.re, usedForPreviews);
-		arrowList = new HashSet<>(c.arrowList);
+		this.arrowList = new HashSet<>(c.arrowList);
 		this.canvas = c.canvas;
-		this.canvasName = c.canvasName;
 	}
 
-	protected AbstractAnnotation(DRenderingEngine re, double x, double y, double zoom) {
+	protected AbstractAnnotation(DRenderingEngine re, double x, double y) {
 		this(re, false);
-		setLocation((int)x, (int)y);
+		setLocation(x, y);
 	}
 
 	protected AbstractAnnotation(DRenderingEngine re, Map<String, String> argMap) {
 		this(re, false);
 
-		Point2D coords = ViewUtils.getComponentCoordinates(re, argMap);
-		this.globalZoom = ViewUtils.getDouble(argMap, ZOOM, 1.0);
-		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0);
+		if (argMap.containsKey(Annotation.X))
+			x = Double.parseDouble(argMap.get(Annotation.X));
+		if (argMap.containsKey(Annotation.Y))
+			y = Double.parseDouble(argMap.get(Annotation.Y));
+		
+		this.zOrder = ViewUtils.getDouble(argMap, Z, 0.0).intValue();
 		
 		if (argMap.get(NAME) != null)
 			name = argMap.get(NAME);
@@ -123,16 +121,14 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		String canvasString = ViewUtils.getString(argMap, CANVAS, FOREGROUND);
 		
 		if (canvasString != null && canvasString.equals(BACKGROUND)) {
-			this.canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS));
-			this.canvasName = DRenderingEngine.Canvas.BACKGROUND_CANVAS;
+			this.canvas = CanvasID.BACKGROUND;
 		}
-
-		setLocation((int)coords.getX(), (int)coords.getY());
 
 		if (argMap.containsKey(ANNOTATION_ID))
 			this.uuid = UUID.fromString(argMap.get(ANNOTATION_ID));
 	}
 
+	
 	//------------------------------------------------------------------------
 
 	protected String getDefaultName() {
@@ -141,211 +137,148 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return cyAnnotator.getDefaultAnnotationName(getType().getSimpleName().replace("Annotation", ""));
 	}
 	
-//	@Override
-//	public String toString() {
-//		return getArgMap().get("type")+" annotation "+uuid.toString()+" at "+getX()+", "+getY()+" zoom="+globalZoom+" on canvas "+canvasName;
-//	}
+	
+	@Override
+	public double getX() {
+		return x;
+	}
+	
+	@Override
+	public double getY() {
+		return y;
+	}
+	
+	@Override
+	public void setLocation(double x, double y) {
+		this.x = x;
+		this.y = y;
+	}
+	
+	public void setX(double x) {
+		this.x = x;
+	}
+	
+	public void setY(double y) {
+		this.y = y;
+	}
+	
+	@Override
+	public double getWidth() {
+		return width;
+	}
+	
+	@Override
+	public double getHeight() {
+		return height;
+	}
+	
+	public void setBounds(Rectangle2D bounds) {
+		this.x = bounds.getX();
+		this.y = bounds.getY();
+		this.width = bounds.getWidth();
+		this.height = bounds.getHeight();
+	}
+	
+	public Rectangle2D getBounds() {
+		return new Rectangle2D.Double(x, y, width, height);
+	}
+	
+	public void setSize(double width, double height) {
+		this.width = width;
+		this.height = height;
+	}
+	
+	@Override
+	public double getZoom() {
+		return 1; // Legacy
+	}
+	
 
 	@Override
-	public String getCanvasName() {
-		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
-			return BACKGROUND;
-		return FOREGROUND;
+	public CanvasID getCanvas() {
+		return canvas;
 	}
 
 	@Override
-	public void setCanvas(String cnvs) {
-		canvasName = (cnvs.equals(BACKGROUND)) ? DRenderingEngine.Canvas.BACKGROUND_CANVAS : DRenderingEngine.Canvas.FOREGROUND_CANVAS;
-		canvas = (ArbitraryGraphicsCanvas)(re.getCanvas(canvasName));
-		for (ArrowAnnotation arrow: arrowList) 
-			if (arrow instanceof DingAnnotation)
-				((DingAnnotation)arrow).setCanvas(cnvs);
-
+	public void setCanvas(String name) {
+		CanvasID canvasID = CanvasID.fromArgName(name); 
+		changeCanvas(canvasID);
 		update();		// Update network attributes
 	}
 
 	@Override
-	public void changeCanvas(final String cnvs) {
-		// Are we really changing anything?
-		if ((cnvs.equals(BACKGROUND) && canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS)) ||
-		    (cnvs.equals(FOREGROUND) && canvasName.equals(DRenderingEngine.Canvas.FOREGROUND_CANVAS)))
+	public void changeCanvas(CanvasID canvasID) {
+		if(this.canvas == canvasID)
 			return;
 
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			if (!(this instanceof ArrowAnnotationImpl)) {
-				for (ArrowAnnotation arrow: arrowList) {
-					if (arrow instanceof DingAnnotation)
-						((DingAnnotation)arrow).changeCanvas(cnvs);
-				}
+		this.canvas = canvasID;
+		
+		for(ArrowAnnotation arrow: arrowList) {
+			if(arrow instanceof DingAnnotation) {
+				((DingAnnotation)arrow).changeCanvas(canvasID);
 			}
-			
-			canvas.remove(this);	// Remove ourselves from the current canvas
-			canvas.repaint();  	// update the canvas
-			setCanvas(cnvs);		// Set the new canvas
-			canvas.add(this);	// Add ourselves		
-			canvas.repaint();  	// update the canvas
-		});
+		}
 	}
 
 	@Override
 	public CyNetworkView getNetworkView() {
-		return (CyNetworkView)re.getViewModel();
+		return re.getViewModel();
 	}
 
 	@Override
-	public ArbitraryGraphicsCanvas getCanvas() {
-		return canvas;
-	}
-
-	public JComponent getComponent() {
-		return (JComponent)this;
-	}
-
 	public UUID getUUID() {
 		return uuid;
 	}
 
-	public double getZOrder() {
-		return zOrder;
-	}
-
 	@Override
-	public void addComponent(final JComponent cnvs) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			if (inCanvas(canvas) && (canvas == cnvs)) {
-				canvas.setComponentZOrder(this, (int)zOrder);
-				return;
-			}
-
-			if (cnvs == null && canvas != null) {
-	
-			} else if (cnvs == null) {
-				setCanvas(FOREGROUND);
-			} else {
-				if (cnvs.equals(re.getCanvas(DRenderingEngine.Canvas.BACKGROUND_CANVAS)))
-					setCanvas(BACKGROUND);
-				else
-					setCanvas(FOREGROUND);
-			}
-			canvas.add(this.getComponent());
-			canvas.setComponentZOrder(this, (int)zOrder);
-		});
+	public int getZOrder() {
+		return zOrder;
 	}
     
 	@Override
-	public CyAnnotator getCyAnnotator() {return cyAnnotator;}
+	public void setZOrder(int z) {
+		this.zOrder = z;
+	}
+	
+	@Override
+	public CyAnnotator getCyAnnotator() {
+		return cyAnnotator;
+	}
 
 	@Override
 	public void setGroupParent(GroupAnnotation parent) {
 		if (parent instanceof GroupAnnotationImpl) {
-			this.parent = (GroupAnnotationImpl)parent;
+			this.groupParent = (GroupAnnotationImpl) parent;
 		} else if (parent == null) {
-			this.parent = null;
+			this.groupParent = null;
 		}
 //		cyAnnotator.addAnnotation(this);
 	}
 
 	@Override
 	public GroupAnnotation getGroupParent() {
-		return (GroupAnnotation)parent;
+		return groupParent;
 	}
     
-	// Assumes location is node coordinates
-	@Override
-	public void moveAnnotationRelative(Point2D location) {
-		if (offset == null) {
-			moveAnnotation(location);
-			return;
-		}
-
-		// Get the relative move
-		moveAnnotation(new Point2D.Double(location.getX()-offset.getX(), location.getY()-offset.getY()));
-	}
-
 	// Assumes location is node coordinates.
 	@Override
 	public void moveAnnotation(Point2D location) {
-		// Location is in "node coordinates"
-		Point2D coords = ViewUtils.getComponentCoordinates(re, location.getX(), location.getY());
 		if (!(this instanceof ArrowAnnotationImpl)) {
-			setLocation((int)coords.getX(), (int)coords.getY());
+			setLocation(location.getX(), location.getY());
 		}
-	}
-
-	@Override
-	public void setLocation(final int x, final int y) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			super.setLocation(x, y);
-			canvas.modifyComponentLocation(x, y, this);
-		});
-	}
-
-	@Override
-	public void setSize(final int width, final int height) {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			super.setSize(width, height);
-		});
-	}
-
-	@Override
-	public Point getLocation() {
-		return super.getLocation();
-	}
-
-	@Override
-	public boolean contains(int x, int y) {
-		if (x > getX() && y > getY() && x-getX() < getWidth() && y-getY() < getHeight())
-			return true;
-		return false;
 	}
 
 	@Override
 	public void removeAnnotation() {
-		ViewUtil.invokeOnEDTAndWait(() -> {
-			canvas.remove(this);
-			cyAnnotator.removeAnnotation(this);
-			for (ArrowAnnotation arrow: arrowList) {
-				if (arrow instanceof DingAnnotation)
-					((DingAnnotation)arrow).removeAnnotation();
+		cyAnnotator.removeAnnotation(this);
+		for(ArrowAnnotation arrow: arrowList) {
+			if(arrow instanceof DingAnnotation) {
+				((DingAnnotation)arrow).removeAnnotation();
 			}
-			if (parent != null)
-				parent.removeMember(this);
-	
-			canvas.repaint();
-		});
-	}
-
-	
-	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		Rectangle2D daBounds = getInitialBounds();
-		
-		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
-		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
-		
-		double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
-		double deltaY = (daBounds.getY()-initialBounds.getY())/initialBounds.getHeight();
-		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
-
-		// Now, switch back to component coordinates
-		Rectangle2D componentBounds = ViewUtils.getComponentCoordinates(cyAnnotator.getRenderingEngine(), newBounds);
-		getComponent().setLocation((int)componentBounds.getX(), (int)componentBounds.getY());
-		resizeAnnotation(componentBounds.getWidth(), componentBounds.getHeight());
-	}
-	
-	
-	private static Rectangle2D adjustBounds(Rectangle2D bounds, 
-            Rectangle2D outerBounds,
-            double dx, double dy, 
-            double dw, double dh) {
-		double newX = outerBounds.getX() + dx*outerBounds.getWidth();
-		double newY = outerBounds.getY() + dy*outerBounds.getHeight();
-		double newWidth = bounds.getWidth()*dw;
-		double newHeight = bounds.getHeight()*dh;
-		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
-	}
-	
-	public void resizeAnnotation(double width, double height) {
-		// Nothing to do here...
+		}
+		if(groupParent != null) {
+			groupParent.removeMember(this);
+		}
 	}
 
 	@Override
@@ -357,32 +290,6 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	public void setName(String name) {
 		if (!Objects.equals(name, this.name)) {
 			this.name = name;
-			update();
-		}
-	}
-
-	@Override
-	public double getZoom() {
-		return globalZoom;
-	}
-
-	@Override
-	public void setZoom(double zoom) {
-		if (zoom != globalZoom) {
-			globalZoom = zoom;
-			update();
-		}
-	}
-
-	@Override
-	public double getSpecificZoom() {
-		return myZoom;
-	}
-
-	@Override
-	public void setSpecificZoom(double zoom) {
-		if (zoom != myZoom) {
-			myZoom = zoom;
 			update();
 		}
 	}
@@ -403,7 +310,7 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 			cyAnnotator.setSelectedAnnotation(this, selected);
 			
 			if (firePropertyChangeEvent)
-				firePropertyChange("selected", !selected, selected);
+				pcs.firePropertyChange("selected", !selected, selected);
 		}
 	}
 
@@ -428,21 +335,18 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	public Map<String,String> getArgMap() {
 		Map<String, String> argMap = new HashMap<>();
 		if (name != null)
-			argMap.put(NAME, this.name);
-		ViewUtils.addNodeCoordinates(re, argMap, getX(), getY());
-		argMap.put(ZOOM,Double.toString(this.globalZoom));
-		if (canvasName.equals(DRenderingEngine.Canvas.BACKGROUND_CANVAS))
-			argMap.put(CANVAS, BACKGROUND);
-		else
-			argMap.put(CANVAS, FOREGROUND);
-		argMap.put(ANNOTATION_ID, this.uuid.toString());
+			argMap.put(NAME, name);
+		
+		argMap.put(X, Double.toString(getX()));
+		argMap.put(Y, Double.toString(getY()));
+		argMap.put(ZOOM, Double.toString(re.getZoom())); // Legacy
+		argMap.put(CANVAS, canvas.toArgName());
+		argMap.put(ANNOTATION_ID, uuid.toString());
 
-		if (parent != null)
-			argMap.put(PARENT_ID, parent.getUUID().toString());
+		if (groupParent != null)
+			argMap.put(PARENT_ID, groupParent.getUUID().toString());
 
-		int zOrder = canvas.getComponentZOrder(getComponent());
-		argMap.put(Z, Integer.toString(zOrder));
-
+		argMap.put(Z, Integer.toString(getZOrder()));
 		return argMap;
 	}
 	
@@ -452,18 +356,13 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 	}
 
 	@Override
-	public void drawAnnotation(Graphics g, double x, double y, double scaleFactor) {
-	}
-
-	@Override
 	public void update() {
-		updateAnnotationAttributes();
-		getCanvas().repaint();
+		contentChanged();
 	}
 
 	// Component overrides
 	@Override
-	public void paint(Graphics g) {
+	public void paint(Graphics g, boolean showSelected) {
 		Graphics2D g2 = (Graphics2D)g;
 
 		/* Set up all of our anti-aliasing, etc. here to avoid doing it redundantly */
@@ -494,64 +393,26 @@ public abstract class AbstractAnnotation extends JComponent implements DingAnnot
 		return null;
 	}
 
-	// Protected methods
-	protected void updateAnnotationAttributes() {
-		if (!usedForPreviews) {
-//			cyAnnotator.addAnnotation(this);
-			contentChanged();
-		}
-	}
-
-	// Save the bounds (in node coordinates)
-	@Override
-	public void saveBounds() {
-		initialBounds = ViewUtils.getNodeCoordinates(re, getBounds().getBounds2D());
-	}
-
-	@Override
-	public Rectangle2D getInitialBounds() {
-		return initialBounds;
-	}
-
-	// Save the offset in node coordinates
-	@Override
-	public void setOffset(Point2D offset) {
-		if (offset == null) {
-			this.offset = null;
-			return;
-		}
-
-		Point2D mouse = ViewUtils.getNodeCoordinates(re, offset.getX(), offset.getY());
-		Point2D current = ViewUtils.getNodeCoordinates(re, getLocation().getX(), getLocation().getY());
-
-		this.offset = new Point2D.Double(mouse.getX()-current.getX(), mouse.getY()-current.getY());
-	}
-
-	@Override
-	public Point2D getOffset() {
-		return offset;
-	}
 
 	@Override
 	public void contentChanged() {
 		if (re != null)
-			re.fireContentChanged();
+			re.setContentChanged();
 	}
 
-	/**
-	 * Adjust the the size to correspond to the aspect ratio of the
-	 * current annotation.  This should be overloaded by annotations that
-	 * have an aspect ratio (e.g. Shape, Image, etc.)
-	 */
-	public Dimension adjustAspectRatio(Dimension d) {
-		return d;
+	public void addPropertyChangeListener(PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(listener);
 	}
 
-	public boolean inCanvas(ArbitraryGraphicsCanvas cnvs) {
-		for (Component c: cnvs.getComponents()) {
-			if (c == this) return true;
-		}
-		return false;
+	public void removePropertyChangeListener(PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(listener);
 	}
 
+	public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.addPropertyChangeListener(propertyName, listener);
+	}
+
+	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+		pcs.removePropertyChangeListener(propertyName, listener);
+	}
 }

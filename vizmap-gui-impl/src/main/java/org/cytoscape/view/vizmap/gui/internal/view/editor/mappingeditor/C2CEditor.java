@@ -1,12 +1,22 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkTableManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.view.vizmap.VisualMappingManager;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,16 +33,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkTableManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.gui.editor.EditorManager;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
 
 public class C2CEditor<K extends Number, V extends Number> extends AbstractContinuousMappingEditor<K, V> {
 
@@ -60,6 +60,7 @@ public class C2CEditor<K extends Number, V extends Number> extends AbstractConti
 		final CyTable attr = netTblMgr.getTable(appMgr.getCurrentNetwork(), type, CyNetwork.DEFAULT_ATTRS);
 		
 		final VisualMappingManager vmMgr = servicesUtil.get(VisualMappingManager.class);
-		editorPanel = new C2CMappingEditorPanel<K, V>(vmMgr.getCurrentVisualStyle(), mapping, attr, servicesUtil);
+		editorPanel = new C2CMappingEditorPanel<K, V>(vmMgr.getCurrentVisualStyle(), mapping, attr, editorManager,
+				servicesUtil);
 	}
 }

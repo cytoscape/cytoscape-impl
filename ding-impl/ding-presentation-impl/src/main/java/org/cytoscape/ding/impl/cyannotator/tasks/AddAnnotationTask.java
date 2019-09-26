@@ -2,11 +2,11 @@ package org.cytoscape.ding.impl.cyannotator.tasks;
 
 import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
 
+import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Window;
-import java.awt.geom.Point2D;
 
 import javax.swing.JDialog;
+import javax.swing.SwingUtilities;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
@@ -41,10 +41,10 @@ import org.cytoscape.work.TaskMonitor;
 public class AddAnnotationTask extends AbstractTask {
 
 	private final DRenderingEngine re;
-	private final Point2D location;
+	private final Point location;
 	private final AnnotationFactory<?> annotationFactory; 
 
-	public AddAnnotationTask(DRenderingEngine re, Point2D location, AnnotationFactory<?> annotationFactory) {
+	public AddAnnotationTask(DRenderingEngine re, Point location, AnnotationFactory<?> annotationFactory) {
 		this.re = re;
 		this.location = location;
 		this.annotationFactory = annotationFactory;
@@ -59,13 +59,13 @@ public class AddAnnotationTask extends AbstractTask {
 				final JDialog dialog = ((AbstractDingAnnotationFactory<?>) annotationFactory).createAnnotationDialog(re.getViewModel(), location);
 				
 				if (dialog != null) {
-					Window owner = dialog.getOwner();
-					
+					var owner = dialog.getParent();
 					if (location != null && owner != null) {
 						Rectangle screen = owner.getGraphicsConfiguration().getBounds();
-						dialog.setLocation((int)location.getX() + screen.x, (int) location.getY() + screen.x);
+						Point point = SwingUtilities.convertPoint(re.getComponent(), location, owner);
+						dialog.setLocation(point.x + screen.x, point.y + screen.y);
 					} else {
-						dialog.setLocationRelativeTo(re.getCanvas());
+						dialog.setLocationRelativeTo(re.getComponent());
 					}
 					
 					dialog.setVisible(true);

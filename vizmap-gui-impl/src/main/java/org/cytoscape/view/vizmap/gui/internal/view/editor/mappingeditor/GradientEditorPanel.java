@@ -1,12 +1,42 @@
 package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
 
+import java.awt.Color;
+import java.awt.Paint;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JOptionPane;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.util.color.BrewerType;
+import org.cytoscape.util.color.Palette;
+import org.cytoscape.util.color.PaletteType;
+import org.cytoscape.util.swing.CyColorPaletteChooser;
+import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
+import org.cytoscape.view.vizmap.VisualStyle;
+import org.cytoscape.view.vizmap.gui.editor.EditorManager;
+import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
+import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
+import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
+import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
+import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
+import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
+import org.jdesktop.swingx.multislider.Thumb;
+
 /*
  * #%L
  * Cytoscape VizMap GUI Impl (vizmap-gui-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,39 +53,6 @@ package org.cytoscape.view.vizmap.gui.internal.view.editor.mappingeditor;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-import java.awt.Color;
-import java.awt.Paint;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
-
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.util.swing.CyColorPaletteChooser;
-import org.cytoscape.util.swing.CyColorPaletteChooserFactory;
-import org.cytoscape.util.color.BrewerType;
-import org.cytoscape.util.color.Palette;
-import org.cytoscape.util.color.PaletteType;
-import org.cytoscape.util.color.PaletteProviderManager;
-import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.view.vizmap.gui.editor.ValueEditor;
-import org.cytoscape.view.vizmap.gui.internal.util.NumberConverter;
-import org.cytoscape.view.vizmap.gui.internal.util.ServicesUtil;
-import org.cytoscape.view.vizmap.mappings.BoundaryRangeValues;
-import org.cytoscape.view.vizmap.mappings.ContinuousMapping;
-import org.cytoscape.view.vizmap.mappings.ContinuousMappingPoint;
-import org.jdesktop.swingx.multislider.Thumb;
 
 /**
  * Color Gradient Mapping editor.
@@ -77,11 +74,14 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 	protected final CyColorPaletteChooserFactory paletteChooserFactory;
 
-	// protected Palette currentPalette;
-
-	public GradientEditorPanel(final VisualStyle style, final ContinuousMapping<T, Color> mapping, final CyTable attr,
-			final ValueEditor<Paint> colorEditor, final ServicesUtil servicesUtil) {
-		super(style, mapping, attr, servicesUtil);
+	public GradientEditorPanel(
+			VisualStyle style,
+			ContinuousMapping<T, Color> mapping,
+			CyTable attr,
+			EditorManager editorManager,
+			ValueEditor<Paint> colorEditor,
+			ServicesUtil servicesUtil) {
+		super(style, mapping, attr, editorManager, servicesUtil);
 
 		// TODO: replace this with the new CyColorPaletteChooser
 		this.colorEditor = colorEditor;
@@ -90,47 +90,48 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		getIconPanel().setVisible(false);
 
-		getPaletteButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				JButton cb = (JButton)evt.getSource();
+		getPaletteButton().addActionListener(evt -> {
+			// Bring up the palette chooser dialog
+			CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
+			Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
 
-				// Bring up the palette chooser dialog
-				CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(paletteType, false);
-				Palette newPalette = chooser.showDialog(GradientEditorPanel.this, "Set palette", currentPalette, 9);
+			if (newPalette == null)
+				return;
 
-				if (newPalette == null) return;
-
-				// Get the palette
-				Color[] colors = newPalette.getColors();
-				if (colors.length < 9)
-					colors = newPalette.getColors(9);
-				DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
-				DEF_LOWER_COLOR = colors[colors.length-2];
-				DEF_MID_COLOR = colors[(colors.length-1)/2];
-				DEF_UPPER_COLOR = colors[1];
-				DEF_ABOVE_UPPER_COLOR = colors[0];
-				if (!userEdited) {
+			// Get the palette
+			Color[] colors = newPalette.getColors();
+			
+			if (colors.length < 9)
+				colors = newPalette.getColors(9);
+			
+			DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
+			DEF_LOWER_COLOR = colors[colors.length-2];
+			DEF_MID_COLOR = colors[(colors.length-1)/2];
+			DEF_UPPER_COLOR = colors[1];
+			DEF_ABOVE_UPPER_COLOR = colors[0];
+			
+			if (!userEdited) {
+				setCurrentPalette(newPalette);
+				savePalette(currentPalette);
+				createSimpleGradient();
+			} else if (userEdited) {
+				// error?
+				Object[] options = { "Yes", "No" };
+				int n = JOptionPane.showOptionDialog(
+						null, 
+						"This will reset your current settings. Are you sure you want to continue?", 
+				        "Warning",
+				        JOptionPane.DEFAULT_OPTION,
+				        JOptionPane.WARNING_MESSAGE,
+				        null,
+				        options,
+				        options[1]
+				);
+				
+				if (n == 0) {
 					setCurrentPalette(newPalette);
 					savePalette(currentPalette);
 					createSimpleGradient();
-				} else if (userEdited) {
-					// error?
-					SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-							Object[] options = { "Yes", "No" };
-							int n = JOptionPane.showOptionDialog(null, 
-							                                     "This will reset your current settings.  Are you sure you want to continue?", 
-																									 "Warning",
-					   		                                  JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE,
-					     		                                null, options, options[1]);
-							if (n == 0) {
-								setCurrentPalette(newPalette);
-								savePalette(currentPalette);
-								createSimpleGradient();
-							}
-						}
-					});
 				}
 			}
 		});
@@ -140,8 +141,10 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		*/
 		if (currentPalette != null) {
 			Color[] colors = currentPalette.getColors();
+			
 			if (colors.length < 9)
 				colors = currentPalette.getColors(9);
+			
 			DEF_BELOW_LOWER_COLOR = colors[colors.length-1];
 			DEF_LOWER_COLOR = colors[colors.length-2];
 			DEF_MID_COLOR = colors[(colors.length-1)/2];
@@ -168,32 +171,31 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 					if (e.getClickCount() == 2) {
 						Color oldColor = getSlider().getModel().getThumbAt(getSlider().getSelectedIndex()).getObject();
 						Color newColor = changeThumbColor(oldColor);
-						if (newColor != null) {
+						
+						if (newColor != null)
 							setColor(newColor);
-						}
 					}
 				}
 			}
 		});
 
-		if ((mapping != null) && (mapping.getPointCount() == 0))
+		if (mapping != null && mapping.getPointCount() == 0)
 			addButtonActionPerformed(null);
 
-		getColorButton().addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent evt) {
-				getAndSetColor();
+		getColorButton().addActionListener(evt -> {
+			int idx = getSlider().getSelectedIndex();
+			
+			if (idx == -1 || idx >= getSlider().getModel().getThumbCount())
+				return;
+			
+			Color oldColor = getSlider().getModel().getThumbAt(idx).getObject();
+			Color newColor = changeThumbColor(oldColor);
+			
+			if (newColor != null) {
+				setColor(newColor);
+				setButtonColor(newColor);
 			}
 		});
-	}
-
-	private void getAndSetColor() {
-		Color oldColor = getSlider().getModel().getThumbAt(getSlider().getSelectedIndex()).getObject();
-		Color newColor = changeThumbColor(oldColor);
-		if (newColor != null) {
-			setColor(newColor);
-			setButtonColor(newColor);
-		}
 	}
 
 	public ImageIcon getLegend(final int width, final int height) {
@@ -206,16 +208,17 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	protected Color changeThumbColor(Color oldColor) {
 		if (currentPalette != null) {
 			PaletteType type = currentPalette.getType();
-
 			CyColorPaletteChooser chooser = paletteChooserFactory.getColorPaletteChooser(type, false);
 			Color newColor = chooser.showDialog(GradientEditorPanel.this, "Set thumb color", currentPalette, oldColor, 9);
 
 			// We'll return the new color, but we need to handle the change in palettes here
 			Palette newPalette = chooser.getSelectedPalette();
+			
 			if (newPalette != null) {
 				currentPalette = newPalette;
 				// TODO: Update palette combo box
 			}
+			
 			return newColor;
 		} else {
 			return (Color) colorEditor.showEditor(null, oldColor);
@@ -225,14 +228,12 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	@Override
 	protected void addButtonActionPerformed(ActionEvent evt) {
 		// Currently, there is no mapping.
-		if (mapping.getPointCount() == 0) {
+		if (mapping.getPointCount() == 0)
 			createSimpleGradient();
-		} else {
+		else
 			updateGradient();
-		}
 
-		getSlider().repaint();
-		repaint();
+		update();
 	}
 
 	private void updateGradient() {
@@ -248,7 +249,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		Color equalVal = Color.WHITE;
 		Color greaterVal = previousRange.greaterValue;
 
-		lowerRange = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
+		lowerRange = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 
 		final T value = NumberConverter.convert(columnType, maxValue);
 		mapping.addPoint(value, lowerRange);
@@ -267,6 +268,7 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 
 		// Clear any existing thumbs
 		final List<Thumb<Color>> sorted = getSlider().getModel().getSortedThumbs();
+		
 		for (Thumb<Color> t : sorted)
 			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
 
@@ -287,9 +289,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 			getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 			getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-			lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-			midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-			upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+			lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+			midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+			upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 			// Add three points.
 			mapping.addPoint(
@@ -303,7 +305,6 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				upperRange);
 			initSlider();
 		} else if (minValue>=0) { // all positive values
-
 			// TODO: Provide more bins
 			//
 			if (currentPalette != null && currentPalette.getType() == BrewerType.SEQUENTIAL) {
@@ -327,9 +328,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -346,9 +347,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -368,9 +369,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_UPPER_COLOR);
 
-				lowerRange = new BoundaryRangeValues<Color>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_BELOW_LOWER_COLOR, DEF_LOWER_COLOR, DEF_LOWER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_UPPER_COLOR, DEF_UPPER_COLOR, DEF_ABOVE_UPPER_COLOR);
 
 				// Add three points.
 				mapping.addPoint(
@@ -389,9 +390,9 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 				getSlider().getModel().addThumb(50f, DEF_MID_COLOR);
 				getSlider().getModel().addThumb(100f, DEF_LOWER_COLOR);
 	
-				lowerRange = new BoundaryRangeValues<Color>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
-				midRange = new BoundaryRangeValues<Color>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
-				upperRange = new BoundaryRangeValues<Color>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
+				lowerRange = new BoundaryRangeValues<>(DEF_ABOVE_UPPER_COLOR, DEF_UPPER_COLOR, DEF_UPPER_COLOR);
+				midRange = new BoundaryRangeValues<>(DEF_MID_COLOR, DEF_MID_COLOR, DEF_MID_COLOR);
+				upperRange = new BoundaryRangeValues<>(DEF_LOWER_COLOR, DEF_LOWER_COLOR, DEF_BELOW_LOWER_COLOR);
 	
 				// Add three points.
 				mapping.addPoint(
@@ -415,13 +416,16 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 	protected void deleteButtonActionPerformed(final ActionEvent evt) {
 		final int selectedIndex = getSlider().getSelectedIndex();
 
-		if (0 <= selectedIndex) {
+		if (selectedIndex >= 0) {
 			getSlider().getModel().removeThumb(selectedIndex);
+			
 			mapping.removePoint(selectedIndex);
 			updateMap();
+			
 			final CyApplicationManager appMgr = servicesUtil.get(CyApplicationManager.class);
 			appMgr.getCurrentNetworkView().updateView();
-			repaint();
+			
+			update();
 		}
 	}
 
@@ -435,24 +439,23 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		Color greaterVal = mapping.getPoint(selected).getRange().greaterValue;
 
 		int numPoints = mapping.getAllPoints().size();
+		
 		if (numPoints > 1) {
-			if (selected == 0)
+			if (selected == 0) {
 				greaterVal = newColor;
-			else if (selected == (numPoints - 1))
+			} else if (selected == (numPoints - 1)) {
 				lesserVal = newColor;
-			else {
+			} else {
 				lesserVal = newColor;
 				greaterVal = newColor;
 			}
 		}
 
-		final BoundaryRangeValues<Color> brv = new BoundaryRangeValues<Color>(lesserVal, equalVal, greaterVal);
-
+		final BoundaryRangeValues<Color> brv = new BoundaryRangeValues<>(lesserVal, equalVal, greaterVal);
 		mapping.getPoint(selected).setRange(brv);
 
-		if (numPoints > 1) {
+		if (numPoints > 1)
 			getSlider().repaint();
-		}
 
 		userEdited = true;
 	}
@@ -464,11 +467,13 @@ public class GradientEditorPanel<T extends Number> extends ContinuousMappingEdit
 		final double minValue = tracer.getMin(type);
 
 		final List<Thumb<Color>> sorted = getSlider().getModel().getSortedThumbs();
+		
 		for (Thumb<Color> t : sorted)
 			getSlider().getModel().removeThumb(getSlider().getModel().getThumbIndex(t));
 
 		// Sort points
-		final SortedMap<Double, ContinuousMappingPoint<T, Color>> sortedPoints = new TreeMap<Double, ContinuousMappingPoint<T, Color>>();
+		final SortedMap<Double, ContinuousMappingPoint<T, Color>> sortedPoints = new TreeMap<>();
+		
 		for (final ContinuousMappingPoint<T, Color> point : mapping.getAllPoints()) {
 			final Number val = point.getValue();
 			sortedPoints.put(val.doubleValue(), point);

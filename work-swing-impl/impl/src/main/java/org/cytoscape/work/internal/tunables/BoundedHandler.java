@@ -159,8 +159,8 @@ public class BoundedHandler<T extends AbstractBounded, N> extends AbstractGUITun
 			// Do something reasonable for max and min...
 			// At some point, we should use superscripts for scientific notation...
 			label.setText(
-					title + " (max: " + format.format((Number)bounded.getLowerBound()) +
-					" min: " + format.format((Number)bounded.getUpperBound()) + ")"
+					title + " (min: " + format.format((Number)bounded.getLowerBound()) +
+					" max: " + format.format((Number)bounded.getUpperBound()) + ")"
 			);
 			boundedField = new TunableBoundedField((Number)bounded.getValue(), (Number)bounded.getLowerBound(),
 			                                  (Number)bounded.getUpperBound(), bounded.isLowerBoundStrict(),

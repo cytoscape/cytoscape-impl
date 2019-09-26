@@ -39,7 +39,7 @@ import org.cytoscape.view.model.CyNetworkView;
  * 
  * TODO: design and implement event/listeners for this.
  */
-public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
+public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 
 	protected int coarseDetailThreshold;
 	protected int nodeBorderThreshold;
@@ -51,7 +51,6 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	private final CyProperty<Properties> cyProp;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	private boolean drawEdges = true;
 
 	@SuppressWarnings("unchecked")
 	public DingGraphLOD(final CyServiceRegistrar serviceRegistrar) {
@@ -72,7 +71,6 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		this.nodeLabelThreshold = source.nodeLabelThreshold;
 		this.edgeArrowThreshold = source.edgeArrowThreshold;
 		this.edgeLabelThreshold = source.edgeLabelThreshold;
-		this.drawEdges = source.drawEdges;
 	}
 
 	private void init() {
@@ -81,30 +79,78 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 		nodeLabelThreshold = parseInt(props.getProperty("render.nodeLabelThreshold"), 200);
 		edgeArrowThreshold = parseInt(props.getProperty("render.edgeArrowThreshold"), 600);
 		edgeLabelThreshold = parseInt(props.getProperty("render.edgeLabelThreshold"), 200);
-
 	}
 
-	private int parseInt(final String intString, final int defaultValue) {
-
-		int value;
+	private static int parseInt(String intString, int defaultValue) {
 		try {
-			value = Integer.parseInt(intString);
-		} catch (Exception e) {	
+			return Integer.parseInt(intString);
+		} catch (NumberFormatException e) {	
 			return defaultValue;
 		}
-		return value;
 	}
 
-	/**
-	 * For dense networks we don't want to draw edges during
-	 * pan and zoom operations.  This flag controls that.
-	 *
-	 * @param drawEdges if true edges will not be drawn
-	 */
 	@Override
-	public void setDrawEdges(boolean drawEdges) {
-		this.drawEdges = drawEdges;
+	public GraphLOD faster() {
+		return new GraphLOD() {
+			@Override
+			public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+				// This is the only difference, we pass renderEdges=false
+				return DingGraphLOD.this.renderEdges(false, visibleNodeCount, totalNodeCount, totalEdgeCount);
+			}
+			@Override
+			public boolean detail(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.detail(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.nodeBorders(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.nodeLabels(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.customGraphics(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.edgeArrows(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.dashedEdges(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.edgeAnchors(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.edgeLabels(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
+				return DingGraphLOD.this.textAsShape(renderNodeCount, renderEdgeCount);
+			}
+			@Override
+			public double getNestedNetworkImageScaleFactor() {
+				return DingGraphLOD.this.getNestedNetworkImageScaleFactor();
+			}
+		};
 	}
+	
+	
+//	/**
+//	 * For dense networks we don't want to draw edges during
+//	 * pan and zoom operations.  This flag controls that.
+//	 *
+//	 * @param drawEdges if true edges will not be drawn
+//	 */
+//	@Override
+//	public void setDrawEdges(boolean drawEdges) {
+//		this.drawEdges = drawEdges;
+//	}
 
 	@Override
 	public void handleEvent(PropertyUpdatedEvent e) {
@@ -119,8 +165,8 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 			view.updateView();
 	}
 
-	@Override
-	public boolean getDrawEdges() { return drawEdges; }
+//	@Override
+//	public boolean getDrawEdges() { return drawEdges; }
 
 	/**
 	 * Determines whether or not to render all edges in a graph, no edges, or
@@ -149,20 +195,24 @@ public class DingGraphLOD extends GraphLOD implements PropertyUpdatedListener {
 	 *         are to be rendered.
 	 */
 	@Override
-	public byte renderEdges(final int visibleNodeCount, final int totalNodeCount, final int totalEdgeCount) {
+	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+		return renderEdges(true, visibleNodeCount, totalNodeCount, totalEdgeCount);
+	}
+
+	private RenderEdges renderEdges(boolean drawEdges, int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		if (totalEdgeCount >= Math.min(edgeArrowThreshold, edgeLabelThreshold)) {
 			// Since we don't know the visible edge count, use visible node count as a proxy
 			// System.out.println("DingGraphLOD: renderEdges("+visibleNodeCount+","+totalNodeCount+","+totalEdgeCount+")");
 			// System.out.println("DingGraphLOD: drawEdges = "+drawEdges);
 			if (drawEdges || visibleNodeCount <= Math.max(edgeArrowThreshold, edgeLabelThreshold)/2 ) {
-				return (byte) 0;
+				return RenderEdges.TOUCHING_VISIBLE_NODES;
 			}
-			return (byte) (-1);
+			return RenderEdges.NONE;
 		} else {
-			return (byte) 1;
+			return RenderEdges.ALL;
 		}
 	}
-
+	
 	/**
 	 * Determines whether or not to render a graph at full detail. By default
 	 * this method returns true if and only if the sum of rendered nodes and

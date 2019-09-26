@@ -1,8 +1,6 @@
 package org.cytoscape.graph.render.stateful;
 
-import java.awt.Image;
-import java.awt.image.BufferedImage;
-
+import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -37,8 +35,8 @@ public class GraphRendererTest extends TestCase {
 	private GraphGraphics grafx;
 
 	public void setUp() {
-		Image img = new BufferedImage(500,500,BufferedImage.TYPE_INT_ARGB);
-		grafx = new GraphGraphics( img, false, true);
+		NetworkImageBuffer img = new NetworkImageBuffer(500,500);
+		grafx = new GraphGraphics(img);
 	}
 
 	// normal without anchors
@@ -47,7 +45,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,120.0f,120.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_ELLIPSE,
 		                                  ArrowShapeVisualProperty.CIRCLE,5.0f,
 										  null /*anchors*/,
@@ -71,7 +69,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,120.0f,120.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
 		                                  ArrowShapeVisualProperty.NONE,5.0f,
 										  new SingleEdgeAnchor(new float[]{100.0f,100.0f}),
@@ -96,7 +94,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,120.0f,120.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
                                           ArrowShapeVisualProperty.NONE,5.0f,
 										  null /*anchors*/,
@@ -120,7 +118,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,120.0f,120.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_TRIANGLE,
                                           ArrowShapeVisualProperty.NONE,5.0f,
 										  new SingleEdgeAnchor(new float[]{75.0f,150.0f}),
@@ -144,7 +142,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,110.0f,120.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_HEXAGON,
                                           ArrowShapeVisualProperty.DIAMOND,8.0f,
 										  null /*anchors*/,
@@ -169,7 +167,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {110.0f,110.0f,120.0f,110.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
                                           ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
@@ -193,7 +191,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {12.0f,12.0f,17.0f,17.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
                                           ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
@@ -217,7 +215,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {12.0f,12.0f,18.0f,18.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
                                           ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),
@@ -241,7 +239,7 @@ public class GraphRendererTest extends TestCase {
 		float[] trgNodeExtents = {10.0f,10.0f,20.0f,20.0f};
 		float[] rtnValSrc = new float[2];
 		float[] rtnValTrg = new float[2];
-		boolean ret = GraphRenderer.computeEdgeEndpoints(grafx,
+		boolean ret = GraphRenderer.computeEdgeEndpoints(
 		                                  srcNodeExtents,GraphGraphics.SHAPE_PARALLELOGRAM,
                                           ArrowShapeVisualProperty.HALF_BOTTOM,1.0f,
 										  new SingleEdgeAnchor(new float[]{0.0f,50.0f}),

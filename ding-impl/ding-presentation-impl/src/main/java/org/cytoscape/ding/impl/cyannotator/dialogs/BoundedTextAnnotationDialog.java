@@ -70,7 +70,7 @@ public class BoundedTextAnnotationDialog extends JDialog {
 		super(owner);
 		this.re = re;
 		this.cyAnnotator = re.getCyAnnotator();
-		this.startingLocation = start != null ? start : re.getCenter();
+		this.startingLocation = start != null ? start : re.getComponentCenter();
 		this.mAnnotation = new BoundedTextAnnotationImpl(re, false);
 		this.create = true;
 
@@ -167,20 +167,17 @@ public class BoundedTextAnnotationDialog extends JDialog {
 			return;
 		}
 
-		mAnnotation.getComponent().setLocation((int)startingLocation.getX(), (int)startingLocation.getY());
-		mAnnotation.addComponent(null);
+		var nodePoint = re.getTransform().getNodeCoordinates(startingLocation);
+		mAnnotation.setLocation(nodePoint.getX(), nodePoint.getY());
 		mAnnotation.update();
 		cyAnnotator.addAnnotation(mAnnotation);
-
-		// Update the canvas
-		re.getCanvas(DRenderingEngine.Canvas.FOREGROUND_CANVAS).repaint();
 
 		// Set this shape to be resized
 		cyAnnotator.resizeShape(mAnnotation);
 
 		try {
 			// Warp the mouse to the starting location (if supported)
-			Point start = mAnnotation.getComponent().getLocationOnScreen();
+			Point start = re.getComponent().getLocationOnScreen();
 			Robot robot = new Robot();
 			robot.mouseMove((int) start.getX() + 100, (int) start.getY() + 100);
 		} catch (Exception e) {}

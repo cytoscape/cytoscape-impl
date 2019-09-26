@@ -30,135 +30,60 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
 /**
  *
  */
-public class PrintLOD extends GraphLOD {
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param visibleNodeCount DOCUMENT ME!
-	 * @param totalNodeCount DOCUMENT ME!
-	 * @param totalEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public byte renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
-		return 0;
+public class PrintLOD implements GraphLOD {
+	
+	@Override
+	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
+		return RenderEdges.TOUCHING_VISIBLE_NODES;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean detail(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean nodeBorders(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean dashedEdges(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean edgeAnchors(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
 		return true;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param renderNodeCount DOCUMENT ME!
-	 * @param renderEdgeCount DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public boolean textAsShape(int renderNodeCount, int renderEdgeCount) {
 		return exportTextAsShape;
 	}
 
 	private boolean exportTextAsShape = true;
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param pExportTextAsShape DOCUMENT ME!
-	 */
 	public void setPrintingTextAsShape(boolean pExportTextAsShape) {
 		exportTextAsShape = pExportTextAsShape;
 	}

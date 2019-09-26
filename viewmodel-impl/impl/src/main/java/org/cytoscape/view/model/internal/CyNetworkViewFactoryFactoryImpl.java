@@ -1,10 +1,14 @@
 package org.cytoscape.view.model.internal;
 
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_VISIBLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_TITLE;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
 import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_SELECTED;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_VISIBLE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
 
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewConfig;
@@ -12,7 +16,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.internal.model.CyNetworkViewFactoryImpl;
-import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 
@@ -33,7 +36,10 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_NODES, NODE_SELECTED, Boolean.TRUE::equals);
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_EDGES, EDGE_SELECTED, Boolean.TRUE::equals);
 			// Non-clearable VPs
-			CyNetworkViewImpl.NODE_GEOMETRIC_PROPS.forEach(config::addNonClearableVisualProperty);
+			config.addNonClearableVisualProperty(NODE_X_LOCATION);
+			config.addNonClearableVisualProperty(NODE_Y_LOCATION);
+			config.addNonClearableVisualProperty(NODE_VISIBLE);
+			config.addNonClearableVisualProperty(EDGE_VISIBLE);
 			config.addNonClearableVisualProperty(NODE_SELECTED);
 			config.addNonClearableVisualProperty(EDGE_SELECTED);
 			config.addNonClearableVisualProperty(NETWORK_TITLE);

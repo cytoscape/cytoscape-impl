@@ -80,7 +80,6 @@ public class ImageAnnotationPanel extends JPanel {
 	private void initComponents() {
 		setBorder(LookAndFeelUtil.createPanelBorder());
 
-		final JLabel nameLabel = new JLabel("Annotation Name:");
 		final JLabel label1 = new JLabel("Border Color:");
 		final JLabel label2 = new JLabel("Border Opacity:");
 		final JLabel label3 = new JLabel("Border Width:");

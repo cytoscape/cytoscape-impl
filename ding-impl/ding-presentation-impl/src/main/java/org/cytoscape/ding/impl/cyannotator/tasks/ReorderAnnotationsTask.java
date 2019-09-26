@@ -12,6 +12,7 @@ import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
 import org.cytoscape.work.AbstractTask;
@@ -89,7 +90,7 @@ public class ReorderAnnotationsTask extends AbstractTask {
 			DingAnnotation da = annotations.get(i);
 			// group annotations must stay on the foreground canvas
 			if(!(da instanceof GroupAnnotation && Annotation.BACKGROUND.equals(canvasName))) {
-				da.changeCanvas(canvasName);
+				da.changeCanvas(CanvasID.fromArgName(canvasName));
 			}
 		}
 		

@@ -1,7 +1,7 @@
 package org.cytoscape.ding.impl.cyannotator.tasks;
 
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Set;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
@@ -66,7 +66,7 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 		if(re == null)
 			return null;
 		final CyAnnotator cyAnnotator = re.getCyAnnotator();
-		final Set<DingAnnotation> annotations = cyAnnotator != null ?
+		final Collection<DingAnnotation> annotations = cyAnnotator != null ?
 				cyAnnotator.getAnnotationSelection().getSelectedAnnotations() : Collections.emptySet();
 		
 		return new TaskIterator(new ReorderAnnotationsTask(re, annotations, canvasName, shift));
@@ -79,7 +79,7 @@ public class ReorderSelectedAnnotationsTaskFactory implements NetworkViewTaskFac
 			return false;
 		
 		final CyAnnotator cyAnnotator = re.getCyAnnotator();
-		final Set<DingAnnotation> annotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
+		final var annotations = cyAnnotator.getAnnotationSelection().getSelectedAnnotations();
 		
 		if (annotations == null || annotations.isEmpty())
 			return false;
