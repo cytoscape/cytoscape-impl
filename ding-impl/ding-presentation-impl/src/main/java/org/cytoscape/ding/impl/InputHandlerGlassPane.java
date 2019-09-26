@@ -636,7 +636,6 @@ public class InputHandlerGlassPane extends JComponent {
 			
 			hit = mousePressedCheckHit(e);
 			if(hit) {
-				re.updateView(UpdateType.ALL_FAST);
 				e.consume(); // no selection rectangle or lasso
 			} else if(!isAdditiveSelect(e)) {
 				deselectAllOnRelease = true;
@@ -864,7 +863,6 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 			
 			mousePressedPoint = null;
-			re.updateView(UpdateType.ALL_FULL);
 			
 			if(annotationMovingEdit != null && moveNodesEdit != null) {
 				CompositeCyEdit compositeEdit = new CompositeCyEdit("Move", registrar);
@@ -881,6 +879,8 @@ public class InputHandlerGlassPane extends JComponent {
 			} else if(moveNodesEdit != null) {
 				moveNodesEdit.post();
 			}
+			
+			e.consume();
 		}
 		
 		
