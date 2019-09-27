@@ -46,10 +46,21 @@ public class PSWriter extends AbstractTask implements CyWriter {
 
 	@Tunable(
 			description = "Export text as font:",
-			longDescription = "If true (the default value), texts will be exported as fonts."
+			longDescription = "If true (the default value), texts will be exported as fonts.",
+			groups = { "_Others" },
+			gravity = 2.1
 	)
 	public boolean exportTextAsFont = true;
 
+	@Tunable(
+			description = "Hide Labels:",
+			longDescription = "If true then node and edge labels will not be visible in the image.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.2
+	)
+	public boolean hideLabels;
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export Network";
@@ -86,10 +97,11 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		// TODO should be accomplished with presentation properties
 		// view.setPrintingTextAsShape(!exportTextAsFont);
 
+		engine.getProperties().setProperty("exportHideLabels", String.valueOf(hideLabels));
+		
 		final Properties p = new Properties();
 		p.setProperty(PSGraphics2D.PAGE_SIZE, "Letter");
-		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES",
-				Boolean.toString(!exportTextAsFont));
+		p.setProperty("org.freehep.graphicsio.AbstractVectorGraphicsIO.TEXT_AS_SHAPES", Boolean.toString(!exportTextAsFont));
 		tm.setProgress(0.1);
 		PSGraphics2D g = new PSGraphics2D(stream, new Dimension(width.intValue(), height.intValue()));
 		g.setMultiPage(false); // true for PS file
@@ -100,6 +112,8 @@ public class PSWriter extends AbstractTask implements CyWriter {
 		g.startExport();
 		engine.printCanvas(g);
 		g.endExport();
+		
+		engine.getProperties().remove("exportHideLabels");
 		
 		logger.debug("PS image created.");
 		tm.setStatusMessage("PS image created.");

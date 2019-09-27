@@ -117,7 +117,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final NodeDetails nodeDetails;
 	private final EdgeDetails edgeDetails;
 	
-	private PrintLOD printLOD;
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
@@ -176,7 +175,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
-		printLOD = new PrintLOD();
 		
 		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
@@ -434,10 +432,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 	
-	public PrintLOD getPrintLOD() {
-		return printLOD;
-	}
-	
 	/**
 	 * Set the zoom level and redraw the view.
 	 */
@@ -625,13 +619,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 
-	public void setPrintingTextAsShape(boolean textAsShape) {
-		synchronized (dingLock) {
-			printLOD.setPrintingTextAsShape(textAsShape);
-		}
-	}
 
 	
+	// File > Print
 	@Override
 	public int print(Graphics g, PageFormat pageFormat, int page) {
 		if(page != 0)
@@ -651,21 +641,31 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// from InternalFrameComponent
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
 		
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), dingGraphLOD, transform);
+		PrintLOD printLOD = new PrintLOD();
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), printLOD, transform);
 		
 		return PAGE_EXISTS;
 	}
-
 	
+
+	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
 	@Override
 	public void printCanvas(Graphics g) {
 		final boolean contentChanged = this.contentChanged;
 		
 		// Check properties related to printing:
 		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
-		setPrintingTextAsShape(exportAsShape);
+		boolean transparent   = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		boolean hideLabels    = "true".equalsIgnoreCase(props.getProperty("exportHideLabels"));
 		
-		print(g);
+		PrintLOD printLOD = new PrintLOD();
+		printLOD.setPrintingTextAsShape(exportAsShape);
+		printLOD.setExportLabels(!hideLabels);
+		
+		Color bg = transparent ? null : getBackgroundColor();
+		
+		var transform = renderComponent.getTransform();
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, printLOD, transform);
 		
 		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
 		// (this method is usually only used to export the View as image, create thumbnails, etc,
@@ -674,18 +674,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setContentChanged(contentChanged);
 	}
 	
-	/**
-	 * This method is used by freehep lib to export network as graphics.
-	 */
-	public void print(Graphics g) {
-		boolean transparent = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
-		
-		var transform = renderComponent.getTransform();
-		Color bg = transparent ? null : getBackgroundColor();
-		
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, dingGraphLOD, transform);
-	}
-
 	
 	/**
 	 * Method to return a reference to an Image object, which represents the current network view.

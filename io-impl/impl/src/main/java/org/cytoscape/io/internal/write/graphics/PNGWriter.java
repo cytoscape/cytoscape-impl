@@ -43,14 +43,14 @@ public class PNGWriter extends BitmapWriter {
 	)
 	public boolean transparentBackground;
 	
+	
 	public PNGWriter(RenderingEngine<?> re, OutputStream outStream, Set<String> extensions) {
 		super(re, outStream, extensions);
 	}
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
-		re.getProperties().setProperty("exportTransparentBackground", "" + transparentBackground);
-		
+		re.getProperties().setProperty("exportTransparentBackground", String.valueOf(transparentBackground));
 		try {
 			super.run(tm);
 		} finally {
