@@ -32,6 +32,17 @@ import org.cytoscape.graph.render.stateful.GraphLOD;
  */
 public class PrintLOD implements GraphLOD {
 	
+	private boolean exportTextAsShape = true;
+	private boolean exportLabels = true;
+	
+	public void setPrintingTextAsShape(boolean pExportTextAsShape) {
+		exportTextAsShape = pExportTextAsShape;
+	}
+	
+	public void setExportLabels(boolean exportLabels) {
+		this.exportLabels = exportLabels;
+	}
+	
 	@Override
 	public RenderEdges renderEdges(int visibleNodeCount, int totalNodeCount, int totalEdgeCount) {
 		return RenderEdges.TOUCHING_VISIBLE_NODES;
@@ -49,7 +60,7 @@ public class PrintLOD implements GraphLOD {
 
 	@Override
 	public boolean nodeLabels(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return exportLabels;
 	}
 
 	@Override
@@ -74,7 +85,7 @@ public class PrintLOD implements GraphLOD {
 
 	@Override
 	public boolean edgeLabels(int renderNodeCount, int renderEdgeCount) {
-		return true;
+		return exportLabels;
 	}
 
 	@Override
@@ -82,9 +93,5 @@ public class PrintLOD implements GraphLOD {
 		return exportTextAsShape;
 	}
 
-	private boolean exportTextAsShape = true;
-
-	public void setPrintingTextAsShape(boolean pExportTextAsShape) {
-		exportTextAsShape = pExportTextAsShape;
-	}
+	
 }

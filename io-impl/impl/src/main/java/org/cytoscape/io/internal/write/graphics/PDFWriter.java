@@ -54,9 +54,21 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 
 	@Tunable(
 			description = "Export text as font:",
-			longDescription = "If true (the default value), texts will be exported as fonts."
+			longDescription = "If true (the default value), texts will be exported as fonts.",
+			groups = { "_Others" },
+			gravity = 2.1
 	)
 	public boolean exportTextAsFont = true;
+	
+	@Tunable(
+			description = "Hide Labels:",
+			longDescription = "If true then node and edge labels will not be visible in the image.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.2
+	)
+	public boolean hideLabels;
+	
 	
 	@ProvidesTitle
 	public String getTitle() {
@@ -117,7 +129,8 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		Graphics2D g = null;
 		logger.debug("!!!!! Enter block 2");
 		
-		engine.getProperties().setProperty("exportTextAsShape", new Boolean(!exportTextAsFont).toString());
+		engine.getProperties().setProperty("exportTextAsShape", String.valueOf(!exportTextAsFont));
+		engine.getProperties().setProperty("exportHideLabels",  String.valueOf(hideLabels));
 		
 		tm.setProgress(0.2);
 		
@@ -145,6 +158,9 @@ public class PDFWriter extends AbstractTask implements CyWriter {
 		writer.close();
 		
 		stream.close();
+		
+		engine.getProperties().remove("exportTextAsShape");
+		engine.getProperties().remove("exportHideLabels");
 
 		logger.debug("PDF rendering finished.");
 		tm.setProgress(1.0);
