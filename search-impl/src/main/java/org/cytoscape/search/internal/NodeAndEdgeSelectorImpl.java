@@ -1,5 +1,29 @@
 package org.cytoscape.search.internal;
 
+/*
+ * #%L
+ * Cytoscape Search Impl (search-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +46,52 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * flag.
 	 */
 	public static final long UNSET_NETWORK_CHECK_CANCEL_FREQ = 50000;
+
+	/**
+	 * Unselects nodes and edges on {@code network} and then selects nodes and edges on
+	 * that {@code network} as found in {@code searchResults}. If the {@code network}
+	 * is null or has no nodes this method just returns. If {@code task.isCancelled()} is
+	 * {@code true} this method returns immediately and can leave the {@code network} in an inconsistent
+	 * state
+	 * @param network The network to adjust selections on
+	 * @param searchResults the nodes and edges to select
+	 * @param task Task this is running under
+	 * @param taskMonitor monitor used to let caller know status
+	 */
+	@Override
+	public void selectNodesAndEdges(CyNetwork network, SearchResults searchResults, IndexAndSearchTask task, TaskMonitor taskMonitor) {
+		if (network == null || network.getNodeList().size() == 0)
+			return;
+
+		int nodeHitCount = searchResults.getNodeHitCount();
+		int edgeHitCount = searchResults.getEdgeHitCount();
+		
+		if (nodeHitCount == 0 && edgeHitCount == 0) {
+			taskMonitor.setStatusMessage("Could not find any match.");
+			unselectNodesAndEdges(network, task, taskMonitor);
+			taskMonitor.setTitle("Search Finished");
+			taskMonitor.setProgress(1.0);
+			return;
+		}
+		if (!unselectNodesAndEdges(network, task, taskMonitor)) {
+			return;
+		}
+		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and " + edgeHitCount + " edges");
+
+		List<String> nodeHits = searchResults.getNodeHits();
+		List<String> edgeHits = searchResults.getEdgeHits();
+
+		long startTime = System.currentTimeMillis();
+		selectNodes(nodeHits, nodeHitCount, network, task, taskMonitor);
+		selectEdges(edgeHits, edgeHitCount, network, task, taskMonitor);
+		
+		if (task.isCancelled()) {
+			return;
+		}
+		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and "
+		                             + edgeHitCount + " edges completed in "
+				                     + Long.toString(System.currentTimeMillis() - startTime) + " ms");
+	}
 
 	private boolean unselectNodes(CyNetwork network, IndexAndSearchTask task) {
 		List<CyNode> nodeList = CyTableUtil.getNodesInState(network, CyNetwork.SELECTED, true);
@@ -70,49 +140,6 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 		return true;
 	}
 
-	/**
-	 * Unselects nodes and edges and then selects nodes and edges as found in {@code searchResulst}
-	 * returning prematurely if the {@code task} has been cancelled
-	 * @param network The network to adjust selections on
-	 * @param searchResults the nodes and edges to select
-	 * @param task Task this is running under
-	 * @param taskMonitor monitor used to let caller know status
-	 */
-	@Override
-	public void selectNodesAndEdges(CyNetwork network, SearchResults searchResults, IndexAndSearchTask task, TaskMonitor taskMonitor) {
-		if (network == null || network.getNodeList().size() == 0)
-			return;
-
-		int nodeHitCount = searchResults.getNodeHitCount();
-		int edgeHitCount = searchResults.getEdgeHitCount();
-		
-		if (nodeHitCount == 0 && edgeHitCount == 0) {
-			taskMonitor.setStatusMessage("Could not find any match.");
-			unselectNodesAndEdges(network, task, taskMonitor);
-			taskMonitor.setTitle("Search Finished");
-			taskMonitor.setProgress(1.0);
-			return;
-		}
-		if (!unselectNodesAndEdges(network, task, taskMonitor)) {
-			return;
-		}
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and " + edgeHitCount + " edges");
-
-		List<String> nodeHits = searchResults.getNodeHits();
-		List<String> edgeHits = searchResults.getEdgeHits();
-
-		long startTime = System.currentTimeMillis();
-		selectNodes(nodeHits, nodeHitCount, network, task, taskMonitor);
-		selectEdges(edgeHits, edgeHitCount, network, task, taskMonitor);
-		
-		if (task.isCancelled()) {
-			return;
-		}
-		taskMonitor.setStatusMessage("Selecting " + nodeHitCount + " nodes and "
-		                             + edgeHitCount + " edges completed in "
-				                     + Long.toString(System.currentTimeMillis() - startTime) + " ms");
-	}
-	
 	private void selectNodes(final List<String> nodeHits, int nodeHitCount, CyNetwork network,
 			IndexAndSearchTask task, TaskMonitor taskMonitor) {
 		final Iterator<String> nodeIt = nodeHits.iterator();
