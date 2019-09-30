@@ -329,16 +329,15 @@ public final class DEdgeDetails implements EdgeDetails {
 	}
 
 
-	// Used by bends
-//	private final MinLongHeap m_heap = new MinLongHeap();
-//	private final float[] m_extentsBuff = new float[4];
-
-	// Interface org.cytoscape.graph.render.immed.EdgeAnchors:
-
 	private int getNumAnchors(View<CyEdge> edgeView) {
 		Bend bend = getBend(edgeView); 
-		int numHandles = bend.getAllHandles().size();
-		if (numHandles == 0)
+		if(bend == null)
+			return 0;
+		var handles = bend.getAllHandles();
+		if(handles == null)
+			return 0;
+		int numHandles = handles.size();
+		if(numHandles == 0)
 			return 0;
 		return getLineCurved(edgeView) == CURVED_LINES ? numHandles : 2 * numHandles;
 	}
