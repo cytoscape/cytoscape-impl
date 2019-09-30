@@ -41,7 +41,9 @@ import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -100,7 +102,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public enum UpdateType {
 		ALL_FAST, // Render a fast frame
 		ALL_FULL,  // Render a fast frame, then start rendering a full frame async
-		JUST_ANNOTATIONS // Just render annotations fast
+		JUST_ANNOTATIONS, // Just render annotations fast
+		JUST_EDGES
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -137,7 +140,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
-//	private Timer animationTimer;
+	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
 	private final CoalesceTimer coalesceTimer;
 	
@@ -315,16 +318,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		bendStore.updateSelectedEdges(selectedEdges);
 		
-//		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
-//		edgeDetails.updateAnimatedEdges(animatedEdges);
-//		if(animatedEdges.isEmpty() && animationTimer != null) {
-//			animationTimer.stop();
-//			animationTimer = null;
-//		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
-//			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
-//			animationTimer.setRepeats(true);
-//			animationTimer.start();
-//		}
+		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
+		edgeDetails.updateAnimatedEdges(animatedEdges);
+		if(animatedEdges.isEmpty() && animationTimer != null) {
+			animationTimer.stop();
+			animationTimer = null;
+		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
+			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
+			animationTimer.setRepeats(true);
+			animationTimer.start();
+		}
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
@@ -345,18 +348,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return renderComponent.getBackgroundPaint();
 	}
 	
-//	private void advanceAnimatedEdges() {
-//		edgeDetails.advanceAnimatedEdges();
-//		// This is more lightweight than calling updateView(). And if the animation thread is faster 
-//		// than the renderer the EDT will coalesce the extra paint events.
-//		setContentChanged();
-//		networkCanvas.repaint();
-//	}
+	private void advanceAnimatedEdges() {
+		edgeDetails.advanceAnimatedEdges();
+		
+		RenderDetailFlags flags = renderComponent.getLastFastRenderFlags();
+		if(flags.renderEdges() != RenderEdges.NONE) {
+			updateView(UpdateType.JUST_EDGES);
+		}
+	}
 	
-	
-//	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
-//		return cyAnnotator.adjustBoundsToIncludeAnnotations(extentsBuff);
-//	}
 	
 	public BendStore getBendStore() {
 		return bendStore;

@@ -162,6 +162,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private FramePanel getPanel(DebugFrameType type) {
 		switch(type) {
 			case MAIN_ANNOTAITONS:
+			case MAIN_EDGES:
 			case MAIN_FAST: return fastPanel;
 			case MAIN_SLOW: return slowPanel;
 			case BEV_FAST:  return fastBirdPanel;
@@ -172,7 +173,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	
 	@Override
 	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
-		DebugEntry entry = new DebugEntry(time, cancelled, type == DebugFrameType.MAIN_ANNOTAITONS, nodeCount, edgeCountEstimate);
+		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
 		getPanel(type).addEntry(entry);
 	}
 	

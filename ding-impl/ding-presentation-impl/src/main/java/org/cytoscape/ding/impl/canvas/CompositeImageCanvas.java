@@ -135,10 +135,10 @@ public class CompositeImageCanvas {
 	 * Returns an ImageFuture that represents the result of the painting.
 	 * To get the Image buffer from the ImageFuture call future.join().
 	 */
-	private ImageFuture paint(ProgressMonitor pm, Predicate<DingCanvas<?>> shouldRepaint) {
+	private ImageFuture paint(ProgressMonitor pm, Predicate<DingCanvas<?>> layers) {
 		var pm2 = ProgressMonitor.notNull(pm);
 		var flags = getRenderDetailFlags();
-		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, shouldRepaint), executor);
+		var future = CompletableFuture.supplyAsync(() -> paintImpl(pm2, flags, layers), executor);
 		return new ImageFuture(future, flags, pm2);
 	}
 	
@@ -154,7 +154,11 @@ public class CompositeImageCanvas {
 		);
 	}
 	
-	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> shouldRepaint) {
+	public ImageFuture paintJustEdges(ProgressMonitor pm) {
+		return paint(pm, c -> c == edgeCanvas);
+	}
+	
+	private Image paintImpl(ProgressMonitor pm, RenderDetailFlags flags, Predicate<DingCanvas<?>> layers) {
 		var subPms = pm.split(weights);
 		pm.start();
 		
@@ -163,7 +167,7 @@ public class CompositeImageCanvas {
 			var subPm = subPms.get(i);
 			
 			Image canvasImage;
-			if(shouldRepaint == null || shouldRepaint.test(canvas)) {
+			if(layers == null || layers.test(canvas)) {
 				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
 			} else {
 				canvasImage = canvas.getTransform().getImage();

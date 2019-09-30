@@ -34,6 +34,7 @@ public abstract class RenderComponent extends JComponent {
 	private ImageFuture fastFuture;
 	private UpdateType updateType = UpdateType.ALL_FULL;
 	
+	private RenderDetailFlags lastFastRenderFlags;
 	private boolean initialized = false;
 	
 	public RenderComponent(DRenderingEngine re, GraphLOD lod) {
@@ -66,6 +67,10 @@ public abstract class RenderComponent extends JComponent {
 	
 	public boolean isInitialized() {
 		return initialized;
+	}
+	
+	public RenderDetailFlags getLastFastRenderFlags() {
+		return lastFastRenderFlags;
 	}
 	
 	public NetworkTransform getTransform() {
@@ -153,21 +158,24 @@ public abstract class RenderComponent extends JComponent {
 				slowFuture = null;
 			}
 			
-			// RENDER: fast frame right now
+			// fast frame right now
 			if(updateType == UpdateType.JUST_ANNOTATIONS) {
-				var fastPm = debugPm(UpdateType.JUST_ANNOTATIONS, null);
+				var fastPm = debugPm(updateType, null);
 				fastFuture = fastCanvas.paintJustAnnotations(fastPm);
-				fastFuture.join();
+			} else if(updateType == UpdateType.JUST_EDGES) {
+				var fastPm = debugPm(updateType, null);
+				fastFuture = fastCanvas.paintJustEdges(fastPm);
 			} else {
 				var fastPm = debugPm(UpdateType.ALL_FAST, null);
 				fastFuture = fastCanvas.paint(fastPm);
-				fastFuture.join();
 			}
+			fastFuture.join();
+			lastFastRenderFlags = fastFuture.getLastRenderDetail();
 			
 			future = fastFuture;
 			updateThumbnail(fastFuture);
 
-			// RENDER: start a slow frame if necessary
+			// start a slow frame if necessary
 			if(updateType == UpdateType.ALL_FULL && !sameDetail()) { 
 				var slowPm = debugPm(UpdateType.ALL_FULL, getSlowProgressMonitor());
 				slowFuture = slowCanvas.paint(slowPm);
