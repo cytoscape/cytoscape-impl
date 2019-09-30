@@ -52,6 +52,7 @@ import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
+import org.cytoscape.view.presentation.property.EdgeBendVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
@@ -302,7 +303,7 @@ public final class DEdgeDetails implements EdgeDetails {
 	@Override
 	public Bend getBend(View<CyEdge> edgeView, boolean forceCreate) {
 		Bend bend = edgeView.getVisualProperty(EDGE_BEND);
-		if (bend == null && forceCreate) {
+		if(forceCreate && (bend == null || bend == EdgeBendVisualProperty.DEFAULT_EDGE_BEND)) {
 			bend = new BendImpl();
 		}
 		return bend;
