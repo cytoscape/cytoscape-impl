@@ -47,34 +47,32 @@ public final class EnhancedSearchUtils {
 	 * Replaces whitespace characters with underline. Method: Search for
 	 * SEARCH_STRING, replace with REPLACE_STRING.
 	 */
-	public static String replaceWhitespace(String searchTerm) {
-		String replaceTerm = "";
+	public static String replaceWhitespace(final String searchTerm) {
 
 		if (searchTerm == null){
-			return replaceTerm;
+			return "";
 		}
 		
 		Pattern searchPattern = Pattern.compile(SEARCH_STRING);
 		
 		String[] result = searchPattern.split(searchTerm);
-		replaceTerm = result[0];
+		StringBuffer sbuf = new StringBuffer();
+		sbuf.append(result[0]);
 		for (int i = 1; i < result.length; i++) {
-			replaceTerm = replaceTerm + REPLACE_STRING + result[i];
+			sbuf.append(REPLACE_STRING);
+			sbuf.append(result[i]);
 		}
 
-		return replaceTerm;
+		return sbuf.toString();
 	}
 
 	/**
 	 * This special lowercase handling turns a query string into lowercase,
 	 * and logical operators (AND, OR, NOT) into uppercase.
 	 */
-	public static String queryToLowerCase (String queryString) {
+	public static String queryToLowerCase (final String queryString) {
 
-		String lowercaseQuery;
-
-		lowercaseQuery = queryString;
-		lowercaseQuery = lowercaseQuery.toLowerCase();
+		String lowercaseQuery = queryString.toLowerCase();
 		
 		lowercaseQuery = lowercaseQuery.replaceAll(LOWERCASE_AND, UPPERCASE_AND);
 		lowercaseQuery = lowercaseQuery.replaceAll(LOWERCASE_OR, UPPERCASE_OR);
