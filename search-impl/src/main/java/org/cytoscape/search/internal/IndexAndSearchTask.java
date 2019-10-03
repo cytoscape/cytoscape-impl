@@ -1,20 +1,5 @@
 package org.cytoscape.search.internal;
 
-
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import org.apache.lucene.store.RAMDirectory;
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.search.internal.EnhancedSearch.Status;
-import org.cytoscape.task.AbstractNetworkTask;
-import org.cytoscape.work.ObservableTask;
-import org.cytoscape.work.TaskMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /*
  * #%L
  * Cytoscape Search Impl (search-impl)
@@ -38,6 +23,20 @@ import org.slf4j.LoggerFactory;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import org.apache.lucene.store.RAMDirectory;
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.search.internal.EnhancedSearch.Status;
+import org.cytoscape.task.AbstractNetworkTask;
+import org.cytoscape.work.ObservableTask;
+import org.cytoscape.work.TaskMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class IndexAndSearchTask extends AbstractNetworkTask implements ObservableTask {
 	
