@@ -158,7 +158,7 @@ public class CyActivator extends AbstractCyActivator {
 		CySessionReaderManagerImpl sessionReaderManager = new CySessionReaderManagerImpl(streamUtil);
 		VizmapReaderManagerImpl vizmapReaderManager = new VizmapReaderManagerImpl(streamUtil);
 		CyPropertyReaderManagerImpl propertyReaderManager = new CyPropertyReaderManagerImpl(streamUtil);
-		PresentationWriterManagerImpl viewWriterManager = new PresentationWriterManagerImpl();
+		PresentationWriterManagerImpl viewWriterManager = new PresentationWriterManagerImpl(serviceRegistrar);
 		CyNetworkViewWriterManagerImpl networkViewWriterManager = new CyNetworkViewWriterManagerImpl();
 		SessionWriterManagerImpl sessionWriterManager = new SessionWriterManagerImpl();
 		PropertyWriterManagerImpl propertyWriterManager = new PropertyWriterManagerImpl();

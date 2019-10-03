@@ -76,6 +76,11 @@ public class BoundedPropertyHandler extends AbstractTunableHandler implements Tu
 		Class<?> elementType = getElementType();
 		Object value = BasicTypePropertyHandler.parseValue(getName(), propertyValue, elementType);
 		container.setValue((Comparable)value);
+		try {
+			setValue(container);
+		} catch (IllegalAccessException | InvocationTargetException e) {
+			throw new IllegalArgumentException(e);
+		}
 	}
 	
 
