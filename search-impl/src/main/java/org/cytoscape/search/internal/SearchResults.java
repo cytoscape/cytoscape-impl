@@ -22,15 +22,15 @@ public class SearchResults {
 		if (this.isError() == false && message == null) {
 			int edges = this.getEdgeHitCount();
 			int nodes = this.getNodeHitCount();
-			if(nodes == 1 && edges == 1) {
-				this.message = "Selected 1 node and 1 edge";
-			} else if(nodes == 1 && edges != 1) {
-				this.message = "Selected 1 node and " + edges + " edges";
-			} else if(nodes != 1 && edges == 1) {
-				this.message = "Selected " + nodes + " nodes and 1 edge";
-			} else {
-				this.message = "Selected " + nodes + " nodes and " + edges + " edges";
+			String nodeplural = "s";
+			if (nodes == 1) {
+				nodeplural = "";
 			}
+			String edgeplural = "s";
+			if (edges == 1) {
+				edgeplural = "";
+			}
+			this.message = "Selected " + nodes + " node" + nodeplural + " and " + edges + " edge" + edgeplural;
 		}
 		else {
 			this.message = message;
