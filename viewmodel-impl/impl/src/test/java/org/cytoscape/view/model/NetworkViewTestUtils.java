@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyIdentifiable;
@@ -32,8 +33,19 @@ public class NetworkViewTestUtils {
 	
 	private NetworkViewTestUtils() {}
 	
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
+		return createNetworkView(network, false, configExtender);
+	}
+	
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network) {
+		return createNetworkView(network, false, null);
+	}
 	
 	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree) {
+		return createNetworkView(network, useRTree, null);
+	}
+	
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree, Consumer<CyNetworkViewConfig> configExtender) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
@@ -43,14 +55,15 @@ public class NetworkViewTestUtils {
 		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
 		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
 		config.setEnableSpacialIndex2D(useRTree);
+		if(configExtender != null) {
+			configExtender.accept(config);
+		}
+		
 		CyNetworkViewFactory viewFactory = factoryFactory.createNetworkViewFactory(lexicon, "test", config);
 		CyNetworkViewImpl networkView = (CyNetworkViewImpl)viewFactory.createNetworkView(network);
 		return networkView;
 	}
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network) {
-		return createNetworkView(network, true);
-	}
 
 	public static Set<Long> asSuidSet(Iterable<? extends CyIdentifiable> iterable) {
 		HashSet<Long> set = new HashSet<>();

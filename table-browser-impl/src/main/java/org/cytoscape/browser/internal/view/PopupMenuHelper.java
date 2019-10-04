@@ -26,21 +26,30 @@ package org.cytoscape.browser.internal.view;
 
 import java.awt.Component;
 import java.awt.Point;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.browser.internal.task.StaticTaskFactoryProvisioner;
+import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyColumn;
@@ -69,12 +78,12 @@ public class PopupMenuHelper {
 	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
-	
+
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public PopupMenuHelper(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
-		
+
 		tableCellFactoryMap = new HashMap<>();
 		tableColumnFactoryMap = new HashMap<>();
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
@@ -93,17 +102,35 @@ public class PopupMenuHelper {
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
 			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
 		}
-		
+
 		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
 	}
 
 	@SuppressWarnings("serial")
 	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue,
-			final Class<? extends CyIdentifiable> tableType, final Component invoker,
-			final int x, final int y, final JTable table) {
+			final Class<? extends CyIdentifiable> tableType, final Component invoker, final int x, final int y,
+			final JTable table) {
 		final JPopupMenu menu = new JPopupMenu();
-		
+
+		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
+
+		if (value != null) {
+			String urlString = value.toString();
+			if (urlString != null && (urlString.startsWith("http:") || urlString.startsWith("https:")))
+				menu.add(getOpenLinkMenu(value.toString()));
+		}
+
+		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
+
+		for (final Map.Entry<TableCellTaskFactory, Map<?, ?>> mapEntry : tableCellFactoryMap.entrySet()) {
+			TableCellTaskFactory taskFactory = mapEntry.getKey();
+			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
+			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
+		}
+
+		menu.add(new JSeparator());
+
 		// Add preset menu items
 		menu.add(new JMenuItem(new AbstractAction("Edit") {
 			@Override
@@ -116,59 +143,85 @@ public class PopupMenuHelper {
 			}
 		}));
 		
-		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
+		menu.add(new JMenuItem(new AbstractAction("Copy") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
+				final String columnName = column.getName();
+				final Object sourceValue = sourceRow.getRaw(columnName);
+				
+				StringSelection stringSelection = new StringSelection(sourceValue.toString());
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				clipboard.setContents(stringSelection, null);
+			}
+		}));
 		
-		if (value != null) {
-			String urlString = value.toString();
-			if (urlString != null && (urlString.startsWith("http:") || urlString.startsWith("https:")))
-				menu.add(getOpenLinkMenu(value.toString()));
-		}
-		
-		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
+		menu.add(new JMenuItem(new AbstractAction("Paste") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
+				final String columnName = column.getName();
+				
+				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				String pasteValue;
+				try {
+					pasteValue = (String) clipboard.getData(DataFlavor.stringFlavor);
+			
+				
+				final List<Object> parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName, pasteValue);
+				
+				if (parsedData.get(0) != null) {
+					sourceRow.set(columnName, parsedData.get(0));
+				}
+				else {
+					JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value",
+							JOptionPane.ERROR_MESSAGE);
+				}	
+				} catch (UnsupportedFlavorException | IOException e1) {
+					JOptionPane.showMessageDialog(null, e1.getMessage(), "Invalid Value",
+							JOptionPane.ERROR_MESSAGE);
+					e1.printStackTrace();
+				}
+			}
+		}));
 
-		for (final Map.Entry<TableCellTaskFactory, Map<?, ?>> mapEntry : tableCellFactoryMap.entrySet()) {
-			TableCellTaskFactory taskFactory = mapEntry.getKey();
-			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
-			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
-		}
-		
 		if (tableType == CyNode.class || tableType == CyEdge.class) {
 			menu.add(new JSeparator());
-			
-			final String name = String.format("Select %s from selected rows", 
+
+			final String name = String.format("Select %s from selected rows",
 					tableType == CyNode.class ? "nodes" : "edges");
-			
+
 			final JMenuItem mi = new JMenuItem(new AbstractAction(name) {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					selectElementsFromSelectedRows(table, tableType);
 				}
-				
+
 				@Override
 				public boolean isEnabled() {
-					final CyApplicationManager applicationManager =
-							serviceRegistrar.getService(CyApplicationManager.class);
-					
+					final CyApplicationManager applicationManager = serviceRegistrar
+							.getService(CyApplicationManager.class);
+
 					return table.getSelectedRowCount() > 0 && applicationManager.getCurrentNetwork() != null;
 				}
 			});
 			menu.add(mi);
 		}
-		
+
 		if (menu.getSubElements().length > 0)
 			menu.show(invoker, x, y);
 	}
 
 	/**
-	 * This method creates popup menu submenus and menu items based on the
-	 * "title" and "preferredMenu" keywords, depending on which are present in
-	 * the service properties.
+	 * This method creates popup menu submenus and menu items based on the "title"
+	 * and "preferredMenu" keywords, depending on which are present in the service
+	 * properties.
 	 */
 	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map<?, ?> props,
 			final Class<? extends CyIdentifiable> tableType) {
 		if (!enabledFor(tableType, props))
 			return;
-		
+
 		String menuLabel = (String) (props.get("title"));
 		if (menuLabel == null)
 			menuLabel = "Unidentified Task: " + Integer.toString(tf.hashCode());
@@ -179,13 +232,13 @@ public class PopupMenuHelper {
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
 		String types = (String) props.get("tableTypes");
-		
+
 		if (types == null)
 			return true;
-		
+
 		for (String type : types.split(",")) {
 			type = type.trim();
-			
+
 			if ("all".equals(type))
 				return true;
 			if ("node".equals(type) && CyNode.class.equals(tableType))
@@ -197,7 +250,7 @@ public class PopupMenuHelper {
 			if ("unassigned".equals(type) && tableType == null)
 				return true;
 		}
-		
+
 		return false;
 	}
 
@@ -221,9 +274,9 @@ public class PopupMenuHelper {
 	 * A simple action that executes the specified TaskFactory
 	 */
 	private class PopupAction extends AbstractAction {
-		
+
 		private static final long serialVersionUID = -2841342029789163004L;
-		
+
 		private final TaskFactory tf;
 
 		PopupAction(final TaskFactory tf, final String menuLabel) {
@@ -238,12 +291,12 @@ public class PopupMenuHelper {
 				taskManager.execute(tf.createTaskIterator());
 		}
 	}
-	
+
 	// Preset menu item: open browser
 	protected JMenuItem getOpenLinkMenu(final Object urlString) {
 		final JMenuItem openLinkItem = new JMenuItem();
 		openLinkItem.setText("Open URL in web browser...");
-		
+
 		if (urlString == null || urlString.toString().startsWith("http:") == false) {
 			openLinkItem.setEnabled(false);
 		} else {
@@ -258,35 +311,37 @@ public class PopupMenuHelper {
 
 		return openLinkItem;
 	}
-	
+
 	private void selectElementsFromSelectedRows(final JTable table, final Class<? extends CyIdentifiable> tableType) {
 		final Thread t = new Thread() {
 			@Override
 			public void run() {
 				final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 				final CyNetwork net = applicationManager.getCurrentNetwork();
-				
+
 				if (net != null) {
 					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
 					final int[] selectedRows = table.getSelectedRows();
 					final Set<CyRow> targetRows = new HashSet<CyRow>();
-					
+
 					for (final int rowIndex : selectedRows) {
-						// Getting the row from data table solves the problem with hidden or moved SUID column.
-						// However, since the rows might be sorted we need to convert the index to model.
-						final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) 
-								tableModel.getValueAt(table.convertRowIndexToModel(rowIndex), CyNetwork.SUID);
+						// Getting the row from data table solves the problem with hidden or moved SUID
+						// column.
+						// However, since the rows might be sorted we need to convert the index to
+						// model.
+						final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) tableModel
+								.getValueAt(table.convertRowIndexToModel(rowIndex), CyNetwork.SUID);
 						targetRows.add(tableModel.getRow(selected.getValidatedObject()));
 					}
-					
-					final CyTable cyTable = 
-							tableType == CyNode.class ? net.getDefaultNodeTable() : net.getDefaultEdgeTable();
-							
+
+					final CyTable cyTable = tableType == CyNode.class ? net.getDefaultNodeTable()
+							: net.getDefaultEdgeTable();
+
 					for (final CyRow cyRow : cyTable.getAllRows())
 						cyRow.set(CyNetwork.SELECTED, targetRows.contains(cyRow));
-					
+
 					final CyNetworkView view = applicationManager.getCurrentNetworkView();
-					
+
 					if (view != null) {
 						final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 						eventHelper.flushPayloadEvents();

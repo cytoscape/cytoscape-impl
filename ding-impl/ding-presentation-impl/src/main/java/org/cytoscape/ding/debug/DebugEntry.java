@@ -4,14 +4,14 @@ public class DebugEntry {
 
 	private final long time;
 	private final boolean cancelled;
-	private final boolean annotations;
+	private final DebugFrameType type;
 	private final int nodeCount;
 	private final int edgeCountEstimate;
 	
-	public DebugEntry(long frameTime, boolean cancelled, boolean annotations, int nodeCount, int edgeCountEstimate) {
+	public DebugEntry(long frameTime, boolean cancelled, DebugFrameType type, int nodeCount, int edgeCountEstimate) {
 		this.time = frameTime;
 		this.cancelled = cancelled;
-		this.annotations = annotations;
+		this.type = type;
 		this.nodeCount = nodeCount;
 		this.edgeCountEstimate = edgeCountEstimate;
 	}
@@ -24,10 +24,6 @@ public class DebugEntry {
 		return cancelled;
 	}
 
-	public boolean isAnnotations() {
-		return annotations;
-	}
-
 	public int getNodeCount() {
 		return nodeCount;
 	}
@@ -37,8 +33,10 @@ public class DebugEntry {
 	}
 	
 	public String getTimeMessage() {
-		if(annotations)
+		if(type == DebugFrameType.MAIN_ANNOTAITONS)
 			return "(annotations) " + time;
+		else if(type == DebugFrameType.MAIN_EDGES)
+			return "(edges) " + time;
 		else if(cancelled)
 			return "(cancelled) " + time;
 		else

@@ -41,7 +41,9 @@ import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
+import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
+import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
@@ -100,7 +102,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public enum UpdateType {
 		ALL_FAST, // Render a fast frame
 		ALL_FULL,  // Render a fast frame, then start rendering a full frame async
-		JUST_ANNOTATIONS // Just render annotations fast
+		JUST_ANNOTATIONS, // Just render annotations fast
+		JUST_EDGES
 	}
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -117,7 +120,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final NodeDetails nodeDetails;
 	private final EdgeDetails edgeDetails;
 	
-	private PrintLOD printLOD;
 	private final DingGraphLODAll dingGraphLODAll = new DingGraphLODAll();
 	private final DingGraphLOD dingGraphLOD;
 
@@ -138,7 +140,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	private final List<ContentChangeListener> contentChangeListeners = new CopyOnWriteArrayList<>();
 	private final List<ThumbnailChangeListener> thumbnailChangeListeners = new CopyOnWriteArrayList<>();
 	
-//	private Timer animationTimer;
+	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
 	private final CoalesceTimer coalesceTimer;
 	
@@ -176,7 +178,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
-		printLOD = new PrintLOD();
 		
 		renderComponent = new MainRenderComponent(this, dingGraphLOD);
 		picker = new NetworkPicker(this, null);
@@ -317,16 +318,16 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 		bendStore.updateSelectedEdges(selectedEdges);
 		
-//		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
-//		edgeDetails.updateAnimatedEdges(animatedEdges);
-//		if(animatedEdges.isEmpty() && animationTimer != null) {
-//			animationTimer.stop();
-//			animationTimer = null;
-//		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
-//			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
-//			animationTimer.setRepeats(true);
-//			animationTimer.start();
-//		}
+		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
+		edgeDetails.updateAnimatedEdges(animatedEdges);
+		if(animatedEdges.isEmpty() && animationTimer != null) {
+			animationTimer.stop();
+			animationTimer = null;
+		} else if(!animatedEdges.isEmpty() && animationTimer == null) {
+			animationTimer = new Timer(200, e -> advanceAnimatedEdges());
+			animationTimer.setRepeats(true);
+			animationTimer.start();
+		}
 		
 		// update LOD
 		boolean hd = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL);
@@ -347,18 +348,15 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		return renderComponent.getBackgroundPaint();
 	}
 	
-//	private void advanceAnimatedEdges() {
-//		edgeDetails.advanceAnimatedEdges();
-//		// This is more lightweight than calling updateView(). And if the animation thread is faster 
-//		// than the renderer the EDT will coalesce the extra paint events.
-//		setContentChanged();
-//		networkCanvas.repaint();
-//	}
+	private void advanceAnimatedEdges() {
+		edgeDetails.advanceAnimatedEdges();
+		
+		RenderDetailFlags flags = renderComponent.getLastFastRenderFlags();
+		if(flags.renderEdges() != RenderEdges.NONE) {
+			updateView(UpdateType.JUST_EDGES);
+		}
+	}
 	
-	
-//	public boolean adjustBoundsToIncludeAnnotations(double[] extentsBuff) {
-//		return cyAnnotator.adjustBoundsToIncludeAnnotations(extentsBuff);
-//	}
 	
 	public BendStore getBendStore() {
 		return bendStore;
@@ -433,10 +431,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		}
 	}
 
-	
-	public PrintLOD getPrintLOD() {
-		return printLOD;
-	}
 	
 	/**
 	 * Set the zoom level and redraw the view.
@@ -625,13 +619,9 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	}
 
 
-	public void setPrintingTextAsShape(boolean textAsShape) {
-		synchronized (dingLock) {
-			printLOD.setPrintingTextAsShape(textAsShape);
-		}
-	}
 
 	
+	// File > Print
 	@Override
 	public int print(Graphics g, PageFormat pageFormat, int page) {
 		if(page != 0)
@@ -651,21 +641,31 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// from InternalFrameComponent
 		g.clipRect(0, 0, renderComponent.getWidth(), renderComponent.getHeight());
 		
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), dingGraphLOD, transform);
+		PrintLOD printLOD = new PrintLOD();
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, getBackgroundColor(), printLOD, transform);
 		
 		return PAGE_EXISTS;
 	}
-
 	
+
+	// File > Export Network to Image... (JPEG, PNG, PDF, POSTSCRIPT, SVG)
 	@Override
 	public void printCanvas(Graphics g) {
 		final boolean contentChanged = this.contentChanged;
 		
 		// Check properties related to printing:
 		boolean exportAsShape = "true".equalsIgnoreCase(props.getProperty("exportTextAsShape"));
-		setPrintingTextAsShape(exportAsShape);
+		boolean transparent   = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
+		boolean hideLabels    = "true".equalsIgnoreCase(props.getProperty("exportHideLabels"));
 		
-		print(g);
+		PrintLOD printLOD = new PrintLOD();
+		printLOD.setPrintingTextAsShape(exportAsShape);
+		printLOD.setExportLabels(!hideLabels);
+		
+		Color bg = transparent ? null : getBackgroundColor();
+		
+		var transform = renderComponent.getTransform();
+		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, printLOD, transform);
 		
 		// Keep previous dirty flags, otherwise the actual view canvas may not be updated next time.
 		// (this method is usually only used to export the View as image, create thumbnails, etc,
@@ -674,18 +674,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		setContentChanged(contentChanged);
 	}
 	
-	/**
-	 * This method is used by freehep lib to export network as graphics.
-	 */
-	public void print(Graphics g) {
-		boolean transparent = "true".equalsIgnoreCase(props.getProperty("exportTransparentBackground"));
-		
-		var transform = renderComponent.getTransform();
-		Color bg = transparent ? null : getBackgroundColor();
-		
-		CompositeGraphicsCanvas.paint((Graphics2D)g, this, bg, dingGraphLOD, transform);
-	}
-
 	
 	/**
 	 * Method to return a reference to an Image object, which represents the current network view.

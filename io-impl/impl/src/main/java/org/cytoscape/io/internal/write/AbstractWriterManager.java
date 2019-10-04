@@ -46,14 +46,13 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 
 	public AbstractWriterManager(DataCategory category) {
 		this.category = category;
-		factories = new ConcurrentHashMap<CyFileFilter,T>(16, 0.75f, 2);
+		factories = new ConcurrentHashMap<>(16, 0.75f, 2);
 	}
 
 	public List<CyFileFilter> getAvailableWriterFilters() {
-		return new ArrayList<CyFileFilter>( factories.keySet() );
+		return new ArrayList<>( factories.keySet() );
 	}
 	
-	@SuppressWarnings("unchecked")
 	public void addCyWriterFactory(T factory, Map<String,String> props) {
 		if ( factory != null && factory.getFileFilter().getDataCategory() == category ) {
 			logger.info("adding IO taskFactory ");
@@ -62,7 +61,6 @@ public class AbstractWriterManager<T extends CyWriterFactory>  implements CyWrit
 			logger.warn("Specified factory is null or has wrong DataCategory (" + category + ")");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void removeCyWriterFactory(T factory, Map<String,String> props) {
 		factories.remove(factory.getFileFilter());
 	}

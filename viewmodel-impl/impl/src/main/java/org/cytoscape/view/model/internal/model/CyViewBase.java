@@ -69,13 +69,12 @@ public abstract class CyViewBase<M> implements View<M> {
 	public void batch(Consumer<View<M>> viewConsumer, boolean setDirty) {
 		ViewLock lock = getLock();
 		synchronized (lock) {
-			lock.setUpdateDirty(setDirty);
-			
-			viewConsumer.accept(this);
-			
-			if(setDirty)
+			lock.enterBatch(() ->
+				viewConsumer.accept(this)
+			);
+			if(setDirty && lock.isUpdateDirty()) {
 				getNetworkView().setDirty();
-			lock.setUpdateDirty(true);
+			}
 		}
 	}
 	

@@ -1,6 +1,7 @@
 package org.cytoscape.task.internal.export;
 
 import java.io.File;
+import java.util.Objects;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
@@ -16,6 +17,8 @@ import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListChangeListener;
+import org.cytoscape.work.util.ListSelection;
 
 /*
  * #%L
@@ -47,6 +50,8 @@ import org.cytoscape.work.Tunable;
  */
 public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriterFactory, PresentationWriterManager> {
 	
+	private static String defaultFormat = "PNG";
+	
 	public CyNetworkView view = null;
 	@Tunable(description="Network View to export", 
 	         longDescription=StringToModel.CY_NETWORK_VIEW_LONG_DESCRIPTION,
@@ -76,22 +81,13 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	}
 
 	private RenderingEngine<?> re;
-	private boolean useTunable = false;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public ViewWriter(CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar.getService(PresentationWriterManager.class),
-				serviceRegistrar.getService(CyApplicationManager.class));
+		super(serviceRegistrar.getService(PresentationWriterManager.class), serviceRegistrar.getService(CyApplicationManager.class));
 		this.serviceRegistrar = serviceRegistrar;
-		useTunable = true;
 
-		// Pick PNG as a default file format
-		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
-			if (fileTypeDesc.contains("PNG")) {
-				options.setSelectedValue(fileTypeDesc);
-				break;
-			}
-		}
+		initDefaultFormat();
 	}
 
 	/**
@@ -101,29 +97,32 @@ public final class ViewWriter extends TunableAbstractCyWriter<PresentationWriter
 	 * @param re The RenderingEngine used to generate the image to be written to the file.
 	 */
 	public ViewWriter(CyNetworkView view, RenderingEngine<?> re, CyServiceRegistrar serviceRegistrar) {
-		super(serviceRegistrar.getService(PresentationWriterManager.class),
-				serviceRegistrar.getService(CyApplicationManager.class));
+		super(serviceRegistrar.getService(PresentationWriterManager.class), serviceRegistrar.getService(CyApplicationManager.class));
 		this.serviceRegistrar = serviceRegistrar;
 
-		if (view == null)
-			throw new NullPointerException("CyNetworkView is null");
-		if (re == null)
-			throw new NullPointerException("RenderingEngine is null");
-		
-		this.view = view;
-		this.re = re;
+		this.view = Objects.requireNonNull(view, "CyNetworkView is null");
+		this.re   = Objects.requireNonNull(re, "RenderingEngine is null");
 
-		// Pick PNG as a default file format
-		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
-			if (fileTypeDesc.contains("PNG")) {
-				options.setSelectedValue(fileTypeDesc);
-				break;
-			}
-		}
+		initDefaultFormat();
 
 		outputFile = getSuggestedFile();
 	}
 
+	
+	private void initDefaultFormat() {
+		for(String fileTypeDesc : getFileFilterDescriptions()) {
+			if (fileTypeDesc.contains(defaultFormat)) {
+				options.setSelectedValue(fileTypeDesc);
+				break;
+			}
+		}
+		options.addListener(new ListChangeListener<>() {
+			@Override public void selectionChanged(ListSelection<String> source) {
+				defaultFormat = options.getSelectedValue();
+			}
+		});
+	}
+	
 	@Override
 	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
 		if (view == null) return null;

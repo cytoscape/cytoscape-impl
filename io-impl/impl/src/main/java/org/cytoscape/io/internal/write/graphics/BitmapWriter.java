@@ -60,6 +60,17 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 	private static final String PIXELS = "pixels";
 	private static final String INCHES = "inches";
 	
+	
+	@Tunable(
+			description = "Hide Labels:",
+			longDescription = "If true then node and edge labels will not be visible in the image.",
+			exampleStringValue = "true",
+			groups = { "_Others" },
+			gravity = 2.2
+	)
+	public boolean hideLabels;
+	
+	
 	@ProvidesTitle
 	public String getTitle() {
 		return "Image Parameters";
@@ -273,7 +284,18 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		tm.setProgress(0.0);
 		logger.debug("Bitmap image rendering start.");
 
+		re.getProperties().setProperty("exportHideLabels", String.valueOf(hideLabels));
+		try {
+			writeImage(tm);
+		} finally {
+			re.getProperties().remove("exportHideLabels");
+		}
 		
+		logger.debug("Bitmap image rendering finished.");
+		tm.setProgress(1.0);
+	}
+	
+	private void writeImage(TaskMonitor tm) throws Exception {
 		final BufferedImage image = new BufferedImage(widthInPixels, heightInPixels, getImageType());
 		
 		final Graphics2D g = (Graphics2D) image.getGraphics();
@@ -292,10 +314,8 @@ public class BitmapWriter extends AbstractTask implements CyWriter {
 		} finally {
 			outStream.close();
 		}
-
-		logger.debug("Bitmap image rendering finished.");
-		tm.setProgress(1.0);
 	}
+	
 	
 	protected int getImageType() {
 		return BufferedImage.TYPE_INT_RGB;

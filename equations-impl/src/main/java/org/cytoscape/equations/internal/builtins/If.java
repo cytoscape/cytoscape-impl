@@ -67,4 +67,21 @@ public class If extends AbstractFunction {
 		else
 			return args[condition ? 1 : 2].toString();
 	}
+	
+	/**
+	 * This is a hack, but we can't have the return type be Object.class because that
+	 * effectively makes the IF function useless (because it can't be nested inside another
+	 * expression). So... we will return the type of the arguments.
+	 */
+	@Override
+	public Class<?> validateArgTypes(Class[] argTypes) {
+		Class<?> returnType = super.validateArgTypes(argTypes);
+		if(returnType == null)
+			return null;
+		if(argTypes.length < 3 || argTypes[1] == null)
+			return null;
+		if(argTypes[1].equals(argTypes[2]))
+			return argTypes[1];
+		return null;
+	}
 }
