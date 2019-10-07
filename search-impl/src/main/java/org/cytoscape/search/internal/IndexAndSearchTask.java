@@ -144,13 +144,17 @@ public class IndexAndSearchTask extends AbstractNetworkTask implements Observabl
 	
 			if(!results.isError()) {
 				selector.selectNodesAndEdges(network, results, this, taskMonitor);
+				taskMonitor.setStatusMessage("Updating any network views");
+
+				startTime = System.currentTimeMillis();
 				viewUpdator.updateView(network);
+				taskMonitor.setStatusMessage("Updating any network views completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 			}
 		} finally {
 			executor.shutdownNow();
 		}
 	}
-	
+
 	/**
 	 * Runs search under another thread so this task can be easily cancelled
 	 * @param network
