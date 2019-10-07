@@ -96,7 +96,9 @@ public class NodeAndEdgeSelectorImplTest {
 		selector.selectNodesAndEdges(network, SearchResults.results(new ArrayList<String>(), new ArrayList<String>()), mockTask, mockMonitor);
 
 		verify(mockMonitor).setStatusMessage("Could not find any match.");
+		verify(mockMonitor).setStatusMessage("Unsetting any existing selected nodes");
 		verify(mockMonitor).setTitle("Search Finished");
+		verify(mockMonitor, times(2)).setProgress(0.0);
 		verify(mockMonitor).setProgress(1.0);
 		assertEquals(0, CyTableUtil.getSelectedNodes(network).size());
 	}
@@ -119,9 +121,8 @@ public class NodeAndEdgeSelectorImplTest {
 		selector.selectNodesAndEdges(network, SearchResults.results(Arrays.asList(new String[] {node1.getSUID().toString(),
 				node2.getSUID().toString()}), new ArrayList<String>()), mockTask, mockMonitor);
 
-		verify(mockMonitor).setStatusMessage("Unsetting any existing network selections");
+		//verify(mockMonitor).setStatusMessage("Unsetting any existing network selections");
 		verify(mockMonitor).setStatusMessage("Selecting 2 nodes and 0 edges");
-		verify(mockMonitor, times(2)).setProgress(0.0);
 		assertEquals(2, CyTableUtil.getSelectedNodes(network).size());
 	}
 
@@ -149,9 +150,11 @@ public class NodeAndEdgeSelectorImplTest {
 		selector.selectNodesAndEdges(network, SearchResults.results(Arrays.asList(new String[] {node1.getSUID().toString(),
 				node2.getSUID().toString()}), Arrays.asList(new String[] {edge1.getSUID().toString()})), mockTask, mockMonitor);
 
-		verify(mockMonitor).setStatusMessage("Unsetting any existing network selections");
+		verify(mockMonitor).setStatusMessage("Unsetting any existing selected nodes");
+		verify(mockMonitor).setStatusMessage("Unsetting any existing selected edges");
+
 		verify(mockMonitor).setStatusMessage("Selecting 2 nodes and 1 edge");
-		verify(mockMonitor, times(2)).setProgress(0.0);
+		
 		assertEquals(2, CyTableUtil.getSelectedNodes(network).size());
 		assertEquals(1, CyTableUtil.getSelectedEdges(network).size());
 	}
@@ -182,9 +185,9 @@ public class NodeAndEdgeSelectorImplTest {
 		selector.selectNodesAndEdges(network, SearchResults.results(Arrays.asList(new String[] {node1.getSUID().toString(),
 				node2.getSUID().toString()}), Arrays.asList(new String[] {edge1.getSUID().toString(),edge2.getSUID().toString()})), mockTask, mockMonitor);
 
-		verify(mockMonitor).setStatusMessage("Unsetting any existing network selections");
+		verify(mockMonitor).setStatusMessage("Unsetting any existing selected nodes");
+		verify(mockMonitor).setStatusMessage("Unsetting any existing selected edges");
 		verify(mockMonitor).setStatusMessage("Selecting 2 nodes and 2 edges");
-		verify(mockMonitor, times(3)).setProgress(0.0);
 		assertEquals(2, CyTableUtil.getSelectedNodes(network).size());
 		assertEquals(2, CyTableUtil.getSelectedEdges(network).size());
 	}

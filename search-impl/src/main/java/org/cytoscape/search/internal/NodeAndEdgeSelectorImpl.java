@@ -55,6 +55,8 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 */
 	public static final long UNSET_NETWORK_CHECK_CANCEL_FREQ = 50000;
 
+	public static final int PROGRESS_UPDATE_FREQ = 10000;
+
 	/**
 	 * Unselects nodes and edges on {@code network} and then selects nodes and edges on
 	 * that {@code network} as found in {@code searchResults}. If the {@code network}
@@ -96,10 +98,10 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 
 		List<String> nodeHits = searchResults.getNodeHits();
 		List<String> edgeHits = searchResults.getEdgeHits();
-
+		int totalHitCount = nodeHitCount + edgeHitCount;
 		long startTime = System.currentTimeMillis();
-		selectNodes(nodeHits, nodeHitCount, network, task, taskMonitor);
-		selectEdges(edgeHits, edgeHitCount, network, task, taskMonitor);
+		selectNodes(nodeHits, nodeHitCount, totalHitCount, network, task, taskMonitor);
+		selectEdges(edgeHits, edgeHitCount, totalHitCount, network, task, taskMonitor);
 		
 		if (task.isCancelled()) {
 			return;
@@ -115,11 +117,15 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * @param task Invoking task used to see if this method should return early
 	 * @return true upon success or false if method exited early cause {@code task.isCancelled()} returned true
 	 */
-	private boolean unselectNodes(CyNetwork network, IndexAndSearchTask task) {
+	private boolean unselectNodes(CyNetwork network, IndexAndSearchTask task, TaskMonitor taskMonitor) {
+		taskMonitor.setStatusMessage("Unsetting any existing selected nodes");
+		long startTime = System.currentTimeMillis();
 		//bypassing CyTableUtil to skip the allocation of a new ArrayList
 		Collection<Long> suids = network.getDefaultNodeTable().getMatchingKeys(CyNetwork.SELECTED, 
 				true, Long.class);
 		long counter = 0;
+		int numNodes = suids.size();
+		taskMonitor.setProgress(0.0);
 		for (Long suid : suids) {
 			CyNode n = network.getNode(suid);
 			if (n == null) {
@@ -131,7 +137,12 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 				if (task.isCancelled())
 					return false;
 			}
+			if (counter % PROGRESS_UPDATE_FREQ == 0) {
+				taskMonitor.setProgress((double)counter / (double)numNodes);
+			}
 		}
+		taskMonitor.setStatusMessage("Unsetting any existing selected nodes completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
+
 		return true;
 	}
 	
@@ -141,12 +152,15 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * @param task Invoking task used to see if this method should return early
 	 * @return true upon success or false if method exited early cause {@code task.isCancelled()} returned true
 	 */
-	private boolean unselectEdges(CyNetwork network, IndexAndSearchTask task) {
-		
+	private boolean unselectEdges(CyNetwork network, IndexAndSearchTask task, TaskMonitor taskMonitor) {
+		taskMonitor.setStatusMessage("Unsetting any existing selected edges");
+		long startTime = System.currentTimeMillis();
 		//bypassing CyTableUtil to skip the allocation of a new ArrayList
 		Collection<Long> suids = network.getDefaultEdgeTable().getMatchingKeys(CyNetwork.SELECTED, 
 				true, Long.class);
 		long counter = 0;
+		taskMonitor.setProgress(0.0);
+		int numEdges = suids.size();
 		for (Long suid: suids) {
 			CyEdge e = network.getEdge(suid);
 			if (e == null) {
@@ -158,7 +172,11 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 				if (task.isCancelled())
 					return false;
 			}
+			if (counter % PROGRESS_UPDATE_FREQ == 0) {
+				taskMonitor.setProgress((double)counter / (double)numEdges);
+			}
 		}
+		taskMonitor.setStatusMessage("Unsetting any existing selected edges completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		return true;
 	}
 	
@@ -169,15 +187,11 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * @param taskMonitor
 	 */
 	private boolean unselectNodesAndEdges(CyNetwork network, IndexAndSearchTask task, TaskMonitor taskMonitor) {
-		taskMonitor.setStatusMessage("Unsetting any existing network selections");
-		long startTime = System.currentTimeMillis();
-		if (!this.unselectNodes(network, task))
+		if (!this.unselectNodes(network, task, taskMonitor))
 			return false;
 		
-		if (!this.unselectEdges(network, task))
+		if (!this.unselectEdges(network, task, taskMonitor))
 			return false;
-
-		taskMonitor.setStatusMessage("Unsetting any existing network selections completed in " + Long.toString(System.currentTimeMillis() - startTime) + " ms");
 		return true;
 	}
 
@@ -190,21 +204,22 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * @param task the task requesting the update
 	 * @param taskMonitor task monitor that updates the user as to status
 	 */
-	private void selectNodes(final List<String> nodeHits, int nodeHitCount, CyNetwork network,
+	private void selectNodes(final List<String> nodeHits, int nodeHitCount, int totalHitCount, CyNetwork network,
 			IndexAndSearchTask task, TaskMonitor taskMonitor) {
 		final Iterator<String> nodeIt = nodeHits.iterator();
-		int numCompleted = 0;
-
+		int counter = 0;
+		taskMonitor.setProgress(0.0);
 		while (nodeIt.hasNext() && !task.isCancelled()) {
-			int currESPIndex = Integer.parseInt(nodeIt.next().toString());
+			int currESPIndex = Integer.parseInt(nodeIt.next());
 			CyNode currNode = network.getNode(currESPIndex);
 
 			if (currNode != null)
 				network.getRow(currNode).set(CyNetwork.SELECTED, true);
 			else
 				logger.warn("Unknown node identifier " + (currESPIndex));
-
-			taskMonitor.setProgress(numCompleted++ / nodeHitCount);
+			counter++;
+			if (counter % PROGRESS_UPDATE_FREQ == 0)
+				taskMonitor.setProgress(counter / totalHitCount);
 		}
 	}
 	
@@ -217,21 +232,22 @@ public class NodeAndEdgeSelectorImpl implements NodeAndEdgeSelector {
 	 * @param task the task requesting the update
 	 * @param taskMonitor task monitor that updates the user as to status
 	 */
-	private void selectEdges(final List<String> edgeHits, int edgeHitCount, CyNetwork network,
+	private void selectEdges(final List<String> edgeHits, int edgeHitCount, int totalHitCount, CyNetwork network,
 			IndexAndSearchTask task, TaskMonitor taskMonitor) {
 		final Iterator<String> edgeIt = edgeHits.iterator();
-		int numCompleted = 0;
+		int counter = totalHitCount - edgeHitCount;
 
 		while (edgeIt.hasNext() && !task.isCancelled()) {
-			int currESPIndex = Integer.parseInt(edgeIt.next().toString());
+			int currESPIndex = Integer.parseInt(edgeIt.next());
 			CyEdge currEdge = network.getEdge(currESPIndex);
 			
 			if (currEdge != null)
 				network.getRow(currEdge).set(CyNetwork.SELECTED, true);
 			else
 				logger.warn("Unknown edge identifier " + (currESPIndex));
-
-			taskMonitor.setProgress(++numCompleted / edgeHitCount);
+			counter++;
+			if (counter % PROGRESS_UPDATE_FREQ == 0)
+				taskMonitor.setProgress(counter / totalHitCount);
 		}
 	}
 }
