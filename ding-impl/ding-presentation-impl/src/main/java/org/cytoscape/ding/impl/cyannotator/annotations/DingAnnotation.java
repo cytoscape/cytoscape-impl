@@ -125,4 +125,10 @@ public interface DingAnnotation extends Annotation {
 	default Rectangle2D getBounds() {
 		return new Rectangle2D.Double(getX(), getY(), getWidth(), getHeight());
 	}
+
+	void setSize(double width, double height);
+	
+	void saveBounds();
+
+	Rectangle2D getInitialBounds();
 }

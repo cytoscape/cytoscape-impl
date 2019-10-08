@@ -341,6 +341,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		renderComponent.setScaleFactor(scaleFactor);
 		
+		boolean annotationSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
+		if(!annotationSelection)
+			cyAnnotator.getAnnotationSelection().clear();
+		
 		setContentChanged(true);
 	}
 	
