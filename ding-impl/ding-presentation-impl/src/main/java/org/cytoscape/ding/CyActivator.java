@@ -127,7 +127,7 @@ import org.osgi.framework.BundleContext;
 public class CyActivator extends AbstractCyActivator {
 	
 	// Set to true to enable the Ding Debug panel
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	
 	private CustomGraphicsManager cgManager;
 	private CyCustomGraphics2Manager cg2Manager;

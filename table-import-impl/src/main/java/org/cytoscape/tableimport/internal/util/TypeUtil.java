@@ -161,47 +161,46 @@ public final class TypeUtil {
 		// First pass: Look for exact column name
 		// Second pass: Select column whose name contains one of the tokens
 		MAIN_LOOP:
-		for (int count = 0; count < 2; count++) {
-			boolean exact = count == 0;
+		for (int attempt = 0; attempt < 2; attempt++) {
+			boolean exact = attempt == 0;
 			
 			for (int i = 0; i < size; i++) {
 				final String name = model.getColumnName(i);
 				final AttributeDataType dataType = dataTypes[i];
 				
-				if (CyIdentifiable.SUID.equalsIgnoreCase(name)) {
-					// Columns called SUID are ignored by default
-					types[i] = NONE;
-				} else if (importType == NETWORK_IMPORT) {
-					if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
-						srcFound = true;
-						types[i] = SOURCE;
-					} else if (!tgtFound && matches(name, PREF_TARGET_NAMES, exact) && isValid(TARGET, dataType)) {
-						tgtFound = true;
-						types[i] = TARGET;
-					} else if (!interactFound && matches(name, PREF_INTERACTION_NAMES, exact) &&
-							isValid(INTERACTION, dataType)) {
-						interactFound = true;
-						types[i] = INTERACTION;
+				if (attempt == 0) {
+					if (CyIdentifiable.SUID.equalsIgnoreCase(name) || name.endsWith(".SUID") || CyNetwork.SELECTED.equalsIgnoreCase(name)) {
+						// SUID and 'selected' columns are ignored by default
+						types[i] = NONE;
+					} else if (importType == NETWORK_IMPORT) {
+						if (!srcFound && matches(name, PREF_SOURCE_NAMES, exact) && isValid(SOURCE, dataType)) {
+							srcFound = true;
+							types[i] = SOURCE;
+						} else if (!tgtFound && matches(name, PREF_TARGET_NAMES, exact) && isValid(TARGET, dataType)) {
+							tgtFound = true;
+							types[i] = TARGET;
+						} else if (!interactFound && matches(name, PREF_INTERACTION_NAMES, exact) &&
+								isValid(INTERACTION, dataType)) {
+							interactFound = true;
+							types[i] = INTERACTION;
+						}
+					} else if (importType == ONTOLOGY_IMPORT) {
+						if (!keyFound && matches(name, PREF_KEY_NAMES, exact) && canBeKey(model, i, dataType)) {
+							keyFound = true;
+							types[i] = KEY;
+						} else if (!goFound && matches(name, PREF_ONTOLOGY_NAMES, exact) && isValid(ONTOLOGY, dataType)) {
+							goFound = true;
+							types[i] = ONTOLOGY;
+						} else if (!taxFound && matches(name, PREF_TAXON_NAMES, exact) && isValid(TAXON, dataType)) {
+							taxFound = true;
+							types[i] = TAXON;
+						}
+						
+						if (keyFound && goFound && taxFound)
+							break MAIN_LOOP;
 					}
-					
-					if (srcFound && tgtFound && interactFound)
-						break MAIN_LOOP;
-				} else if (importType == ONTOLOGY_IMPORT) {
-					if (!keyFound && matches(name, PREF_KEY_NAMES, exact) && canBeKey(model, i, dataType)) {
-						keyFound = true;
-						types[i] = KEY;
-					} else if (!goFound && matches(name, PREF_ONTOLOGY_NAMES, exact) && isValid(ONTOLOGY, dataType)) {
-						goFound = true;
-						types[i] = ONTOLOGY;
-					} else if (!taxFound && matches(name, PREF_TAXON_NAMES, exact) && isValid(TAXON, dataType)) {
-						taxFound = true;
-						types[i] = TAXON;
-					}
-					
-					if (keyFound && goFound && taxFound)
-						break MAIN_LOOP;
-				} else if (!keyFound) {
-					if (canBeKey(model, i, dataType)) {
+				} else if (!keyFound) { // Second attempt and we haven't found a key column yet...
+					if (types[i] != NONE && canBeKey(model, i, dataType)) {
 						keyFound = true;
 						types[i] = KEY;
 						break MAIN_LOOP;

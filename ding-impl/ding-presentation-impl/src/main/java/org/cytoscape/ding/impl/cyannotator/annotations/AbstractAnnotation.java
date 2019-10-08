@@ -76,6 +76,7 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected double height;
 	
 	protected int zOrder;
+	protected Rectangle2D initialBounds;
 	
 	
 	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -183,9 +184,42 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 		return new Rectangle2D.Double(x, y, width, height);
 	}
 	
+	@Override
 	public void setSize(double width, double height) {
 		this.width = width;
 		this.height = height;
+	}
+	
+	// Save the bounds (in node coordinates)
+	@Override
+	public void saveBounds() {
+		initialBounds = getBounds().getBounds2D();
+	}
+
+	@Override
+	public Rectangle2D getInitialBounds() {
+		return initialBounds;
+	}
+		
+	public void resizeAnnotationRelative(Rectangle2D initialBounds, Rectangle2D outlineBounds) {
+		Rectangle2D daBounds = getInitialBounds();
+		
+		double deltaW = outlineBounds.getWidth()/initialBounds.getWidth();
+		double deltaH = outlineBounds.getHeight()/initialBounds.getHeight();
+		
+		double deltaX = (daBounds.getX()-initialBounds.getX())/initialBounds.getWidth();
+		double deltaY = (daBounds.getY()-initialBounds.getY())/initialBounds.getHeight();
+		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
+
+		setBounds(newBounds);
+	}
+	
+	private static Rectangle2D adjustBounds(Rectangle2D bounds, Rectangle2D outerBounds, double dx, double dy, double dw, double dh) {
+		double newX = outerBounds.getX() + dx * outerBounds.getWidth();
+		double newY = outerBounds.getY() + dy * outerBounds.getHeight();
+		double newWidth  = bounds.getWidth() * dw;
+		double newHeight = bounds.getHeight()* dh;
+		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
 	}
 	
 	@Override

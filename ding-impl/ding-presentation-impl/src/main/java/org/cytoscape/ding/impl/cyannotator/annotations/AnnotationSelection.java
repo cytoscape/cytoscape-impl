@@ -18,7 +18,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -44,7 +43,6 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	// node coordinates
 	private Rectangle2D union; 
 	private Rectangle2D savedUnion;
-	private Map<DingAnnotation,Rectangle2D> savedBoundsMap;
 	
 	// Everything below in image coordinates
 	private final Map<Position,Rectangle> anchors = new EnumMap<>(Position.class);
@@ -69,8 +67,10 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 	
 	public void clear() {
-		selectedAnnotations.clear();
-		updateBounds();
+		if(!selectedAnnotations.isEmpty()) {
+			selectedAnnotations.clear();
+			updateBounds();
+		}
 	}
 	
 	public boolean contains(DingAnnotation a) {
@@ -97,9 +97,8 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	private void saveBounds() {
 		savedUnion = union;
-		savedBoundsMap = new HashMap<>();
-		for(var a : this) {
-			savedBoundsMap.put(a, a.getBounds());
+		for(DingAnnotation da : selectedAnnotations) {
+			da.saveBounds();
 		}
 	}
 
@@ -148,33 +147,14 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		if(isEast(position))
 			mouseX -= resizingAnchor.getMouseOffsetX();
 		
+				
 		Point2D node = re.getTransform().getNodeCoordinates(mouseX, mouseY);
 		Rectangle2D newOutlineBounds = resize(position, savedUnion, node.getX(), node.getY());
 
 		for(var a : this) {
-			Rectangle2D daInitialBounds = savedBoundsMap.get(a);
-			resizeAnnotationRelative((AbstractAnnotation)a, daInitialBounds, savedUnion, newOutlineBounds);
-			a.update();
+			((AbstractAnnotation)a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
 		}
 		updateBounds();
-	}
-	
-	private static void resizeAnnotationRelative(AbstractAnnotation da, Rectangle2D daBounds, Rectangle2D initialBounds, Rectangle2D outlineBounds) {
-		double deltaW = outlineBounds.getWidth()  / initialBounds.getWidth();
-		double deltaH = outlineBounds.getHeight() / initialBounds.getHeight();
-		
-		double deltaX = (daBounds.getX() - initialBounds.getX()) / initialBounds.getWidth();
-		double deltaY = (daBounds.getY() - initialBounds.getY()) / initialBounds.getHeight();
-		Rectangle2D newBounds = adjustBounds(daBounds, outlineBounds, deltaX, deltaY, deltaW, deltaH);
-		da.setBounds(newBounds);
-	}
-	
-	private static Rectangle2D adjustBounds(Rectangle2D bounds, Rectangle2D outerBounds, double dx, double dy, double dw, double dh) {
-		double newX = outerBounds.getX() + dx*outerBounds.getWidth();
-		double newY = outerBounds.getY() + dy*outerBounds.getHeight();
-		double newWidth = bounds.getWidth()*dw;
-		double newHeight = bounds.getHeight()*dh;
-		return new Rectangle2D.Double(newX,  newY, newWidth, newHeight);
 	}
 	
 	public static Rectangle2D resize(Position position, Rectangle2D bounds, double mouseX, double mouseY) {

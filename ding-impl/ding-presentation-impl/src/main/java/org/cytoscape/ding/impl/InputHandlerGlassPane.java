@@ -809,9 +809,7 @@ public class InputHandlerGlassPane extends JComponent {
 				toggle = Toggle.SELECT;
 
 				if (isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
-					double[] ptBuff = {e.getX(), e.getY()};
-					re.getTransform().xformImageToNodeCoords(ptBuff);
-					HandleKey hit = re.getBendStore().pickHandle((float) ptBuff[0], (float) ptBuff[1]);
+					HandleKey hit = re.getPicker().getHandleAt(e.getPoint());
 					if(hit != null) {
 						re.getBendStore().selectHandle(hit);
 					}

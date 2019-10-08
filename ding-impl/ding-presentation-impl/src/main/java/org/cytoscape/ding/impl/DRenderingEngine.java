@@ -57,7 +57,6 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -173,8 +172,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			return thread;
 		});
 		
-		SpacialIndex2DFactory spacialIndexFactory = registrar.getService(SpacialIndex2DFactory.class);
-		this.bendStore = new BendStore(this, handleFactory, spacialIndexFactory);
+		this.bendStore = new BendStore(this, handleFactory);
 		
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
@@ -340,6 +338,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		double scaleFactor = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR);
 		renderComponent.setScaleFactor(scaleFactor);
+		
+		boolean annotationSelection = viewModelSnapshot.getVisualProperty(DVisualLexicon.NETWORK_ANNOTATION_SELECTION);
+		if(!annotationSelection)
+			cyAnnotator.getAnnotationSelection().clear();
 		
 		setContentChanged(true);
 	}

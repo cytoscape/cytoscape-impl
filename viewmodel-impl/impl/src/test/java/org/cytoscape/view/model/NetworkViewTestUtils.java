@@ -33,19 +33,12 @@ public class NetworkViewTestUtils {
 	
 	private NetworkViewTestUtils() {}
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
-		return createNetworkView(network, false, configExtender);
-	}
-	
 	public static CyNetworkViewImpl createNetworkView(CyNetwork network) {
-		return createNetworkView(network, false, null);
+		return createNetworkView(network, null);
 	}
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree) {
-		return createNetworkView(network, useRTree, null);
-	}
 	
-	public static CyNetworkViewImpl createNetworkView(CyNetwork network, boolean useRTree, Consumer<CyNetworkViewConfig> configExtender) {
+	public static CyNetworkViewImpl createNetworkView(CyNetwork network, Consumer<CyNetworkViewConfig> configExtender) {
 		VisualProperty<NullDataType> rootVp = new NullVisualProperty("ROOT", "root");
 		BasicVisualLexicon lexicon = new BasicVisualLexicon(rootVp);
 		
@@ -54,7 +47,6 @@ public class NetworkViewTestUtils {
 		
 		CyNetworkViewFactoryFactoryImpl factoryFactory = new CyNetworkViewFactoryFactoryImpl(registrar);
 		CyNetworkViewConfigImpl config = factoryFactory.createConfig(lexicon);
-		config.setEnableSpacialIndex2D(useRTree);
 		if(configExtender != null) {
 			configExtender.accept(config);
 		}

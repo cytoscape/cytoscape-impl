@@ -25,9 +25,6 @@ public class CyNetworkViewConfigImpl implements CyNetworkViewConfig {
 	private final Set<VisualProperty<?>> edgeVPs = new HashSet<>();
 	private final Set<VisualProperty<?>> netVPs = new HashSet<>();
 	
-	private boolean enableSpacialIndex = false;
-	
-	
 	@Override
 	public <T, V extends T> void addTrackedVisualProperty(Object key, VisualProperty<? extends T> vp, Predicate<V> predicate) {
 		Objects.requireNonNull(key);
@@ -75,14 +72,5 @@ public class CyNetworkViewConfigImpl implements CyNetworkViewConfig {
 		else if(CyNetwork.class.equals(type))
 			return netVPs;
 		return null;
-	}
-
-	@Override
-	public void setEnableSpacialIndex2D(boolean enable) {
-		this.enableSpacialIndex = enable;
-	}
-	
-	public boolean isSpacialIndex2DEnabled() {
-		return enableSpacialIndex;
 	}
 }

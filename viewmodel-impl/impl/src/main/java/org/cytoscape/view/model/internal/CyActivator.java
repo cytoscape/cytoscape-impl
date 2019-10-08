@@ -33,8 +33,6 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.internal.debug.PrintSpacialIndexAction;
 import org.cytoscape.view.model.internal.debug.PrintViewModelAction;
-import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndex2DFactoryImpl;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.osgi.framework.BundleContext;
 
 public class CyActivator extends AbstractCyActivator {
@@ -56,9 +54,6 @@ public class CyActivator extends AbstractCyActivator {
 			CyNetworkViewFactoryFactory factoryFactory = new CyNetworkViewFactoryFactoryImpl(serviceRegistrar);
 			registerService(bc, factoryFactory, CyNetworkViewFactoryFactory.class, new Properties());
 		}
-		
-		registerService(bc, new RTreeSpacialIndex2DFactoryImpl(), SpacialIndex2DFactory.class);
-		
 		
 		// Debug actions
 		CyAction printModelAction = new PrintViewModelAction(serviceRegistrar);

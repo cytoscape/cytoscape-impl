@@ -111,7 +111,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 			}
 			@Override
 			public boolean customGraphics(int renderNodeCount, int renderEdgeCount) {
-				return DingGraphLOD.this.customGraphics(renderNodeCount, renderEdgeCount);
+				return renderNodeCount < nodeLabelThreshold;
 			}
 			@Override
 			public boolean edgeArrows(int renderNodeCount, int renderEdgeCount) {
