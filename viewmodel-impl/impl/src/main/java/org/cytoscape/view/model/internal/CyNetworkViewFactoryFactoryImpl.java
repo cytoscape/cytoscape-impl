@@ -31,7 +31,6 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 	public CyNetworkViewConfigImpl createConfig(VisualLexicon lexicon) {
 		CyNetworkViewConfigImpl config = new CyNetworkViewConfigImpl();
 		if(lexicon instanceof BasicVisualLexicon) {
-			config.setEnableSpacialIndex2D(false);
 			// Tracked VPs
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_NODES, NODE_SELECTED, Boolean.TRUE::equals);
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_EDGES, EDGE_SELECTED, Boolean.TRUE::equals);

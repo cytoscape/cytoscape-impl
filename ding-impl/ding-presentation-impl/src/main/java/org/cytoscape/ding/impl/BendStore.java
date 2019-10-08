@@ -1,6 +1,8 @@
 package org.cytoscape.ding.impl;
 
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,9 +19,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.spacial.SpacialIndex2D;
-import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -27,21 +26,20 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 public class BendStore {
 
 	// Size of square for moving handle
-	public static final float DEFAULT_HANDLE_SIZE = 12.0f;
-	private static final float HALF_SIZE = DEFAULT_HANDLE_SIZE / 2.0f;
+	public static final float HANDLE_SIZE = 12.0f;
+	private static final float HALF_SIZE = HANDLE_SIZE / 2.0f;
 	
 	private final DRenderingEngine re;
 	private final HandleFactory handleFactory;
 	
-	private final SpacialIndex2D<HandleKey> handleSpacialIndex;
 	private Map<Long,List<HandleKey>> selectedEdges = new HashMap<>();
 	private Set<HandleKey> selectedHandles = new HashSet<>();
+	private Map<HandleKey,Rectangle2D> handleIndex = new HashMap<>();
 	
 	
-	public BendStore(DRenderingEngine re, HandleFactory handleFactory, SpacialIndex2DFactory spacialIndex2DFactory) {
+	public BendStore(DRenderingEngine re, HandleFactory handleFactory) {
 		this.re = re;
 		this.handleFactory = handleFactory;
-		this.handleSpacialIndex = spacialIndex2DFactory.createSpacialIndex2D();
 	}
 	
 	
@@ -103,12 +101,41 @@ public class BendStore {
 	
 	
 	public HandleKey pickHandle(float x, float y) {
-		SpacialIndex2DEnumerator<HandleKey> hits = handleSpacialIndex.queryOverlap(x, y, x, y);
-		return hits.hasNext() ? hits.next() : null;
+		for(var entry : handleIndex.entrySet()) {
+			Rectangle2D area = entry.getValue();
+			if(area.contains(x, y)) {
+				return entry.getKey();
+			}
+		}
+		return null;
 	}
 	
-	public SpacialIndex2DEnumerator<HandleKey> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
-		 return handleSpacialIndex.queryOverlap(xMin, yMin, xMax, yMax);
+	public List<HandleKey> queryOverlap(Rectangle2D selectionRectangle) {
+		if(handleIndex.isEmpty())
+			return Collections.emptyList();
+		
+		List<HandleKey> handles = new ArrayList<>();
+		for(var entry : handleIndex.entrySet()) {
+			Rectangle2D area = entry.getValue();
+			if(area.intersects(selectionRectangle)) {
+				handles.add(entry.getKey());
+			}
+		}
+		return handles;
+	}
+	
+	public List<HandleKey> queryOverlap(GeneralPath path) {
+		if(handleIndex.isEmpty())
+			return Collections.emptyList();
+		
+		List<HandleKey> handles = new ArrayList<>();
+		for(var entry : handleIndex.entrySet()) {
+			Rectangle2D handleArea = entry.getValue();
+			if(path.intersects(handleArea)) {
+				handles.add(entry.getKey());
+			}
+		}
+		return handles;
 	}
 	
 	
@@ -149,7 +176,7 @@ public class BendStore {
 				HandleKey key = new HandleKey(suid, j);
 				
 				selectedEdges.get(suid).add(key);
-				handleSpacialIndex.put(key, x - HALF_SIZE, y - HALF_SIZE, x + HALF_SIZE, y + HALF_SIZE);
+				handleIndex.put(key, new Rectangle2D.Float(x - HALF_SIZE, y - HALF_SIZE, HANDLE_SIZE, HANDLE_SIZE));
 			}
 		}
 	}
@@ -158,7 +185,7 @@ public class BendStore {
 		if(selectedEdges.containsKey(suid)) {
 			List<HandleKey> keys = selectedEdges.remove(suid);
 			for(HandleKey k : keys) {
-				handleSpacialIndex.delete(k);
+				handleIndex.remove(k);
 			}
 		}
 	}
@@ -172,13 +199,13 @@ public class BendStore {
 	}
 	
 	public void moveHandle(HandleKey key, float x, float y) {
-		if(handleSpacialIndex.exists(key)) {
+		if(handleIndex.containsKey(key)) {
 			View<CyEdge> edge = getEdge(key);
 			final Bend bend = re.getEdgeDetails().getBend(edge);
 			final HandleImpl handle = (HandleImpl) bend.getAllHandles().get(key.getHandleIndex());
 			handle.defineHandle(re.getViewModelSnapshot(), edge, x, y);
 			
-			handleSpacialIndex.put(key, x - HALF_SIZE, y - HALF_SIZE, x + HALF_SIZE, y + HALF_SIZE);
+			handleIndex.put(key, new Rectangle2D.Float(x - HALF_SIZE, y - HALF_SIZE, HANDLE_SIZE, HANDLE_SIZE));
 		}
 	}
 	
@@ -186,10 +213,8 @@ public class BendStore {
 	public HandleKey addHandle(View<CyEdge> edge, Point2D pt) {
 		int bestIndex = getBestHandleIndex(edge, pt);
 		if(bestIndex < 0) {
-			addHandleInternal(edge, pt, 0); // handles object is empty. Add first handle.
-			return new HandleKey(edge.getSUID(), 0); // Index of this handle, which is first (0)
+			bestIndex = 0; // Index of this handle, which is first (0)
 		}
-		
 		addHandleInternal(edge, pt, bestIndex);
 		return new HandleKey(edge.getSUID(), bestIndex);
 	}
@@ -261,27 +286,24 @@ public class BendStore {
 		selectedEdges.computeIfAbsent(suid, s -> new ArrayList<>()).add(insertInx, new HandleKey(suid, insertInx));
 		
 		if (re.getEdgeDetails().isSelected(edge)) {
-			float[] extentsBuff = new float[4];
-			
 			int n = bend.getAllHandles().size();
+			// shift existing keys
 			for (int j = n - 1; j > insertInx; j--) {
-				HandleKey key = new HandleKey(suid, j-1);
+				HandleKey oldKey = new HandleKey(suid, j-1);
 				HandleKey newKey = new HandleKey(suid, j);
 				
-				handleSpacialIndex.get(key, extentsBuff);
-				handleSpacialIndex.delete(key);
-				handleSpacialIndex.put(newKey, extentsBuff[0], extentsBuff[1], extentsBuff[2], extentsBuff[3]);
-				
-//				if(selectedAnchors.remove(key)) {
-//					selectedAnchors.add(newKey);
-//				}
+				Rectangle2D area = handleIndex.remove(oldKey);
+				handleIndex.put(newKey, area);
 			}
 			
-			handleSpacialIndex.put(new HandleKey(suid, insertInx),
+			HandleKey key = new HandleKey(suid, insertInx);
+			Rectangle2D area = new Rectangle2D.Float(
 					(float) (handleLocation.getX() - HALF_SIZE),
 					(float) (handleLocation.getY() - HALF_SIZE),
-					(float) (handleLocation.getX() + HALF_SIZE),
-					(float) (handleLocation.getY() + HALF_SIZE));
+					HANDLE_SIZE, 
+					HANDLE_SIZE);
+					
+			handleIndex.put(key, area);
 		}
 
 		re.setContentChanged();
@@ -312,9 +334,7 @@ public class BendStore {
 
 		long suid = edge.getSUID();
 		if(selectedEdges.containsKey(suid)) {
-			handleSpacialIndex.delete(key);
-
-			float[] extentsBuff = new float[4];
+			handleIndex.remove(key);
 			
 			// shift all the anchors above idx down by 1
 			// MKTODO really need a better way of doing this
@@ -327,9 +347,8 @@ public class BendStore {
 				HandleKey prevKey = new HandleKey(suid, j+1);
 				HandleKey newKey  = new HandleKey(suid, j);
 				
-				handleSpacialIndex.get(prevKey, extentsBuff);
-				handleSpacialIndex.delete(prevKey);
-				handleSpacialIndex.put(newKey, extentsBuff[0], extentsBuff[1], extentsBuff[2], extentsBuff[3]);
+				Rectangle2D area = handleIndex.remove(prevKey);
+				handleIndex.put(newKey, area);
 			}
 		}
 	}

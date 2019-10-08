@@ -19,7 +19,6 @@ import org.cytoscape.ding.impl.cyannotator.create.ShapeAnnotationFactory;
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.annotations.Annotation;
 import org.cytoscape.view.presentation.annotations.AnnotationManager;
 import org.cytoscape.view.presentation.annotations.GroupAnnotation;
@@ -44,7 +43,6 @@ public class AbstractAnnotationTest {
 		
 		when(registrar.getService(DingRenderer.class)).thenReturn(dingRenderer);
 		when(registrar.getService(CyEventHelper.class)).thenReturn(mock(CyEventHelper.class));
-		when(registrar.getService(SpacialIndex2DFactory.class)).thenReturn(nvTest.getSpacialIndex2DFactory());
 		
 		graphView = nvTest.getNetworkView();
 		

@@ -18,10 +18,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -30,29 +28,16 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
-import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndex2DFactoryImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
-import org.junit.runners.Parameterized.Parameters;
 
 
-@RunWith(Parameterized.class)
 public class SpacialIndex2DTest {
 
 	private NetworkTestSupport networkSupport = new NetworkTestSupport();
 	
-	@Parameters(name = "RTree: {0}")
-	public static Collection<Boolean[]> configs() {
-		return Arrays.asList(new Boolean[] {true} , new Boolean[] {false});
-	}
-	
-	@Parameter
-	public Boolean useRTree;
 	
 	@Test
 	public void testSpacialIndex2DSnapshot() {
@@ -61,7 +46,7 @@ public class SpacialIndex2DTest {
 		CyNode n2 = network.addNode();
 		CyNode n3 = network.addNode();
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, useRTree);
+		CyNetworkViewImpl networkView = createNetworkView(network);
 		View<CyNode> nv1 = networkView.getNodeView(n1);
 		setGeometry(nv1, 4, 2, 4, 2, 1);
 		View<CyNode> nv2 = networkView.getNodeView(n2);
@@ -88,18 +73,6 @@ public class SpacialIndex2DTest {
 		
 		assertArrayEquals(new float[] {2.0f, 1.0f, 6.0f, 3.0f}, map.get(nv1.getSUID()), 0);
 		assertArrayEquals(new float[] {4.0f, 2.0f, 8.0f, 4.0f}, map.get(nv2.getSUID()), 0);
-		
-		try {
-			spacialIndex.delete(nv1.getSUID());
-			fail();
-		} catch (UnsupportedOperationException e) {
-		}
-		
-		try {
-			spacialIndex.put(99l, 1, 2, 3, 4);
-			fail();
-		} catch (UnsupportedOperationException e) {
-		}
 	}
 	
 	@Test
@@ -108,7 +81,7 @@ public class SpacialIndex2DTest {
 		CyNode n1 = network.addNode();
 		CyNode n2 = network.addNode();
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, useRTree);
+		CyNetworkViewImpl networkView = createNetworkView(network);
 		View<CyNode> nv1 = networkView.getNodeView(n1);
 		View<CyNode> nv2 = networkView.getNodeView(n2);
 		
@@ -128,44 +101,6 @@ public class SpacialIndex2DTest {
 	
 	private static final long SUID_1 = 100, SUID_2 = 200;
 	
-	@Test
-	public void testSpacialIndex2DMutable() {
-		SpacialIndex2D<Long> spacialIndex = new RTreeSpacialIndex2DFactoryImpl().createSpacialIndex2D();
-		assertEquals(0, spacialIndex.size());
-		
-		float[] extents = new float[4];
-		
-		spacialIndex.put(SUID_1, 1, 2, 3, 4);
-		assertTrue(spacialIndex.exists(100l));
-		assertEquals(1, spacialIndex.size());
-		spacialIndex.get(SUID_1, extents);
-		assertArrayEquals(new float[] {1,2,3,4}, extents, 0);
-		
-		spacialIndex.put(SUID_2, 11, 22, 33, 44);
-		assertTrue(spacialIndex.exists(200l));
-		assertEquals(2, spacialIndex.size());
-		spacialIndex.get(SUID_2, extents);
-		assertArrayEquals(new float[] {11,22,33,44}, extents, 0);
-		
-		spacialIndex.put(SUID_1, 111, 222, 333, 444);
-		assertTrue(spacialIndex.exists(100l));
-		assertEquals(2, spacialIndex.size());
-		spacialIndex.get(SUID_1, extents);
-		assertArrayEquals(new float[] {111,222,333,444}, extents, 0);
-		
-		spacialIndex.delete(SUID_1);
-		assertFalse(spacialIndex.exists(SUID_1));
-		assertEquals(1, spacialIndex.size());
-		assertEquals(1, spacialIndex.queryAll().size());
-		assertFalse(spacialIndex.get(SUID_1, extents));
-		assertArrayEquals(new float[] {111,222,333,444}, extents, 0);
-		spacialIndex.delete(SUID_1); // should be no-op
-		
-		spacialIndex.delete(SUID_2);
-		assertFalse(spacialIndex.exists(SUID_1));
-		assertEquals(0, spacialIndex.size());
-	}
-	
 	
 	@Test
 	public void testHiddenNodes() {
@@ -177,7 +112,7 @@ public class SpacialIndex2DTest {
 		CyEdge e2 = network.addEdge(n2, n3, false);
 		CyEdge e3 = network.addEdge(n3, n1, false);
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, useRTree);
+		CyNetworkViewImpl networkView = createNetworkView(network);
 		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
 		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
 		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
@@ -248,7 +183,7 @@ public class SpacialIndex2DTest {
 		CyNetwork network = networkSupport.getNetwork();
 		CyNode n1 = network.addNode();
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, useRTree);
+		CyNetworkViewImpl networkView = createNetworkView(network);
 		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 0);
 		
 		View<CyNode> nv1 = networkView.getNodeView(n1);
@@ -271,7 +206,7 @@ public class SpacialIndex2DTest {
 		CyNode n2 = network.addNode();
 		CyNode n3 = network.addNode();
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, false); // turn spacial index off
+		CyNetworkViewImpl networkView = createNetworkView(network); // turn spacial index off
 		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
 		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
 		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
@@ -293,7 +228,7 @@ public class SpacialIndex2DTest {
 		CyNode n8 = network.addNode();
 		CyNode n9 = network.addNode();
 		
-		CyNetworkViewImpl networkView = createNetworkView(network, useRTree);
+		CyNetworkViewImpl networkView = createNetworkView(network);
 		View<CyNode> nv1 = networkView.getNodeView(n1);
 		View<CyNode> nv2 = networkView.getNodeView(n2);
 		View<CyNode> nv3 = networkView.getNodeView(n3);

@@ -27,15 +27,6 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 		this.zOrderComparator = createComparator();
 	}
 	
-	@Override
-	public void put(Long suid, float xMin, float yMin, float xMax, float yMax) {
-		throw new UnsupportedOperationException("Cannot modify view snapshot");
-	}
-	
-	@Override
-	public void delete(Long suid) {
-		throw new UnsupportedOperationException("Cannot modify view snapshot");
-	}
 
 	@Override
 	public void getMBR(float[] extents) {

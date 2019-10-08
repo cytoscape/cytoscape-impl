@@ -19,7 +19,6 @@ import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.VPNetworkStore;
 import org.cytoscape.view.model.internal.model.VPStore;
-import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.internal.model.spacial.SimpleSpacialIndex2DSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
@@ -67,7 +66,6 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			VPStore nodeVPs,
 			VPStore edgeVPs,
 			VPNetworkStore netVPs,
-			SpacialIndex2D<Long> spacialIndex,
 			boolean isBVL
 	) {
 		super(networkView.getSUID());
@@ -81,16 +79,9 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.nodeVPs = nodeVPs;
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
+		this.isBVL = isBVL; // is BasicVisualLexicon?
 		
-		this.isBVL = isBVL;
-		
-		if(spacialIndex == null) {
-			this.spacialIndex = new SimpleSpacialIndex2DSnapshotImpl(this);
-		} else {
-			this.spacialIndex = spacialIndex;
-			if(spacialIndex instanceof RTreeSpacialIndex2DSnapshotImpl)
-				((RTreeSpacialIndex2DSnapshotImpl)spacialIndex).setSnapshot(this);
-		}
+		this.spacialIndex = new SimpleSpacialIndex2DSnapshotImpl(this);
 	}
 	
 	@Override
