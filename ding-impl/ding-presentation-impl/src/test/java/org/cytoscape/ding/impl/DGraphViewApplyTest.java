@@ -23,7 +23,6 @@ import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 import org.cytoscape.view.presentation.property.NodeShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.view.presentation.property.values.NodeShape;
@@ -116,7 +115,6 @@ public class DGraphViewApplyTest {
 		when(serviceRegistrar.getService(IconManager.class)).thenReturn(iconManager);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visualMappingManager);
 		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(networkViewManager);
-		when(serviceRegistrar.getService(SpacialIndex2DFactory.class)).thenReturn(testSupport.getSpacialIndex2DFactory());
 		
 		dgv = testSupport.getNetworkViewFactoryFactory().createNetworkViewFactory(dingLexicon, DingRenderer.ID).createNetworkView(network);
 		re = new DRenderingEngine(dgv, dingLexicon, annotationFactoryManager, dingGraphLOD, handleFactory, serviceRegistrar);

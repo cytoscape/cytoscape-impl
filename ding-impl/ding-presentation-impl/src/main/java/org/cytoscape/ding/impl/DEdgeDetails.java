@@ -312,7 +312,7 @@ public final class DEdgeDetails implements EdgeDetails {
 	@Override
 	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
 		if (isSelected(edgeView) && getNumAnchors(edgeView) > 0)
-			return BendStore.DEFAULT_HANDLE_SIZE;
+			return BendStore.HANDLE_SIZE;
 		return 0.0f;
 	}
 

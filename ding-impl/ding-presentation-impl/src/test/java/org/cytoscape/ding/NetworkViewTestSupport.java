@@ -6,7 +6,6 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.NetworkViewFactoryTestSupport;
-import org.cytoscape.view.model.spacial.SpacialIndex2DFactory;
 
 /*
  * #%L
@@ -52,7 +51,4 @@ public class NetworkViewTestSupport extends NetworkTestSupport {
 		return networkViewFactoryTestSupport.getNetworkViewFactoryFactory();
 	}
 	
-	public SpacialIndex2DFactory getSpacialIndex2DFactory() {
-		return networkViewFactoryTestSupport.getSpacialIndex2DFactory();
-	}
 }

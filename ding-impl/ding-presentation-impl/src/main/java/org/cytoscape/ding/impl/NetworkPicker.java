@@ -481,54 +481,19 @@ public class NetworkPicker {
 	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
 		BendStore bendStore = re.getBendStore();
 		if(getFlags().has(LOD_EDGE_ANCHORS)) {
-			double[] ptBuff = {r.x, r.y};
-			re.getTransform().xformImageToNodeCoords(ptBuff);
-			final float xMin = (float) ptBuff[0];
-			final float yMin = (float) ptBuff[1];
-			ptBuff[0] = r.x + r.width;
-			ptBuff[1] = r.y + r.height;
-			re.getTransform().xformImageToNodeCoords(ptBuff);
-			final float xMax = (float) ptBuff[0];
-			final float yMax = (float) ptBuff[1];
-
-			SpacialIndex2DEnumerator<HandleKey> handles = bendStore.queryOverlap(xMin, yMin, xMax, yMax);
-			List<HandleKey> list = new ArrayList<>(handles.size());
-			while(handles.hasNext()) {
-				list.add(handles.next());
-			}
-			return list;
+			Rectangle2D area = re.getTransform().getNodeCoordinates(r);
+			return bendStore.queryOverlap(area);
 		}
 		return Collections.emptyList();
 	}
 	
 	public List<HandleKey> getHandlesInPath(GeneralPath path) {
 		BendStore bendStore = re.getBendStore();
-		path = re.getTransform().pathInNodeCoords(path);
-		if(path == null)
-			return Collections.emptyList();
-	
-		Rectangle2D mbr = path.getBounds2D();
-		if(mbr == null)
-			return Collections.emptyList();
-		
-		SpacialIndex2DEnumerator<HandleKey> handles = bendStore
-				.queryOverlap((float)mbr.getMinX(), (float)mbr.getMinY(), (float)mbr.getMaxX(), (float)mbr.getMaxY());
-		
-		List<HandleKey> list = new ArrayList<>(handles.size());
-		float[] extents = new float[4];
-		
-		while(handles.hasNext()) {
-			HandleKey key = handles.nextExtents(extents);
-			float x = extents[0];
-			float y = extents[1];
-			float w = extents[2] - x;
-			float h = extents[3] - y;
-			if(path.intersects(x, y, w, h)) {
-				list.add(key);
-			}
-			list.add(handles.next());
+		if(getFlags().has(LOD_EDGE_ANCHORS)) {
+			GeneralPath area = re.getTransform().pathInNodeCoords(path);
+			return bendStore.queryOverlap(area);
 		}
-		return list;
+		return Collections.emptyList();
 	}
 	
 	

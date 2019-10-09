@@ -30,7 +30,6 @@ import org.cytoscape.view.model.events.AddedNodeViewsEvent;
 import org.cytoscape.view.model.events.UpdateNetworkPresentationEvent;
 import org.cytoscape.view.model.internal.CyNetworkViewConfigImpl;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
-import org.cytoscape.view.model.internal.model.spacial.RTreeSpacialIndexStore;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.Tuple2;
@@ -71,9 +70,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	protected final VPStore edgeVPs;
 	protected final VPNetworkStore netVPs;
 	
-	private final RTreeSpacialIndexStore spacialIndex;
 
-	
 	public CyNetworkViewImpl(CyServiceRegistrar registrar, CyNetwork network, VisualLexicon visualLexicon, String rendererId, CyNetworkViewConfigImpl config) {
 		super(network);
 		this.eventHelper = registrar.getService(CyEventHelper.class);
@@ -87,14 +84,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.edgeVPs = new VPStore(CyEdge.class, visualLexicon, config);
 		this.nodeVPs = new VPStore(CyNode.class, visualLexicon, config);
 		this.netVPs  = new VPNetworkStore(visualLexicon, config);
-		
-		if(visualLexicon instanceof BasicVisualLexicon && config.isSpacialIndex2DEnabled()) {
-			System.out.println("Using RTree spacial index");
-			this.spacialIndex = new RTreeSpacialIndexStore();
-		} else {
-			System.out.println("Using Simple spacial index");
-			this.spacialIndex = null;
-		}
 	}
 	
 	
@@ -117,7 +106,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 						nodeVPs.createSnapshot(),
 						edgeVPs.createSnapshot(),
 						netVPs.createSnapshot(),
-						spacialIndex == null ? null : spacialIndex.createSnapshot(),
 						visualLexicon instanceof BasicVisualLexicon
 					);
 				}
@@ -165,8 +153,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		synchronized (nodeLock) {
 			dataSuidToNode = dataSuidToNode.put(model.getSUID(), view);
 			viewSuidToNode = viewSuidToNode.put(view.getSUID(), view);
-			if(spacialIndex != null)
-				spacialIndex.addDefault(nodeVPs, view.getSUID());
 			setDirty();
 		}
 		
@@ -207,8 +193,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 					adjacentEdgeMap = adjacentEdgeMap.remove(nodeView.getSUID());
 					
 					nodeVPs.remove(nodeView.getSUID());
-					if(spacialIndex != null)
-						spacialIndex.remove(nodeView.getSUID());
 					
 					setDirty();
 				}
@@ -333,14 +317,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return list;
 	}
 	
-
-	protected <T, V extends T> void updateNodeGeometry(View<CyNode> node, VisualProperty<? extends T> vp) {
-		if(spacialIndex != null) {
-			synchronized (nodeLock) {
-				spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
-			}
-		}
-	}
 	
 	private void updateAdjacentEdgeMap(CyEdgeViewImpl edgeView, boolean add) {
 		Set<CyEdgeViewImpl> edges;
@@ -366,11 +342,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 				nodeVPs.setViewDefault(vp, value);
 				if(nodeVPs.getConfig().isTracked(vp)) {
 					netVPs.updateTrackedVP(getSUID(), vp);
-				}
-				if(spacialIndex != null && NODE_GEOMETRIC_PROPS.contains(vp)) {
-					for(CyNodeViewImpl node : dataSuidToNode.values()) {
-						spacialIndex.updateNodeGeometry(node.getSUID(), nodeVPs, vp);
-					}
 				}
 			}
 		} else if(vp.getTargetDataType().equals(CyEdge.class)) {

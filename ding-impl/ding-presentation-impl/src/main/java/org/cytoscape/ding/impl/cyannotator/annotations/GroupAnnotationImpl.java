@@ -157,7 +157,11 @@ public class GroupAnnotationImpl extends AbstractAnnotation implements GroupAnno
 		double deltaY = getY() - y;
 
 		for(var child : annotations) {
-			child.setLocation(child.getX() - deltaX, child.getY() - deltaY);
+			var x2 = child.getX() - deltaX;
+			var y2 = child.getY() - deltaY;
+			if(child.getX() != x2 && child.getY() != y2) {
+				child.setLocation(x2, y2);
+			}
 		}
 
 		updateBounds();
