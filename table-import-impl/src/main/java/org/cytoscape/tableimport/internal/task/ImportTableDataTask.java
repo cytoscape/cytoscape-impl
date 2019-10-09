@@ -22,6 +22,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -630,14 +631,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 			final boolean caseSensitive) {
 		final CyColumn targetKeyColumn = getJoinTargetColumn(targetTable);
 		final Map<String, String> normalizedSourceKeys = new HashMap<>();
-		
+
 		if (!caseSensitive) {
 			final CyColumn pk = sourceTable.getPrimaryKey();
-			
+
 			if (pk.getType() == String.class) {
 				for (CyRow row : sourceTable.getAllRows()) {
 					final String key = row.get(pk.getName(), String.class);
-					
+
 					if (key != null)
 						normalizedSourceKeys.put(key.toLowerCase().trim(), key);
 				}
@@ -646,28 +647,27 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 		
 		for (CyRow targetRow : targetTable.getAllRows()) {
 			Object key = targetRow.get(targetKeyColumn.getName(), targetKeyColumn.getType());
-			
+
 			if (key == null)
-				continue; 
+				continue;
 
 			if (!caseSensitive)
 				key = normalizedSourceKeys.get(key.toString().toLowerCase().trim());
 
 			if (key == null)
 				continue;
-			
-			if (key.getClass() != sourceTable.getPrimaryKey().getType() ) {
+
+			if (key.getClass() != sourceTable.getPrimaryKey().getType()) {
 				try {
 					key = DataUtils.convertString(key.toString(), sourceTable.getPrimaryKey().getType());
-				}
-				catch(Exception e) {
+				} catch (Exception e) {
 					continue;
 				}
 			}
-			
+
 			if (key == null || !sourceTable.rowExists(key))
 				continue;
-				
+
 			final CyRow sourceRow = sourceTable.getRow(key);
 
 			for (CyColumn col : sourceColumns) {
@@ -675,45 +675,82 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 					continue;
 
 				String targetColName = source2targetColumnMap.get(col.getName());
-				
-				if (targetColName != null)
+
+				if (targetColName != null && targetTable.getColumn(targetColName) != null)
 					targetRow.set(targetColName, sourceRow.getRaw(col.getName()));
 			}
 		}
 	}
 
-	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns,CyTable targetTable, boolean addVirtual) {
+	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable, boolean addVirtual) {
+		CyRootNetwork rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
+		Set<String> columnNames = getAllColumnNames(rootNet);
+		
 		for (CyColumn col : sourceColumns) {
 			if (col == sourceTable.getPrimaryKey())
 				continue;
 			
-			// This is a bad idea!  It prevents users from updating data in existing
-			// columns, which is a common case
-			// String targetColName = getUniqueColumnName(targetTable, col.getName());
-			String targetColName = col.getName();
-
-			if (targetTable.getColumn(targetColName) == null) {
+			String name = col.getName();
+			boolean exists = targetTable.getColumn(name) == null;
+			
+			// Also check if the column exists in the root network or other subnetworks in the same collection
+			if (!exists)
+				exists = columnNames.contains(name.toLowerCase());
+			
+			if (!exists) {
 				if (!addVirtual) {
 					if (col.getType() == List.class)
-						targetTable.createListColumn(targetColName, col.getListElementType(), col.isImmutable());
+						targetTable.createListColumn(name, col.getListElementType(), col.isImmutable());
 					else
-						targetTable.createColumn(targetColName, col.getType(), col.isImmutable(), col.getDefaultValue());
+						targetTable.createColumn(name, col.getType(), col.isImmutable(), col.getDefaultValue());
 				} else {
-					targetTable.addVirtualColumn(targetColName, col.getName(), sourceTable, getJoinTargetColumn(targetTable).getName(), false);
+					targetTable.addVirtualColumn(name, col.getName(), sourceTable, getJoinTargetColumn(targetTable).getName(), false);
 				}
 			} else {
-				CyColumn targetCol = targetTable.getColumn(targetColName);
+				CyColumn targetCol = targetTable.getColumn(name);
 				
-				if ((targetCol.getType() != col.getType()) ||
+				if (targetCol != null // TODO what if it's null because it's not a shared table column, but a local one?
+						&& (targetCol.getType() != col.getType()) ||
 				    (col.getType() == List.class && (targetCol.getListElementType() != col.getListElementType()))) {
-					logger.error("Column '"+targetColName+"' has a different type in the target table -- skipping column");
+					logger.error("Column '" + name + "' has a different type in the target table -- skipping column");
 					
 					continue;
 				}
 			}
 
-			source2targetColumnMap.put(col.getName(), targetColName);
+			source2targetColumnMap.put(col.getName(), name);
 		}
+	}
+	
+	/**
+	 * @return All column names in lower case.
+	 */
+	private Set<String> getAllColumnNames(CyRootNetwork rootNet) {
+		List<CyTable> tables = new ArrayList<>();
+		Class<? extends CyIdentifiable> type = getDataTypeTargetForNetworkCollection().getSelectedValue().type;
+		CyNetworkTableManager netTableMgr = serviceRegistrar.getService(CyNetworkTableManager.class);
+		CyTable rootTbl = netTableMgr.getTable(rootNet, type, CyNetwork.LOCAL_ATTRS);
+		
+		if (rootTbl != null)
+			tables.add(rootTbl);
+		
+		for (CyNetwork sub : rootNet.getSubNetworkList()) {
+			CyTable netTbl = netTableMgr.getTable(sub, type, CyNetwork.LOCAL_ATTRS);
+			
+			if (netTbl != null)
+				tables.add(netTbl);
+		}
+		
+		Set<String> set = new HashSet<>();
+		
+		for (CyTable table: tables) {
+			Collection<CyColumn> columns = table.getColumns();
+			
+			for (CyColumn col : columns)
+				set.add(col.getName().toLowerCase());
+		}
+		
+		return set;
 	}
 	
 	private void addTable(){
