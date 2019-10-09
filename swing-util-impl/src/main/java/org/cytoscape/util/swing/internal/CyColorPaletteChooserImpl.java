@@ -62,7 +62,6 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 	private final PaletteProviderManager paletteManager;
 	private final PaletteType paletteType;
-	protected boolean paletteOnly;
 
 	private Component parent;
 	private String title;
@@ -72,8 +71,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 	// private Palette selectedPalette;
 	// private Color selectedColor;
-	private int colorCount;
-	private ColorPaletteProviderPanel[] palettePanels;
+	private boolean paletteOnly;
 
   /**
    * True if OK was pressed; false otherwise.
@@ -97,9 +95,18 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	protected JPanel innerPanel = null;
 
 	/**
-	 * The style editor panel.
+	 * If we want to be able to remember our color choices, we need
+	 * to make sure not to reset the JColorChooser.  All of this
+	 * static stuff is to allow us to do that.  Unfortunately, when
+	 * we switch types or the number of colors or from paletteOnly
+	 * to a full chooser, we need to know that.
 	 */
-	protected JColorChooser colorChooser = null;
+	private static JColorChooser colorChooser = null;
+	private static ColorPanelSelectionModel model = null;
+	private static boolean lastPaletteOnly = false;
+	private static int colorCount = 0;
+	private static PaletteType lastPaletteType = null;
+	private static ColorPaletteProviderPanel[] palettePanels = null;
 
 	public CyColorPaletteChooserImpl(final PaletteProviderManager paletteManager, final PaletteType type, boolean paletteOnly) {
 		this.paletteOnly = paletteOnly;
@@ -109,11 +116,18 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 	@Override
   public Color showDialog(final Component parent, final String title, 
-                          final Palette initialPalette, final Color initialColor, int colorCount) {
+                          final Palette initialPalette, final Color initialColor, int colors) {
 
+		// System.out.println("showDialog - false");
+		checkColorChooser(colors, false);
 		paletteOnly = false;
-		if (colorCount < 1) colorCount = 9;
-		init(parent, title, initialPalette, initialColor, colorCount);
+		lastPaletteOnly = false;
+		lastPaletteType = paletteType;
+		if (colors < 1) 
+			colorCount = 9;
+		else
+			colorCount = colors;
+		init(parent, title, initialPalette, initialColor);
 		if (showDialog())
 			return getSelectedColor();
 
@@ -122,11 +136,18 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 	@Override
   public Palette showDialog(final Component parent, final String title,
-                            final Palette initialPalette, int colorCount) {
+                            final Palette initialPalette, int colors) {
 
+		// System.out.println("showDialog - true");
+		checkColorChooser(colors, true);
 		paletteOnly = true;
-		if (colorCount < 1) colorCount = 9;
-		init(parent, title, initialPalette, null, colorCount);
+		lastPaletteOnly = true;
+		lastPaletteType = paletteType;
+		if (colors < 1) 
+			colorCount = 9;
+		else
+			colorCount = colors;
+		init(parent, title, initialPalette, null);
 		if (showDialog())
 			return getSelectedPalette();
 		return initialPalette;
@@ -143,14 +164,12 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	}
 
 	private void init(final Component parent, final String title, 
-                    final Palette initialPalette, final Color initialColor, int colorCount) {
+                    final Palette initialPalette, final Color initialColor) {
 		this.parent = parent;
 		this.title = title;
 		this.initialPalette = initialPalette;
 		this.initialColor = initialColor;
-		this.colorCount = colorCount;
 		this.setModalityType(Dialog.ModalityType.APPLICATION_MODAL);
-
 
 		// UI configuration
 		this.setTitle(title);
@@ -174,35 +193,39 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 		colorsTab.setLayout(new BoxLayout(colorsTab, BoxLayout.Y_AXIS));
 		this.innerPanel.add(colorsTab);
 
+		if (colorChooser == null) {
+			// System.out.println("Creating new colorchooser");
+			model = new ColorPanelSelectionModel();
+			colorChooser = new JColorChooser(model);
+
+			// Get the list of palettes
+			List<PaletteProvider> providers = getPaletteProviders(false);
+			palettePanels = getPanels(providers, colorCount);
+
+			// Get the standard color panels
+			if (paletteOnly) {
+				colorChooser.setChooserPanels(palettePanels);
+				colorChooser.setPreviewPanel(new JPanel()); // Hide the preview panel
+			} else {
+				AbstractColorChooserPanel[] oldPanels = colorChooser.getChooserPanels();
+				AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[oldPanels.length+palettePanels.length];
+				for (int i = 0; i < palettePanels.length; i++) {
+					newPanels[i] = palettePanels[i];
+				}
+
+				for (int i = 0; i < oldPanels.length; i++) {
+					newPanels[i+palettePanels.length] = oldPanels[i];
+				}
+				colorChooser.setChooserPanels(newPanels);
+			}
+		}
+
 		// set custom colorSelectionModel
-		ColorPanelSelectionModel model = new ColorPanelSelectionModel();
-		this.colorChooser = new JColorChooser(model);
 		if (initialPalette != null)
 			model.setPalette(initialPalette);
 
 		if (initialColor != null)
 			model.setSelectedColor(initialColor);
-
-		// Get the list of palettes
-		List<PaletteProvider> providers = getPaletteProviders(false);
-		palettePanels = getPanels(providers, colorCount);
-
-		// overwrite the color chooser panels
-		if (paletteOnly) {
-			colorChooser.setChooserPanels(palettePanels);
-			colorChooser.setPreviewPanel(new JPanel()); // Hide the preview panel
-		} else {
-			AbstractColorChooserPanel[] oldPanels = colorChooser.getChooserPanels();
-			AbstractColorChooserPanel[] newPanels = new AbstractColorChooserPanel[oldPanels.length+palettePanels.length];
-			for (int i = 0; i < palettePanels.length; i++) {
-				newPanels[i] = palettePanels[i];
-			}
-
-			for (int i = 0; i < oldPanels.length; i++) {
-				newPanels[i+palettePanels.length] = oldPanels[i];
-			}
-			colorChooser.setChooserPanels(newPanels);
-		}
 
 		colorsTab.add( this.colorChooser, BorderLayout.CENTER );
 
@@ -290,6 +313,18 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 
 		this.pack( );
 		this.validate( );
+	}
+
+	private boolean checkColorChooser(int colors, boolean paletteO) {
+		if (colors < 1) colors = 9;
+		// System.out.println("static colorCount = "+CyColorPaletteChooserImpl.colorCount+", colors = "+colors);
+		// System.out.println("static lastPaletteOnly = "+CyColorPaletteChooserImpl.lastPaletteOnly+", paletteO = "+paletteO);
+		// System.out.println("static lastPaletteType = "+CyColorPaletteChooserImpl.lastPaletteType+", paletteType = "+paletteType);
+		if (CyColorPaletteChooserImpl.colorCount == colors && 
+		    CyColorPaletteChooserImpl.lastPaletteOnly == paletteO &&
+				CyColorPaletteChooserImpl.lastPaletteType == paletteType) return true;
+		colorChooser = null;
+		return false;
 	}
 
 //----------------------------------------------------------------------
