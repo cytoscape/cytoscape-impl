@@ -90,15 +90,13 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	private boolean isNodeVisible(Long nodeSuid) {
-//		if(spacialIndex == null) {
-			if(isBVL) {
-				return Boolean.TRUE.equals(nodeVPs.getVisualProperty(nodeSuid, BasicVisualLexicon.NODE_VISIBLE));
-			} else {
-				return true;
-			}
-//		} else {
-//			return spacialIndex.exists(nodeSuid);
-//		}
+		if(!isBVL)
+			return true;
+		return Boolean.TRUE.equals(nodeVPs.getVisualProperty(nodeSuid, BasicVisualLexicon.NODE_VISIBLE));
+	}
+	
+	public boolean isBVL() {
+		return isBVL;
 	}
 	
 	private boolean isEdgeVisible(CyEdgeViewImpl mutableEdgeView) {
@@ -187,13 +185,13 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public View<CyNode> getNodeView(long suid) {
+	public CyNodeViewSnapshotImpl getNodeView(long suid) {
 		CyNodeViewImpl view = viewSuidToNode.getOrElse(suid, null);
 		return view == null ? null : getSnapshotNodeView(view);
 	}
 	
 	@Override
-	public View<CyEdge> getEdgeView(long suid) {
+	public CyEdgeViewSnapshotImpl getEdgeView(long suid) {
 		CyEdgeViewImpl view = viewSuidToEdge.getOrElse(suid, null);
 		return view == null ? null : getSnapshotEdgeView(view);
 	}
@@ -201,6 +199,17 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	@Override
 	public List<View<CyNode>> getNodeViews() {
 		List<View<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
+		for(CyNodeViewImpl view : viewSuidToNode.values()) {
+			CyNodeViewSnapshotImpl nv = getSnapshotNodeView(view);
+			if(nv != null) {
+				nodeViews.add(nv);
+			}
+		}
+		return nodeViews;
+	}
+	
+	public List<CyNodeViewSnapshotImpl> getSnapshotNodeViews() {
+		List<CyNodeViewSnapshotImpl> nodeViews = new ArrayList<>(viewSuidToNode.size());
 		for(CyNodeViewImpl view : viewSuidToNode.values()) {
 			CyNodeViewSnapshotImpl nv = getSnapshotNodeView(view);
 			if(nv != null) {
