@@ -22,4 +22,4 @@ showNodeEdgeCount=true
 showNetworkProvenanceHierarchy=true
 taskStackSize=10485760
 maxRecentlyOpenedFiles=6
-cyrest.version=3.8.0
+cyrest.version=3.10.0.SNAPSHOT
