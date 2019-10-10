@@ -684,14 +684,14 @@ public class ImportTableDataTask extends AbstractTask implements TunableValidato
 
 	private void copyColumns(CyTable sourceTable, List<CyColumn> sourceColumns, CyTable targetTable, boolean addVirtual) {
 		CyRootNetwork rootNet = name2RootMap.get(targetNetworkCollection.getSelectedValue());
-		Set<String> columnNames = getAllColumnNames(rootNet);
+		Set<String> columnNames = rootNet != null ? getAllColumnNames(rootNet) : Collections.emptySet();
 		
 		for (CyColumn col : sourceColumns) {
 			if (col == sourceTable.getPrimaryKey())
 				continue;
 			
 			String name = col.getName();
-			boolean exists = targetTable.getColumn(name) == null;
+			boolean exists = targetTable.getColumn(name) != null;
 			
 			// Also check if the column exists in the root network or other subnetworks in the same collection
 			if (!exists)
