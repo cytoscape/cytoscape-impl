@@ -38,16 +38,17 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.junit.Before;
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
 public class HideUtilsTest {
 	
-	@Mock private CyNetworkView view;
-	@Mock private CyNetwork network;
+	@Mock CyNetworkView view;
+	@Mock CyNetwork network;
 	
 	private Collection<CyEdge> edges;
 	private Collection<CyNode> nodes;
