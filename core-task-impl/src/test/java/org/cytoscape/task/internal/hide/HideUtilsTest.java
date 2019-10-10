@@ -59,15 +59,20 @@ public class HideUtilsTest {
 	@Mock CyNode node1;
 	@Mock CyNode node2;
 	@Mock CyNode node3;
-	@Mock private View<CyEdge> ev1;
-	@Mock private View<CyEdge> ev2;
-	@Mock private View<CyEdge> ev3;
-	@Mock private View<CyNode> nv1;
-	@Mock private View<CyNode> nv2;
-	@Mock private View<CyNode> nv3;
+	@Mock View<CyEdge> ev1;
+	@Mock View<CyEdge> ev2;
+	@Mock View<CyEdge> ev3;
+	@Mock View<CyEdge> ev4;
+	@Mock View<CyNode> nv1;
+	@Mock View<CyNode> nv2;
+	@Mock View<CyNode> nv3;
+	
+	@Rule public MockitoRule mockitoRule = MockitoJUnit.rule(); 
 	
 	@Before
 	public void initMocks() {
+		
+		
 		edges = new ArrayList<CyEdge>();
 		edges.add(edge1);
 		edges.add(edge2);
@@ -79,12 +84,12 @@ public class HideUtilsTest {
 		nodes.add(node3);
 		
 		MockitoAnnotations.initMocks(this);
+		
 		when(view.getEdgeView(any(CyEdge.class))).thenReturn(ev1, ev2, ev3);
 		when(view.getNodeView(any(CyNode.class))).thenReturn(nv1, nv2, nv3);
 		when(view.getModel()).thenReturn(network);
 	}
 	
-	@Ignore
 	@Test
 	public void testsetVisibleEdges() throws Exception {
 
@@ -93,7 +98,6 @@ public class HideUtilsTest {
 		
 	}
 	
-	@Ignore
 	@Test
 	public void testsetVisibleNodes() throws Exception {
 
