@@ -8,11 +8,10 @@ import java.util.List;
 
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.View;
-import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.snapshot.CyNetworkViewSnapshotImpl;
+import org.cytoscape.view.model.internal.model.snapshot.CyNodeViewSnapshotImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
@@ -50,21 +49,18 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 		}
 	}
 	
-	private static double get(View<CyNode> node, VisualProperty<?> vp) {
-		return ((Number)node.getVisualProperty(vp)).doubleValue();
-	}
 
 	private void initMBR() {
 		if(mbr == null) {
-			Iterator<View<CyNode>> iter = snapshot.getNodeViewsIterable().iterator();
+			Iterator<CyNodeViewSnapshotImpl> iter = snapshot.getSnapshotNodeViews().iterator();
 			if(!iter.hasNext()) {
 				mbr = new double[] {0, 0, 0, 0};
 			} else {
-				View<CyNode> node = iter.next();
-				double x = get(node, BasicVisualLexicon.NODE_X_LOCATION);
-				double y = get(node, BasicVisualLexicon.NODE_Y_LOCATION);
-				double h = get(node, BasicVisualLexicon.NODE_HEIGHT);
-				double w = get(node, BasicVisualLexicon.NODE_WIDTH);
+				CyNodeViewSnapshotImpl node = iter.next();
+				double x = node.x;
+				double y = node.y;
+				double h = node.h;
+				double w = node.w;
 				
 				double xMin = x - (w/2);
 				double xMax = x + (w/2);
@@ -73,10 +69,10 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 				
 				while(iter.hasNext()) {
 					node = iter.next();
-					x = get(node, BasicVisualLexicon.NODE_X_LOCATION);
-					y = get(node, BasicVisualLexicon.NODE_Y_LOCATION);
-					h = get(node, BasicVisualLexicon.NODE_HEIGHT);
-					w = get(node, BasicVisualLexicon.NODE_WIDTH);
+					x = node.x;
+					y = node.y;
+					h = node.h;
+					w = node.w;
 					
 					xMin = Math.min(xMin, x - (w/2));
 					xMax = Math.max(xMax, x + (w/2));
@@ -100,7 +96,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
 	@Override
 	public boolean get(Long suid, float[] extents) {
-		View<CyNode> node = snapshot.getNodeView(suid);
+		var node = snapshot.getNodeView(suid);
 		if(node == null)
 			return false;
 		copyExtents(node, extents);
@@ -109,19 +105,19 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
 	@Override
 	public boolean get(Long suid, double[] extents) {
-		View<CyNode> node = snapshot.getNodeView(suid);
+		var node = snapshot.getNodeView(suid);
 		if(node == null)
 			return false;
 		copyExtents(node, extents);
 		return true;
 	}
 
-	private static void copyExtents(View<CyNode> node, float[] extents) {
+	private static void copyExtents(CyNodeViewSnapshotImpl node, float[] extents) {
 		if(extents != null) {
-			double x = get(node, BasicVisualLexicon.NODE_X_LOCATION);
-			double y = get(node, BasicVisualLexicon.NODE_Y_LOCATION);
-			double h = get(node, BasicVisualLexicon.NODE_HEIGHT);
-			double w = get(node, BasicVisualLexicon.NODE_WIDTH);
+			double x = node.x;
+			double y = node.y;
+			double h = node.h;
+			double w = node.w;
 			extents[X_MIN] = (float) (x - (w/2));
 			extents[X_MAX] = (float) (x + (w/2));
 			extents[Y_MIN] = (float) (y - (h/2));
@@ -129,12 +125,12 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 		}
 	}
 	
-	private static void copyExtents(View<CyNode> node, double[] extents) {
+	private static void copyExtents(CyNodeViewSnapshotImpl node, double[] extents) {
 		if(extents != null) {
-			double x = get(node, BasicVisualLexicon.NODE_X_LOCATION);
-			double y = get(node, BasicVisualLexicon.NODE_Y_LOCATION);
-			double h = get(node, BasicVisualLexicon.NODE_HEIGHT);
-			double w = get(node, BasicVisualLexicon.NODE_WIDTH);
+			double x = node.x;
+			double y = node.y;
+			double h = node.h;
+			double w = node.w;
 			extents[X_MIN] = x - (w/2);
 			extents[X_MAX] = x + (w/2);
 			extents[Y_MIN] = y - (h/2);
@@ -149,7 +145,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
 	@Override
 	public SpacialIndex2DEnumerator<Long> queryAll() {
-		return new SimpleSpacialIndex2DEnumerator(snapshot.getNodeViews());
+		return new SimpleSpacialIndex2DEnumerator(snapshot.getSnapshotNodeViews());
 	}
 	
 	@Override
@@ -158,12 +154,12 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 		if(xMin <= mbr[X_MIN] && yMin <= mbr[Y_MIN] && xMax >= mbr[X_MAX] && yMax >= mbr[Y_MAX])
 			return queryAll();
 		
-		List<View<CyNode>> overlapNodes = new ArrayList<>();
-		for(View<CyNode> node : snapshot.getNodeViews()) {
-			double x = get(node, BasicVisualLexicon.NODE_X_LOCATION);
-			double y = get(node, BasicVisualLexicon.NODE_Y_LOCATION);
-			double h = get(node, BasicVisualLexicon.NODE_HEIGHT);
-			double w = get(node, BasicVisualLexicon.NODE_WIDTH);
+		List<CyNodeViewSnapshotImpl> overlapNodes = new ArrayList<>();
+		for(var node : snapshot.getSnapshotNodeViews()) {
+			double x = node.x;
+			double y = node.y;
+			double h = node.h;
+			double w = node.w;
 			double aMin = x - (w/2);
 			double aMax = x + (w/2);
 			double bMin = y - (h/2);
@@ -191,9 +187,9 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 	private class SimpleSpacialIndex2DEnumerator implements SpacialIndex2DEnumerator<Long> {
 
 		private final int size;
-		private final Iterator<View<CyNode>> iter;
+		private final Iterator<CyNodeViewSnapshotImpl> iter;
 		
-		public SimpleSpacialIndex2DEnumerator(List<View<CyNode>> nodes) {
+		public SimpleSpacialIndex2DEnumerator(List<CyNodeViewSnapshotImpl> nodes) {
 			Collections.sort(nodes, zOrderComparator);
 			this.size = nodes.size();
 			this.iter = nodes.iterator();
@@ -211,7 +207,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
 		@Override
 		public Long nextExtents(float[] extents) {
-			View<CyNode> node = iter.next();
+			var node = iter.next();
 			copyExtents(node, extents);
 			return node.getSUID();
 		}
