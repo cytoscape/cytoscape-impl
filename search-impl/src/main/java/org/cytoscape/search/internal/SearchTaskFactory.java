@@ -45,6 +45,8 @@ public class SearchTaskFactory extends AbstractNetworkTaskFactory {
 
 	@Override
 	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(new IndexAndSearchTask(network, searchMgr, query, serviceRegistrar));
+		return new TaskIterator(new IndexAndSearchTask(network, searchMgr, query,
+				new ViewUpdatorImpl(serviceRegistrar), new NodeAndEdgeSelectorImpl(),
+				new EnhancedSearchQueryFactory(), new EnhancedSearchIndexFactory()));
 	}
 }

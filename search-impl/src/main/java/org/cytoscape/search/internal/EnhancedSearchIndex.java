@@ -29,6 +29,7 @@ package org.cytoscape.search.internal;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
@@ -48,9 +49,23 @@ import org.cytoscape.search.internal.util.EnhancedSearchUtils;
 import org.cytoscape.work.TaskMonitor;
 
 
-public class EnhancedSearchIndex {
-	
-	private EnhancedSearchIndex() { }
+public class EnhancedSearchIndex implements Callable {
+	private static final int PROGRESS_UPDATE_INTERVAL = 10000;
+	private CyNetwork network;
+	private TaskMonitor taskMonitor;
+	protected EnhancedSearchIndex(CyNetwork network, TaskMonitor taskMonitor) {
+		this.network = network;
+		this.taskMonitor = taskMonitor;
+	}
+
+	/**
+	 * Lets search be called from an ExecutorService
+	 */
+	@Override
+	public RAMDirectory call() throws Exception {
+		RAMDirectory idx = EnhancedSearchIndex.buildIndex(this.network, this.taskMonitor);
+		return idx;
+	}
 	
 
 	public static RAMDirectory buildIndex(CyNetwork network, TaskMonitor taskMonitor) {
@@ -64,18 +79,28 @@ public class EnhancedSearchIndex {
 
 			// Add a document for each graph object - node and edge
 			List<CyNode> nodeList = network.getNodeList();
+			List<CyEdge> edgeList = network.getEdgeList();
+			int totalElements = nodeList.size() + edgeList.size();
+			int counter = 0;
+			taskMonitor.setProgress(0.0);
 			
-			taskMonitor.setProgress(0.1);
 			for (CyNode cyNode : nodeList) {
 				writer.addDocument(createDocument(network, cyNode, EnhancedSearch.NODE_TYPE, cyNode.getSUID()));
+				counter += 1;
+				if (counter % PROGRESS_UPDATE_INTERVAL == 0) {
+					taskMonitor.setProgress(updateProgress(counter, totalElements));
+				}
 			}
-			taskMonitor.setProgress(0.6);
 		
-			List<CyEdge> edgeList = network.getEdgeList();
 			for (CyEdge cyEdge : edgeList) {
 				writer.addDocument(createDocument(network, cyEdge, EnhancedSearch.EDGE_TYPE, cyEdge.getSUID()));
+				counter += 1;
+				if (counter % PROGRESS_UPDATE_INTERVAL == 0) {
+					taskMonitor.setProgress(updateProgress(counter, totalElements));
+				}
 			}
-
+			taskMonitor.setStatusMessage("Optimizing index");
+			taskMonitor.setProgress(0.5);
 			// Optimize and close the writer to finish building the index
 			writer.optimize();
 			writer.close();
@@ -88,7 +113,21 @@ public class EnhancedSearchIndex {
 			taskMonitor.setProgress(0.95);
 		}
 	}
-
+	
+	/**
+	 * Generates a percent complete by dividing {@code processedElementCount} by
+	 * {@code totalElements} 
+	 * @param processedElementCount number of nodes & edges processed
+	 * @param totalElements total number of nodes and edges
+	 * @return percent complete as double ie 0.5 means 50% or 0.0 if {@code totalElements} is 0 or less
+	 */
+	private static double updateProgress(int processedElementCount, int totalElements) {
+		if (totalElements <= 0) {
+			return 0.0;
+		}
+		return (double)processedElementCount / (double)totalElements;
+	}
+	
 	/**
 	 * Make a Document object with an un-indexed identifier field and indexed
 	 * attribute fields

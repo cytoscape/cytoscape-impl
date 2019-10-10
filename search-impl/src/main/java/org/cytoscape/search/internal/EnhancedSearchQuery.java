@@ -3,6 +3,7 @@ package org.cytoscape.search.internal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
@@ -29,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,18 +48,30 @@ import org.slf4j.LoggerFactory;
  * #L%
  */
 
-public class EnhancedSearchQuery {
-	
+public class EnhancedSearchQuery implements Callable {
+
 	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	
 	private final RAMDirectory idx;
 	private final CyNetwork network;
 	private SearchResults results;
 	private Searcher searcher;
+	private final String query;
 
-	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index) {
+	public EnhancedSearchQuery(CyNetwork network, RAMDirectory index, final String query) {
 		this.network = network;
 		this.idx = index;
+		this.query = query;
+	}
+
+	/**
+	 * Lets query be called from an ExecutorService
+	 * @return results of query
+	 */
+	@Override
+	public SearchResults call() throws Exception {
+		this.executeQuery(query);
+		return results;
 	}
 
 	public void executeQuery(String queryString) {
@@ -91,21 +104,23 @@ public class EnhancedSearchQuery {
 		// CustomMultiFieldQueryParser is used to support range queries on numerical attribute fields.
 		QueryParser queryParser = new CustomMultiFieldQueryParser(attFields, new CaseInsensitiveWhitespaceAnalyzer());
 
-		SearchResults results;
 		try {
 			// Execute query
 			Query query = queryParser.parse(queryString);
 			IdentifiersCollector hitCollector = new IdentifiersCollector(searcher);
 			searcher.search(query, hitCollector);		    
-			results = SearchResults.results(hitCollector.getNodeHits(), hitCollector.getEdgeHits());
+			this.results = SearchResults.results(hitCollector.getNodeHits(), hitCollector.getEdgeHits());
 		} catch (ParseException pe) {
-			//int column = pe.currentToken.next.beginColumn;
-			results = SearchResults.syntaxError();
+			if (pe.getMessage() != null && pe.getMessage().endsWith("too many boolean clauses")){
+				this.results = SearchResults.syntaxError("At " + queryString.length() + " characters query string is too large");
+			} else {
+				this.results = SearchResults.syntaxError();
+			}
+			logger.error(pe.getMessage(), pe);
 		} catch (Exception e) {
-			results = SearchResults.fatalError();
+			this.results = SearchResults.fatalError();
 			logger.error(e.getMessage(), e);
 		}
-		this.results = results;
 	}
 	
 	public SearchResults getResults() {

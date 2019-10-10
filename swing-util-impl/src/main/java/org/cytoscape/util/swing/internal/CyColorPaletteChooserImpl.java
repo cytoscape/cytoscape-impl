@@ -166,6 +166,7 @@ class CyColorPaletteChooserImpl extends JDialog implements CyColorPaletteChooser
 	private void init(final Component parent, final String title, 
                     final Palette initialPalette, final Color initialColor) {
 		this.parent = parent;
+		this.setLocationRelativeTo(parent);
 		this.title = title;
 		this.initialPalette = initialPalette;
 		this.initialColor = initialColor;

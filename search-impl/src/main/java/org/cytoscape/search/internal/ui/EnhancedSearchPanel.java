@@ -117,27 +117,15 @@ public class EnhancedSearchPanel extends JPanel {
 
 	
 	private void showPopup(SearchResults results) {
+		if (results == null) {
+			return;
+		}
 		JLabel label = new JLabel();
 		
-		if(results.getStatus() == Status.ERROR_SYNTAX) {
+		if(results.isError()) {
 			label.setForeground(Color.RED);
-			label.setText("   Cannot execute search query   ");
-		} else if(results.getStatus() == Status.ERROR_FATAL) {
-			label.setForeground(Color.RED);
-			label.setText("   Query execution error   ");
-		} else {
-			int edges = results.getEdgeHitCount();
-			int nodes = results.getNodeHitCount();
-			if(nodes == 1 && edges == 1) {
-				label.setText("   Selected 1 node and 1 edge   ");
-			} else if(nodes == 1 && edges != 1) {
-				label.setText("   Selected 1 node and " + edges + " edges   ");
-			} else if(nodes != 1 && edges == 1) {
-				label.setText("   Selected " + nodes + " nodes and 1 edge   ");
-			} else {
-				label.setText("   Selected " + nodes + " nodes and " + edges + " edges   ");
-			}
 		}
+		label.setText("   " + results.getMessage() + "   ");
 		
 		LookAndFeelUtil.makeSmall(label);
 		JPopupMenu popup = new JPopupMenu();

@@ -57,7 +57,7 @@ public class ReindexTask extends AbstractNetworkTask {
 		if (interrupted) {
 			return;
 		}
-
+		EnhancedSearchPlugin.attributeChanged = false;
 		taskMonitor.setProgress(1);
 		taskMonitor.setStatusMessage("Network re-indexed successfuly");
 

@@ -17,6 +17,7 @@ import org.cytoscape.io.read.CyTableReader;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.tableimport.internal.reader.AbstractMappingParameters;
 import org.cytoscape.tableimport.internal.reader.AttributeMappingParameters;
 import org.cytoscape.tableimport.internal.reader.DefaultAttributeTableReader;
 import org.cytoscape.tableimport.internal.reader.ExcelAttributeSheetReader;
@@ -112,6 +113,12 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 	         context="nongui")
 	public String dataTypeList;
 	
+	@Tunable(description="Decimal character used in the decimal format",
+			longDescription="Character that separates the integer-part (characteristic) and the fractional-part (mantissa) of a decimal number. The default value is the dot \".\"",
+			exampleStringValue=".",
+			context="nogui")
+	public Character decimalSeparator;
+	
 	private final TableImportContext tableImportContext;
 	private final CyServiceRegistrar serviceRegistrar;
 
@@ -186,6 +193,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
+		if(decimalSeparator == null) {
+			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
+		}
+		
 		List<String> attrNameList = new ArrayList<>();
 		int colCount;
 		String[] attributeNames;
@@ -224,7 +235,8 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 				isStart,
 				delimiters.getSelectedValues(),
 				null,
-				startLoadRowTemp
+				startLoadRowTemp,
+				decimalSeparator
 		);
 		
 		colCount = previewPanel.getPreviewTable().getColumnModel().getColumnCount();
@@ -314,7 +326,7 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 			keyColumnIndex--;
 
 		amp = new AttributeMappingParameters(sourceName, delimiters.getSelectedValues(), listDelimiters,
-				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, namespacesCopy, startLoadRow, null);
+				keyColumnIndex, attributeNames, dataTypesCopy, typesCopy, namespacesCopy, startLoadRow, null, decimalSeparator);
 		
 		if (this.fileType.equalsIgnoreCase(SupportedFileType.EXCEL.getExtension()) ||
 		    this.fileType.equalsIgnoreCase(SupportedFileType.OOXML.getExtension())) {

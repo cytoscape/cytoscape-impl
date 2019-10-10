@@ -26,6 +26,7 @@ import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
@@ -108,7 +109,8 @@ public class MappingIntegrationTest {
 	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
-	CyTableManager tabMgr = new CyTableManagerImpl(new CyNetworkTableManagerImpl(), netMgr, serviceRegistrar);
+	private CyNetworkTableManagerImpl netTabMgr = new CyNetworkTableManagerImpl();
+	CyTableManager tabMgr = new CyTableManagerImpl(netTabMgr, netMgr, serviceRegistrar);
 	Properties syncFactoryProp = new Properties();
 	
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
@@ -120,6 +122,7 @@ public class MappingIntegrationTest {
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+        when(serviceRegistrar.getService(CyNetworkTableManager.class)).thenReturn(netTabMgr);
         when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
         when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tabMgr);
         when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
