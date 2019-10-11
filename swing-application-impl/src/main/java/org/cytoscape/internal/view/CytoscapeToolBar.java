@@ -3,6 +3,7 @@ package org.cytoscape.internal.view;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GrayFilter;
@@ -33,9 +35,11 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
 import javax.swing.UIManager;
@@ -328,20 +332,41 @@ public class CytoscapeToolBar extends JToolBar {
 		}	
 	}
 	
-	public static JButton createToolBarButton(CyAction action) {
+	public static AbstractButton createToolBarButton(CyAction action) {
 		action.updateEnableState();
+		final AbstractButton button;
 		
-		final JButton button = new JButton(action) {
-			@Override
-		      public JToolTip createToolTip() {
-				return new CyToolTip(
-						this,
-						(String) action.getValue(Action.SHORT_DESCRIPTION),
-						(String) action.getValue(Action.LONG_DESCRIPTION),
-						action.getToolTipImage() == null ? null : new ImageIcon(action.getToolTipImage())
-				);
-		      }
-		};
+		if (action.useToggleButton()) {
+			button = new JToggleButton(action) {
+				@Override
+				public JToolTip createToolTip() {
+					return CytoscapeToolBar.createToolTip(this, action);
+				}
+				@Override
+				public void paint(Graphics g) {
+					if (isSelected()) {
+						var g2 = (Graphics2D) g.create();
+						g2.setColor(UIManager.getColor("CyToggleButton[Selected].background"));
+						g2.fillRect(
+								BUTTON_BORDER_SIZE,
+								BUTTON_BORDER_SIZE,
+								getWidth() - 2 * BUTTON_BORDER_SIZE,
+								getHeight() - 2 * BUTTON_BORDER_SIZE
+						);
+						g2.dispose();
+					}
+					super.paint(g);
+				}
+			};
+		} else {
+			button = new JButton(action) {
+				@Override
+				public JToolTip createToolTip() {
+					return CytoscapeToolBar.createToolTip(this, action);
+				}
+			};
+		}
+		
 		button.setText(action.getName());
 		button.setBorder(BorderFactory.createEmptyBorder(BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE, BUTTON_BORDER_SIZE,
 				BUTTON_BORDER_SIZE));
@@ -375,6 +400,13 @@ public class CytoscapeToolBar extends JToolBar {
 		}
 		
 		return button;
+	}
+	
+	private static JToolTip createToolTip(JComponent comp, CyAction action) {
+		return new CyToolTip(comp,
+				(String) action.getValue(Action.SHORT_DESCRIPTION),
+				(String) action.getValue(Action.LONG_DESCRIPTION),
+				action.getToolTipImage() == null ? null : new ImageIcon(action.getToolTipImage()));
 	}
 	
 	private void update() {
@@ -594,11 +626,11 @@ public class CytoscapeToolBar extends JToolBar {
 	
 	private static class ActionButton {
 		
-		final JButton component;
+		final AbstractButton component;
 		final boolean separatorBefore;
 		final boolean separatorAfter;
 		
-		public ActionButton(JButton button, boolean separatorBefore, boolean separatorAfter) {
+		public ActionButton(AbstractButton button, boolean separatorBefore, boolean separatorAfter) {
 			this.component = button;
 			this.separatorBefore = separatorBefore;
 			this.separatorAfter = separatorAfter;

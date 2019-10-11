@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -140,7 +141,7 @@ public class CytoscapeMenus {
 						buttonsAfterSeparator = 0;
 					}
 					
-					final JButton newBtn = CytoscapeToolBar.createToolBarButton(action);
+					final AbstractButton newBtn = CytoscapeToolBar.createToolBarButton(action);
 					viewToolBar.add(newBtn);
 					buttonsAfterSeparator++;
 				}
