@@ -554,8 +554,8 @@ public class CyActivator extends AbstractCyActivator {
 			TextIcon icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),
 					UIManager.getColor("CyColor.complement(+1)"), 32, 32);
 			
-			starterPanelActionToolBar = new StarterPanelAction(Float.MAX_VALUE - 1.0f, icon, cytoscapeDesktop, serviceRegistrar);
-			starterPanelActionMenu = new StarterPanelAction(1.4f, cytoscapeDesktop, serviceRegistrar);
+			starterPanelActionToolBar = new StarterPanelAction(Float.MAX_VALUE - 1.0f, icon, cytoscapeDesktop);
+			starterPanelActionMenu = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		}
 		
 		detachedViewToolBarAction = new DetachedViewToolBarAction(1.5f, netViewMediator);

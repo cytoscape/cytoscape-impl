@@ -5,15 +5,10 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 import javax.swing.Icon;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.internal.view.CytoscapeDesktop;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -45,15 +40,13 @@ public class StarterPanelAction extends AbstractCyAction {
 	private static String TITLE = "Show Starter Panel";
 
 	private final CytoscapeDesktop desktop;
-	private final CyServiceRegistrar serviceRegistrar;
 	
 	/**
 	 * Use this constructor to register the action as a menu item.
 	 */
-	public StarterPanelAction(float menuGravity, CytoscapeDesktop desktop, CyServiceRegistrar serviceRegistrar) {
+	public StarterPanelAction(float menuGravity, CytoscapeDesktop desktop) {
 		super(TITLE);
 		this.desktop = desktop;
-		this.serviceRegistrar = serviceRegistrar;
 		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
@@ -64,15 +57,15 @@ public class StarterPanelAction extends AbstractCyAction {
 	/**
 	 * Use this constructor to register the action as a tool bar button.
 	 */
-	public StarterPanelAction(float toolbarGravity, Icon icon, CytoscapeDesktop desktop, CyServiceRegistrar serviceRegistrar) {
+	public StarterPanelAction(float toolbarGravity, Icon icon, CytoscapeDesktop desktop) {
 		super(TITLE);
 		this.desktop = desktop;
-		this.serviceRegistrar = serviceRegistrar;
 		
 		putValue(LARGE_ICON_KEY, icon);
 		putValue(SHORT_DESCRIPTION, TITLE);
 		setIsInToolBar(true);
 		setToolbarGravity(toolbarGravity);
+		useToggleButton = true;
 		
 		desktop.getStarterPanel().addComponentListener(new ComponentAdapter() {
 			@Override
@@ -97,30 +90,11 @@ public class StarterPanelAction extends AbstractCyAction {
 	@Override
 	public void menuSelected(MenuEvent evt) {
 		updateEnableState();
-		JCheckBoxMenuItem item = getThisItem();
-
-		if (item != null)
-			item.setSelected(desktop.isStarterPanelVisible());
 	}
 	
 	@Override
 	public void updateEnableState() {
-		if (isInToolBar()) // For the tool bar button
-			setEnabled(!desktop.isStarterPanelVisible());
-		else // For the menu item
-			super.updateEnableState();
-	}
-	
-	private JCheckBoxMenuItem getThisItem() {
-		JMenu menu = serviceRegistrar.getService(CySwingApplication.class).getJMenu(getPreferredMenu());
-		
-		for (int i = 0; i < menu.getItemCount(); i++) {
-			JMenuItem item = menu.getItem(i);
-			
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
-				return (JCheckBoxMenuItem) item;
-		}
-		
-		return null;
+		super.updateEnableState();
+		putValue(SELECTED_KEY, desktop.isStarterPanelVisible());
 	}
 }
