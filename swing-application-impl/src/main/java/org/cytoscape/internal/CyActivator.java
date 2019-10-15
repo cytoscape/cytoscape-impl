@@ -110,6 +110,7 @@ import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
+import org.cytoscape.internal.actions.CheckForUpdatesAction;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
@@ -244,7 +245,11 @@ public class CyActivator extends AbstractCyActivator {
 	private DestroyNetworksAction destroyNetworksAction;
 	private ExportNetworkAction exportNetworkAction;
 	private ExportImageAction exportImageAction;
-	
+
+	// Show Welcome Screen
+	private CheckForUpdatesAction welcomeScreenAction;
+
+
 	@Override
 	public void start(final BundleContext bc) throws Exception {
 		final CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
@@ -420,6 +425,9 @@ public class CyActivator extends AbstractCyActivator {
 		registerAllServices(bc, netSelectionMediator);
 		registerAllServices(bc, netSearchMediator);
 
+		// From old Welcome Screen
+		registerAllServices(bc, welcomeScreenAction, new Properties());
+
 		registerServiceListener(bc, cytoscapeDesktop::addAction, cytoscapeDesktop::removeAction, CyAction.class);
 		registerServiceListener(bc, preferenceAction::addCyProperty, preferenceAction::removeCyProperty, CyProperty.class);
 //		registerServiceListener(bc, cy3preferenceAction::addCyProperty, cy3preferenceAction::removeCyProperty, CyProperty.class);
@@ -549,7 +557,7 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, cytoscapeDesktop, 1.2f, serviceRegistrar);
 		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f, serviceRegistrar);
 		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f, serviceRegistrar);
-		
+
 		{
 			TextIcon icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),
 					UIManager.getColor("CyColor.complement(+1)"), 32, 32);
@@ -566,6 +574,9 @@ public class CyActivator extends AbstractCyActivator {
 		destroyNetworksAction = new DestroyNetworksAction(3.2f, netMainPanel, serviceRegistrar);
 		exportNetworkAction = new ExportNetworkAction(1000.1f, serviceRegistrar);
 		exportImageAction = new ExportImageAction(1000.2f, serviceRegistrar);
+
+		// Updater moved from old Welcome Screen
+		welcomeScreenAction = new CheckForUpdatesAction(serviceRegistrar);
 	}
 	
 	private void setLookAndFeel(final BundleContext bc) {
