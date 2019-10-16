@@ -12,7 +12,6 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
-import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -91,8 +90,8 @@ public class GraphicsDetailAction extends AbstractCyAction {
 		updateEnableState();
 		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		
-		if (view instanceof DRenderingEngine && isEnabled())
-			putValue(SELECTED_KEY, view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
+		if (view != null && isEnabled())
+			putValue(SELECTED_KEY, Boolean.TRUE == view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
 		else
 			putValue(SELECTED_KEY, false);
 	}
