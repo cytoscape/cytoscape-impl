@@ -245,8 +245,12 @@ public class NetworkViewImplTest {
 		// it should fire an event for all 4, but only when setting it as a bypass.
 		n0.setVisualProperty(NODE_SIZE, 999);
 		assertEventCount(eventHelper, 1);
+		n0.setVisualProperty(NODE_SIZE, 999);
+		assertEventCount(eventHelper, 0);
 		n0.setLockedValue(NODE_SIZE, 888);
 		assertEventCount(eventHelper, 4);
+		n0.setLockedValue(NODE_SIZE, 888);
+		assertEventCount(eventHelper, 0);
 		n0.setVisualProperty(NODE_SIZE, 777); // this value is locked so it shouldn't change at this point
 		assertEventCount(eventHelper, 0);
 		n0.clearValueLock(NODE_SIZE);
@@ -448,12 +452,14 @@ public class NetworkViewImplTest {
 //		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
 		
 		assertTrue(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES).isEmpty());
+		assertEquals(0, netView.createSnapshot().getTrackedNodeCount(CyNetworkViewConfig.SELECTED_NODES));
 		
 		n0.setVisualProperty(NODE_SELECTED, true);
 		n1.setVisualProperty(NODE_SELECTED, true);
 		
 		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES));
 		assertEquals(2, selectedNodes.size());
+		assertEquals(2, netView.createSnapshot().getTrackedNodeCount(CyNetworkViewConfig.SELECTED_NODES));
 		assertTrue(selectedNodes.contains(n0.getSUID()));
 		assertTrue(selectedNodes.contains(n1.getSUID()));
 		
@@ -476,6 +482,9 @@ public class NetworkViewImplTest {
 			config.addTrackedVisualProperty(NODE_LABEL_STARTS_WITH_A, NODE_LABEL, v -> v.startsWith("A"));
 			config.addTrackedVisualProperty(NODE_LABEL_IS_CCC, NODE_LABEL, "CCC");
 		});
+		
+		assertTrue(netView.createSnapshot().isTrackedNodeKey(NODE_LABEL_STARTS_WITH_A));
+		assertTrue(netView.createSnapshot().isTrackedNodeKey(NODE_LABEL_IS_CCC));
 		
 		List<CyNode> nodes = network.getNodeList();
 		View<CyNode> n0 = netView.getNodeView(nodes.get(0));
@@ -508,6 +517,13 @@ public class NetworkViewImplTest {
 		nodesNamedCCC = asSuidSet(netView.createSnapshot().getTrackedNodes(NODE_LABEL_IS_CCC));
 		assertEquals(1, nodesNamedCCC.size());
 		assertTrue(nodesNamedCCC.contains(n2.getSUID()));
+		
+		assertTrue(netView.createSnapshot().getTrackedNodes("BLAH BLAH BLAH").isEmpty());
+		assertEquals(0, netView.createSnapshot().getTrackedNodeCount("Blah blah"));
+		assertFalse(netView.createSnapshot().isTrackedNodeKey("blah"));
+		assertTrue(netView.createSnapshot().getTrackedEdges("BLAH BLAH BLAH").isEmpty());
+		assertEquals(0, netView.createSnapshot().getTrackedEdgeCount("Blah blah"));
+		assertFalse(netView.createSnapshot().isTrackedEdgeKey("blah"));
 	}
 	
 	

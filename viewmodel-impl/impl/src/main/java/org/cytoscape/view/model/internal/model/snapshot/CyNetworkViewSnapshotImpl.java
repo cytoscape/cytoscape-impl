@@ -303,6 +303,16 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
+	public int getTrackedNodeCount(Object key) {
+		return nodeVPs.getTracked(key).size();
+	}
+	
+	@Override
+	public boolean isTrackedNodeKey(Object key) {
+		return nodeVPs.isTrackedKey(key);
+	}
+	
+	@Override
 	public Collection<View<CyEdge>> getTrackedEdges(Object key) {
 		java.util.HashSet<View<CyEdge>> edges = new java.util.HashSet<>();
 		for(Long suid : edgeVPs.getTracked(key)) {
@@ -314,6 +324,16 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		return edges;
 	}
 
+	@Override
+	public int getTrackedEdgeCount(Object key) {
+		return edgeVPs.getTracked(key).size();
+	}
+	
+	@Override
+	public boolean isTrackedEdgeKey(Object key) {
+		return edgeVPs.isTrackedKey(key);
+	}
+	
 	@Override
 	public <T, V extends T> void setViewDefault(VisualProperty<? extends T> vp, V defaultValue) {
 		throw new UnsupportedOperationException("Cannot modify view snapshot");

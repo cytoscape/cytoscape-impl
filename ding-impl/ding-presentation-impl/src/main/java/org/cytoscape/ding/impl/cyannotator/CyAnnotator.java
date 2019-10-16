@@ -1,7 +1,5 @@
 package org.cytoscape.ding.impl.cyannotator;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDT;
-
 import java.awt.geom.Rectangle2D;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -16,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -83,7 +82,7 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	private Rectangle2D resizeBounds; // node coordinates
 	private ArrowAnnotationImpl repositioning;
 	
-	private Set<DingAnnotation> annotationSet = new HashSet<>();
+	private Set<DingAnnotation> annotationSet = Collections.newSetFromMap(new ConcurrentHashMap<>());
 	
 	private AnnotationEdit undoEdit;
 	
@@ -172,32 +171,30 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 	}
 	
 	public void loadAnnotations(List<String> annotations) {
-		invokeOnEDT(() -> {
-			loading = true;
-			
-			try {
-				List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
-				Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
-				Map<String, Annotation> uuidMap = new HashMap<>();
-				Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+		loading = true;
 		
-				if (annotations != null) {
-					loadRegularAnnotations(annotations, arrowList, groupMap, uuidMap, zOrderMap);
-					loadGroups(groupMap, uuidMap);
-					loadArrows(arrowList, zOrderMap);
-					// Now, handle our Z-Order.  This needs to be done after everything else is
-					// added to make sure that we have the proper number of components
-					// We use a TreeMap so that the keys (the zOrder are ordered)
-					restoreZOrder(zOrderMap);
-				}
-			} catch (Exception e) {
-				logger.error("Annotations were not loaded correctly.", e);
-			} finally {
-				loading = false;
-				re.setContentChanged();
-				propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, Collections.emptySet(), new HashSet<>(annotationSet));
+		try {
+			List<Map<String, String>> arrowList = new ArrayList<>(); // Keep a list of arrows
+			Map<GroupAnnotation, String> groupMap = new HashMap<>(); // Keep a map of groups and uuids
+			Map<String, Annotation> uuidMap = new HashMap<>();
+			Map<CanvasID, Map<Integer, DingAnnotation>> zOrderMap = new HashMap<>();
+	
+			if (annotations != null) {
+				loadRegularAnnotations(annotations, arrowList, groupMap, uuidMap, zOrderMap);
+				loadGroups(groupMap, uuidMap);
+				loadArrows(arrowList, zOrderMap);
+				// Now, handle our Z-Order.  This needs to be done after everything else is
+				// added to make sure that we have the proper number of components
+				// We use a TreeMap so that the keys (the zOrder are ordered)
+				restoreZOrder(zOrderMap);
 			}
-		});
+		} catch (Exception e) {
+			logger.error("Annotations were not loaded correctly.", e);
+		} finally {
+			loading = false;
+			re.setContentChanged();
+			propChangeSupport.firePropertyChange(PROP_ANNOTATIONS, Collections.emptySet(), new HashSet<>(annotationSet));
+		}
 	}
 
 	public DingAnnotation getAnnotation(UUID annotationID) {

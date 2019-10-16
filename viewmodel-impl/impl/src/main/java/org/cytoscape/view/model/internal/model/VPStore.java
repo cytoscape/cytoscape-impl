@@ -1,6 +1,7 @@
 package org.cytoscape.view.model.internal.model;
 
 import java.util.Collection;
+import java.util.Objects;
 
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualLexiconNode;
@@ -99,11 +100,16 @@ public class VPStore {
 		return visualProperties.getOrElse(suid,HashMap.empty()).keySet().removeAll(config.getNoClearVPs());
 	}
 	 
-	protected <T, V extends T> void setVisualProperty(Long suid, VisualProperty<? extends T> vp, V value) {
+	protected <T, V extends T> boolean setVisualProperty(Long suid, VisualProperty<? extends T> vp, V value) {
 		if(setSpecialVisualProperty(suid, vp, value))
-			return;
-		visualProperties = put(visualProperties, suid, vp, value);
-		updateTrackedVP(suid, vp);
+			return true;
+		var prevValue = getVisualPropertiesMap(suid).getOrElse(vp, null);
+		if(!Objects.equals(prevValue, value)) {
+			visualProperties = put(visualProperties, suid, vp, value);
+			updateTrackedVP(suid, vp);
+			return true;
+		}
+		return false;
 	}
 	
 	
@@ -139,9 +145,15 @@ public class VPStore {
 		return false;
 	}
 	
-	public <T, V extends T> void setLockedValue(Long suid, VisualProperty<? extends T> parentVP, V value) {
+	public <T, V extends T> boolean setLockedValue(Long suid, VisualProperty<? extends T> parentVP, V value) {
+		boolean[] changed = { false };
+		
+		changed[0] |= isChanged(directLocks, suid, parentVP, value);
 		directLocks = put(directLocks, suid, parentVP, value);
+		
+		changed[0] |= isChanged(allLocks, suid, parentVP, value);
 		allLocks = put(allLocks, suid, parentVP, value);
+		
 		updateTrackedVP(suid, parentVP);
 		
 		// this used to be propagateLockedVisualProperty() in ding
@@ -149,10 +161,20 @@ public class VPStore {
 		node.visit(n -> {
 			VisualProperty vp = n.getVisualProperty();
 			if(!isDirectlyLocked(suid, vp) && parentVP.getClass() == vp.getClass()) { // Preventing ClassCastExceptions
+				
+				changed[0] |= isChanged(allLocks, suid, vp, value);
 				allLocks = put(allLocks, suid, vp, value);
+				
 				updateTrackedVP(suid, vp);
 			}
 		});
+		
+		return changed[0];
+	}
+	
+	private static boolean isChanged(Map<Long,Map<VisualProperty<?>,Object>> map, Long suid, VisualProperty<?> vp, Object value) {
+		var prevValue = map.getOrElse(suid, HashMap.empty()).getOrElse(vp, null);
+		return !Objects.equals(value, prevValue);
 	}
 	
 	private void removeTrackedVPs(Long suid) {
@@ -186,6 +208,10 @@ public class VPStore {
 	
 	public Set<Long> getTracked(Object key) {
 		return tracked.getOrElse(key, HashSet.empty());
+	}
+	
+	public boolean isTrackedKey(Object key) {
+		return config.isTrackedKey(key);
 	}
 	
 	public boolean isValueLocked(Long suid, VisualProperty<?> vp) {

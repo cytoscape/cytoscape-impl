@@ -70,6 +70,9 @@ public class UnHideTask extends AbstractNetworkViewTask {
 		if (nodes != null)
 			elements.addAll(nodes);
 
+		if(cancelled)
+			return;
+		
 		tm.setProgress(0.1);
 		
 		if (edges != null)
@@ -81,19 +84,25 @@ public class UnHideTask extends AbstractNetworkViewTask {
 		final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 		final VisualMappingManager vmMgr = serviceRegistrar.getService(VisualMappingManager.class);
 
-		undoSupport.postEdit(new HideEdit(description, view, elements, true, eventHelper, vmMgr));
 		tm.setProgress(0.3);
 
 		if (nodes != null)
 			HideUtils.setVisibleNodes(nodes, true, view);
+		
+		if(cancelled)
+			return;
 
 		tm.setProgress(0.5);
 
 		if (edges != null)
 			HideUtils.setVisibleEdges(edges, true, view);
+		
+		if(cancelled)
+			return;
 
 		tm.setProgress(0.7);
 
+		undoSupport.postEdit(new HideEdit(description, view, elements, true, eventHelper, vmMgr));
 		vmMgr.getVisualStyle(view).apply(view);
 		view.updateView();
 		tm.setProgress(1.0);

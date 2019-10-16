@@ -47,6 +47,10 @@ public class CyNetworkViewConfigImpl implements CyNetworkViewConfig {
 		Objects.requireNonNull(vp);
 		noClearVPs.add(vp);
 	}
+	
+	public boolean isTrackedKey(Object key) {
+		return predicates.containsKey(key);
+	}
 
 	public Set<VisualProperty<?>> getNoClearVPs() {
 		return noClearVPs;

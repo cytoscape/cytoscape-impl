@@ -141,7 +141,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
-	private final CoalesceTimer coalesceTimer;
+	private final CoalesceTimer eventFireCoalesceTimer;
 	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
@@ -193,7 +193,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		cyAnnotator.loadAnnotations();
 		
-		coalesceTimer = new CoalesceTimer();
+		eventFireCoalesceTimer = new CoalesceTimer(240);
 		
 		// Check if the view model has changed approximately 30 times per second
 		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());
@@ -302,7 +302,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		// Fire this event on another thread (and debounce) so that it doesn't block the renderer
 		// MKTODO should this go here???
-		coalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
+		eventFireCoalesceTimer.coalesce(() -> eventHelper.fireEvent(new UpdateNetworkPresentationEvent(getViewModel())));
 	}
 	
 	private void updateModel() {
@@ -800,7 +800,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	public void dispose() {
 		synchronized(this) {
 			checkDirtyTimer.stop();
-			coalesceTimer.shutdown();
+			eventFireCoalesceTimer.shutdown();
 			cyAnnotator.dispose();
 			serviceRegistrar.unregisterAllServices(cyAnnotator);
 			renderComponent.dispose();

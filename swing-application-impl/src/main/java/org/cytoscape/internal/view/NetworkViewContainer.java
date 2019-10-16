@@ -64,6 +64,8 @@ import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewConfig;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
@@ -294,8 +296,26 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 		final CyNetworkView view = getNetworkView();
 		
 		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
-			final int hn = ViewUtil.getHiddenNodeCount(view);
-			final int he = ViewUtil.getHiddenEdgeCount(view);
+			
+			final int hn;
+			final int he;
+			if(view.supportsSnapshots()) {
+				CyNetworkViewSnapshot snapshot = view.createSnapshot();
+				if(snapshot.isTrackedNodeKey(CyNetworkViewConfig.HIDDEN_NODES) && snapshot.isTrackedEdgeKey(CyNetworkViewConfig.HIDDEN_EDGES)) {
+					// fast
+					hn = snapshot.getTrackedNodeCount(CyNetworkViewConfig.HIDDEN_NODES);
+					he = snapshot.getTrackedEdgeCount(CyNetworkViewConfig.HIDDEN_EDGES);
+				} else {
+					// slow
+					hn = ViewUtil.getHiddenNodeCount(view);
+					he = ViewUtil.getHiddenEdgeCount(view);
+				}
+			} else {
+				// slow
+				hn = ViewUtil.getHiddenNodeCount(view);
+				he = ViewUtil.getHiddenEdgeCount(view);
+			}
+			
 			getNodeHiddenLabel().setText("" + hn);
 			getEdgeHiddenLabel().setText("" + he);
 			

@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class CoalesceTimer {
 
-	public static final int DEFAULT_DELAY = 120;
+	public static final int DEFAULT_DELAY_MILLISECONDS = 120;
 	public static final int DEFAULT_THREADS = 1;
 	
 	private static final Object DEFAULT_KEY = new Object();
@@ -28,7 +28,11 @@ public class CoalesceTimer {
 	
 	
 	public CoalesceTimer() {
-		this(DEFAULT_DELAY, DEFAULT_THREADS);
+		this(DEFAULT_DELAY_MILLISECONDS, DEFAULT_THREADS);
+	}
+	
+	public CoalesceTimer(int delayMilliseconds) {
+		this(delayMilliseconds, DEFAULT_THREADS);
 	}
 	
 	public CoalesceTimer(int delay, int threads) {

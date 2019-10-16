@@ -86,6 +86,10 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		this.netVPs  = new VPNetworkStore(visualLexicon, config);
 	}
 	
+	@Override
+	public boolean supportsSnapshots() {
+		return true;
+	}
 	
 	@Override
 	public CyNetworkViewSnapshot createSnapshot() {

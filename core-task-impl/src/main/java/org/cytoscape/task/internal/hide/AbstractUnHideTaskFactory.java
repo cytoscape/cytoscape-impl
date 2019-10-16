@@ -1,10 +1,5 @@
 package org.cytoscape.task.internal.hide;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
@@ -39,26 +34,36 @@ public abstract class AbstractUnHideTaskFactory extends AbstractNetworkViewTaskF
 	
 	@Override
 	public boolean isReady(final CyNetworkView networkView) {
-		if (super.isReady(networkView)) {
-			// Also check whether or not there is at least one hidden element...
-			final List<View<? extends CyIdentifiable>> views = new ArrayList<>();
-			
-			if (unhideNodes)
-				views.addAll(networkView.getNodeViews());
-			if (unhideEdges)
-				views.addAll(networkView.getEdgeViews());
-			
-			for (View<? extends CyIdentifiable> v : views) {
-				final VisualProperty<?> vp = v.getModel() instanceof CyNode ? 
-						BasicVisualLexicon.NODE_VISIBLE : BasicVisualLexicon.EDGE_VISIBLE;
-				
-				if (v.getVisualProperty(vp) == Boolean.FALSE)
+		if(super.isReady(networkView)) {
+			if(unhideNodes) {
+				var views = networkView.getNodeViewsIterable();
+				if(hasHidden(views, BasicVisualLexicon.NODE_VISIBLE)) {
 					return true;
+				}
+			}
+			if(unhideEdges) {
+				// Checking all edges for visibility doesn't scale for large networks, just bail out
+				if(networkView.getModel().getEdgeCount() > 500000) {
+					return true;
+				}
+				var views = networkView.getEdgeViewsIterable();
+				if(hasHidden(views, BasicVisualLexicon.EDGE_VISIBLE)) {
+					return true;
+				}
 			}
 		}
-		
 		return false;
 	}
+	
+	private <T> boolean hasHidden(Iterable<View<T>> views, VisualProperty<?> vp) {
+		for(var v : views) {
+			if(v.getVisualProperty(vp) == Boolean.FALSE) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	
 	public String getDescription() {
 		return description;

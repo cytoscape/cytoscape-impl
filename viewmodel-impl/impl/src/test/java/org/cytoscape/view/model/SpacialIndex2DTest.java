@@ -129,6 +129,7 @@ public class SpacialIndex2DTest {
 		// hide nv1
 		networkView.getNodeView(n1).setVisualProperty(NODE_VISIBLE, false);
 		snapshot = networkView.createSnapshot();
+		assertEquals(1, snapshot.getTrackedNodeCount(CyNetworkViewConfig.HIDDEN_NODES));
 		assertMBR(snapshot, 3, 7, 13, 11);
 		assertHidden(snapshot, n1);
 		assertVisible(snapshot, n2, 1);

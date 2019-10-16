@@ -9,6 +9,7 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.collection.Set;
 
@@ -53,14 +54,16 @@ public abstract class CyViewBase<M> implements View<M> {
 	public <T, V extends T> void setVisualProperty(VisualProperty<? extends T> vp, V value) {
 		ViewLock lock = getLock();
 		synchronized (lock) {
-			getVPStore().setVisualProperty(suid, vp, value);
-			if(lock.isUpdateDirty())
-				getNetworkView().setDirty();
-			boolean locked = getVPStore().isValueLocked(suid, vp);
-			if(!locked) {
-				// If the value is overridden by a lock then the value returned 
-				// by getVisualProperty() won't visibly change by setting the VP here.
-				fireViewChangedEvent(vp, value, false);
+			boolean changed = getVPStore().setVisualProperty(suid, vp, value);
+			if(changed) {
+				if(lock.isUpdateDirty())
+					getNetworkView().setDirty();
+				boolean locked = getVPStore().isValueLocked(suid, vp);
+				if(!locked) {
+					// If the value is overridden by a lock then the value returned 
+					// by getVisualProperty() won't visibly change by setting the VP here.
+					fireViewChangedEvent(vp, value, false);
+				}
 			}
 		}
 	}
@@ -98,20 +101,22 @@ public abstract class CyViewBase<M> implements View<M> {
 	public <T, V extends T> void setLockedValue(VisualProperty<? extends T> vp, V value) {
 		ViewLock lock = getLock();
 		synchronized (lock) {
-			getVPStore().setLockedValue(suid, vp, value);
-			if(lock.isUpdateDirty())
-				getNetworkView().setDirty();
-		
-			VisualLexiconNode visualLexiconNode = getNetworkView().getVisualLexicon().getVisualLexiconNode(vp);
-			if(visualLexiconNode.getChildren().isEmpty()) {
-				// much more common case, might as well optimize for it
-				fireViewChangedEvent(vp, value, true);
-			} else {
-				visualLexiconNode.visit(node -> {
-					VisualProperty<?> nodeVP = node.getVisualProperty();
-					Object nodeValue = getVPStore().getVisualProperty(suid, vp);
-					fireViewChangedEvent(nodeVP, nodeValue, true);
-				});
+			boolean changed = getVPStore().setLockedValue(suid, vp, value);
+			if(changed) {
+				if(lock.isUpdateDirty())
+					getNetworkView().setDirty();
+			
+				VisualLexiconNode visualLexiconNode = getNetworkView().getVisualLexicon().getVisualLexiconNode(vp);
+				if(visualLexiconNode.getChildren().isEmpty()) {
+					// much more common case, might as well optimize for it
+					fireViewChangedEvent(vp, value, true);
+				} else {
+					visualLexiconNode.visit(node -> {
+						VisualProperty<?> nodeVP = node.getVisualProperty();
+						Object nodeValue = getVPStore().getVisualProperty(suid, vp);
+						fireViewChangedEvent(nodeVP, nodeValue, true);
+					});
+				}
 			}
 		}
 	}

@@ -34,6 +34,8 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 			// Tracked VPs
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_NODES, NODE_SELECTED, Boolean.TRUE::equals);
 			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_EDGES, EDGE_SELECTED, Boolean.TRUE::equals);
+			config.addTrackedVisualProperty(CyNetworkViewConfig.HIDDEN_NODES, NODE_VISIBLE, Boolean.FALSE::equals);
+			config.addTrackedVisualProperty(CyNetworkViewConfig.HIDDEN_EDGES, EDGE_VISIBLE, Boolean.FALSE::equals);
 			// Non-clearable VPs
 			config.addNonClearableVisualProperty(NODE_X_LOCATION);
 			config.addNonClearableVisualProperty(NODE_Y_LOCATION);
