@@ -1,12 +1,25 @@
 package org.cytoscape.view.manual.internal.common;
 
+import java.awt.event.ActionEvent;
+
+import javax.swing.event.MenuEvent;
+
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.application.swing.CySwingApplication;
+import org.cytoscape.application.swing.CytoPanel;
+import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.application.swing.CytoPanelState;
+import org.cytoscape.view.model.CyNetworkViewManager;
+
 /*
  * #%L
  * Cytoscape Manual Layout Impl (manual-layout-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +37,6 @@ package org.cytoscape.view.manual.internal.common;
  * #L%
  */
 
-import java.awt.event.ActionEvent;
-
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.event.MenuEvent;
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
-import org.cytoscape.application.swing.CytoPanel;
-import org.cytoscape.application.swing.CytoPanelComponent;
-import org.cytoscape.application.swing.CytoPanelName;
-import org.cytoscape.application.swing.CytoPanelState;
-import org.cytoscape.view.model.CyNetworkViewManager;
-
 /**
  * Base class for displaying cytopanel menu items. This class primarily
  * manages the Layout Menu logic and tab selection of the tools cytopanel. 
@@ -52,7 +49,6 @@ public abstract class AbstractManualLayoutAction extends AbstractCyAction {
 	private final CySwingApplication swingApp;
 
 	private final static String preferredMenu = "Layout";
-	private final String title;
 	private final CytoPanelComponent comp;
 
 	/**
@@ -60,10 +56,14 @@ public abstract class AbstractManualLayoutAction extends AbstractCyAction {
 	 *
 	 * @param title The title of the menu item. 
 	 */
-	public AbstractManualLayoutAction(CytoPanelComponent comp, CySwingApplication swingApp, CyApplicationManager appMgr,
-			final CyNetworkViewManager networkViewManager, float menuGravity) {
+	public AbstractManualLayoutAction(
+			CytoPanelComponent comp,
+			CySwingApplication swingApp,
+			CyApplicationManager appMgr,
+			CyNetworkViewManager networkViewManager,
+			float menuGravity
+	) {
 		super(comp.getTitle(), appMgr,"networkAndView", networkViewManager);
-		this.title = comp.getTitle();
 		this.swingApp = swingApp;
 		this.comp = comp;
     	manualLayoutPanel = swingApp.getCytoPanel(CytoPanelName.SOUTH_WEST);
@@ -82,32 +82,17 @@ public abstract class AbstractManualLayoutAction extends AbstractCyAction {
 
 		int menuIndex = manualLayoutPanel.indexOfComponent(comp.getComponent());
 
-		// Case 1: Panel is disabled
 		if (curState == CytoPanelState.HIDE) {
+			// Case 1: Panel is disabled
 			manualLayoutPanel.setState(CytoPanelState.DOCK);
 			manualLayoutPanel.setSelectedIndex(menuIndex);
-
-		// Case 2: Panel is in the DOCK/FLOAT and a different panel is selected
-		} else if ( manualLayoutPanel.getSelectedIndex() != menuIndex ) {
+		} else if (manualLayoutPanel.getSelectedIndex() != menuIndex) {
+			// Case 2: Panel is in the DOCK/FLOAT and a different panel is selected
 			manualLayoutPanel.setSelectedIndex(menuIndex);
-
-		// Case 3: The currently selected item is selected 
-		} else { 
+		} else {
+			// Case 3: The currently selected item is selected
 			manualLayoutPanel.setState(CytoPanelState.HIDE);
 		}
-	} 
-
-	private JCheckBoxMenuItem getThisItem() {
-		JMenu layouts = swingApp.getJMenu(preferredMenu);
-		
-		for (int i = 0; i < layouts.getItemCount(); i++) {
-			JMenuItem item = layouts.getItem(i);
-			
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(title))
-				return (JCheckBoxMenuItem) item;
-		}
-		
-		return null;
 	}
 
 	/**
@@ -116,25 +101,22 @@ public abstract class AbstractManualLayoutAction extends AbstractCyAction {
 	@Override
 	public void menuSelected(MenuEvent e) {
 		// set the check next to the menu item
-		JCheckBoxMenuItem item = getThisItem(); 
 		int menuIndex = manualLayoutPanel.indexOfComponent(comp.getComponent());
 
-		if (item != null) {
-			if (manualLayoutPanel.getSelectedIndex() != menuIndex
-					|| manualLayoutPanel.getState() == CytoPanelState.HIDE)
-				item.setSelected(false);
-			else 
-				item.setSelected(true);
-		}
-	
+		if (manualLayoutPanel.getSelectedIndex() != menuIndex || manualLayoutPanel.getState() == CytoPanelState.HIDE)
+			putValue(SELECTED_KEY, false);
+		else
+			putValue(SELECTED_KEY, true);
+
 		// enable the menu based on cytopanel state
 		CytoPanelState parentState = swingApp.getCytoPanel(CytoPanelName.WEST).getState();
+
 		if (parentState == CytoPanelState.HIDE)
 			setEnabled(false);
 		else
 			setEnabled(true);
 
-		// enable the menu based on presence of network 
+		// enable the menu based on presence of network
 		updateEnableState();
 	}
 }

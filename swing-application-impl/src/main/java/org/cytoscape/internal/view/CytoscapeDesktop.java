@@ -1854,7 +1854,7 @@ public class CytoscapeDesktop extends JFrame
 						for (CytoPanelImpl cp : getAllCytoPanels()) {
 							CytoPanelStateInternal state = cp.getStateInternal();
 							CytoPanelAction action = new CytoPanelAction(cp.getCytoPanelNameInternal(),
-									CytoscapeDesktop.this, 0.0f, serviceRegistrar);
+									CytoscapeDesktop.this, 0.0f);
 							
 							JMenuItem mi = new JCheckBoxMenuItem(action);
 							mi.setSelected(state != HIDE);

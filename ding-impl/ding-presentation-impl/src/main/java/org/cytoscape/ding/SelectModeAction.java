@@ -6,15 +6,11 @@ import static org.cytoscape.ding.DVisualLexicon.NETWORK_NODE_SELECTION;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
@@ -28,7 +24,7 @@ import org.cytoscape.view.presentation.RenderingEngineFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -123,48 +119,28 @@ public class SelectModeAction extends AbstractCyAction {
 	
 	@Override
 	public void menuSelected(MenuEvent e) {
-		final JCheckBoxMenuItem item = getThisItem(); 
-
-		if (item != null) {
-			final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-			final CyNetworkView view = applicationManager.getCurrentNetworkView();
+		boolean select = false;
+		final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		final CyNetworkView view = applicationManager.getCurrentNetworkView();
+		
+		if (view != null) {
+			Boolean nodeSelection = view.getVisualProperty(NETWORK_NODE_SELECTION);
+			Boolean edgeSelection = view.getVisualProperty(NETWORK_EDGE_SELECTION);
+			Boolean annotationSelection = view.getVisualProperty(NETWORK_ANNOTATION_SELECTION);
 			
-			if (view == null) {
-				item.setSelected(false);
-			} else {
-				Boolean nodeSelection = view.getVisualProperty(NETWORK_NODE_SELECTION);
-				Boolean edgeSelection = view.getVisualProperty(NETWORK_EDGE_SELECTION);
-				Boolean annotationSelection = view.getVisualProperty(NETWORK_ANNOTATION_SELECTION);
-				
-				if (nodeSelection && edgeSelection && annotationSelection)
-					item.setSelected(name.equalsIgnoreCase(ALL));
-				else if (nodeSelection && edgeSelection)
-					item.setSelected(name.equalsIgnoreCase(NODES_EDGES));
-				else if (nodeSelection)
-					item.setSelected(name.equalsIgnoreCase(NODES));
-				else if (edgeSelection)
-					item.setSelected(name.equalsIgnoreCase(EDGES));
-				else if (annotationSelection)
-					item.setSelected(name.equalsIgnoreCase(ANNOTATIONS));
-				else
-					item.setSelected(false);
-			}
+			if (nodeSelection && edgeSelection && annotationSelection)
+				select = name.equalsIgnoreCase(ALL);
+			else if (nodeSelection && edgeSelection)
+				select = name.equalsIgnoreCase(NODES_EDGES);
+			else if (nodeSelection)
+				select = name.equalsIgnoreCase(NODES);
+			else if (edgeSelection)
+				select = name.equalsIgnoreCase(EDGES);
+			else if (annotationSelection)
+				select = name.equalsIgnoreCase(ANNOTATIONS);
 		}
 		
+		putValue(SELECTED_KEY, select);
 		updateEnableState();
-	}
-	
-	private JCheckBoxMenuItem getThisItem() {
-		final CySwingApplication swingApplication = serviceRegistrar.getService(CySwingApplication.class);
-		final JMenu menu = swingApplication.getJMenu(preferredMenu);
-		
-		for (int i = 0; i < menu.getItemCount(); i++) {
-			final JMenuItem item = menu.getItem(i);
-			
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
-				return (JCheckBoxMenuItem) item;
-		}
-		
-		return null;
 	}
 }

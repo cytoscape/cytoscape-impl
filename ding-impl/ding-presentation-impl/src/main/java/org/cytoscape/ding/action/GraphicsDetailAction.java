@@ -5,15 +5,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.ShowGraphicsDetailsTaskFactory;
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -93,34 +89,17 @@ public class GraphicsDetailAction extends AbstractCyAction {
 	@Override
 	public void menuSelected(MenuEvent me) {
 		updateEnableState();
-		JCheckBoxMenuItem item = getThisItem();
-
-		if (item != null) {
-			CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-			
-			if (view instanceof DRenderingEngine && isEnabled())
-				item.setSelected(view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
-			else
-				item.setSelected(false);
-		}
+		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
+		
+		if (view instanceof DRenderingEngine && isEnabled())
+			putValue(SELECTED_KEY, view.getVisualProperty(DVisualLexicon.NETWORK_FORCE_HIGH_DETAIL));
+		else
+			putValue(SELECTED_KEY, false);
 	}
 	
 	@Override
 	public void updateEnableState() {
 		CyNetworkView view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
 		setEnabled(taskFactory.isReady(view));
-	}
-
-	private JCheckBoxMenuItem getThisItem() {
-		JMenu menu = serviceRegistrar.getService(CySwingApplication.class).getJMenu(preferredMenu);
-		
-		for (int i = 0; i < menu.getItemCount(); i++) {
-			JMenuItem item = menu.getItem(i);
-			
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
-				return (JCheckBoxMenuItem) item;
-		}
-		
-		return null;
 	}
 }

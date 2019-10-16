@@ -52,6 +52,7 @@ import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.search.NetworkSearchTaskFactory;
 import org.cytoscape.internal.actions.AboutAction;
 import org.cytoscape.internal.actions.BookmarkAction;
+import org.cytoscape.internal.actions.CheckForUpdatesAction;
 import org.cytoscape.internal.actions.CloseWindowAction;
 import org.cytoscape.internal.actions.CreateNetworkViewsAction;
 import org.cytoscape.internal.actions.CytoPanelAction;
@@ -110,7 +111,6 @@ import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
-import org.cytoscape.internal.actions.CheckForUpdatesAction;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
@@ -552,11 +552,11 @@ public class CyActivator extends AbstractCyActivator {
 		bookmarkAction = new BookmarkAction(cytoscapeDesktop, bookmarkDialogFactory);
 		settingsAction = new SettingsAction(layoutSettingsManager, serviceRegistrar);
 		
-		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, cytoscapeDesktop, 1.0f, serviceRegistrar);
-		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, cytoscapeDesktop, 1.1f, serviceRegistrar);
-		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, cytoscapeDesktop, 1.2f, serviceRegistrar);
-		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f, serviceRegistrar);
-		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f, serviceRegistrar);
+		cytoPanelWestAction = new CytoPanelAction(CytoPanelNameInternal.WEST, cytoscapeDesktop, 1.0f);
+		cytoPanelSouthAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH, cytoscapeDesktop, 1.1f);
+		cytoPanelEastAction = new CytoPanelAction(CytoPanelNameInternal.EAST, cytoscapeDesktop, 1.2f);
+		cytoPanelSouthWestAction = new CytoPanelAction(CytoPanelNameInternal.SOUTH_WEST, cytoscapeDesktop, 1.3f);
+		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f);
 
 		{
 			TextIcon icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),

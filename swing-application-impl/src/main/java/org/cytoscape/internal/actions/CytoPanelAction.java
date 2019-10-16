@@ -7,19 +7,14 @@ import static org.cytoscape.internal.view.CytoPanelStateInternal.UNDOCK;
 
 import java.awt.event.ActionEvent;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.event.MenuEvent;
 
 import org.cytoscape.application.swing.AbstractCyAction;
-import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.internal.view.CytoPanelImpl;
 import org.cytoscape.internal.view.CytoPanelNameInternal;
 import org.cytoscape.internal.view.CytoPanelStateInternal;
 import org.cytoscape.internal.view.CytoscapeDesktop;
-import org.cytoscape.service.util.CyServiceRegistrar;
 
 /*
  * #%L
@@ -50,19 +45,16 @@ public class CytoPanelAction extends AbstractCyAction {
 	
 	private final CytoPanelNameInternal position;
 	private final CytoscapeDesktop desktop;
-	private final CyServiceRegistrar serviceRegistrar;
 
 	public CytoPanelAction(
 			CytoPanelNameInternal position,
 			CytoscapeDesktop desktop,
-			float menuGravity,
-			CyServiceRegistrar serviceRegistrar
+			float menuGravity
 	) {
 		super("Show " + position.getTitle());
 
 		this.position = position;
 		this.desktop = desktop;
-		this.serviceRegistrar = serviceRegistrar;
 		
 		setPreferredMenu("View");
 		setMenuGravity(menuGravity);
@@ -89,12 +81,11 @@ public class CytoPanelAction extends AbstractCyAction {
 	@Override
 	public void menuSelected(MenuEvent evt) {
 		updateEnableState();
-		JCheckBoxMenuItem item = getThisItem();
 		CytoPanel cytoPanel = desktop.getCytoPanel(position);
+		boolean select = cytoPanel.getCytoPanelComponentCount() > 0
+				&& ((CytoPanelImpl) cytoPanel).getStateInternal() != HIDE;
 
-		if (item != null && cytoPanel instanceof CytoPanelImpl)
-			item.setSelected(cytoPanel.getCytoPanelComponentCount() > 0
-					&& ((CytoPanelImpl) cytoPanel).getStateInternal() != HIDE);
+		putValue(SELECTED_KEY, select);
 	}
 	
 	@Override
@@ -102,18 +93,5 @@ public class CytoPanelAction extends AbstractCyAction {
 		CytoPanel cytoPanel = desktop.getCytoPanel(position);
 		setEnabled(cytoPanel instanceof CytoPanelImpl && cytoPanel.getThisComponent() != null
 				&& cytoPanel.getCytoPanelComponentCount() > 0);
-	}
-
-	private JCheckBoxMenuItem getThisItem() {
-		JMenu menu = serviceRegistrar.getService(CySwingApplication.class).getJMenu(preferredMenu);
-		
-		for (int i = 0; i < menu.getItemCount(); i++) {
-			JMenuItem item = menu.getItem(i);
-			
-			if (item instanceof JCheckBoxMenuItem && item.getText().equals(getName()))
-				return (JCheckBoxMenuItem) item;
-		}
-		
-		return null;
 	}
 }
