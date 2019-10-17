@@ -678,7 +678,9 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 			}
 			
-			if(edgeSelectionEnabled() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
+			final var edgeSelectionEnabled = edgeSelectionEnabled(true);
+			
+			if(edgeSelectionEnabled && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
 				HandleKey handle = picker.getHandleAt(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
@@ -686,7 +688,7 @@ public class InputHandlerGlassPane extends JComponent {
 				}
 			}
 			
-			if(edgeSelectionEnabled()) {
+			if(edgeSelectionEnabled) {
 				View<CyEdge> edge = picker.getEdgeAt(e.getPoint());
 				if(edge != null) {
 					if(e.isAltDown() && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS))
@@ -1162,8 +1164,8 @@ public class InputHandlerGlassPane extends JComponent {
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInPath(selectionLasso);
 				}
-				if(edgeSelectionEnabled()) {
-					// MKTODO
+				if(edgeSelectionEnabled(false)) {
+					// MKTODO getEdgesInPath() is not accurate, it does not work for curved edges
 					edges   = re.getPicker().getEdgesInPath(selectionLasso);
 					handles = re.getPicker().getHandlesInPath(selectionLasso);
 				}
@@ -1244,7 +1246,7 @@ public class InputHandlerGlassPane extends JComponent {
 				if(nodeSelectionEnabled()) {
 					nodes = re.getPicker().getNodesInRectangle(selectionRect);
 				}
-				if(edgeSelectionEnabled()) {
+				if(edgeSelectionEnabled(false)) {
 					edges = re.getPicker().getEdgesInRectangle(selectionRect);
 					handles = re.getPicker().getHandlesInRectangle(selectionRect);
 				}
@@ -1391,14 +1393,21 @@ public class InputHandlerGlassPane extends JComponent {
 		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
 	}
 	
-	private boolean edgeSelectionEnabled() {
+	private boolean edgeSelectionEnabled(boolean optimize) {
 		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {
 			return false;
 		}
-		var snapshot = re.getViewModelSnapshot();
-		var fastLod = re.getGraphLOD().faster();
-		RenderEdges edges = RenderDetailFlags.renderEdges(snapshot, re.getTransform(), fastLod);
-		return edges != RenderEdges.NONE;
+		
+		if(optimize) {
+			// Optimization, turn edge selection off if there are too many edges visible.
+			// Picking the edge that the user clicked on can become very performance intensive, and chances are they
+			// are not trying to select individual edges from a hairball.
+			var snapshot = re.getViewModelSnapshot();
+			var fastLod = re.getGraphLOD().faster();
+			RenderEdges edges = RenderDetailFlags.renderEdges(snapshot, re.getTransform(), fastLod);
+			return edges != RenderEdges.NONE;
+		}
+		return true;
 	}
 	
 	private boolean isLODEnabled(int flag) {
@@ -1431,7 +1440,7 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private void deselectAllEdges() {
-		if(edgeSelectionEnabled()) {
+		if(edgeSelectionEnabled(false)) {
 			re.getBendStore().unselectAllHandles();
 			Collection<View<CyEdge>> selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
 			select(selectedEdges, CyEdge.class, false);
