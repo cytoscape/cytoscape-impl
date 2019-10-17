@@ -1297,9 +1297,11 @@ public class InputHandlerGlassPane extends JComponent {
 		
 		private Point mousePressedPoint;
 		private ViewChangeEdit undoPanEdit;
+		private boolean actuallyPanned = false;
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
+			actuallyPanned = false;
 			changeCursor(panCursor);
 			mousePressedPoint = e.getPoint();
 			e.consume();
@@ -1308,6 +1310,7 @@ public class InputHandlerGlassPane extends JComponent {
 		@Override
 		public void mouseDragged(MouseEvent e) {
 			if(mousePressedPoint != null) {
+				actuallyPanned = true;
 				if(undoPanEdit == null) {
 					// Save state on start of drag, that way we don't post an undo edit if the user just clicks.
 					// Pass null, don't save node state, just the center location of the canvas.
@@ -1346,7 +1349,8 @@ public class InputHandlerGlassPane extends JComponent {
 			mousePressedPoint = null;
 			undoPanEdit = null;
 			
-			re.updateView(UpdateType.ALL_FULL);
+			if(actuallyPanned)
+				re.updateView(UpdateType.ALL_FULL);
 		}
 		
 		private Cursor createPanCursor() {
