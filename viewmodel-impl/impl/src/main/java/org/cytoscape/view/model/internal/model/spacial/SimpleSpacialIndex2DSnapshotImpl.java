@@ -20,6 +20,7 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 	// The snapshot is immutable so we can cache whatever we want
 	private double[] mbr = null;
 	private Comparator<View<CyNode>> zOrderComparator;
+	private CachedQueryResults cachedQueryResults;
 	
 	public SimpleSpacialIndex2DSnapshotImpl(CyNetworkViewSnapshotImpl snapshot) {
 		this.snapshot = snapshot;
@@ -145,14 +146,25 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 
 	@Override
 	public SpacialIndex2DEnumerator<Long> queryAll() {
-		return new SimpleSpacialIndex2DEnumerator(snapshot.getSnapshotNodeViews());
+		var nodeViews = snapshot.getSnapshotNodeViews();
+		Collections.sort(nodeViews, zOrderComparator);
+		return new SimpleSpacialIndex2DEnumerator(nodeViews);
 	}
 	
 	@Override
 	public SpacialIndex2DEnumerator<Long> queryOverlap(float xMin, float yMin, float xMax, float yMax) {
 		initMBR();
-		if(xMin <= mbr[X_MIN] && yMin <= mbr[Y_MIN] && xMax >= mbr[X_MAX] && yMax >= mbr[Y_MAX])
+		if(xMin <= mbr[X_MIN] && yMin <= mbr[Y_MIN] && xMax >= mbr[X_MAX] && yMax >= mbr[Y_MAX]) {
 			return queryAll();
+		}
+		
+		// This method is not synchronized, get a reference before doing the test just in case the reference changes
+		var cached = cachedQueryResults;
+		if(cached != null && cached.matches(xMin,yMin,xMax,yMax)) {
+			return new SimpleSpacialIndex2DEnumerator(cached.getOverlapNodes());
+		}
+		
+		cachedQueryResults = null;
 		
 		List<CyNodeViewSnapshotImpl> overlapNodes = new ArrayList<>();
 		for(var node : snapshot.getSnapshotNodeViews()) {
@@ -169,8 +181,13 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 				overlapNodes.add(node);
 			}
 		}
+		
+		Collections.sort(overlapNodes, zOrderComparator);
+		cachedQueryResults = new CachedQueryResults(xMin, yMin, xMax, yMax, overlapNodes);
 		return new SimpleSpacialIndex2DEnumerator(overlapNodes);
 	}
+	
+	
 
 	private static boolean intersects(float x1, float y1, float x2, float y2, 
 			double a1, double b1, double a2, double b2) {
@@ -184,13 +201,38 @@ public class SimpleSpacialIndex2DSnapshotImpl implements SpacialIndex2D<Long> {
 	}
 	
 	
-	private class SimpleSpacialIndex2DEnumerator implements SpacialIndex2DEnumerator<Long> {
+	private static class CachedQueryResults {
+		
+		private final float xMin;
+		private final float yMin;
+		private final float xMax;
+		private final float yMax;
+		private final List<CyNodeViewSnapshotImpl> overlapNodes;
+		
+		public CachedQueryResults(float xMin, float yMin, float xMax, float yMax, List<CyNodeViewSnapshotImpl> overlapNodes) {
+			this.xMin = xMin;
+			this.yMin = yMin;
+			this.xMax = xMax;
+			this.yMax = yMax;
+			this.overlapNodes = overlapNodes;
+		}
+		
+		public boolean matches(float xMin, float yMin, float xMax, float yMax) {
+			return this.xMin == xMin && this.yMin == yMin && this.xMax == xMax && this.yMax == yMax;
+		}
+		
+		public List<CyNodeViewSnapshotImpl> getOverlapNodes() {
+			return overlapNodes;
+		}
+	}
+
+	
+	private static class SimpleSpacialIndex2DEnumerator implements SpacialIndex2DEnumerator<Long> {
 
 		private final int size;
 		private final Iterator<CyNodeViewSnapshotImpl> iter;
 		
 		public SimpleSpacialIndex2DEnumerator(List<CyNodeViewSnapshotImpl> nodes) {
-			Collections.sort(nodes, zOrderComparator);
 			this.size = nodes.size();
 			this.iter = nodes.iterator();
 		}
