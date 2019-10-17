@@ -35,6 +35,7 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -127,7 +128,7 @@ public class InputHandlerGlassPane extends JComponent {
         	new TooltipListener(),
         	new SelecionClickAndDragListener(),
         	new AddAnnotationListener(),
-        	new SelectionLassoListener(),
+//        	new SelectionLassoListener(), // comment out for 3.8
         	new SelectionRectangleListener(),
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
         );
@@ -208,11 +209,15 @@ public class InputHandlerGlassPane extends JComponent {
 		return orderedMouseAdapter.get(t);
 	}
 	
+	private <T> Optional<T> maybe(Class<T> t) {
+		return Optional.ofNullable(orderedMouseAdapter.get(t));
+	}
+	
 	@Override
 	protected void paintComponent(Graphics g) {
 		get(AddEdgeListener.class).drawAddingEdge(g);
 		get(SelectionRectangleListener.class).drawSelectionRectangle(g);
-		get(SelectionLassoListener.class).drawSelectionLasso(g);
+		maybe(SelectionLassoListener.class).ifPresent(listener -> listener.drawSelectionLasso(g));
 	}
 	
 	
@@ -899,7 +904,7 @@ public class InputHandlerGlassPane extends JComponent {
 		public void mouseDragged(MouseEvent e) {
 			if(!hit || !isLeftMouse(e))
 				return;
-			if(get(SelectionLassoListener.class).isDragging() || get(SelectionRectangleListener.class).isDragging())
+			if(get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l->l.isDragging()).orElse(false))
 				return;
 			
 			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
