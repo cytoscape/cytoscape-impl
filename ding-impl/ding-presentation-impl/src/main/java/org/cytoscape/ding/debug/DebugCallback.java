@@ -2,6 +2,8 @@ package org.cytoscape.ding.debug;
 
 public interface DebugCallback {
 	
-	void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time);
+	void start(DebugFrameType type);
+	
+	void done(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time);
 	
 }

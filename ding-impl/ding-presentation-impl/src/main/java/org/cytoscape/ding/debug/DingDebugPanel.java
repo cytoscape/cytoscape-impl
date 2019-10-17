@@ -1,11 +1,14 @@
 package org.cytoscape.ding.debug;
 
 import java.awt.Component;
+import java.util.EnumMap;
+import java.util.Map;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -17,6 +20,7 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.DingRenderer;
 import org.cytoscape.ding.impl.TransformChangeListener;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
+import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -37,10 +41,14 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	private JLabel transformCntrLabel;
 	private JLabel transformZoomLabel;
 	
+	private JCheckBox logCheckbox;
+	
 	private FramePanel fastPanel;
 	private FramePanel slowPanel;
 	private FramePanel fastBirdPanel;
 	private FramePanel slowBirdPanel;
+	
+	private Map<DebugFrameType,Integer> frameCount = new EnumMap<>(DebugFrameType.class);
 	
 	
 	public DingDebugPanel(CyServiceRegistrar registrar) {
@@ -65,7 +73,10 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		clearButton.addActionListener(e -> clear());
 		JButton edgeButton = new JButton("Count Edges");
 		edgeButton.addActionListener(e -> countEdges());
-		LookAndFeelUtil.makeSmall(edgeButton, edgeCountLabel);
+		
+		logCheckbox = new JCheckBox("log to console");
+		
+		LookAndFeelUtil.makeSmall(edgeButton, edgeCountLabel, logCheckbox);
 		
 		GroupLayout layout = new GroupLayout(this);
 		setLayout(layout);
@@ -89,7 +100,10 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 				.addComponent(fastBirdPanel)
 				.addComponent(slowBirdPanel)
 			)
-			.addComponent(clearButton)
+			.addGroup(layout.createParallelGroup(Alignment.BASELINE)
+				.addComponent(clearButton)
+				.addComponent(logCheckbox)
+			)
 		);
 		
 		layout.setHorizontalGroup(layout.createParallelGroup()
@@ -111,7 +125,11 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 					.addComponent(slowBirdPanel)
 				)
 			)
-			.addComponent(clearButton)
+			.addGroup(layout.createSequentialGroup()
+				.addComponent(clearButton)
+				.addGap(0, Short.MAX_VALUE, Short.MAX_VALUE)
+				.addComponent(logCheckbox)
+			)
 		);
 	}
 	
@@ -120,6 +138,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		slowPanel.clear();
 		fastBirdPanel.clear();
 		slowBirdPanel.clear();
+		frameCount.clear();
 	}
 	
 	private void countEdges() {
@@ -138,6 +157,8 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	@Override
 	public void handleEvent(SetCurrentNetworkViewEvent e) {
 		clear();
+		frameCount.clear();
+		
 		if(re != null) {
 			re.setDebugCallback(null);
 			re.removeTransformChangeListener(this);
@@ -172,9 +193,23 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 	}
 	
 	@Override
-	public void addFrame(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
+	public void start(DebugFrameType type) {
+		int frameNumber = frameCount.merge(type, 0, (x,y) -> x + 1);
+		if(logCheckbox.isSelected()) { 
+			System.out.println(type + " " + frameNumber + " start");
+		}
+	}
+	
+	@Override
+	public void done(DebugFrameType type, boolean cancelled, int nodeCount, int edgeCountEstimate, long time) {
 		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
-		getPanel(type).addEntry(entry);
+		int frameNumber = frameCount.getOrDefault(type, 0);
+		if(logCheckbox.isSelected()) { 
+			System.out.println(type + " " + frameNumber + " done");
+		}
+		ViewUtil.invokeOnEDT(() -> {
+			getPanel(type).addEntry(entry);
+		});
 	}
 	
 	@Override
