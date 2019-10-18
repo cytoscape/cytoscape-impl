@@ -190,8 +190,7 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			this.detached = false;
 			
 			// Hide Navigator when starting Compare Mode
-			if (getBirdsEyeViewPanel().isVisible())
-				getBirdsEyeViewButton().doClick();
+			hideBirdsEyePanel();
 			
 			removeKeyBindings(this);
 			removeKeyBindings(getRootPane());
@@ -199,6 +198,11 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			setKeyBindings(this);
 			setKeyBindings(getRootPane());
 		}
+	}
+	
+	public void hideBirdsEyePanel() {
+		if (getBirdsEyeViewPanel().isVisible())
+			getBirdsEyeViewButton().doClick();
 	}
 	
 	public boolean isCurrent() {

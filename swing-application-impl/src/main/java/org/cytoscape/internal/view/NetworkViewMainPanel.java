@@ -34,6 +34,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.swing.JComponent;
@@ -49,6 +50,7 @@ import org.cytoscape.internal.view.GridViewToggleModel.Mode;
 import org.cytoscape.internal.view.NetworkViewGrid.ThumbnailPanel;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.task.destroy.DestroyNetworkViewTaskFactory;
@@ -88,6 +90,8 @@ import org.cytoscape.work.swing.DialogTaskManager;
 public class NetworkViewMainPanel extends JPanel {
 
 	public static String NAME = "__NETWORK_VIEW_MAIN_PANEL__";
+	private static final String VIEW_THRESHOLD = "viewThreshold";
+	private static final int DEF_VIEW_THRESHOLD = 3000;
 	
 	private JPanel contentPane;
 	private final CardLayout cardLayout;
@@ -188,7 +192,28 @@ public class NetworkViewMainPanel extends JPanel {
 		if (isGridMode())
 			updateGrid();
 		
+		// Hide the Birds-Eye-View for performance reasons if the network is large.
+		int numElements = view.getModel().getNodeCount() + view.getModel().getEdgeCount();
+		if(numElements > getViewThreshold()) {
+			vc.hideBirdsEyePanel();
+		}
+		
 		return vc.getRenderingEngine();
+	}
+	
+	private int getViewThreshold() {
+		final Properties props = (Properties)
+				serviceRegistrar.getService(CyProperty.class, "(cyPropertyName=cytoscape3.props)").getProperties();
+		final String vts = props.getProperty(VIEW_THRESHOLD);
+		int threshold;
+		
+		try {
+			threshold = Integer.parseInt(vts);
+		} catch (Exception e) {
+			threshold = DEF_VIEW_THRESHOLD;
+		}
+
+		return threshold;
 	}
 	
 	public boolean isRendered(final CyNetworkView view) {
