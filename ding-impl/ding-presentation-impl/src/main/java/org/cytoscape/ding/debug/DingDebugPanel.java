@@ -205,7 +205,7 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		DebugEntry entry = new DebugEntry(time, cancelled, type, nodeCount, edgeCountEstimate);
 		int frameNumber = frameCount.getOrDefault(type, 0);
 		if(logCheckbox.isSelected()) { 
-			System.out.println(type + " " + frameNumber + " done");
+			System.out.println(type + " " + frameNumber + " done (" + time + ")");
 		}
 		ViewUtil.invokeOnEDT(() -> {
 			getPanel(type).addEntry(entry);

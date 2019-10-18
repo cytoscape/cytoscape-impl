@@ -13,6 +13,10 @@ import java.util.concurrent.TimeUnit;
 /**
  * A timer that can be used to coalesce multiple quick calls to a handler in order
  * to avoid running the same task in quick succession.
+ * 
+ * Note: The word "coalesce" is being used improperly here, it really should be 
+ * called "DebounceTimer". But this class has been copy-pasted to a few places
+ * in the Cytoscape codebase and I wan't all the copies to have the same name.
  */
 public class CoalesceTimer {
 
@@ -55,7 +59,7 @@ public class CoalesceTimer {
 	 * the calls is less than the delay will result in the runnable running once.
 	 * <br><br>
 	 * It is recommended to use a single thread if this method is preferred over
-	 * {@link CoalesceTimer#coalesce(Object, Runnable)}
+	 * {@link CoalesceTimer#debounce(Object, Runnable)}
 	 * 
 	 * <pre>
 	 * public void handleEvent(RowsSetEvent e) {
@@ -65,8 +69,8 @@ public class CoalesceTimer {
 	 * }
 	 * </pre>
 	 */
-	public synchronized void coalesce(Runnable runnable) {
-		coalesce(DEFAULT_KEY, runnable);
+	public synchronized void debounce(Runnable runnable) {
+		debounce(DEFAULT_KEY, runnable);
 	}
 	
 	/**
@@ -86,7 +90,7 @@ public class CoalesceTimer {
 	 * }
 	 * </pre>
 	 */
-	public synchronized void coalesce(Object key, Runnable runnable) {
+	public synchronized void debounce(Object key, Runnable runnable) {
 		Objects.requireNonNull(key);
 		Objects.requireNonNull(runnable);
 		

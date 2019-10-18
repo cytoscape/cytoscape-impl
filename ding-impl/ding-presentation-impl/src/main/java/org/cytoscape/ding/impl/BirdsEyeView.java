@@ -13,8 +13,9 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
-import org.cytoscape.ding.impl.canvas.RenderComponent;
 import org.cytoscape.ding.impl.canvas.BirdsEyeViewRenderComponent;
+import org.cytoscape.ding.impl.canvas.RenderComponent;
+import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -24,7 +25,7 @@ import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
-public final class BirdsEyeView implements RenderingEngine<CyNetwork> {
+public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentChangeListener {
 
 	private static final double SCALE_FACTOR = 0.97;
 	
@@ -33,6 +34,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork> {
 	private final DRenderingEngine re;
 	private final RenderComponent renderComponent;
 	
+	private final CoalesceTimer contentChangedTimer;
 	
 	public BirdsEyeView(DRenderingEngine re, CyServiceRegistrar registrar) {
 		this.re = re;
@@ -46,10 +48,17 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork> {
 		renderComponent.addMouseMotionListener(mouseListener);
 		renderComponent.addMouseWheelListener(mouseListener);
 		
-		re.addTransformChangeListener(() -> {
-			renderComponent.repaint();
-		});
-		re.addContentChangeListener(() -> {
+		re.addTransformChangeListener(renderComponent::repaint);
+		re.addContentChangeListener(this);
+		
+		contentChangedTimer = new CoalesceTimer(200);
+	}	
+	
+
+	@Override
+	public void contentChanged() {
+		renderComponent.updateView(UpdateType.ALL_FAST);
+		contentChangedTimer.debounce(() -> {
 			fitCanvasToNetwork();
 			renderComponent.setBackgroundPaint(re.getBackgroundColor());
 			renderComponent.updateView(UpdateType.ALL_FULL);

@@ -598,7 +598,7 @@ public class InputHandlerGlassPane extends JComponent {
 		public void mouseMoved(MouseEvent e) {
 			// This event gets called a lot as the user moves the mouse over the canvas.
 			// Use a CoalesceTimer to debounce the event to avoid calling getPickedNodeView() constantly.
-			delayTimer.coalesce(() -> showTooltip(e));
+			delayTimer.debounce(() -> showTooltip(e));
 		}
 		
 		private void showTooltip(MouseEvent e) {
