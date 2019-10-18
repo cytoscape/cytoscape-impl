@@ -4,8 +4,10 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
 import java.awt.Toolkit;
+import java.awt.Window;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.FilteredImageSource;
@@ -42,12 +44,15 @@ import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.JToolTip;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.cytoscape.application.CyApplicationConfiguration;
 import org.cytoscape.application.swing.AbstractCyAction;
 import org.cytoscape.application.swing.CyAction;
 import org.cytoscape.application.swing.ToolBarComponent;
+import org.cytoscape.internal.view.util.MenuScroller;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
@@ -126,12 +131,14 @@ public class CytoscapeToolBar extends JToolBar {
 			private void showPopup(MouseEvent e) {
 				if (e.isPopupTrigger()) {
 					final JPopupMenu popup = new JPopupMenu();
+					
 					JMenuItem menuItem = new JMenuItem("Show All");
 					popup.add(menuItem);
 					menuItem.addActionListener(ev -> {
 						showAll();
 						resave();
 					});
+					
 					menuItem = new JMenuItem("Hide All");
 					popup.add(menuItem);
 					popup.addSeparator();
@@ -185,6 +192,41 @@ public class CytoscapeToolBar extends JToolBar {
 								resave();
 							});
 							popup.add(mi);
+						}
+					}
+					
+					// Calculate max number of visible menu items before scrolling
+					Window window = SwingUtilities.getWindowAncestor(CytoscapeToolBar.this);
+					
+					if (window != null) {
+						GraphicsConfiguration gc = window.getGraphicsConfiguration();
+						int sh = ViewUtil.getEffectiveScreenArea(gc).height;
+						int ph = popup.getPreferredSize().height;
+						
+						if (ph > sh) {
+							int h = 0;
+							
+							// Creates another MenuScroller to get the size of the added scroll buttons
+							MenuScroller tmpScroller = MenuScroller.setScrollerFor(new JPopupMenu(), 1);
+							h += tmpScroller.getUpItem().getPreferredSize().height;
+							h += tmpScroller.getDownItem().getPreferredSize().height;
+							tmpScroller.dispose();
+							
+							for (int count = 0; count <  popup.getComponentCount(); count++) {
+								Component comp = popup.getComponent(count);
+								h += comp.getPreferredSize().height;
+								
+								if (h > sh) {
+									MenuScroller.setScrollerFor(
+											popup,
+											count - 2, // (ignore 'Show/Hide All' items)
+											125,
+											2, // (always show 'Show/Hide All' items on top)
+											0
+									);
+									break;
+								}
+							}
 						}
 					}
 					
