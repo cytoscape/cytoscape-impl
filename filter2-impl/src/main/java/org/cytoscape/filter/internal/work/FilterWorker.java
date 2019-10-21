@@ -15,7 +15,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -91,8 +95,10 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 				List<CyEdge> edgeList = network.getEdgeList();
 				double total = nodeList.size() + edgeList.size();
 				
-				List<CyIdentifiable> selected = new ArrayList<>();
-				List<CyIdentifiable> unselected = new ArrayList<>();
+				List<CyNode> selectedNodes = new ArrayList<>();
+				List<CyNode> unselectedNodes = new ArrayList<>();
+				List<CyEdge> selectedEdges = new ArrayList<>();
+				List<CyEdge> unselectedEdges = new ArrayList<>();
 				
 				// First run the filter, then do the selection after.
 				// The filter.accepts() method can be slow, if we update the selection 
@@ -104,10 +110,10 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					}
 					boolean accepted = filter.accepts(network, node);
 					if (accepted) {
-						selected.add(node);
+						selectedNodes.add(node);
 						nodeCount++;
 					} else {
-						unselected.add(node);
+						unselectedNodes.add(node);
 					}
 					monitor.setProgress(++counter / total);
 				}
@@ -117,27 +123,21 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					}
 					boolean accepted = filter.accepts(network, edge);
 					if (accepted) {
-						selected.add(edge);
+						selectedEdges.add(edge);
 						edgeCount++;
 					} else {
-						unselected.add(edge);
+						unselectedEdges.add(edge);
 					}
 					monitor.setProgress(++counter / total);
 				}
 				
 				// now do the selection
-				for (CyIdentifiable element : unselected) {
-					CyRow row = network.getRow(element);
-					if (row.get(CyNetwork.SELECTED, Boolean.class)) {
-						row.set(CyNetwork.SELECTED, Boolean.FALSE);
-					}
+				if(applyAction == ApplyAction.FILTER) {
+					filter(networkView, selectedNodes, unselectedNodes, selectedEdges, unselectedEdges);
+				} else {
+					select(network, selectedNodes, unselectedNodes, selectedEdges, unselectedEdges);
 				}
-				for (CyIdentifiable element : selected) {
-					CyRow row = network.getRow(element);
-					if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
-						row.set(CyNetwork.SELECTED, Boolean.TRUE);
-					}
-				}
+				
 			}
 			finally {
 				if (filter instanceof MemoizableTransformer) {
@@ -157,6 +157,51 @@ public class FilterWorker extends AbstractWorker<FilterPanel, FilterPanelControl
 					edgeCount,
 					edgeCount == 1 ? "edge" : "edges",
 					duration));
+		}
+	}
+	
+	
+	private void filter(CyNetworkView networkView, List<CyNode> selectedNodes, List<CyNode> unselectedNodes, List<CyEdge> selectedEdges, List<CyEdge> unselectedEdges) {
+		HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
+		TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, unselectedNodes, unselectedEdges);
+		
+		UnHideTaskFactory unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
+		TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
+		
+		TaskIterator taskIterator = new TaskIterator();
+		taskIterator.append(hideTasks);
+		taskIterator.append(unhideTasks);
+		
+		SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+		taskManager.execute(taskIterator);
+	}
+	
+	
+	private void select(CyNetwork network, List<CyNode> selectedNodes, List<CyNode> unselectedNodes, List<CyEdge> selectedEdges, List<CyEdge> unselectedEdges) {
+		// now do the selection
+		for(CyNode element : unselectedNodes) {
+			CyRow row = network.getRow(element);
+			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+				row.set(CyNetwork.SELECTED, Boolean.FALSE);
+			}
+		}
+		for(CyEdge element : unselectedEdges) {
+			CyRow row = network.getRow(element);
+			if (row.get(CyNetwork.SELECTED, Boolean.class)) {
+				row.set(CyNetwork.SELECTED, Boolean.FALSE);
+			}
+		}
+		for(CyNode element : selectedNodes) {
+			CyRow row = network.getRow(element);
+			if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
+				row.set(CyNetwork.SELECTED, Boolean.TRUE);
+			}
+		}
+		for(CyEdge element : selectedEdges) {
+			CyRow row = network.getRow(element);
+			if (!row.get(CyNetwork.SELECTED, Boolean.class)) {
+				row.set(CyNetwork.SELECTED, Boolean.TRUE);
+			}
 		}
 	}
 }

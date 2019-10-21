@@ -5,8 +5,6 @@ import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
@@ -21,6 +19,7 @@ import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.util.swing.LookAndFeelUtil;
 
 /*
  * #%L
@@ -60,15 +59,12 @@ public class FilterPanel extends AbstractPanel<FilterElement, FilterPanelControl
 		worker.setView(this);
 		
 		applyAutomaticallyCheckBox = new JCheckBox("Apply when filter changes"); 
-		applyAutomaticallyCheckBox.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent event) {
-				controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
-			}
+		applyAutomaticallyCheckBox.addActionListener(e -> {
+			controller.setInteractive(applyAutomaticallyCheckBox.isSelected(), FilterPanel.this);
 		});
 		applyAutomaticallyCheckBox.setOpaque(!isAquaLAF());
-		
 		applyAutomaticallyCheckBox.setToolTipText("<html>Apply the filter automatically when the filter definition changes.<br>(Turned off by default for networks that are very large.)</html>");
+		LookAndFeelUtil.makeSmall(applyAutomaticallyCheckBox);
 		
 		final JPanel applyPanel = createApplyPanel();
 		final Component editPanel = createEditPanel();

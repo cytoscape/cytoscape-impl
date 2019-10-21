@@ -18,7 +18,11 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.task.hide.UnHideTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -81,7 +85,13 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		monitor.setProgress(0.0);
 		monitor.setStatusMessage(null);
 		
-		Sink sink = new Sink(network);
+		Sink sink;
+		if(applyAction == ApplyAction.FILTER) {
+			sink = new FilterSink(networkView);
+		} else {
+			sink = new SelectSink(network);
+		}
+		
 		long startTime = System.currentTimeMillis();
 		try {
 			List<Transformer<CyNetwork, CyIdentifiable>> transformers = controller.getTransformers(view);
@@ -104,6 +114,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 				}
 			}
 			
+			sink.done();
+			
 			if (networkView != null) {
 				networkView.updateView();
 			}
@@ -111,10 +123,10 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			long duration = System.currentTimeMillis() - startTime;
 			monitor.setProgress(1.0);
 			monitor.setStatusMessage(String.format("Selected %d %s and %d %s in %dms",
-					sink.nodeCount,
-					sink.nodeCount == 1 ? "node" : "nodes",
-					sink.edgeCount,
-					sink.edgeCount == 1 ? "edge" : "edges",
+					sink.getNodeCount(),
+					sink.getNodeCount() == 1 ? "node" : "nodes",
+					sink.getEdgeCount(),
+					sink.getEdgeCount() == 1 ? "edge" : "edges",
 					duration));
 		}
 	}
@@ -246,8 +258,8 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 		}
 	}
 	
-	static class Sink implements TransformerSink<CyIdentifiable> {
-		private final CyNetwork network;
+	private abstract class Sink implements TransformerSink<CyIdentifiable> {
+		final CyNetwork network;
 		int nodeCount;
 		int edgeCount;
 		
@@ -262,9 +274,73 @@ public class TransformerWorker extends AbstractWorker<TransformerPanel, Transfor
 			} else if (element instanceof CyEdge) {
 				edgeCount++;
 			}
-			
+		}
+		
+		public int getNodeCount() {
+			return nodeCount;
+		}
+		
+		public int getEdgeCount() {
+			return edgeCount;
+		}
+		
+		void done() {}
+	}
+	
+	
+	class SelectSink extends Sink {
+		
+		SelectSink(CyNetwork network) {
+			super(network);
+		}
+		
+		@Override
+		public void collect(CyIdentifiable element) {
+			super.collect(element);
 			network.getRow(element).set(CyNetwork.SELECTED, true);
 		}
 		
+	}
+	
+	
+	class FilterSink extends Sink {
+
+		private final CyNetworkView networkView;
+		private List<CyNode> selectedNodes = new ArrayList<>();
+		private List<CyEdge> selectedEdges = new ArrayList<>();
+		
+		
+		FilterSink(CyNetworkView networkView) {
+			super(networkView.getModel());
+			this.networkView = networkView;
+		}
+		
+		@Override
+		public void collect(CyIdentifiable element) {
+			super.collect(element);
+			if (element instanceof CyNode) {
+				selectedNodes.add((CyNode)element);
+			} else if (element instanceof CyEdge) {
+				selectedEdges.add((CyEdge)element);
+			}
+		}
+		
+		@Override
+		public void done() {
+			if(networkView != null) {
+				HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
+				TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, network.getNodeList(), network.getEdgeList());
+				
+				UnHideTaskFactory unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
+				TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
+				
+				TaskIterator taskIterator = new TaskIterator();
+				taskIterator.append(hideTasks);
+				taskIterator.append(unhideTasks);
+				
+				SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+				taskManager.execute(taskIterator);
+			}
+		}
 	}
 }

@@ -20,6 +20,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.CyUserLog;
 import org.cytoscape.filter.TransformerManager;
 import org.cytoscape.filter.internal.FilterIO;
@@ -30,6 +31,7 @@ import org.cytoscape.filter.internal.tasks.ImportNamedTransformersTask;
 import org.cytoscape.filter.internal.view.TransformerViewManager.TransformerViewElement;
 import org.cytoscape.filter.internal.view.look.FilterPanelStyle;
 import org.cytoscape.filter.internal.work.AbstractWorker;
+import org.cytoscape.filter.internal.work.AbstractWorker.ApplyAction;
 import org.cytoscape.filter.internal.work.ValidationManager;
 import org.cytoscape.filter.model.CompositeFilter;
 import org.cytoscape.filter.model.Filter;
@@ -38,7 +40,10 @@ import org.cytoscape.filter.model.Transformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.hide.UnHideAllTaskFactory;
 import org.cytoscape.util.swing.IconManager;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -116,6 +121,20 @@ public abstract class AbstractPanelController<T extends NamedElement, V extends 
 		namedElementListeners = new CopyOnWriteArrayList<>();
 	}
 
+	public void setApplyAction(ApplyAction action) {
+		if(action == ApplyAction.SELECT && worker.getApplyAction() != action) {
+			CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+			CyNetworkView networkView = applicationManager.getCurrentNetworkView();
+			if(networkView != null) {
+				UnHideAllTaskFactory unhideFactory = serviceRegistrar.getService(UnHideAllTaskFactory.class);
+				TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView);
+				SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+				taskManager.execute(unhideTasks);
+			}
+		}
+		worker.setApplyAction(action);
+	}
+	
 	public JPopupMenu createAddConditionMenu(final CompositeFilterPanel<?> panel) {
 		JPopupMenu menu = new JPopupMenu();
 		

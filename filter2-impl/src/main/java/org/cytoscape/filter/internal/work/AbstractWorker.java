@@ -1,5 +1,7 @@
 package org.cytoscape.filter.internal.work;
 
+import java.util.Objects;
+
 import javax.swing.JProgressBar;
 
 import org.cytoscape.filter.internal.view.AbstractPanel;
@@ -35,6 +37,11 @@ public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends Abs
 	
 	public static final int PROGRESS_BAR_MAXIMUM = Integer.MAX_VALUE;
 	
+	
+	public static enum ApplyAction {
+		SELECT, FILTER
+	}
+	
 	protected LazyWorkQueue queue;
 	
 	private ProgressMonitor currentMonitor;
@@ -43,6 +50,7 @@ public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends Abs
 	protected C controller;
 
 	protected boolean isInteractive;
+	protected ApplyAction applyAction = ApplyAction.SELECT;
 
 	protected final CyServiceRegistrar serviceRegistrar;
 	
@@ -74,6 +82,14 @@ public abstract class AbstractWorker<V extends AbstractPanel<?,?>, C extends Abs
 	
 	public void setInteractive(boolean isInteractive) {
 		this.isInteractive = isInteractive;
+	}
+	
+	public void setApplyAction(ApplyAction action) {
+		this.applyAction = Objects.requireNonNull(action);
+	}
+	
+	public ApplyAction getApplyAction() {
+		return applyAction;
 	}
 	
 	public void requestWork() {

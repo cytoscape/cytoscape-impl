@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.ComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -26,10 +27,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JProgressBar;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
 
 import org.cytoscape.filter.TransformerContainer;
+import org.cytoscape.filter.internal.work.AbstractWorker.ApplyAction;
 import org.cytoscape.filter.model.NamedTransformer;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -73,6 +76,8 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 	protected JButton applyButton;
 	protected JButton cancelApplyButton;
 	protected JProgressBar progressBar;
+	protected JRadioButton selectButton;
+	protected JRadioButton filterButton;
 
 	protected JLabel statusLabel;
 	
@@ -114,17 +119,33 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if(cancelApplyButton.isEnabled()) {
-				 cancelApplyButton.setForeground(UIManager.getColor("Button.foreground"));
+					cancelApplyButton.setForeground(UIManager.getColor("Button.foreground"));
 				}
 			}
 		});
 		
 		statusLabel = new JLabel(" ");
-		statusLabel.setFont(statusLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
 		progressBar = new JProgressBar();
 		progressBar.setMinimum(0);
 		progressBar.setMaximum(AbstractPanelController.PROGRESS_BAR_MAXIMUM);
+		
+		selectButton = new JRadioButton("select");
+		filterButton = new JRadioButton("show");
+		ButtonGroup buttonGroup = new ButtonGroup();
+		buttonGroup.add(selectButton);
+		buttonGroup.add(filterButton);
+		selectButton.setSelected(true);
+		selectButton.addActionListener(e -> {
+			controller.setApplyAction(ApplyAction.SELECT);
+			applyButton.doClick();
+		});
+		filterButton.addActionListener(e -> {
+			controller.setApplyAction(ApplyAction.FILTER);
+			applyButton.doClick();
+		});
+		
+		LookAndFeelUtil.makeSmall(statusLabel, selectButton, filterButton);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -198,13 +219,22 @@ public abstract class AbstractPanel<T extends NamedElement, C extends AbstractPa
 		
 		layout.setHorizontalGroup(layout.createParallelGroup(Alignment.LEADING, true)
 				.addGroup(layout.createSequentialGroup()
+						.addComponent(selectButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(filterButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+				)
+				.addGroup(layout.createSequentialGroup()
 						.addComponent(applyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(progressBar, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 						.addComponent(cancelApplyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 				)
 				.addComponent(statusLabel, DEFAULT_SIZE, DEFAULT_SIZE, Short.MAX_VALUE)
 		);
+		
 		layout.setVerticalGroup(layout.createSequentialGroup()
+				.addGroup(layout.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(selectButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
+						.addComponent(filterButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)	
+				)
 				.addGroup(layout.createParallelGroup(Alignment.CENTER, false)
 						.addComponent(applyButton, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
 						.addComponent(progressBar, PREFERRED_SIZE, DEFAULT_SIZE, PREFERRED_SIZE)
