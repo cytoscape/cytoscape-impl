@@ -14,6 +14,11 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.events.RowSetRecord;
 import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.hide.HideTaskFactory;
+import org.cytoscape.task.hide.UnHideTaskFactory;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.SynchronousTaskManager;
+import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
@@ -87,5 +92,21 @@ public final class SelectUtils {
 
 		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
 		eventHelper.fireEvent(event);
+	}
+	
+	public void setVisible(CyNetworkView networkView, Collection<CyNode> selectedNodes, Collection<CyEdge> selectedEdges) {
+		CyNetwork network = networkView.getModel();
+		HideTaskFactory hideFactory = serviceRegistrar.getService(HideTaskFactory.class);
+		TaskIterator hideTasks = hideFactory.createTaskIterator(networkView, network.getNodeList(), network.getEdgeList());
+		
+		UnHideTaskFactory unhideFactory = serviceRegistrar.getService(UnHideTaskFactory.class);
+		TaskIterator unhideTasks = unhideFactory.createTaskIterator(networkView, selectedNodes, selectedEdges);
+		
+		TaskIterator taskIterator = new TaskIterator();
+		taskIterator.append(hideTasks);
+		taskIterator.append(unhideTasks);
+		
+		SynchronousTaskManager<?> taskManager = serviceRegistrar.getService(SynchronousTaskManager.class);
+		taskManager.execute(taskIterator);
 	}
 }

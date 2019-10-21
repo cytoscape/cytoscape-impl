@@ -1,6 +1,8 @@
 package org.cytoscape.task.internal.filter;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Optional;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
@@ -10,7 +12,10 @@ import org.cytoscape.io.read.CyTransformerReader;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.filter.SelectTunable.Action;
 import org.cytoscape.task.internal.select.SelectUtils;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.TaskMonitor;
@@ -49,6 +54,9 @@ public class SelectFilterTask extends AbstractTask {
 	@ContainsTunables
 	public TransformerJsonTunable json = new TransformerJsonTunable();
 	
+	@ContainsTunables
+	public SelectTunable select = new SelectTunable();
+	
 	
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -63,8 +71,7 @@ public class SelectFilterTask extends AbstractTask {
 
 		CyTransformerReader transformerReader = serviceRegistrar.getService(CyTransformerReader.class);
 
-		NamedTransformer<CyNetwork, CyIdentifiable> transformer = json.getTransformer("ApplyFilterTask",
-				transformerReader);
+		NamedTransformer<CyNetwork, CyIdentifiable> transformer = json.getTransformer("ApplyFilterTask", transformerReader);
 		
 		if (transformer == null) {
 			tm.showMessage(Level.ERROR, "Error parsing JSON");
@@ -72,27 +79,41 @@ public class SelectFilterTask extends AbstractTask {
 		}
 
 		boolean valid = TransformerJsonTunable.validate(transformer, tm);
-		
-		if (!valid)
+		if (!valid) {
+			tm.showMessage(Level.ERROR, "Cannot parse JSON format");
 			return;
+		}
 
-		applyFilter(serviceRegistrar, network, transformer);
+		Optional<SelectTunable.Action> action = select.getAction();
+		if(action.isEmpty()) {
+			tm.showMessage(Level.ERROR, "Invalid value for 'action' arguent");
+			return;
+		}
+		
+		applyFilter(serviceRegistrar, network, transformer, action.get());
 	}
 	
 	
-	public static void applyFilter(CyServiceRegistrar serviceRegistrar, CyNetwork network,
-			NamedTransformer<CyNetwork, CyIdentifiable> transformer) {
-		SelectUtils selectUtils = new SelectUtils(serviceRegistrar);
+	public static void applyFilter(CyServiceRegistrar registrar, CyNetwork network, NamedTransformer<CyNetwork,CyIdentifiable> transformer, SelectTunable.Action action) {
+		SelectUtils selectUtils = new SelectUtils(registrar);
 
 		// De-select all nodes and edges.
-		// Do this before running the filter because selection handlers can run in
-		// parallel with the filter.
+		// Do this before running the filter because selection handlers can run in parallel with the filter.
 		selectUtils.setSelectedNodes(network, network.getNodeList(), false);
 		selectUtils.setSelectedEdges(network, network.getEdgeList(), false);
 
 		Sink sink = new Sink();
-		serviceRegistrar.getService(TransformerManager.class).execute(network, transformer.getTransformers(), sink);
+		registrar.getService(TransformerManager.class).execute(network, transformer.getTransformers(), sink);
 
-		selectUtils.setSelectedNodes(network, sink.getNodes(), true);
+		if(action == Action.SELECT) {
+			selectUtils.setSelectedNodes(network, sink.getNodes(), true);
+			selectUtils.setSelectedEdges(network, sink.getEdges(), true);
+		} else if(action == Action.SHOW) { 
+			CyNetworkViewManager networkViewManager = registrar.getService(CyNetworkViewManager.class);
+			Collection<CyNetworkView> networkViews = networkViewManager.getNetworkViews(network);
+			for(CyNetworkView networkView : networkViews) {
+				selectUtils.setVisible(networkView, sink.getNodes(), sink.getEdges());
+			}
+		}
 	}
 }

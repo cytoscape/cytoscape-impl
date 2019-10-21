@@ -1,5 +1,7 @@
 package org.cytoscape.task.internal.filter;
 
+import java.util.Optional;
+
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.filter.TransformerContainer;
@@ -23,6 +25,9 @@ public class ApplyFilterTask extends AbstractTask {
 	
 	@ContainsTunables
 	public ContainerTunable containerTunable = new ContainerTunable();
+
+	@ContainsTunables
+	public SelectTunable select = new SelectTunable();
 	
 	
 	private final CyServiceRegistrar serviceRegistrar;
@@ -55,7 +60,13 @@ public class ApplyFilterTask extends AbstractTask {
 			return;
 		}
 		
-		SelectFilterTask.applyFilter(serviceRegistrar, network, transformer);
+		Optional<SelectTunable.Action> action = select.getAction();
+		if(action.isEmpty()) {
+			taskMonitor.showMessage(Level.ERROR, "Invalid value for 'action' arguent");
+			return;
+		}
+		
+		SelectFilterTask.applyFilter(serviceRegistrar, network, transformer, action.get());
 	}
 
 }
