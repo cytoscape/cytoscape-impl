@@ -48,13 +48,13 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 	
 	private static final Logger logger = LoggerFactory.getLogger(DingNavigationRenderingEngineFactory.class);
 
-	private final DingNetworkViewFactory viewFactoryMediator;
+	private final DingNetworkViewFactory networkViewFactory;
 	private final VisualLexicon dingLexicon;
 	private final CyServiceRegistrar registrar;
 
 	
-	public DingNavigationRenderingEngineFactory(DingNetworkViewFactory viewFactoryMediator, CyServiceRegistrar registrar, VisualLexicon dingLexicon) {
-		this.viewFactoryMediator = viewFactoryMediator;
+	public DingNavigationRenderingEngineFactory(DingNetworkViewFactory networkViewFactory, CyServiceRegistrar registrar, VisualLexicon dingLexicon) {
+		this.networkViewFactory = networkViewFactory;
 		this.dingLexicon = dingLexicon;
 		this.registrar = registrar;
 	}
@@ -71,8 +71,8 @@ public class DingNavigationRenderingEngineFactory implements RenderingEngineFact
 		logger.debug("Start adding BEV.");
 		final JComponent container = (JComponent) visualizationContainer;
 		
-		// Create instance of an engine.
-		DRenderingEngine re = viewFactoryMediator.getRenderingEngine((CyNetworkView)view);
+		// The DRenderingEngine instance was created when the CyNetworkView was created
+		DRenderingEngine re = networkViewFactory.getRenderingEngine((CyNetworkView)view);
 		BirdsEyeView bev = new BirdsEyeView(re, registrar);
 
 		container.setLayout(new BorderLayout());

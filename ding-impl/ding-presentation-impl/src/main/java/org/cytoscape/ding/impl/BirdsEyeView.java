@@ -2,6 +2,8 @@ package org.cytoscape.ding.impl;
 
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
@@ -41,6 +43,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 		
 		var lod = new BirdsEyeViewLOD(re.getGraphLOD());
 		renderComponent = new BirdsEyeViewRenderComponent(re, lod);
+		renderComponent.setBackgroundPaint(re.getBackgroundColor());
 		renderComponent.showAnnotationSelection(false);
 		
 		var mouseListener = new InnerMouseListener();
@@ -52,6 +55,16 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 		re.addContentChangeListener(this);
 		
 		contentChangedTimer = new CoalesceTimer(200);
+		
+		renderComponent.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// make sure the view is initialized properly, but we have 
+				// to wait for setBounds() to be called to know the viewport size
+				fitCanvasToNetwork();
+				e.getComponent().removeComponentListener(this);
+			}
+		});
 	}	
 	
 
