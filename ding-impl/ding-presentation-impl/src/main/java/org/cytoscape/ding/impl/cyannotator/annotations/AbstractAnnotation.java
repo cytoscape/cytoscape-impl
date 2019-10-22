@@ -60,8 +60,6 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	protected final CyAnnotator cyAnnotator;
 	private UUID uuid = UUID.randomUUID();
 	
-	protected boolean selected;
-
 	private Set<ArrowAnnotation> arrowList = new HashSet<>();
 	protected final boolean usedForPreviews;
 	protected DRenderingEngine re;
@@ -330,21 +328,14 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 
 	@Override
 	public boolean isSelected() {
-		return selected;
+		return cyAnnotator.getAnnotationSelection().contains(this);
 	}
 
 	@Override
 	public void setSelected(boolean selected) {
-		setSelected(selected, true);
-	}
-	
-	protected void setSelected(boolean selected, boolean firePropertyChangeEvent) {
-		if (selected != this.selected) {
-			this.selected = selected;
+		if(selected != isSelected()) {
 			cyAnnotator.setSelectedAnnotation(this, selected);
-			
-			if (firePropertyChangeEvent)
-				pcs.firePropertyChange("selected", !selected, selected);
+			pcs.firePropertyChange("selected", !selected, selected);
 		}
 	}
 

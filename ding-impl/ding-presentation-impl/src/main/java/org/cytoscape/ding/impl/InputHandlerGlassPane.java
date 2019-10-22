@@ -1437,25 +1437,37 @@ public class InputHandlerGlassPane extends JComponent {
 		}
 	}
 	
-	private void deselectAllNodes() {
+	private boolean deselectAllNodes() {
 		if(nodeSelectionEnabled()) {
 			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			select(selectedNodes, CyNode.class, false);
+			if(!selectedNodes.isEmpty()) {
+				select(selectedNodes, CyNode.class, false);
+				return true;
+			}
 		}
+		return false;
 	}
 	
-	private void deselectAllEdges() {
+	private boolean deselectAllEdges() {
 		if(edgeSelectionEnabled(false)) {
 			re.getBendStore().unselectAllHandles();
 			Collection<View<CyEdge>> selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-			select(selectedEdges, CyEdge.class, false);
+			if(!selectedEdges.isEmpty()) {
+				select(selectedEdges, CyEdge.class, false);
+				return true;
+			}
 		}
+		return false;
 	}
 	
-	private void deselectAllAnnotations() {
+	private boolean deselectAllAnnotations() {
 		if(annotationSelectionEnabled()) {
-			cyAnnotator.clearSelectedAnnotations();
+			if(!cyAnnotator.getAnnotationSelection().isEmpty()) {
+				cyAnnotator.clearSelectedAnnotations();
+				return true;
+			}
 		}
+		return false;
 	}
 	
 	private void deselectAllNodesAndEdges() {
@@ -1464,9 +1476,12 @@ public class InputHandlerGlassPane extends JComponent {
 	}
 	
 	private void deselectAll() {
-		deselectAllNodes();
-		deselectAllEdges();
-		deselectAllAnnotations();
+		boolean nodesDeselected = deselectAllNodes();
+		boolean edgesDeselected = deselectAllEdges();
+		boolean annotDeselected = deselectAllAnnotations();
+		if(!(nodesDeselected || edgesDeselected) && annotDeselected) {
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
+		}
 	}
 	
 	private void changeCursor(Cursor cursor) {
