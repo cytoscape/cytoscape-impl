@@ -7,7 +7,11 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
 import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
@@ -287,6 +291,18 @@ public final class ViewUtil {
 			final CyServiceRegistrar serviceRegistrar) {
 		final CyProperty<Properties> cyProps = serviceRegistrar.getService(CyProperty.class, CY_PROPERTY_NAME);
 		cyProps.getProperties().setProperty(key, value);
+	}
+	
+	public static Rectangle getEffectiveScreenArea(final GraphicsConfiguration gc) {
+		final Rectangle bounds = gc.getBounds();
+		final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+		final Rectangle rect = new Rectangle();
+		rect.x = bounds.x + screenInsets.left;
+		rect.y = bounds.y + screenInsets.top;
+		rect.height = bounds.height - screenInsets.top - screenInsets.bottom;
+		rect.width = bounds.width - screenInsets.left - screenInsets.right;
+		
+		return rect;
 	}
 	
 	public static Window getWindowAncestor(final ActionEvent evt, final CySwingApplication swingApplication) {

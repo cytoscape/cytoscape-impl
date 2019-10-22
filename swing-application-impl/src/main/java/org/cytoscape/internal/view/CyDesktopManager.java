@@ -4,14 +4,13 @@ import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.application.swing.CyNetworkViewDesktopMgr;
+import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.view.model.CyNetworkView;
 
 /*
@@ -108,24 +107,12 @@ public class CyDesktopManager implements CyNetworkViewDesktopMgr {
 			
 			if (!frames.isEmpty()) {
 				// Calculate the actual screen area by removing screen insets such as Menu Bars, Docks, etc.
-				final Rectangle effectiveScreenArea = getEffectiveScreenArea(gc);
+				final Rectangle effectiveScreenArea = ViewUtil.getEffectiveScreenArea(gc);
 				arrangeWindows(frames.toArray(new NetworkViewFrame[frames.size()]), type, effectiveScreenArea);
 			}
 		}
 	}
 
-	private Rectangle getEffectiveScreenArea(final GraphicsConfiguration gc) {
-		final Rectangle bounds = gc.getBounds();
-		final Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-		final Rectangle rect = new Rectangle();
-		rect.x = bounds.x + screenInsets.left;
-		rect.y = bounds.y + screenInsets.top;
-		rect.height = bounds.height - screenInsets.top - screenInsets.bottom;
-		rect.width = bounds.width - screenInsets.left - screenInsets.right;
-		
-		return rect;
-	}
-	
 	private void arrangeWindows(final NetworkViewFrame[] frames, final ArrangeType type, final Rectangle bounds) {
 		final int frameCount = frames != null ? frames.length : 0;
 		
