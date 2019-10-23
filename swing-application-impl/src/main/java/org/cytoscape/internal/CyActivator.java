@@ -112,10 +112,12 @@ import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.util.ViewUtil;
+import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.NetworkDestroyedListener;
 import org.cytoscape.property.CyProperty;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.session.events.SessionAboutToBeLoadedListener;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
@@ -484,7 +486,9 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkViewManager netViewManager = getService(bc, CyNetworkViewManager.class);
 		IconManager iconManager = serviceRegistrar.getService(IconManager.class);
 		
-		final RootNetworkManager rootNetManager = new RootNetworkManager();
+		final RootNetworkManager rootNetManager = new RootNetworkManager(serviceRegistrar);
+		registerService(bc, rootNetManager, NetworkAboutToBeDestroyedListener.class);
+		registerService(bc, rootNetManager, SessionAboutToBeLoadedListener.class);
 		
 		final CytoscapeMenuBar cytoscapeMenuBar = new CytoscapeMenuBar(serviceRegistrar);
 		final CytoscapeToolBar cytoscapeToolBar = new CytoscapeToolBar(serviceRegistrar);
