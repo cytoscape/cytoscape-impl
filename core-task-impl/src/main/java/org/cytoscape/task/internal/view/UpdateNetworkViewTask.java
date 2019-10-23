@@ -55,7 +55,9 @@ public class UpdateNetworkViewTask extends AbstractTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Update Network View(s)");
+		
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
@@ -65,7 +67,7 @@ public class UpdateNetworkViewTask extends AbstractTask {
 			
 			for (CyNetworkView view : viewList) {
 				view.updateView();
-				taskMonitor.showMessage(TaskMonitor.Level.INFO, "Updated view: " + view);
+				tm.showMessage(TaskMonitor.Level.INFO, "Updated view: " + view);
 			}
 		}
 	}

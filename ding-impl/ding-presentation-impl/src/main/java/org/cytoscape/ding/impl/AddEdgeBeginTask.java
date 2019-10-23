@@ -27,9 +27,10 @@ public class AddEdgeBeginTask extends AbstractNodeViewTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Add Edge (Begin)");
+		
 		DRenderingEngine re = serviceRegistrar.getService(DingRenderer.class).getRenderingEngine(netView);
 		InputHandlerGlassPane glassPane = re.getInputHandlerGlassPane();
 		glassPane.beginAddingEdge(nodeView);
 	}
-		
 }

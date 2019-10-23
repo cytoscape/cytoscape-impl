@@ -46,9 +46,11 @@ public class GetCurrentNetworkViewTask extends AbstractTask implements Observabl
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Get Current Network View");
+		
 		view = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetworkView();
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Current network view is " + view);
+		tm.showMessage(TaskMonitor.Level.INFO, "Current network view is " + view);
 	}
 
 	@Override

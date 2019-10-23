@@ -78,15 +78,24 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Apply Style");
 		tm.setProgress(0.0);
 
 		VisualMappingManager vmManager = serviceRegistrar.getService(VisualMappingManager.class);
 
-		int i = 0;
 		int viewCount = networkViews.size();
 		selectedStyle = styles.getSelectedValue();
-
+		
+		if (viewCount == 0) // Should not happen!
+			throw new RuntimeException("No network views selected.");
+		if (selectedStyle == null) // Should not happen!
+			throw new RuntimeException("No style selected.");
+		
+		tm.setStatusMessage("Applying style '" + selectedStyle.getTitle() + "' to " + viewCount + " view(s)...");
+		int i = 0;
+		
 		for (final CyNetworkView view : networkViews) {
+			tm.setStatusMessage((i + 1 ) + ": '" + DataUtils.getViewTitle(view) + "'...");
 			selectedStyle.apply(view);
 			view.updateView();
 			vmManager.setVisualStyle(selectedStyle, view);

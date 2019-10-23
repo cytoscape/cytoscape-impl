@@ -67,11 +67,10 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 
 	@Override
 	public void run(TaskMonitor tm) {
-		int i = 0;
-		int networkCount;
-		
 		if (destroyCurrentNetwork) {
+			tm.setTitle("Destroy Network(s)");
 			tm.setProgress(0.0);
+			
 			CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
 			
 			if (localNets == null || localNets.isEmpty()) {

@@ -62,6 +62,9 @@ public class AddNodeTask extends AbstractNetworkViewTask implements ObservableTa
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Add Node");
+		tm.setStatusMessage("Adding node '" + nodeName + "'...");
+		
 		final CyNetwork net = view.getModel();
 		node = net.addNode();
 		

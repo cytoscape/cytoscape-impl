@@ -60,16 +60,18 @@ public class ListNetworkViewsTask extends AbstractTask implements ObservableTask
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("List Network Views");
+		
 		if (network == null)
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		
 		views = new ArrayList<>(serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network));
-		taskMonitor.showMessage(TaskMonitor.Level.INFO,
+		tm.showMessage(TaskMonitor.Level.INFO,
 				"Views for network " + (network != null ? DataUtils.getNetworkName(network) : null));
 		
 		for (CyNetworkView view : views) {
-			taskMonitor.showMessage(TaskMonitor.Level.INFO, "    " + view);
+			tm.showMessage(TaskMonitor.Level.INFO, "    " + view);
 			return;
 		}
 	}

@@ -162,13 +162,13 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Create Network View(s)");
 		tm.setProgress(0.0);
 
 		final Collection<CyNetwork> netList = network != null ? Collections.singletonList(network) : networks;
 		final int total = netList.size();
 		
-		tm.setTitle("Creating Network View" + (total == 1 ? "" : "s"));
-		tm.setStatusMessage("Creating " + total + " network view" + (total == 1 ? "" : "s") + "...");
+		tm.setStatusMessage("Creating " + total + " view" + (total == 1 ? "" : "s") + "...");
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first

@@ -126,6 +126,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Clone Network");
 		tm.setProgress(0.0);
 
 		// nogui?

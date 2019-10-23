@@ -75,11 +75,15 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 	}
 
 	@Override
-	public void run(final TaskMonitor taskMonitor) {
+	public void run(TaskMonitor tm) {
+		tm.setTitle("Add Node");
+		tm.setProgress(0.0);
+		
 		if (network == null) {
 			network = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
+			
 			if (network == null) {
-				taskMonitor.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
+				tm.showMessage(TaskMonitor.Level.ERROR, "Network must be specified for add command");
 				return;
 			}
 		}
@@ -100,8 +104,9 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 			}
 		}
 		cyEventHelper.flushPayloadEvents();
-		taskMonitor.showMessage(TaskMonitor.Level.INFO, "Added node "+newNode.toString()+" to network");
-
+		
+		tm.showMessage(TaskMonitor.Level.INFO, "Added node " + newNode.toString() + " to network");
+		tm.setProgress(1.0);
 	}
 
 	public Object getResults(Class type) {

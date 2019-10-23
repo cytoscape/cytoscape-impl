@@ -38,7 +38,9 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	}
 
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Add Edge");
+		
 		CyNetwork net = netView.getModel();
 		View<CyNode> mutableSourceNodeView = netView.getNodeView(sourceNodeView.getSUID());
 		View<CyNode> mutableTargetNodeView = netView.getNodeView(targetNodeView.getSUID());
@@ -48,11 +50,13 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		CyNode sourceNode = mutableSourceNodeView.getModel();
 		CyNode targetNode = mutableTargetNodeView.getModel();
 		
-		edge = net.addEdge(sourceNode, targetNode, true);
-		final String interaction = "interacts with";
 		String sourceName = net.getRow(sourceNode).get(CyRootNetwork.SHARED_NAME, String.class);
 		String targetName = net.getRow(targetNode).get(CyRootNetwork.SHARED_NAME, String.class);
+		String interaction = "interacts with";
 		String edgeName = sourceName + " (" + interaction + ") " + targetName;
+		tm.setStatusMessage("Adding edge '" + edgeName + "'...");
+		
+		edge = net.addEdge(sourceNode, targetNode, true);
 		
 		CyRow edgeRow = net.getRow(edge, CyNetwork.DEFAULT_ATTRS);
 		edgeRow.set(CyNetwork.NAME, edgeName);

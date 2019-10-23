@@ -75,13 +75,14 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setTitle("Copy Existing Network View");
+		tm.setProgress(0.0);
+		
 		if (sourceView == null)
 			throw new NullPointerException("source network view is null.");
 		if (newView == null)
 			throw new NullPointerException("new network view is null.");
 
-		tm.setProgress(0.0);
-		
 		final Collection<RenderingEngine<?>> engines = renderingEngineMgr.getAllRenderingEngines();
 		Collection<VisualProperty<?>> nodeProps = null;
 		Collection<VisualProperty<?>> edgeProps = null;

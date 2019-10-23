@@ -75,13 +75,13 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask im
 
 	@Override
 	public void run(TaskMonitor tm) {
-		int i = 0;
-		int viewCount;
-		
 		if (confirm && destroyCurrentNetworkView) { // Also checks destroyCurrentNetworkView for backwards compatibility
+			tm.setTitle("Destroy Network View(s)");
 			tm.setProgress(0.0);
-			final CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
-			viewCount = networkViews.size();
+			
+			CyNetworkViewManager viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+			int i = 0;
+			int viewCount = networkViews.size();
 			
 			for (final CyNetworkView nv : networkViews) {
 				Long suid = nv.getSUID();

@@ -63,6 +63,8 @@ public class SetCurrentNetworkViewTask extends AbstractTask {
 
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Set Current Network View");
+		
 		if (view == null) {
 			Collection<CyNetworkView> viewList = network != null
 					? serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(network)

@@ -184,6 +184,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 
 	@Override
 	public void run(final TaskMonitor tm) {
+		tm.setTitle("New Empty Network");
 		tm.setProgress(0.0);
 
 		final String networkCollectionName = rootNetworkList.getSelectedValue();
