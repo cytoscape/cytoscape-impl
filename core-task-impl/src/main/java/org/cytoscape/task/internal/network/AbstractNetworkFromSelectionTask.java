@@ -104,12 +104,12 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 
 	@Override
 	public void run(TaskMonitor tm) {
+		tm.setProgress(0.0);
+		
 		if (parentNetwork == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Source network must be specified.");
 			return;
 		}
-		
-		tm.setProgress(0.0);
 		
 		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);		
 		CyNetworkView sourceView = null;

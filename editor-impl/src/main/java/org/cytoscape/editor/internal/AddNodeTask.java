@@ -22,7 +22,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -47,7 +47,7 @@ public class AddNodeTask extends AbstractNetworkViewTask implements ObservableTa
 	private final CyServiceRegistrar registrar;
 	
 	private boolean postUndo = true;
-	private CyNode node = null;
+	private CyNode node;
 	
 	public AddNodeTask(CyNetworkView view, Point2D xformPt, String nodeName, CyServiceRegistrar registrar) {
 		super(view);
@@ -83,7 +83,7 @@ public class AddNodeTask extends AbstractNetworkViewTask implements ObservableTa
 		vs.apply(net.getRow(node), nv);
 		view.updateView();
 		
-		if(postUndo) {
+		if (postUndo) {
 			AddNodeEdit addNodeEdit = new AddNodeEdit(view, node, xformPt, nodeName, registrar);
 			addNodeEdit.post();
 		}
@@ -91,9 +91,6 @@ public class AddNodeTask extends AbstractNetworkViewTask implements ObservableTa
 
 	@Override
 	public <R> R getResults(Class<? extends R> type) {
-		if(CyNode.class.equals(type)) {
-			return type.cast(node);
-		}
-		return null;
+		return CyNode.class.equals(type) ? type.cast(node) : null;
 	}
 }

@@ -14,7 +14,6 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
@@ -26,7 +25,7 @@ import org.cytoscape.work.json.JSONResult;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -56,12 +55,14 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 	public CyNetwork network;
 	
 	private final CyServiceRegistrar serviceRegistrar;
-	private List<CyNetwork> localNets = null;
+	private List<CyNetwork> localNets;
 
 	public DestroyNetworkTask(Collection<CyNetwork> nets, CyServiceRegistrar serviceRegistrar) {
 		super(nets);
+		
 		if (nets != null && !nets.isEmpty())
-			localNets = new ArrayList<CyNetwork>(nets);
+			localNets = new ArrayList<>(nets);
+		
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -82,7 +83,8 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 				}
 			}
 
-			networkCount = localNets.size();
+			int i = 0;
+			int networkCount = localNets.size();
 				
 			for (CyNetwork n : localNets) {
 				if (cancelled)
@@ -123,6 +125,7 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 	}
 
 	@Override
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getResults(Class type) {
 		if (localNets == null) return null;
 		if (type.equals(String.class)) {

@@ -1,30 +1,5 @@
 package org.cytoscape.task.internal.network;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +20,6 @@ import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -59,6 +33,29 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 import org.cytoscape.work.util.ListSingleSelection;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 /**
  * Create an empty network with view.
@@ -74,7 +71,6 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 	protected final CyRootNetworkManager rootNetMgr;
 	protected final CyServiceRegistrar registrar;
 
-	private boolean cancel;
 	private CyNetworkView view;
 	private CySubNetwork subNetwork;
 
@@ -117,15 +113,17 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 	protected HashMap<String, CyRootNetwork> name2RootMap;
 
 	@SuppressWarnings("unchecked")
-	public NewEmptyNetworkTask(final CyNetworkFactory netFactory,
-							   final CyNetworkManager netMgr,
-							   final CyNetworkViewManager netViewMgr,
-							   final CyNetworkNaming namingUtil,
-							   final VisualMappingManager vmMgr,
-							   final CyRootNetworkManager rootNetMgr,
-							   final CyApplicationManager appMgr,
-							   final Set<NetworkViewRenderer> viewRenderers,
-								 final CyServiceRegistrar registrar) {
+	public NewEmptyNetworkTask(
+			CyNetworkFactory netFactory,
+			CyNetworkManager netMgr,
+			CyNetworkViewManager netViewMgr,
+			CyNetworkNaming namingUtil,
+			VisualMappingManager vmMgr,
+			CyRootNetworkManager rootNetMgr,
+			CyApplicationManager appMgr,
+			Set<NetworkViewRenderer> viewRenderers,
+			CyServiceRegistrar registrar
+	) {
 		this.netMgr = netMgr;
 		this.netViewMgr = netViewMgr;
 		this.netFactory = netFactory;
@@ -194,7 +192,7 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 			subNetwork = (CySubNetwork) netFactory.createNetwork();
 		} else {
 			// Add a new subNetwork to the given collection
-			subNetwork = this.name2RootMap.get(networkCollectionName).addSubNetwork();
+			subNetwork = name2RootMap.get(networkCollectionName).addSubNetwork();
 		}
 
 		tm.setProgress(0.2);
@@ -233,11 +231,6 @@ public class NewEmptyNetworkTask extends AbstractTask implements ObservableTask 
 		tm.setProgress(0.9);
 		applyVisualStyle(style);
 		tm.setProgress(1.0);
-	}
-
-	@Override
-	public void cancel() {
-		cancel = true;
 	}
 
 	public CyNetworkView getView() {

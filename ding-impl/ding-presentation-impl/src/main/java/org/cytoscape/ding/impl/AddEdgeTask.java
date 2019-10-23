@@ -24,7 +24,7 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	private final View<CyNode> targetNodeView;
 	
 	private boolean postUndo = true;
-	private CyEdge edge = null;
+	private CyEdge edge;
 	
 	public AddEdgeTask(CyServiceRegistrar registrar, CyNetworkView netView, View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
 		this.registrar = registrar;
@@ -44,7 +44,8 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		CyNetwork net = netView.getModel();
 		View<CyNode> mutableSourceNodeView = netView.getNodeView(sourceNodeView.getSUID());
 		View<CyNode> mutableTargetNodeView = netView.getNodeView(targetNodeView.getSUID());
-		if(mutableSourceNodeView == null || mutableTargetNodeView == null)
+		
+		if (mutableSourceNodeView == null || mutableTargetNodeView == null)
 			return;
 		
 		CyNode sourceNode = mutableSourceNodeView.getModel();
@@ -68,10 +69,11 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		
 		VisualStyle vs = registrar.getService(VisualMappingManager.class).getVisualStyle(netView);
 		View<CyEdge> edgeView = netView.getEdgeView(edge);
+		
 		if (edgeView != null) {
 			vs.apply(edgeRow, edgeView);
 			
-			if(postUndo) {
+			if (postUndo) {
 				AddEdgeEdit addEdgeEdit = new AddEdgeEdit(registrar, netView, sourceNodeView, targetNodeView, edgeView);
 				addEdgeEdit.post();
 			}
@@ -85,5 +87,4 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		}
 		return null;
 	}
-
 }

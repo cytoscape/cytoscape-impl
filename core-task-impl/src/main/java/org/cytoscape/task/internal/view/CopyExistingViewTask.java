@@ -23,7 +23,7 @@ import org.cytoscape.work.TaskMonitor;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -161,11 +161,9 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 	}
 
 	@Override
-	public Object getResults(Class expectedType) {
-		if (expectedType.equals(String.class)) {
-			return newView.toString();
-		}
-		return newView;
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public Object getResults(Class type) {
+		return String.class.equals(type) ? newView.toString() : newView;
 	}
 
 	// may return null if nodes don't somehow line up!

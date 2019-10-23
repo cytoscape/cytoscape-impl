@@ -1,33 +1,7 @@
 package org.cytoscape.task.internal.networkobjects;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
@@ -48,7 +22,32 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.json.JSONResult;
 
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 public class AddNodeTask extends AbstractTask implements ObservableTask {
+	
 	CyNode newNode;
 	CyEventHelper cyEventHelper;
 	CyNetworkViewManager networkViewManager;
@@ -58,16 +57,20 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Network", context="nogui", 
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
 					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
 	@Tunable(description="Name of the node to add", 
 	         longDescription="The name of the node, which will be assigned to both "+
 					                 "the 'name' and 'shared name' columns", 
 					 exampleStringValue="Node 1", context="nogui")
-	public String name = null;
+	public String name;
 
-	public AddNodeTask(VisualMappingManager vmm, CyNetworkViewManager viewManager, CyEventHelper eventHelper,
-	                   CyServiceRegistrar registrar) {
+	public AddNodeTask(
+			VisualMappingManager vmm,
+			CyNetworkViewManager viewManager,
+			CyEventHelper eventHelper,
+			CyServiceRegistrar registrar
+	) {
 		cyEventHelper = eventHelper;
 		networkViewManager = viewManager;
 		visualMappingManager = vmm;
@@ -89,26 +92,32 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 		}
 
 		newNode = network.addNode();
+		
 		if (name != null) {
 			network.getRow(newNode).set(CyNetwork.NAME, name);
 			network.getRow(newNode).set(CyRootNetwork.SHARED_NAME, name);
 		}
+		
 		cyEventHelper.flushPayloadEvents();
+		
 		if (networkViewManager.viewExists(network)) {
 			for (CyNetworkView view: networkViewManager.getNetworkViews(network)) {
 				View<CyNode> nodeView = view.getNodeView(newNode);
 				VisualStyle style = visualMappingManager.getVisualStyle(view);
-				if (style != null) {
+				
+				if (style != null)
 					style.apply(network.getRow(newNode), nodeView);
-				}
 			}
 		}
+		
 		cyEventHelper.flushPayloadEvents();
 		
 		tm.showMessage(TaskMonitor.Level.INFO, "Added node " + newNode.toString() + " to network");
 		tm.setProgress(1.0);
 	}
 
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object getResults(Class type) {
 		if (type.equals(CyNode.class)) {
 			return newNode;
@@ -117,17 +126,20 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 				return "<none>";
 			return newNode.toString();
 		}  else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (newNode == null) 
-				return "{}";
-			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return "{\"node\":"+cyJSONUtil.toJson(newNode)+"}";
-			}};
+			JSONResult res = () -> {
+				if (newNode == null) {
+					return "{}";
+				} else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return "{\"node\":" + cyJSONUtil.toJson(newNode) + "}";
+				}
+			};
 			return res;
 		}
 		return newNode;
 	}
 	
+	@Override
 	public List<Class<?>> getResultClasses() {
 		return Arrays.asList(CyNode.class, String.class, JSONResult.class);
 	}

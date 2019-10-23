@@ -2,7 +2,6 @@ package org.cytoscape.task.internal.network;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -32,18 +31,14 @@ import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.CyNetworkNaming;
 import org.cytoscape.task.internal.view.CopyExistingViewTask;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.cytoscape.work.json.JSONResult;
 
 /*
  * #%L
@@ -51,7 +46,7 @@ import org.cytoscape.work.json.JSONResult;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -90,9 +85,9 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyServiceRegistrar serviceRegistrar;
 
 	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
-	public CyNetwork network = null;
+	public CyNetwork network;
 
-	private CyNetworkView result = null;
+	private CyNetworkView result;
 
 	public CloneNetworkTask(final CyNetwork net,
 							final CyNetworkManager netmgr,
@@ -125,6 +120,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		this.serviceRegistrar = registrar;
 	}
 
+	@Override
 	public void run(TaskMonitor tm) {
 		tm.setTitle("Clone Network");
 		tm.setProgress(0.0);
@@ -199,8 +195,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 	
 	private void cloneNodes(final CyNetwork origNet, final CyNetwork newNet) {
-		orig2NewNodeMap = new WeakHashMap<CyNode, CyNode>();
-		new2OrigNodeMap = new WeakHashMap<CyNode, CyNode>();
+		orig2NewNodeMap = new WeakHashMap<>();
+		new2OrigNodeMap = new WeakHashMap<>();
 		
 		for (final CyNode origNode : origNet.getNodeList()) {
 			cloneNode(origNet, newNet, origNode);
@@ -219,12 +215,13 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		
 		if (!groupMgr.isGroup(origNode, origNet))
 			cloneNetworkPointer(origNet, newNet, newNode, origNode.getNetworkPointer());
+		
 		return newNode;
 	}
 
 	private void cloneEdges(final CyNetwork origNet, final CyNetwork newNet) {
-		new2OrigEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
-		orig2NewEdgeMap = new WeakHashMap<CyEdge, CyEdge>();
+		new2OrigEdgeMap = new WeakHashMap<>();
+		orig2NewEdgeMap = new WeakHashMap<>();
 		
 		for (final CyEdge origEdge : origNet.getEdgeList()) {
 			cloneEdge(origNet, newNet, origEdge);
@@ -282,15 +279,15 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 
 	private CyGroup cloneGroup(final CyNetwork origNet, final CyNetwork newNet, final CyGroup origGroup) {
-		List<CyNode> nodeList = new ArrayList<CyNode>();
-		List<CyEdge> edgeList = new ArrayList<CyEdge>();
-
+		List<CyNode> nodeList = new ArrayList<>();
+		
 		// Check to see if the group node is already in the network
 		boolean groupNodeExists = origNet.containsNode(origGroup.getGroupNode());
 		boolean collapsed = origGroup.isCollapsed(origNet);
-		if (collapsed)
+		
+		if (collapsed) {
 			origGroup.expand(origNet);
-		else {
+		} else {
 			// If we're not collapsed, we need to clone the group node and it's edges
 			CyNode groupNode = origGroup.getGroupNode();
 
