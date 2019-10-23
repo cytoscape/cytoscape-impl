@@ -25,7 +25,7 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 @SuppressWarnings("serial")
 public abstract class RenderComponent extends JComponent {
 	
-	protected final DRenderingEngine re;
+	protected DRenderingEngine re;
 	
 	private CompositeImageCanvas fastCanvas; // treat this as the 'main' canvas
 	private CompositeImageCanvas slowCanvas;
@@ -209,6 +209,7 @@ public abstract class RenderComponent extends JComponent {
 	public void dispose() {
 		fastCanvas.dispose();
 		slowCanvas.dispose();
+		re = null;
 	}
 
 	public void showAnnotationSelection(boolean show) {

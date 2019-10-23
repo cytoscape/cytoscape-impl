@@ -165,7 +165,9 @@ public class DingDebugPanel extends JPanel implements CytoPanelComponent, DebugC
 		}
 		
 		CyNetworkView netView = e.getNetworkView();
-		if(netView != null) {
+		if(netView == null) {
+			re = null; // avoid memory leak
+		} else {
 			CyNetwork model = netView.getModel();
 			String name = model.getRow(model).get(CyNetwork.NAME, String.class);
 			networkNameLabel.setText(name);

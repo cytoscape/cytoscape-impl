@@ -326,6 +326,9 @@ public class DefaultTableBrowser extends AbstractTableBrowser
 			});
 		}
 		
+		// This avoids a memory leak on Mac
+		tableChooser.getEditor().setItem("");
+		
 		return tableChooser;
 	}
 	

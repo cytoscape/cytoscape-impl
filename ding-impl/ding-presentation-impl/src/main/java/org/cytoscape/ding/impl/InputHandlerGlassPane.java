@@ -69,6 +69,7 @@ import org.cytoscape.ding.internal.util.ViewUtil;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
+import org.cytoscape.model.CyDisposable;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
@@ -102,16 +103,17 @@ import org.cytoscape.work.swing.DialogTaskManager;
  * the small progress bar.
  */
 @SuppressWarnings("serial")
-public class InputHandlerGlassPane extends JComponent {
+public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	private static final int PROGRESS_BAR_TICKS = 1000;
 	
 	private final CyServiceRegistrar registrar;
-	private final DRenderingEngine re;
-	private final CyAnnotator cyAnnotator;
 	private final OrderedMouseAdapter orderedMouseAdapter;
 	private final PopupMenuHelper popupMenuHelper;
 	private final JProgressBar progressBar;
+	
+	private DRenderingEngine re;
+	private CyAnnotator cyAnnotator;
 	
 	
 	public InputHandlerGlassPane(CyServiceRegistrar registrar, DRenderingEngine re) {
@@ -141,6 +143,13 @@ public class InputHandlerGlassPane extends JComponent {
         
         this.popupMenuHelper = new PopupMenuHelper(re, InputHandlerGlassPane.this, registrar);
         this.progressBar = addProgressBar();
+	}
+	
+	@Override
+	public void dispose() {
+		System.out.println("InputHandlerGlassPane.dispose()");
+		re = null;
+		cyAnnotator = null;
 	}
 	
 	private JProgressBar addProgressBar() {
@@ -1525,5 +1534,5 @@ public class InputHandlerGlassPane extends JComponent {
 			}
 		}
 	}
-	
+
 }

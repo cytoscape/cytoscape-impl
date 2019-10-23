@@ -798,6 +798,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	@Override
 	public void dispose() {
 		synchronized(this) {
+			inputHandler.dispose();
 			checkDirtyTimer.stop();
 			eventFireTimer.shutdown();
 			cyAnnotator.dispose();

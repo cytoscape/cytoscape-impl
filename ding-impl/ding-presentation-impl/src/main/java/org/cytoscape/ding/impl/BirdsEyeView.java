@@ -33,7 +33,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	
 	private final double[] extents = new double[4];
 	
-	private final DRenderingEngine re;
+	private DRenderingEngine re;
 	private final RenderComponent renderComponent;
 	
 	private final CoalesceTimer contentChangedTimer;
@@ -228,6 +228,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	@Override
 	public void dispose() {
 		renderComponent.dispose();
+		re = null;
 	}
 
 	@Override
