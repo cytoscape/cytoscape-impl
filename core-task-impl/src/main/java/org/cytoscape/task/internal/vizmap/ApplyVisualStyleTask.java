@@ -95,6 +95,9 @@ public class ApplyVisualStyleTask extends AbstractNetworkViewCollectionTask impl
 		int i = 0;
 		
 		for (final CyNetworkView view : networkViews) {
+			if (cancelled)
+				return;
+				
 			tm.setStatusMessage((i + 1 ) + ": '" + DataUtils.getViewTitle(view) + "'...");
 			selectedStyle.apply(view);
 			view.updateView();

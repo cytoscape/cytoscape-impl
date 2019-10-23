@@ -66,6 +66,9 @@ public class UpdateNetworkViewTask extends AbstractTask {
 					.getNetworkViews(network);
 			
 			for (CyNetworkView view : viewList) {
+				if (cancelled)
+					return;
+				
 				view.updateView();
 				tm.showMessage(TaskMonitor.Level.INFO, "Updated view: " + view);
 			}

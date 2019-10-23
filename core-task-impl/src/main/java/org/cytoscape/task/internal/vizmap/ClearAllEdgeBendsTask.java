@@ -56,6 +56,9 @@ public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 		int total = networkViews.size();
 		
 		for (CyNetworkView nv : networkViews) {
+			if (cancelled)
+				return;
+			
 			tm.setStatusMessage(count + " of " + total + ": " + DataUtils.getViewTitle(nv) + "...");
 			tm.setProgress((float)count / total);
 			
@@ -67,7 +70,10 @@ public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 			
 			final Collection<View<CyEdge>> edgeViews = nv.getEdgeViews();
 			
-			for (final View<CyEdge> ev : edgeViews) {
+			for (View<CyEdge> ev : edgeViews) {
+				if (cancelled)
+					return;
+				
 				ev.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
 				ev.clearValueLock(BasicVisualLexicon.EDGE_BEND);
 			}

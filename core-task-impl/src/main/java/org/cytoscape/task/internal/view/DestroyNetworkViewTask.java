@@ -84,6 +84,9 @@ public class DestroyNetworkViewTask extends AbstractNetworkViewCollectionTask im
 			int viewCount = networkViews.size();
 			
 			for (final CyNetworkView nv : networkViews) {
+				if (cancelled)
+					return;
+				
 				Long suid = nv.getSUID();
 				String title = DataUtils.getViewTitle(nv);
 				viewManager.destroyNetworkView(nv);

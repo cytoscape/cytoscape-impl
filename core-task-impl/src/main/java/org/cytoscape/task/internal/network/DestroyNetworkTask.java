@@ -85,6 +85,9 @@ public class DestroyNetworkTask extends AbstractNetworkCollectionTask implements
 			networkCount = localNets.size();
 				
 			for (CyNetwork n : localNets) {
+				if (cancelled)
+					return;
+				
 				destroyNetwork(n, netManager);
 				i++;
 				tm.setProgress((i / (double) networkCount));
