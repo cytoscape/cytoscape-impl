@@ -37,8 +37,8 @@ import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.ding.impl.cyannotator.AnnotationFactoryManager;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
-import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.event.CyEventHelper;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
@@ -141,7 +141,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	
 	private Timer animationTimer;
 	private final Timer checkDirtyTimer;
-	private final CoalesceTimer eventFireTimer;
+	private final DebounceTimer eventFireTimer;
 	
 	private final BendStore bendStore;
 	private InputHandlerGlassPane inputHandler = null;
@@ -193,7 +193,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		cyAnnotator.loadAnnotations();
 		
-		eventFireTimer = new CoalesceTimer(240);
+		eventFireTimer = new DebounceTimer(240);
 		
 		// Check if the view model has changed approximately 30 times per second
 		checkDirtyTimer = new Timer(30, e -> checkModelIsDirty());

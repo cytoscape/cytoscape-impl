@@ -15,8 +15,8 @@ import javax.swing.UIManager;
 import org.cytoscape.app.internal.manager.AppManager;
 import org.cytoscape.app.internal.net.UpdateManager;
 import org.cytoscape.app.internal.ui.AppManagerMediator;
-import org.cytoscape.app.internal.util.CoalesceTimer;
 import org.cytoscape.application.swing.AbstractCyAction;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
@@ -50,7 +50,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	private final BadgeIcon icon;
 
-	private final CoalesceTimer coalesceTimer = new CoalesceTimer(2000, 1);
+	private final DebounceTimer debounceTimer = new DebounceTimer(2000);
 	
 	private final UpdateManager updateManager;
 	private final AppManagerMediator appManagerMediator;
@@ -101,7 +101,7 @@ public class UpdateNotificationAction extends AbstractCyAction {
 
 	public void updateEnableState(boolean checkForUpdates) {
 		// Debounce the update events, because checkForUpdates() can be expensive!
-		coalesceTimer.coalesce(() -> {
+		debounceTimer.debounce(() -> {
 			if (checkForUpdates)
 				updateManager.checkForUpdates();
 	

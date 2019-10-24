@@ -102,9 +102,9 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.ToolBarComponent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.internal.actions.CytoPanelAction;
 import org.cytoscape.internal.command.CommandToolPanel;
-import org.cytoscape.internal.util.CoalesceTimer;
 import org.cytoscape.internal.view.util.ToggleableButtonGroup;
 import org.cytoscape.internal.view.util.VerticalButtonUI;
 import org.cytoscape.internal.view.util.ViewUtil;
@@ -252,7 +252,7 @@ public class CytoscapeDesktop extends JFrame
 	private final Map<CytoPanelNameInternal, Dimension> undockPreferredSizes = new HashMap<>();
 	private final Map<CytoPanelNameInternal, Dimension> dockPreferredSizes = new HashMap<>();
 	
-	private final CoalesceTimer resizeEventTimer = new CoalesceTimer(200, 1);
+	private final DebounceTimer resizeEventTimer = new DebounceTimer(200);
 	
 	// These Control Panel components must respect this order
 	private List<String> controlComponentsOrder = Arrays.asList(
@@ -351,7 +351,7 @@ public class CytoscapeDesktop extends JFrame
 			@Override
 			public void componentResized(ComponentEvent evt) {
 				if (isVisible())
-					resizeEventTimer.coalesce(() -> {
+					resizeEventTimer.debounce(() -> {
 						invokeOnEDT(() -> {
 							// Update the sidebars
 							for (CytoPanelImpl cp : getAllCytoPanels()) {

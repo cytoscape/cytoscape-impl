@@ -63,9 +63,9 @@ import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
-import org.cytoscape.ding.internal.util.CoalesceTimer;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -601,7 +601,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	private class TooltipListener extends MouseAdapter {
 		
-		private CoalesceTimer delayTimer = new CoalesceTimer(60, 1);
+		private DebounceTimer delayTimer = new DebounceTimer(60);
 		
 		@Override
 		public void mouseMoved(MouseEvent e) {

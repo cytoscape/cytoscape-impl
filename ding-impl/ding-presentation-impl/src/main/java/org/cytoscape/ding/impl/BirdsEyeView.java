@@ -17,7 +17,7 @@ import javax.swing.JComponent;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.canvas.BirdsEyeViewRenderComponent;
 import org.cytoscape.ding.impl.canvas.RenderComponent;
-import org.cytoscape.ding.internal.util.CoalesceTimer;
+import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
@@ -36,7 +36,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 	private DRenderingEngine re;
 	private final RenderComponent renderComponent;
 	
-	private final CoalesceTimer contentChangedTimer;
+	private final DebounceTimer contentChangedTimer;
 	
 	public BirdsEyeView(DRenderingEngine re, CyServiceRegistrar registrar) {
 		this.re = re;
@@ -54,7 +54,7 @@ public final class BirdsEyeView implements RenderingEngine<CyNetwork>, ContentCh
 		re.addTransformChangeListener(renderComponent::repaint);
 		re.addContentChangeListener(this);
 		
-		contentChangedTimer = new CoalesceTimer(200);
+		contentChangedTimer = new DebounceTimer(200);
 		
 		renderComponent.addComponentListener(new ComponentAdapter() {
 			@Override
