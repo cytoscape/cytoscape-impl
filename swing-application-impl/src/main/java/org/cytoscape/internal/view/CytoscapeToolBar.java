@@ -211,15 +211,23 @@ public class CytoscapeToolBar extends JToolBar {
 							h += tmpScroller.getUpItem().getPreferredSize().height;
 							h += tmpScroller.getDownItem().getPreferredSize().height;
 							tmpScroller.dispose();
+							int sepIdx = -1;
 							
 							for (int count = 0; count <  popup.getComponentCount(); count++) {
 								Component comp = popup.getComponent(count);
-								h += comp.getPreferredSize().height;
+								
+								if (comp instanceof JSeparator)
+									sepIdx = count;
+								else
+									h += comp.getPreferredSize().height;
 								
 								if (h > sh) {
+									if (sepIdx >= 0)
+										popup.remove(sepIdx);
+									
 									MenuScroller.setScrollerFor(
 											popup,
-											count - 2, // (ignore 'Show/Hide All' items)
+											Math.max(1, count - 2/*make sure it fits*/ - 2/*ignore 'Show/Hide All'*/),
 											125,
 											2, // (always show 'Show/Hide All' items on top)
 											0
