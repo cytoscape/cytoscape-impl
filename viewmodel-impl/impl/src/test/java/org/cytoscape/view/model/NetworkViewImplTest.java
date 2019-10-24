@@ -17,12 +17,14 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
@@ -323,6 +325,113 @@ public class NetworkViewImplTest {
 	}
 	
 	
+	@Test
+	public void testGetNodeViewsIterableParallel() throws Exception {
+		CyNetwork network = networkSupport.getNetwork();
+		
+		for(int i = 0; i < 1000; i++) {
+			CyNode n1 = network.addNode();
+			CyNode n2 = network.addNode();
+			network.addEdge(n1, n2, false);
+			network.addEdge(n1, n2, false);
+			network.addEdge(n1, n2, false);
+		}
+		
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, null);
+		
+		assertEquals(2000, netView.getNodeViews().size());
+		assertEquals(3000, netView.getEdgeViews().size());
+		
+		ExecutorService executor = Executors.newCachedThreadPool();
+		
+		
+		Callable<Integer> iterateRunnable = () -> {
+			int count = 0;
+			var iterable = netView.getNodeViewsIterable();
+			for(var element : iterable) {
+				doSomething(element);
+				count++;
+			}
+			return count;
+		};
+		
+		Runnable mutateRunnable = () -> {
+			for(int i = 0; i < 1000; i++) {
+				netView.addNode(network.addNode());
+			}
+		};
+
+		var mutateFuture  = executor.submit(mutateRunnable);
+		var iterateFuture = executor.submit(iterateRunnable);
+		
+		mutateFuture.get();
+		int count = iterateFuture.get();
+		
+		assertEquals(2000, count);
+		assertEquals(3000, netView.getNodeViews().size());
+		
+		executor.shutdown();
+	}
+	
+	
+	@Test
+	public void testGetEdgeViewsIterableParallel() throws Exception {
+		CyNetwork network = networkSupport.getNetwork();
+		
+		for(int i = 0; i < 1000; i++) {
+			CyNode n1 = network.addNode();
+			CyNode n2 = network.addNode();
+			network.addEdge(n1, n2, false);
+			network.addEdge(n1, n2, false);
+			network.addEdge(n1, n2, false);
+		}
+		
+		CyNetworkViewImpl netView = NetworkViewTestUtils.createNetworkView(network, null);
+		
+		assertEquals(2000, netView.getNodeViews().size());
+		assertEquals(3000, netView.getEdgeViews().size());
+		
+		ExecutorService executor = Executors.newCachedThreadPool();
+		
+		Callable<Integer> iterateRunnable = () -> {
+			int count = 0;
+			var iterable = netView.getEdgeViewsIterable();
+			for(var element : iterable) {
+				doSomething(element);
+				count++;
+			}
+			return count;
+		};
+		
+		Runnable mutateRunnable = () -> {
+			for(int i = 0; i < 1000; i++) {
+				CyNode n1 = network.addNode();
+				CyNode n2 = network.addNode();
+				netView.addNode(n1);
+				netView.addNode(n2);
+				var edge = network.addEdge(n1, n2, false);
+				netView.addEdge(edge);
+			}
+		};
+
+		var mutateFuture  = executor.submit(mutateRunnable);
+		var iterateFuture = executor.submit(iterateRunnable);
+		
+		mutateFuture.get();
+		int count = iterateFuture.get();
+		
+		assertEquals(3000, count);
+		assertEquals(4000, netView.getEdgeViews().size());
+		
+		executor.shutdown();
+	}
+	
+	private static void doSomething(CyIdentifiable element) {
+		// this is just here to make sure the JIT doesn't remove this code
+		if(element.getSUID() == -99) {
+			throw new RuntimeException();
+		}
+	}
 	
 	@Test
 	public void testAdjacentEdges() {
