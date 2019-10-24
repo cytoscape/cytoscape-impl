@@ -71,9 +71,6 @@ public class ClearAllEdgeBendsTask extends AbstractNetworkViewCollectionTask {
 			final Collection<View<CyEdge>> edgeViews = nv.getEdgeViews();
 			
 			for (View<CyEdge> ev : edgeViews) {
-				if (cancelled)
-					return;
-				
 				ev.setVisualProperty(BasicVisualLexicon.EDGE_BEND, null);
 				ev.clearValueLock(BasicVisualLexicon.EDGE_BEND);
 			}
