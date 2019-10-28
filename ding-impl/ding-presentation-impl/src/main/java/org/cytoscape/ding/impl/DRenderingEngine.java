@@ -191,8 +191,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
-		cyAnnotator.loadAnnotations();
-		
 		eventFireTimer = new DebounceTimer(240);
 		
 		// Check if the view model has changed approximately 30 times per second

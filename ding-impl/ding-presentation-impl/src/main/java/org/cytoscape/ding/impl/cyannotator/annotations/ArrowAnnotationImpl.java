@@ -67,9 +67,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	private Paint targetColor;
 	private double targetSize = 1.0;
 
-	private double shapeWidth;
-	private double shapeHeight;
-
 	private double xOffset;
 	private double yOffset;
 
@@ -122,63 +119,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super(re, usedForPreviews);
 	}
 
-	public ArrowAnnotationImpl(ArrowAnnotationImpl c, boolean usedForPreviews) {
-		super(c, usedForPreviews);
 
-		// Line parameters
-		this.lineColor = c.lineColor;
-		this.lineWidth = c.lineWidth;
-
-		// Source arrow parameters
-		this.source = c.source;
-		this.sourceType = c.sourceType;
-		this.sourceColor = c.sourceColor;
-		this.sourceSize = c.sourceSize;
-
-		// Target arrow parameters
-		this.target = c.target;
-		this.targetType = c.targetType;
-		this.targetColor = c.targetColor;
-		this.targetSize = c.targetSize;
-		
-		name = c.getName() != null ? c.getName() : getDefaultName();
-	}
-
-	public ArrowAnnotationImpl(
-			DRenderingEngine re,
-			DingAnnotation source,
-			Object target,
-			float lineWidth,
-			Paint lineColor,
-			ArrowType sourceType,
-			Paint sourceColor,
-			float sourceSize,
-			ArrowType targetType,
-			Paint targetColor,
-			float targetSize
-	) {
-		super(re, source.getX(), source.getY());
-
-		// Line parameters
-		this.lineColor = lineColor;
-		this.lineWidth = lineWidth;
-
-		// Source arrow parameters
-		this.source = source;
-		this.sourceType = sourceType;
-		this.sourceColor = sourceColor;
-		this.sourceSize = sourceSize;
-
-		// Target arrow parameters
-		this.target = target;
-		this.targetType = targetType;
-		this.targetColor = targetColor;
-		this.targetSize = targetSize;
-
-		updateBounds();
-	}
-
-	public ArrowAnnotationImpl(DRenderingEngine re, Map<String, String> argMap) {
+	public ArrowAnnotationImpl(DRenderingEngine re, Map<String,String> argMap) {
 		super(re, argMap);
 
 		this.lineColor = ViewUtils.getColor(argMap, ARROWCOLOR, Color.BLACK);
@@ -204,11 +146,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (argMap.containsKey(TARGETPOINT)) {
 			String point = argMap.get(TARGETPOINT);
 			String[] xy = point.split(",");
-			double[] nextLocn = new double[2];
-			nextLocn[0] = Double.parseDouble(xy[0]);
-			nextLocn[1] = Double.parseDouble(xy[1]);
-			re.getTransform().xformNodeToImageCoords(nextLocn);
-			target = new Point2D.Double(nextLocn[0], nextLocn[1]);
+			double x = Double.parseDouble(xy[0]);
+			double y = Double.parseDouble(xy[1]);
+			target = new Point2D.Double(x, y);
 		} else if (argMap.containsKey(TARGETANN)) {
 			UUID uuid = UUID.fromString(argMap.get(TARGETANN));
 			target = cyAnnotator.getAnnotation(uuid);
@@ -217,8 +157,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			String[] xy = point.split(",");
 			double x = Double.parseDouble(xy[0]);
 			double y = Double.parseDouble(xy[1]);
-			View<CyNode> nv = re.getPicker().getNodeAt(new Point2D.Double(x, y));
-			target = nv.getModel();
+			target = re.getPicker().getNodeAt(new Point2D.Double(x, y));
 		}
 		
 		updateBounds();
@@ -248,15 +187,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (this.sourceColor != null)
 			argMap.put(SOURCECOLOR, ViewUtils.convertColor(this.sourceColor));
 
-		if (target != null && target instanceof Point2D) {
+		if (target instanceof Point2D) {
 			Point2D xy = (Point2D) target;
 			argMap.put(TARGETPOINT, Double.toString(xy.getX()) + "," + Double.toString(xy.getY()));
-		} else if (target != null && target instanceof Annotation) {
+		} else if (target instanceof Annotation) {
 			argMap.put(TARGETANN, ((DingAnnotation) target).getUUID().toString());
-		} else if (target != null && target instanceof CyNode) {
-			// MKTODO Is this correct? How can target be an instance of CyNode???
-			View<CyNode> nv = re.getViewModelSnapshot().getNodeView((CyNode) target);
-
+		} else if (target instanceof View) {
+			View<CyNode> nv = (View<CyNode>) target;
 			if (nv != null) {
 				double xCenter = re.getNodeDetails().getXPosition(nv);
 				double yCenter = re.getNodeDetails().getYPosition(nv);
@@ -274,7 +211,11 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 	}
 
 	@Override
-	public Annotation getSource() { return this.source; }
+	public Annotation getSource() { 
+		return this.source;
+	}
+	
+	
 	@Override
 	public void setSource(Annotation source) { 
 		if (this.source != null)
@@ -284,44 +225,54 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (source != null)
 			source.addArrow(this);
 
-		// updateBounds();
 		update();
 	}
 	
 	@Override
-	public Object getTarget() { return this.target; }
+	public Object getTarget() {
+		return this.target; 
+	}
+	
 	@Override
 	public void setTarget(Annotation target) { 
 		this.target = target; 
-		// updateBounds();
 		update();
 	}
 
 	@Override
+	@Deprecated
 	public void setTarget(CyNode target) { 
+		// This is only here for backwards compatibility, do not use
+		View<CyNode> nv = re.getViewModelSnapshot().getNodeView(target);
+		setTarget(nv);
+	}
+	
+	public void setTarget(View<CyNode> target) { 
 		this.target = target; 
-		// updateBounds();
 		update();
 	}
 
 	@Override
 	public void setTarget(Point2D target) { 
 		this.target = target; 
-		// updateBounds();
 		update();
 	}
 
 	@Override
-	public double getLineWidth() { return (double)lineWidth; }
+	public double getLineWidth() { 
+		return (double)lineWidth; 
+		
+	}
+	
 	@Override
-	public void setLineWidth(double width) { this.lineWidth = (float)width; update();}
+	public void setLineWidth(double width) { 
+		this.lineWidth = (float)width; 
+		update();
+	}
 
 	@Override
 	public double getArrowSize(ArrowEnd end) { 
-		if (end == ArrowEnd.SOURCE)
-			return this.sourceSize; 
-		else
-			return this.targetSize; 
+		return (end == ArrowEnd.SOURCE) ? sourceSize : targetSize; 
 	}
 	@Override
 	public void setArrowSize(ArrowEnd end, double width) { 
@@ -334,10 +285,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public String getArrowType(ArrowEnd end) { 
-		if (end == ArrowEnd.SOURCE)
-			return this.sourceType.arrowName(); 
-		else
-			return this.targetType.arrowName(); 
+		return (end == ArrowEnd.SOURCE) ? sourceType.arrowName() : targetType.arrowName(); 
 	}
 
 	@Override
@@ -350,7 +298,8 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			}
 		}
 
-		if (aType == null) return;
+		if (aType == null) 
+			return;
 
 		if (end == ArrowEnd.SOURCE)
 			this.sourceType = aType; 
@@ -361,10 +310,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public AnchorType getAnchorType(ArrowEnd end) {
-		if (end == ArrowEnd.SOURCE)
-			return this.sourceAnchorType; 
-		else
-			return this.targetAnchorType; 
+		return (end == ArrowEnd.SOURCE) ? sourceAnchorType : targetAnchorType; 
 	}
 
 	@Override
@@ -389,10 +335,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	@Override
 	public Paint getArrowColor(ArrowEnd end) { 
-		if (end == ArrowEnd.SOURCE)
-			return this.sourceColor; 
-		else
-			return this.targetColor; 
+		return (end == ArrowEnd.SOURCE) ? sourceColor : targetColor; 
 	}
 
 	@Override
@@ -402,25 +345,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		else
 			this.targetColor = color; 
 		update();
-	}
-
-	@Override
-	public void setZoom(double zoom) {
-		if (zoom == getZoom())
-			return;
-
-		float factor = (float) (zoom / getZoom());
-		lineWidth *= factor;
-		updateBounds();
-		super.setZoom(zoom);
-	}
-
-	@Override
-	public void setSpecificZoom(double zoom) {
-		if (zoom == getSpecificZoom())
-			return;
-		
-		super.setSpecificZoom(zoom);		
 	}
 
 	@Override
@@ -451,23 +375,22 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 		// Get the stroke
 		float border = (float)(lineWidth/2.0);
-		if (!isPrinting && border < 1.0f) border = 1.0f;
+		if (!isPrinting && border < 1.0f) 
+			border = 1.0f;
 		g2.setPaint(lineColor);
 		g2.setStroke(new BasicStroke(border, BasicStroke.JOIN_ROUND, BasicStroke.JOIN_ROUND, 10.0f));
 		
-		Line2D relativeLine = arrowLine != null ? getRelativeLine(arrowLine, 0.0, 0.0, 1.0, border) : null;
-
-		if (relativeLine != null) {
+		if (arrowLine != null) {
 			// Handle opacity
 			if (lineColor instanceof Color) {
 				int alpha = ((Color)lineColor).getAlpha();
 				float opacity = (float)alpha/(float)255;
 				final Composite originalComposite = g2.getComposite();
 				g2.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, opacity));
-				g2.draw(relativeLine);
+				g2.draw(arrowLine);
 				g2.setComposite(originalComposite);
 			} else {
-				g2.draw(relativeLine);
+				g2.draw(arrowLine);
 			}
 		}
 
@@ -477,13 +400,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (sourceType != ArrowType.NONE) {
 			if (sourceColor == null) 
 				sourceColor = lineColor;
-			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.SOURCE, sourceColor, sourceSize*10.0*getZoom(), sourceType);
+			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.SOURCE, sourceColor, sourceSize*10.0*getZoom(), sourceType);
 		}
 
 		if (targetType != ArrowType.NONE) {
 			if (targetColor == null) 
 				targetColor = lineColor;
-			GraphicsUtilities.drawArrow(g, relativeLine, ArrowEnd.TARGET, targetColor, targetSize*10.0*getZoom(), targetType);
+			GraphicsUtilities.drawArrow(g, arrowLine, ArrowEnd.TARGET, targetColor, targetSize*10.0*getZoom(), targetType);
 		}
 	}
 
@@ -493,47 +416,13 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		super.update();
 	}
 
-	public void setSize(double width, double height) {
-		shapeWidth = width;
-		shapeHeight = height;
-		setSize((int)shapeWidth, (int)shapeHeight);
-	}
-
 	@Override
 	public JDialog getModifyDialog() {
 		return new ArrowAnnotationDialog(this, ViewUtil.getActiveWindow(re));
 	}
 
-	private Line2D getRelativeLine(Line2D line, double x, double y, 
-	                               double scaleFactor, double stroke) {
-		if (usedForPreviews || line == null) 
-			return line;
-
-		double x1 = line.getX1()*scaleFactor;
-		double x2 = line.getX2()*scaleFactor;
-		double width = Math.abs(x2-x1)+xOffset*scaleFactor;
-		double y1 = line.getY1()*scaleFactor;
-		double y2 = line.getY2()*scaleFactor;
-		double height = Math.abs(y2-y1)+yOffset*scaleFactor;
-		if (y2 < y1) {
-			y1 = height+y-stroke;
-			y2 = yOffset*scaleFactor+y+stroke;
-		} else {
-			y1 = yOffset*scaleFactor+y+stroke;
-			y2 = height+y-stroke;
-		}
-		if (x2 < x1) {
-			x1 = width+x-stroke;
-			x2 = xOffset*scaleFactor+x+stroke;
-		} else {
-			x1 = xOffset*scaleFactor+x+stroke;
-			x2 = width+x-stroke;
-		}
-		return new Line2D.Double(x1, y1, x2, y2);
-	}
 
 	private void updateBounds() {
-
 		xOffset = 0.0; yOffset = 0.0;
 
 		// We need to take into account our arrows
@@ -564,7 +453,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 
 	private Line2D getArrowLine(Object target, DingAnnotation source) {
 		if (usedForPreviews)
-			return new Line2D.Double(10.0, shapeHeight/2, shapeWidth-20.0, shapeHeight/2);
+			return new Line2D.Double(10.0, getHeight()/2, getWidth()-20.0, getHeight()/2);
 
 		Point2D targetPoint = null;
 		Point2D sourceCenter = centerPoint(source.getBounds());
@@ -577,9 +466,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 			Rectangle2D targetBounds = a.getBounds();
 			// Find the closest face and return
 			targetPoint = findFace(sourceCenter, targetBounds, targetAnchorType);
-		} else if (target instanceof CyNode) {
+		} else if (target instanceof View) {
 			// get the target point from ding
-			View<CyNode> nv = re.getViewModelSnapshot().getNodeView((CyNode)target);
+			View<CyNode> nv = (View<CyNode>) target;
 			Rectangle2D nodeBounds = getNodeBounds(nv);
 			targetPoint = findFace(sourceCenter, nodeBounds, targetAnchorType);
 		}
@@ -590,14 +479,12 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		return targetPoint != null ? new Line2D.Double(sourcePoint, targetPoint) : null;
 	}
 
-	private Point2D centerPoint(Rectangle2D bounds) {
-		return new Point2D.Double(bounds.getX()+bounds.getWidth()/2.0,
-		                          bounds.getY()+bounds.getHeight()/2.0);
-		
+	private static Point2D centerPoint(Rectangle2D bounds) {
+		return new Point2D.Double(bounds.getCenterX(), bounds.getCenterY());
 	}
 
 	// Find the mid point to draw the target to
-	private Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
+	private static Point2D findFace(Point2D source, Rectangle2D target, AnchorType anchorType) {
 		if (source == null || target == null)
 			return null;
 		
@@ -659,8 +546,6 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		if (nv == null)
 			return null;
 		
-		double[] nextLocn = new double[2];
-
 		NodeDetails nodeDetails = re.getNodeDetails();
 		
 		// First, get our starting and ending points in node coordinates
@@ -670,27 +555,9 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		double width  = nodeDetails.getWidth(nv);
 		double height = nodeDetails.getHeight(nv);
 
-		double xStart = xCenter-width/2.0;
-		double yStart = yCenter-height/2.0;
+		double xStart = xCenter - width/2.0;
+		double yStart = yCenter - height/2.0;
 
-		double xEnd = xStart+width;
-		double yEnd = yStart+height;
-
-		// Now convert to component coordinates
-		nextLocn[0] = xStart;
-		nextLocn[1] = yStart;
-		re.getTransform().xformNodeToImageCoords(nextLocn);
-
-		double x = nextLocn[0];
-		double y = nextLocn[1];
-
-		nextLocn[0] = xEnd;
-		nextLocn[1] = yEnd;
-		re.getTransform().xformNodeToImageCoords(nextLocn);
-
-		width = nextLocn[0]-x;
-		height = nextLocn[1]-y;
-
-		return new Rectangle2D.Double(x, y, width, height);
+		return new Rectangle2D.Double(xStart, yStart, width, height);
 	}
 }

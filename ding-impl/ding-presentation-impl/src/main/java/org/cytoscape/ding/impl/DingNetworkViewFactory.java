@@ -72,6 +72,10 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 		netView.addNetworkViewListener(re);
 		
 		mainRenderingEngines.put(netView, re);
+		
+		// this has to be done after DRenderingEngine is instantiated and added to mainRenderingEngines
+		re.getCyAnnotator().loadAnnotations();
+		
 		return netView;
 	}
 	

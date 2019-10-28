@@ -1086,7 +1086,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				return;
 
 
-			if (resizeAnnotation != null) {
+			if(resizeAnnotation != null) {
 				Rectangle2D initialBounds = cyAnnotator.getResizeBounds(); // node coords
 				var point = re.getTransform().getNodeCoordinates(e.getPoint());
 				var bounds = AnnotationSelection.resize(Position.SOUTH_EAST, initialBounds, point.getX(), point.getY());
@@ -1094,27 +1094,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				resizeAnnotation.update();
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
 				
-			} else if (repositionAnnotation != null) {
-				// MKTODO this is probably broken
+			} else if(repositionAnnotation != null) {
 				Point mousePoint = e.getPoint();
 
-				// See what's under our mouse
-				// Annotation?
 				List<DingAnnotation> annotations = re.getPicker().getAnnotationsAt(mousePoint);
 				if (annotations.contains(repositionAnnotation))
 					annotations.remove(repositionAnnotation);
 
-				if (annotations.size() > 0) {
+				// Target can be another annotation, a node, or just a point.
+				if(annotations.size() > 0) {
 					repositionAnnotation.setTarget(annotations.get(0));
-
-				// Node?
-				} else if (overNode(mousePoint)) {
-					CyNode overNode = getNodeAtLocation(mousePoint);
+				} else if(overNode(mousePoint)) {
+					View<CyNode> overNode = re.getPicker().getNodeAt(mousePoint);
 					repositionAnnotation.setTarget(overNode);
-
-				// Nope, just set the point
 				} else {
-					repositionAnnotation.setTarget(mousePoint);
+					Point2D nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
+					repositionAnnotation.setTarget(nodeCoordinates);
 				}
 
 				repositionAnnotation.update();
@@ -1432,11 +1427,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		return re.getPicker().getNodeAt(mousePoint) != null;
 	}
 
-	private CyNode getNodeAtLocation(Point2D mousePoint) {
-		return re.getPicker().getNodeAt(mousePoint).getModel();
-	}
-	
-	
 	private <T extends CyIdentifiable> void toggleSelection(View<T> element, Class<T> type, Toggle toggle) {
 		if(element != null) {
 			if(toggle == Toggle.SELECT)
