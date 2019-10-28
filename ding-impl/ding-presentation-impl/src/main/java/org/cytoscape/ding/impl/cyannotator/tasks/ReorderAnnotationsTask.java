@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree;
 import org.cytoscape.ding.impl.cyannotator.AnnotationTree.Shift;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
@@ -98,6 +99,7 @@ public class ReorderAnnotationsTask extends AbstractTask {
 		CyAnnotator cyAnnotator = re.getCyAnnotator();
 		AnnotationTree tree = cyAnnotator.getAnnotationTree();
 		tree.resetZOrder();
+		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
 	
 
