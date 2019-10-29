@@ -244,7 +244,7 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 	}
 	
 	@Override
-	public View<CyEdge> getEdgeView(long suid) {
+	public CyEdgeViewImpl getEdgeView(long suid) {
 		return viewSuidToEdge.getOrElse(suid, null);
 	}
 	
