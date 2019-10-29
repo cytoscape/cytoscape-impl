@@ -218,7 +218,9 @@ public final class GraphRenderer {
 					if (!edgeDetails.isVisible(edge))
 						continue;
 					SnapshotEdgeInfo edgeInfo = netView.getEdgeInfo(edge);
-					final long otherNode = nodeSuid ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+					var sourceViewSUID = edgeInfo.getSourceViewSUID();
+					var targetViewSUID = edgeInfo.getTargetViewSUID();
+					final long otherNode = nodeSuid ^ sourceViewSUID ^ targetViewSUID;
 					final View<CyNode> otherCyNode = netView.getNodeView(otherNode);
 
 					if (nodeBuff.get(otherNode) < 0) { // Has not yet been rendered.
@@ -236,7 +238,7 @@ public final class GraphRenderer {
 						final byte trgShape;
 						final float[] srcExtents;
 						final float[] trgExtents;
-						if (nodeSuid == edgeInfo.getSourceViewSUID()) {
+						if (nodeSuid == sourceViewSUID) {
 							srcShape = nodeShape;
 							trgShape = otherNodeShape;
 							srcExtents = floatBuff1;

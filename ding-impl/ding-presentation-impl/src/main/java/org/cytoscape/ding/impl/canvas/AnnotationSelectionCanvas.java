@@ -6,13 +6,13 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
-public class AnnotationSelectionCanvas extends DingCanvas<NetworkImageBuffer> {
+public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	private final DRenderingEngine re;
 	private boolean show = true;
 	
-	public AnnotationSelectionCanvas(NetworkImageBuffer transform, DRenderingEngine re) {
-		super(transform);
+	public AnnotationSelectionCanvas(GP graphics, DRenderingEngine re) {
+		super(graphics);
 		this.re = re;
 	}
 	
@@ -22,9 +22,11 @@ public class AnnotationSelectionCanvas extends DingCanvas<NetworkImageBuffer> {
 		if(pm.isCancelled())
 			return;
 		
-		var selection = re.getCyAnnotator().getAnnotationSelection();
+		Graphics2D g = graphicsProvider.getGraphics();
+		if(g == null)
+			return;
 		
-		Graphics2D g = transform.getGraphics();
+		var selection = re.getCyAnnotator().getAnnotationSelection();
 		selection.paint(g);		
 		g.dispose();
 	}

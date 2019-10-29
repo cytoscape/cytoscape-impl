@@ -7,16 +7,19 @@ import java.util.Objects;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 
-public class ColorCanvas<T extends NetworkTransform> extends DingCanvas<T> {
+public class ColorCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	public static final Color DEFAULT_COLOR = Color.WHITE;
 	
 	private Color color;
 	private boolean dirty = true;
 	
-	public ColorCanvas(T t, Color color) {
-		super(t);
+	public ColorCanvas(GP g, Color color) {
+		super(g);
 		setColor(color);
+		g.getTransform().addTransformChangeListener(() -> {
+			dirty = true;
+		});
 	}
 	
 	
@@ -32,12 +35,6 @@ public class ColorCanvas<T extends NetworkTransform> extends DingCanvas<T> {
 	}
 
 	@Override
-	public void setViewport(int width, int height) {
-		super.setViewport(width, height);
-		dirty = true;
-	}
-	
-	@Override
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		if(pm.isCancelled())
 			return;
@@ -51,8 +48,11 @@ public class ColorCanvas<T extends NetworkTransform> extends DingCanvas<T> {
 	}
 
 	private void fill() {
-		Graphics2D g = transform.getGraphics();
-		g.setColor(color);
-		g.fillRect(0, 0, transform.getWidth(), transform.getHeight());
+		NetworkTransform t = graphicsProvider.getTransform();
+		Graphics2D g = graphicsProvider.getGraphics();
+		if(g != null) {
+			g.setColor(color);
+			g.fillRect(0, 0, t.getWidth(), t.getHeight());
+		}
 	}
 }

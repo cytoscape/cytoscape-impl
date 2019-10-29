@@ -9,13 +9,13 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
+import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.VPNetworkStore;
 import org.cytoscape.view.model.internal.model.VPStore;
@@ -30,7 +30,7 @@ import io.vavr.collection.Set;
 public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> implements CyNetworkViewSnapshot {
 	
 	private final String rendererId;
-	private final CyNetworkView networkView;
+	private final CyNetworkViewImpl networkView;
 
 	// View object is stored twice, using both the view suid and model suid as keys.
 	private final Map<Long,CyNodeViewImpl> dataSuidToNode;
@@ -56,7 +56,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	
 	
 	public CyNetworkViewSnapshotImpl(
-			CyNetworkView networkView,
+			CyNetworkViewImpl networkView,
 			String rendererId,
 			Map<Long,CyNodeViewImpl> dataSuidToNode,
 			Map<Long,CyNodeViewImpl> viewSuidToNode,
@@ -148,7 +148,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 	}
 	
 	@Override
-	public CyNetworkView getMutableNetworkView() {
+	public CyNetworkViewImpl getMutableNetworkView() {
 		return networkView;
 	}
 	

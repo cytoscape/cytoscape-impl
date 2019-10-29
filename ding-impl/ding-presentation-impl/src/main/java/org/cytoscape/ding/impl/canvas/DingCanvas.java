@@ -30,37 +30,30 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 /**
  * 
  */
-public abstract class DingCanvas<T extends NetworkTransform> {
+public abstract class DingCanvas<GP extends GraphicsProvider> {
 	
-	protected final T transform;
+	protected GP graphicsProvider;
 	
-	
-	public DingCanvas(T transform) {
-		this.transform = transform;
+	public DingCanvas(GP graphicsProvider) {
+		this.graphicsProvider = graphicsProvider;
 	}
 	
-	public void setViewport(int width, int height) {
-		transform.setViewport(width, height);
-	}
-	
-	public void setCenter(double x, double y) {
-		transform.setCenter(x, y);
-	}
-	
-	public void setScaleFactor(double scaleFactor) {
-		transform.setScaleFactor(scaleFactor);
-	}
-	
-	public T getTransform() {
-		return transform;
-	}
 	
 	public abstract void paint(ProgressMonitor pm, RenderDetailFlags flags); 
 	
-	public T paintAndGet(ProgressMonitor pm, RenderDetailFlags flags) {
+	
+	public GP getGraphicsProvier() {
+		return graphicsProvider;
+	}
+	
+	public void setGraphicsProvider(GP graphicsProvider) {
+		this.graphicsProvider = graphicsProvider;
+	}
+	
+	public GP paintAndGet(ProgressMonitor pm, RenderDetailFlags flags) {
 		pm = ProgressMonitor.notNull(pm);
 		paint(pm, flags);
-		return transform;
+		return graphicsProvider;
 	}
 	
 	public void dispose() {

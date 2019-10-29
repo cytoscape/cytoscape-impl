@@ -21,6 +21,7 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cytoscape.ding.impl.canvas.GraphicsProvider;
 import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.immed.arrow.Arrow;
 import org.cytoscape.graph.render.immed.arrow.ArrowheadArrow;
@@ -190,8 +191,7 @@ public final class GraphGraphics {
 	private char[] m_charBuff = new char[20];
 	private final FontRenderContext m_fontRenderContextFull = new FontRenderContext(null,true,true);
 	
-	
-	private final NetworkTransform transform;
+	private final GraphicsProvider graphicsProvider;
 	
 	private Graphics2D m_g2d;
 	private Graphics2D m_gMinimal; // We use mostly java.awt.Graphics methods.
@@ -229,14 +229,14 @@ public final class GraphGraphics {
 	 *            if this is true, we will clear the image before drawing.  This should
 	 *            only ever be false when we're printing....
 	 */
-	public GraphGraphics(NetworkTransform transform) {
-		this.transform = transform;
+	public GraphGraphics(GraphicsProvider graphicsProvider) {
+		this.graphicsProvider = graphicsProvider;
 		m_path2dPrime.setWindingRule(GeneralPath.WIND_EVEN_ODD);
 		initialize(CLEAR_PAINT);
 	}
 	
 	public NetworkTransform getTransform() {
-		return transform;
+		return graphicsProvider.getTransform();
 	}
 
 	/**
@@ -287,7 +287,7 @@ public final class GraphGraphics {
 			m_g2d.dispose();
 		}
 
-		m_g2d = transform.getGraphics();
+		m_g2d = graphicsProvider.getGraphics();
 
 //		final Composite origComposite = m_g2d.getComposite();
 //		m_g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC));
@@ -370,7 +370,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = yMin;
 		m_ptsBuff[2] = xMax;
 		m_ptsBuff[3] = yMax;
-		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		// Here, double values outside of the range of ints will be cast to
 		// the nearest int without overflow.
@@ -388,7 +388,7 @@ public final class GraphGraphics {
 	 * Sets m_gMinimal.
 	 */
 	private final void makeMinimalGraphics() {
-		m_gMinimal = transform.getGraphics();
+		m_gMinimal = graphicsProvider.getGraphics();
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_SPEED);
 		m_gMinimal.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION, RenderingHints.VALUE_ALPHA_INTERPOLATION_SPEED);
@@ -820,7 +820,7 @@ public final class GraphGraphics {
 		m_ptsBuff[1] = y0;
 		m_ptsBuff[2] = x1;
 		m_ptsBuff[3] = y1;
-		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
+		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 2);
 
 		final int xNot = (int) m_ptsBuff[0];
 		final int yNot = (int) m_ptsBuff[1];
@@ -1668,7 +1668,7 @@ public final class GraphGraphics {
 
 		m_ptsBuff[0] = xCenter;
 		m_ptsBuff[1] = yCenter;
-		transform.getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
+		getTransform().getAffineTransform().transform(m_ptsBuff, 0, m_ptsBuff, 0, 1);
 		m_gMinimal.setFont(font);
 
 		final FontMetrics fMetrics = m_gMinimal.getFontMetrics();

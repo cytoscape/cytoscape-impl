@@ -38,13 +38,13 @@ import org.cytoscape.view.vizmap.VisualPropertyDependency;
 /**
  * Canvas to be used for drawing actual network visualization
  */
-public class NodeCanvas<T extends NetworkTransform> extends DingCanvas<T> {
+public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	private final VisualMappingManager vmm;
 	private final DRenderingEngine re;
 
-	public NodeCanvas(T t, DRenderingEngine re) {
-		super(t);
+	public NodeCanvas(GP graphics, DRenderingEngine re) {
+		super(graphics);
 		this.re = re;
 		this.vmm = re.getServiceRegistrar().getService(VisualMappingManager.class);
 	}
@@ -58,7 +58,7 @@ public class NodeCanvas<T extends NetworkTransform> extends DingCanvas<T> {
 	public void paint(ProgressMonitor pm, RenderDetailFlags flags) {
 		var dependencies = getVPDeps();
 		var snapshot = re.getViewModelSnapshot();
-		var graphics = new GraphGraphics(transform); // MKTODO don't need to create a graphics object on every frame
+		var graphics = new GraphGraphics(graphicsProvider); // MKTODO don't need to create a GraphGraphics object on every frame
 		var edgeDetails = re.getEdgeDetails();
 		var nodeDetails = re.getNodeDetails();
 		

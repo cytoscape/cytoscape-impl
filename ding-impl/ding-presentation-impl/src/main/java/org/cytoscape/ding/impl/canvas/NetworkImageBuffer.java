@@ -11,44 +11,64 @@ import java.awt.image.BufferedImage;
  * This allows Canvases to paint in parallel because each canvas can have a separate
  * image buffer.
  */
-public class NetworkImageBuffer extends NetworkTransform {
+public class NetworkImageBuffer implements ImageGraphicsProvider {
 	
 	private static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
 	
+	private NetworkTransform transform;
+	private boolean enabled = true;
 	private Image image;
 	
-	public NetworkImageBuffer(int width, int height) {
-		super(width, height);
-		updateImage();
-	}
-	
-	public NetworkImageBuffer(NetworkTransform t) {
-		super(t);
+	public NetworkImageBuffer(NetworkTransform transform) {
+		this.transform = transform;
+		transform.addTransformChangeListener(this::updateImage);
 		updateImage();
 	}
 	
 	private void updateImage() {
-		this.image = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+		if(!enabled) {
+			this.image = null;
+			return;
+		}
+		
+		if(image == null || (transform.getWidth() != image.getWidth(null) || transform.getHeight() != image.getHeight(null))) {
+			this.image = new BufferedImage(transform.getWidth(), transform.getHeight(), BufferedImage.TYPE_INT_ARGB);
+		}
 	}
 	
+	@Override
+	public NetworkTransform getTransform() {
+		return transform;
+	}
+	
+	@Override
 	public Image getImage() {
 		return image;
 	}
 	
-	@Override
-	public void setViewport(int width, int height) {
-		if(getWidth() != width || getHeight() != height) {
-			super.setViewport(width, height);
-			updateImage();
-		}
+	public boolean isEnabled() {
+		return enabled;
 	}
 	
+	public void setEnabled(boolean enabled) {
+		if(this.enabled == enabled)
+			return;
+		
+		this.enabled = enabled;
+		
+		if(enabled)
+			updateImage();
+		else
+			this.image = null;
+	}
 	/**
 	 * Returns the Graphics2D object directly from the image buffer, the AffineTransform has not 
 	 * been applied yet. To draw in node coordinates make sure to call
 	 * g.setTransform(networkImageBuffer.getAffineTransform()).
 	 */
 	public Graphics2D getGraphics() {
+		if(!enabled || image == null)
+			return null;
 		var g = (Graphics2D) image.getGraphics();
 		clear(g);
 		return g;
@@ -56,6 +76,7 @@ public class NetworkImageBuffer extends NetworkTransform {
 	
 	private void clear(Graphics2D g) {
 		g.setBackground(TRANSPARENT_COLOR);
-		g.clearRect(0, 0, getWidth(), getHeight());
+		g.clearRect(0, 0, image.getWidth(null), image.getHeight(null));
 	}
+
 }
