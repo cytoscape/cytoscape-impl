@@ -56,13 +56,13 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 	private final boolean fitContent; 
 
 	public CopyExistingViewTask(
-			final RenderingEngineManager renderingEngineMgr,
-             final CyNetworkView newView, 
-             final CyNetworkView sourceView,
-             final VisualStyle style,
-             final Map<CyNode, CyNode> new2sourceNodeMap /*may be null*/,
-             final Map<CyEdge, CyEdge> new2sourceEdgeMap /*may be null*/,
-             final boolean fitContent
+			RenderingEngineManager renderingEngineMgr,
+			CyNetworkView newView,
+			CyNetworkView sourceView,
+			VisualStyle style,
+			Map<CyNode, CyNode> new2sourceNodeMap /* may be null */,
+			Map<CyEdge, CyEdge> new2sourceEdgeMap /* may be null */,
+			boolean fitContent
 	) {
 		this.newView = newView;
 		this.sourceView = sourceView;
@@ -112,8 +112,14 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 		}
 		
 		// Copy node locations and locked visual properties
-		for (final View<CyNode> newNodeView : newView.getNodeViews()) {
-			final View<CyNode> origNodeView = getOriginalNodeView(newNodeView); 
+		tm.setStatusMessage("Copying node views...");
+		tm.setProgress(0.1);
+		
+		for (var newNodeView : newView.getNodeViews()) {
+			if (cancelled)
+				return;
+			
+			var origNodeView = getOriginalNodeView(newNodeView); 
 			
 			if (origNodeView == null)
 				continue;
@@ -125,34 +131,45 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 
 			if (nodeProps != null) {
 				// Set lock (if necessary)
-				for (final VisualProperty vp : nodeProps) {
+				for (VisualProperty<?> vp : nodeProps) {
 					if (origNodeView.isValueLocked(vp))
 						newNodeView.setLockedValue(vp, origNodeView.getVisualProperty(vp));
 				}
 			}
 		}
 		
+		// Copy edge locked visual properties
+		tm.setStatusMessage("Copying edge views...");
 		tm.setProgress(0.5);
 		
-		// Copy edge locked visual properties
-		for (final View<CyEdge> newEdgeView : newView.getEdgeViews()) {
-			final View<CyEdge> origEdgeView = getOriginalEdgeView(newEdgeView); 
+		for (var newEdgeView : newView.getEdgeViews()) {
+			if (cancelled)
+				return;
+			
+			var origEdgeView = getOriginalEdgeView(newEdgeView); 
 			
 			if (origEdgeView != null && edgeProps != null) {
 				// Set lock (if necessary)
-				for (final VisualProperty vp : edgeProps) {
+				for (VisualProperty<?> vp : edgeProps) {
 					if (origEdgeView.isValueLocked(vp))
 						newEdgeView.setLockedValue(vp, origEdgeView.getVisualProperty(vp));
 				}
 			}
 		}
 		
+		tm.setStatusMessage("Applying style...");
 		tm.setProgress(0.9);
+		
+		if (cancelled)
+			return;
 		
 		if (style != null) {
 			style.apply(newView);
 			newView.updateView();
 		}
+		
+		if (cancelled)
+			return;
 		
 		if (fitContent)
 			newView.fitContent();

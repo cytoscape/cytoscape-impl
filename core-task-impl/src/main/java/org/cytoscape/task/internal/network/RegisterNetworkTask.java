@@ -112,34 +112,49 @@ public class RegisterNetworkTask extends AbstractTask implements ObservableTask 
 	
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Register Networks");
+		tm.setStatusMessage("Registering " + networks.size() + " network(s)...");
 		tm.setProgress(0.0);
 		
 		for (CyNetwork network: networks) {
+			if (cancelled)
+				return;
+			
 			if (!networkManager.networkExists(network.getSUID()))
 				networkManager.addNetwork(network, false);
 		}
 		
-		tm.setProgress(0.1);
+		tm.setProgress(0.4);
 		
-		if (views != null ) {
-			for (CyNetworkView view: views) {
+		if (views != null) {
+			tm.setStatusMessage("Registering " + views.size() + " view(s)...");
+
+			for (CyNetworkView view : views) {
+				if (cancelled)
+					return;
+
 				if (view != null) {
 					networkViewManager.addNetworkView(view, false);
 					tm.setProgress(0.2);
-					
+
 					if (style != null) {
 						vmm.setVisualStyle(style, view);
 						tm.setProgress(0.8);
 					}
+
 					view.updateView();
 				}
 			}
 		}
 		
+		if (cancelled)
+			return;
+		
+		tm.setProgress(0.9);
+
 		if (views != null) {
 			appMgr.setCurrentNetworkView(views.get(0));
 			appMgr.setSelectedNetworkViews(views);
-			tm.setProgress(0.9);
 		} else {
 			appMgr.setCurrentNetwork(networks.get(0));
 		}
