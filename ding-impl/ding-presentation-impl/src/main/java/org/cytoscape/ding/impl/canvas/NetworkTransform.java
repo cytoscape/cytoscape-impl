@@ -1,6 +1,5 @@
 package org.cytoscape.ding.impl.canvas;
 
-import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
@@ -13,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.cytoscape.ding.impl.TransformChangeListener;
 
-public abstract class NetworkTransform {
+public class NetworkTransform {
 	
 	private int width;
 	private int height;
@@ -33,6 +32,15 @@ public abstract class NetworkTransform {
 		updateTransform();
 	}
 	
+	public NetworkTransform(int width, int height, double x, double y, double scaleFactor) {
+		this.width = width;
+		this.height = height;
+		this.x = x;
+		this.y = y;
+		this.scaleFactor = scaleFactor;
+		updateTransform();
+	}
+	
 	public NetworkTransform(NetworkTransform t) {
 		this.width = t.width;
 		this.height = t.height;
@@ -41,8 +49,6 @@ public abstract class NetworkTransform {
 		this.scaleFactor = t.scaleFactor;
 		updateTransform();
 	}
-	
-	public abstract Graphics2D getGraphics();
 	
 	public int getWidth() {
 		return width;

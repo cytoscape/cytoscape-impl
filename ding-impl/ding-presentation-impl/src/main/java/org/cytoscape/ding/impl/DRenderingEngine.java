@@ -177,12 +177,12 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
 		
-		renderComponent = new MainRenderComponent(this, dingGraphLOD);
-		picker = new NetworkPicker(this, null);
-
 		// Finally, intialize our annotations
 		cyAnnotator = new CyAnnotator(this, annMgr, registrar);
 		registrar.registerService(cyAnnotator, SessionAboutToBeSavedListener.class, new Properties());
+		
+		renderComponent = new MainRenderComponent(this, dingGraphLOD);
+		picker = new NetworkPicker(this, null);
 		
 		// Updating the snapshot for nested networks
 		addContentChangeListener(() -> {
@@ -698,11 +698,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			double zoom = Math.min(((double) width)  / (extents[2] - extents[0]), 
                                    ((double) height) / (extents[3] - extents[1])) * 0.98;
 			
-			NetworkImageBuffer buffer = new NetworkImageBuffer(width, height);
-			buffer.setCenter(xCenter, yCenter);
-			buffer.setScaleFactor(zoom);
+			NetworkTransform transform = new NetworkTransform(width, height, xCenter, yCenter, zoom);
+			NetworkImageBuffer buffer = new NetworkImageBuffer(transform);
 			
-			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, getBackgroundColor(), dingGraphLOD, buffer);
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, getBackgroundColor(), dingGraphLOD, transform);
 			
 			image[0] = buffer.getImage();
 		});

@@ -32,20 +32,20 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  * #L%
  */
 
-public class AnnotationCanvas<T extends NetworkTransform> extends DingCanvas<T> {
+public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 	
 	private final DingAnnotation.CanvasID canvasID;
 	private final DRenderingEngine re;
 	private boolean showSelection = true;
 	
-	public AnnotationCanvas(T t, DRenderingEngine re, DingAnnotation.CanvasID canvasID) {
-		super(t);
+	public AnnotationCanvas(GP graphics, DRenderingEngine re, DingAnnotation.CanvasID canvasID) {
+		super(graphics);
 		this.re = re;
 		this.canvasID = canvasID;
 	}
 
-	public AnnotationCanvas(T t, DRenderingEngine re, DingAnnotation.CanvasID canvasID, boolean showSelection) {
-		this(t, re, canvasID);
+	public AnnotationCanvas(GP graphics, DRenderingEngine re, DingAnnotation.CanvasID canvasID, boolean showSelection) {
+		this(graphics, re, canvasID);
 		this.showSelection = showSelection;
 	}
 
@@ -64,7 +64,11 @@ public class AnnotationCanvas<T extends NetworkTransform> extends DingCanvas<T> 
 		if(pm.isCancelled())
 			return;
 		
-		Graphics2D g = transform.getGraphics();
+		Graphics2D g = graphicsProvider.getGraphics();
+		if(g == null)
+			return;
+		
+		var transform = graphicsProvider.getTransform();
 		g.setTransform(transform.getAffineTransform());
 		
 		Rectangle2D visibleArea = transform.getNetworkVisibleAreaNodeCoords();

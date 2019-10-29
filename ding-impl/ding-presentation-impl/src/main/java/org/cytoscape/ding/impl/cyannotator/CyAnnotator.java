@@ -222,6 +222,15 @@ public class CyAnnotator implements SessionAboutToBeSavedListener {
 		return getAnnotations(canvasId, true);
 	}
 	
+	public boolean hasAnnotations(CanvasID canvasId) {
+		for(var a : annotationSet) {
+			if(a.getCanvas() == canvasId) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Returns the annotations on the given canvas sorted by z-order.
 	 * @param ascending If true sort ascending, otherwise descending

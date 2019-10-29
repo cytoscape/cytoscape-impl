@@ -16,6 +16,7 @@ import java.util.function.Predicate;
 
 import org.cytoscape.ding.debug.DebugProgressMonitor;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.graph.render.stateful.GraphLOD;
 import org.cytoscape.graph.render.stateful.RenderDetailFlags;
@@ -30,17 +31,18 @@ public class CompositeImageCanvas {
 	private final DRenderingEngine re;
 	
 	// Canvas layers from top to bottom
-	private final AnnotationSelectionCanvas annotationSelectionCanvas;
-	private final AnnotationCanvas<NetworkImageBuffer> foregroundAnnotationCanvas;
-	private final NodeCanvas<NetworkImageBuffer> nodeCanvas;
-	private final EdgeCanvas<NetworkImageBuffer> edgeCanvas;
-	private final AnnotationCanvas<NetworkImageBuffer> backgroundAnnotationCanvas;
-	private final ColorCanvas<NetworkImageBuffer> backgroundColorCanvas;
+	private final AnnotationSelectionCanvas<ImageGraphicsProvider> annotationSelectionCanvas;
+	private final AnnotationCanvas<ImageGraphicsProvider> fgAnnotationCanvas;
+	private final NodeCanvas<ImageGraphicsProvider> nodeCanvas;
+	private final EdgeCanvas<ImageGraphicsProvider> edgeCanvas;
+	private final AnnotationCanvas<ImageGraphicsProvider> bgAnnotationCanvas;
+	private final ColorCanvas<ImageGraphicsProvider> bgColorCanvas;
 	
 	private GraphLOD lod;
-	private final NetworkImageBuffer image;
+	private final ImageGraphicsProvider image;
+	private final NetworkTransform transform;
 	
-	private final List<DingCanvas<NetworkImageBuffer>> canvasList;
+	private final List<DingCanvas<ImageGraphicsProvider>> canvasList;
 	private final double[] weights;
 	
 	private final Executor executor;
@@ -48,34 +50,67 @@ public class CompositeImageCanvas {
 	public CompositeImageCanvas(DRenderingEngine re, GraphLOD lod, int w, int h) {
 		this.re = re;
 		this.lod = lod;
-		this.image = newBuffer(w, h);
+		this.transform = new NetworkTransform(w, h);
+		this.image = newBuffer(transform);
 		
 		canvasList = Arrays.asList(
-			annotationSelectionCanvas = new AnnotationSelectionCanvas(newBuffer(w, h), re),
-			foregroundAnnotationCanvas = new AnnotationCanvas<>(newBuffer(w, h), re, FOREGROUND),
-			nodeCanvas = new NodeCanvas<>(newBuffer(w, h), re),
-			edgeCanvas = new EdgeCanvas<>(newBuffer(w, h), re),
-			backgroundAnnotationCanvas = new AnnotationCanvas<>(newBuffer(w, h), re, BACKGROUND),
-			backgroundColorCanvas = new ColorCanvas<>(newBuffer(w, h), null)
+			annotationSelectionCanvas = new AnnotationSelectionCanvas<>(NullGraphicsProvider.INSTANCE, re),
+			fgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, FOREGROUND),
+			nodeCanvas = new NodeCanvas<>(newBuffer(transform), re),
+			edgeCanvas = new EdgeCanvas<>(newBuffer(transform), re),
+			bgAnnotationCanvas = new AnnotationCanvas<>(NullGraphicsProvider.INSTANCE, re, BACKGROUND),
+			bgColorCanvas = new ColorCanvas<>(newBuffer(transform), null)
 		);
-		
+	
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
 		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
 		
+		re.getCyAnnotator().addPropertyChangeListener(e -> updateAnnotationCanvasBuffers());
+		updateAnnotationCanvasBuffers();
+		
 		this.executor = re.getSingleThreadExecutorService();
 	}
 	
-	private static NetworkImageBuffer newBuffer(int w, int h) {
-		return new NetworkImageBuffer(w, h);
+	private static ImageGraphicsProvider newBuffer(NetworkTransform transform) {
+		return new NetworkImageBuffer(transform);
 	}
 	
 	// Kind of hackey, we don't want the annotation selection to show up in the brids-eye-view
 	public void showAnnotationSelection(boolean show) {
 		annotationSelectionCanvas.show(show);
-		foregroundAnnotationCanvas.setShowSelection(show);
-		backgroundAnnotationCanvas.setShowSelection(show);
+		fgAnnotationCanvas.setShowSelection(show);
+		bgAnnotationCanvas.setShowSelection(show);
+	}
+	
+	private void updateAnnotationCanvasBuffers() {
+		// This is a memory optimization, don't allocate buffers for the annotation canvases if there are no annotations to render.
+		var cyAnnotator = re.getCyAnnotator();
+		boolean hasFG = cyAnnotator.hasAnnotations(CanvasID.FOREGROUND);
+		boolean hasBG = cyAnnotator.hasAnnotations(CanvasID.BACKGROUND);
+		boolean hasAnn = hasFG || hasBG;
+		
+		if(hasFG && fgAnnotationCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
+			fgAnnotationCanvas.setGraphicsProvider(newBuffer(transform));
+		}
+		if(!hasFG && !(fgAnnotationCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
+			fgAnnotationCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
+		}
+		
+		if(hasBG && bgAnnotationCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
+			bgAnnotationCanvas.setGraphicsProvider(newBuffer(transform));
+		}
+		if(!hasBG && !(bgAnnotationCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
+			bgAnnotationCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
+		}
+		
+		if(hasAnn && annotationSelectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider) {
+			annotationSelectionCanvas.setGraphicsProvider(newBuffer(transform));
+		}
+		if(!hasAnn && !(annotationSelectionCanvas.getGraphicsProvier() instanceof NullGraphicsProvider)) {
+			annotationSelectionCanvas.setGraphicsProvider(NullGraphicsProvider.INSTANCE);
+		}
 	}
 	
 	public void dispose() {
@@ -87,37 +122,34 @@ public class CompositeImageCanvas {
 	}
 	
 	public NetworkTransform getTransform() {
-		return image;
+		return transform;
 	}
 	
 	public void setBackgroundPaint(Paint paint) {
 		Color color = (paint instanceof Color) ? (Color)paint : ColorCanvas.DEFAULT_COLOR;
-		backgroundColorCanvas.setColor(color);
+		bgColorCanvas.setColor(color);
 	}
 	
 	public Color getBackgroundPaint() {
-		return backgroundColorCanvas.getColor();
+		return bgColorCanvas.getColor();
 	}
 	
 	public void setViewport(int width, int height) {
-		image.setViewport(width, height);
-		canvasList.forEach(c -> c.setViewport(width, height));
+		transform.setViewport(width, height);
 	}
 	
 	public void setCenter(double x, double y) {
-		image.setCenter(x, y);
-		canvasList.forEach(c -> c.setCenter(x, y));
+		transform.setCenter(x, y);
 	}
 	
 	public void setScaleFactor(double scaleFactor) {
-		image.setScaleFactor(scaleFactor);
-		canvasList.forEach(c -> c.setScaleFactor(scaleFactor));
+		transform.setScaleFactor(scaleFactor);
 	}
 	
 
 	public RenderDetailFlags getRenderDetailFlags() {
 		var snapshot = re.getViewModelSnapshot();
-		return RenderDetailFlags.create(snapshot, image, lod);
+		return RenderDetailFlags.create(snapshot, transform, lod);
 	}
 	
 	
@@ -148,8 +180,8 @@ public class CompositeImageCanvas {
 	
 	public ImageFuture paintJustAnnotations(ProgressMonitor pm) {
 		return paint(pm, c -> 
-			c == backgroundAnnotationCanvas || 
-			c == foregroundAnnotationCanvas || 
+			c == bgAnnotationCanvas || 
+			c == fgAnnotationCanvas || 
 			c == annotationSelectionCanvas
 		);
 	}
@@ -170,10 +202,12 @@ public class CompositeImageCanvas {
 			if(layers == null || layers.test(canvas)) {
 				canvasImage = canvas.paintAndGet(subPm, flags).getImage();
 			} else {
-				canvasImage = canvas.getTransform().getImage();
+				canvasImage = canvas.getGraphicsProvier().getImage();
 			}
 				
-			overlayImage(image.getImage(), canvasImage);
+			if(canvasImage != null) {
+				overlayImage(image.getImage(), canvasImage);
+			}
 		}
 		
 		if(pm instanceof DebugProgressMonitor)

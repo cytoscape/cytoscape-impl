@@ -1,6 +1,7 @@
 package org.cytoscape.graph.render.stateful;
 
 import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.immed.GraphGraphics;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
@@ -35,7 +36,8 @@ public class GraphRendererTest extends TestCase {
 	private GraphGraphics grafx;
 
 	public void setUp() {
-		NetworkImageBuffer img = new NetworkImageBuffer(500,500);
+		NetworkTransform transform = new NetworkTransform(500, 500);
+		NetworkImageBuffer img = new NetworkImageBuffer(transform);
 		grafx = new GraphGraphics(img);
 	}
 

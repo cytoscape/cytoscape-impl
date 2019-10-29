@@ -18,18 +18,18 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
  */
 public class CompositeGraphicsCanvas {
 
-	public static void paint(Graphics2D graphics, DRenderingEngine re, Color bgPaint, GraphLOD lod, NetworkTransform t) {
-		var transform = new NetworkGraphicsTransform(graphics, t);
+	public static void paint(Graphics2D graphics, DRenderingEngine re, Color bgPaint, GraphLOD lod, NetworkTransform transform) {
+		var g = new SimpleGraphicsProvider(transform, graphics);
 		var snapshot = re.getViewModelSnapshot();
 		var flags = RenderDetailFlags.create(snapshot, transform, lod);
 		var pm = new NoOutputProgressMonitor();
 		
 		var canvasList = Arrays.asList(
-			new AnnotationCanvas<>(transform, re, FOREGROUND, false),
-			new NodeCanvas<>(transform, re),
-			new EdgeCanvas<>(transform, re),
-			new AnnotationCanvas<>(transform, re, BACKGROUND, false),
-			new ColorCanvas<>(transform, bgPaint)
+			new AnnotationCanvas<>(g, re, FOREGROUND, false),
+			new NodeCanvas<>(g, re),
+			new EdgeCanvas<>(g, re),
+			new AnnotationCanvas<>(g, re, BACKGROUND, false),
+			new ColorCanvas<>(g, bgPaint)
 		);
 		Collections.reverse(canvasList);
 		

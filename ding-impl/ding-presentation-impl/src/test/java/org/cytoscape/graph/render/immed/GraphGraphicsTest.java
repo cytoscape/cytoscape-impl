@@ -7,6 +7,7 @@ import java.util.Random;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.stat.inference.TestUtils;
 import org.cytoscape.ding.impl.canvas.NetworkImageBuffer;
+import org.cytoscape.ding.impl.canvas.NetworkTransform;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
 
@@ -68,7 +69,8 @@ public class GraphGraphicsTest extends TestCase {
 	}
 
 	public void setUp() {
-		image = new NetworkImageBuffer(canvasSize, canvasSize);
+		NetworkTransform transform = new NetworkTransform(canvasSize, canvasSize);
+		image = new NetworkImageBuffer(transform);
 		currentGraphGraphics = new GraphGraphics(image);
 		oldGraphGraphics = new OldGraphGraphics(image.getImage(),false);
 		oldGraphGraphics.clear(Color.white,0,0,1.0);
