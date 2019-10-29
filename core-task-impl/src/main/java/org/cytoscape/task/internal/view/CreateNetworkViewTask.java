@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -20,6 +21,7 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.AbstractNetworkCollectionTask;
 import org.cytoscape.task.internal.layout.ApplyPreferredLayoutTask;
 import org.cytoscape.task.internal.network.RegisterNetworkTask;
+import org.cytoscape.task.internal.utils.DataUtils;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
@@ -42,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -182,7 +184,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			int i = 0;
 			int viewCount = netList.size();
 			
-			for (final CyNetwork n : netList) {
+			for (CyNetwork n : netList) {
+				if (cancelled)
+					break;
+				
 				// TODO Remove this check when multiple views per network is supported
 				if (netViewMgr.viewExists(n))
 					continue;
@@ -193,18 +198,24 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 				if (curView == null && n.equals(curNet))
 					curView = view;
 				
-				tm.setStatusMessage("Network view successfully created for:  "
-						+ n.getRow(n).get(CyNetwork.NAME, String.class));
+				tm.setStatusMessage("Network view successfully created for: " + DataUtils.getNetworkName(n));
 				i++;
 				tm.setProgress((i / (double) viewCount));
 			}
 			
-			if (layoutMgr == null) {
-				// Create network from selection?
-				insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, netMgr, vmMgr, appMgr, netViewMgr));
-			} else {
-				insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, netMgr, vmMgr, appMgr, netViewMgr));
+			if (!cancelled) {
+				if (layoutMgr == null) {
+					// Create network from selection?
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, netMgr, vmMgr, appMgr, netViewMgr));
+				} else {
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, netMgr, vmMgr, appMgr, netViewMgr));
+				}
 			}
+		}
+		
+		if (cancelled) {
+			disposeNewViews();
+			return;
 		}
 		
 		tm.setProgress(1.0);
@@ -228,6 +239,9 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			
 			view.setVisualProperty(BasicVisualLexicon.NETWORK_TITLE, title);
 			
+			if (cancelled)
+				return view;
+			
 			netViewMgr.addNetworkView(view, false);
 
 			// Apply visual style
@@ -235,6 +249,9 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 				vmMgr.setVisualStyle(style, view);
 				style.apply(view);
 			}
+			
+			if (cancelled)
+				return view;
 
 			// If a source view has been provided, use that to set the X/Y positions of the
 			// nodes along with the visual style.
@@ -250,8 +267,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			
 			return view;
 		} catch (Exception e) {
-			throw new Exception("Could not create network view for network: "
-					+ (network != null ? network.getRow(network).get(CyNetwork.NAME, String.class) : "null"), e);
+			throw new Exception("Could not create network view for network: " + DataUtils.getNetworkName(network), e);
 		} finally {
 			serviceRegistrar.getService(UndoSupport.class).postEdit(
 					new CreateNetworkViewEdit(eventHelper, network, viewFactory, netViewMgr));
@@ -283,9 +299,23 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 //		}
 //	}
 	
+	private void disposeNewViews() {
+		Set<CyNetworkView> viewSet = netViewMgr.getNetworkViewSet();
+		Iterator<CyNetworkView> iter = networkViews.iterator();
+		
+		while (iter.hasNext()) {
+			CyNetworkView view = iter.next();
+			iter.remove();
+			
+			if (viewSet.contains(view))
+				netViewMgr.destroyNetworkView(view);
+			else
+				view.dispose();
+		}
+	}
 
 	// While we're no longer an ObservableTask, this is still needed for internal use.
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+	@SuppressWarnings("rawtypes")
 	public Object getResults(Class type) {
 		return new ArrayList<>(networkViews);
 	}
@@ -345,7 +375,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		}
 		
 		@Override
-		public void run(final TaskMonitor tm) throws Exception {
+		public void run(TaskMonitor tm) throws Exception {
 			// Try again, now with the selected view factory
 			final CyNetworkViewFactory factory = renderers.getSelectedValue().getNetworkViewFactory();
 			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(networks, factory, 

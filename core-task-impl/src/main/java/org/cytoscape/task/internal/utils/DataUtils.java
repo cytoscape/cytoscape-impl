@@ -43,6 +43,9 @@ public class DataUtils {
 	public static final String PARENT_NETWORK_COLUMN = "__parentNetwork.SUID";
 	
 	public static String getNetworkName(CyNetwork network) {
+		if (network == null)
+			return null;
+		
 		String name = "";
 		
 		try {
@@ -57,6 +60,9 @@ public class DataUtils {
 	}
 	
 	public static String getViewTitle(CyNetworkView view) {
+		if (view == null)
+			return null;
+		
 		String title = view.getVisualProperty(BasicVisualLexicon.NETWORK_TITLE);
 		
 		if (title == null || title.trim().isEmpty())
