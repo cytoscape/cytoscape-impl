@@ -498,8 +498,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private void editAnnotation(DingAnnotation annotation, Point p) {
 			invokeOnEDT(() -> {
-				EditAnnotationTaskFactory taskFactory = new EditAnnotationTaskFactory(registrar.getService(DingRenderer.class));
+				DingRenderer dingRenderer = registrar.getService(DingRenderer.class);
 				DialogTaskManager tm = registrar.getService(DialogTaskManager.class);
+				EditAnnotationTaskFactory taskFactory = new EditAnnotationTaskFactory(dingRenderer);
 				tm.execute(taskFactory.createTaskIterator(re.getViewModel(), annotation, p));
 			});
 		}
@@ -1313,6 +1314,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
+			if(!isSingleLeftClick(e))
+				return;
+			
 			actuallyPanned = false;
 			changeCursor(panCursor);
 			mousePressedPoint = e.getPoint();
