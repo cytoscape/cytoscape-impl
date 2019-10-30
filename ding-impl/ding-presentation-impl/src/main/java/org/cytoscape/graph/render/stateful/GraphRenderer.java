@@ -942,7 +942,7 @@ public final class GraphRenderer {
 				for (final CustomGraphicsInfo cgInfo : infoList) {
 					// MKTODO I guess there's no way around doing this? The charts need access to the underlying table model.
 					CyNetworkView netViewForCharts = netView.getMutableNetworkView();
-					View<CyNode> mutableNode = netViewForCharts.getNodeView(cyNode.getSUID());
+					View<CyNode> mutableNode = netView.getMutableNodeView(cyNode.getSUID());
 					if(mutableNode != null) {
 						List<CustomGraphicLayer> layers = cgInfo.createLayers(netViewForCharts, mutableNode, nodeDetails, dependencies);
 						

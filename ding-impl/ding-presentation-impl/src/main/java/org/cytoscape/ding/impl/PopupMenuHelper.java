@@ -105,7 +105,7 @@ class PopupMenuHelper {
 	 * @param action Acceptable values are "NEW" or "OPEN." Case does not matter.
 	 */
 	void createEdgeViewMenu(View<CyEdge> edgeView, int x, int y, String action) {
-		edgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
+		edgeView = re.getViewModelSnapshot().getMutableEdgeView(edgeView.getSUID());
 		if (edgeView != null ) {
 			Collection<EdgeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getEdgeViewTaskFactoryMap(), action);
 			Collection<CyEdgeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyEdgeViewContextMenuFactoryMap(), action);
@@ -161,7 +161,7 @@ class PopupMenuHelper {
 	 * @param action Acceptable values are "NEW", "OPEN", or "EDGE". Case does not matter.
 	 */
 	void createNodeViewMenu(View<CyNode> nodeView, int x, int y , String action) {
-		nodeView = re.getViewModel().getNodeView(nodeView.getSUID()); // get the mutable node view
+		nodeView = re.getViewModelSnapshot().getMutableNodeView(nodeView.getSUID()); // get the mutable node view
 		if (nodeView != null ) {
 			Collection<NodeViewTaskFactory> usableTFs = getPreferredActions(vtfl.getNodeViewTaskFactoryMap(),action);
 			Collection<CyNodeViewContextMenuFactory> usableCMFs = getPreferredActions(vtfl.getCyNodeViewContextMenuFactoryMap(),action);

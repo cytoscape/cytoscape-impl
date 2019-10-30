@@ -229,7 +229,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return dataSuidToNode.getOrElse(node.getSUID(), null);
 	}
 	
-	@Override
 	public View<CyNode> getNodeView(long suid) {
 		return viewSuidToNode.getOrElse(suid, null);
 	}
@@ -243,7 +242,6 @@ public class CyNetworkViewImpl extends CyViewBase<CyNetwork> implements CyNetwor
 		return dataSuidToEdge.getOrElse(edge.getSUID(), null);
 	}
 	
-	@Override
 	public CyEdgeViewImpl getEdgeView(long suid) {
 		return viewSuidToEdge.getOrElse(suid, null);
 	}

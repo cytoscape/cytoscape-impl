@@ -8,7 +8,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -19,14 +19,14 @@ import org.cytoscape.work.TaskMonitor;
 public class AddEdgeTask extends AbstractTask implements ObservableTask {
 
 	private final CyServiceRegistrar registrar;
-	private final CyNetworkView netView;
+	private final CyNetworkViewSnapshot netView;
 	private final View<CyNode> sourceNodeView;
 	private final View<CyNode> targetNodeView;
 	
 	private boolean postUndo = true;
 	private CyEdge edge;
 	
-	public AddEdgeTask(CyServiceRegistrar registrar, CyNetworkView netView, View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
+	public AddEdgeTask(CyServiceRegistrar registrar, CyNetworkViewSnapshot netView, View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
 		this.registrar = registrar;
 		this.netView = netView;
 		this.sourceNodeView = sourceNodeView;
@@ -42,8 +42,8 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		tm.setTitle("Add Edge");
 		
 		CyNetwork net = netView.getModel();
-		View<CyNode> mutableSourceNodeView = netView.getNodeView(sourceNodeView.getSUID());
-		View<CyNode> mutableTargetNodeView = netView.getNodeView(targetNodeView.getSUID());
+		View<CyNode> mutableSourceNodeView = netView.getMutableNodeView(sourceNodeView.getSUID());
+		View<CyNode> mutableTargetNodeView = netView.getMutableNodeView(targetNodeView.getSUID());
 		
 		if (mutableSourceNodeView == null || mutableTargetNodeView == null)
 			return;

@@ -40,7 +40,6 @@ import org.cytoscape.ding.impl.DRenderingEngine;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -196,14 +195,12 @@ public class ViewState {
 	 * this object.
 	 */
 	public void apply() {
-		CyNetworkView mutableNetworkView = view.getMutableNetworkView();
-
 		if (points != null) {
 			// Use nodes as keys because they are less volatile than views...
 			for (View<CyNode> n: points.keySet()) {
 				Point2D.Double p = points.get(n);
 				
-				View<CyNode> mutableNode = mutableNetworkView.getNodeView(n.getSUID());
+				View<CyNode> mutableNode = view.getMutableNodeView(n.getSUID());
 				if(mutableNode != null) {
 					mutableNode.setVisualProperty(DVisualLexicon.NODE_X_LOCATION, p.getX());
 					mutableNode.setVisualProperty(DVisualLexicon.NODE_Y_LOCATION, p.getY());
@@ -221,7 +218,7 @@ public class ViewState {
 			for(View<CyEdge> e: anchors.keySet()) {
 				// FIXME!
 				//ev.getBend().setHandles( anchors.get(e) );
-				View<CyEdge> mutableEdge = mutableNetworkView.getEdgeView(e.getModel());
+				View<CyEdge> mutableEdge = view.getMutableEdgeView(e.getSUID());
 				if(mutableEdge != null) {
 					mutableEdge.setVisualProperty(DVisualLexicon.EDGE_CURVED, linetype.get(e).intValue());
 				}

@@ -81,7 +81,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -350,7 +349,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			final int code = k.getKeyCode();
 			final float move = k.isShiftDown() ? 15.0f : 1.0f;
 
-			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var snapshot = re.getViewModelSnapshot();
+			var selectedNodes = snapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 			for(View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
 				double yPos = re.getNodeDetails().getYPosition(node);
@@ -366,19 +366,19 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 
 				// MKTODO better way of doing this???
-				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(node.getSUID());
+				View<CyNode> mutableNodeView = snapshot.getMutableNodeView(node.getSUID());
 				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION, xPos);
 				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
 			}
 
 			Set<HandleKey> handlesToMove = re.getBendStore().getSelectedHandles();
 			for (HandleKey handleKey : handlesToMove) {
-				View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
+				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getEdgeSuid());
 
 				// MKTODO this code is copy-pasted in a few places, clean it up
 				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-					Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-					View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
+					Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
+					View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
 					if(mutableEdgeView != null) {
 						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
 							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
@@ -591,7 +591,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void createEdge(View<CyNode> sourceNodeView, View<CyNode> targetNodeView) {
-			CyNetworkView netView = re.getViewModel();
+			var netView = re.getViewModelSnapshot();
 			AddEdgeTask addEdgeTask = new AddEdgeTask(registrar, netView, sourceNodeView, targetNodeView);
 			DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);
 			taskManager.execute(new TaskIterator(addEdgeTask));
@@ -847,7 +847,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
 			
 			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(edgeView.getSUID());
+				View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(edgeView.getSUID());
 				if(mutableEdgeView != null) {
 					if (defaultBend instanceof BendImpl)
 						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
@@ -976,9 +976,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			}
 
+			var snapshot = re.getViewModelSnapshot();
 			if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
 				for (View<CyNode> node : selectedNodes) {
-					View<CyNode> mutableNode = re.getViewModel().getNodeView(node.getSUID());
+					View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
 					if(mutableNode != null) {
 						NodeDetails nodeDetails = re.getNodeDetails();
 						double oldXPos = nodeDetails.getXPosition(mutableNode);
@@ -990,11 +991,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			    }
 			} else {
 				for (HandleKey handleKey : anchorsToMove) {
-					View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(handleKey.getEdgeSuid());
+					View<CyEdge> ev = snapshot.getEdgeView(handleKey.getEdgeSuid());
 
 					if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-						Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-						View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getSUID());
+						Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
+						View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
 						if(mutableEdgeView != null) {
 							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
 								if( defaultBend instanceof BendImpl )
@@ -1016,7 +1017,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					if( bend.getAllHandles().isEmpty() )
 						continue;
 					final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-					final Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), ev);
+					final Point2D newPoint = handle.calculateHandleLocation(snapshot, ev);
 					
 					float x = (float) newPoint.getX();
 					float y = (float) newPoint.getY();
@@ -1510,13 +1511,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		for (View<? extends CyIdentifiable> nodeOrEdgeView : nodesOrEdgeViews) {
 			if(isNodes) {
-				View<CyNode> mutableNodeView = re.getViewModel().getNodeView(nodeOrEdgeView.getSUID());
+				View<CyNode> mutableNodeView = snapshot.getMutableNodeView(nodeOrEdgeView.getSUID());
 				Long modelSuid = snapshot.getNodeInfo((View<CyNode>)nodeOrEdgeView).getModelSUID();
 				CyRow row = table.getRow(modelSuid);
 				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_SELECTED, selectedBoxed);
 				row.set(CyNetwork.SELECTED, selectedBoxed);	
 			} else {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(nodeOrEdgeView.getSUID());
+				View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(nodeOrEdgeView.getSUID());
 				Long modelSuid = snapshot.getEdgeInfo((View<CyEdge>)nodeOrEdgeView).getModelSUID();
 				CyRow row = table.getRow(modelSuid);
 				mutableEdgeView.setVisualProperty(BasicVisualLexicon.EDGE_SELECTED, selectedBoxed);

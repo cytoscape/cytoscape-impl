@@ -195,7 +195,17 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		CyEdgeViewImpl view = viewSuidToEdge.getOrElse(suid, null);
 		return view == null ? null : getSnapshotEdgeView(view);
 	}
+	
+	@Override
+	public View<CyNode> getMutableNodeView(long suid) {
+		return getMutableNetworkView().getNodeView(suid);
+	}
 
+	@Override
+	public View<CyEdge> getMutableEdgeView(long suid) {
+		return getMutableNetworkView().getEdgeView(suid);
+	}
+	
 	@Override
 	public List<View<CyNode>> getNodeViews() {
 		List<View<CyNode>> nodeViews = new ArrayList<>(viewSuidToNode.size());
@@ -341,6 +351,18 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 
 	@Override
 	public void dispose() {
+	}
+
+	@Override
+	public void fitContent() {
+	}
+
+	@Override
+	public void fitSelected() {
+	}
+
+	@Override
+	public void updateView() {
 	}
 
 }
