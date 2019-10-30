@@ -23,7 +23,7 @@ import org.cytoscape.work.json.JSONResult;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -59,33 +59,38 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 
 	@Override
 	public void run(TaskMonitor tm) {
-		tm.setProgress(0.0d);
-		tm.setStatusMessage("Applying Default Layout...");
+		tm.setTitle("Apply Preferred Layout");
+		tm.setProgress(0.0);
 
-		final CyNetworkViewManager viewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		final CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
+		final CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
+		
+		if (layout != null)
+			tm.setStatusMessage("Applying " + layout.getName() + "...");
+		else
+			throw new IllegalArgumentException("Couldn't find default layout algorithm"); // Should not happen!
+		
 		Collection<CyNetworkView> views = networkViews;
 		
 		if (networkSelected != null)
-			views = viewMgr.getNetworkViews(networkSelected);
+			views = serviceRegistrar.getService(CyNetworkViewManager.class).getNetworkViews(networkSelected);
 		
-		final CyLayoutAlgorithmManager layoutMgr = serviceRegistrar.getService(CyLayoutAlgorithmManager.class);
-		final CyLayoutAlgorithm layout = layoutMgr.getDefaultLayout();
-		tm.setProgress(0.2);
+		tm.setProgress(0.1);
 		
 		int i = 0;
 		int viewCount = views.size();
 		
-		for (final CyNetworkView view : views) {
-			if (layout != null) {
-				//clearEdgeBends(view);
-				String layoutAttribute = layoutMgr.getLayoutAttribute(layout, view);
-				final TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(), 
-						CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute);
-				if (itr != null) // For unit tests...
-					insertTasksAfterCurrentTask(itr);
-			} else {
-				throw new IllegalArgumentException("Couldn't find default layout algorithm");
-			}
+		for (CyNetworkView view : views) {
+			if (cancelled)
+				return;
+			
+			//clearEdgeBends(view);
+			String layoutAttribute = layoutMgr.getLayoutAttribute(layout, view);
+			TaskIterator itr = layout.createTaskIterator(view, layout.getDefaultLayoutContext(),
+					CyLayoutAlgorithm.ALL_NODE_VIEWS, layoutAttribute);
+			
+			if (itr != null) // For unit tests...
+				insertTasksAfterCurrentTask(itr);
 
 			i++;
 			tm.setProgress((i / (double) viewCount));
@@ -94,17 +99,15 @@ public class ApplyPreferredLayoutTask extends AbstractNetworkViewCollectionTask 
 		tm.setProgress(1.0);
 	}
 	
-	
-	
 	@SuppressWarnings({"rawtypes"})
 	public Object getResults(Class type) {
 		if (type.equals(JSONResult.class)) {
 			JSONResult res = () -> { return "{}"; };
 			return res;
 		}
+		
 		return null;
 	}
-
 
 //	/**
 //	 * Clears edge bend values ASSIGNED TO EACH EDGE. Default Edge Bend value
