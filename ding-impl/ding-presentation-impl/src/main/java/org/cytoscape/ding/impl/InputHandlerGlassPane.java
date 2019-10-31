@@ -1108,7 +1108,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					repositionAnnotation.setTarget(annotations.get(0));
 				} else if(overNode(mousePoint)) {
 					View<CyNode> overNode = re.getPicker().getNodeAt(mousePoint);
-					repositionAnnotation.setTarget(overNode);
+					// the node view must be mutable so that the coordinates will update when the node is moved
+					var mutableNodeView = re.getViewModelSnapshot().getMutableNodeView(overNode.getSUID());
+					repositionAnnotation.setTarget(mutableNodeView);
 				} else {
 					Point2D nodeCoordinates = re.getTransform().getNodeCoordinates(mousePoint);
 					repositionAnnotation.setTarget(nodeCoordinates);

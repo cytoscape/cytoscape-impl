@@ -459,7 +459,7 @@ public class ArrowAnnotationImpl extends AbstractAnnotation implements ArrowAnno
 		Point2D sourceCenter = centerPoint(source.getBounds());
 		
 		if (target instanceof Point2D) {
-			targetPoint = re.getTransform().getImageCoordinates(((Point2D)target).getX(), ((Point2D)target).getY());
+			targetPoint = (Point2D) target;
 		} else if (target instanceof DingAnnotation) {
 			DingAnnotation a = (DingAnnotation)target;
 			// get the bounds
