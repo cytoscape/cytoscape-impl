@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.swing.Icon;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.impl.DRenderingEngine;
@@ -63,7 +62,6 @@ public class ArrowAnnotationFactory extends AbstractDingAnnotationFactory<ArrowA
 		DingAnnotation annotation = re.getPicker().getAnnotationAt(location);
 		
 		if (annotation == null || annotation instanceof ArrowAnnotationImpl) {
-			JOptionPane.showMessageDialog(re.getInputHandlerGlassPane(), "Please click another annotation.");
 			return null;
 		}
 		

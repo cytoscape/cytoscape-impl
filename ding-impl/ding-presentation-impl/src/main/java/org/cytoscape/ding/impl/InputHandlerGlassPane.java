@@ -127,8 +127,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
         	new DoubleClickListener(),
         	new AddEdgeListener(),
         	new TooltipListener(),
-        	new SelecionClickAndDragListener(),
         	new AddAnnotationListener(),
+        	new SelecionClickAndDragListener(),
 //        	new SelectionLassoListener(), // comment out for 3.8
         	new SelectionRectangleListener(),
         	new PanListener() // panning only happens if no node/edge/annotation/handle is clicked, so it needs to go last
