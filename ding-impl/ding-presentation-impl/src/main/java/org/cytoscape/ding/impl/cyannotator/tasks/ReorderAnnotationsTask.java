@@ -119,6 +119,7 @@ public class ReorderAnnotationsTask extends AbstractTask {
 			tree.shift(shift, Annotation.BACKGROUND, bga);
 		
 		tree.resetZOrder();
+		re.updateView(UpdateType.JUST_ANNOTATIONS);
 	}
 	
 }

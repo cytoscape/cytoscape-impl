@@ -501,7 +501,7 @@ public class NetworkPicker {
 	
 	
 	public DingAnnotation getAnnotationAt(CanvasID canvasId, Point2D p) {
-		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, false); // highest z-order first
+		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, true);
 		Point2D nodeP = re.getTransform().getNodeCoordinates(p);
 		
 		DingAnnotation hit = null;
@@ -531,7 +531,7 @@ public class NetworkPicker {
 	
 	
 	public List<DingAnnotation> getAnnotationsAt(CanvasID canvasId, Point p) {
-		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, false); // highest z-order first
+		List<DingAnnotation> annotations = re.getCyAnnotator().getAnnotations(canvasId, true); 
 		Point2D nodeP = re.getTransform().getNodeCoordinates(p);
 		
 		List<DingAnnotation> list = new ArrayList<>();
