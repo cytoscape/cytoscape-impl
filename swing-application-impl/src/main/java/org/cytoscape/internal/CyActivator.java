@@ -325,13 +325,13 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(MENU_GRAVITY, "7.0");
-			props.setProperty(TITLE, "Contact Help Desk...");
+			props.setProperty(TITLE, "Links for Help");
 			registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
-			props.setProperty(TITLE, "Report a Bug...");
+			props.setProperty(TITLE, "Report a Bug");
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
 		}
