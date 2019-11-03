@@ -41,7 +41,7 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Add Edge");
 		
-		CyNetwork net = netView.getModel();
+		CyNetwork net = netView.getMutableNetworkView().getModel();
 		View<CyNode> mutableSourceNodeView = netView.getMutableNodeView(sourceNodeView.getSUID());
 		View<CyNode> mutableTargetNodeView = netView.getMutableNodeView(targetNodeView.getSUID());
 		
