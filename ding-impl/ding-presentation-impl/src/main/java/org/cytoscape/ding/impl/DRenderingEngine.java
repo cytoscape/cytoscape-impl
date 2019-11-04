@@ -310,8 +310,8 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		renderComponent.setBackgroundPaint(backgroundPaint);
 		
-		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-		bendStore.updateSelectedEdges(selectedEdges);
+//		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
+//		bendStore.updateSelectedEdges(selectedEdges);
 		
 		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
 		edgeDetails.updateAnimatedEdges(animatedEdges);

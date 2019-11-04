@@ -39,7 +39,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.strokes.DAnimatedStroke;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
 import org.cytoscape.graph.render.stateful.EdgeDetails;
@@ -60,6 +59,8 @@ import org.cytoscape.view.presentation.property.values.LineType;
 
 
 public final class DEdgeDetails implements EdgeDetails {
+	
+	public static final float HANDLE_SIZE = 12.0f; 
 
 	private final DRenderingEngine re;
 	private Map<View<CyEdge>,DAnimatedStroke> animatedStrokes = null;
@@ -312,21 +313,33 @@ public final class DEdgeDetails implements EdgeDetails {
 	@Override
 	public float getAnchorSize(View<CyEdge> edgeView, int anchorInx) {
 		if (isSelected(edgeView) && getNumAnchors(edgeView) > 0)
-			return BendStore.HANDLE_SIZE;
+			return HANDLE_SIZE;
 		return 0.0f;
 	}
-
-
+	
+	public boolean hasHandles(View<CyEdge> edgeView) {
+		Bend bend = getBend(edgeView);
+		if(bend == null)
+			return false;
+		return !bend.getAllHandles().isEmpty();
+	}
+	
 	@Override
 	public Paint getAnchorPaint(View<CyEdge> edgeView, int anchorInx) {
 		if (getLineCurved(edgeView) == STRAIGHT_LINES)
 			anchorInx = anchorInx / 2;
-
-		HandleKey handleKey = new HandleKey(edgeView.getSUID(), anchorInx);
-		if(re.getBendStore().isHandleSelected(handleKey))
-			return getSelectedPaint(edgeView);
-		else
-			return getUnselectedPaint(edgeView);
+		
+		BendStore bendStore = re.getBendStore();
+		Bend bend = getBend(edgeView);
+		List<Handle> handles = bend.getAllHandles();
+		try {
+			Handle handle = handles.get(anchorInx);
+			if(bendStore.isHandleSelected(new HandleInfo(edgeView, bend, handle))) {
+				return getSelectedPaint(edgeView);
+			}
+		} catch(IndexOutOfBoundsException e) {
+		}
+		return getUnselectedPaint(edgeView);
 	}
 
 
@@ -478,7 +491,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			while (true) {
 				if (edgeView.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
-				if (re.getBendStore().hasHandles(otherEdgeView))
+				if (hasHandles(otherEdgeView))
 					i++;
 			}
 

@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
@@ -35,6 +34,8 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.Bend;
+import org.cytoscape.view.presentation.property.values.Handle;
 
 
 /**
@@ -92,23 +93,74 @@ public class NetworkPicker {
 	}
 
 	public View<CyEdge> getEdgeAt(Point2D pt) {
-		View<CyEdge> ev = null;
 		List<Long> edges = getEdgesIntersecting((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());
-
-		long chosenEdge = edges.isEmpty() ? -1 : edges.get(edges.size()-1);
-		if (chosenEdge >= 0) {
-			CyNetworkViewSnapshot netViewSnapshot = re.getViewModelSnapshot();
-			ev = netViewSnapshot.getEdgeView(chosenEdge);
-		}
-		return ev;
+		if(edges.isEmpty())
+			return null;
+		long chosenEdge = edges.get(edges.size()-1);
+		return re.getViewModelSnapshot().getEdgeView(chosenEdge);
 	}
 	
-	public HandleKey getHandleAt(Point2D pt) {
-		double[] ptBuff = {pt.getX(), pt.getY()};
-		re.getTransform().xformImageToNodeCoords(ptBuff);
-		HandleKey handleKey = re.getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
-		return handleKey;
+	
+	
+	public HandleInfo getHandleAt(Point2D pt) {
+		Rectangle r = new Rectangle((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());
+		List<HandleInfo> handles = getHandlesIntersecting(r, 1);
+		if(handles.isEmpty())
+			return null;
+		return handles.get(0);
 	}
+	
+	public List<HandleInfo> getHandlesInRectangle(Rectangle r) {
+		return getHandlesIntersecting(r, -1);
+	}
+	
+	public List<HandleInfo> getHandlesIntersecting(Rectangle r, int maxCount) {
+		Rectangle2D selectionArea = re.getTransform().getNodeCoordinates(r);
+		
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
+		EdgeDetails edgeDetails = re.getEdgeDetails();
+		
+		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
+		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
+		
+		List<HandleInfo> resultHandles = maxCount == 1 ? new ArrayList<>(1) : new ArrayList<>();
+		Set<Long> processedNodes = new HashSet<>();
+		while(nodeHits.hasNext()) {
+			long node = nodeHits.next();
+			
+			Iterable<View<CyEdge>> touchingEdges = snapshot.getAdjacentEdgeIterable(node);
+			for(View<CyEdge> e : touchingEdges) {
+				if(edgeDetails.isSelected(e)) {
+					SnapshotEdgeInfo edgeInfo = snapshot.getEdgeInfo(e);
+					long otherNode = node ^ edgeInfo.getSourceViewSUID() ^ edgeInfo.getTargetViewSUID();
+					
+					if(!processedNodes.contains(otherNode)) {
+						Bend bend = edgeDetails.getBend(e);
+						if(bend != null) {
+							List<Handle> handles = bend.getAllHandles();
+							if(handles != null) {
+								for(Handle handle : handles) {
+									Point2D p = handle.calculateHandleLocation(snapshot, e);
+									var size = DEdgeDetails.HANDLE_SIZE;
+									Rectangle2D handleArea = new Rectangle2D.Double(p.getX()-(size/2), p.getY()-(size/2), size, size);
+									if(selectionArea.intersects(handleArea)) {
+										resultHandles.add(new HandleInfo(e, bend, handle));
+										if(maxCount > 0 && resultHandles.size() >= maxCount) {
+											return resultHandles;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+			processedNodes.add(node);
+		}
+		
+		return resultHandles;
+	}
+	
 	
 	
 	private static boolean intersectsLine(Line2D line, GeneralPath path) {
@@ -157,6 +209,7 @@ public class NetworkPicker {
 	}
 	
 	
+	
 	public List<View<CyEdge>> getEdgesInRectangle(Rectangle r) {
 		List<Long> suids = getEdgesIntersecting(r.x, r.y, r.x + r.width, r.y + r.height);
 		return suidsToEdges(suids);
@@ -184,8 +237,7 @@ public class NetworkPicker {
 		Set<Long> processedNodes = new HashSet<>();
 		List<Long> resultEdges = new ArrayList<>();
 		
-		// AWT has no API for computing the intersection of two general paths, so we must default to treating
-		// edges as lines.
+		// AWT has no API for computing the intersection of two general paths, so we must default to treating edges as lines.
 		while(nodeHits.hasNext()) {
 			long node = nodeHits.nextExtents(extentsBuff);
 			
@@ -218,8 +270,6 @@ public class NetworkPicker {
 	
 	
 	public List<Long> getEdgesIntersecting(int xMini, int yMini, int xMaxi, int yMaxi) {
-		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
-		
 		double[] ptBuff = new double[2];
 		ptBuff[0] = xMini;
 		ptBuff[1] = yMini;
@@ -237,6 +287,7 @@ public class NetworkPicker {
 		Line2D.Float line = new Line2D.Float();
 		float[] extentsBuff = new float[4];
 		
+		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		Rectangle2D.Float area = re.getTransform().getNetworkVisibleAreaNodeCoords();
 		SpacialIndex2DEnumerator<Long> nodeHits = snapshot.getSpacialIndex2D().queryOverlap(area.x, area.y, area.x + area.width, area.y + area.height);
 		
@@ -477,24 +528,31 @@ public class NetworkPicker {
 		return result;
 	}
 	
-
-	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
-		BendStore bendStore = re.getBendStore();
-		if(getFlags().has(LOD_EDGE_ANCHORS)) {
-			Rectangle2D area = re.getTransform().getNodeCoordinates(r);
-			return bendStore.queryOverlap(area);
-		}
-		return Collections.emptyList();
-	}
 	
-	public List<HandleKey> getHandlesInPath(GeneralPath path) {
-		BendStore bendStore = re.getBendStore();
-		if(getFlags().has(LOD_EDGE_ANCHORS)) {
-			GeneralPath area = re.getTransform().pathInNodeCoords(path);
-			return bendStore.queryOverlap(area);
-		}
-		return Collections.emptyList();
-	}
+//	public HandleKey getHandleAt(Point2D pt) {
+//		double[] ptBuff = {pt.getX(), pt.getY()};
+//		re.getTransform().xformImageToNodeCoords(ptBuff);
+//		HandleKey handleKey = re.getBendStore().pickHandle((float)ptBuff[0], (float)ptBuff[1]);
+//		return handleKey;
+//	}
+//
+//	public List<HandleKey> getHandlesInRectangle(Rectangle r) {
+//		BendStore bendStore = re.getBendStore();
+//		if(getFlags().has(LOD_EDGE_ANCHORS)) {
+//			Rectangle2D area = re.getTransform().getNodeCoordinates(r);
+//			return bendStore.queryOverlap(area);
+//		}
+//		return Collections.emptyList();
+//	}
+//	
+//	public List<HandleKey> getHandlesInPath(GeneralPath path) {
+//		BendStore bendStore = re.getBendStore();
+//		if(getFlags().has(LOD_EDGE_ANCHORS)) {
+//			GeneralPath area = re.getTransform().pathInNodeCoords(path);
+//			return bendStore.queryOverlap(area);
+//		}
+//		return Collections.emptyList();
+//	}
 	
 	
 	// Annotations

@@ -385,7 +385,7 @@ public class DingGraphLOD implements GraphLOD, PropertyUpdatedListener {
 	 */
 	@Override
 	public boolean edgeAnchors(final int renderNodeCount, final int renderEdgeCount) {
-		return true;
+		return renderEdgeCount < edgeArrowThreshold;
 	}
 
 	/**
