@@ -332,8 +332,6 @@ public interface EdgeDetails {
 
 	Bend getBend(View<CyEdge> edgeView);
 
-	Bend getBend(View<CyEdge> edgeView, boolean forceCreate);
-
 	boolean isSelected(View<CyEdge> edgeView);
 
 	String getTooltipText(View<CyEdge> edgeView);

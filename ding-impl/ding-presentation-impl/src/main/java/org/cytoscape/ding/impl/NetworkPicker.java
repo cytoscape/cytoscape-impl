@@ -103,7 +103,7 @@ public class NetworkPicker {
 	
 	
 	public HandleInfo getHandleAt(Point2D pt) {
-		Rectangle r = new Rectangle((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());
+		Rectangle r = new Rectangle((int)pt.getX(), (int)pt.getY(), 1, 1);
 		List<HandleInfo> handles = getHandlesIntersecting(r, 1);
 		if(handles.isEmpty())
 			return null;
@@ -142,8 +142,7 @@ public class NetworkPicker {
 								for(Handle handle : handles) {
 									Point2D p = handle.calculateHandleLocation(snapshot, e);
 									var size = DEdgeDetails.HANDLE_SIZE;
-									Rectangle2D handleArea = new Rectangle2D.Double(p.getX()-(size/2), p.getY()-(size/2), size, size);
-									if(selectionArea.intersects(handleArea)) {
+									if(selectionArea.intersects(p.getX()-(size/2), p.getY()-(size/2), size, size)) {
 										resultHandles.add(new HandleInfo(e, bend, handle));
 										if(maxCount > 0 && resultHandles.size() >= maxCount) {
 											return resultHandles;

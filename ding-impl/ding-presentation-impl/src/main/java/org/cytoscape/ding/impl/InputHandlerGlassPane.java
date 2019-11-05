@@ -376,22 +376,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 			Set<HandleInfo> handlesToMove = re.getBendStore().getSelectedHandles();
 			for (HandleInfo handleKey : handlesToMove) {
-				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getEdge().getSUID());
-
-				// MKTODO this code is copy-pasted in a few places, clean it up
-				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-					Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
-					View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
-					if(mutableEdgeView != null) {
-						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-						} else {
-							Bend bend = re.getEdgeDetails().getBend(ev, true);
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-						}
-					}
-				}
-				
+				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getSUID());				
 				Handle handle = handleKey.getHandle();
 				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
 				
@@ -777,13 +762,9 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void toggleChosenAnchor(HandleInfo chosenAnchor, MouseEvent e) {
-			final long edge = chosenAnchor.getEdge().getSUID();
-			View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(edge);
-			
 			// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
 			if(e.isAltDown()) { // Remove handle
 				removeHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", registrar);
-				setBendAsLockedValue(ev);
 				re.getBendStore().removeHandle(chosenAnchor);
 			} else {
 				boolean selected = re.getBendStore().isHandleSelected(chosenAnchor);
@@ -800,23 +781,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			re.setContentChanged();	
 		}
 		
-		private void setBendAsLockedValue(View<CyEdge> ev) {
-			Bend bend = null;
-			if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-				Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-				if(re.getEdgeDetails().getBend(ev) == defaultBend) {
-					bend = new BendImpl((BendImpl) defaultBend);
-				} else {
-					bend = new BendImpl((BendImpl) re.getEdgeDetails().getBend(ev));
-				}
-			}
-			if(bend != null) {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getModel());
-				if(mutableEdgeView != null) {
-					mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bend);
-				}
-			}
-		}
 		
 		private Toggle toggleSelectedEdge(View<CyEdge> edgeView, MouseEvent e) {
 			boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
@@ -840,27 +804,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void addHandle(View<CyEdge> edgeView, MouseEvent e) {
-			re.getBendStore().unselectAllHandles();
-			double[] ptBuff = {e.getX(), e.getY()};
-			re.getTransform().xformImageToNodeCoords(ptBuff);
-			// Store current handle list
+			var bendStore = re.getBendStore();
+			bendStore.unselectAllHandles();
 			addHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", registrar);
 			
-			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
-			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-			
-			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-				View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(edgeView.getSUID());
-				if(mutableEdgeView != null) {
-					if (defaultBend instanceof BendImpl)
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
-					else
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-				}
-			}
-			
-			HandleInfo handle = re.getBendStore().addHandle(edgeView, newHandlePoint);
-			re.getBendStore().selectHandle(handle);
+			Point2D newHandlePoint = re.getTransform().getNodeCoordinates(e.getPoint());
+			HandleInfo handle = bendStore.addHandle(edgeView, newHandlePoint);
+			bendStore.selectHandle(handle);
 		}
 		
 		
@@ -978,10 +928,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					deltaY = (deltaY < 0) ? (-avg) : avg;
 				}
 			}
-
+			
 			var snapshot = re.getViewModelSnapshot();
-			if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
-				for (View<CyNode> node : selectedNodes) {
+			
+			if(!anchorsToMove.isEmpty()) {
+				for(HandleInfo handleKey : anchorsToMove) {
+					Bend bend = handleKey.getBend();
+	
+					//This test is necessary because in some instances, an anchor can still be present in the selected
+					//anchor list, even though the anchor has been removed. A better fix would be to remove the
+					//anchor from that list before this code is ever reached. However, this is not currently possible
+					//under the present API, so for now we just detect this situation and continue.
+					if(bend == null || bend.getAllHandles().isEmpty())
+						continue;
+					
+					Handle handle = handleKey.getHandle();
+					var ev = snapshot.getMutableEdgeView(handleKey.getSUID());
+					Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
+					
+					float x = (float) newPoint.getX();
+					float y = (float) newPoint.getY();
+					
+					re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
+				}
+			} else { // If we are moving anchors of edges, no need to move nodes (bug #2360).
+				for(var node : selectedNodes) {
 					View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
 					if(mutableNode != null) {
 						NodeDetails nodeDetails = re.getNodeDetails();
@@ -992,49 +963,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 						mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
 					}
 			    }
-			} else {
-				for(HandleInfo handleKey : anchorsToMove) {
-					View<CyEdge> ev = handleKey.getEdge();
-
-					if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-						Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
-						View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
-						if(mutableEdgeView != null) {
-							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
-								if( defaultBend instanceof BendImpl )
-									mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-								else
-									mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-							} else {
-								Bend bend = re.getEdgeDetails().getBend(ev, true);
-								mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-							}
-						}
-					}
-					final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-
-					//This test is necessary because in some instances, an anchor can still be present in the selected
-					//anchor list, even though the anchor has been removed. A better fix would be to remove the
-					//anchor from that list before this code is ever reached. However, this is not currently possible
-					//under the present API, so for now we just detect this situation and continue.
-					if(bend.getAllHandles().isEmpty())
-						continue;
-					Handle handle = handleKey.getHandle();
-					Point2D newPoint = handle.calculateHandleLocation(snapshot, ev);
-					
-					float x = (float) newPoint.getX();
-					float y = (float) newPoint.getY();
-					
-					re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
-				}
 			}
 			
 			if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
 				re.setContentChanged();
 			}
-//			if (!selectedNodes.isEmpty() && re.getBendStore().getSelectedHandles().isEmpty()) {
-//				networkCanvas.setHideEdges();
-//			}
 		}
 	}
 	

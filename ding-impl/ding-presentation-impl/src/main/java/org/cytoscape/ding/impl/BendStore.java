@@ -1,13 +1,15 @@
 package org.cytoscape.ding.impl;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+
 import java.awt.geom.Point2D;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
@@ -33,7 +35,8 @@ public class BendStore {
 	}
 	
 	public void selectHandle(HandleInfo key) {
-		selectedHandles.add(key);
+		if(key != null)
+			selectedHandles.add(key);
 	}
 	
 	public void unselectHandle(HandleInfo key) {
@@ -45,31 +48,62 @@ public class BendStore {
 	}
 	
 	public Set<HandleInfo> getSelectedHandles() {
+		// MKTODO only do this on content changed?
+		Iterator<HandleInfo> iter = selectedHandles.iterator();
+		var snapshot = re.getViewModelSnapshot();
+		while(iter.hasNext()) {
+			var handle = iter.next();
+			var ev = snapshot.getEdgeView(handle.getSUID());
+			if(!re.getEdgeDetails().isSelected(ev)) {
+				iter.remove();
+			}
+		}
+		
 		return Collections.unmodifiableSet(selectedHandles);
 	}
 	
 	
 	public void moveHandle(HandleInfo handleInfo, float x, float y) {
-		Handle handle = handleInfo.getHandle();
-		View<CyEdge> edge = handleInfo.getEdge();
-		handle.defineHandle(re.getViewModelSnapshot(), edge, x, y);
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(handleInfo.getSUID());
+		if(mutableEdgeView != null) {
+			Handle handle = handleInfo.getHandle();
+			handle.defineHandle(re.getViewModel(), mutableEdgeView, x, y);
+		}
 	}
 	
 	
+	private Bend getOrCreateLockedBend(View<CyEdge> mutableEdgeView) {
+		if(mutableEdgeView == null)
+			return null;
+		if(mutableEdgeView.isValueLocked(EDGE_BEND))
+			return mutableEdgeView.getVisualProperty(EDGE_BEND);
+			
+		Bend defaultBend = re.getViewModelSnapshot().getViewDefault(EDGE_BEND);
+		Bend bend;
+		if(defaultBend == EDGE_BEND.getDefault())
+			bend = new BendImpl();
+		else
+			bend = new BendImpl((BendImpl)defaultBend); // copy handles from default bend
+		
+		mutableEdgeView.setLockedValue(EDGE_BEND, bend);
+		return bend;
+	}
+	
 	public HandleInfo addHandle(View<CyEdge> edge, Point2D pt) {
-		int index = getBestHandleIndex(edge, pt);
-		if(index < 0) {
-			index = 0; // Index of this handle, which is first (0)
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(edge.getSUID());
+		Bend bend = getOrCreateLockedBend(mutableEdgeView);
+		if(mutableEdgeView != null && bend != null) {
+			int index = getBestHandleIndex(bend, edge, pt);
+			if(index < 0) {
+				index = 0; // Index of this handle, which is first (0)
+			}
+			Handle handle = handleFactory.createHandle(re.getViewModel(), mutableEdgeView, pt.getX(), pt.getY());
+			bend.insertHandleAt(index, handle);
+			re.setContentChanged();
+			return new HandleInfo(edge, bend, handle);
 		}
 		
-		// Add handle to the bend
-		Bend bend = re.getEdgeDetails().getBend(edge, true);
-		CyNetworkView netView = re.getViewModelSnapshot();
-		Handle handle = handleFactory.createHandle(netView, edge, pt.getX(), pt.getY());
-		bend.insertHandleAt(index, handle);
-		re.setContentChanged();
-		
-		return new HandleInfo(edge, bend, handle);
+		return null;
 	}
 	
 	
@@ -85,8 +119,7 @@ public class BendStore {
 	}
 	
 	
-	private int getBestHandleIndex(View<CyEdge> edge, Point2D pt) {
-		Bend bend = re.getEdgeDetails().getBend(edge, true);
+	private int getBestHandleIndex(Bend bend, View<CyEdge> edge, Point2D pt) {
 		List<Handle> handles = bend.getAllHandles();
 		if(handles.isEmpty())
 			return -1;
@@ -129,11 +162,18 @@ public class BendStore {
 	}
 
 	
+	
+	
 	public void removeHandle(HandleInfo key) {
 		selectedHandles.remove(key);
-		Bend bend = key.getBend();
-		int index = bend.getIndex(key.getHandle());
-		bend.removeHandleAt(index);
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(key.getSUID());
+		if(mutableEdgeView != null) {
+			Bend bend = getOrCreateLockedBend(mutableEdgeView);
+			if(bend != null) {
+				int index = bend.getIndex(key.getHandle());
+				bend.removeHandleAt(index);
+			}
+		}
 	}
 	
 }

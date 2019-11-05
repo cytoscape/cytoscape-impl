@@ -9,18 +9,22 @@ import org.cytoscape.view.presentation.property.values.Handle;
 
 public class HandleInfo {
 
-	private final View<CyEdge> edge;
+	private final long edgeSuid;;
 	private final Bend bend;
 	private final Handle handle;
 	
 	public HandleInfo(View<CyEdge> edge, Bend bend, Handle handle) {
-		this.edge = edge;
+		this(edge.getSUID(), bend, handle);
+	}
+	
+	public HandleInfo(long suid, Bend bend, Handle handle) {
+		this.edgeSuid = suid;
 		this.bend = bend;
 		this.handle = handle;
 	}
 
-	public View<CyEdge> getEdge() {
-		return edge;
+	public long getSUID() {
+		return edgeSuid;
 	}
 
 	public Bend getBend() {
