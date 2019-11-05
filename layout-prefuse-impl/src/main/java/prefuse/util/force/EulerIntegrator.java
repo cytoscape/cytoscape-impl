@@ -37,13 +37,19 @@ import java.util.Iterator;
  */
 public class EulerIntegrator implements Integrator {
     
-	/**
-	 * @see prefuse.util.force.Integrator#integrate(prefuse.util.force.ForceSimulator, long)
-	 */
+	private final StateMonitor monitor;
+	
+	public EulerIntegrator(StateMonitor monitor) {
+		this.monitor = monitor;
+	}
+
+	@Override
 	public void integrate(ForceSimulator sim, long timestep) {
 		float speedLimit = sim.getSpeedLimit();
 		Iterator iter = sim.getItems();
 		while ( iter.hasNext() ) {
+			if (monitor.isCancelled())
+				return;
 			ForceItem item = (ForceItem)iter.next();
 			item.location[0] += timestep * item.velocity[0];
 			item.location[1] += timestep * item.velocity[1];

@@ -82,12 +82,14 @@ public class NBodyForce extends AbstractForce {
     private QuadTreeNode root;
     
     private Random rand = null; // deterministic randomness
+    
+    private final StateMonitor monitor;
 
     /**
      * Create a new NBodyForce with default parameters.
      */
-    public NBodyForce() {
-        this(DEFAULT_GRAV_CONSTANT, DEFAULT_DISTANCE, DEFAULT_THETA);
+    public NBodyForce(StateMonitor monitor) {
+        this(DEFAULT_GRAV_CONSTANT, DEFAULT_DISTANCE, DEFAULT_THETA, monitor);
     }
     
     /**
@@ -101,7 +103,8 @@ public class NBodyForce extends AbstractForce {
      * an aggregated mass is used rather than drilling down to individual
      * item mass values.
      */
-    public NBodyForce(float gravConstant, float minDistance, float theta) {
+    public NBodyForce(float gravConstant, float minDistance, float theta, StateMonitor monitor) {
+		this.monitor = monitor;
         params = new float[] { gravConstant, minDistance, theta };
         minValues = new float[] { DEFAULT_MIN_GRAV_CONSTANT,
             DEFAULT_MIN_DISTANCE, DEFAULT_MIN_THETA };
@@ -170,6 +173,8 @@ public class NBodyForce extends AbstractForce {
         float x2 = Float.MIN_VALUE, y2 = Float.MIN_VALUE;
         Iterator itemIter = fsim.getItems();
         while ( itemIter.hasNext() ) {
+        	if (monitor.isCancelled())
+        		return;
             ForceItem item = (ForceItem)itemIter.next();
             float x = item.location[0];
             float y = item.location[1];
@@ -185,6 +190,8 @@ public class NBodyForce extends AbstractForce {
         // insert items into quadtree
         itemIter = fsim.getItems();
         while ( itemIter.hasNext() ) {
+        	if (monitor.isCancelled())
+        		return;
             ForceItem item = (ForceItem)itemIter.next();
             insert(item);
         }
@@ -257,6 +264,8 @@ public class NBodyForce extends AbstractForce {
         n.mass = 0;
         if ( n.hasChildren ) {
             for ( int i=0; i < n.children.length; i++ ) {
+            	if (monitor.isCancelled())
+            		return;
                 if ( n.children[i] != null ) {
                     calcMass(n.children[i]);
                     n.mass += n.children[i].mass;

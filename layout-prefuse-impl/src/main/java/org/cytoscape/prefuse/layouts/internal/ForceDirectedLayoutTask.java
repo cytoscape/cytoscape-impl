@@ -46,6 +46,7 @@ import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
 import prefuse.util.force.NBodyForce;
 import prefuse.util.force.SpringForce;
+import prefuse.util.force.StateMonitor;
 
 
 /**
@@ -59,6 +60,7 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 	private ForceDirectedLayout.Integrators integrator;
 	private Map<LayoutNode,ForceItem> forceItems;
 	private ForceDirectedLayoutContext context;
+	private final StateMonitor monitor;
 
 	/**
 	 * Creates a new ForceDirectedLayout object.
@@ -74,9 +76,11 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		edgeWeighter = context.edgeWeighter;
 		edgeWeighter.setWeightAttribute(layoutAttribute);
+		
+		monitor = new StateMonitor();
 
-		m_fsim = new ForceSimulator();
-		m_fsim.addForce(new NBodyForce());
+		m_fsim = new ForceSimulator(monitor);
+		m_fsim.addForce(new NBodyForce(monitor));
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());
 
@@ -99,8 +103,8 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		//m_fsim.setIntegrator(integrator.getNewIntegrator());
 		//m_fsim.clear();
 
-		m_fsim = new ForceSimulator();
-		m_fsim.addForce(new NBodyForce());
+		m_fsim = new ForceSimulator(monitor);
+		m_fsim.addForce(new NBodyForce(monitor));
 		m_fsim.addForce(new SpringForce());
 		m_fsim.addForce(new DragForce());
 
@@ -118,6 +122,9 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		
 		// initialize nodes
 		for (LayoutNode ln: nodeList) {
+			if (cancelled)
+				return;
+			
 			ForceItem fitem = forceItems.get(ln); 
 			if ( fitem == null ) {
 				fitem = new ForceItem();
@@ -131,6 +138,9 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		
 		// initialize edges
 		for (LayoutEdge e: edgeList) {
+			if (cancelled)
+				return;
+
 			LayoutNode n1 = e.getSource();
 			ForceItem f1 = forceItems.get(n1); 
 			LayoutNode n2 = e.getTarget();
@@ -150,7 +160,10 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 
 		// perform layout
 		long timestep = 1000L;
-		for ( int i = 0; i < context.numIterations && !cancelled; i++ ) {
+		for ( int i = 0; i < context.numIterations; i++ ) {
+			if (cancelled)
+				return;
+
 			timestep *= (1.0 - i/(double)context.numIterations);
 			long step = timestep+50;
 			m_fsim.runSimulator(step);
@@ -160,6 +173,9 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 		// update positions
 		part.resetNodes(); // reset the nodes so we get the new average location
 		for (LayoutNode ln: part.getNodeList()) {
+			if (cancelled)
+				return;
+
 			if (!ln.isLocked()) {
 				ForceItem fitem = forceItems.get(ln); 
 				ln.setX(fitem.location[0]);
@@ -167,6 +183,12 @@ public class ForceDirectedLayoutTask extends AbstractPartitionLayoutTask {
 				part.moveNodeToLocation(ln);
 			}
 		}
+	}
+	
+	@Override
+	public void cancel() {
+		super.cancel();
+		monitor.cancel();
 	}
 
 	/**

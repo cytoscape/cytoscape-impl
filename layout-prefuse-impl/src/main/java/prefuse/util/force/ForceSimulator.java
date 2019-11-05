@@ -45,20 +45,23 @@ public class ForceSimulator {
     private Integrator integrator;
     private float speedLimit = 1.0f;
     
+    private final StateMonitor monitor;
+    
     /**
      * Create a new, empty ForceSimulator. A RungeKuttaIntegrator is used
      * by default.
      */
-    public ForceSimulator() {
-        this(new RungeKuttaIntegrator());
+    public ForceSimulator(StateMonitor monitor) {
+        this(new RungeKuttaIntegrator(monitor), monitor);
     }
 
     /**
      * Create a new, empty ForceSimulator.
      * @param integr the Integrator to use
      */
-    public ForceSimulator(Integrator integr) {
-        integrator = integr;
+    public ForceSimulator(Integrator integrator, StateMonitor monitor) {
+        this.integrator = integrator;
+        this.monitor = monitor;
         iforces = new Force[5];
         sforces = new Force[5];
         iflen = 0;
@@ -224,20 +227,24 @@ public class ForceSimulator {
      * @param timestep the span of the timestep for which to run the simulator
      */
     public void runSimulator(long timestep) {
-        accumulate();
-        integrator.integrate(this, timestep);
+		if (!monitor.isCancelled())
+			accumulate();
+		if (!monitor.isCancelled())
+			integrator.integrate(this, timestep);
     }
     
     /**
      * Accumulate all forces acting on the items in this simulation
      */
     public void accumulate() {
-        for ( int i = 0; i < iflen; i++ )
+        for ( int i = 0; i < iflen && !monitor.isCancelled(); i++ )
             iforces[i].init(this);
-        for ( int i = 0; i < sflen; i++ )
+        for ( int i = 0; i < sflen && !monitor.isCancelled(); i++ )
             sforces[i].init(this);
         Iterator itemIter = items.iterator();
         while ( itemIter.hasNext() ) {
+			if (monitor.isCancelled())
+				return;
             ForceItem item = (ForceItem)itemIter.next();
             item.force[0] = 0.0f; item.force[1] = 0.0f;
             for ( int i = 0; i < iflen; i++ )
@@ -245,6 +252,8 @@ public class ForceSimulator {
         }
         Iterator springIter = springs.iterator();
         while ( springIter.hasNext() ) {
+			if (monitor.isCancelled())
+				return;
             Spring s = (Spring)springIter.next();
             for ( int i = 0; i < sflen; i++ ) {
                 sforces[i].getForce(s);

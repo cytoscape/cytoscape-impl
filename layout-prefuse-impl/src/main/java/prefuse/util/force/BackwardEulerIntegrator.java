@@ -45,13 +45,19 @@ import java.util.Iterator;
  */
 public class BackwardEulerIntegrator implements Integrator {
     
-	/**
-	 * @see prefuse.util.force.Integrator#integrate(prefuse.util.force.ForceSimulator, long)
-	 */
+	private final StateMonitor monitor;
+
+	public BackwardEulerIntegrator(StateMonitor monitor) {
+		this.monitor = monitor;
+	}
+
+	@Override
 	public void integrate(final ForceSimulator sim, final long timestep) {
 		float speedLimit = sim.getSpeedLimit();
 		Iterator iter = sim.getItems();
 		while ( iter.hasNext() ) {
+			if (monitor.isCancelled())
+				return;
 			ForceItem item = (ForceItem)iter.next();
 			float coeff = timestep / item.mass;
 			item.velocity[0] += coeff * item.force[0];

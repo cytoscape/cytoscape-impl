@@ -36,6 +36,12 @@ import java.util.Iterator;
  */
 public class RungeKuttaIntegrator implements Integrator {
     
+	private final StateMonitor monitor;
+	
+	public RungeKuttaIntegrator(StateMonitor monitor) {
+		this.monitor = monitor;
+	}
+	
     /**
      * @see prefuse.util.force.Integrator#integrate(prefuse.util.force.ForceSimulator, long)
      */
@@ -46,6 +52,8 @@ public class RungeKuttaIntegrator implements Integrator {
         
         Iterator iter = sim.getItems();
         while ( iter.hasNext() ) {
+			if (monitor.isCancelled())
+				return;
             ForceItem item = (ForceItem)iter.next();
             coeff = timestep / item.mass;
             k = item.k;
@@ -67,6 +75,8 @@ public class RungeKuttaIntegrator implements Integrator {
         
         iter = sim.getItems();
         while ( iter.hasNext() ) {
+        	if (monitor.isCancelled())
+				return;
             ForceItem item = (ForceItem)iter.next();
             coeff = timestep / item.mass;
             k = item.k;
@@ -93,6 +103,8 @@ public class RungeKuttaIntegrator implements Integrator {
         
         iter = sim.getItems();
         while ( iter.hasNext() ) {
+        	if (monitor.isCancelled())
+				return;
             ForceItem item = (ForceItem)iter.next();
             coeff = timestep / item.mass;
             k = item.k;
@@ -119,6 +131,8 @@ public class RungeKuttaIntegrator implements Integrator {
         
         iter = sim.getItems();
         while ( iter.hasNext() ) {
+        	if (monitor.isCancelled())
+				return;
             ForceItem item = (ForceItem)iter.next();
             coeff = timestep / item.mass;
             k = item.k;

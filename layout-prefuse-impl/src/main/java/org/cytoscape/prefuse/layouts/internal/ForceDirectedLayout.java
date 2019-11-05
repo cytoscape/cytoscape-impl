@@ -38,6 +38,7 @@ import org.cytoscape.work.undo.UndoSupport;
 import prefuse.util.force.EulerIntegrator;
 import prefuse.util.force.Integrator;
 import prefuse.util.force.RungeKuttaIntegrator;
+import prefuse.util.force.StateMonitor;
 
 public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
@@ -60,11 +61,11 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 			return name;
 		}
 
-		public Integrator getNewIntegrator() {
+		public Integrator getNewIntegrator(StateMonitor monitor) {
 			if (this == EULER)
-				return new EulerIntegrator();
+				return new EulerIntegrator(monitor);
 			else
-				return new RungeKuttaIntegrator();
+				return new RungeKuttaIntegrator(monitor);
 		}
 	}
 
