@@ -1,12 +1,27 @@
 package org.cytoscape.prefuse.layouts.internal;
 
+import java.util.HashSet;
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.undo.UndoSupport;
+
+import prefuse.util.force.EulerIntegrator;
+import prefuse.util.force.Integrator;
+import prefuse.util.force.RungeKuttaIntegrator;
+import prefuse.util.force.StateMonitor;
+
 /*
  * #%L
  * Cytoscape Prefuse Layout Impl (layout-prefuse-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -23,21 +38,6 @@ package org.cytoscape.prefuse.layouts.internal;
  * <http://www.gnu.org/licenses/lgpl-2.1.html>.
  * #L%
  */
-
-
-import java.util.HashSet;
-import java.util.Set;
-
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.AbstractLayoutAlgorithm;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.undo.UndoSupport;
-
-import prefuse.util.force.EulerIntegrator;
-import prefuse.util.force.Integrator;
-import prefuse.util.force.RungeKuttaIntegrator;
 
 public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
@@ -60,11 +60,11 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 			return name;
 		}
 
-		public Integrator getNewIntegrator() {
+		public Integrator getNewIntegrator(StateMonitor monitor) {
 			if (this == EULER)
-				return new EulerIntegrator();
+				return new EulerIntegrator(monitor);
 			else
-				return new RungeKuttaIntegrator();
+				return new RungeKuttaIntegrator(monitor);
 		}
 	}
 
@@ -86,7 +86,7 @@ public class ForceDirectedLayout extends AbstractLayoutAlgorithm {
 
 	@Override
 	public Set<Class<?>> getSupportedEdgeAttributeTypes() {
-		final Set<Class<?>> ret = new HashSet<Class<?>>();
+		final Set<Class<?>> ret = new HashSet<>();
 
 		ret.add(Integer.class);
 		ret.add(Double.class);

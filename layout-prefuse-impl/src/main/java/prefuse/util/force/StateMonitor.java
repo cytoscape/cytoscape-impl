@@ -24,15 +24,15 @@ package prefuse.util.force;
  * #L%
  */
 
-/**
- * Interface for numerical integration routines. These routines are used
- * to update the position and velocity of items in response to forces
- * over a given time step.
- *
- * @author <a href="http://jheer.org">jeffrey heer</a>
- */
-public interface Integrator {
+public class StateMonitor {
 
-    void integrate(ForceSimulator sim, long timestep);
-    
+	private volatile boolean cancelled;
+	
+	public void cancel() {
+		cancelled = true;
+	}
+	
+	public boolean isCancelled() {
+		return cancelled;
+	}
 }
