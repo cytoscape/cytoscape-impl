@@ -1,12 +1,16 @@
 package prefuse.util.force;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+
 /*
  * #%L
  * Cytoscape Prefuse Layout Impl (layout-prefuse-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,10 +28,6 @@ package prefuse.util.force;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.Iterator;
-
 /**
  * Manages a simulation of physical forces acting on bodies. To create a
  * custom ForceSimulator, add the desired {@link Force} functions and choose an
@@ -37,8 +37,8 @@ import java.util.Iterator;
  */
 public class ForceSimulator {
 
-    private ArrayList items;
-    private ArrayList springs;
+    private ArrayList<ForceItem> items;
+    private ArrayList<Spring> springs;
     private Force[] iforces;
     private Force[] sforces;
     private int iflen, sflen;
@@ -57,7 +57,7 @@ public class ForceSimulator {
 
     /**
      * Create a new, empty ForceSimulator.
-     * @param integr the Integrator to use
+     * @param integrator the Integrator to use
      */
     public ForceSimulator(Integrator integrator, StateMonitor monitor) {
         this.integrator = integrator;
@@ -66,8 +66,8 @@ public class ForceSimulator {
         sforces = new Force[5];
         iflen = 0;
         sflen = 0;
-        items = new ArrayList();
-        springs = new ArrayList();
+        items = new ArrayList<>();
+        springs = new ArrayList<>();
     }
 
     /**
@@ -109,49 +109,55 @@ public class ForceSimulator {
      * for the simulator.
      */
     public void clear() {
-        items.clear();
-        Iterator siter = springs.iterator();
-        Spring.SpringFactory f = Spring.getFactory();
-        while ( siter.hasNext() )
-            f.reclaim((Spring)siter.next());
-        springs.clear();
-    }
-    
+		items.clear();
+		Iterator<Spring> siter = springs.iterator();
+		Spring.SpringFactory f = Spring.getFactory();
+		
+		while (siter.hasNext())
+			f.reclaim((Spring) siter.next());
+		
+		springs.clear();
+	}
+
     /**
      * Add a new Force function to the simulator.
      * @param f the Force function to add
      */
     public void addForce(Force f) {
-        if ( f.isItemForce() ) {
-            if ( iforces.length == iflen ) {
-                // resize necessary
-                Force[] newf = new Force[iflen+10];
-                System.arraycopy(iforces, 0, newf, 0, iforces.length);
-                iforces = newf;
-            }
-            iforces[iflen++] = f;
-        }
-        if ( f.isSpringForce() ) {
-            if ( sforces.length == sflen ) {
-                // resize necessary
-                Force[] newf = new Force[sflen+10];
-                System.arraycopy(sforces, 0, newf, 0, sforces.length);
-                sforces = newf;
-            }
-            sforces[sflen++] = f;
-        }
+		if (f.isItemForce()) {
+			if (iforces.length == iflen) {
+				// resize necessary
+				Force[] newf = new Force[iflen + 10];
+				System.arraycopy(iforces, 0, newf, 0, iforces.length);
+				iforces = newf;
+			}
+			
+			iforces[iflen++] = f;
+		}
+		
+		if (f.isSpringForce()) {
+			if (sforces.length == sflen) {
+				// resize necessary
+				Force[] newf = new Force[sflen + 10];
+				System.arraycopy(sforces, 0, newf, 0, sforces.length);
+				sforces = newf;
+			}
+			
+			sforces[sflen++] = f;
+		}
     }
     
     /**
      * Get an array of all the Force functions used in this simulator.
      * @return an array of Force functions
      */
-    public Force[] getForces() {
-        Force[] rv = new Force[iflen+sflen];
-        System.arraycopy(iforces, 0, rv, 0, iflen);
-        System.arraycopy(sforces, 0, rv, iflen, sflen);
-        return rv;
-    }
+	public Force[] getForces() {
+		Force[] rv = new Force[iflen + sflen];
+		System.arraycopy(iforces, 0, rv, 0, iflen);
+		System.arraycopy(sforces, 0, rv, iflen, sflen);
+		
+		return rv;
+	}
     
     /**
      * Add a ForceItem to the simulation.
@@ -173,7 +179,7 @@ public class ForceSimulator {
      * Get an iterator over all registered ForceItems.
      * @return an iterator over the ForceItems.
      */
-    public Iterator getItems() {
+    public Iterator<ForceItem> getItems() {
         return items.iterator();
     }
     
@@ -207,18 +213,20 @@ public class ForceSimulator {
      * @return the Spring added to the simulation
      */
     public Spring addSpring(ForceItem item1, ForceItem item2, float coeff, float length) {
-        if ( item1 == null || item2 == null )
-            throw new IllegalArgumentException("ForceItems must be non-null");
-        Spring s = Spring.getFactory().getSpring(item1, item2, coeff, length);
-        springs.add(s);
-        return s;
+		if (item1 == null || item2 == null)
+			throw new IllegalArgumentException("ForceItems must be non-null");
+		
+		Spring s = Spring.getFactory().getSpring(item1, item2, coeff, length);
+		springs.add(s);
+		
+		return s;
     }
     
     /**
      * Get an iterator over all registered Springs.
      * @return an iterator over the Springs.
      */
-    public Iterator getSprings() {
+    public Iterator<Spring> getSprings() {
         return springs.iterator();
     }
     
@@ -226,39 +234,48 @@ public class ForceSimulator {
      * Run the simulator for one timestep.
      * @param timestep the span of the timestep for which to run the simulator
      */
-    public void runSimulator(long timestep) {
+	public void runSimulator(long timestep) {
 		if (!monitor.isCancelled())
 			accumulate();
 		if (!monitor.isCancelled())
 			integrator.integrate(this, timestep);
-    }
-    
+	}
+	
     /**
      * Accumulate all forces acting on the items in this simulation
      */
-    public void accumulate() {
-        for ( int i = 0; i < iflen && !monitor.isCancelled(); i++ )
-            iforces[i].init(this);
-        for ( int i = 0; i < sflen && !monitor.isCancelled(); i++ )
-            sforces[i].init(this);
-        Iterator itemIter = items.iterator();
-        while ( itemIter.hasNext() ) {
-			if (monitor.isCancelled())
-				return;
-            ForceItem item = (ForceItem)itemIter.next();
-            item.force[0] = 0.0f; item.force[1] = 0.0f;
-            for ( int i = 0; i < iflen; i++ )
-                iforces[i].getForce(item);
-        }
-        Iterator springIter = springs.iterator();
-        while ( springIter.hasNext() ) {
-			if (monitor.isCancelled())
-				return;
-            Spring s = (Spring)springIter.next();
-            for ( int i = 0; i < sflen; i++ ) {
-                sforces[i].getForce(s);
-            }
-        }
+    protected void accumulate() {
+    	// Init
+		for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+			iforces[i].init(this);
+		for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+			sforces[i].init(this);
+		
+		// Update forces
+		updateForceItems(items);
+		updateSprings(springs);
     }
-    
-} // end of class ForceSimulator
+
+	private void updateForceItems(Collection<ForceItem> list) {
+		for (ForceItem item : list) {
+			if (monitor.isCancelled())
+				return;
+			
+			item.force[0] = 0.0f;
+			item.force[1] = 0.0f;
+			
+			for (int i = 0; i < iflen && !monitor.isCancelled(); i++)
+				iforces[i].getForce(item);
+		}
+	}
+	
+	private void updateSprings(Collection<Spring> list) {
+		for (Spring s : list) {
+			if (monitor.isCancelled())
+				return;
+			
+			for (int i = 0; i < sflen && !monitor.isCancelled(); i++)
+				sforces[i].getForce(s);
+		}
+	}
+}
