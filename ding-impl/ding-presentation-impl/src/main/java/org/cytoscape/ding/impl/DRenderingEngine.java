@@ -171,7 +171,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			return thread;
 		});
 		
-		this.bendStore = new BendStore(this, handleFactory);
+		this.bendStore = new BendStore(this, eventHelper, handleFactory);
 		
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);

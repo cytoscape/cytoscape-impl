@@ -9,10 +9,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
@@ -21,11 +25,13 @@ public class BendStore {
 
 	private final DRenderingEngine re;
 	private final HandleFactory handleFactory;
+	private final CyEventHelper eventHelper;
 	
 	private Set<HandleInfo> selectedHandles = new HashSet<>();
 	
-	public BendStore(DRenderingEngine re, HandleFactory handleFactory) {
+	public BendStore(DRenderingEngine re, CyEventHelper eventHelper, HandleFactory handleFactory) {
 		this.re = re;
+		this.eventHelper = eventHelper;
 		this.handleFactory = handleFactory;
 	}
 	
@@ -99,6 +105,9 @@ public class BendStore {
 			}
 			Handle handle = handleFactory.createHandle(re.getViewModel(), mutableEdgeView, pt.getX(), pt.getY());
 			bend.insertHandleAt(index, handle);
+			
+			fireViewChangeEvent(mutableEdgeView, bend);
+			
 			re.setContentChanged();
 			return new HandleInfo(edge, bend, handle);
 		}
@@ -172,8 +181,17 @@ public class BendStore {
 			if(bend != null) {
 				int index = bend.getIndex(key.getHandle());
 				bend.removeHandleAt(index);
+				
+				fireViewChangeEvent(mutableEdgeView, bend);
 			}
 		}
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	private void fireViewChangeEvent(View<CyEdge> mutableEdgeView, Bend bend) {
+		var record = new ViewChangeRecord<>(mutableEdgeView, BasicVisualLexicon.EDGE_BEND, bend, true);
+		eventHelper.addEventPayload(re.getViewModel(), record, ViewChangedEvent.class);
 	}
 	
 }
