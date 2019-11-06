@@ -84,7 +84,6 @@ import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -353,7 +352,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			final float move = k.isShiftDown() ? 15.0f : 1.0f;
 
 			var snapshot = re.getViewModelSnapshot();
-			var selectedNodes = snapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var selectedNodes = snapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 			for(View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
 				double yPos = re.getNodeDetails().getYPosition(node);
@@ -869,7 +868,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l->l.isDragging()).orElse(false))
 				return;
 			
-			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			

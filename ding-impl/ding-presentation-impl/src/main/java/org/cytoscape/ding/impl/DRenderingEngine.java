@@ -50,7 +50,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -310,9 +309,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		renderComponent.setBackgroundPaint(backgroundPaint);
 		
-//		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-//		bendStore.updateSelectedEdges(selectedEdges);
-		
 		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
 		edgeDetails.updateAnimatedEdges(animatedEdges);
 		if(animatedEdges.isEmpty() && animationTimer != null) {
@@ -543,7 +539,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
-		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 		if(selectedElms.isEmpty())
 			return;
 		

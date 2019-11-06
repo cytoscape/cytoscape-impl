@@ -31,11 +31,7 @@ public class CyNetworkViewFactoryFactoryImpl implements CyNetworkViewFactoryFact
 	public CyNetworkViewConfigImpl createConfig(VisualLexicon lexicon) {
 		CyNetworkViewConfigImpl config = new CyNetworkViewConfigImpl();
 		if(lexicon instanceof BasicVisualLexicon) {
-			// Tracked VPs
-			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_NODES, NODE_SELECTED, Boolean.TRUE::equals);
-//			config.addTrackedVisualProperty(CyNetworkViewConfig.SELECTED_EDGES, EDGE_SELECTED, Boolean.TRUE::equals);
-			config.addTrackedVisualProperty(CyNetworkViewConfig.HIDDEN_NODES, NODE_VISIBLE, Boolean.FALSE::equals);
-			config.addTrackedVisualProperty(CyNetworkViewConfig.HIDDEN_EDGES, EDGE_VISIBLE, Boolean.FALSE::equals);
+			// Tracked VPs... Don't track any VP's by default
 			// Non-clearable VPs
 			config.addNonClearableVisualProperty(NODE_X_LOCATION);
 			config.addNonClearableVisualProperty(NODE_Y_LOCATION);

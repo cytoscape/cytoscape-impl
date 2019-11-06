@@ -1,5 +1,6 @@
 package org.cytoscape.ding.impl;
 
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +14,7 @@ import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewFactoryFactory;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedEvent;
 import org.cytoscape.view.model.events.NetworkViewAboutToBeDestroyedListener;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 /**
@@ -25,7 +27,10 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
  */
 public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkViewAboutToBeDestroyedListener {
 
-	public static final Object ANIMATED_EDGES = new Object();
+	public static final Object ANIMATED_EDGES = "ANIMATED_EDGES";
+	public static final Object SELECTED_NODES = "SELECTED_NODES";
+	public static final Object HIDDEN_NODES = "HIDDEN_NODES";
+	public static final Object HIDDEN_EDGES = "HIDDEN_EDGES";
 	
 	
 	private final CyNetworkViewFactory delegateFactory;
@@ -59,7 +64,12 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	 */
 	public static CyNetworkViewConfig getNetworkViewConfig(CyNetworkViewFactoryFactory factoryFactory, DVisualLexicon dVisualLexicon) {
 		CyNetworkViewConfig config = factoryFactory.createConfig(dVisualLexicon);
-		config.addTrackedVisualProperty(ANIMATED_EDGES, DVisualLexicon.EDGE_LINE_TYPE, dVisualLexicon::isAnimated);
+		// Do not track selected edges, its too performance intensive
+		config.addTrackedVisualProperty(SELECTED_NODES, BasicVisualLexicon.NODE_SELECTED, Boolean.TRUE::equals);
+		config.addTrackedVisualProperty(ANIMATED_EDGES, BasicVisualLexicon.EDGE_LINE_TYPE, dVisualLexicon::isAnimated);
+		// This is an optimization for CyNetworkViewMediator
+		config.addTrackedVisualProperty(HIDDEN_NODES, BasicVisualLexicon.NODE_VISIBLE, Boolean.FALSE::equals);
+		config.addTrackedVisualProperty(HIDDEN_EDGES, BasicVisualLexicon.EDGE_VISIBLE, Boolean.FALSE::equals);
 		return config;
 	}
 	
