@@ -11,6 +11,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.Objects;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
@@ -69,7 +70,7 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	private static final Dimension DEF_PANEL_SIZE = new Dimension(600, 400);
 	
 	private JDialog dialog;
-	private JPanel innerPanel;
+	private SimpleRootPaneContainer innerPanel;
 	private CyNetworkView dummyView;
 	private View<CyEdge> edgeView;
 
@@ -86,13 +87,8 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 			final RenderingEngineFactory<CyNetwork> presentationFactory,
 			final CyServiceRegistrar serviceRegistrar
 	) {
-		if (cyNetworkViewFactory == null)
-			throw new NullPointerException("CyNetworkViewFactory is null.");
-		if (presentationFactory == null)
-			throw new NullPointerException("RenderingEngineFactory is null.");
-		
-		this.cyNetworkViewFactory = cyNetworkViewFactory;
-		this.presentationFactory = presentationFactory;
+		this.cyNetworkViewFactory = Objects.requireNonNull(cyNetworkViewFactory, "CyNetworkViewFactory is null.");
+		this.presentationFactory  = Objects.requireNonNull(presentationFactory, "RenderingEngineFactory is null.");
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
@@ -104,50 +100,39 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		dialog.setResizable(false);
 		
 		dialog.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
+			@Override public void windowClosing(WindowEvent e) {
 				editCancelled = true;
 			}
 		});
 		dialog.setPreferredSize(DEF_PANEL_SIZE);
 
-		final String osName = System.getProperty("os.name").toLowerCase();
-		String newHandleAction = "Ctrl-Alt-click";
-		
-		if (osName.contains("windows"))
-			newHandleAction = "Alt-click";
-		else if (osName.contains("mac"))
-			newHandleAction = "Option-click";
-		
+		String newHandleAction = getHandleActionLabel();
 		final JLabel infoLabel = new JLabel(
 				"<html><b>1. <i>" + newHandleAction + "</i></b> the edge to add a new handle.<br />" +
 				"<b>2. </b>Drag handles to bend (select the edge first).</html>"
 		);
 		infoLabel.setFont(infoLabel.getFont().deriveFont(LookAndFeelUtil.getSmallFontSize()));
 		
-		innerPanel = new JPanel();
+		innerPanel = new SimpleRootPaneContainer();
 		innerPanel.setBackground(UIManager.getColor("Table.background"));
 		innerPanel.setBorder(BorderFactory.createLineBorder(UIManager.getColor("Separator.foreground")));
 
 		final JButton okButton = new JButton(new AbstractAction("OK") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				editCancelled = false;
 				dialog.dispose();
 			}
 		});
 		
 		final JButton cancelButton = new JButton(new AbstractAction("Cancel") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				editCancelled = true;
 				dialog.dispose();
 			}
 		});
 		
 		final JButton removeBendButton = new JButton(new AbstractAction("Remove Bend") {
-			@Override
-			public void actionPerformed(ActionEvent e) {
+			@Override public void actionPerformed(ActionEvent e) {
 				bendRemoved = true;
 				editCancelled = false;
 				dialog.dispose();
@@ -175,8 +160,18 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 		);
 	}
 	
+	private String getHandleActionLabel() {
+		final String osName = System.getProperty("os.name").toLowerCase();
+		if (osName.contains("windows"))
+			return "Alt-click";
+		else if (osName.contains("mac"))
+			return "Option-click";
+		else
+			return "Ctrl-Alt-click";
+	}
+	
 	private void updateUI(Bend startBend) {
-		innerPanel.removeAll();
+//		innerPanel.removeAll();
 		
 		final Color NODE_COLOR = UIManager.getColor("Label.disabledForeground");
 		final Color EDGE_COLOR = UIManager.getColor("Label.foreground");

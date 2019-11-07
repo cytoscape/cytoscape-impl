@@ -148,7 +148,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	@Override
 	public void dispose() {
-		System.out.println("InputHandlerGlassPane.dispose()");
 		re = null;
 		cyAnnotator = null;
 	}
