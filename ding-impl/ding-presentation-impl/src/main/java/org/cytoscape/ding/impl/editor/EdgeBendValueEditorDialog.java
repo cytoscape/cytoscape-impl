@@ -212,6 +212,11 @@ public class EdgeBendValueEditorDialog {
 		// Render it in this panel.  It is not necessary to register this engine to manager.
 		presentationFactory.createRenderingEngine(innerPanel, dummyView);
 	}
+	
+	
+	public boolean isEditCancelled() {
+		return editCancelled;
+	}
 
 	public Bend showDialog(Component parent, Bend initialValue) {
 		init(parent);
@@ -219,8 +224,6 @@ public class EdgeBendValueEditorDialog {
 		editCancelled = false;
 		bendRemoved = false;
 		updateUI(initialValue);
-		
-		EditMode.setMode(true);
 		
 		if (parent != null)
 			dialog.setLocationRelativeTo(parent);
@@ -230,8 +233,6 @@ public class EdgeBendValueEditorDialog {
 		dialog.pack();
 		dummyView.fitContent();
 		dialog.setVisible(true);
-		
-		EditMode.setMode(false);
 		
 		cyNetworkViewFactory.removeRenderingEngine(dummyView);
 		

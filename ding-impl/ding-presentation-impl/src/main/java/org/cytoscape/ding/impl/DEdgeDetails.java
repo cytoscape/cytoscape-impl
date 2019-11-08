@@ -379,23 +379,29 @@ public final class DEdgeDetails implements EdgeDetails {
 		return connectingEdges;
 	}
 	
+	
+	private class VisualPropertyEdgeAnchors implements EdgeAnchors {
+		private final View<CyEdge> edgeView;
+		public VisualPropertyEdgeAnchors(View<CyEdge> edgeView) {
+			this.edgeView = edgeView;
+		}
+		public int numAnchors() { 
+			return DEdgeDetails.this.getNumAnchors(edgeView); 
+		}
+		public void getAnchor(int anchorIndex, float[] anchorArr) {
+			DEdgeDetails.this.getAnchor(edgeView, anchorIndex, anchorArr);
+		}
+	}
+	
+	
 	@Override
-	public EdgeAnchors getAnchors(CyNetworkViewSnapshot netView, View<CyEdge> edgeView) {
+	public EdgeAnchors getAnchors(final CyNetworkViewSnapshot netView, final View<CyEdge> edgeView) {
 		if (edgeView == null)
 			return null;
 		
-		final EdgeAnchors returnThis = new EdgeAnchors() {
-			public int numAnchors() { 
-				return DEdgeDetails.this.getNumAnchors(edgeView); 
-			}
-			public void getAnchor(int anchorIndex, float[] anchorArr) {
-				DEdgeDetails.this.getAnchor(edgeView, anchorIndex, anchorArr);
-			}
-		};
-		
 		int numAnchors = getNumAnchors(edgeView);
 		if (numAnchors > 0) {
-			return returnThis;
+			return new VisualPropertyEdgeAnchors(edgeView);
 		}
 
 		float[]	extentsBuff = new float[4];
@@ -418,7 +424,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			int i = 0;
 			for (View<CyEdge> selfEdge : selfEdgeList) {
 				if (selfEdge.getSUID() == edgeView.getSUID())
-					break; // MKTODO break???? shouldn't this be continue??? what about edges that haven't been processed yet???
+					break;
 				if (getNumAnchors(selfEdge) == 0)
 					i++;
 			}
@@ -549,7 +555,8 @@ public final class DEdgeDetails implements EdgeDetails {
 				}
 			};
 		}
-		return returnThis;
+		
+		return new VisualPropertyEdgeAnchors(edgeView);
 	}
 
 	

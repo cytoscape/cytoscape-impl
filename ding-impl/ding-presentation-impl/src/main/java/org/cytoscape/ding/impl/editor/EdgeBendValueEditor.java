@@ -3,6 +3,7 @@ package org.cytoscape.ding.impl.editor;
 import java.awt.Component;
 import java.util.Objects;
 
+import org.cytoscape.ding.impl.BendImpl;
 import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -55,6 +56,14 @@ public class EdgeBendValueEditor implements ValueEditor<Bend> {
 	public <S extends Bend> Bend showEditor(Component parent, S initialValue) {
 		EdgeBendValueEditorDialog dialog = new EdgeBendValueEditorDialog(cyNetworkViewFactory, presentationFactory, serviceRegistrar);
 		Bend bend = dialog.showDialog(parent, initialValue);
+		
+		// The reason to create a new object is so that the view model thinks its a new value
+		// and a ViewChangeEvent gets fired. If we just modify the existing Bend object
+		// then the view model doesn't see the change.
+		if(!dialog.isEditCancelled() && bend instanceof BendImpl) {
+			bend = new BendImpl((BendImpl)bend);
+		}
+		
 		return bend;
 	}
 
