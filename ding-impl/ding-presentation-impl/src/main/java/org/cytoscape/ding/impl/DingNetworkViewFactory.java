@@ -94,12 +94,12 @@ public class DingNetworkViewFactory implements CyNetworkViewFactory, NetworkView
 	}
 
 	public void removeRenderingEngine(CyNetworkView networkView) {
-		mainRenderingEngines.remove(networkView);
+		DRenderingEngine re = mainRenderingEngines.remove(networkView);
 	}
 	
 	@Override
 	public void handleEvent(NetworkViewAboutToBeDestroyedEvent e) {
-		mainRenderingEngines.remove(e.getNetworkView());
+		removeRenderingEngine(e.getNetworkView());
 	}
 	
 }
