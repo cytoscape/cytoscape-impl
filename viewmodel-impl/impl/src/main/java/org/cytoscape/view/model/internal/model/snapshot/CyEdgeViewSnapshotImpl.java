@@ -10,10 +10,13 @@ import org.cytoscape.view.model.internal.model.VPStore;
 public class CyEdgeViewSnapshotImpl extends CyViewSnapshotBase<CyEdge> implements SnapshotEdgeInfo {
 	
 	private final CyNetworkViewSnapshotImpl parent;
+	// Its ok to have a reference to the mutable view object as long as we don't follow its parent pointer.
+	private final CyEdgeViewImpl view;
 
 	public CyEdgeViewSnapshotImpl(CyNetworkViewSnapshotImpl parent, CyEdgeViewImpl view) {
 		super(view.getSUID());
 		this.parent = parent;
+		this.view = view;
 	}
 	
 	@Override
@@ -21,28 +24,24 @@ public class CyEdgeViewSnapshotImpl extends CyViewSnapshotBase<CyEdge> implement
 		return parent;
 	}
 	
-	private CyEdgeViewImpl getEdgeView() {
-		return parent.getMutableNetworkView().getEdgeView(getSUID());
-	}
-	
 	@Override
 	public Long getModelSUID() {
-		return getEdgeView().getModel().getSUID();
+		return view.getModel().getSUID();
 	}
 
 	@Override
 	public long getSourceViewSUID() {
-		return getEdgeView().getSourceSuid();
+		return view.getSourceSuid();
 	}
 
 	@Override
 	public long getTargetViewSUID() {
-		return getEdgeView().getTargetSuid();
+		return view.getTargetSuid();
 	}
 
 	@Override
 	public boolean isDirected() {
-		return getEdgeView().isDirected();
+		return view.isDirected();
 	}
 
 	@Override
