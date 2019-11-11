@@ -440,4 +440,9 @@ public abstract class AbstractAnnotation implements DingAnnotation {
 	public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
 		pcs.removePropertyChangeListener(propertyName, listener);
 	}
+	
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "[" + getName() + "]";
+	}
 }

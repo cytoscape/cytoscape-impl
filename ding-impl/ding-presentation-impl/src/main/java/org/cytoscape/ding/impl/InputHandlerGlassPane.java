@@ -294,28 +294,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void moveAnnotations(KeyEvent e) {
-			//Some annotations have been double clicked and selected
-			int code = e.getKeyCode();
-			final int move = 2;
+			var selection = cyAnnotator.getAnnotationSelection();
+			Point start = re.getTransform().getImageCoordinates(selection.getLocation());
+			int x = start.x;
+			int y = start.y;
 			
-			for(DingAnnotation a : cyAnnotator.getAnnotationSelection()) {
-				double[] coords = {a.getX(), a.getY()};
-				re.getTransform().xformNodeToImageCoords(coords);
-				
-				if(code == VK_UP)
-					coords[1] -= move;
-				else if(code == VK_DOWN)
-					coords[1] += move;
-				else if(code == VK_LEFT)
-					coords[0] -= move;
-				else if(code == VK_RIGHT)
-					coords[0] += move;
-
-				re.getTransform().xformImageToNodeCoords(coords);
-				a.setLocation(coords[0], coords[1]);
-				a.update();
-				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			final int move = 2;
+			switch(e.getKeyCode()) {
+				case VK_UP:    y -= move; break;
+				case VK_DOWN:  y += move; break;
+				case VK_LEFT:  x -= move; break;
+				case VK_RIGHT: x += move; break;
 			}
+			
+			selection.setMovingStartOffset(start);
+			selection.moveSelection(x, y);
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 		}
 		
 		private void cancelAnnotations() {
@@ -647,7 +641,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
-				annotationSelection.setMouseOffset(e.getPoint());
+				annotationSelection.setMovingStartOffset(e.getPoint());
 				
 				AnchorLocation anchor = annotationSelection.overAnchor(e.getX(), e.getY());
 				if(!annotationSelection.isEmpty() && anchor != null) {
@@ -661,7 +655,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
 						deselectAllNodesAndEdges();
 					}
-					annotationSelection.setMouseOffset(e.getPoint());
+					annotationSelection.setMovingStartOffset(e.getPoint());
 					return true;
 				}
 			}
@@ -877,8 +871,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
 					return;
 				} else {
-					annotationSelection.moveSelection(e.getX(), e.getY());
-					annotationSelection.setMouseOffset(e.getPoint());
+					annotationSelection.moveSelection(e.getPoint());
+					annotationSelection.setMovingStartOffset(e.getPoint());
 				}
 			}
 			

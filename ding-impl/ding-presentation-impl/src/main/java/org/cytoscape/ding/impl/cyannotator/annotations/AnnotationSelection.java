@@ -46,7 +46,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	// Everything below in image coordinates
 	private final Map<Position,Rectangle> anchors = new EnumMap<>(Position.class);
-	private Point movingMouseOffset;
+	private Point movingStartOffset;
 	private AnchorLocation resizingAnchor;
 	
 	
@@ -108,6 +108,19 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 			var bounds = a.getBounds();
 			union = (union == null) ? bounds : union.createUnion(bounds);
 		}
+	}
+	
+	/**
+	 * Returns bounds in node coordinates.
+	 */
+	public Rectangle2D getBounds() {
+		updateBounds();
+		return union;
+	}
+	
+	public Point2D getLocation() {
+		Rectangle2D bounds = getBounds();
+		return new Point2D.Double(bounds.getX(), bounds.getY());
 	}
 	
 	public AnchorLocation overAnchor(int mouseX, int mouseY) {
@@ -211,12 +224,17 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 
 	
 	
-	public void setMouseOffset(Point offset) {
-		this.movingMouseOffset = offset;
+	public void setMovingStartOffset(Point offset) {
+		this.movingStartOffset = offset;
 	}
 	
+	
+	public void moveSelection(Point p) {
+		moveSelection(p.x, p.y);
+	}
 	/**
-	 * Assumes x and y are component (mouse) coordinates
+	 * Assumes x and y are component (mouse) coordinates.
+	 * Moves the selection to the given point, setMovingStartOffset() must be called first.
 	 */
 	public void moveSelection(int x, int y) {
 		// Avoid moving the same annotation twice
@@ -232,7 +250,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 
 		NetworkTransform transform = cyAnnotator.getRenderingEngine().getTransform();
 		Point2D nodePt   = transform.getNodeCoordinates(x, y);
-		Point2D offsetPt = transform.getNodeCoordinates(movingMouseOffset);
+		Point2D offsetPt = transform.getNodeCoordinates(movingStartOffset);
 		
 		double dx = nodePt.getX() - offsetPt.getX();
 		double dy = nodePt.getY() - offsetPt.getY();
@@ -245,7 +263,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	}
 	
 	public void stopMoving() {
-		this.movingMouseOffset = null;
+		this.movingStartOffset = null;
 	}
 	
 	
