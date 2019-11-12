@@ -4,6 +4,7 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor wrapped;
 	private final double percentage; // eg 0.2 = 20 percent
+	private double currentProgress;
 	
 	SubProgressMonitor(ProgressMonitor wrapped, double percentage) {
 		this.wrapped = wrapped;
@@ -21,11 +22,13 @@ public class SubProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void addProgress(double progress) {
+		currentProgress += progress;
 		wrapped.addProgress(progress * percentage);
 	}
 
 	@Override
 	public void done() {
+		addProgress(1.0 - currentProgress);
 	}
 
 }

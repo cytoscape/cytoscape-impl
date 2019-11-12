@@ -45,6 +45,8 @@ public class ColorCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 			}
 			dirty = false;
 		}
+		
+		pm.done();
 	}
 
 	private void fill() {

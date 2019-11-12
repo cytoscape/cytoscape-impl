@@ -65,7 +65,7 @@ public class CompositeImageCanvas {
 		// Must paint over top of each other in reverse order
 		Collections.reverse(canvasList);
 		// This is the proportion of total progress assigned to each canvas. Edge canvas gets the most.
-		weights = new double[] {1, 1, 20, 3, 1, 1}; // MKTODO not very elegant
+		weights = new double[] {1, 1, 20, 3, 0, 0}; // MKTODO not very elegant
 		
 		re.getCyAnnotator().addPropertyChangeListener(e -> updateAnnotationCanvasBuffers());
 		updateAnnotationCanvasBuffers();

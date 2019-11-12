@@ -66,5 +66,7 @@ public class NodeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 			return;
 		
 		GraphRenderer.renderNodes(pm, graphics, snapshot, flags, nodeDetails, edgeDetails, dependencies);
+		
+		pm.done();
 	}
 }
