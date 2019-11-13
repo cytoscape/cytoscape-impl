@@ -10,6 +10,7 @@ import org.cytoscape.graph.render.stateful.RenderDetailFlags;
 public class ColorCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 
 	public static final Color DEFAULT_COLOR = Color.WHITE;
+	public static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
 	
 	private Color color;
 	private boolean dirty = true;
@@ -40,15 +41,25 @@ public class ColorCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 			return;
 		
 		if(dirty) {
-			if(color != null) {
+			if(color == null)
+				clear();
+			else
 				fill();
-			}
+			
 			dirty = false;
 		}
 		
 		pm.done();
 	}
 
+	
+	private void clear() {
+		NetworkTransform t = graphicsProvider.getTransform();
+		Graphics2D g = graphicsProvider.getGraphics();
+		g.setBackground(TRANSPARENT_COLOR);
+		g.clearRect(0, 0, t.getWidth(), t.getHeight());
+	}
+	
 	private void fill() {
 		NetworkTransform t = graphicsProvider.getTransform();
 		Graphics2D g = graphicsProvider.getGraphics();
