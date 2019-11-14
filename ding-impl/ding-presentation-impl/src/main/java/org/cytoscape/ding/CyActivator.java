@@ -449,6 +449,10 @@ public class CyActivator extends AbstractCyActivator {
 		SelectModeAction selectNodesEdgesAction = new SelectModeAction(SelectModeAction.NODES_EDGES, 0.8f, serviceRegistrar);
 		registerAllServices(bc, selectNodesEdgesAction);
 
+		
+		SelectModeAction selectNodeLabelsAction = new SelectModeAction(SelectModeAction.NODE_LABELS, 0.85f, serviceRegistrar);
+		registerAllServices(bc, selectNodeLabelsAction);
+		
 		SelectModeAction selectAllAction = new SelectModeAction(SelectModeAction.ALL, 0.9f, serviceRegistrar);
 		registerAllServices(bc, selectAllAction);
 		

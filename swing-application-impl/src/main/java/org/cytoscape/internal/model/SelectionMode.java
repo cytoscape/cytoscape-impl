@@ -50,6 +50,13 @@ public enum SelectionMode {
 			"Turn off this option if you don't want annotations to be selected when they are clicked or drag-selected.",
 			"/images/tooltips/selection-mode-annotations.gif",
 			"NETWORK_ANNOTATION_SELECTION"
+	),
+	NODE_LABEL_SELECTION(
+			"Toggle Node Label Selection",
+			"0",   // Character which map to the icon in the font.
+			"Turn off this option if you don't want node labels to be selected when they are drag-selected.",
+			"/images/tooltips/selection-mode-node-label.gif",
+			"NETWORK_NODE_LABEL_SELECTION"
 	);
 	
 	private final String text;

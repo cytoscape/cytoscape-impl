@@ -61,6 +61,7 @@ import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
+import org.cytoscape.ding.impl.undo.NodeLabelChangeEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
@@ -89,6 +90,7 @@ import org.cytoscape.view.presentation.annotations.AnnotationFactory;
 import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
 import org.cytoscape.view.presentation.property.values.Position;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -225,6 +227,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	protected void paintComponent(Graphics g) {
 		get(AddEdgeListener.class).drawAddingEdge(g);
 		get(SelectionRectangleListener.class).drawSelectionRectangle(g);
+		get(SelecionClickAndDragListener.class).drawLabelSelectionRectangle(g);
 		maybe(SelectionLassoListener.class).ifPresent(listener -> listener.drawSelectionLasso(g));
 	}
 	
@@ -634,6 +637,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		private ViewChangeEdit addHandleEdit;
 		private ViewChangeEdit moveNodesEdit;
 		
+		private DLabelSelection selectedLabel;
+		
 		
 		@Override
 		public void mousePressed(MouseEvent e) {
@@ -645,6 +650,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			removeHandleEdit = null;
 			addHandleEdit = null;
 			moveNodesEdit = null;
+			
+			selectedLabel = null;
 			
 			deselectAllOnRelease = false;
 			mousePressedPoint = e.getPoint();
@@ -659,6 +666,16 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		private boolean mousePressedCheckHit(MouseEvent e) {
 			NetworkPicker picker = re.getPicker();
+						
+			if ( labelSelectionEnabled() ) {   // if label drag feature is enabled
+			
+				selectedLabel = picker.getNodeLabelAt(e.getPoint());
+				if ( selectedLabel != null) {
+					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.SELECT);
+					repaint();
+					return true;
+				}
+			}
 			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
@@ -871,6 +888,35 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(!isLeftClick(e)) // We only care about left mouse button
 				return;
 			
+			if (selectedLabel != null ) {
+				// update the visual property here.
+				
+				double offsetX = e.getX() - mousePressedPoint.getX(); //  selectedLabel.getOriginalX();
+				double offsetY = e.getY() - mousePressedPoint.getY(); //selectedLabel.getOriginalY();
+				
+				if ( ((int)offsetX) != 0 || ((int)offsetY) != 0 ) {
+					double scaleFactor = re.getTransform().getScaleFactor();
+				
+					View<CyNode> mutableNode = re.getViewModelSnapshot().getMutableNodeView(selectedLabel.getNode().getSUID());
+					ObjectPosition position = new ObjectPosition( mutableNode.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION));
+					position.setOffsetX(position.getOffsetX()+ offsetX /scaleFactor);
+					position.setOffsetY(position.getOffsetY() + offsetY /scaleFactor);
+
+					mutableNode.setLockedValue(DVisualLexicon.NODE_LABEL_POSITION, position);
+					
+					// handle Undo
+					NodeLabelChangeEdit undoEntry = new NodeLabelChangeEdit(registrar, selectedLabel.getPreviousPosition(), 
+							re.getViewModel(), mutableNode);
+					undoEntry.post(position);
+				}
+				
+				if( !selectedLabel.getNodeWasSelected()) {
+					toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.DESELECT);
+				}
+				selectedLabel = null;
+				re.updateView(UpdateType.ALL_FAST); 
+			}
+			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
 				annotationSelection.stopResizing();
@@ -917,6 +963,15 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			if(get(SelectionRectangleListener.class).isDragging() || maybe(SelectionLassoListener.class).map(l->l.isDragging()).orElse(false))
 				return;
 			
+			if (selectedLabel != null) {				
+				selectedLabel.moveRectangle(e.getX() - (int) mousePressedPoint.getX() /* (int)selectedLabel.getOriginalX()*/, 
+						e.getY() - (int) mousePressedPoint.getY() /*(int)selectedLabel.getOriginalY()*/ );
+				
+				repaint(); // repaint the glass pane
+				return;
+			}
+				
+			
 			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
 			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
@@ -940,6 +995,17 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				re.updateView(UpdateType.ALL_FAST);
 			} else {
 				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			}
+		}
+		
+		
+		public void drawLabelSelectionRectangle(Graphics graphics) {
+			// Draw selection rectangle
+			if(selectedLabel != null) {
+				Graphics2D g = (Graphics2D) graphics.create();
+				// External border
+				g.setColor(UIManager.getColor("Focus.color"));
+				g.draw(selectedLabel.getRectangle());
 			}
 		}
 
@@ -1408,6 +1474,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	private boolean nodeSelectionEnabled() {
 		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_SELECTION);
 	}
+	
+	private boolean labelSelectionEnabled() {
+		return re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_NODE_LABEL_SELECTION);
+	}
+	
 	
 	private boolean edgeSelectionEnabled(boolean optimize) {
 		if(Boolean.FALSE.equals(re.getViewModelSnapshot().getVisualProperty(DVisualLexicon.NETWORK_EDGE_SELECTION))) {

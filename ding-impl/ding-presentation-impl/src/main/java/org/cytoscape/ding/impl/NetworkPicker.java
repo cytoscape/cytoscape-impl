@@ -3,9 +3,12 @@ package org.cytoscape.ding.impl;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ANCHORS;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_EDGE_ARROWS;
 import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_HIGH_DETAIL;
+import static org.cytoscape.graph.render.stateful.RenderDetailFlags.LOD_NODE_LABELS;
 
+import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.font.FontRenderContext;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -14,10 +17,12 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
@@ -35,6 +40,9 @@ import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
 import org.cytoscape.view.presentation.property.ArrowShapeVisualProperty;
 import org.cytoscape.view.presentation.property.values.ArrowShape;
+import org.cytoscape.view.presentation.property.values.ObjectPosition;
+import org.cytoscape.view.presentation.property.values.Position;
+import org.cytoscape.graph.render.stateful.MeasuredLineCreator;
 
 
 /**
@@ -91,6 +99,103 @@ public class NetworkPicker {
 		return re.getViewModelSnapshot().getNodeView(suid);
 	}
 
+	public DLabelSelection getNodeLabelAt(Point2D pt) {
+	
+		if ( !renderDetailFlags.has(LOD_NODE_LABELS))
+			return null;
+	
+		return  selectLabel(re.getViewModelSnapshot(), pt);
+
+	}
+	
+	/**
+	 * 
+	 * @param snapshot
+	 * @param pt   point where the mouse was clicked.
+	 * @return a DLabelSelection object if there is a node label under the specified point. null if no labels are found at this point.
+	 */
+	private DLabelSelection selectLabel(CyNetworkViewSnapshot snapshot, Point2D pt ) {
+		
+		double[] locn = {pt.getX(), pt.getY()};
+		
+		re.getTransform().xformImageToNodeCoords(locn);
+		double xP = locn[0];
+		double yP = locn[1];	
+						
+		List<DLabelSelection> overlapNodes = new ArrayList<>();
+		
+		for(View<CyNode> nodeView : snapshot.getNodeViews()) {
+		
+			// compute the actual size of label text rectangle
+			String labelText = nodeDetails.getLabelText(nodeView);
+			
+			Font   font = nodeDetails.getLabelFont(nodeView);
+			double labelWidth = nodeDetails.getLabelWidth(nodeView);
+			
+			MeasuredLineCreator mlCreator = new MeasuredLineCreator(labelText, font,  new FontRenderContext(null,true,true), 1.0, true, labelWidth);
+			
+			double h = mlCreator.getTotalHeight();  // actual label text box height
+			double w =  mlCreator.getMaxLineWidth();  // actual label text box width. 
+			
+			// compute the actual position of the label text box.
+			double x = nodeDetails.getXPosition(nodeView); 
+			double y = nodeDetails.getYPosition(nodeView); 
+			double nodeWidth = nodeDetails.getWidth(nodeView);
+			double nodeHeight = nodeDetails.getHeight(nodeView);
+			
+			final Position textAnchor = nodeDetails.getLabelTextAnchor(nodeView);
+			final Position nodeAnchor = nodeDetails.getLabelNodeAnchor(nodeView);
+			final float offsetVectorX = nodeDetails.getLabelOffsetVectorX(nodeView);
+			final float offsetVectorY = nodeDetails.getLabelOffsetVectorY(nodeView);
+
+			final double[] doubleBuff1 = new double[4];
+			final double[] doubleBuff2 = new double[2];
+			
+			doubleBuff1[0] = x - nodeWidth/2;
+			doubleBuff1[1] = y - nodeHeight/2;
+			doubleBuff1[2] = x + nodeWidth/2;
+			doubleBuff1[3] = y + nodeHeight/2;
+			
+			GraphRenderer.lemma_computeAnchor(nodeAnchor, doubleBuff1, doubleBuff2);
+
+			final double nodeAnchorPointX = doubleBuff2[0];
+			final double nodeAnchorPointY = doubleBuff2[1];
+			
+			doubleBuff1[0] = -0.5d * w;
+			doubleBuff1[1] = -0.5d * h;
+			doubleBuff1[2] = 0.5d * w;
+			doubleBuff1[3] = 0.5d * h;
+			GraphRenderer.lemma_computeAnchor(textAnchor, doubleBuff1, doubleBuff2);
+
+			final double textXCenter = nodeAnchorPointX - doubleBuff2[0] + offsetVectorX;
+			final double textYCenter = nodeAnchorPointY - doubleBuff2[1] + offsetVectorY;			
+					
+			double aMin = textXCenter - (w/2);
+			double aMax = textXCenter + (w/2);
+			double bMin = textYCenter - (h/2);
+			double bMax = textYCenter + (h/2); 
+			
+			if( xP > aMin && xP < aMax && yP > bMin && yP <bMax ) {
+				locn[0] = aMin;
+				locn[1] = bMin;
+				re.getTransform().xformNodeToImageCoords (locn);
+				double scaleFactor =  re.getTransform().getScaleFactor();
+				
+				Rectangle r = new Rectangle ((int)locn[0],(int)locn[1], (int)(w*scaleFactor), (int)(h*scaleFactor));
+				
+				ObjectPosition pos = nodeView.isSet(DVisualLexicon.NODE_LABEL_POSITION) ?
+						 nodeView.getVisualProperty(DVisualLexicon.NODE_LABEL_POSITION) : null;
+
+				overlapNodes.add(new DLabelSelection ( nodeView, r, pos, nodeDetails.isSelected(nodeView)));
+			}
+		} 
+				
+		Collections.sort(overlapNodes, 
+				Comparator.comparing(labelSelection -> Double.valueOf(nodeDetails.getZPosition(labelSelection.getNode()) )));
+
+		return overlapNodes.size() == 0 ? null : overlapNodes.get(overlapNodes.size()-1);
+	} 
+	
 	public View<CyEdge> getEdgeAt(Point2D pt) {
 		View<CyEdge> ev = null;
 		List<Long> edges = getEdgesIntersecting((int)pt.getX(), (int)pt.getY(), (int)pt.getX(), (int)pt.getY());

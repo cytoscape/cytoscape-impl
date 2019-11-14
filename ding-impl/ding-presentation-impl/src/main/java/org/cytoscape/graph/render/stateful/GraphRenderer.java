@@ -558,8 +558,13 @@ public final class GraphRenderer {
 		}
 	}
 	
-	
-	private final static void lemma_computeAnchor(final Position anchor, final double[] input4x,
+	/**
+	 * 
+	 * @param anchor
+	 * @param input4x An array of 4 elements:  x0,y0,x1, y1 of a rectangle
+	 * @param rtrn2x  An array of 2 element. x and y coordinates of the center of the object.
+	 */
+	public final static void lemma_computeAnchor(final Position anchor, final double[] input4x,
 	                                              final double[] rtrn2x) {
 		switch (anchor) {
 			case CENTER:
