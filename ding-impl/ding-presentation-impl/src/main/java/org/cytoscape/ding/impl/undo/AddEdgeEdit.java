@@ -20,17 +20,17 @@ import org.cytoscape.work.undo.UndoSupport;
 public class AddEdgeEdit extends AbstractCyEdit {
 
 	private final CyServiceRegistrar registrar;
-	private final CyNetworkViewSnapshot netView;
+	private final CyNetworkViewSnapshot snapshot;
 	private final View<CyNode> sourceNodeView;
 	private final View<CyNode> targetNodeView;
 	
 	private CyEdge edge;
 	
 
-	public AddEdgeEdit(CyServiceRegistrar registrar, CyNetworkViewSnapshot netView, View<CyNode> sourceNodeView, View<CyNode> targetNodeView, View<CyEdge> edgeView) {
+	public AddEdgeEdit(CyServiceRegistrar registrar, CyNetworkViewSnapshot snapshot, View<CyNode> sourceNodeView, View<CyNode> targetNodeView, View<CyEdge> edgeView) {
 		super("Add Edge");
 		this.registrar = registrar;
-		this.netView = netView;
+		this.snapshot = snapshot;
 		this.sourceNodeView = sourceNodeView;
 		this.targetNodeView = targetNodeView;
 		this.edge = edgeView.getModel();
@@ -38,13 +38,13 @@ public class AddEdgeEdit extends AbstractCyEdit {
 
 	@Override
 	public void undo() {
-		CyNetwork network = netView.getModel();
+		CyNetwork network = snapshot.getMutableNetworkView().getModel();
 		network.removeEdges(Collections.singleton(edge));
 	}
 
 	@Override
 	public void redo() {
-		AddEdgeTask addEdgeTask = new AddEdgeTask(registrar, netView, sourceNodeView, targetNodeView);
+		AddEdgeTask addEdgeTask = new AddEdgeTask(registrar, snapshot, sourceNodeView, targetNodeView);
 		addEdgeTask.setPostUndo(false);
 		
 		DialogTaskManager taskManager = registrar.getService(DialogTaskManager.class);

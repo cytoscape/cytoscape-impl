@@ -68,7 +68,7 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 		registrar.getService(CyEventHelper.class).flushPayloadEvents(net);
 		
 		VisualStyle vs = registrar.getService(VisualMappingManager.class).getVisualStyle(netView);
-		View<CyEdge> edgeView = netView.getEdgeView(edge);
+		View<CyEdge> edgeView = netView.getMutableNetworkView().getEdgeView(edge);
 		
 		if (edgeView != null) {
 			vs.apply(edgeRow, edgeView);
