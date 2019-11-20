@@ -125,8 +125,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	private final HashMap<String, Integer> columnWidthMap = new HashMap<>();
 
 	// For right-click menu
-	private JPopupMenu rightClickPopupMenu;
-	private JPopupMenu rightClickHeaderPopupMenu;
+	private JPopupMenu popupMenu;
+	private JPopupMenu headerPopupMenu;
 	private JMenuItem openFormulaBuilderMenuItem;
 
 	private MultiLineTableCellEditor multiLineCellEditor;
@@ -352,41 +352,38 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	/**
-	 * This method initializes rightClickPopupMenu
+	 * This method initializes popupMenu
 	 * 
 	 * @return the inilialised pop-up menu
 	 */
 	public JPopupMenu getPopupMenu() {
-		if (rightClickPopupMenu != null)
-			return rightClickPopupMenu;
+		if (popupMenu != null)
+			return popupMenu;
 
-		rightClickPopupMenu = new JPopupMenu();
+		popupMenu = new JPopupMenu();
 		openFormulaBuilderMenuItem = new JMenuItem("Open Formula Builder");
 
 		final JTable table = this;
 		
-		openFormulaBuilderMenuItem.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(final ActionEvent e) {
-				final int cellRow = table.getSelectedRow();
-				final int cellColumn = table.getSelectedColumn();
-				final BrowserTableModel tableModel = (BrowserTableModel) getModel();
-				final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(table);
-				
-				if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
-					JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
-							"Information", JOptionPane.INFORMATION_MESSAGE);
-				} else {
-					final String columnName = tableModel.getColumnName(cellColumn);
-					FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, BrowserTable.this,
-							rootFrame, columnName);
-					formulaBuilderDialog.setLocationRelativeTo(rootFrame);
-					formulaBuilderDialog.setVisible(true);
-				}
+		openFormulaBuilderMenuItem.addActionListener(evt -> {
+			final int cellRow = table.getSelectedRow();
+			final int cellColumn = table.getSelectedColumn();
+			final BrowserTableModel tableModel = (BrowserTableModel) getModel();
+			final JFrame rootFrame = (JFrame) SwingUtilities.getRoot(table);
+			
+			if (cellRow == -1 || cellColumn == -1 || !tableModel.isCellEditable(cellRow, cellColumn)) {
+				JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
+						"Information", JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				final String columnName = tableModel.getColumnName(cellColumn);
+				FormulaBuilderDialog formulaBuilderDialog = new FormulaBuilderDialog(compiler, BrowserTable.this,
+						rootFrame, columnName);
+				formulaBuilderDialog.setLocationRelativeTo(rootFrame);
+				formulaBuilderDialog.setVisible(true);
 			}
 		});
 
-		return rightClickPopupMenu;
+		return popupMenu;
 	}
 
 	@Override
@@ -469,10 +466,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	public void setVisibleAttributeNames(final Collection<String> visibleAttributes) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		var model = (BrowserTableModel) getModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		
-		for (final String name : model.getAllAttributeNames()) {
+		for (String name : model.getAllAttributeNames()) {
 			int col = model.mapColumnNameToColumnIndex(name);
 			TableColumn column = columnModel.getColumnByModelIndex(col);
 			columnModel.setColumnVisible(column, visibleAttributes.contains(name));
@@ -483,10 +480,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	public List<String> getVisibleAttributeNames() {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		final List<String> visibleAttrNames = new ArrayList<String>();
+		var model = (BrowserTableModel) getModel();
+		List<String> visibleAttrNames = new ArrayList<>();
 		
-		for (final String name : model.getAllAttributeNames()) {
+		for (String name : model.getAllAttributeNames()) {
 			if (isColumnVisible(name))
 				visibleAttrNames.add(name);
 		}
@@ -495,8 +492,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 
 	public boolean isColumnVisible(String name) {
-		BrowserTableModel model = (BrowserTableModel) getModel();
-		BrowserTableColumnModel columnModel = (BrowserTableColumnModel) getColumnModel();
+		var model = (BrowserTableModel) getModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
 		TableColumn column = columnModel.getColumnByModelIndex(model.mapColumnNameToColumnIndex(name));
 		
 		return columnModel.isColumnVisible(column);
@@ -679,9 +676,10 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	}
 	
 	private JPopupMenu getHeaderPopupMenu() {
-		if (rightClickHeaderPopupMenu == null)
-			rightClickHeaderPopupMenu = new JPopupMenu();
-		return rightClickHeaderPopupMenu;
+		if (headerPopupMenu == null)
+			headerPopupMenu = new JPopupMenu();
+		
+		return headerPopupMenu;
 	}
 	
 	private void showCellMenu(final Class<?> type, final List<?> listItems, final String borderTitle,
@@ -705,28 +703,23 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			curItem.add(getPopupMenu());
 
 			JMenuItem copyAll = new JMenuItem("Copy all entries");
-			copyAll.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringBuilder builder = new StringBuilder();
-					for (Object oneEntry : listItems)
-						builder.append(oneEntry.toString() + CELL_BREAK);
+			copyAll.addActionListener(evt -> {
+				final StringBuilder builder = new StringBuilder();
+				
+				for (Object oneEntry : listItems)
+					builder.append(oneEntry.toString() + CELL_BREAK);
 
-					final StringSelection selection = new StringSelection(builder.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
+				final StringSelection selection = new StringSelection(builder.toString());
+				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				systemClipboard.setContents(selection, selection);
 			});
 			curItem.add(copyAll);
 
 			JMenuItem copy = new JMenuItem("Copy this entry");
-			copy.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final StringSelection selection = new StringSelection(item.toString());
-					systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-					systemClipboard.setContents(selection, selection);
-				}
+			copy.addActionListener(evt -> {
+				final StringSelection selection = new StringSelection(item.toString());
+				systemClipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+				systemClipboard.setContents(selection, selection);
 			});
 
 			curItem.add(copy);
@@ -878,8 +871,8 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 	 * @param rows
 	 */
 	private void bulkUpdate(final Collection<RowSetRecord> rows) {
-		final Set<Long> suidSelected = new HashSet<Long>();
-		final Set<Long> suidUnselected = new HashSet<Long>();
+		final Set<Long> suidSelected = new HashSet<>();
+		final Set<Long> suidUnselected = new HashSet<>();
 
 		for (RowSetRecord rowSetRecord : rows) {
 			if (rowSetRecord.getColumn().equals(CyNetwork.SELECTED)) {
@@ -950,7 +943,7 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 			return;
 
 		final int selectedRowCount = getSelectedRowCount();
-		final Set<CyRow> targetRows = new HashSet<CyRow>();
+		final Set<CyRow> targetRows = new HashSet<>();
 		
 		for (int i = 0; i < selectedRowCount; i++) {
 			// getting the row from data table solves the problem with hidden or

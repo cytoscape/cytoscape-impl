@@ -84,16 +84,16 @@ public class CyActivator extends AbstractCyActivator {
 		registerServiceListener(bc, popupMenuHelper::addTableCellTaskFactory, popupMenuHelper::removeTableCellTaskFactory, TableCellTaskFactory.class);
 		
 		{
-			ClearAllErrorsTaskFactory taskFactory = new ClearAllErrorsTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new ClearAllErrorsTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(TITLE, "Clear All Errors");
-			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		{
-			SetColumnFormatTaskFactory taskFactory = new SetColumnFormatTaskFactory(serviceRegistrar);
-			Properties props = new Properties();
+			var factory = new SetColumnFormatTaskFactory(serviceRegistrar);
+			var props = new Properties();
 			props.setProperty(TITLE, "Format Column...");
-			registerService(bc, taskFactory, TableColumnTaskFactory.class, props);
+			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		
 		TableBrowserMediator mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser,

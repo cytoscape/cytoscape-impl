@@ -1,29 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2009 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -32,7 +8,6 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,9 +44,32 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2009 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
+
 /**
- * A class that encapsulates the creation of JPopupMenus based on TaskFactory
- * services.
+ * A class that encapsulates the creation of JPopupMenus based on TaskFactory services.
  */
 public class PopupMenuHelper {
 
@@ -89,18 +87,18 @@ public class PopupMenuHelper {
 		factoryProvisioner = new StaticTaskFactoryProvisioner();
 	}
 
-	public void createColumnHeaderMenu(final CyColumn column, final Class<? extends CyIdentifiable> tableType,
-			final Component invoker, final int x, final int y) {
+	public void createColumnHeaderMenu(CyColumn column, Class<? extends CyIdentifiable> tableType, Component invoker,
+			int x, int y) {
 		if (tableColumnFactoryMap.isEmpty())
 			return;
 
-		final JPopupMenu menu = new JPopupMenu();
-		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
+		var menu = new JPopupMenu();
+		var tracker = new PopupMenuGravityTracker(menu);
 
-		for (final Map.Entry<TableColumnTaskFactory, Map<?, ?>> mapEntry : tableColumnFactoryMap.entrySet()) {
-			TableColumnTaskFactory taskFactory = mapEntry.getKey();
+		for (var entry : tableColumnFactoryMap.entrySet()) {
+			TableColumnTaskFactory taskFactory = entry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column);
-			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
+			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
 
 		if (menu.getSubElements().length > 0)
@@ -108,25 +106,24 @@ public class PopupMenuHelper {
 	}
 
 	@SuppressWarnings("serial")
-	public void createTableCellMenu(final CyColumn column, final Object primaryKeyValue,
-			final Class<? extends CyIdentifiable> tableType, final Component invoker, final int x, final int y,
-			final JTable table) {
-		final JPopupMenu menu = new JPopupMenu();
-
-		final Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
+	public void createTableCellMenu(CyColumn column, Object primaryKeyValue, Class<? extends CyIdentifiable> tableType,
+			Component invoker, int x, int y, JTable table) {
+		var menu = new JPopupMenu();
+		Object value = column.getTable().getRow(primaryKeyValue).get(column.getName(), column.getType());
 
 		if (value != null) {
 			String urlString = value.toString();
+			
 			if (urlString != null && (urlString.startsWith("http:") || urlString.startsWith("https:")))
 				menu.add(getOpenLinkMenu(value.toString()));
 		}
 
-		final PopupMenuGravityTracker tracker = new PopupMenuGravityTracker(menu);
+		var tracker = new PopupMenuGravityTracker(menu);
 
-		for (final Map.Entry<TableCellTaskFactory, Map<?, ?>> mapEntry : tableCellFactoryMap.entrySet()) {
-			TableCellTaskFactory taskFactory = mapEntry.getKey();
+		for (var entry : tableCellFactoryMap.entrySet()) {
+			TableCellTaskFactory taskFactory = entry.getKey();
 			TaskFactory provisioner = factoryProvisioner.createFor(taskFactory, column, primaryKeyValue);
-			createMenuItem(provisioner, tracker, mapEntry.getValue(), tableType);
+			createMenuItem(provisioner, tracker, entry.getValue(), tableType);
 		}
 
 		menu.add(new JSeparator());
@@ -146,9 +143,9 @@ public class PopupMenuHelper {
 		menu.add(new JMenuItem(new AbstractAction("Copy") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
-				final String columnName = column.getName();
-				final Object sourceValue = sourceRow.getRaw(columnName);
+				CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
+				String columnName = column.getName();
+				Object sourceValue = sourceRow.getRaw(columnName);
 				
 				StringSelection stringSelection = new StringSelection(sourceValue.toString());
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
@@ -159,27 +156,22 @@ public class PopupMenuHelper {
 		menu.add(new JMenuItem(new AbstractAction("Paste") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				final CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
-				final String columnName = column.getName();
-				
+				CyRow sourceRow = column.getTable().getRow(primaryKeyValue);
+				String columnName = column.getName();
 				Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-				String pasteValue;
+				
 				try {
-					pasteValue = (String) clipboard.getData(DataFlavor.stringFlavor);
-			
-				
-				final List<Object> parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName, pasteValue);
-				
-				if (parsedData.get(0) != null) {
-					sourceRow.set(columnName, parsedData.get(0));
-				}
-				else {
-					JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value",
-							JOptionPane.ERROR_MESSAGE);
-				}	
+					var pasteValue = (String) clipboard.getData(DataFlavor.stringFlavor);
+					List<Object> parsedData = TableBrowserUtil.parseCellInput(column.getTable(), columnName,
+							pasteValue);
+
+					if (parsedData.get(0) != null)
+						sourceRow.set(columnName, parsedData.get(0));
+					else
+						JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value",
+								JOptionPane.ERROR_MESSAGE);
 				} catch (UnsupportedFlavorException | IOException e1) {
-					JOptionPane.showMessageDialog(null, e1.getMessage(), "Invalid Value",
-							JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, e1.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
 					e1.printStackTrace();
 				}
 			}
@@ -188,10 +180,9 @@ public class PopupMenuHelper {
 		if (tableType == CyNode.class || tableType == CyEdge.class) {
 			menu.add(new JSeparator());
 
-			final String name = String.format("Select %s from selected rows",
-					tableType == CyNode.class ? "nodes" : "edges");
+			var name = String.format("Select %s from selected rows", tableType == CyNode.class ? "nodes" : "edges");
 
-			final JMenuItem mi = new JMenuItem(new AbstractAction(name) {
+			JMenuItem mi = new JMenuItem(new AbstractAction(name) {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					selectElementsFromSelectedRows(table, tableType);
@@ -199,8 +190,7 @@ public class PopupMenuHelper {
 
 				@Override
 				public boolean isEnabled() {
-					final CyApplicationManager applicationManager = serviceRegistrar
-							.getService(CyApplicationManager.class);
+					CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 
 					return table.getSelectedRowCount() > 0 && applicationManager.getCurrentNetwork() != null;
 				}
@@ -217,8 +207,8 @@ public class PopupMenuHelper {
 	 * and "preferredMenu" keywords, depending on which are present in the service
 	 * properties.
 	 */
-	private void createMenuItem(final TaskFactory tf, final PopupMenuGravityTracker tracker, final Map<?, ?> props,
-			final Class<? extends CyIdentifiable> tableType) {
+	private void createMenuItem(TaskFactory tf, PopupMenuGravityTracker tracker, Map<?, ?> props,
+			Class<? extends CyIdentifiable> tableType) {
 		if (!enabledFor(tableType, props))
 			return;
 
@@ -254,19 +244,19 @@ public class PopupMenuHelper {
 		return false;
 	}
 
-	public void addTableColumnTaskFactory(final TableColumnTaskFactory newFactory, final Map<?, ?> properties) {
+	public void addTableColumnTaskFactory(TableColumnTaskFactory newFactory, Map<?, ?> properties) {
 		tableColumnFactoryMap.put(newFactory, properties);
 	}
 
-	public void removeTableColumnTaskFactory(final TableColumnTaskFactory factory, final Map<?, ?> properties) {
+	public void removeTableColumnTaskFactory(TableColumnTaskFactory factory, Map<?, ?> properties) {
 		tableColumnFactoryMap.remove(factory);
 	}
 
-	public void addTableCellTaskFactory(final TableCellTaskFactory newFactory, final Map<?, ?> properties) {
+	public void addTableCellTaskFactory(TableCellTaskFactory newFactory, Map<?, ?> properties) {
 		tableCellFactoryMap.put(newFactory, properties);
 	}
 
-	public void removeTableCellTaskFactory(final TableCellTaskFactory factory, final Map<?, ?> properties) {
+	public void removeTableCellTaskFactory(TableCellTaskFactory factory, Map<?, ?> properties) {
 		tableCellFactoryMap.remove(factory);
 	}
 
@@ -293,57 +283,53 @@ public class PopupMenuHelper {
 	}
 
 	// Preset menu item: open browser
-	protected JMenuItem getOpenLinkMenu(final Object urlString) {
-		final JMenuItem openLinkItem = new JMenuItem();
+	protected JMenuItem getOpenLinkMenu(Object urlString) {
+		var openLinkItem = new JMenuItem();
 		openLinkItem.setText("Open URL in web browser...");
 
 		if (urlString == null || urlString.toString().startsWith("http:") == false) {
 			openLinkItem.setEnabled(false);
 		} else {
-			openLinkItem.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
-					openBrowser.openURL(urlString.toString());
-				}
+			openLinkItem.addActionListener(evt -> {
+				var openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+				openBrowser.openURL(urlString.toString());
 			});
 		}
 
 		return openLinkItem;
 	}
 
-	private void selectElementsFromSelectedRows(final JTable table, final Class<? extends CyIdentifiable> tableType) {
-		final Thread t = new Thread() {
+	private void selectElementsFromSelectedRows(JTable table, Class<? extends CyIdentifiable> tableType) {
+		Thread t = new Thread() {
 			@Override
 			public void run() {
-				final CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-				final CyNetwork net = applicationManager.getCurrentNetwork();
+				CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+				CyNetwork net = applicationManager.getCurrentNetwork();
 
 				if (net != null) {
-					final BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
-					final int[] selectedRows = table.getSelectedRows();
-					final Set<CyRow> targetRows = new HashSet<CyRow>();
+					BrowserTableModel tableModel = (BrowserTableModel) table.getModel();
+					int[] selectedRows = table.getSelectedRows();
+					Set<CyRow> targetRows = new HashSet<CyRow>();
 
-					for (final int rowIndex : selectedRows) {
+					for (int rowIndex : selectedRows) {
 						// Getting the row from data table solves the problem with hidden or moved SUID
 						// column.
 						// However, since the rows might be sorted we need to convert the index to
 						// model.
-						final ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) tableModel
+						ValidatedObjectAndEditString selected = (ValidatedObjectAndEditString) tableModel
 								.getValueAt(table.convertRowIndexToModel(rowIndex), CyNetwork.SUID);
 						targetRows.add(tableModel.getRow(selected.getValidatedObject()));
 					}
 
-					final CyTable cyTable = tableType == CyNode.class ? net.getDefaultNodeTable()
-							: net.getDefaultEdgeTable();
+					CyTable cyTable = tableType == CyNode.class ? net.getDefaultNodeTable() : net.getDefaultEdgeTable();
 
-					for (final CyRow cyRow : cyTable.getAllRows())
+					for (var cyRow : cyTable.getAllRows())
 						cyRow.set(CyNetwork.SELECTED, targetRows.contains(cyRow));
 
-					final CyNetworkView view = applicationManager.getCurrentNetworkView();
+					CyNetworkView view = applicationManager.getCurrentNetworkView();
 
 					if (view != null) {
-						final CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+						CyEventHelper eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 						eventHelper.flushPayloadEvents();
 						view.updateView();
 					}

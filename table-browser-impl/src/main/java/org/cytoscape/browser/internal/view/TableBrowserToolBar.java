@@ -189,7 +189,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 		// Do nothing
 	}
-
+	
 	protected void updateEnableState() {
 		for (final JComponent comp : components)
 			updateEnableState(comp);
@@ -438,7 +438,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton getSelectButton() {
 		if (selectButton == null) {
 			selectButton = new JButton(ICON_COLUMNS);
-			selectButton.setToolTipText("Show Columns");
+			selectButton.setToolTipText("Show Columns...");
 			styleButton(selectButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 
 			selectButton.addActionListener(e -> {
@@ -457,7 +457,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton getFnBuilderButton() {
 		if (fnBuilderButton == null) {
 			fnBuilderButton = new JButton("f(x)");
-			fnBuilderButton.setToolTipText("Function Builder");
+			fnBuilderButton.setToolTipText("Function Builder...");
 			
 			Font iconFont = null;
 			
@@ -608,7 +608,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	protected JButton getSelectionModeButton() {
 		if (selectionModeButton == null) {
 			selectionModeButton = new JButton(ICON_COG);
-			selectionModeButton.setToolTipText("Change Table Mode");
+			selectionModeButton.setToolTipText("Change Table Mode...");
 			styleButton(selectionModeButton, iconMgr.getIconFont(TableBrowserToolBar.ICON_FONT_SIZE * 4/5));
 		}
 		
@@ -618,7 +618,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private JButton getNewButton() {
 		if (createNewAttributeButton == null) {
 			createNewAttributeButton = new JButton(ICON_PLUS);
-			createNewAttributeButton.setToolTipText("Create New Column");
+			createNewAttributeButton.setToolTipText("Create New Column...");
 			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
 			createNewAttributeButton.addActionListener(e -> {
