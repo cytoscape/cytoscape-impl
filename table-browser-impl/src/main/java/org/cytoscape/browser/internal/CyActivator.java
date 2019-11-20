@@ -8,6 +8,7 @@ import java.util.Properties;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
 import org.cytoscape.browser.internal.task.ClearAllErrorsTaskFactory;
+import org.cytoscape.browser.internal.task.HideColumnTaskFactory;
 import org.cytoscape.browser.internal.task.SetColumnFormatTaskFactory;
 import org.cytoscape.browser.internal.view.DefaultTableBrowser;
 import org.cytoscape.browser.internal.view.GlobalTableBrowser;
@@ -99,5 +100,14 @@ public class CyActivator extends AbstractCyActivator {
 				networkTableBrowser, globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
+		
+		{
+			var factory = new HideColumnTaskFactory(mediator);
+			var props = new Properties();
+			props.setProperty(TITLE, "Hide Column");
+			// Do not register the factory as an OSGI service unless it's necessary.
+			// We just need to add it to the menu helper for now.
+			popupMenuHelper.addTableColumnTaskFactory(factory, props);
+		}
 	}
 }

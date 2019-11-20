@@ -451,8 +451,8 @@ public final class BrowserTableModel extends AbstractTableModel
 		return -1;
 	}
 
-	private String mapColumnIndexToColumnName(final int index) {		
-		if (index <= attrNames.size())
+	private String mapColumnIndexToColumnName(int index) {		
+		if (index >= 0 && index <= attrNames.size())
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();

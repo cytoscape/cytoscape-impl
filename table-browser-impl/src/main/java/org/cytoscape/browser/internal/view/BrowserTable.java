@@ -501,6 +501,20 @@ public class BrowserTable extends JTable implements MouseListener, ActionListene
 		
 		return columnModel.isColumnVisible(column);
 	}
+	
+	public void hideColumn(String columnName) {
+		var model = (BrowserTableModel) getModel();
+		var columnModel = (BrowserTableColumnModel) getColumnModel();
+		
+		for (String name : model.getAllAttributeNames()) {
+			if (name.equals(columnName)) {
+				int col = model.mapColumnNameToColumnIndex(name);
+				TableColumn column = columnModel.getColumnByModelIndex(col);
+				columnModel.setColumnVisible(column, false);
+				break;
+			}
+		}
+	}
 
 	@Override
 	public void handleEvent(final ColumnCreatedEvent e) {

@@ -12,6 +12,7 @@ import org.cytoscape.application.swing.CytoPanel;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedEvent;
 import org.cytoscape.application.swing.events.CytoPanelComponentSelectedListener;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -119,5 +120,29 @@ public class TableBrowserMediator implements SetCurrentNetworkListener, CytoPane
 		
 		if (table == null || table.isPublic())
 			serviceRegistrar.getService(CyApplicationManager.class).setCurrentTable(table);
+	}
+	
+	public void hideColumn(CyColumn column) {
+		CyTable table = column.getTable();
+		
+		invokeOnEDTAndWait(() -> {
+			BrowserTable browserTable = getBrowserTable(table);
+			
+			if (browserTable != null)
+				browserTable.hideColumn(column.getName());
+		});
+	}
+
+	private BrowserTable getBrowserTable(CyTable table) {
+		if (nodeTableBrowser.getBrowserTable(table) != null)
+			return nodeTableBrowser.getBrowserTable(table);
+		if (edgeTableBrowser.getBrowserTable(table) != null)
+			return edgeTableBrowser.getBrowserTable(table);
+		if (networkTableBrowser.getBrowserTable(table) != null)
+			return networkTableBrowser.getBrowserTable(table);
+		if (globalTableBrowser.getBrowserTable(table) != null)
+			return globalTableBrowser.getBrowserTable(table);
+		
+		return null;
 	}
 }
