@@ -35,6 +35,10 @@ public abstract class IconUtil {
 	public static final String FILE_EXPORT = "+";
 	public static final String FILE_IMPORT = ",";
 	
+	public static final String COLUMN_ADD = "-";
+	public static final String COLUMN_REMOVE = ".";
+	public static final String COLUMN_SHOW = "/";
+	
 	private IconUtil() {
 		// ...
 	}

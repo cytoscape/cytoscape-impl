@@ -3,10 +3,6 @@ package org.cytoscape.browser.internal.view;
 import static javax.swing.GroupLayout.DEFAULT_SIZE;
 import static javax.swing.GroupLayout.PREFERRED_SIZE;
 import static org.cytoscape.util.swing.IconManager.ICON_COG;
-import static org.cytoscape.util.swing.IconManager.ICON_COLUMNS;
-import static org.cytoscape.util.swing.IconManager.ICON_PLUS;
-import static org.cytoscape.util.swing.IconManager.ICON_TABLE;
-import static org.cytoscape.util.swing.IconManager.ICON_TIMES_CIRCLE;
 import static org.cytoscape.util.swing.IconManager.ICON_TRASH_O;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 
@@ -113,11 +109,10 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 	private SequentialGroup hToolBarGroup;
 	private ParallelGroup vToolBarGroup;
 	
-	private JButton selectButton;
-	
 	private JButton selectionModeButton;
-	private JButton createNewAttributeButton;
-	private JButton deleteAttributeButton;
+	private JButton showColumnsButton;
+	private JButton createColumnButton;
+	private JButton deleteColumnsButton;
 	private JButton deleteTableButton;
 	private JButton fnBuilderButton;
 	private JButton importButton;
@@ -206,7 +201,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 			
 			if (comp == deleteTableButton) {
 				enabled = browserTableModel.getDataTable().getMutability() == Mutability.MUTABLE;
-			} else if (comp == deleteAttributeButton) {
+			} else if (comp == deleteColumnsButton) {
 				for (final CyColumn column : attrs.getColumns()) {
 					if (!column.isImmutable()) {
 						enabled = true;
@@ -240,9 +235,9 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		if (objType == CyNode.class || objType == CyEdge.class)
 			addComponent(getSelectionModeButton(), ComponentPlacement.RELATED);
 		
-		addComponent(getSelectButton(), ComponentPlacement.RELATED);
-		addComponent(getNewButton(), ComponentPlacement.RELATED);
-		addComponent(getDeleteButton(), ComponentPlacement.RELATED);
+		addComponent(getShowColumnsButton(), ComponentPlacement.RELATED);
+		addComponent(getCreateColumnButton(), ComponentPlacement.RELATED);
+		addComponent(getDeleteColumnsButton(), ComponentPlacement.RELATED);
 		addComponent(getDeleteTableButton(), ComponentPlacement.RELATED);
 		addComponent(getFnBuilderButton(), ComponentPlacement.RELATED);
 //		addComponent(getMapGlobalTableButton(). ComponentPlacement.RELATED);
@@ -435,23 +430,23 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return toolBar;
 	}
 
-	private JButton getSelectButton() {
-		if (selectButton == null) {
-			selectButton = new JButton(ICON_COLUMNS);
-			selectButton.setToolTipText("Show Columns...");
-			styleButton(selectButton, iconMgr.getIconFont(ICON_FONT_SIZE));
+	private JButton getShowColumnsButton() {
+		if (showColumnsButton == null) {
+			showColumnsButton = new JButton(IconUtil.COLUMN_SHOW);
+			showColumnsButton.setToolTipText("Show Columns...");
+			styleButton(showColumnsButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 
-			selectButton.addActionListener(e -> {
+			showColumnsButton.addActionListener(e -> {
 				if (browserTableModel != null) {
 					getColumnSelector().update(browserTableModel.getDataTable().getColumns(),
 							browserTable.getVisibleAttributeNames());
 					getColumnSelectorPopupMenu().pack();
-					getColumnSelectorPopupMenu().show(selectButton, 0, selectButton.getHeight());
+					getColumnSelectorPopupMenu().show(showColumnsButton, 0, showColumnsButton.getHeight());
 				}
 			});
 		}
 		
-		return selectButton;
+		return showColumnsButton;
 	}
 
 	private JButton getFnBuilderButton() {
@@ -493,7 +488,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 						JOptionPane.showMessageDialog(rootFrame, "Can't enter a formula w/o a selected cell.",
 								"Information", JOptionPane.INFORMATION_MESSAGE);
 					} else {
-						final String attrName = getAttribName(cellRow, cellColumn);
+						final String attrName = getColumnName(cellRow, cellColumn);
 						final Map<String, Class<?>> attribNameToTypeMap = new HashMap<>();
 						final CyTable dataTable = browserTableModel.getDataTable();
 						initAttribNameToTypeMap(dataTable, attrName, attribNameToTypeMap);
@@ -520,42 +515,42 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return fnBuilderButton;
 	}
 
-	private String getAttribName(final int cellRow, final int cellColumn) {
+	private String getColumnName(final int cellRow, final int cellColumn) {
 		int colIndexModel = browserTable.convertColumnIndexToModel(cellColumn);
 		return browserTableModel.getColumnName( colIndexModel);
 	}
 
-	private JButton getDeleteButton() {
-		if (deleteAttributeButton == null) {
-			deleteAttributeButton = new JButton(ICON_TRASH_O);
-			deleteAttributeButton.setToolTipText("Delete Columns...");
-			styleButton(deleteAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
+	private JButton getDeleteColumnsButton() {
+		if (deleteColumnsButton == null) {
+			deleteColumnsButton = new JButton(IconUtil.COLUMN_REMOVE);
+			deleteColumnsButton.setToolTipText("Delete Columns...");
+			styleButton(deleteColumnsButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
 			// Create pop-up window for deletion
-			deleteAttributeButton.addActionListener(e -> {
-				removeAttribute();
+			deleteColumnsButton.addActionListener(e -> {
+				showColumnDeletionDialog();
 				updateEnableState();
 			});
 		}
 
-		return deleteAttributeButton;
+		return deleteColumnsButton;
 	}
 
 	private JButton getDeleteTableButton() {
 		if (deleteTableButton == null) {
-			deleteTableButton = new JButton(ICON_TABLE + "" + ICON_TIMES_CIRCLE);
+			deleteTableButton = new JButton(ICON_TRASH_O);
 			deleteTableButton.setToolTipText("Delete Table...");
-			styleButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE / 2.0f));
+			styleButton(deleteTableButton, iconMgr.getIconFont(ICON_FONT_SIZE));
 			
 			// Create pop-up window for deletion
-			deleteTableButton.addActionListener(e -> removeTable());
+			deleteTableButton.addActionListener(e -> deleteTable());
 		}
 
 		return deleteTableButton;
 	}
 	
-	private void removeAttribute() {
-		final JFrame frame = (JFrame)SwingUtilities.getRoot(this);
+	private void showColumnDeletionDialog() {
+		final JFrame frame = (JFrame) SwingUtilities.getRoot(this);
 		final DeletionDialog dDialog = new DeletionDialog(frame, browserTableModel.getDataTable());
 
 		dDialog.pack();
@@ -563,7 +558,7 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		dDialog.setVisible(true);
 	}
 
-	private void removeTable() {
+	private void deleteTable() {
 		final CyTable table = browserTableModel.getDataTable();
 
 		if (table.getMutability() == CyTable.Mutability.MUTABLE) {
@@ -615,21 +610,21 @@ public class TableBrowserToolBar extends JPanel implements PopupMenuListener {
 		return selectionModeButton;
 	}
 	
-	private JButton getNewButton() {
-		if (createNewAttributeButton == null) {
-			createNewAttributeButton = new JButton(ICON_PLUS);
-			createNewAttributeButton.setToolTipText("Create New Column...");
-			styleButton(createNewAttributeButton, iconMgr.getIconFont(ICON_FONT_SIZE));
+	private JButton getCreateColumnButton() {
+		if (createColumnButton == null) {
+			createColumnButton = new JButton(IconUtil.COLUMN_ADD);
+			createColumnButton.setToolTipText("Create New Column...");
+			styleButton(createColumnButton, iconMgr.getIconFont(IconUtil.CY_FONT_NAME, TableBrowserToolBar.ICON_FONT_SIZE));
 			
-			createNewAttributeButton.addActionListener(e -> {
+			createColumnButton.addActionListener(e -> {
 				if (browserTableModel != null)
-					getCreateColumnMenu().show(createNewAttributeButton, 0, createNewAttributeButton.getHeight());
+					getCreateColumnMenu().show(createColumnButton, 0, createColumnButton.getHeight());
 			});
 			
-			createNewAttributeButton.setEnabled(false);
+			createColumnButton.setEnabled(false);
 		}
 
-		return createNewAttributeButton;
+		return createColumnButton;
 	}
 	
 	/*
