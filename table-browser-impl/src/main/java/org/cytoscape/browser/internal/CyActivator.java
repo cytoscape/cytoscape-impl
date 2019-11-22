@@ -58,14 +58,13 @@ public class CyActivator extends AbstractCyActivator {
 	
 	@Override
 	public void start(BundleContext bc) {
-		CyServiceRegistrar serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-
-		PopupMenuHelper popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
+		var serviceRegistrar = getService(bc, CyServiceRegistrar.class);
+		var popupMenuHelper = new PopupMenuHelper(serviceRegistrar);
 		
-		DefaultTableBrowser nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
-		DefaultTableBrowser edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
-		DefaultTableBrowser networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
-		GlobalTableBrowser globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
+		var nodeTableBrowser = new DefaultTableBrowser("Node Table", CyNode.class, serviceRegistrar, popupMenuHelper);
+		var edgeTableBrowser = new DefaultTableBrowser("Edge Table", CyEdge.class, serviceRegistrar, popupMenuHelper);
+		var networkTableBrowser = new DefaultTableBrowser("Network Table", CyNetwork.class, serviceRegistrar, popupMenuHelper);
+		var globalTableBrowser = new GlobalTableBrowser("Unassigned Tables", serviceRegistrar, popupMenuHelper);
 		
 		registerAllServices(bc, nodeTableBrowser);
 		registerAllServices(bc, edgeTableBrowser);
@@ -96,8 +95,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TableColumnTaskFactory.class, props);
 		}
 		
-		TableBrowserMediator mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser,
-				networkTableBrowser, globalTableBrowser, serviceRegistrar);
+		var mediator = new TableBrowserMediator(nodeTableBrowser, edgeTableBrowser, networkTableBrowser,
+				globalTableBrowser, serviceRegistrar);
 		registerService(bc, mediator, SetCurrentNetworkListener.class);
 		registerService(bc, mediator, CytoPanelComponentSelectedListener.class);
 		

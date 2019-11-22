@@ -1,5 +1,7 @@
 package org.cytoscape.browser.internal.view;
 
+import static org.cytoscape.work.ServiceProperties.TITLE;
+
 import java.awt.Component;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -23,6 +25,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.CyUserLog;
 import org.cytoscape.browser.internal.task.StaticTaskFactoryProvisioner;
 import org.cytoscape.browser.internal.util.TableBrowserUtil;
 import org.cytoscape.browser.internal.util.ValidatedObjectAndEditString;
@@ -43,6 +46,8 @@ import org.cytoscape.util.swing.PopupMenuGravityTracker;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * #%L
@@ -76,10 +81,12 @@ public class PopupMenuHelper {
 	private final Map<TableCellTaskFactory, Map<?, ?>> tableCellFactoryMap;
 	private final Map<TableColumnTaskFactory, Map<?, ?>> tableColumnFactoryMap;
 	private final StaticTaskFactoryProvisioner factoryProvisioner;
-
+	
 	private final CyServiceRegistrar serviceRegistrar;
+	
+	private static final Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 
-	public PopupMenuHelper(final CyServiceRegistrar serviceRegistrar) {
+	public PopupMenuHelper(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 
 		tableCellFactoryMap = new HashMap<>();
@@ -170,9 +177,9 @@ public class PopupMenuHelper {
 					else
 						JOptionPane.showMessageDialog(null, parsedData.get(1), "Invalid Value",
 								JOptionPane.ERROR_MESSAGE);
-				} catch (UnsupportedFlavorException | IOException e1) {
-					JOptionPane.showMessageDialog(null, e1.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
-					e1.printStackTrace();
+				} catch (UnsupportedFlavorException | IOException ex) {
+					JOptionPane.showMessageDialog(null, ex.getMessage(), "Invalid Value", JOptionPane.ERROR_MESSAGE);
+					logger.warn("Error pasting cell value", ex);
 				}
 			}
 		}));
@@ -190,7 +197,7 @@ public class PopupMenuHelper {
 
 				@Override
 				public boolean isEnabled() {
-					CyApplicationManager applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+					var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 
 					return table.getSelectedRowCount() > 0 && applicationManager.getCurrentNetwork() != null;
 				}
@@ -209,15 +216,16 @@ public class PopupMenuHelper {
 	 */
 	private void createMenuItem(TaskFactory tf, PopupMenuGravityTracker tracker, Map<?, ?> props,
 			Class<? extends CyIdentifiable> tableType) {
-		if (!enabledFor(tableType, props))
+		if (!tf.isReady() || !enabledFor(tableType, props))
 			return;
 
-		String menuLabel = (String) (props.get("title"));
-		if (menuLabel == null)
-			menuLabel = "Unidentified Task: " + Integer.toString(tf.hashCode());
+		String title = (String) props.get(TITLE);
+		
+		if (title == null)
+			title = "Unidentified Task: " + Integer.toString(tf.hashCode());
 
-		if (tf.isReady())
-			tracker.addMenuItem(new JMenuItem(new PopupAction(tf, menuLabel)), GravityTracker.USE_ALPHABETIC_ORDER);
+		var mi = new JMenuItem(new PopupAction(tf, title));
+		tracker.addMenuItem(mi, GravityTracker.USE_ALPHABETIC_ORDER);
 	}
 
 	private boolean enabledFor(Class<? extends CyIdentifiable> tableType, Map<?, ?> props) {
@@ -258,28 +266,6 @@ public class PopupMenuHelper {
 
 	public void removeTableCellTaskFactory(TableCellTaskFactory factory, Map<?, ?> properties) {
 		tableCellFactoryMap.remove(factory);
-	}
-
-	/**
-	 * A simple action that executes the specified TaskFactory
-	 */
-	private class PopupAction extends AbstractAction {
-
-		private static final long serialVersionUID = -2841342029789163004L;
-
-		private final TaskFactory tf;
-
-		PopupAction(final TaskFactory tf, final String menuLabel) {
-			super(menuLabel);
-			this.tf = tf;
-		}
-
-		@Override
-		public void actionPerformed(ActionEvent ae) {
-			final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
-			if (taskManager != null && tf != null)
-				taskManager.execute(tf.createTaskIterator());
-		}
 	}
 
 	// Preset menu item: open browser
@@ -337,5 +323,27 @@ public class PopupMenuHelper {
 			}
 		};
 		t.start();
+	}
+	
+	/**
+	 * A simple action that executes the specified TaskFactory
+	 */
+	private class PopupAction extends AbstractAction {
+
+		private static final long serialVersionUID = -2841342029789163004L;
+
+		private final TaskFactory tf;
+
+		PopupAction(final TaskFactory tf, final String menuLabel) {
+			super(menuLabel);
+			this.tf = tf;
+		}
+
+		@Override
+		public void actionPerformed(ActionEvent ae) {
+			final TaskManager<?, ?> taskManager = serviceRegistrar.getService(TaskManager.class);
+			if (taskManager != null && tf != null)
+				taskManager.execute(tf.createTaskIterator());
+		}
 	}
 }
