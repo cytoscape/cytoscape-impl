@@ -281,7 +281,6 @@ import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
@@ -324,7 +323,6 @@ public class CyActivator extends AbstractCyActivator {
 	private CyServiceRegistrar serviceRegistrar;
 	private CyEventHelper eventHelper;
 	private CyNetworkNaming networkNaming;
-	private CyNetworkViewFactory netViewFactory;
 	private CyNetworkFactory netFactory;
 	private CyRootNetworkManager rootNetManager;
 	private VisualMappingManager visualMappingManager;
@@ -346,7 +344,6 @@ public class CyActivator extends AbstractCyActivator {
 		serviceRegistrar = getService(bc, CyServiceRegistrar.class);
 		eventHelper = getService(bc, CyEventHelper.class);
 		networkNaming = getService(bc, CyNetworkNaming.class);
-		netViewFactory = getService(bc, CyNetworkViewFactory.class);
 		netFactory = getService(bc, CyNetworkFactory.class);
 		rootNetManager = getService(bc, CyRootNetworkManager.class);
 		visualMappingManager = getService(bc, VisualMappingManager.class);
@@ -1173,7 +1170,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			var factory = new AddEdgeTaskFactory(visualMappingManager, netViewManager, eventHelper, serviceRegistrar);
+			var factory = new AddEdgeTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND, "add edge");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -1187,7 +1184,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, TaskFactory.class, props);
 		}
 		{
-			var factory = new AddNodeTaskFactory(visualMappingManager, netViewManager, eventHelper, serviceRegistrar);
+			var factory = new AddNodeTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND, "add node");
 			props.setProperty(COMMAND_NAMESPACE, "network");
@@ -2207,8 +2204,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// Register as 3 types of service.
-			var factory = new ConnectSelectedNodesTaskFactoryImpl(eventHelper, visualMappingManager, netViewManager,
-					serviceRegistrar);
+			var factory = new ConnectSelectedNodesTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(IN_MENU_BAR, "false");
 			props.setProperty(IN_TOOL_BAR, "false");
