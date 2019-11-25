@@ -84,8 +84,21 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private final CyNetworkViewFactory nullNetworkViewFactory;
 	private final CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	@Tunable(
+			description = "Network",
+			context = "nogui",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING
+	)
 	public CyNetwork network;
+	
+	@Tunable(
+			description = "Clone View",
+			context = "nogui",
+			longDescription = "Whether or not to clone the network view as well. Only boolean values are allowed: ```true``` (default) or ```false```\"",
+			exampleStringValue = "true"
+	)
+	public boolean cloneView = true;
 
 	private CyNetworkView result;
 
@@ -144,7 +157,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		// TODO What if the network has more than one view
 		final CyNetworkView origView = views.size() != 0 ? views.iterator().next() : null; 
 		
-		if (origView != null && !cancelled) {
+		if (cloneView && origView != null && !cancelled) {
 			tm.setStatusMessage("Cloning view...");
 			
 			final VisualStyle style = vmm.getVisualStyle(origView);

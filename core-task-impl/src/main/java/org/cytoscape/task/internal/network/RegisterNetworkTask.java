@@ -152,7 +152,7 @@ public class RegisterNetworkTask extends AbstractTask implements ObservableTask 
 		
 		tm.setProgress(0.9);
 
-		if (views != null) {
+		if (views != null && !views.isEmpty()) {
 			appMgr.setCurrentNetworkView(views.get(0));
 			appMgr.setSelectedNetworkViews(views);
 		} else {
@@ -201,7 +201,7 @@ public class RegisterNetworkTask extends AbstractTask implements ObservableTask 
 					CyNetwork network = networks.get(0);
 					CyNetworkView view = null;
 					
-					if (views.size() == 1)
+					if (views != null && views.size() == 1)
 						view = views.get(0);
 					
 					return jsonNetView(network, view);
