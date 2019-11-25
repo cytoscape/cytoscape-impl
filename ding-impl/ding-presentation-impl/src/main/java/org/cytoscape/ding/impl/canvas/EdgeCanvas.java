@@ -26,5 +26,7 @@ public class EdgeCanvas<GP extends GraphicsProvider> extends DingCanvas<GP> {
 			return;
 		
 		GraphRenderer.renderEdges(pm, graphics, netViewSnapshot, flags, nodeDetails, edgeDetails);
+		
+		pm.done();
 	}
 }

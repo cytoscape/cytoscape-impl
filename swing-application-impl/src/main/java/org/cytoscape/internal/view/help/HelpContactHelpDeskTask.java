@@ -31,7 +31,7 @@ import org.cytoscape.work.TaskMonitor;
 
 public class HelpContactHelpDeskTask extends AbstractTask {
 	
-	private static final String HELP_DESK_URL = "https://groups.google.com/forum/?fromgroups#!forum/cytoscape-helpdesk";
+	private static final String HELP_DESK_URL = "https://cytoscape.org/documentation_users.html";
 	
 	private final CyServiceRegistrar serviceRegistrar;
 

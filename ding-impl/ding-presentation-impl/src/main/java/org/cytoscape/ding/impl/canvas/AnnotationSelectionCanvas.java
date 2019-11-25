@@ -28,6 +28,8 @@ public class AnnotationSelectionCanvas<GP extends GraphicsProvider> extends Ding
 		
 		var selection = re.getCyAnnotator().getAnnotationSelection();
 		selection.paint(g);		
+		
+		pm.done();
 		g.dispose();
 	}
 

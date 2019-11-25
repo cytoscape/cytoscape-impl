@@ -267,11 +267,12 @@ public class CyApplicationManagerImpl implements CyApplicationManager,
 	}
 
 	private void internalSetSelectedNetworks(List<CyNetwork> networks, List<CyEvent<?>> eventsToFire) {
-		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<>(networks)
-				: new LinkedHashSet<CyNetwork>();
-		selectedNetworks = selectNetworks(selectedNetworks);
+		Set<CyNetwork> selectedNetworks = networks != null ? new LinkedHashSet<>(networks) : new LinkedHashSet<>();
 		
-		eventsToFire.add(new SetSelectedNetworksEvent(this, new ArrayList<>(selectedNetworks)));
+		if (!selectedNetworks.equals(new LinkedHashSet<>(getSelectedNetworks()))) {
+			selectedNetworks = selectNetworks(selectedNetworks);
+			eventsToFire.add(new SetSelectedNetworksEvent(this, new ArrayList<>(selectedNetworks)));
+		}
 	}
 	
 	@Override

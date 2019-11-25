@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
  */
 public class NetworkImageBuffer implements ImageGraphicsProvider {
 	
-	private static final Color TRANSPARENT_COLOR = new Color(0,0,0,0);
+	private static final Color TRANSPARENT_COLOR = ColorCanvas.TRANSPARENT_COLOR;
 	
 	private NetworkTransform transform;
 	private boolean enabled = true;

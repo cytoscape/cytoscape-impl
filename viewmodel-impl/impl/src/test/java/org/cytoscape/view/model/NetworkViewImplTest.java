@@ -32,10 +32,13 @@ import org.cytoscape.view.model.events.ViewChangedEvent;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.internal.model.CyNodeViewImpl;
 import org.cytoscape.view.model.internal.model.VPStore;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.junit.Test;
 
 public class NetworkViewImplTest {
 
+	public static final Object SELECTED_NODES = "SELECTED_NODES";
+	
 	private NetworkTestSupport networkSupport = new NetworkTestSupport();
 	
 	private CyNetwork createSquareTestNetwork() {
@@ -52,7 +55,9 @@ public class NetworkViewImplTest {
 	}
 	
 	private CyNetworkViewImpl createSquareTestNetworkView() {
-		return NetworkViewTestUtils.createNetworkView(createSquareTestNetwork());
+		return NetworkViewTestUtils.createNetworkView(createSquareTestNetwork(), config -> {
+			config.addTrackedVisualProperty(SELECTED_NODES, BasicVisualLexicon.NODE_SELECTED, Boolean.TRUE::equals);
+		});
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -560,21 +565,21 @@ public class NetworkViewImplTest {
 //		View<CyNode> n2 = netView.getNodeView(nodes.get(2));
 //		View<CyNode> n3 = netView.getNodeView(nodes.get(3));
 		
-		assertTrue(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES).isEmpty());
-		assertEquals(0, netView.createSnapshot().getTrackedNodeCount(CyNetworkViewConfig.SELECTED_NODES));
+		assertTrue(netView.createSnapshot().getTrackedNodes(SELECTED_NODES).isEmpty());
+		assertEquals(0, netView.createSnapshot().getTrackedNodeCount(SELECTED_NODES));
 		
 		n0.setVisualProperty(NODE_SELECTED, true);
 		n1.setVisualProperty(NODE_SELECTED, true);
 		
-		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES));
+		Set<Long> selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(SELECTED_NODES));
 		assertEquals(2, selectedNodes.size());
-		assertEquals(2, netView.createSnapshot().getTrackedNodeCount(CyNetworkViewConfig.SELECTED_NODES));
+		assertEquals(2, netView.createSnapshot().getTrackedNodeCount(SELECTED_NODES));
 		assertTrue(selectedNodes.contains(n0.getSUID()));
 		assertTrue(selectedNodes.contains(n1.getSUID()));
 		
 		n1.setVisualProperty(NODE_SELECTED, false);
 		
-		selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES));
+		selectedNodes = asSuidSet(netView.createSnapshot().getTrackedNodes(SELECTED_NODES));
 		
 		assertEquals(1, selectedNodes.size());
 		assertTrue(selectedNodes.contains(n0.getSUID()));

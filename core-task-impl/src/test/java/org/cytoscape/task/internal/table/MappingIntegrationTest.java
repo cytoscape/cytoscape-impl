@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -51,7 +51,6 @@ import org.cytoscape.task.internal.network.NewNetworkSelectedNodesOnlyTask;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.Task;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskMonitor;
@@ -101,18 +100,16 @@ public class MappingIntegrationTest {
 	private CyApplicationManager appMgr = mock(CyApplicationManager.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
 	private CyNetworkManagerImpl netMgr = new CyNetworkManagerImpl(serviceRegistrar);
+	private CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
 	private final CyRootNetworkManagerImpl rootNetMgr = new CyRootNetworkManagerImpl();
 	private EquationCompiler compiler = new EquationCompilerImpl(new EquationParserImpl(serviceRegistrar));
 	private Interpreter interpreter = new InterpreterImpl();
-	
-	private SyncTunableMutator<?> stm = new SyncTunableMutator();
-	SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
-
+	private SyncTunableMutator<?> stm = new SyncTunableMutator<>();
+	private SyncTunableHandlerFactory syncTunableHandlerFactory = new SyncTunableHandlerFactory();
 	private TunableSetterImpl ts = new TunableSetterImpl(new SyncTunableMutatorFactory(syncTunableHandlerFactory),  new TunableRecorderManager());
 	private CyNetworkTableManagerImpl netTabMgr = new CyNetworkTableManagerImpl();
-	CyTableManager tabMgr = new CyTableManagerImpl(netTabMgr, netMgr, serviceRegistrar);
-	Properties syncFactoryProp = new Properties();
-	
+	private CyTableManager tabMgr = new CyTableManagerImpl(netTabMgr, netMgr, serviceRegistrar);
+	private Properties syncFactoryProp = new Properties();
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
 	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
 
@@ -122,13 +119,16 @@ public class MappingIntegrationTest {
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+        when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
         when(serviceRegistrar.getService(CyNetworkTableManager.class)).thenReturn(netTabMgr);
         when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
         when(serviceRegistrar.getService(CyTableManager.class)).thenReturn(tabMgr);
         when(serviceRegistrar.getService(TunableSetter.class)).thenReturn(ts);
         when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+        when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(groupMgr);
         when(serviceRegistrar.getService(EquationCompiler.class)).thenReturn(compiler);
 		when(serviceRegistrar.getService(Interpreter.class)).thenReturn(interpreter);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineManager);
         
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
@@ -192,11 +192,7 @@ public class MappingIntegrationTest {
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		net1.getDefaultNodeTable().getRow(node2.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask = new NewNetworkSelectedNodesOnlyTask(net1,
-				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
-				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
-				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
-				mock(CyServiceRegistrar.class));
+		var newNetTask = new NewNetworkSelectedNodesOnlyTask(net1, serviceRegistrar);
 
 		assertNotNull(newNetTask);
 		newNetTask.setTaskIterator(new TaskIterator(newNetTask));
@@ -240,11 +236,7 @@ public class MappingIntegrationTest {
 		//creating another subnetwork (subnet2) to check that bot virtual columns will be added
 		net1.getDefaultNodeTable().getRow(node1.getSUID()).set(CyNetwork.SELECTED, true);
 		
-		NewNetworkSelectedNodesOnlyTask newNetTask2 = new NewNetworkSelectedNodesOnlyTask(net1,
-				support.getRootNetworkFactory(), viewSupport.getNetworkViewFactory(), netMgr,
-				mock(CyNetworkViewManager.class), mock(CyNetworkNaming.class), mock(VisualMappingManager.class),
-				mock(CyApplicationManager.class), eventHelper, groupMgr, renderingEngineManager,
-				mock(CyServiceRegistrar.class));
+		var newNetTask2 = new NewNetworkSelectedNodesOnlyTask(net1, serviceRegistrar);
 
 		assertNotNull(newNetTask2);
 		newNetTask2.setTaskIterator(new TaskIterator(newNetTask2));
@@ -265,13 +257,12 @@ public class MappingIntegrationTest {
 
 		//these two tests are failing because the required table update when creating the subnetwork is not handled
 		//hence the nodes are there but the related rows in the table are empty
-		assertEquals(table1sRow1, subnet2.getRow(node1).get(table1sCol, String.class) );
-		assertEquals(table2sRow1, subnet2.getRow(node1).get(table2sCol, String.class) );
+		assertEquals(table1sRow1, subnet2.getRow(node1).get(table1sCol, String.class));
+		assertEquals(table2sRow1, subnet2.getRow(node1).get(table2sCol, String.class));
 	}
 	
 	public void mapping(CyTable table, CyNetwork net, CyRootNetwork rootNet, CyColumn col, boolean selectedOnly) throws Exception{
-		ImportTableDataTaskFactoryImpl mappingTF =
-				new ImportTableDataTaskFactoryImpl(new TableImportContext(), serviceRegistrar);
+		var mappingTF = new ImportTableDataTaskFactoryImpl(new TableImportContext(), serviceRegistrar);
 		List<CyNetwork> nets = new ArrayList<>();
 		nets.add(net);
 

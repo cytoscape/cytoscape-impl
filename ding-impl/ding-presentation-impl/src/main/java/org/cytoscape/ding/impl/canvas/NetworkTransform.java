@@ -200,4 +200,8 @@ public class NetworkTransform {
 		xformNodeToImageCoords(p1);
 		return new Point((int)p1[0], (int)p1[1]);
 	}
+	
+	public Point getImageCoordinates(Point2D p) {
+		return getImageCoordinates(p.getX(), p.getY());
+	}
 }

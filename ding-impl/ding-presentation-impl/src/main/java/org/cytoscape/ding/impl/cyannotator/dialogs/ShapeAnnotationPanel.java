@@ -310,11 +310,13 @@ public class ShapeAnnotationPanel extends JPanel {
 		if (fillColorCheck.isSelected()) {
 			fillColorButton.setEnabled(true);
 			fillOpacitySlider.setEnabled(true);
+			preview.setFillColor(fillColorButton.getColor());
 		} else {
 			fillColorButton.setEnabled(false);
 			fillOpacitySlider.setEnabled(false);
 			preview.setFillColor(null);
 		}
+		previewPanel.repaint();
 	}
 
 	private void borderColorCheckActionPerformed(ActionEvent evt) {
@@ -322,11 +324,13 @@ public class ShapeAnnotationPanel extends JPanel {
 		if (borderColorCheck.isSelected()) {
 			borderColorButton.setEnabled(true);
 			borderOpacitySlider.setEnabled(true);
+			preview.setBorderColor(borderColorButton.getColor());
 		} else {
 			borderColorButton.setEnabled(false);
-			preview.setBorderColor(null);
 			borderOpacitySlider.setEnabled(false);
+			preview.setBorderColor(null);
 		}
+		previewPanel.repaint();
 	}
 
 	private void borderWidthActionPerformed(ActionEvent evt) {

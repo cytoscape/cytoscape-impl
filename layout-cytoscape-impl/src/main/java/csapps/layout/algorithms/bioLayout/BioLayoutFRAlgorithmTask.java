@@ -1,12 +1,24 @@
 package csapps.layout.algorithms.bioLayout;
 
+import java.util.ArrayList;
+import java.util.Set;
+
+import org.cytoscape.model.CyNode;
+import org.cytoscape.view.layout.LayoutEdge;
+import org.cytoscape.view.layout.LayoutNode;
+import org.cytoscape.view.layout.LayoutPartition;
+import org.cytoscape.view.layout.LayoutPoint;
+import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.view.model.View;
+import org.cytoscape.work.undo.UndoSupport;
+
 /*
  * #%L
  * Cytoscape Layout Algorithms Impl (layout-cytoscape-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,22 +36,8 @@ package csapps.layout.algorithms.bioLayout;
  * #L%
  */
 
-
-
-import java.util.ArrayList;
-import java.util.Set;
-
-import org.cytoscape.model.CyNode;
-import org.cytoscape.view.layout.LayoutEdge;
-import org.cytoscape.view.layout.LayoutNode;
-import org.cytoscape.view.layout.LayoutPartition;
-import org.cytoscape.view.layout.LayoutPoint;
-import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.View;
-import org.cytoscape.work.undo.UndoSupport;
-
-
 public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
+	
 	private double attraction_constant;
 	private double repulsion_constant;
 	private double gravity_constant;
@@ -75,9 +73,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	/**
 	 * The width, height and depth of the layout
 	 */
-	private double width = 0;
-	private double height = 0;
-	private double depth = 0;
+	private double width;
+	private double height;
+	private double depth;
 
 	private BioLayoutFRContext context;
 
@@ -90,15 +88,23 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	Profile updateProfile;
 	 */
 
-	public BioLayoutFRAlgorithmTask(final String displayName, CyNetworkView networkView, Set<View<CyNode>> nodesToLayOut, final BioLayoutFRContext context, final boolean supportWeights, String attrName, UndoSupport undo) {		
-		super(displayName, networkView, nodesToLayOut,  context.singlePartition, attrName, undo);
-		this.context = context;
+	public BioLayoutFRAlgorithmTask(
+			String displayName,
+			CyNetworkView networkView,
+			Set<View<CyNode>> nodesToLayOut,
+			BioLayoutFRContext context,
+			boolean supportWeights,
+			String attrName,
+			UndoSupport undo
+	) {		
+		super(displayName, networkView, nodesToLayOut, context.singlePartition, attrName, undo);
 
-		this.supportWeights =supportWeights;
+		this.context = context;
+		this.supportWeights = supportWeights;
 		this.edgeWeighter = context.edgeWeighter;
 		this.edgeWeighter.setWeightAttribute(layoutAttribute);
-		
-		displacementArray = new ArrayList<Double>(100);
+
+		displacementArray = new ArrayList<>(100);
 	}
 
 	/**
@@ -124,20 +130,20 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	 *
 	 * @return the human-readable algorithm name
 	 */
+	@Override
 	public String toString() {
 		if (supportWeights)
 			return "Edge-weighted Force directed (BioLayout)";
 		else
-
 			return "Force directed (BioLayout)";
 	}
 
 	/**
 	 * Perform a layout
 	 */
+	@Override
 	public void layoutPartition(LayoutPartition partition) {
 		this.partition = partition;
-
 		LayoutPoint initialLocation = null;
 
 		/* Get all of our profiles */
@@ -151,9 +157,7 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		        initProfile.start();
 		*/
 
-		// Calculate a bounded rectangle for our
-		// layout.  This is roughly the area of all
-		// nodes * 2
+		// Calculate a bounded rectangle for our layout. This is roughly the area of all nodes * 2
 		calculateSize();
 
 		//System.out.println("BioLayoutFR Algorithm.  Laying out " + partition.nodeCount()
@@ -163,9 +167,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		double temp;
 
 		if (context.temperature == 0) {
-			temp = Math.sqrt(this.width*this.height)/2;
+			temp = Math.sqrt(this.width * this.height) / 2;
 		} else {
-			temp = Math.sqrt(this.width*this.height) * this.context.temperature/100;
+			temp = Math.sqrt(this.width * this.height) * this.context.temperature / 100;
 		}
 
 		// Figure out our starting point
@@ -182,30 +186,35 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// Calculate our edge weights
 		partition.calculateEdgeWeights();
 		// initProfile.done("Initialization completed in ");
-		taskMonitor.setStatusMessage("Calculating new node positions");
-		taskMonitor.setProgress(0.01);
-
+		taskMonitor.setStatusMessage("Calculating new node positions...");
+		setTaskStatus(2);
+		
 		// Main algorithm
 		// iterProfile.start();
-		int iteration = 0;
-
-		for (iteration = 0; (iteration < context.nIterations) && !cancelled; iteration++) {
-			if ((temp = doOneIteration(iteration, temp)) == 0)
+		for (int i = 0; i < context.nIterations; i++) {
+			if (cancelled)
+				return;
+			
+			taskMonitor.setStatusMessage("Calculating new node positions: Iteration " + (i + 1) + " of " + context.nIterations + "...");
+			
+			if ((temp = doOneIteration(i, temp)) == 0) {
+				setTaskStatus(92);
 				break;
-
-			if (debug || ((context.update_iterations > 0) && ((iteration % context.update_iterations) == 0))) {
-				if (iteration > 0) {
+			}
+			
+			if (debug || (context.update_iterations > 0 && (i % context.update_iterations) == 0)) {
+				if (i > 0) {
 					// Actually move the pieces around
-					for (LayoutNode v: partition.getNodeList()) {
+					for (LayoutNode v : partition.getNodeList()) {
+						if (cancelled)
+							return;
+						
 						// if this is locked, the move just resets X and Y
-						if(context.layout3D)
+						if (context.layout3D)
 							v.moveToLocation3D();
 						else
 							v.moveToLocation();
-
 					}
-					// This fires events to presentation layer.
-					networkView.updateView();
 				}
 
 				if (debug) {
@@ -215,52 +224,60 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 					}
 				}
 			}
-
-			taskMonitor.setStatusMessage("Calculating new node positions - " + iteration);
-			taskMonitor.setProgress(iteration / context.nIterations);
+			
+			setTaskStatus(Math.round(2 + ((i + 1) / (float) context.nIterations) * 90));
 		}
 
 		// iterProfile.done("Iterations complete in ");
 		// System.out.println("Attraction calculation portion of iterations took "+attractProfile.getTotalTime()+"ms");
 		// System.out.println("Repulsion calculation portion of iterations took "+repulseProfile.getTotalTime()+"ms");
 		// System.out.println("Update portion of iterations took "+updateProfile.getTotalTime()+"ms");
-		taskMonitor.setStatusMessage("Updating display");
+		taskMonitor.setStatusMessage("Updating display...");
 
 		// Actually move the pieces around
 		// Note that we reset our min/max values before we start this
 		// so we can get an accurate min/max for paritioning
 		partition.resetNodes();
-
-		for (LayoutNode v: partition.getNodeList()) {
-			if(context.layout3D)
+		
+		for (LayoutNode v : partition.getNodeList()) {
+			if (cancelled)
+				return;
+			
+			if (context.layout3D)
 				partition.moveNodeToLocation3D(v);
 			else
 				partition.moveNodeToLocation(v);
 		}
+		
+		setTaskStatus(96);
 
 		// Not quite done, yet.  If we're only laying out selected nodes, we need
 		// to migrate the selected nodes back to their starting position
 		double xDelta = 0.0;
 		double yDelta = 0.0;
 		double zDelta = 0.0;
-		final LayoutPoint finalLocation = partition.getAverageLocation();
+		LayoutPoint finalLocation = partition.getAverageLocation();
 		xDelta = finalLocation.getX() - initialLocation.getX();
 		yDelta = finalLocation.getY() - initialLocation.getY();
-		if(context.layout3D)
+		
+		if (context.layout3D)
 			zDelta = finalLocation.getZ() - initialLocation.getZ(); 
 
 		partition.resetNodes();
-		for (LayoutNode v: partition.getNodeList()) {
+		
+		for (LayoutNode v : partition.getNodeList()) {
+			if (cancelled)
+				return;
+			
 			if (!v.isLocked()) {
 				v.decrement(xDelta, yDelta, zDelta);
-				if(context.layout3D)
+				
+				if (context.layout3D)
 					partition.moveNodeToLocation3D(v);
 				else
 					partition.moveNodeToLocation(v);
 			}
 		}
-
-		//System.out.println("Layout complete after " + iteration + " iterations");
 	}
 
 	/**
@@ -277,7 +294,10 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 		// repulseProfile.start();
 		// Calculate repulsive forces
-		for (LayoutNode v: partition.getNodeList()) {
+		for (LayoutNode v : partition.getNodeList()) {
+			if (cancelled)
+				return 0;
+			
 			if (!v.isLocked()) {
 				xAverage += v.getX()/partition.nodeCount();
 				yAverage += v.getY()/partition.nodeCount();
@@ -286,6 +306,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		}
 
 		for (LayoutNode v: partition.getNodeList()) {
+			if (cancelled)
+				return 0;
+			
 			if (!v.isLocked()) {
 				calculateRepulsion(v);
 				if (gravity_constant != 0)
@@ -303,6 +326,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 /// for e in E do begin
 		for (LayoutEdge e: partition.getEdgeList()) {
+			if (cancelled)
+				return 0;
+			
 			calculateAttraction(e);
 		}
 /// end
@@ -319,6 +345,9 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 
 /// for v in V do begin
 		for (LayoutNode v: partition.getNodeList()) {
+			if (cancelled)
+				return 0;
+			
 			if (v.isLocked())
 				continue;
 
@@ -350,9 +379,8 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	}
 
 	/**
-	 * calculate the slope of the total displacement over the last 10 iterations.  If its positive or 0
-	 * we're done.
-	 *
+	 * calculate the slope of the total displacement over the last 10 iterations.
+	 * If its positive or 0 we're done.
 	 */
 	private boolean complete(double xDisp, double yDisp) {
 		Double disp = new Double(Math.sqrt((xDisp * xDisp) + (yDisp * yDisp)));
@@ -630,8 +658,6 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 		// kind of a hack but keeps calculations simple
 		// MKTODO For 3D we cheat and just make the depth equal to width, means code above is unaltered
 		this.depth = this.width;
-		/*
-		*/
 	}
 
 	/**
@@ -683,5 +709,4 @@ public class BioLayoutFRAlgorithmTask extends BioLayoutAlgorithmTask {
 	private double forceA(double k, double distance, double weight) {
 		return ((distance / k) * weight);
 	}
-
 }

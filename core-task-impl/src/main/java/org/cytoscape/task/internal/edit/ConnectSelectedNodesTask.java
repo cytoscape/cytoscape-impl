@@ -15,7 +15,6 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.events.AddedEdgesEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.util.json.CyJSONUtil;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.view.vizmap.VisualStyle;
@@ -54,16 +53,13 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 
 	static final String DEFAULT_INTERACTION = "interacts with";
 
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager vmm;
-	private final CyNetworkViewManager netViewMgr;
 	private final CyServiceRegistrar serviceRegistrar;
-	private List<CyEdge> newEdges = null;
+	private List<CyEdge> newEdges;
 
 	private CyNetwork network;
 	@Tunable(description="The network containing the nodes to connect",
 	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION,
-					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
+			 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING,
 	         context="nogui", required=true)
 	public CyNetwork getnetwork() {
 		return network;
@@ -78,17 +74,12 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 
 	@Tunable(description="The list of nodes to connect",
 	         longDescription=StringToModel.CY_NODE_LIST_LONG_DESCRIPTION,
-					 exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING,
+			 exampleStringValue=StringToModel.CY_NODE_LIST_EXAMPLE_STRING,
 	         context="nogui", required=true)
 	public NodeList nodes = null;
 
-	public ConnectSelectedNodesTask(final CyNetwork network,
-			final CyEventHelper eventHelper, final VisualMappingManager vmm, 
-			final CyNetworkViewManager netViewMgr, final CyServiceRegistrar serviceRegistrar) {
+	public ConnectSelectedNodesTask(CyNetwork network, CyServiceRegistrar serviceRegistrar) {
 		this.network = network;
-		this.eventHelper = eventHelper;
-		this.vmm = vmm;
-		this.netViewMgr = netViewMgr;
 		this.serviceRegistrar = serviceRegistrar;
 		nodes = new NodeList();
 	}
@@ -117,6 +108,11 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 		int i = 0;
 
 		newEdges = new ArrayList<>();
+		
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var networkViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var visualMappingManager = serviceRegistrar.getService(VisualMappingManager.class);
+		
 		eventHelper.silenceEventSource(network);
 		
 		for (final CyNode source : selectedNodes) {
@@ -145,15 +141,14 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 
 		serviceRegistrar.getService(UndoSupport.class).postEdit(new ConnectSelectedNodesEdit(network, newEdges));
 
-		for (CyEdge edge: newEdges) {
+		for (CyEdge edge: newEdges)
 			eventHelper.addEventPayload(network, edge, AddedEdgesEvent.class); 
-		}
 		
 		eventHelper.flushPayloadEvents(); // To make sure the edge views are created before applying the style
 
 		// Apply visual style
-		for (final CyNetworkView view : netViewMgr.getNetworkViews(network)) {
-			VisualStyle vs = vmm.getVisualStyle(view);
+		for (var view : networkViewManager.getNetworkViews(network)) {
+			VisualStyle vs = visualMappingManager.getVisualStyle(view);
 			vs.apply(view);
 			view.updateView();
 		}
@@ -162,29 +157,37 @@ public class ConnectSelectedNodesTask extends AbstractTask implements Observable
 	}
 
 	@Override
-	@SuppressWarnings({"unchecked", "rawtypes"})
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public Object getResults(Class type) {
 		if (type.equals(List.class)) {
 			return newEdges;
-		} else if (type.equals(String.class)){
-			if (newEdges.size() == 0)
+		} else if (type.equals(String.class)) {
+			if (newEdges.isEmpty())
 				return "<none>";
+			
 			String ret = "";
+			
 			if (newEdges != null && newEdges.size() > 0) {
 				ret += "Edges added: \n";
-				for (CyEdge edge: newEdges) {
-					ret += "   "+network.getRow(edge).get(CyNetwork.NAME, String.class)+"\n";
-				}
+				
+				for (CyEdge edge : newEdges)
+					ret += "   " + network.getRow(edge).get(CyNetwork.NAME, String.class) + "\n";
 			}
-		}  else if (type.equals(JSONResult.class)) {
-			JSONResult res = () -> {if (newEdges == null || newEdges.size() == 0) 
-				return "{}";
-			else {
-				CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
-				return "{\"edges\":"+cyJSONUtil.cyIdentifiablesToJson(newEdges)+"}";
-			}};
+			
+			return ret;
+		} else if (type.equals(JSONResult.class)) {
+			JSONResult res = () -> {
+				if (newEdges == null || newEdges.size() == 0)
+					return "{}";
+				else {
+					CyJSONUtil cyJSONUtil = serviceRegistrar.getService(CyJSONUtil.class);
+					return "{\"edges\":" + cyJSONUtil.cyIdentifiablesToJson(newEdges) + "}";
+				}
+			};
+			
 			return res;
 		}
+		
 		return newEdges;
 	}
 	

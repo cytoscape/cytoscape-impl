@@ -110,6 +110,7 @@ import org.cytoscape.internal.view.help.HelpContactHelpDeskTaskFactory;
 import org.cytoscape.internal.view.help.HelpReportABugTaskFactory;
 import org.cytoscape.internal.view.help.HelpTourTaskFactory;
 import org.cytoscape.internal.view.help.HelpTutorialsTaskFactory;
+import org.cytoscape.internal.view.help.HelpVideosTaskFactory;
 import org.cytoscape.internal.view.help.HelpUserManualTaskFactory;
 import org.cytoscape.internal.view.util.ViewUtil;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
@@ -196,6 +197,7 @@ public class CyActivator extends AbstractCyActivator {
 	private HelpUserManualTaskFactory helpUserManualTaskFactory;
 	private HelpTourTaskFactory helpTourTaskFactory;
 	private HelpTutorialsTaskFactory helpTutorialsTaskFactory;
+	private HelpVideosTaskFactory helpVideosTaskFactory;
 	private HelpContactHelpDeskTaskFactory helpContactHelpDeskTaskFactory;
 	private HelpReportABugTaskFactory helpReportABugTaskFactory;
 	
@@ -307,6 +309,14 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, helpUserManualTaskFactory, TaskFactory.class, props);
 		}
 		{
+                        Properties props = new Properties();
+                        props.setProperty(PREFERRED_MENU, HELP_MENU);
+                        props.setProperty(TITLE, "Video Demos");
+                        props.setProperty(MENU_GRAVITY, "1.1");
+                        props.setProperty(TOOLTIP, "Show Demo Videos");
+                        registerService(bc, helpVideosTaskFactory, TaskFactory.class, props);
+                }
+		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(TITLE, "Tour");
@@ -325,13 +335,13 @@ public class CyActivator extends AbstractCyActivator {
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
 			props.setProperty(MENU_GRAVITY, "7.0");
-			props.setProperty(TITLE, "Contact Help Desk...");
+			props.setProperty(TITLE, "Links for Help");
 			registerService(bc, helpContactHelpDeskTaskFactory, TaskFactory.class, props);
 		}
 		{
 			Properties props = new Properties();
 			props.setProperty(PREFERRED_MENU, HELP_MENU);
-			props.setProperty(TITLE, "Report a Bug...");
+			props.setProperty(TITLE, "Report a Bug");
 			props.setProperty(MENU_GRAVITY, "8.0");
 			registerService(bc, helpReportABugTaskFactory, TaskFactory.class, props);
 		}
@@ -519,6 +529,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		helpUserManualTaskFactory = new HelpUserManualTaskFactory(serviceRegistrar);
 		helpTutorialsTaskFactory = new HelpTutorialsTaskFactory(serviceRegistrar);
+		helpVideosTaskFactory = new HelpVideosTaskFactory(serviceRegistrar);
 		helpContactHelpDeskTaskFactory = new HelpContactHelpDeskTaskFactory(serviceRegistrar);
 		helpReportABugTaskFactory = new HelpReportABugTaskFactory(serviceRegistrar);
 		helpTourTaskFactory = new HelpTourTaskFactory(serviceRegistrar);

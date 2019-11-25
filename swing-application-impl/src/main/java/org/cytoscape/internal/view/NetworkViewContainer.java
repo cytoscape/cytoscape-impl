@@ -64,7 +64,6 @@ import org.cytoscape.util.swing.CyToolTip;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.Range;
 import org.cytoscape.view.model.VisualLexicon;
@@ -298,6 +297,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 
 	protected void updateHiddenInfo() {
 		final CyNetworkView view = getNetworkView();
+		// MKTODO This is kind of a hack, these keys are defined in DingNetworkViewFactory, 
+		// I don't want to make them API (in CyNetworkViewConfig) so I just hard-code them here.
+		final String HIDDEN_NODES = "HIDDEN_NODES";
+		final String HIDDEN_EDGES = "HIDDEN_EDGES";
 		
 		if (getInfoPanel().isVisible() && !Util.isDisposed(view)) {
 			
@@ -305,10 +308,10 @@ public class NetworkViewContainer extends SimpleRootPaneContainer {
 			final int he;
 			if(view.supportsSnapshots()) {
 				CyNetworkViewSnapshot snapshot = view.createSnapshot();
-				if(snapshot.isTrackedNodeKey(CyNetworkViewConfig.HIDDEN_NODES) && snapshot.isTrackedEdgeKey(CyNetworkViewConfig.HIDDEN_EDGES)) {
+				if(snapshot.isTrackedNodeKey(HIDDEN_NODES) && snapshot.isTrackedEdgeKey(HIDDEN_EDGES)) {
 					// fast
-					hn = snapshot.getTrackedNodeCount(CyNetworkViewConfig.HIDDEN_NODES);
-					he = snapshot.getTrackedEdgeCount(CyNetworkViewConfig.HIDDEN_EDGES);
+					hn = snapshot.getTrackedNodeCount(HIDDEN_NODES);
+					he = snapshot.getTrackedEdgeCount(HIDDEN_EDGES);
 				} else {
 					// slow
 					hn = ViewUtil.getHiddenNodeCount(view);

@@ -1,12 +1,12 @@
-package org.cytoscape.ding.impl.editor;
+package prefuse.util.force;
 
 /*
  * #%L
- * Cytoscape Ding View/Presentation Impl (ding-presentation-impl)
+ * Cytoscape Prefuse Layout Impl (layout-prefuse-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,16 +24,15 @@ package org.cytoscape.ding.impl.editor;
  * #L%
  */
 
-public class EditMode {
+public class StateMonitor {
+
+	private volatile boolean cancelled;
 	
-	private static boolean mode = false;
-	
-	public static final boolean isDirectMode() {
-		return mode;
+	public void cancel() {
+		cancelled = true;
 	}
 	
-	public static final void setMode(final boolean newMode) {
-		mode = newMode;
+	public boolean isCancelled() {
+		return cancelled;
 	}
-	
 }

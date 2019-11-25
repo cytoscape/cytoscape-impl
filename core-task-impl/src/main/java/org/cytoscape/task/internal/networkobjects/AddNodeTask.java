@@ -48,32 +48,27 @@ import org.cytoscape.work.json.JSONResult;
 
 public class AddNodeTask extends AbstractTask implements ObservableTask {
 	
-	CyNode newNode;
-	CyEventHelper cyEventHelper;
-	CyNetworkViewManager networkViewManager;
-	VisualMappingManager visualMappingManager;
-	final CyServiceRegistrar serviceRegistrar;
+	private CyNode newNode;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	@Tunable(description="Network", context="nogui", 
-	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
-					 exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	@Tunable(
+			description="Network",
+			context="nogui", 
+			longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
+			exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING
+	)
 	public CyNetwork network;
 
-	@Tunable(description="Name of the node to add", 
-	         longDescription="The name of the node, which will be assigned to both "+
-					                 "the 'name' and 'shared name' columns", 
-					 exampleStringValue="Node 1", context="nogui")
+	@Tunable(
+			description="Name of the node to add", 
+			longDescription="The name of the node, which will be assigned to both "+
+					        "the 'name' and 'shared name' columns", 
+			exampleStringValue="Node 1",
+			context="nogui"
+	)
 	public String name;
 
-	public AddNodeTask(
-			VisualMappingManager vmm,
-			CyNetworkViewManager viewManager,
-			CyEventHelper eventHelper,
-			CyServiceRegistrar registrar
-	) {
-		cyEventHelper = eventHelper;
-		networkViewManager = viewManager;
-		visualMappingManager = vmm;
+	public AddNodeTask(CyServiceRegistrar registrar) {
 		this.serviceRegistrar = registrar;
 	}
 
@@ -98,19 +93,23 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 			network.getRow(newNode).set(CyRootNetwork.SHARED_NAME, name);
 		}
 		
-		cyEventHelper.flushPayloadEvents();
+		var eventHelper = serviceRegistrar.getService(CyEventHelper.class);
+		var networkViewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		var visualMappingManager = serviceRegistrar.getService(VisualMappingManager.class);
+		
+		eventHelper.flushPayloadEvents();
 		
 		if (networkViewManager.viewExists(network)) {
-			for (CyNetworkView view: networkViewManager.getNetworkViews(network)) {
+			for (CyNetworkView view : networkViewManager.getNetworkViews(network)) {
 				View<CyNode> nodeView = view.getNodeView(newNode);
 				VisualStyle style = visualMappingManager.getVisualStyle(view);
-				
+
 				if (style != null)
 					style.apply(network.getRow(newNode), nodeView);
 			}
 		}
 		
-		cyEventHelper.flushPayloadEvents();
+		eventHelper.flushPayloadEvents();
 		
 		tm.showMessage(TaskMonitor.Level.INFO, "Added node " + newNode.toString() + " to network");
 		tm.setProgress(1.0);

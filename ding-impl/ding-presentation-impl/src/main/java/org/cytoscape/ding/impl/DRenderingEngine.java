@@ -1,7 +1,5 @@
 package org.cytoscape.ding.impl;
 
-import static org.cytoscape.ding.internal.util.ViewUtil.invokeOnEDTAndWait;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -19,8 +17,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -50,7 +50,6 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.session.events.SessionAboutToBeSavedListener;
 import org.cytoscape.view.model.CyNetworkView;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewListener;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
@@ -128,7 +127,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	// Snapshot of current view.  Will be updated by CONTENT_CHANGED event.
 	private BufferedImage snapshotImage;
 	// Represents current snapshot is latest version or not.
-	private boolean latest;
+	private boolean latestSnapshot;
 
 	private final Properties props;
 	private final CyAnnotator cyAnnotator;
@@ -172,7 +171,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			return thread;
 		});
 		
-		this.bendStore = new BendStore(this, handleFactory);
+		this.bendStore = new BendStore(this, eventHelper, handleFactory);
 		
 		nodeDetails = new DNodeDetails(this, registrar);
 		edgeDetails = new DEdgeDetails(this);
@@ -185,9 +184,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		picker = new NetworkPicker(this, null);
 		
 		// Updating the snapshot for nested networks
-		addContentChangeListener(() -> {
-			latest = false;
-		});
+		addContentChangeListener(() -> latestSnapshot = false);
 
 		viewModelSnapshot = viewModel.createSnapshot();
 		
@@ -309,9 +306,6 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		// Check for important changes between snapshots
 		Paint backgroundPaint = viewModelSnapshot.getVisualProperty(BasicVisualLexicon.NETWORK_BACKGROUND_PAINT);
 		renderComponent.setBackgroundPaint(backgroundPaint);
-		
-		Collection<View<CyEdge>> selectedEdges = viewModelSnapshot.getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-		bendStore.updateSelectedEdges(selectedEdges);
 		
 		Collection<View<CyEdge>> animatedEdges = viewModelSnapshot.getTrackedEdges(DingNetworkViewFactory.ANIMATED_EDGES);
 		edgeDetails.updateAnimatedEdges(animatedEdges);
@@ -543,7 +537,7 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 		
 		CyNetworkViewSnapshot netViewSnapshot = getViewModelSnapshot();
 		SpacialIndex2D<Long> spacial = netViewSnapshot.getSpacialIndex2D();
-		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+		Collection<View<CyNode>> selectedElms = netViewSnapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 		if(selectedElms.isEmpty())
 			return;
 		
@@ -681,14 +675,17 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 */
 	@Override 
 	public Image createImage(int width, int height) {
+		return createImage(width, height, false);
+	}
+	
+	
+	private Image createImage(int width, int height, boolean transparentBackground) {
 		if (width < 0 || height < 0)
 			throw new IllegalArgumentException("width and height arguments must be greater than zero");
 
-		Image[] image = {null};
-		
-		// Run on the EDT to make sure the canvas is not in the middle of painting
+		// Run on the same thread as renderComponent to make sure the canvas is not in the middle of painting
 		// MKTODO could we reuse the birds-eye-view buffer instead of doing a full frame draw?
-		invokeOnEDTAndWait(() -> {
+		Future<Image> future = getSingleThreadExecutorService().submit(() -> {
 			// MKTODO copy-pasted from fitContent()
 			double[] extents = new double[4];
 			getViewModelSnapshot().getSpacialIndex2D().getMBR(extents); // extents of the network
@@ -700,13 +697,19 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 			
 			NetworkTransform transform = new NetworkTransform(width, height, xCenter, yCenter, zoom);
 			NetworkImageBuffer buffer = new NetworkImageBuffer(transform);
+			Color bgColor = transparentBackground ? null : getBackgroundColor();
 			
-			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, getBackgroundColor(), dingGraphLOD, transform);
+			CompositeGraphicsCanvas.paint(buffer.getGraphics(), this, bgColor, dingGraphLOD, transform);
 			
-			image[0] = buffer.getImage();
+			return buffer.getImage();
 		});
 		
-		return image[0];
+		try {
+			return future.get();
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	private double checkZoom(double zoom, double orig) {
@@ -761,10 +764,10 @@ public class DRenderingEngine implements RenderingEngine<CyNetwork>, Printable, 
 	 * @return Image of this view.  It is always up-to-date.
 	 */
 	protected TexturePaint getSnapshot(final double width, final double height) {
-		if(!latest) {
+		if(!latestSnapshot) {
 			// Need to update snapshot.
-			snapshotImage = (BufferedImage) createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE);
-			latest = true;
+			snapshotImage = (BufferedImage) createImage(DEF_SNAPSHOT_SIZE, DEF_SNAPSHOT_SIZE, true);
+			latestSnapshot = true;
 		}
 
 		// Handle non-square images

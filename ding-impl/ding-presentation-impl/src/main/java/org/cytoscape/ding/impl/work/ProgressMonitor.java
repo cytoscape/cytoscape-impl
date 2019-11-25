@@ -36,4 +36,5 @@ public interface ProgressMonitor {
 	static ProgressMonitor notNull(ProgressMonitor pm) {
 		return pm == null ? new NoOutputProgressMonitor() : pm;
 	}
+	
 }

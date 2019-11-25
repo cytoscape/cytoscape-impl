@@ -27,7 +27,6 @@ import java.awt.geom.Point2D;
  */
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.editor.EditMode;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkView;
@@ -55,8 +54,7 @@ public class HandleImpl implements Handle {
 		defineHandle(graphView, view, x, y);
 	}
 
-	public HandleImpl(HandleImpl h)
-	{
+	public HandleImpl(HandleImpl h) {
 		this.x = h.x;
 		this.y = h.y;
 		this.cosTheta = h.cosTheta;
@@ -86,26 +84,15 @@ public class HandleImpl implements Handle {
 			defineHandle(graphView, view, x, y);
 		}
 		
-		final View<CyNode> sourceView = getSourceNodeView(graphView, view);
-		final View<CyNode> targetView = getTargetNodeView(graphView, view);
+		View<CyNode> sourceView = getSourceNodeView(graphView, view);
+		View<CyNode> targetView = getTargetNodeView(graphView, view);
 		
-		final double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
-		final double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
-		final double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		double sX = sourceView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		double sY = sourceView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
+		double tX = targetView.getVisualProperty(DVisualLexicon.NODE_X_LOCATION);
+		double tY = targetView.getVisualProperty(DVisualLexicon.NODE_Y_LOCATION);
 
-		final Point2D newPoint;
-		if (EditMode.isDirectMode()) {
-			newPoint = new Point2D.Double();
-			if (x == 0 && y == 0) {
-				// If default, use center
-				newPoint.setLocation(tX - sX, tY - sY);
-			} else {
-				newPoint.setLocation(x, y);
-			}
-		} else {
-			newPoint = convert(sX, sY, tX, tY);
-		}
+		Point2D newPoint = convert(sX, sY, tX, tY);
 		return newPoint;
 	}
 

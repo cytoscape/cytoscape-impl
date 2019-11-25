@@ -4,6 +4,7 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 
 	private final ProgressMonitor wrapped;
 	private final int totalWork;
+	private int currentWork;
 	
 	DiscreteProgressMonitor(ProgressMonitor wrapped, int totalWork) {
 		this.wrapped = wrapped;
@@ -18,6 +19,7 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 	public void addWork(int workToAdd) {
 		double progress = (double)workToAdd / (double)totalWork;
 		addProgress(progress);
+		currentWork += workToAdd;
 	}
 	
 	public void increment() {
@@ -36,6 +38,7 @@ public class DiscreteProgressMonitor implements ProgressMonitor {
 
 	@Override
 	public void done() {
-//		wrapped.done();
+		if(totalWork > 0)
+			addProgress((double)(totalWork - currentWork) / (double)totalWork);
 	}
 }

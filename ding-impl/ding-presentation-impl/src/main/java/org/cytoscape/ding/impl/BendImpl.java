@@ -39,19 +39,17 @@ public class BendImpl implements Bend {
 	private static final String DELIMITER ="|";
 	
 	// List of Handles included in this Bend
-	private final List<Handle> handles;
+	private final List<Handle> handles = new CopyOnWriteArrayList<>();
 	
 	public BendImpl() {
-		this.handles = new CopyOnWriteArrayList<Handle>();
 	}
 
-	public BendImpl(BendImpl bend)
-	{
-		this.handles = new CopyOnWriteArrayList<Handle>();
-		for( Handle h : bend.handles)
-		{
-			HandleImpl handle = (HandleImpl)h;
-			handles.add( new HandleImpl(handle) );
+	public BendImpl(BendImpl bend) {
+		if(bend != null) {
+			for(Handle h : bend.handles) {
+				HandleImpl handle = (HandleImpl)h;
+				handles.add( new HandleImpl(handle) );
+			}
 		}
 	}
 
@@ -104,7 +102,6 @@ public class BendImpl implements Bend {
 	}
 	
 	public static Bend parseSerializableString(String strRepresentation) {
-		
 		final Bend bend = new BendImpl();
 		// Validate
 		if (strRepresentation == null)

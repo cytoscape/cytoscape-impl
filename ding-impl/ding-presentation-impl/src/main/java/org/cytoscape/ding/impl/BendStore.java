@@ -1,153 +1,51 @@
 package org.cytoscape.ding.impl;
 
-import java.awt.geom.GeneralPath;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE_BEND;
+
 import java.awt.geom.Point2D;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
-import org.cytoscape.graph.render.stateful.EdgeDetails;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.events.ViewChangeRecord;
+import org.cytoscape.view.model.events.ViewChangedEvent;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.presentation.property.values.Bend;
 import org.cytoscape.view.presentation.property.values.Handle;
 import org.cytoscape.view.presentation.property.values.HandleFactory;
 
 public class BendStore {
 
-	// Size of square for moving handle
-	public static final float HANDLE_SIZE = 12.0f;
-	private static final float HALF_SIZE = HANDLE_SIZE / 2.0f;
-	
 	private final DRenderingEngine re;
 	private final HandleFactory handleFactory;
+	private final CyEventHelper eventHelper;
 	
-	private Map<Long,List<HandleKey>> selectedEdges = new HashMap<>();
-	private Set<HandleKey> selectedHandles = new HashSet<>();
-	private Map<HandleKey,Rectangle2D> handleIndex = new HashMap<>();
+	private Set<HandleInfo> selectedHandles = new HashSet<>();
 	
-	
-	public BendStore(DRenderingEngine re, HandleFactory handleFactory) {
+	public BendStore(DRenderingEngine re, CyEventHelper eventHelper, HandleFactory handleFactory) {
 		this.re = re;
+		this.eventHelper = eventHelper;
 		this.handleFactory = handleFactory;
 	}
 	
 	
-	/**
-	 * Each edge can have multiple anchors (handles). To identify an 
-	 * anchor we use the SUID of the edge and the index of the anchor.
-	 */
-	public static class HandleKey {
-		
-		private final long suid;
-		private final int index;
-		
-		public HandleKey(long suid, int index) {
-			this.suid = suid;
-			this.index = index;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(index, suid);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			HandleKey other = (HandleKey) obj;
-			return index == other.index && suid == other.suid;
-		}
-
-		public long getEdgeSuid() {
-			return suid;
-		}
-
-		public int getHandleIndex() {
-			return index;
-		}
-	}
-
-
-	private View<CyEdge> getEdge(HandleKey key) {
-		return re.getViewModelSnapshot().getEdgeView(key.getEdgeSuid());
-	}
-	
-	/**
-	 * This should be called by DRenderingEngine whenever the snapshot changes.
-	 */
-	public void updateSelectedEdges(Collection<View<CyEdge>> selectedEdgeViews) {
-		Set<Long> oldSelectedEdges = new HashSet<>(this.selectedEdges.keySet());
-		
-		for(View<CyEdge> edge : selectedEdgeViews) {
-			oldSelectedEdges.remove(edge.getSUID());
-		}
-		for(Long suid : oldSelectedEdges) {
-			unselectEdge(suid);
-		}
-		for(View<CyEdge> edge : selectedEdgeViews) {
-			selectEdge(edge);
-		}
-	}
-	
-	
-	public HandleKey pickHandle(float x, float y) {
-		for(var entry : handleIndex.entrySet()) {
-			Rectangle2D area = entry.getValue();
-			if(area.contains(x, y)) {
-				return entry.getKey();
-			}
-		}
-		return null;
-	}
-	
-	public List<HandleKey> queryOverlap(Rectangle2D selectionRectangle) {
-		if(handleIndex.isEmpty())
-			return Collections.emptyList();
-		
-		List<HandleKey> handles = new ArrayList<>();
-		for(var entry : handleIndex.entrySet()) {
-			Rectangle2D area = entry.getValue();
-			if(area.intersects(selectionRectangle)) {
-				handles.add(entry.getKey());
-			}
-		}
-		return handles;
-	}
-	
-	public List<HandleKey> queryOverlap(GeneralPath path) {
-		if(handleIndex.isEmpty())
-			return Collections.emptyList();
-		
-		List<HandleKey> handles = new ArrayList<>();
-		for(var entry : handleIndex.entrySet()) {
-			Rectangle2D handleArea = entry.getValue();
-			if(path.intersects(handleArea)) {
-				handles.add(entry.getKey());
-			}
-		}
-		return handles;
-	}
-	
-	
-	public boolean isHandleSelected(HandleKey key) {
+	public boolean isHandleSelected(HandleInfo key) {
 		return selectedHandles.contains(key);
 	}
 	
-	public void selectHandle(HandleKey key) {
-		selectedHandles.add(key);
+	public void selectHandle(HandleInfo key) {
+		if(key != null)
+			selectedHandles.add(key);
 	}
 	
-	public void unselectHandle(HandleKey key) {
+	public void unselectHandle(HandleInfo key) {
 		selectedHandles.remove(key);
 	}
 	
@@ -155,68 +53,66 @@ public class BendStore {
 		selectedHandles.clear();
 	}
 	
-	public Set<HandleKey> getSelectedHandles() {
+	public Set<HandleInfo> getSelectedHandles() {
+		// MKTODO only do this on content changed?
+		Iterator<HandleInfo> iter = selectedHandles.iterator();
+		var snapshot = re.getViewModelSnapshot();
+		while(iter.hasNext()) {
+			var handle = iter.next();
+			var ev = snapshot.getEdgeView(handle.getSUID());
+			if(!re.getEdgeDetails().isSelected(ev)) {
+				iter.remove();
+			}
+		}
+		
 		return Collections.unmodifiableSet(selectedHandles);
 	}
 	
-	// Should synchronize around m_view.m_lock.
-	private void selectEdge(View<CyEdge> edge) {
-		Long suid = edge.getSUID();
-		if(!selectedEdges.containsKey(suid)) {
-			selectedEdges.put(suid, new ArrayList<>());
-
-			List<Handle> handles = re.getEdgeDetails().getBend(edge).getAllHandles();
+	
+	public void moveHandle(HandleInfo handleInfo, float x, float y) {
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(handleInfo.getSUID());
+		if(mutableEdgeView != null) {
+			Handle handle = handleInfo.getHandle();
+			handle.defineHandle(re.getViewModel(), mutableEdgeView, x, y);
+		}
+	}
+	
+	
+	private Bend getOrCreateLockedBend(View<CyEdge> mutableEdgeView) {
+		if(mutableEdgeView == null)
+			return null;
+		if(mutableEdgeView.isValueLocked(EDGE_BEND))
+			return mutableEdgeView.getVisualProperty(EDGE_BEND);
 			
-			for(int j = 0; j < handles.size(); j++) {
-				Handle handle = handles.get(j);
-				Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), edge);
-				float x = (float) newPoint.getX();
-				float y = (float) newPoint.getY();
-				
-				HandleKey key = new HandleKey(suid, j);
-				
-				selectedEdges.get(suid).add(key);
-				handleIndex.put(key, new Rectangle2D.Float(x - HALF_SIZE, y - HALF_SIZE, HANDLE_SIZE, HANDLE_SIZE));
+		Bend defaultBend = re.getViewModelSnapshot().getViewDefault(EDGE_BEND);
+		Bend bend;
+		if(defaultBend == EDGE_BEND.getDefault())
+			bend = new BendImpl();
+		else
+			bend = new BendImpl((BendImpl)defaultBend); // copy handles from default bend
+		
+		mutableEdgeView.setLockedValue(EDGE_BEND, bend);
+		return bend;
+	}
+	
+	public HandleInfo addHandle(View<CyEdge> edge, Point2D pt) {
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(edge.getSUID());
+		Bend bend = getOrCreateLockedBend(mutableEdgeView);
+		if(mutableEdgeView != null && bend != null) {
+			int index = getBestHandleIndex(bend, edge, pt);
+			if(index < 0) {
+				index = 0; // Index of this handle, which is first (0)
 			}
-		}
-	}
-	
-	private void unselectEdge(Long suid) {
-		if(selectedEdges.containsKey(suid)) {
-			List<HandleKey> keys = selectedEdges.remove(suid);
-			for(HandleKey k : keys) {
-				handleIndex.remove(k);
-			}
-		}
-	}
-	
-	public List<HandleKey> getHandles(View<CyEdge> edge) {
-		return selectedEdges.get(edge.getSUID());
-	}
-	
-	public boolean hasHandles(View<CyEdge> edge) {
-		return selectedEdges.containsKey(edge.getSUID());
-	}
-	
-	public void moveHandle(HandleKey key, float x, float y) {
-		if(handleIndex.containsKey(key)) {
-			View<CyEdge> edge = getEdge(key);
-			final Bend bend = re.getEdgeDetails().getBend(edge);
-			final HandleImpl handle = (HandleImpl) bend.getAllHandles().get(key.getHandleIndex());
-			handle.defineHandle(re.getViewModelSnapshot(), edge, x, y);
+			Handle handle = handleFactory.createHandle(re.getViewModel(), mutableEdgeView, pt.getX(), pt.getY());
+			bend.insertHandleAt(index, handle);
 			
-			handleIndex.put(key, new Rectangle2D.Float(x - HALF_SIZE, y - HALF_SIZE, HANDLE_SIZE, HANDLE_SIZE));
+			fireViewChangeEvent(mutableEdgeView, bend);
+			
+			re.setContentChanged();
+			return new HandleInfo(edge, bend, handle);
 		}
-	}
-	
-	
-	public HandleKey addHandle(View<CyEdge> edge, Point2D pt) {
-		int bestIndex = getBestHandleIndex(edge, pt);
-		if(bestIndex < 0) {
-			bestIndex = 0; // Index of this handle, which is first (0)
-		}
-		addHandleInternal(edge, pt, bestIndex);
-		return new HandleKey(edge.getSUID(), bestIndex);
+		
+		return null;
 	}
 	
 	
@@ -224,7 +120,7 @@ public class BendStore {
 		CyNetworkViewSnapshot snapshot = re.getViewModelSnapshot();
 		double[] extentsBuff = new double[4];
 		boolean exists = snapshot.getSpacialIndex2D().get(nodeViewSuid, extentsBuff);
-		if (!exists)
+		if(!exists)
 			return null;
 		double xCenter = (extentsBuff[0] + extentsBuff[2]) / 2.0d;
 		double yCenter = (extentsBuff[1] + extentsBuff[3]) / 2.0d;
@@ -232,8 +128,7 @@ public class BendStore {
 	}
 	
 	
-	private int getBestHandleIndex(View<CyEdge> edge, Point2D pt) {
-		Bend bend = re.getEdgeDetails().getBend(edge, true);
+	private int getBestHandleIndex(Bend bend, View<CyEdge> edge, Point2D pt) {
 		List<Handle> handles = bend.getAllHandles();
 		if(handles.isEmpty())
 			return -1;
@@ -274,83 +169,29 @@ public class BendStore {
 		
 		return bestInx;
 	}
+
 	
-	private void addHandleInternal(View<CyEdge> edge, Point2D handleLocation, int insertInx) {
-		Long suid = edge.getSUID();
-		Bend bend = re.getEdgeDetails().getBend(edge, true);
-		CyNetworkView netView = re.getViewModelSnapshot();
-		
-		Handle handle = handleFactory.createHandle(netView, edge, handleLocation.getX(), handleLocation.getY());
-		bend.insertHandleAt(insertInx, handle);
-
-		selectedEdges.computeIfAbsent(suid, s -> new ArrayList<>()).add(insertInx, new HandleKey(suid, insertInx));
-		
-		if (re.getEdgeDetails().isSelected(edge)) {
-			int n = bend.getAllHandles().size();
-			// shift existing keys
-			for (int j = n - 1; j > insertInx; j--) {
-				HandleKey oldKey = new HandleKey(suid, j-1);
-				HandleKey newKey = new HandleKey(suid, j);
+	
+	
+	public void removeHandle(HandleInfo key) {
+		selectedHandles.remove(key);
+		View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(key.getSUID());
+		if(mutableEdgeView != null) {
+			Bend bend = getOrCreateLockedBend(mutableEdgeView);
+			if(bend != null) {
+				int index = bend.getIndex(key.getHandle());
+				bend.removeHandleAt(index);
 				
-				Rectangle2D area = handleIndex.remove(oldKey);
-				handleIndex.put(newKey, area);
+				fireViewChangeEvent(mutableEdgeView, bend);
 			}
-			
-			HandleKey key = new HandleKey(suid, insertInx);
-			Rectangle2D area = new Rectangle2D.Float(
-					(float) (handleLocation.getX() - HALF_SIZE),
-					(float) (handleLocation.getY() - HALF_SIZE),
-					HANDLE_SIZE, 
-					HANDLE_SIZE);
-					
-			handleIndex.put(key, area);
 		}
-
-		re.setContentChanged();
 	}
 	
 	
-	public void getHandleLocation(HandleKey key, float[] pointBuff) {
-		View<CyEdge> edge = getEdge(key);
-		Bend bend = re.getEdgeDetails().getBend(edge, true);
-		
-		Handle handle;
-		if (re.getEdgeDetails().getLineCurved(edge) == EdgeDetails.CURVED_LINES)
-			handle = bend.getAllHandles().get(key.getHandleIndex());
-		else
-			handle = bend.getAllHandles().get(key.getHandleIndex()/2);
-
-		Point2D newPoint = handle.calculateHandleLocation(re.getViewModelSnapshot(), edge);
-		pointBuff[0] = (float) newPoint.getX();
-		pointBuff[1] = (float) newPoint.getY();
-	}
-	
-	
-	public void removeHandle(HandleKey key) {
-		View<CyEdge> edge = getEdge(key);
-		
-		Bend bend = re.getEdgeDetails().getBend(edge);
-		bend.removeHandleAt(key.getHandleIndex());
-
-		long suid = edge.getSUID();
-		if(selectedEdges.containsKey(suid)) {
-			handleIndex.remove(key);
-			
-			// shift all the anchors above idx down by 1
-			// MKTODO really need a better way of doing this
-			int n = bend.getAllHandles().size();
-
-			List<HandleKey> keys = selectedEdges.get(suid);
-			keys.subList(key.getHandleIndex(), n).clear();
-			
-			for(int j = key.getHandleIndex(); j < n; j++) {
-				HandleKey prevKey = new HandleKey(suid, j+1);
-				HandleKey newKey  = new HandleKey(suid, j);
-				
-				Rectangle2D area = handleIndex.remove(prevKey);
-				handleIndex.put(newKey, area);
-			}
-		}
+	@SuppressWarnings("unchecked")
+	private void fireViewChangeEvent(View<CyEdge> mutableEdgeView, Bend bend) {
+		var record = new ViewChangeRecord<>(mutableEdgeView, BasicVisualLexicon.EDGE_BEND, bend, true);
+		eventHelper.addEventPayload(re.getViewModel(), record, ViewChangedEvent.class);
 	}
 	
 }

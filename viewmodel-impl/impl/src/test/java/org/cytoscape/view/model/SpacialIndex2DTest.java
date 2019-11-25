@@ -30,6 +30,7 @@ import org.cytoscape.model.NetworkTestSupport;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
 import org.cytoscape.view.model.spacial.SpacialIndex2D;
 import org.cytoscape.view.model.spacial.SpacialIndex2DEnumerator;
+import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -104,6 +105,7 @@ public class SpacialIndex2DTest {
 	
 	@Test
 	public void testHiddenNodes() {
+		final String HIDDEN_NODES = "HIDDEN_NODES";
 		CyNetwork network = networkSupport.getNetwork();
 		CyNode n1 = network.addNode();
 		CyNode n2 = network.addNode();
@@ -112,7 +114,9 @@ public class SpacialIndex2DTest {
 		CyEdge e2 = network.addEdge(n2, n3, false);
 		CyEdge e3 = network.addEdge(n3, n1, false);
 		
-		CyNetworkViewImpl networkView = createNetworkView(network);
+		CyNetworkViewImpl networkView = createNetworkView(network, config -> {
+			config.addTrackedVisualProperty(HIDDEN_NODES, BasicVisualLexicon.NODE_VISIBLE, Boolean.FALSE::equals);
+		});
 		setGeometry(networkView.getNodeView(n1), 4, 3, 4, 2, 1);
 		setGeometry(networkView.getNodeView(n2), 5, 8, 4, 2, 2);
 		setGeometry(networkView.getNodeView(n3), 11, 10, 4, 2, 3);
@@ -129,7 +133,7 @@ public class SpacialIndex2DTest {
 		// hide nv1
 		networkView.getNodeView(n1).setVisualProperty(NODE_VISIBLE, false);
 		snapshot = networkView.createSnapshot();
-		assertEquals(1, snapshot.getTrackedNodeCount(CyNetworkViewConfig.HIDDEN_NODES));
+		assertEquals(1, snapshot.getTrackedNodeCount(HIDDEN_NODES));
 		assertMBR(snapshot, 3, 7, 13, 11);
 		assertHidden(snapshot, n1);
 		assertVisible(snapshot, n2, 1);

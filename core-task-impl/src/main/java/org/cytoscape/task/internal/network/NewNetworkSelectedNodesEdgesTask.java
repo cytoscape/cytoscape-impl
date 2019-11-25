@@ -1,24 +1,13 @@
 package org.cytoscape.task.internal.network;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.event.CyEventHelper;
-import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.view.model.CyNetworkViewFactory;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 
 /*
  * #%L
@@ -26,7 +15,7 @@ import org.cytoscape.view.vizmap.VisualMappingManager;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,32 +38,20 @@ public class NewNetworkSelectedNodesEdgesTask extends AbstractNetworkFromSelecti
 	private Set<CyNode> nodes;
 	private Set<CyEdge> edges;
 	
-	public NewNetworkSelectedNodesEdgesTask(final CyNetwork net,
-	                                        final CyRootNetworkManager cyroot,
-	                                        final CyNetworkViewFactory cnvf,
-	                                        final CyNetworkManager netmgr,
-	                                        final CyNetworkViewManager networkViewManager,
-	                                        final CyNetworkNaming cyNetworkNaming,
-	                                        final VisualMappingManager vmm,
-	                                        final CyApplicationManager appManager,
-	                                        final CyEventHelper eventHelper,
-	                                        final CyGroupManager groupMgr,
-	                                        final RenderingEngineManager renderingEngineMgr,
-	                                        final CyServiceRegistrar serviceRegistrar) {
-		super(net, cyroot, cnvf, netmgr, networkViewManager, cyNetworkNaming,
-		      vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
+	public NewNetworkSelectedNodesEdgesTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
 	}
 
 	/**
 	 * Returns the selected nodes plus all nodes that connect the selected edges
 	 */
 	@Override
-	Set<CyNode> getNodes(final CyNetwork net) {
+	Set<CyNode> getNodes(CyNetwork net) {
 		if (nodes == null) {
 			nodes = new HashSet<>(CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true));
-			final Collection<CyEdge> selectedEdges = getEdges(net);
+			var selectedEdges = getEdges(net);
 
-			for (final CyEdge e : selectedEdges) {
+			for (var e : selectedEdges) {
 				nodes.add(e.getSource());
 				nodes.add(e.getTarget());
 			}
@@ -87,7 +64,7 @@ public class NewNetworkSelectedNodesEdgesTask extends AbstractNetworkFromSelecti
 	 * Returns the selected edges.
 	 */
 	@Override
-	Set<CyEdge> getEdges(final CyNetwork net) {
+	Set<CyEdge> getEdges(CyNetwork net) {
 		if (edges == null)
 			edges = new HashSet<>(CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true));
 

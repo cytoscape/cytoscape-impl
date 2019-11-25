@@ -1,18 +1,16 @@
-package org.cytoscape.task.internal.network;
+package org.cytoscape.internal.view.help;
 
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,17 +28,16 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkTaskFactory
-                                                        implements NewNetworkSelectedNodesOnlyTaskFactory {
-	
+public class HelpVideosTaskFactory extends AbstractTaskFactory {
+
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+	public HelpVideosTaskFactory(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(3, new NewNetworkSelectedNodesOnlyTask(network, serviceRegistrar));
-	}
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new HelpVideosTask(serviceRegistrar));
+	} 
 }

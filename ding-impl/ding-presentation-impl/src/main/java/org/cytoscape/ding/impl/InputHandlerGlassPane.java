@@ -32,6 +32,7 @@ import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,7 +48,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 
 import org.cytoscape.ding.DVisualLexicon;
-import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.cyannotator.CyAnnotator;
 import org.cytoscape.ding.impl.cyannotator.annotations.AbstractAnnotation;
@@ -66,6 +66,7 @@ import org.cytoscape.ding.impl.undo.ViewChangeEdit;
 import org.cytoscape.ding.impl.work.ProgressMonitor;
 import org.cytoscape.ding.internal.util.OrderedMouseAdapter;
 import org.cytoscape.ding.internal.util.ViewUtil;
+import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.event.DebounceTimer;
 import org.cytoscape.graph.render.stateful.GraphLOD.RenderEdges;
 import org.cytoscape.graph.render.stateful.NodeDetails;
@@ -77,12 +78,13 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.events.RowSetRecord;
+import org.cytoscape.model.events.RowsSetEvent;
 import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.destroy.DeleteSelectedNodesAndEdgesTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.LookAndFeelUtil;
-import org.cytoscape.view.model.CyNetworkViewConfig;
 import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.presentation.annotations.Annotation;
@@ -148,7 +150,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	@Override
 	public void dispose() {
-		System.out.println("InputHandlerGlassPane.dispose()");
 		re = null;
 		cyAnnotator = null;
 	}
@@ -296,28 +297,22 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void moveAnnotations(KeyEvent e) {
-			//Some annotations have been double clicked and selected
-			int code = e.getKeyCode();
-			final int move = 2;
+			var selection = cyAnnotator.getAnnotationSelection();
+			Point start = re.getTransform().getImageCoordinates(selection.getLocation());
+			int x = start.x;
+			int y = start.y;
 			
-			for(DingAnnotation a : cyAnnotator.getAnnotationSelection()) {
-				double[] coords = {a.getX(), a.getY()};
-				re.getTransform().xformNodeToImageCoords(coords);
-				
-				if(code == VK_UP)
-					coords[1] -= move;
-				else if(code == VK_DOWN)
-					coords[1] += move;
-				else if(code == VK_LEFT)
-					coords[0] -= move;
-				else if(code == VK_RIGHT)
-					coords[0] += move;
-
-				re.getTransform().xformImageToNodeCoords(coords);
-				a.setLocation(coords[0], coords[1]);
-				a.update();
-				re.updateView(UpdateType.JUST_ANNOTATIONS);
+			final int move = 2;
+			switch(e.getKeyCode()) {
+				case VK_UP:    y -= move; break;
+				case VK_DOWN:  y += move; break;
+				case VK_LEFT:  x -= move; break;
+				case VK_RIGHT: x += move; break;
 			}
+			
+			selection.setMovingStartOffset(start);
+			selection.moveSelection(x, y);
+			re.updateView(UpdateType.JUST_ANNOTATIONS);
 		}
 		
 		private void cancelAnnotations() {
@@ -353,7 +348,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			final float move = k.isShiftDown() ? 15.0f : 1.0f;
 
 			var snapshot = re.getViewModelSnapshot();
-			var selectedNodes = snapshot.getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var selectedNodes = snapshot.getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
 			for(View<CyNode> node : selectedNodes) {
 				double xPos = re.getNodeDetails().getXPosition(node);
 				double yPos = re.getNodeDetails().getYPosition(node);
@@ -374,26 +369,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				mutableNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, yPos);
 			}
 
-			Set<HandleKey> handlesToMove = re.getBendStore().getSelectedHandles();
-			for (HandleKey handleKey : handlesToMove) {
-				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getEdgeSuid());
-
-				// MKTODO this code is copy-pasted in a few places, clean it up
-				if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-					Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
-					View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
-					if(mutableEdgeView != null) {
-						if(ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-						} else {
-							Bend bend = re.getEdgeDetails().getBend(ev, true);
-							mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-						}
-					}
-				}
-				
-				Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-				Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
+			Set<HandleInfo> handlesToMove = re.getBendStore().getSelectedHandles();
+			for (HandleInfo handleKey : handlesToMove) {
+				View<CyEdge> ev = snapshot.getEdgeView(handleKey.getSUID());				
+				Handle handle = handleKey.getHandle();
 				Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(),ev);
 				
 				float x = (float) newPoint.getX();
@@ -679,7 +658,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			
 			if(annotationSelectionEnabled()) {
 				var annotationSelection = cyAnnotator.getAnnotationSelection();
-				annotationSelection.setMouseOffset(e.getPoint());
+				annotationSelection.setMovingStartOffset(e.getPoint());
 				
 				AnchorLocation anchor = annotationSelection.overAnchor(e.getX(), e.getY());
 				if(!annotationSelection.isEmpty() && anchor != null) {
@@ -693,7 +672,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					if(select != Toggle.NOCHANGE && !isAdditiveSelect(e)) {
 						deselectAllNodesAndEdges();
 					}
-					annotationSelection.setMouseOffset(e.getPoint());
+					annotationSelection.setMovingStartOffset(e.getPoint());
 					return true;
 				}
 			}
@@ -713,7 +692,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			final var edgeSelectionEnabled = edgeSelectionEnabled(true);
 			
 			if(edgeSelectionEnabled && isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
-				HandleKey handle = picker.getHandleAt(e.getPoint());
+				HandleInfo handle = picker.getHandleAt(e.getPoint());
 				if(handle != null) {
 					toggleChosenAnchor(handle, e);
 					return true;
@@ -791,14 +770,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			return Toggle.NOCHANGE;
 		}
 		
-		private void toggleChosenAnchor(HandleKey chosenAnchor, MouseEvent e) {
-			final long edge = chosenAnchor.getEdgeSuid();
-			View<CyEdge> ev = re.getViewModelSnapshot().getEdgeView(edge);
-			
+		private void toggleChosenAnchor(HandleInfo chosenAnchor, MouseEvent e) {
 			// Linux users should use Ctrl-Alt since many window managers capture Alt-drag to move windows
 			if(e.isAltDown()) { // Remove handle
 				removeHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Remove Edge Handle", registrar);
-				setBendAsLockedValue(ev);
 				re.getBendStore().removeHandle(chosenAnchor);
 			} else {
 				boolean selected = re.getBendStore().isHandleSelected(chosenAnchor);
@@ -815,23 +790,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			re.setContentChanged();	
 		}
 		
-		private void setBendAsLockedValue(View<CyEdge> ev) {
-			Bend bend = null;
-			if(!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-				Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-				if(re.getEdgeDetails().getBend(ev) == defaultBend) {
-					bend = new BendImpl((BendImpl) defaultBend);
-				} else {
-					bend = new BendImpl((BendImpl) re.getEdgeDetails().getBend(ev));
-				}
-			}
-			if(bend != null) {
-				View<CyEdge> mutableEdgeView = re.getViewModel().getEdgeView(ev.getModel());
-				if(mutableEdgeView != null) {
-					mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, bend);
-				}
-			}
-		}
 		
 		private Toggle toggleSelectedEdge(View<CyEdge> edgeView, MouseEvent e) {
 			boolean wasSelected = re.getEdgeDetails().isSelected(edgeView);
@@ -843,7 +801,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				toggle = Toggle.SELECT;
 
 				if (isLODEnabled(RenderDetailFlags.LOD_EDGE_ANCHORS)) {
-					HandleKey hit = re.getPicker().getHandleAt(e.getPoint());
+					HandleInfo hit = re.getPicker().getHandleAt(e.getPoint());
 					if(hit != null) {
 						re.getBendStore().selectHandle(hit);
 					}
@@ -855,27 +813,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		}
 		
 		private void addHandle(View<CyEdge> edgeView, MouseEvent e) {
-			re.getBendStore().unselectAllHandles();
-			double[] ptBuff = {e.getX(), e.getY()};
-			re.getTransform().xformImageToNodeCoords(ptBuff);
-			// Store current handle list
+			var bendStore = re.getBendStore();
+			bendStore.unselectAllHandles();
 			addHandleEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED_EDGES, "Add Edge Handle", registrar);
 			
-			Point2D newHandlePoint = new Point2D.Float((float) ptBuff[0], (float) ptBuff[1]);
-			Bend defaultBend = re.getViewModelSnapshot().getViewDefault(BasicVisualLexicon.EDGE_BEND);
-			
-			if (edgeView.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend) {
-				View<CyEdge> mutableEdgeView = re.getViewModelSnapshot().getMutableEdgeView(edgeView.getSUID());
-				if(mutableEdgeView != null) {
-					if (defaultBend instanceof BendImpl)
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl) defaultBend));
-					else
-						mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-				}
-			}
-			
-			HandleKey handleKey = re.getBendStore().addHandle(edgeView, newHandlePoint);
-			re.getBendStore().selectHandle(handleKey);
+			Point2D newHandlePoint = re.getTransform().getNodeCoordinates(e.getPoint());
+			HandleInfo handle = bendStore.addHandle(edgeView, newHandlePoint);
+			bendStore.selectHandle(handle);
 		}
 		
 		
@@ -971,8 +915,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				return;
 			}
 				
-			
-			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
+			var selectedNodes = re.getViewModelSnapshot().getTrackedNodes(DingNetworkViewFactory.SELECTED_NODES);
+
 			var anchorsToMove = re.getBendStore().getSelectedHandles();
 			var annotationSelection = cyAnnotator.getAnnotationSelection();
 			
@@ -982,8 +926,8 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					re.updateView(UpdateType.JUST_ANNOTATIONS);
 					return;
 				} else {
-					annotationSelection.moveSelection(e.getX(), e.getY());
-					annotationSelection.setMouseOffset(e.getPoint());
+					annotationSelection.moveSelection(e.getPoint());
+					annotationSelection.setMovingStartOffset(e.getPoint());
 				}
 			}
 			
@@ -1009,7 +953,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 		}
 
-		private void mouseDraggedHandleNodesAndEdges(Collection<View<CyNode>> selectedNodes, Set<HandleKey> anchorsToMove, MouseEvent e) {
+		private void mouseDraggedHandleNodesAndEdges(Collection<View<CyNode>> selectedNodes, Set<HandleInfo> anchorsToMove, MouseEvent e) {
 			if(moveNodesEdit == null)
 				moveNodesEdit = new ViewChangeEdit(re, ViewChangeEdit.SavedObjs.SELECTED, "Move", registrar);
 			
@@ -1042,10 +986,31 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					deltaY = (deltaY < 0) ? (-avg) : avg;
 				}
 			}
-
+			
 			var snapshot = re.getViewModelSnapshot();
-			if (anchorsToMove.isEmpty()) { // If we are moving anchors of edges, no need to move nodes (bug #2360).
-				for (View<CyNode> node : selectedNodes) {
+			
+			if(!anchorsToMove.isEmpty()) {
+				for(HandleInfo handleKey : anchorsToMove) {
+					Bend bend = handleKey.getBend();
+	
+					//This test is necessary because in some instances, an anchor can still be present in the selected
+					//anchor list, even though the anchor has been removed. A better fix would be to remove the
+					//anchor from that list before this code is ever reached. However, this is not currently possible
+					//under the present API, so for now we just detect this situation and continue.
+					if(bend == null || bend.getAllHandles().isEmpty())
+						continue;
+					
+					Handle handle = handleKey.getHandle();
+					var ev = snapshot.getMutableEdgeView(handleKey.getSUID());
+					Point2D newPoint = handle.calculateHandleLocation(re.getViewModel(), ev);
+					
+					float x = (float) newPoint.getX();
+					float y = (float) newPoint.getY();
+					
+					re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
+				}
+			} else { // If we are moving anchors of edges, no need to move nodes (bug #2360).
+				for(var node : selectedNodes) {
 					View<CyNode> mutableNode = snapshot.getMutableNodeView(node.getSUID());
 					if(mutableNode != null) {
 						NodeDetails nodeDetails = re.getNodeDetails();
@@ -1056,49 +1021,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 						mutableNode.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, oldYPos + deltaY);
 					}
 			    }
-			} else {
-				for (HandleKey handleKey : anchorsToMove) {
-					View<CyEdge> ev = snapshot.getEdgeView(handleKey.getEdgeSuid());
-
-					if (!ev.isValueLocked(BasicVisualLexicon.EDGE_BEND)) {
-						Bend defaultBend = snapshot.getViewDefault(BasicVisualLexicon.EDGE_BEND);
-						View<CyEdge> mutableEdgeView = snapshot.getMutableEdgeView(ev.getSUID());
-						if(mutableEdgeView != null) {
-							if( ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND) == defaultBend ) {
-								if( defaultBend instanceof BendImpl )
-									mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)defaultBend));
-								else
-									mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl());
-							} else {
-								Bend bend = re.getEdgeDetails().getBend(ev, true);
-								mutableEdgeView.setLockedValue(BasicVisualLexicon.EDGE_BEND, new BendImpl((BendImpl)bend));
-							}
-						}
-					}
-					final Bend bend = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND);
-					//TODO: Refactor to fix this ordering problem.
-					//This test is necessary because in some instances, an anchor can still be present in the selected
-					//anchor list, even though the anchor has been removed. A better fix would be to remove the
-					//anchor from that list before this code is ever reached. However, this is not currently possible
-					//under the present API, so for now we just detect this situation and continue.
-					if( bend.getAllHandles().isEmpty() )
-						continue;
-					final Handle handle = bend.getAllHandles().get(handleKey.getHandleIndex());
-					final Point2D newPoint = handle.calculateHandleLocation(snapshot, ev);
-					
-					float x = (float) newPoint.getX();
-					float y = (float) newPoint.getY();
-					
-					re.getBendStore().moveHandle(handleKey, x + (float)deltaX, y + (float)deltaY);
-				}
 			}
 			
 			if (!selectedNodes.isEmpty() || !re.getBendStore().getSelectedHandles().isEmpty()) {
 				re.setContentChanged();
 			}
-//			if (!selectedNodes.isEmpty() && re.getBendStore().getSelectedHandles().isEmpty()) {
-//				networkCanvas.setHideEdges();
-//			}
 		}
 	}
 	
@@ -1203,6 +1130,10 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	}
 	
 	
+	/**
+	 * MKTODO This listener is not finished and should not be enabled.
+	 * @author mkucera
+	 */
 	private class SelectionLassoListener extends MouseAdapter {
 		
 		private final Color SELECTION_RECT_BORDER_COLOR_1 = UIManager.getColor("Focus.color");
@@ -1233,7 +1164,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				selectionLasso.closePath();
 				
 				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleKey> handles  = Collections.emptyList();
+				List<HandleInfo> handles = Collections.emptyList();
 				List<View<CyNode>> nodes = Collections.emptyList();
 				List<View<CyEdge>> edges = Collections.emptyList();
 
@@ -1246,7 +1177,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				if(edgeSelectionEnabled(false)) {
 					// MKTODO getEdgesInPath() is not accurate, it does not work for curved edges
 					edges   = re.getPicker().getEdgesInPath(selectionLasso);
-					handles = re.getPicker().getHandlesInPath(selectionLasso);
+//					handles = re.getPicker().getHandlesInPath(selectionLasso);
 				}
 				
 				// Select
@@ -1254,7 +1185,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
 					select(edges, CyEdge.class, true);
-				for(HandleKey handle : handles)
+				for(HandleInfo handle : handles)
 					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
@@ -1315,7 +1246,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		public void mouseReleased(MouseEvent e) {
 			if(selectionRect != null) {
 				List<DingAnnotation> annotations = Collections.emptyList();
-				List<HandleKey> handles  = Collections.emptyList();
+				List<HandleInfo> handles = Collections.emptyList();
 				List<View<CyNode>> nodes = Collections.emptyList();
 				List<View<CyEdge>> edges = Collections.emptyList();
 
@@ -1335,7 +1266,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 					select(nodes, CyNode.class, true);
 				if(!edges.isEmpty())
 					select(edges, CyEdge.class, true);
-				for(HandleKey handle : handles)
+				for(HandleInfo handle : handles)
 					re.getBendStore().selectHandle(handle);
 				for(DingAnnotation a : annotations)
 					a.setSelected(true);
@@ -1505,6 +1436,18 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		return re.getPicker().getNodeAt(mousePoint) != null;
 	}
 
+	private void changeCursor(Cursor cursor) {
+		String componentName = "__CyNetworkView_" + re.getViewModel().getSUID(); // see ViewUtil.createUniqueKey(CyNetworkView)
+		Container parent = this;
+		while(parent != null) {
+			if(componentName.equals(parent.getName())) {
+				parent.setCursor(cursor);
+				break;
+			}
+			parent = parent.getParent();
+		}
+	} 
+	
 	private <T extends CyIdentifiable> void toggleSelection(View<T> element, Class<T> type, Toggle toggle) {
 		if(element != null) {
 			if(toggle == Toggle.SELECT)
@@ -1516,25 +1459,50 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 	
 	private boolean deselectAllNodes() {
 		if(nodeSelectionEnabled()) {
-			Collection<View<CyNode>> selectedNodes = re.getViewModelSnapshot().getTrackedNodes(CyNetworkViewConfig.SELECTED_NODES);
-			if(!selectedNodes.isEmpty()) {
-				select(selectedNodes, CyNode.class, false);
-				return true;
-			}
+			var table = re.getViewModel().getModel().getDefaultNodeTable();
+			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+			if(rows.isEmpty())
+				return false;
+			batchDeselectRows(table, rows);
+			return true;
 		}
 		return false;
 	}
 	
 	private boolean deselectAllEdges() {
 		if(edgeSelectionEnabled(false)) {
-			re.getBendStore().unselectAllHandles();
-			Collection<View<CyEdge>> selectedEdges = re.getViewModelSnapshot().getTrackedEdges(CyNetworkViewConfig.SELECTED_EDGES);
-			if(!selectedEdges.isEmpty()) {
-				select(selectedEdges, CyEdge.class, false);
-				return true;
-			}
+			var table = re.getViewModel().getModel().getDefaultEdgeTable();
+			var rows = table.getMatchingRows(CyNetwork.SELECTED, true);
+			if(rows.isEmpty())
+				return false;
+			batchDeselectRows(table, rows);
+			return true;
 		}
 		return false;
+	}
+		
+	// We want to fire the selection event immediately, waiting for the payload event to fire
+	// on its own time creates a noticeable lag in rendering the nodes/edges as deselected.
+	private void batchDeselectRows(CyTable table, Collection<CyRow> rows) {
+		CyEventHelper eventHelper = registrar.getService(CyEventHelper.class);
+		eventHelper.silenceEventSource(table);
+
+		// Create the RowSetRecord collection
+		List<RowSetRecord> rowsChanged = new ArrayList<>();
+
+		// The list of objects will be all nodes or all edges
+		for(var row : rows) {
+			if (row != null) {
+				row.set(CyNetwork.SELECTED, false);
+				rowsChanged.add(new RowSetRecord(row, CyNetwork.SELECTED, false, false));
+			}
+		}
+
+		// Enable all events from our table
+		eventHelper.unsilenceEventSource(table);
+
+		RowsSetEvent event = new RowsSetEvent(table, rowsChanged);
+		eventHelper.fireEvent(event);
 	}
 	
 	private boolean deselectAllAnnotations() {
@@ -1560,18 +1528,6 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			re.updateView(UpdateType.JUST_ANNOTATIONS);
 		}
 	}
-	
-	private void changeCursor(Cursor cursor) {
-		String componentName = "__CyNetworkView_" + re.getViewModel().getSUID(); // see ViewUtil.createUniqueKey(CyNetworkView)
-		Container parent = this;
-		while(parent != null) {
-			if(componentName.equals(parent.getName())) {
-				parent.setCursor(cursor);
-				break;
-			}
-			parent = parent.getParent();
-		}
-	} 
 	
 	
 	private <T extends CyIdentifiable> void select(Collection<View<T>> nodesOrEdgeViews, Class<T> type, boolean selected) {

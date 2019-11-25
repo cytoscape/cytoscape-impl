@@ -1,18 +1,18 @@
-package org.cytoscape.task.internal.network;
+package org.cytoscape.internal.view.help;
 
-import org.cytoscape.model.CyNetwork;
+import org.cytoscape.application.CyVersion;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
-import org.cytoscape.work.TaskIterator;
+import org.cytoscape.util.swing.OpenBrowser;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.TaskMonitor;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Swing Application Impl (swing-application-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2016 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -30,17 +30,21 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkTaskFactory
-                                                        implements NewNetworkSelectedNodesOnlyTaskFactory {
+public class HelpVideosTask extends AbstractTask {
+	
+	private static final String VIDEOS_URL = "https://www.youtube.com/channel/UCv6auk9FK4NgXiXiqrDLccw"; 
 	
 	private final CyServiceRegistrar serviceRegistrar;
 
-	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+	public HelpVideosTask(final CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
-	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(3, new NewNetworkSelectedNodesOnlyTask(network, serviceRegistrar));
+	public void run(TaskMonitor tm) {
+		final OpenBrowser openBrowser = serviceRegistrar.getService(OpenBrowser.class);
+		final CyVersion cyVersion = serviceRegistrar.getService(CyVersion.class);
+		
+		openBrowser.openURL(VIDEOS_URL);
 	}
 }

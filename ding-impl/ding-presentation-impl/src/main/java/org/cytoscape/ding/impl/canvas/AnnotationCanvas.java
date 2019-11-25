@@ -86,6 +86,7 @@ public class AnnotationCanvas<GP extends GraphicsProvider> extends DingCanvas<GP
 			dpm.increment();
 		}
 		
+		pm.done();
 		g.dispose();
 	}
 	

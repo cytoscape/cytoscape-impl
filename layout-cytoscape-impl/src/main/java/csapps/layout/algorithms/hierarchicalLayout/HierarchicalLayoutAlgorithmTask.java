@@ -1,30 +1,5 @@
 package csapps.layout.algorithms.hierarchicalLayout;
 
-/*
- * #%L
- * Cytoscape Layout Algorithms Impl (layout-cytoscape-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,11 +23,33 @@ import org.cytoscape.view.presentation.property.values.HandleFactory;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 
+/*
+ * #%L
+ * Cytoscape Layout Algorithms Impl (layout-cytoscape-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 	private HashMap<Integer, HierarchyFlowLayoutOrderNode> nodes2HFLON = new HashMap<>();
-	private TaskMonitor taskMonitor;
 	private final HierarchicalLayoutContext context;
 	private final CyServiceRegistrar serviceRegistrar;
 	
@@ -60,13 +57,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	 * Creates a new GridNodeLayout object.
 	 */
 	public HierarchicalLayoutAlgorithmTask(
-			final String displayName,
-			final CyNetworkView networkView,
-			final Set<View<CyNode>> nodesToLayOut,
-			final HierarchicalLayoutContext context,
-			final String attrName,
-			final UndoSupport undo,
-			final CyServiceRegistrar serviceRegistrar) {
+			String displayName,
+			CyNetworkView networkView,
+			Set<View<CyNode>> nodesToLayOut,
+			HierarchicalLayoutContext context,
+			String attrName,
+			UndoSupport undo,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		super(displayName, networkView, nodesToLayOut, attrName, undo);
 		this.context = context;
 		this.serviceRegistrar = serviceRegistrar;
@@ -74,18 +72,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 
 	/**
-	 *  Perform actual layout task.
-	 *  This creates the default square layout.
-	 */
-	@Override
-	final protected void doLayout(final TaskMonitor taskMonitor) {
-		this.taskMonitor = taskMonitor;
-		construct();
-	}
-	
-	/**
-	 * Lays out the graph. See this class' description for an outline
-	 * of the method used. <br>
+	 * Perform actual layout task. This creates the default square layout.<br>
+	 * See this class' description for an outline of the method used.<br>
 	 * For the last step, assembly of the layed out components, the method
 	 * implemented is similar to the FlowLayout layout manager from the AWT.
 	 * Space is allocated in horizontal bands, with a new band begun beneath
@@ -95,26 +83,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	 * component appears in a band which is filled until a right margin is
 	 * hit. After that a new band is started beneath the higher band of
 	 * layed out components. Components are never split between these global
-	 * bands. Each component is finished, regardless of its horizontal
-	 * extent. <br>
+	 * bands. Each component is finished, regardless of its horizontal extent.<br>
 	 * Also, a post placement pass is done on each component to move each
-	 * layer horizontally in order to line up the centers of the layers with
-	 * the center of the component.
-	 * @param event Menu Selection Event.
+	 * layer horizontally in order to line up the centers of the layers with the center of the component.
 	 */
-
-	/**
-	 * Main entry point for AbstractLayoutAlgorithm classes
-	 */
-	public void construct() {
-		taskMonitor.setStatusMessage("Initializing");
-		//initialize(); // Calls initialize_local
-		layout();
-	}
-
-	public void layout() {
-		taskMonitor.setProgress(0.0);
-		taskMonitor.setStatusMessage("Capturing snapshot of network and selected nodes");
+	@Override
+	protected void doLayout(TaskMonitor tm) {
+		tm.setProgress(0.0);
+		tm.setStatusMessage("Capturing snapshot of network and selected nodes...");
 
 		if (cancelled)
 			return;
@@ -122,16 +98,17 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		/* construct node list with selected nodes first */
 		int numLayoutNodes = nodesToLayOut.size();
 
-		if (numLayoutNodes == 1) {
-			// We were asked to do a hierchical layout of a single node -- done!
+		if (numLayoutNodes == 1) // We were asked to do a hierchical layout of a single node -- done!
 			return;
-		}
 
-		HashMap<Long, Integer> suid2Index = new HashMap<Long, Integer>(numLayoutNodes);
-		List<View<CyNode>> nodeViews = new ArrayList<View<CyNode>>(nodesToLayOut);
-		
+		HashMap<Long, Integer> suid2Index = new HashMap<>(numLayoutNodes);
+		List<View<CyNode>> nodeViews = new ArrayList<>(nodesToLayOut);
 		int index = 0;
+		
 		for (View<CyNode> view : nodeViews) {
+			if (cancelled)
+				return;
+			
 			CyNode node = view.getModel();
 			Long suid = node.getSUID();
 			suid2Index.put(suid, index);
@@ -142,21 +119,19 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			return;
 
 		/* create edge list from edges between selected nodes */
-		LinkedList<Edge> edges = new LinkedList();
-
-		for (View<CyEdge> ev: networkView.getEdgeViews()){
+		LinkedList<Edge> edges = new LinkedList<>();
+		
+		for (var ev : networkView.getEdgeViewsIterable()) {
+			if (cancelled)
+				return;
+			
 		    // FIXME: much better would be to query adjacent edges of selected nodes...
 		    
 			Integer edgeFrom = suid2Index.get(ev.getModel().getSource().getSUID());
 			Integer edgeTo = suid2Index.get(ev.getModel().getTarget().getSUID());
 
-			if ((edgeFrom == null) || (edgeTo == null)) {
-				// Must be from an unselected node
+			if ((edgeFrom == null) || (edgeTo == null)) // Must be from an unselected node
 				continue;
-			}
-
-			if (cancelled)
-				return;
 
 			if ((numLayoutNodes <= 1)
 			    || ((edgeFrom < numLayoutNodes)
@@ -170,9 +145,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		/* find horizontal and vertical coordinates of each node */
 		Edge[] edge = new Edge[edges.size()];
 		edges.toArray(edge);
-
+		
 		Graph graph = new Graph(numLayoutNodes, edge);
-
+		
 		/*
 		int edgeIndex;
 		for (edgeIndex = 0; edgeIndex<edge.length; edgeIndex++) {
@@ -188,8 +163,8 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		}
 		System.out.println("Partitioning into components:\n");
 		*/
-		taskMonitor.setProgress(0.1);
-		taskMonitor.setStatusMessage("Finding connected components");
+		tm.setProgress(0.05);
+		tm.setStatusMessage("Finding connected components...");
 
 		if (cancelled)
 			return;
@@ -220,16 +195,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			System.out.println(component[x].getReducedGraph());
 			System.out.println("layer assignment:\n");
 			*/
-			taskMonitor.setProgress((20 + ((40 * (x * 3)) / numComponents / 3))/100.0);
-			taskMonitor.setStatusMessage("making acyclic transitive reduction");
+			tm.setStatusMessage("Making acyclic transitive reduction...");
 			Thread.yield();
 
 			if (cancelled)
 				return;
 
 			reducedTmp[x] = component[x].getReducedGraph();
-			taskMonitor.setProgress((20 + ((40 * ((x * 3) + 1)) / numComponents / 3))/100.0);
-			taskMonitor.setStatusMessage("layering nodes vertically");
+			tm.setStatusMessage("Layering nodes vertically...");
 			Thread.yield();
 
 			if (cancelled)
@@ -237,7 +210,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			layer[x] = reducedTmp[x].getVertexLayers();
 
-			LinkedList<Integer> layerWithDummy = new LinkedList<Integer>();
+			LinkedList<Integer> layerWithDummy = new LinkedList<>();
 
 			for (int i = 0; i < layer[x].length; i++)
 				layerWithDummy.add(Integer.valueOf(layer[x][i]));
@@ -252,14 +225,17 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			/* Insertion of the dummy nodes in the graph */
 			Edge[] allEdges = component[x].GetEdges();
-			LinkedList<Edge> edgesWithAdd = new LinkedList<Edge>();
+			LinkedList<Edge> edgesWithAdd = new LinkedList<>();
 			int dummyStart = component[x].getNodecount();
 			dummyStartForComp[x] = dummyStart;
-			dummy2Edge[x] = new HashMap<Integer, Edge>();
+			dummy2Edge[x] = new HashMap<>();
 
 			//System.out.println(allEdges.length);
 
 			for (int i = 0; i < allEdges.length; i++) {
+				if (cancelled)
+					return;
+				
 				int from = allEdges[i].getFrom();
 				int to = allEdges[i].getTo();
 
@@ -302,8 +278,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			layer[x] = layerNew;
 
-			taskMonitor.setProgress((20 + ((40 * ((x * 3) + 2)) / numComponents / 3))/100.0);
-			taskMonitor.setStatusMessage("positioning nodes within layer");
+			tm.setStatusMessage("Positioning nodes within layer...");
 			Thread.yield();
 
 			if (cancelled)
@@ -316,8 +291,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			    System.out.println("" + y + " : " + horizontalPosition[x][y]);
 			}
 			*/
+			setProgress(tm, .05f, x / (float) component.length, .15f);
 		}
-
+		
+		tm.setProgress(0.15);
+		
 		int resize = renumber.length;
 
 		for (int i = 0; i < component.length; i++)
@@ -340,21 +318,25 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				t++;
 			}
 		}
+		
+		tm.setProgress(0.2); // TODO
 
 		renumber = newRenumber;
 		cI = newcI;
 
-		edges = new LinkedList<Edge>();
+		edges = new LinkedList<>();
 
 		for (int i = 0; i < reduced.length; i++) {
 			edge = reduced[i].GetEdges();
 
 			for (int j = 0; j < edge.length; j++) { // uzasna budzevina!!!!!! // FIXME: what does this mean?
-
 				int from = -1;
 				int to = -1;
 
 				for (int k = 0; k < cI.length; k++) {
+					if (cancelled)
+						return;
+					
 					if ((cI[k] == i) && (renumber[k] == edge[j].getFrom()))
 						from = k;
 
@@ -367,14 +349,16 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 				edges.add(new Edge(from, to)); //edges.add(new Edge(to, from));
 			}
+			
+			setProgress(tm, .2f, i / (float) reduced.length, .3f);
 		}
-
+		
 		edge = new Edge[edges.size()];
 		edges.toArray(edge);
 		graph = new Graph(resize, edge);
-
-		taskMonitor.setProgress(0.6);
-		taskMonitor.setStatusMessage("Repositioning nodes in view");
+		
+		tm.setProgress(0.3);
+		tm.setStatusMessage("Repositioning nodes in view...");
 		Thread.yield();
 
 		if (cancelled)
@@ -384,6 +368,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		HierarchyFlowLayoutOrderNode[] flowLayoutOrder = new HierarchyFlowLayoutOrderNode[resize];
 
 		for (x = 0; x < resize; x++) {
+			if (cancelled)
+				return;
+			
 			if (x < numLayoutNodes)
 				flowLayoutOrder[x] = new HierarchyFlowLayoutOrderNode(nodeViews.get(x), cI[x],
 				                                                      reduced[cI[x]].getNodecount(),
@@ -398,8 +385,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				                                                      x);
 
 			nodes2HFLON.put(x, flowLayoutOrder[x]);
+			
+			setProgress(tm, .3f, x / (float) resize, .4f);
 		}
-
+		
+		tm.setProgress(0.4);
 		Arrays.sort(flowLayoutOrder);
 
 		int lastComponent = -1;
@@ -420,17 +410,16 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		int lastComponentEnd = -1;
 
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
+			if (cancelled)
+				return;
+			
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 			int currentComponent = node.componentNumber;
 			int currentLayer = node.layer;
 			View<CyNode> currentView = node.nodeView;
 
-			taskMonitor.setProgress((60 + ((40 * (nodeIndex + 1)) / resize))/100.0);
-			taskMonitor.setStatusMessage("layering nodes vertically");
+			tm.setStatusMessage("Layering nodes vertically...");
 			Thread.yield();
-
-			if (cancelled)
-				return;
 
 			if (lastComponent == -1) {
 				/* this is the first component */
@@ -443,7 +432,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				/* new component */
 				// first call function for Horizontal Positioning of nodes in lastComponent
 				int[] minXArray = new int[1];
-				int maxX = HorizontalNodePositioning(nodeIndex
+				int maxX = horizontalNodePositioning(nodeIndex
 				                                     - flowLayoutOrder[nodeIndex - 1].componentSize,
 				                                     nodeIndex - 1, flowLayoutOrder, graph,
 				                                     renumber, cI, dummyStartForComp, minXArray);
@@ -515,14 +504,18 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 
 			lastComponent = currentComponent;
 			lastLayer = currentLayer;
+			
+			setProgress(tm, .4f, nodeIndex / (float) resize, .8f);
 		}
-
+		
+		tm.setProgress(0.8);
+		
 		if (cancelled)
 			return;
 
 		/* Set horizontal positions of last component */
 		int[] minXArray = new int[1];
-		HorizontalNodePositioning(lastComponentEnd + 1, resize - 1, flowLayoutOrder, graph,
+		horizontalNodePositioning(lastComponentEnd + 1, resize - 1, flowLayoutOrder, graph,
 		                          renumber, cI, dummyStartForComp, minXArray);
 
 		int minX = minXArray[0];
@@ -531,14 +524,18 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			flowLayoutOrder[i].xPos -= (minX - startComponentX);
 
 		/* Map edges to edge views in order to map dummy nodes to edge bends properly */
-		for (View<CyEdge>ev: networkView.getEdgeViews()){
+		int edgeCount = networkView.getModel().getEdgeCount();
+		int count = 0;
+		
+		for (var ev : networkView.getEdgeViewsIterable()) {
+			if (cancelled)
+				return;
+			
 			Integer edgeFrom = suid2Index.get(ev.getModel().getSource().getSUID());
 			Integer edgeTo = suid2Index.get(ev.getModel().getTarget().getSUID());
 
-			if ((edgeFrom == null) || (edgeTo == null)) {
-				// Must be from an unselected node
+			if ((edgeFrom == null) || (edgeTo == null)) // Must be from an unselected node
 				continue;
-			}
 
 			if ((numLayoutNodes <= 1)
 			    || ((edgeFrom < numLayoutNodes)
@@ -548,13 +545,21 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				                                                             renumber[edgeTo]);
 
 				if (myEdges2EdgeViews[cI[edgeFrom]] == null)
-					myEdges2EdgeViews[cI[edgeFrom]] = new HashMap<Edge, View<CyEdge>>();
+					myEdges2EdgeViews[cI[edgeFrom]] = new HashMap<>();
 
 				myEdges2EdgeViews[cI[edgeFrom]].put(theEdge, ev);
 			}
+			
+			setProgress(tm, .8f, count / (float) edgeCount, .9f);
+			count++;
 		}
-
+		
+		tm.setProgress(0.9);
+		
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
+			if (cancelled)
+				return;
+			
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 
 			if (node.nodeView != null) {
@@ -563,11 +568,16 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				currentView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION, Double.valueOf((double)node.getYPos()));
 			}
 		}
-
+		
+		tm.setProgress(0.925);
+		
 		final HandleFactory handleFactory = serviceRegistrar.getService(HandleFactory.class);
 		final BendFactory bendFactory = serviceRegistrar.getService(BendFactory.class);
 		
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
+			if (cancelled)
+				return;
+			
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 
 			if (node.nodeView == null) {
@@ -595,13 +605,19 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				}
 			}
 		}
-
+		
+		tm.setProgress(0.95);
+		
 		for (nodeIndex = 0; nodeIndex < resize; nodeIndex++) {
+			if (cancelled)
+				return;
+			
 			HierarchyFlowLayoutOrderNode node = flowLayoutOrder[nodeIndex];
 
 			if (node.nodeView == null) {
 				Edge theEdge = dummy2Edge[cI[node.graphIndex]].get(Integer.valueOf(renumber[node.graphIndex]));
 				View<CyEdge> ev = myEdges2EdgeViews[cI[node.graphIndex]].get(theEdge);
+				
 				if (ev != null) {
 					List<Handle> handles = ev.getVisualProperty(BasicVisualLexicon.EDGE_BEND).getAllHandles();
 					for ( Handle h : handles ) {
@@ -615,12 +631,13 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			}
 		}
 
-		taskMonitor.setProgress(1.0);
-		taskMonitor.setStatusMessage("hierarchical layout complete");
+		tm.setProgress(1.0);
 	}
+	
 	private double getXPositionOf(View<CyNode> nodeView){
 		return nodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION);
 	}
+	
 	private double getYPositionOf(View<CyNode> nodeView){
 		return nodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION);
 	}
@@ -628,22 +645,19 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	/**
 	 * Sum length of edges between 2 consecutive layers. This is used for getting as compact
 	 * layout as possible, we want to minimize this sum by horizontal coordinate assignment
-	 * @param nodes
-	 * @param edgesFrom
-	 * @param edgesTo
-	 * @param x
-	 * @param direct
-	 * @param startInd
-	 * @param endInd
-	 * @return
 	 */
-	private double EdgeLength2Layers(HierarchyFlowLayoutOrderNode[] nodes,
-	                                 LinkedList<Integer>[] edgesFrom,
-	                                 LinkedList<Integer>[] edgesTo, int x, int direct,
-	                                 int startInd, int endInd) {
+	private double edgeLength2Layers(
+			HierarchyFlowLayoutOrderNode[] nodes,
+			LinkedList<Integer>[] edgesFrom,
+			LinkedList<Integer>[] edgesTo,
+			int x,
+			int direct,
+			int startInd,
+			int endInd
+	) {
 		double layerMin = 0;
 
-		HashMap<Integer, HierarchyFlowLayoutOrderNode> nodesBak2HFLON = new HashMap<Integer, HierarchyFlowLayoutOrderNode>();
+		HashMap<Integer, HierarchyFlowLayoutOrderNode> nodesBak2HFLON = new HashMap<>();
 
 		for (int i = startInd; i <= endInd; i++)
 			nodesBak2HFLON.put(Integer.valueOf(nodes[i].graphIndex), nodes[i]);
@@ -652,7 +666,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			int xHlp = x;
 
 			while ((xHlp < nodes.length) && (nodes[xHlp].layer == nodes[x].layer)) {
-				Iterator iterToHlp = edgesTo[nodes[xHlp].graphIndex].iterator();
+				if (cancelled)
+					return layerMin;
+				
+				var iterToHlp = edgesTo[nodes[xHlp].graphIndex].iterator();
 				double curPos = nodes[xHlp].xPos;
 
 				while (iterToHlp.hasNext()) {
@@ -668,7 +685,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			xHlp = x - 1;
 
 			while ((xHlp >= 0) && (nodes[xHlp].layer == nodes[x].layer)) {
-				Iterator iterToHlp = edgesTo[nodes[xHlp].graphIndex].iterator();
+				if (cancelled)
+					return layerMin;
+				
+				var iterToHlp = edgesTo[nodes[xHlp].graphIndex].iterator();
 				double curPos = nodes[xHlp].xPos;
 
 				while (iterToHlp.hasNext()) {
@@ -682,7 +702,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			int xHlp = x;
 
 			while ((xHlp < nodes.length) && (nodes[xHlp].layer == nodes[x].layer)) {
-				Iterator iterFromHlp = edgesFrom[nodes[xHlp].graphIndex].iterator();
+				if (cancelled)
+					return layerMin;
+				
+				var iterFromHlp = edgesFrom[nodes[xHlp].graphIndex].iterator();
 				double curPos = nodes[xHlp].xPos;
 
 				while (iterFromHlp.hasNext()) {
@@ -696,7 +719,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			xHlp = x - 1;
 
 			while ((xHlp >= 0) && (nodes[xHlp].layer == nodes[x].layer)) {
-				Iterator iterFromHlp = edgesFrom[nodes[xHlp].graphIndex].iterator();
+				if (cancelled)
+					return layerMin;
+				
+				var iterFromHlp = edgesFrom[nodes[xHlp].graphIndex].iterator();
 				double curPos = nodes[xHlp].xPos;
 
 				while (iterFromHlp.hasNext()) {
@@ -707,7 +733,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 				xHlp--;
 			}
 		}
-
+		
 		return layerMin;
 	}
 
@@ -724,16 +750,24 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	 * @param minX2Return
 	 * @return
 	 */
-	private int HorizontalNodePositioning(int startInd, int endInd,
-	                                      HierarchyFlowLayoutOrderNode[] nodes, Graph theGraph,
-	                                      int[] renumber, int[] cI, int[] dummyStarts,
-	                                      int[] minX2Return) {
+	private int horizontalNodePositioning(
+			int startInd,
+			int endInd,
+			HierarchyFlowLayoutOrderNode[] nodes,
+			Graph theGraph,
+			int[] renumber,
+			int[] cI,
+			int[] dummyStarts,
+			int[] minX2Return
+	) {
+		int maxX = Integer.MIN_VALUE;
+		
 		/* sort nodes in layer in order of coordinate assignment - first dummy nodes, then sorted by fan-in + fan-out */
 		LinkedList<Integer>[] edgesFrom = theGraph.GetEdgesFrom();
 		LinkedList<Integer>[] edgesTo = theGraph.GetEdgesTo();
 
 		LayerOrderNode[] lon = new LayerOrderNode[endInd - startInd + 1];
-		HashMap<Integer, LayerOrderNode> ind2Lon = new HashMap<Integer, LayerOrderNode>();
+		HashMap<Integer, LayerOrderNode> ind2Lon = new HashMap<>();
 
 		for (int i = 0; i <= (endInd - startInd); i++) {
 			boolean dum = false;
@@ -759,8 +793,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		boolean dirFirst = true;
 
 		for (int dx = 0; dx < noOfSteps; dx++) {
+			if (cancelled)
+				return maxX;
+			
 			if (newLayer) {
-				layerMin = EdgeLength2Layers(nodes, edgesFrom, edgesTo, x, direct, startInd, endInd);
+				layerMin = edgeLength2Layers(nodes, edgesFrom, edgesTo, x, direct, startInd, endInd);
 				newLayer = false;
 			}
 
@@ -768,11 +805,14 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			int idealPosXDown = 0;
 			int neighsCountUp = 0;
 			int neighsCountDown = 0;
-			Iterator iterFrom = edgesFrom[nodes[x].graphIndex].iterator();
-			Iterator iterTo = edgesTo[nodes[x].graphIndex].iterator();
+			var iterFrom = edgesFrom[nodes[x].graphIndex].iterator();
+			var iterTo = edgesTo[nodes[x].graphIndex].iterator();
 
 			while (iterFrom.hasNext()
 			       && ((direct == 1) || (edgesTo[nodes[x].graphIndex].isEmpty() && (direct == -1)))) {
+				if (cancelled)
+					return maxX;
+				
 				Integer neigh = (Integer) iterFrom.next();
 
 				if (nodes2HFLON.get(neigh).layer == (nodes[x].layer - 1)) {
@@ -791,6 +831,9 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			while (iterTo.hasNext()
 			       && ((direct == -1)
 			          || (edgesFrom[nodes[x].graphIndex].isEmpty() && (direct == 1)))) {
+				if (cancelled)
+					return maxX;
+				
 				Integer neigh = (Integer) iterTo.next();
 
 				if (nodes2HFLON.get(neigh).layer == (nodes[x].layer + 1)) {
@@ -847,8 +890,10 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 							break;
 					}
 
-					double w = EdgeLength2Layers(nodesBak, edgesFrom, edgesTo, x, direct, startInd,
-					                             endInd);
+					if (cancelled)
+						return maxX;
+					
+					double w = edgeLength2Layers(nodesBak, edgesFrom, edgesTo, x, direct, startInd, endInd);
 
 					if (!q && (w <= layerMin)) {
 						layerMin = w;
@@ -885,8 +930,7 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 							break;
 					}
 
-					double w = EdgeLength2Layers(nodesBak, edgesFrom, edgesTo, x, direct, startInd,
-					                             endInd);
+					double w = edgeLength2Layers(nodesBak, edgesFrom, edgesTo, x, direct, startInd, endInd);
 
 					if (!q && (w <= layerMin)) {
 						layerMin = w;
@@ -923,7 +967,6 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 			x = lon[cur].GetIndex();
 		}
 
-		int maxX = Integer.MIN_VALUE;
 		int minX = Integer.MAX_VALUE;
 
 		for (int i = startInd; i <= endInd; i++) {
@@ -939,38 +982,11 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 		return maxX;
 	}
 
-	/**
-	* Non-blocking call to interrupt the task.
-	*/
-	public void halt() {
-		cancelled = true;
-	}
-
-	/**
-	 * Overrides for LayoutAlgorithm support
-	 */
-	//public String getName() {
-	//	return "hierarchical";
-	//}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
+	@Override
 	public String toString() {
 		return "Hierarchical Layout";
 	}
 	
-	/**
-	* Sets the Task Monitor.
-	*
-	* @param taskMonitor TaskMonitor Object.
-	*/
-	public void setTaskMonitor(TaskMonitor tm) {
-		taskMonitor = tm;
-	}
-
 	/**
 	* Gets the Task Title.
 	*
@@ -979,99 +995,40 @@ public class HierarchicalLayoutAlgorithmTask extends AbstractLayoutTask {
 	public String getTitle() {
 		return new String("Hierarchical Layout");
 	}
+	
+	/**
+	 * @param tm the TaskMonitor
+	 * @param pb the progress value of the previous block of code
+	 * @param v  the new progress value of the current block of code, usually a loop
+	 * @param nb the progress value of the next block of code
+	 */
+	private void setProgress(TaskMonitor tm, float pb, float v, float nb) {
+		float n = pb + (v * (nb - pb));
+		n = Math.round(n * 1000) / 1000.0f; // Reduce the precision in order to avoid unnecessary progress bar updates
+		tm.setProgress(n);
+	}
 }
 
-
-
-class HierarchyFlowLayoutOrderNode implements Comparable {
-	/**
-	 *
-	 */
+class HierarchyFlowLayoutOrderNode implements Comparable<HierarchyFlowLayoutOrderNode> {
+	
 	public View<CyNode> nodeView;
 
-	/**
-	 *
-	 */
 	public int componentNumber;
-
-	/**
-	 *
-	 */
 	public int componentSize;
-
-	/**
-	 *
-	 */
 	public int layer;
-
-	/**
-	 *
-	 */
 	public int horizontalPosition;
-
-	/**
-	 *
-	 */
 	public int xPos;
-
-	/**
-	 *
-	 */
 	public int yPos;
-
-	/**
-	 * *
-	 */
 	public int graphIndex;
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int getXPos() {
-		return xPos;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int getYPos() {
-		return yPos;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param a_xPos DOCUMENT ME!
-	 */
-	public void setXPos(int a_xPos) {
-		xPos = a_xPos;
-	}
-
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param a_yPos DOCUMENT ME!
-	 */
-	public void setYPos(int a_yPos) {
-		yPos = a_yPos;
-	}
-
-	/**
-	 * Creates a new HierarchyFlowLayoutOrderNode object.
-	 *
-	 * @param a_nodeView  DOCUMENT ME!
-	 * @param a_componentNumber  DOCUMENT ME!
-	 * @param a_componentSize  DOCUMENT ME!
-	 * @param a_layer  DOCUMENT ME!
-	 * @param a_horizontalPosition  DOCUMENT ME!
-	 */
-	public HierarchyFlowLayoutOrderNode(View<CyNode> a_nodeView, int a_componentNumber,
-	                                    int a_componentSize, int a_layer, int a_horizontalPosition,
-	                                    int a_graphIndex) {
+	public HierarchyFlowLayoutOrderNode(
+			View<CyNode> a_nodeView,
+			int a_componentNumber,
+			int a_componentSize,
+			int a_layer,
+			int a_horizontalPosition,
+			int a_graphIndex
+	) {
 		nodeView = a_nodeView;
 		componentNumber = a_componentNumber;
 		componentSize = a_componentSize;
@@ -1080,11 +1037,6 @@ class HierarchyFlowLayoutOrderNode implements Comparable {
 		graphIndex = a_graphIndex;
 	}
 
-	/**
-	 * Creates a new HierarchyFlowLayoutOrderNode object.
-	 *
-	 * @param a  DOCUMENT ME!
-	 */
 	public HierarchyFlowLayoutOrderNode(HierarchyFlowLayoutOrderNode a) {
 		nodeView = a.nodeView;
 		componentNumber = a.componentNumber;
@@ -1095,16 +1047,25 @@ class HierarchyFlowLayoutOrderNode implements Comparable {
 		yPos = a.yPos;
 		xPos = a.xPos;
 	}
+	
+	public int getXPos() {
+		return xPos;
+	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param o DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int compareTo(Object o) {
-		HierarchyFlowLayoutOrderNode y = (HierarchyFlowLayoutOrderNode) o;
+	public int getYPos() {
+		return yPos;
+	}
+
+	public void setXPos(int a_xPos) {
+		xPos = a_xPos;
+	}
+
+	public void setYPos(int a_yPos) {
+		yPos = a_yPos;
+	}
+
+	@Override
+	public int compareTo(HierarchyFlowLayoutOrderNode y) {
 		int diff = y.componentSize - componentSize;
 
 		if (diff != 0)
@@ -1123,32 +1084,21 @@ class HierarchyFlowLayoutOrderNode implements Comparable {
 		return horizontalPosition - y.horizontalPosition;
 	}
 }
-;
-
-
 
 /**
  * Class which we use to determine the order by which we traverse nodes when
  * we calculate their horizontal coordinate. We traverse it layer by layer, inside
  * the layer we first place dummy nodes and then sorted by degree of the node. *
  * @author Aleksandar Nikolic
- *
  */
-class LayerOrderNode implements Comparable {
+class LayerOrderNode implements Comparable<LayerOrderNode> {
+	
 	private int index;
 	private boolean isDummy;
 	private int degree;
 	private int priority;
 	private int layer;
 
-	/**
-	 * Creates a new LayerOrderNode object.
-	 *
-	 * @param index  DOCUMENT ME!
-	 * @param isDummy  DOCUMENT ME!
-	 * @param degree  DOCUMENT ME!
-	 * @param layer  DOCUMENT ME!
-	 */
 	public LayerOrderNode(int index, boolean isDummy, int degree, int layer) {
 		this.index = index;
 		this.isDummy = isDummy;
@@ -1165,16 +1115,8 @@ class LayerOrderNode implements Comparable {
 			priority = 15; //priority = degree;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @param arg0 DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
-	public int compareTo(Object arg0) {
-		LayerOrderNode second = (LayerOrderNode) arg0;
-
+	@Override
+	public int compareTo(LayerOrderNode second) {
 		if (layer != second.layer)
 			return (layer - second.layer); //(second.layer - layer); 
 
@@ -1187,33 +1129,15 @@ class LayerOrderNode implements Comparable {
 		return (second.degree - degree);
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int GetIndex() {
 		return index;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public int GetPriority() {
 		return priority;
 	}
 
-	/**
-	 *  DOCUMENT ME!
-	 *
-	 * @return  DOCUMENT ME!
-	 */
 	public boolean GetIsDummy() {
 		return isDummy;
 	}
-
-	
-	
 }

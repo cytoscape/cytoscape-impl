@@ -1,4 +1,10 @@
-package org.cytoscape.browser.internal.util;
+package org.cytoscape.browser.internal.task;
+
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.task.AbstractTableColumnTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
 
 /*
  * #%L
@@ -24,22 +30,26 @@ package org.cytoscape.browser.internal.util;
  * #L%
  */
 
-public abstract class IconUtil {
+public class HideColumnTask extends AbstractTableColumnTask {
+
+	private final TableBrowserMediator mediator;
 	
-	public static final String CY_FONT_NAME = "cytoscape-3";
+	@ProvidesTitle
+	public String getTitle() {
+		return "Hide Column";
+	}
 	
-	public static final String EDGE_TABLE = "!";
-	public static final String NETWORK_TABLE = "\"";
-	public static final String NODE_TABLE = "#";
-	
-	public static final String FILE_EXPORT = "+";
-	public static final String FILE_IMPORT = ",";
-	
-	public static final String COLUMN_ADD = "-";
-	public static final String COLUMN_REMOVE = ".";
-	public static final String COLUMN_SHOW = "/";
-	
-	private IconUtil() {
-		// ...
+	public HideColumnTask(CyColumn column, TableBrowserMediator mediator) {
+		super(column);
+		this.mediator = mediator;
+	}
+
+	@Override
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Hide Column");
+		tm.setStatusMessage("Hide column '" + column.getName() + "'...");
+		tm.setProgress(-1);
+		
+		mediator.hideColumn(column);
 	}
 }
