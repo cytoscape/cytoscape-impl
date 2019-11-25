@@ -1,17 +1,28 @@
 package org.cytoscape.task.internal.view;
 
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.EDGE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_DEPTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_HEIGHT;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_SCALE_FACTOR;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NETWORK_WIDTH;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_X_LOCATION;
+import static org.cytoscape.view.presentation.property.BasicVisualLexicon.NODE_Y_LOCATION;
+
 import java.util.Collection;
 import java.util.Map;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
-import org.cytoscape.view.presentation.RenderingEngine;
 import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
@@ -50,27 +61,28 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 	private final CyNetworkView newView;
 	private final CyNetworkView sourceView;
 	private final VisualStyle style;
-	private RenderingEngineManager renderingEngineMgr;
 	private final Map<CyNode,CyNode> new2sourceNodeMap;
 	private final Map<CyEdge, CyEdge> new2sourceEdgeMap;
 	private final boolean fitContent; 
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	public CopyExistingViewTask(
-			RenderingEngineManager renderingEngineMgr,
 			CyNetworkView newView,
 			CyNetworkView sourceView,
 			VisualStyle style,
 			Map<CyNode, CyNode> new2sourceNodeMap /* may be null */,
 			Map<CyEdge, CyEdge> new2sourceEdgeMap /* may be null */,
-			boolean fitContent
+			boolean fitContent,
+			CyServiceRegistrar serviceRegistrar
 	) {
 		this.newView = newView;
 		this.sourceView = sourceView;
 		this.style = style;
-		this.renderingEngineMgr = renderingEngineMgr;
 		this.new2sourceNodeMap = new2sourceNodeMap;
 		this.new2sourceEdgeMap = new2sourceEdgeMap;
 		this.fitContent = fitContent;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
@@ -83,32 +95,26 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 		if (newView == null)
 			throw new NullPointerException("new network view is null.");
 
-		final Collection<RenderingEngine<?>> engines = renderingEngineMgr.getAllRenderingEngines();
+		var renderingEngineMgr = serviceRegistrar.getService(RenderingEngineManager.class);
+		var engines = renderingEngineMgr.getAllRenderingEngines();
 		Collection<VisualProperty<?>> nodeProps = null;
 		Collection<VisualProperty<?>> edgeProps = null;
 		
 		if (!engines.isEmpty()) {
 			final VisualLexicon lexicon = engines.iterator().next().getVisualLexicon();
-			nodeProps = lexicon.getAllDescendants(BasicVisualLexicon.NODE);
-			edgeProps = lexicon.getAllDescendants(BasicVisualLexicon.EDGE);
+			nodeProps = lexicon.getAllDescendants(NODE);
+			edgeProps = lexicon.getAllDescendants(EDGE);
 		}
 
 		// Copy some network view properties
 		if (!fitContent) {
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_X_LOCATION));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Y_LOCATION));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_CENTER_Z_LOCATION));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_SCALE_FACTOR));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_WIDTH,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_WIDTH));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_HEIGHT));
-			newView.setVisualProperty(BasicVisualLexicon.NETWORK_DEPTH,
-					sourceView.getVisualProperty(BasicVisualLexicon.NETWORK_DEPTH));
+			newView.setVisualProperty(NETWORK_CENTER_X_LOCATION, sourceView.getVisualProperty(NETWORK_CENTER_X_LOCATION));
+			newView.setVisualProperty(NETWORK_CENTER_Y_LOCATION, sourceView.getVisualProperty(NETWORK_CENTER_Y_LOCATION));
+			newView.setVisualProperty(NETWORK_CENTER_Z_LOCATION, sourceView.getVisualProperty(NETWORK_CENTER_Z_LOCATION));
+			newView.setVisualProperty(NETWORK_SCALE_FACTOR, sourceView.getVisualProperty(NETWORK_SCALE_FACTOR));
+			newView.setVisualProperty(NETWORK_WIDTH, sourceView.getVisualProperty(NETWORK_WIDTH));
+			newView.setVisualProperty(NETWORK_HEIGHT, sourceView.getVisualProperty(NETWORK_HEIGHT));
+			newView.setVisualProperty(NETWORK_DEPTH, sourceView.getVisualProperty(NETWORK_DEPTH));
 		}
 		
 		// Copy node locations and locked visual properties
@@ -124,10 +130,8 @@ public class CopyExistingViewTask extends AbstractTask implements ObservableTask
 			if (origNodeView == null)
 				continue;
 
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_X_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_X_LOCATION));
-			newNodeView.setVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION,
-					origNodeView.getVisualProperty(BasicVisualLexicon.NODE_Y_LOCATION));
+			newNodeView.setVisualProperty(NODE_X_LOCATION, origNodeView.getVisualProperty(NODE_X_LOCATION));
+			newNodeView.setVisualProperty(NODE_Y_LOCATION, origNodeView.getVisualProperty(NODE_Y_LOCATION));
 
 			if (nodeProps != null) {
 				// Set lock (if necessary)

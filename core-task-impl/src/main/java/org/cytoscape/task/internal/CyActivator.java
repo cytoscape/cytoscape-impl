@@ -72,7 +72,6 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNetworkTableManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
@@ -339,9 +338,7 @@ public class CyActivator extends AbstractCyActivator {
 	private CyTableWriterManager tableWriterManager;
 	private SynchronousTaskManager<?> syncTaskManager;
 	private TunableSetter tunableSetter;
-	private CyNetworkTableManager netTableManager;
 	private RenderingEngineManager renderingEngineManager;
-	private CyNetworkViewFactory nullNetViewFactory;
 	private IconManager iconManager;
 	
 	@Override
@@ -363,9 +360,7 @@ public class CyActivator extends AbstractCyActivator {
 		tableWriterManager = getService(bc, CyTableWriterManager.class);
 		syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		tunableSetter = getService(bc, TunableSetter.class);
-		netTableManager = getService(bc, CyNetworkTableManager.class);
 		renderingEngineManager = getService(bc, RenderingEngineManager.class);
-		nullNetViewFactory = getService(bc, CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
 		iconManager = getService(bc, IconManager.class);
 
 		var groupManager = getService(bc, CyGroupManager.class);
@@ -2016,9 +2011,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerServiceListener(bc, factory::addNetworkViewRenderer, factory::removeNetworkViewRenderer, NetworkViewRenderer.class);
 		}
 		{
-			var factory = new CloneNetworkTaskFactoryImpl(netManager, netViewManager, visualMappingManager, netFactory,
-					netViewFactory, networkNaming, applicationManager, netTableManager, rootNetManager, groupManager,
-					groupFactory, renderingEngineManager, nullNetViewFactory, serviceRegistrar);
+			var factory = new CloneNetworkTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK);
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
@@ -2039,9 +2032,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, CloneNetworkTaskFactory.class, props);
 		}
 		{
-			var factory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(rootNetManager, netViewFactory, netManager,
-					netViewManager, networkNaming, visualMappingManager, applicationManager, eventHelper,
-					groupManager, renderingEngineManager, serviceRegistrar);
+			var factory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
@@ -2054,9 +2045,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, NewNetworkSelectedNodesAndEdgesTaskFactory.class, props);
 		}
 		{
-			var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(rootNetManager, netViewFactory, netManager,
-					netViewManager, networkNaming, visualMappingManager, applicationManager, eventHelper,
-					groupManager, renderingEngineManager, serviceRegistrar);
+			var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			
 			TextIcon icon = new TextIcon(LAYERED_NEW_FROM_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
@@ -2241,9 +2230,7 @@ public class CyActivator extends AbstractCyActivator {
 		// ---------- COMMANDS ----------
 		// NAMESPACE: network
 		{
-			var factory = new NewNetworkCommandTaskFactory(rootNetManager, netViewFactory, netManager, netViewManager,
-					networkNaming, visualMappingManager, applicationManager, eventHelper, groupManager,
-					renderingEngineManager, serviceRegistrar);
+			var factory = new NewNetworkCommandTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND, "create");
 			props.setProperty(COMMAND_NAMESPACE, "network");

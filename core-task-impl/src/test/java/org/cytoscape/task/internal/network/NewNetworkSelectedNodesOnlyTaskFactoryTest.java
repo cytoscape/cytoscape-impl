@@ -1,6 +1,6 @@
 package org.cytoscape.task.internal.network;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -39,7 +39,7 @@ import org.junit.Test;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -63,16 +63,16 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 	public void testObserver() throws Exception {
 		NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 		NetworkTestSupport networkSupport = new NetworkTestSupport();
-		CyNetworkFactory networkFactory = networkSupport.getNetworkFactory();
 		
+		CyApplicationManager appMgr = mock(CyApplicationManager.class);
+		CyNetworkFactory networkFactory = networkSupport.getNetworkFactory();
 		UndoSupport undoSupport = mock(UndoSupport.class);
-		CyRootNetworkManager crnf = new CyRootNetworkManagerImpl();
-		CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
-		CyNetworkManager netmgr = mock(CyNetworkManager.class);
-		CyNetworkViewManager networkViewManager = mock(CyNetworkViewManager.class);
-		CyNetworkNaming naming = mock(CyNetworkNaming.class);
-		VisualMappingManager vmm = mock(VisualMappingManager.class);
-		CyApplicationManager appManager = mock(CyApplicationManager.class);
+		CyRootNetworkManager rootNetMgr = new CyRootNetworkManagerImpl();
+		CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
+		CyNetworkManager netMgr = mock(CyNetworkManager.class);
+		CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
+		CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
+		VisualMappingManager visMapMgr = mock(VisualMappingManager.class);
 		CyEventHelper eventHelper = mock(CyEventHelper.class);
 		CyGroupManager groupMgr = mock(CyGroupManager.class);
 		RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
@@ -82,14 +82,24 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryTest {
 		when(layoutMgr.getDefaultLayout()).thenReturn(defLayout);
 		
 		CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(networkFactory);
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(netViewFactory);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineMgr);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(groupMgr);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visMapMgr);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
+        when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
+        when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		
-		NewNetworkSelectedNodesOnlyTaskFactoryImpl factory = 
-				new NewNetworkSelectedNodesOnlyTaskFactoryImpl(crnf, cnvf, netmgr, networkViewManager,
-						naming, vmm, appManager, eventHelper, groupMgr, renderingEngineMgr, serviceRegistrar);
-		
+		var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(serviceRegistrar);
+
 		CyNetwork network = networkFactory.createNetwork();
 		CyNode node = network.addNode();
 		network.getRow(node).set(CyNetwork.SELECTED, true);

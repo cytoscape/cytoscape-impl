@@ -2,7 +2,7 @@ package org.cytoscape.task.internal.network;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -17,6 +17,7 @@ import org.cytoscape.event.DummyCyEventHelper;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.NetworkTestSupport;
@@ -35,6 +36,7 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.undo.UndoSupport;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 /*
  * #%L
@@ -66,34 +68,45 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	
 	private CyNetwork net = support.getNetwork();
-	private CyRootNetworkManager cyroot = support.getRootNetworkFactory();
-	private CyNetworkViewFactory cnvf = viewSupport.getNetworkViewFactory();
+	
+	private CyApplicationManager appMgr = Mockito.mock(CyApplicationManager.class);
+	private CyRootNetworkManager rootNetMgr = support.getRootNetworkFactory();
+	private CyNetworkViewFactory netViewFactory = viewSupport.getNetworkViewFactory();
 	private CyEventHelper eventHelper = new DummyCyEventHelper();
 	private UndoSupport undoSupport = mock(UndoSupport.class);
     private CyNetworkNaming namingUtil = mock(CyNetworkNaming.class);
     private CyServiceRegistrar serviceRegistrar = mock(CyServiceRegistrar.class);
-	private CyNetworkManager netmgr = new CyNetworkManagerImpl(serviceRegistrar);
-	private CyNetworkViewManager networkViewManager = mock(CyNetworkViewManager.class);
-	private CyNetworkNaming cyNetworkNaming = mock(CyNetworkNaming.class);
-	private VisualMappingManager vmm = mock(VisualMappingManager.class);
-	private CyApplicationManager appManager = mock(CyApplicationManager.class);
-	private RenderingEngineManager renderingEngineManager = mock(RenderingEngineManager.class);
+	private CyNetworkManager netMgr = new CyNetworkManagerImpl(serviceRegistrar);
+	private CyNetworkViewManager netViewMgr = mock(CyNetworkViewManager.class);
+	private VisualMappingManager visMapMgr = mock(VisualMappingManager.class);
+	private RenderingEngineManager renderingEngineMgr = mock(RenderingEngineManager.class);
 	private CyGroupManager groupMgr = mock(CyGroupManager.class);
 	private CyLayoutAlgorithmManager layoutMgr = mock(CyLayoutAlgorithmManager.class);
 	
 	@Before
 	public void setUp() throws Exception {
+		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appMgr);
+		when(serviceRegistrar.getService(CyRootNetworkManager.class)).thenReturn(rootNetMgr);
+		when(serviceRegistrar.getService(CyNetworkManager.class)).thenReturn(netMgr);
+		when(serviceRegistrar.getService(CyNetworkFactory.class)).thenReturn(support.getNetworkFactory());
+		when(serviceRegistrar.getService(CyNetworkViewFactory.class)).thenReturn(netViewFactory);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewMgr);
+		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineMgr);
+		when(serviceRegistrar.getService(CyGroupManager.class)).thenReturn(groupMgr);
+		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(visMapMgr);
+		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
+		when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
         when(serviceRegistrar.getService(CyNetworkNaming.class)).thenReturn(namingUtil);
         when(serviceRegistrar.getService(CyLayoutAlgorithmManager.class)).thenReturn(layoutMgr);
 		
-		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		when(renderingEngineMgr.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
 	}
 
 	@Test
 	public void testNewNetworkSelectedNodesEdgesTask() throws Exception {
-		netmgr.addNetwork(net);
+		netMgr.addNetwork(net);
 		final CyNode node1 = net.addNode();
 		final CyNode node2 = net.addNode();
 		final CyNode node3 = net.addNode();
@@ -105,22 +118,20 @@ public class NewNetworkSelectedNodesEdgesTaskTest {
 		//net.getRow(node2).set(CyNetwork.SELECTED, true);
 		net.getRow(edge1).set(CyNetwork.SELECTED, true);
 		
-		int numberOfNetsBeforeTask = netmgr.getNetworkSet().size();
-		List<CyNetwork> netListbeforeTask = new ArrayList<>(netmgr.getNetworkSet());
+		int numberOfNetsBeforeTask = netMgr.getNetworkSet().size();
+		List<CyNetwork> netListbeforeTask = new ArrayList<>(netMgr.getNetworkSet());
 		
-		final NewNetworkSelectedNodesEdgesTask task = new NewNetworkSelectedNodesEdgesTask(net, cyroot,
-				cnvf, netmgr, networkViewManager, cyNetworkNaming, vmm, appManager, eventHelper, groupMgr,
-				renderingEngineManager, serviceRegistrar);
+		var task = new NewNetworkSelectedNodesEdgesTask(net, serviceRegistrar);
 
 		assertNotNull("task is null!", task);
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(mock(TaskMonitor.class));
 		
-		int numberOfNetsAfterTask = netmgr.getNetworkSet().size();
+		int numberOfNetsAfterTask = netMgr.getNetworkSet().size();
 
 		assertEquals(1, numberOfNetsAfterTask - numberOfNetsBeforeTask);
 	
-		List<CyNetwork> networkList = new ArrayList<CyNetwork>(netmgr.getNetworkSet());
+		List<CyNetwork> networkList = new ArrayList<>(netMgr.getNetworkSet());
 		networkList.removeAll(netListbeforeTask);
 		assertEquals(2, networkList.get(0).getNodeList().size());
 		assertEquals(1, networkList.get(0).getEdgeList().size());
