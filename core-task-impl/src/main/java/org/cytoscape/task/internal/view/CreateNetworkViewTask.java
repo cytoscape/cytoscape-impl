@@ -174,7 +174,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		
 		if (viewFactory == null && viewRenderers.size() > 1) {
 			// Let the user choose the network view renderer first
-			final ChooseViewRendererTask chooseRendererTask = new ChooseViewRendererTask(netList);
+			var chooseRendererTask = new ChooseViewRendererTask(netList);
 			insertTasksAfterCurrentTask(chooseRendererTask);
 		} else {
 			final CyNetwork curNet = appMgr.getCurrentNetwork();
@@ -204,12 +204,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			}
 			
 			if (!cancelled) {
-				if (layoutMgr == null) {
-					// Create network from selection?
-					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, netMgr, vmMgr, appMgr, netViewMgr));
-				} else {
-					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, netMgr, vmMgr, appMgr, netViewMgr));
-				}
+				if (layoutMgr == null) // Create network from selection?
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews.get(0), style, serviceRegistrar));
+				else
+					insertTasksAfterCurrentTask(new RegisterNetworkTask(networkViews, style, serviceRegistrar));
 			}
 		}
 		
@@ -257,7 +255,7 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 			// nodes along with the visual style.
 			if (sourceView != null) {
 				insertTasksAfterCurrentTask(
-						new CopyExistingViewTask(renderingEngineMgr, view, sourceView, style, null, null, true));
+						new CopyExistingViewTask(view, sourceView, style, null, null, true, serviceRegistrar));
 			} else if (layout == true) {
 				final Set<CyNetworkView> views = new HashSet<>();
 				views.add(view);
@@ -377,10 +375,10 @@ public class CreateNetworkViewTask extends AbstractNetworkCollectionTask {
 		@Override
 		public void run(TaskMonitor tm) throws Exception {
 			// Try again, now with the selected view factory
-			final CyNetworkViewFactory factory = renderers.getSelectedValue().getNetworkViewFactory();
-			final CreateNetworkViewTask createViewTask = new CreateNetworkViewTask(networks, factory, 
-					netViewMgr, netMgr, layoutMgr, eventHelper, vmMgr, renderingEngineMgr, appMgr, serviceRegistrar);
-			
+			var viewFactory = renderers.getSelectedValue().getNetworkViewFactory();
+			var createViewTask = new CreateNetworkViewTask(networks, viewFactory, netViewMgr, netMgr, layoutMgr,
+					eventHelper, vmMgr, renderingEngineMgr, appMgr, serviceRegistrar);
+
 			if (!cancelled)
 				insertTasksAfterCurrentTask(createViewTask);
 		}

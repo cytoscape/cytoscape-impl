@@ -1,14 +1,13 @@
-package org.cytoscape.task.internal.network;
+package org.cytoscape.browser.internal.task;
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
-import org.cytoscape.task.create.NewNetworkSelectedNodesOnlyTaskFactory;
+import org.cytoscape.browser.internal.view.TableBrowserMediator;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.task.AbstractTableColumnTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 /*
  * #%L
- * Cytoscape Core Task Impl (core-task-impl)
+ * Cytoscape Table Browser Impl (table-browser-impl)
  * $Id:$
  * $HeadURL:$
  * %%
@@ -30,17 +29,24 @@ import org.cytoscape.work.TaskIterator;
  * #L%
  */
 
-public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkTaskFactory
-                                                        implements NewNetworkSelectedNodesOnlyTaskFactory {
+public class HideColumnTaskFactory extends AbstractTableColumnTaskFactory {
+
+	private final TableBrowserMediator mediator;
 	
-	private final CyServiceRegistrar serviceRegistrar;
-
-	public NewNetworkSelectedNodesOnlyTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
-		this.serviceRegistrar = serviceRegistrar;
+	public HideColumnTaskFactory(TableBrowserMediator mediator) {
+		this.mediator = mediator;
 	}
-
+	
 	@Override
-	public TaskIterator createTaskIterator(CyNetwork network) {
-		return new TaskIterator(3, new NewNetworkSelectedNodesOnlyTask(network, serviceRegistrar));
+	public TaskIterator createTaskIterator(CyColumn column) {
+		if (column == null)
+			throw new IllegalStateException("'column' must not be null.");
+
+		return new TaskIterator(new HideColumnTask(column, mediator));
+	}
+	
+	@Override
+	public boolean isReady(CyColumn column) {
+		return column != null;
 	}
 }

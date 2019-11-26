@@ -1,12 +1,16 @@
 package org.cytoscape.task.internal.network;
 
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +28,16 @@ package org.cytoscape.task.internal.network;
  * #L%
  */
 
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.work.AbstractTask;
-
 /**
  * Task to create new sub network from an original (parent) network.
- * 
  */
 public abstract class AbstractCreationTask extends AbstractTask {
 
-	protected final CyNetworkManager networkManager;
-	protected final CyNetworkViewManager networkViewManager;
 	protected CyNetwork parentNetwork;
+	protected final CyServiceRegistrar serviceRegistrar;
 
-	public AbstractCreationTask(final CyNetwork parentNetwork, final CyNetworkManager networkManager,
-	                            final CyNetworkViewManager networkViewManager) {
+	public AbstractCreationTask(CyNetwork parentNetwork, CyServiceRegistrar serviceRegistrar) {
 		this.parentNetwork = parentNetwork;
-		this.networkManager = networkManager;
-		this.networkViewManager = networkViewManager;
+		this.serviceRegistrar = serviceRegistrar;
 	}
 }

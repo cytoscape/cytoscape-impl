@@ -29,7 +29,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2016 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -57,12 +57,12 @@ import org.cytoscape.work.TaskIterator;
  */
 public class CytoscapeMenuPopulator {
 	
-	final private CytoscapeDesktop app;
-	final private RootNetworkManager rootNetManager;
-	final private CyServiceRegistrar serviceRegistrar;
+	private final CytoscapeDesktop app;
+	private final RootNetworkManager rootNetManager;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	final private Map<TaskFactory, CyAction> taskMap;
-	final private Map<Object, TaskFactory> provisionerMap;
+	private final Map<TaskFactory, CyAction> taskMap;
+	private final Map<Object, TaskFactory> provisionerMap;
 	
 	/**
 	 * This will construct the basic bar objects, but won't fill them with menu items and associated action listeners.

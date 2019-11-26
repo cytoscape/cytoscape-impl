@@ -1,34 +1,5 @@
 package org.cytoscape.browser.internal.view;
 
-/*
- * #%L
- * Cytoscape Table Browser Impl (table-browser-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,6 +28,29 @@ import org.cytoscape.model.events.RowsDeletedListener;
 import org.cytoscape.model.events.TableAboutToBeDeletedEvent;
 import org.cytoscape.model.events.TableAboutToBeDeletedListener;
 
+/*
+ * #%L
+ * Cytoscape Table Browser Impl (table-browser-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public final class BrowserTableModel extends AbstractTableModel
 									 implements RowsCreatedListener, RowsDeletedListener, TableAboutToBeDeletedListener {
@@ -84,8 +78,7 @@ public final class BrowserTableModel extends AbstractTableModel
 
 	private ReadWriteLock lock;
 
-	public BrowserTableModel(final CyTable dataTable, final Class<? extends CyIdentifiable> tableType,
-			final EquationCompiler compiler) {
+	public BrowserTableModel(CyTable dataTable, Class<? extends CyIdentifiable> tableType, EquationCompiler compiler) {
 		if (dataTable == null)
 			throw new IllegalArgumentException("'dataTable' must not be null");
 		
@@ -190,13 +183,13 @@ public final class BrowserTableModel extends AbstractTableModel
 			switch (viewMode) {
 				case SELECTED:
 					if (selectedRows == null)
-						selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
 					return selectedRows.get(rowIndex);
 				case ALL:
 					return dataTable.getRow(rowIndexToPrimaryKey[rowIndex]);
 				case AUTO:
 					if (selectedRows == null)
-						selectedRows = new ArrayList<CyRow>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
+						selectedRows = new ArrayList<>(dataTable.getMatchingRows(CyNetwork.SELECTED, true));
 					if (selectedRows.size() > 0)
 						return selectedRows.get(rowIndex);
 					else
@@ -451,8 +444,8 @@ public final class BrowserTableModel extends AbstractTableModel
 		return -1;
 	}
 
-	private String mapColumnIndexToColumnName(final int index) {		
-		if (index <= attrNames.size())
+	private String mapColumnIndexToColumnName(int index) {		
+		if (index >= 0 && index <= attrNames.size())
 			return attrNames.get(index);
 
 		throw new ArrayIndexOutOfBoundsException();

@@ -69,7 +69,7 @@ public abstract class AbstractSelectTask extends AbstractTask {
 		serviceRegistrar.getService(CyEventHelper.class).flushPayloadEvents();
 		
 		/*
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(network);
+		final Collection<CyNetworkView> views = viewManager.getNetworkViews(network);
 		CyNetworkView view = null;
 		if(views.size() != 0)
 			view = views.iterator().next();

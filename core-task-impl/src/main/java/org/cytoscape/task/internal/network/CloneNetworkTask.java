@@ -2,14 +2,12 @@ package org.cytoscape.task.internal.network;
 
 import java.awt.Dimension;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.command.StringToModel;
 import org.cytoscape.group.CyGroup;
 import org.cytoscape.group.CyGroupFactory;
@@ -34,9 +32,7 @@ import org.cytoscape.task.internal.view.CopyExistingViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
 import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.view.vizmap.VisualStyle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
@@ -71,53 +67,50 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	private Map<CyEdge, CyEdge> new2OrigEdgeMap;
 	private Map<CyEdge, CyEdge> orig2NewEdgeMap;
 
-	private final VisualMappingManager vmm;
+	private final VisualMappingManager visMapManager;
 	private final CyNetworkFactory netFactory;
-	private final CyNetworkViewFactory netViewFactory;
-	private final CyNetworkNaming naming;
-	private final CyApplicationManager appMgr;
-	private final CyNetworkTableManager netTableMgr;
-	private final CyRootNetworkManager rootNetMgr;
-	private final CyGroupManager groupMgr;
+	private final CyNetworkViewFactory viewFactory;
+	private final CyNetworkViewFactory nullViewFactory;
+	private final CyNetworkNaming netNaming;
+	private final CyNetworkManager netManager;
+	private final CyNetworkViewManager viewManager;
+	private final CyNetworkTableManager netTableManager;
+	private final CyRootNetworkManager rootNetManager;
+	private final CyGroupManager groupManager;
 	private final CyGroupFactory groupFactory;
-	private final RenderingEngineManager renderingEngineMgr;
-	private final CyNetworkViewFactory nullNetworkViewFactory;
-	private final CyServiceRegistrar serviceRegistrar;
-
-	@Tunable(description="Network", context="nogui", longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING)
+	
+	@Tunable(
+			description = "Network",
+			context = "nogui",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING
+	)
 	public CyNetwork network;
+	
+	@Tunable(
+			description = "Clone View",
+			context = "nogui",
+			longDescription = "Whether or not to clone the network view as well. Only boolean values are allowed: ```true``` (default) or ```false```\"",
+			exampleStringValue = "true"
+	)
+	public boolean cloneView = true;
 
 	private CyNetworkView result;
 
-	public CloneNetworkTask(final CyNetwork net,
-							final CyNetworkManager netmgr,
-							final CyNetworkViewManager networkViewManager,
-							final VisualMappingManager vmm,
-							final CyNetworkFactory netFactory,
-							final CyNetworkViewFactory netViewFactory,
-							final CyNetworkNaming naming,
-							final CyApplicationManager appMgr,
-							final CyNetworkTableManager netTableMgr,
-							final CyRootNetworkManager rootNetMgr,
-							final CyGroupManager groupMgr,
-							final CyGroupFactory groupFactory,
-							final RenderingEngineManager renderingEngineMgr,
-							final CyNetworkViewFactory nullNetworkViewFactory,
-							final CyServiceRegistrar registrar) {
-		super(net, netmgr, networkViewManager);
-
-		this.vmm = vmm;
-		this.netFactory = netFactory;
-		this.netViewFactory = netViewFactory;
-		this.naming = naming;
-		this.appMgr = appMgr;
-		this.netTableMgr = netTableMgr;
-		this.rootNetMgr = rootNetMgr;
-		this.groupMgr = groupMgr;
-		this.groupFactory = groupFactory;
-		this.renderingEngineMgr = renderingEngineMgr;
-		this.nullNetworkViewFactory = nullNetworkViewFactory;
-		this.serviceRegistrar = registrar;
+	public CloneNetworkTask(CyNetwork net, CyServiceRegistrar serviceRegistrar) {
+		super(net, serviceRegistrar);
+		
+		visMapManager = serviceRegistrar.getService(VisualMappingManager.class);
+		netFactory = serviceRegistrar.getService(CyNetworkFactory.class);
+		viewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class);
+		nullViewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class, "(id=NullCyNetworkViewFactory)");
+		netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
+		netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
+		netTableManager = serviceRegistrar.getService(CyNetworkTableManager.class);
+		rootNetManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		groupManager = serviceRegistrar.getService(CyGroupManager.class);
+		groupFactory = serviceRegistrar.getService(CyGroupFactory.class);
 	}
 
 	@Override
@@ -125,7 +118,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		tm.setTitle("Clone Network");
 		tm.setStatusMessage("Cloning network...");
 		tm.setProgress(0.0);
-
+		
 		// nogui?
 		if (network != null)
 			parentNetwork = network;
@@ -136,35 +129,32 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 		
 		// Create copied network model
-		final CyNetwork newNet = cloneNetwork(parentNetwork);
+		var newNet = cloneNetwork(parentNetwork);
 		tm.setProgress(0.5);
 		
-		final Collection<CyNetworkView> views = networkViewManager.getNetworkViews(parentNetwork);
+		var views = viewManager.getNetworkViews(parentNetwork);
 		
 		// TODO What if the network has more than one view
-		final CyNetworkView origView = views.size() != 0 ? views.iterator().next() : null; 
+		var origView = views.size() != 0 ? views.iterator().next() : null; 
 		
-		if (origView != null && !cancelled) {
+		if (cloneView && origView != null && !cancelled) {
 			tm.setStatusMessage("Cloning view...");
 			
-			final VisualStyle style = vmm.getVisualStyle(origView);
-	        final CyNetworkView newView = netViewFactory.createNetworkView(newNet);
+			var style = visMapManager.getVisualStyle(origView);
+	        var newView = viewFactory.createNetworkView(newNet);
 	        tm.setProgress(0.6);
 	        
 			if (!cancelled) {
 				// Let the CopyExistingViewTask respond to the Observer (if any)
-				CopyExistingViewTask copyExistingViewTask = new CopyExistingViewTask(renderingEngineMgr, newView,
-						origView, style, new2OrigNodeMap, new2OrigEdgeMap, false);
-				RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newView, style, networkManager, vmm,
-						appMgr, networkViewManager);
+				var copyExistingViewTask = new CopyExistingViewTask(newView, origView, style,
+						new2OrigNodeMap, new2OrigEdgeMap, false, serviceRegistrar);
+				var registerNetworkTask = new RegisterNetworkTask(newView, style, serviceRegistrar);
 				insertTasksAfterCurrentTask(copyExistingViewTask, registerNetworkTask);
 			}
 		} else if (!cancelled) {
-			RegisterNetworkTask registerNetworkTask = new RegisterNetworkTask(newNet, networkManager, vmm, appMgr,
-					networkViewManager);
+			var registerNetworkTask = new RegisterNetworkTask(newNet, serviceRegistrar);
 			insertTasksAfterCurrentTask(registerNetworkTask);
-
-			result = nullNetworkViewFactory.createNetworkView(newNet);
+			result = nullViewFactory.createNetworkView(newNet);
 		}
 
 		if (cancelled) {
@@ -175,8 +165,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		tm.setProgress(1.0);
 	}
 
-	private CyNetwork cloneNetwork(final CyNetwork origNet) {
-		final CyNetwork newNet = netFactory.createNetwork(origNet.getSavePolicy());
+	private CyNetwork cloneNetwork(CyNetwork origNet) {
+		var newNet = netFactory.createNetwork(origNet.getSavePolicy());
 		
 		if (cancelled)
 			return newNet;
@@ -193,8 +183,8 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		if (cancelled)
 			return newNet;
 
-		final CyRootNetwork origRoot = rootNetMgr.getRootNetwork(origNet);
-		final CyRootNetwork newRoot = rootNetMgr.getRootNetwork(newNet);
+		var origRoot = rootNetManager.getRootNetwork(origNet);
+		var newRoot = rootNetManager.getRootNetwork(newNet);
 		addColumns(origRoot, newRoot, CyNetwork.class, CyNetwork.LOCAL_ATTRS);
 		
 		if (cancelled)
@@ -231,16 +221,16 @@ public class CloneNetworkTask extends AbstractCreationTask {
 
 		// Now, override the name so we don't have two networks with the same name
 		newNet.getRow(newNet).set(CyNetwork.NAME, 
-				naming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
+				netNaming.getSuggestedNetworkTitle(origNet.getRow(origNet).get(CyNetwork.NAME, String.class)));
 
 		return newNet;
 	}
 	
-	private void cloneNodes(final CyNetwork origNet, final CyNetwork newNet) {
+	private void cloneNodes(CyNetwork origNet, CyNetwork newNet) {
 		orig2NewNodeMap = new WeakHashMap<>();
 		new2OrigNodeMap = new WeakHashMap<>();
 		
-		for (final CyNode origNode : origNet.getNodeList()) {
+		for (var origNode : origNet.getNodeList()) {
 			if (cancelled)
 				return;
 			
@@ -248,27 +238,27 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private CyNode cloneNode(final CyNetwork origNet, final CyNetwork newNet, final CyNode origNode) {
+	private CyNode cloneNode(CyNetwork origNet, CyNetwork newNet, CyNode origNode) {
 		if (orig2NewNodeMap.containsKey(origNode))
 			return orig2NewNodeMap.get(origNode);
 
-		final CyNode newNode = newNet.addNode();
+		CyNode newNode = newNet.addNode();
 		orig2NewNodeMap.put(origNode, newNode);
 		new2OrigNodeMap.put(newNode, origNode);
 		cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNode, CyNetwork.LOCAL_ATTRS));
 		cloneRow(newNet, CyNode.class, origNet.getRow(origNode, CyNetwork.HIDDEN_ATTRS), newNet.getRow(newNode, CyNetwork.HIDDEN_ATTRS));
 		
-		if (!groupMgr.isGroup(origNode, origNet))
+		if (!groupManager.isGroup(origNode, origNet))
 			cloneNetworkPointer(origNet, newNet, newNode, origNode.getNetworkPointer());
 		
 		return newNode;
 	}
 
-	private void cloneEdges(final CyNetwork origNet, final CyNetwork newNet) {
+	private void cloneEdges(CyNetwork origNet, CyNetwork newNet) {
 		new2OrigEdgeMap = new WeakHashMap<>();
 		orig2NewEdgeMap = new WeakHashMap<>();
 		
-		for (final CyEdge origEdge : origNet.getEdgeList()) {
+		for (CyEdge origEdge : origNet.getEdgeList()) {
 			if (cancelled)
 				return;
 			
@@ -276,14 +266,14 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private CyEdge cloneEdge(final CyNetwork origNet, final CyNetwork newNet, final CyEdge origEdge) {
+	private CyEdge cloneEdge(CyNetwork origNet, CyNetwork newNet, CyEdge origEdge) {
 		if (orig2NewEdgeMap.containsKey(origEdge))
 			return orig2NewEdgeMap.get(origEdge);
 
-		final CyNode newSource = orig2NewNodeMap.get(origEdge.getSource());
-		final CyNode newTarget = orig2NewNodeMap.get(origEdge.getTarget());
-		final boolean newDirected = origEdge.isDirected();
-		final CyEdge newEdge = newNet.addEdge(newSource, newTarget, newDirected);
+		CyNode newSource = orig2NewNodeMap.get(origEdge.getSource());
+		CyNode newTarget = orig2NewNodeMap.get(origEdge.getTarget());
+		boolean newDirected = origEdge.isDirected();
+		CyEdge newEdge = newNet.addEdge(newSource, newTarget, newDirected);
 		new2OrigEdgeMap.put(newEdge, origEdge);
 		orig2NewEdgeMap.put(origEdge, newEdge);
 		cloneRow(newNet, CyEdge.class, origNet.getRow(origEdge, CyNetwork.LOCAL_ATTRS), newNet.getRow(newEdge, CyNetwork.LOCAL_ATTRS));
@@ -292,7 +282,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		return newEdge;
 	}
 
-	private void cloneNetworkPointer(final CyNetwork origNet, final CyNetwork newNet, final CyNode newNode,
+	private void cloneNetworkPointer(CyNetwork origNet, CyNetwork newNet, CyNode newNode,
 			CyNetwork netPointer) {
 		if (netPointer != null) {
 			// If the referenced network is the original network itself, do the same with the new network,
@@ -304,18 +294,18 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private void cloneGroups(final CyNetwork origNet, final CyNetwork newNet) {
+	private void cloneGroups(CyNetwork origNet, CyNetwork newNet) {
 		// Get all of the groups in our original network
-		Set<CyGroup> origGroups = groupMgr.getGroupSet(origNet);
+		Set<CyGroup> origGroups = groupManager.getGroupSet(origNet);
 
 		// First, make sure we clone all of the child nodes for all of our collapsed groups.
 		// Otherwise, we might not be able to create some or our edges
-		for (CyGroup origGroup: origGroups) {
+		for (CyGroup origGroup : origGroups) {
 			if (cancelled)
 				return;
 			
 			if (origGroup.isCollapsed(origNet)) {
-				for (CyNode origNode: origGroup.getNodeList()) {
+				for (CyNode origNode : origGroup.getNodeList()) {
 					if (cancelled)
 						return;
 					
@@ -327,7 +317,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 
 		// Now, we can clone the group itself
-		for (CyGroup origGroup: origGroups) {
+		for (CyGroup origGroup : origGroups) {
 			if (cancelled)
 				return;
 			
@@ -335,7 +325,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private CyGroup cloneGroup(final CyNetwork origNet, final CyNetwork newNet, final CyGroup origGroup) {
+	private CyGroup cloneGroup(CyNetwork origNet, CyNetwork newNet, CyGroup origGroup) {
 		List<CyNode> nodeList = new ArrayList<>();
 		
 		// Check to see if the group node is already in the network
@@ -360,17 +350,14 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 
 		// Get the list of nodes for the group
-		for (CyNode node: origGroup.getNodeList()) {
+		for (var node : origGroup.getNodeList())
 			nodeList.add(orig2NewNodeMap.get(node));
-		}
 
-		for (CyEdge iEdge: origGroup.getInternalEdgeList()) {
+		for (var iEdge : origGroup.getInternalEdgeList())
 			cloneEdge(origNet, newNet, iEdge);
-		}
 
-		for (CyEdge eEdge: origGroup.getExternalEdgeList()) {
+		for (var eEdge : origGroup.getExternalEdgeList())
 			cloneEdge(origNet, newNet, eEdge);
-		}
 
 		// Get the group node
 		CyNode newNode = orig2NewNodeMap.get(origGroup.getGroupNode());
@@ -401,13 +388,13 @@ public class CloneNetworkTask extends AbstractCreationTask {
 
 	private void cloneMetaEdgeInfo(CyNetwork origNet, CyNetwork newNet, CyGroup origGroup) {
 		CyRootNetwork origRoot = ((CySubNetwork)origNet).getRootNetwork();
-		for (CyEdge edge: origRoot.getAdjacentEdgeList(origGroup.getGroupNode(), CyEdge.Type.ANY)) {
+		
+		for (var edge : origRoot.getAdjacentEdgeList(origGroup.getGroupNode(), CyEdge.Type.ANY)) {
 			GroupUtils.updateMetaEdgeInformation(origNet, newNet, edge, orig2NewEdgeMap.get(edge));
 		}
 	}
 
-	private void cloneGroupTables(CyNetwork origNet, CyNetwork newNet, 
-	                              CyGroup origGroup, CyGroup newGroup) {
+	private void cloneGroupTables(CyNetwork origNet, CyNetwork newNet, CyGroup origGroup, CyGroup newGroup) {
 		CyNetwork origGroupNet = origGroup.getGroupNetwork();
 		CyNetwork newGroupNet = newGroup.getGroupNetwork();
 
@@ -423,10 +410,11 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 
 		// Clone the node table
-		for (CyNode node: origGroup.getNodeList()) {
+		for (var node : origGroup.getNodeList()) {
 			Long nodeSUID = node.getSUID();
 			d = GroupUtils.getPosition(origNet, origGroup, nodeSUID, CyNode.class);
 			// System.out.println("Position of node "+node+" is "+d);
+			
 			if (d != null) {
 				GroupUtils.initializePositions(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class);
 				GroupUtils.updatePosition(newNet, newGroup, orig2NewNodeMap.get(node).getSUID(), CyNode.class, d);
@@ -434,21 +422,23 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private void cloneNetwork(final CyNetwork origNet, final CyNetwork newNet) {
+	private void cloneNetwork(CyNetwork origNet, CyNetwork newNet) {
 		cloneRow(newNet, CyNetwork.class, origNet.getRow(origNet, CyNetwork.LOCAL_ATTRS), newNet.getRow(newNet, CyNetwork.LOCAL_ATTRS));
 	}
 
-	private void addColumns(final CyNetwork origNet,
-							final CyNetwork newNet, 
-							final Class<? extends CyIdentifiable> tableType,
-							final String namespace) {
+	private void addColumns(
+			CyNetwork origNet,
+			CyNetwork newNet,
+			Class<? extends CyIdentifiable> tableType,
+			String namespace
+	) {
 		final CyTable from = origNet.getTable(tableType, namespace); 
 		final CyTable to = newNet.getTable(tableType, namespace); 
-		final CyRootNetwork origRoot = rootNetMgr.getRootNetwork(origNet);
-		final CyRootNetwork newRoot = rootNetMgr.getRootNetwork(newNet);
-		final Map<String, CyTable> origRootTables = netTableMgr.getTables(origRoot, tableType);
+		final CyRootNetwork origRoot = rootNetManager.getRootNetwork(origNet);
+		final CyRootNetwork newRoot = rootNetManager.getRootNetwork(newNet);
+		final Map<String, CyTable> origRootTables = netTableManager.getTables(origRoot, tableType);
 		
-		for (final CyColumn col : from.getColumns()){
+		for (var col : from.getColumns()){
 			if (cancelled)
 				return;
 			
@@ -464,7 +454,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 						// Get the original column (not the virtual one!)
 						final CyColumn origCol = info.getSourceTable().getColumn(info.getSourceColumn());
 						// Copy the original column to the root-network's table first
-						String sourceNamespace = netTableMgr.getTableNamespace(info.getSourceTable());
+						String sourceNamespace = netTableManager.getTableNamespace(info.getSourceTable());
 						final CyTable newRootTable = newRoot.getTable(tableType, sourceNamespace);
 						
 						if (newRootTable.getColumn(origCol.getName()) == null)
@@ -484,7 +474,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 
-	private void addVirtualColumn(CyColumn col, CyTable subTable){
+	private void addVirtualColumn(CyColumn col, CyTable subTable) {
 		VirtualColumnInfo colInfo = col.getVirtualColumnInfo();
 		CyColumn checkCol= subTable.getColumn(col.getName());
 		
@@ -498,6 +488,7 @@ public class CloneNetworkTask extends AbstractCreationTask {
 
 	private void copyColumn(CyColumn col, CyTable subTable) {
 		CyColumn checkCol= subTable.getColumn(col.getName());
+		
 		if (checkCol == null) {
 			if (List.class.isAssignableFrom(col.getType()))
 				subTable.createListColumn(col.getName(), col.getListElementType(), false);
@@ -506,18 +497,17 @@ public class CloneNetworkTask extends AbstractCreationTask {
 		}
 	}
 	
-	private void cloneRow(final CyNetwork newNet, final Class<? extends CyIdentifiable> tableType, final CyRow from,
-			final CyRow to) {
-		final CyRootNetwork newRoot = rootNetMgr.getRootNetwork(newNet);
-		Map<String, CyTable> rootTables = netTableMgr.getTables(newRoot, tableType);
+	private void cloneRow(CyNetwork newNet, Class<? extends CyIdentifiable> tableType, CyRow from, CyRow to) {
+		CyRootNetwork newRoot = rootNetManager.getRootNetwork(newNet);
+		Map<String, CyTable> rootTables = netTableManager.getTables(newRoot, tableType);
 		
-		for (final CyColumn col : to.getTable().getColumns()){
-			final String name = col.getName();
+		for (CyColumn col : to.getTable().getColumns()){
+			String name = col.getName();
 			
 			if (name.equals(CyIdentifiable.SUID))
 				continue;
 			
-			final VirtualColumnInfo info = col.getVirtualColumnInfo();
+			VirtualColumnInfo info = col.getVirtualColumnInfo();
 			
 			// If it's a virtual column whose source table is assigned to the new root-network,
 			// then we have to set the value, because the rows of the new root table may not have been copied yet
@@ -527,8 +517,6 @@ public class CloneNetworkTask extends AbstractCreationTask {
 	}
 	
 	private void dispose(CyNetwork net) {
-		CyNetworkManager netManager = serviceRegistrar.getService(CyNetworkManager.class);
-		
 		if (netManager.networkExists(net.getSUID()))
 			netManager.destroyNetwork(net);
 		else

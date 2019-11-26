@@ -68,7 +68,7 @@ public class LoadNetworkFileTaskTest extends AbstractLoadNetworkTaskTester {
 			t.run(tm);
 		}
 		verify(netManager).addNetwork(net, false);
-		// verify(networkViewManager).addNetworkView(view);
+		// verify(viewManager).addNetworkView(view);
 		verify(tm,atLeast(1)).setProgress(1.0);
 	}
 
