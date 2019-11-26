@@ -7,44 +7,42 @@ import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.undo.AbstractCyEdit;
 import org.cytoscape.work.undo.UndoSupport;
 
-public class CompositeCyEdit extends AbstractCyEdit {
+public class CompositeCyEdit {
 
-	private final List<AbstractCyEdit> children = new ArrayList<>();
+	private final String compositeName;
+	private final List<AbstractCyEdit> children;
 	private final CyServiceRegistrar registrar;
 	
-	private CompositeCyEdit(String name, CyServiceRegistrar registrar) {
-		super(name);
+	public CompositeCyEdit(String name, CyServiceRegistrar registrar, int initialCapacity) {
+		this.compositeName = name;
 		this.registrar = registrar;
+		this.children = new ArrayList<>(initialCapacity);
 	}
 	
-	public static CompositeCyEdit init(String name, CyServiceRegistrar registrar) {
-		return new CompositeCyEdit(name, registrar);
-	}
-	
-	public void post(AbstractCyEdit ... edits) {
-		add(edits);
-		post();
-	}
-	
-	public CompositeCyEdit add(AbstractCyEdit ... edits) {
-		for(AbstractCyEdit edit : edits) {
-			children.add(edit);
+	public void add(AbstractCyEdit ... edits) {
+		for(var edit : edits) {
+			if(edit != null) {
+				children.add(edit);
+			}
 		}
-		return this;
-	}
-	
-	@Override
-	public void undo() {
-		children.forEach(AbstractCyEdit::undo);
-	}
-
-	@Override
-	public void redo() {
-		children.forEach(AbstractCyEdit::redo);
 	}
 	
 	public void post() {
-		registrar.getService(UndoSupport.class).postEdit(this);
+		String name = children.size() == 1 ? children.get(0).getPresentationName() : compositeName;
+		
+		var edit = new AbstractCyEdit(name) {
+			@Override
+			public void undo() {
+				children.forEach(AbstractCyEdit::undo);
+				
+			}
+			@Override
+			public void redo() {
+				children.forEach(AbstractCyEdit::redo);
+			}
+		};
+		
+		registrar.getService(UndoSupport.class).postEdit(edit);
 	}
 
 }
