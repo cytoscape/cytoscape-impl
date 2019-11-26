@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.cytoscape.ding.DVisualLexicon;
-//import org.cytoscape.ding.impl.BendStore.HandleKey;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation;
 import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.graph.render.immed.EdgeAnchors;
