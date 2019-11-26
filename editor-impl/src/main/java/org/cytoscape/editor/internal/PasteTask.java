@@ -1,7 +1,7 @@
 package org.cytoscape.editor.internal;
 
 import java.awt.geom.Point2D;
-import java.util.List;
+import java.util.Collection;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -56,7 +56,7 @@ public class PasteTask extends AbstractNetworkViewTask {
 	@Override
 	public void run(TaskMonitor tm) throws Exception {
 		tm.setTitle("Paste Task");
-		final List<CyIdentifiable> pastedObjects;
+		final Collection<CyIdentifiable> pastedObjects;
 		
 		if (xformPt == null)
 			pastedObjects = clipMgr.paste(view, 0.0, 0.0);

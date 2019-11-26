@@ -2,6 +2,7 @@ package org.cytoscape.editor.internal;
 
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
@@ -43,14 +44,14 @@ public class PasteEdit extends AbstractCyEdit {
 	private final CyNetworkView view;
 	private final Point2D xformPt;
 	private final ClipboardImpl clipboard;
-	private final List<CyIdentifiable> pastedObjects;
+	private final Collection<CyIdentifiable> pastedObjects;
 	private final CyServiceRegistrar serviceRegistrar;
 
 	public PasteEdit(
 			CyNetworkView view,
 			Point2D xformPt,
 			ClipboardManagerImpl clipMgr,
-			List<CyIdentifiable> pastedObjects,
+			Collection<CyIdentifiable> pastedObjects,
 			final CyServiceRegistrar serviceRegistrar
 	) {
 		super("Paste");
@@ -81,7 +82,7 @@ public class PasteEdit extends AbstractCyEdit {
 
 	@Override
 	public void redo() {
-		List<CyIdentifiable> pastedObjects = null;
+		Collection<CyIdentifiable> pastedObjects = null;
 		
 		if (this.xformPt == null)
 			pastedObjects = clipboard.paste(view, 0.0, 0.0);

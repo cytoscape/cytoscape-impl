@@ -1,8 +1,8 @@
 package org.cytoscape.editor.internal;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -182,8 +182,8 @@ public class ClipboardImpl {
 		return (nodes != null && nodes.size() > 0) || (edges != null && edges.size() > 0);
 	}
 
-	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
-		final List<CyIdentifiable> pastedObjects = new ArrayList<>();
+	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+		final LinkedHashSet<CyIdentifiable> pastedObjects = new LinkedHashSet<>();
 		final Map<CyRow, CyRow> rowMap = new HashMap<>();
 
 		// We need to do this in 4 passes.
@@ -273,7 +273,7 @@ public class ClipboardImpl {
 			final CyEdge edge,
 			final Map<CyRow, CyRow> rowMap,
 			final Map<CyNode, CyNode> newNodeMap,
-			final List<CyIdentifiable> pastedObjects
+			final Collection<CyIdentifiable> pastedObjects
 	) {
 		CyNetwork sourceNetwork = sourceView.getModel();
 		CyRootNetwork sourceRoot = ((CySubNetwork)sourceNetwork).getRootNetwork();

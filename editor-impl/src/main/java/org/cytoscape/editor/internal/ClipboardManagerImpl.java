@@ -1,6 +1,6 @@
 package org.cytoscape.editor.internal;
 
-import java.util.List;
+import java.util.Collection;
 import java.util.Set;
 
 import org.cytoscape.model.CyEdge;
@@ -80,7 +80,7 @@ public final class ClipboardManagerImpl {
 		currentClipboard = new ClipboardImpl(networkView, nodes, edges, cut, lexicon, serviceRegistrar);
 	}
 
-	public List<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
+	public Collection<CyIdentifiable> paste(CyNetworkView targetView, double x, double y) {
 		if (currentClipboard == null)
 			return null;
 		
