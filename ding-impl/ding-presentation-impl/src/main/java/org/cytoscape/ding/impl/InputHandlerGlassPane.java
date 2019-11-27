@@ -260,6 +260,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 
 		@Override
 		public void keyPressed(KeyEvent e) {
+			
+			//cleare the label selection if it enabled
+			if (labelSelectionEnabled()) 
+			   get(SelecionClickAndDragListener.class).resetLabelSelection();
+			
 			int code = e.getKeyCode();
 			
 			if(code == VK_UP || code == VK_DOWN || code == VK_LEFT || code == VK_RIGHT) {
@@ -406,6 +411,11 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 		
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent e) {
+			
+			//cleare the label selection if it enabled
+			if (labelSelectionEnabled()) 
+			   get(SelecionClickAndDragListener.class).resetLabelSelection();
+			
 			re.zoom(e.getWheelRotation());
 			re.updateView(UpdateType.ALL_FULL);
 		}
@@ -942,6 +952,13 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			}
 		}
 		
+		public void resetLabelSelection() {
+			if (selectedLabel!=null) {
+				toggleSelection(selectedLabel.getNode(), CyNode.class, Toggle.DESELECT);
+				selectedLabel = null;
+			}
+			
+		}
 		
 		public void drawLabelSelectionRectangle(Graphics graphics) {
 			// Draw selection rectangle
