@@ -9,7 +9,6 @@ import org.cytoscape.view.model.VisualLexiconNode;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.events.ViewChangeRecord;
 import org.cytoscape.view.model.events.ViewChangedEvent;
-import org.cytoscape.view.presentation.property.BasicVisualLexicon;
 
 import io.vavr.collection.Set;
 
@@ -111,7 +110,7 @@ public abstract class CyViewBase<M> implements View<M> {
 					// much more common case, might as well optimize for it
 					fireViewChangedEvent(vp, value, true);
 				} else {
-					visualLexiconNode.visit(node -> {
+					visualLexiconNode.visitDescendants(node -> {
 						VisualProperty<?> nodeVP = node.getVisualProperty();
 						Object nodeValue = getVPStore().getVisualProperty(suid, vp);
 						fireViewChangedEvent(nodeVP, nodeValue, true);
