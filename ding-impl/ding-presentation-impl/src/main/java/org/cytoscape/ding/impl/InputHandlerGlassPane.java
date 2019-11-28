@@ -59,6 +59,7 @@ import org.cytoscape.ding.impl.cyannotator.annotations.DingAnnotation.CanvasID;
 import org.cytoscape.ding.impl.cyannotator.create.AbstractDingAnnotationFactory;
 import org.cytoscape.ding.impl.cyannotator.tasks.AddAnnotationTask;
 import org.cytoscape.ding.impl.cyannotator.tasks.EditAnnotationTaskFactory;
+import org.cytoscape.ding.impl.cyannotator.tasks.RemoveAnnotationsTask;
 import org.cytoscape.ding.impl.undo.AnnotationEdit;
 import org.cytoscape.ding.impl.undo.CompositeCyEdit;
 import org.cytoscape.ding.impl.undo.ViewChangeEdit;
@@ -339,7 +340,7 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 				}
 			} else if(code == VK_BACK_SPACE) {
 				// in this case changing the model will trigger a render
-				deleteSelectedNodesAndEdges();
+				deleteSelected();
 			}
 			
 
@@ -481,10 +482,20 @@ public class InputHandlerGlassPane extends JComponent implements CyDisposable {
 			return false;
 		}
 		
-		private void deleteSelectedNodesAndEdges() {
-			final TaskManager<?, ?> taskManager = registrar.getService(TaskManager.class);
+		private void deleteSelected() {
+			TaskIterator tasks = new TaskIterator();
+			
+			var annotationSelection = cyAnnotator.getAnnotationSelection();
+			if(!annotationSelection.isEmpty()) {
+				Collection<Annotation> annotations = new ArrayList<>(annotationSelection.getSelectedAnnotations());
+				tasks.append(new RemoveAnnotationsTask(re, annotations, registrar));
+			}
+			
 			NetworkTaskFactory taskFactory = registrar.getService(DeleteSelectedNodesAndEdgesTaskFactory.class);
-			taskManager.execute(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+			tasks.append(taskFactory.createTaskIterator(re.getViewModel().getModel()));
+			
+			TaskManager<?,?> taskManager = registrar.getService(TaskManager.class);
+			taskManager.execute(tasks);
 		}
 
 		@Override
