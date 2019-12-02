@@ -172,6 +172,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 
 		for(var a : this) {
 			((AbstractAnnotation)a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
+			a.update();
 		}
 		updateBounds();
 	}
