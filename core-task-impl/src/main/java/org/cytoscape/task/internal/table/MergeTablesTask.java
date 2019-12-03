@@ -507,7 +507,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 		if (!unassignedTable.getSelectedValue().toString().matches(NO_TABLES)) {
 			CyTable tableChosen = (CyTable) unassignedTable.getSelectedValue();
 			
-			if (!tableChosen.equals(sourceTable))
+			if (!tableChosen.equals(sourceTable.getSelectedValue()))
 				applyMapping(tableChosen);
 		}
 	}
