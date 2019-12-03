@@ -28,8 +28,6 @@ import org.cytoscape.task.internal.view.CreateNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskMonitor;
 
 /*
@@ -63,9 +61,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 	protected final CyNetworkManager netManager;
 	protected final CyNetworkViewManager viewManager;
 	protected final CyNetworkViewFactory viewFactory;
-	protected final VisualMappingManager visMapManager;
 	protected final CyNetworkNaming netNaming;
-	protected final RenderingEngineManager renderingEngineManager;
 	protected final CyGroupManager groupManager;
 	protected final CyEventHelper eventHelper;
 	
@@ -79,9 +75,7 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 		netManager = serviceRegistrar.getService(CyNetworkManager.class);
 		viewManager = serviceRegistrar.getService(CyNetworkViewManager.class);
 		viewFactory = serviceRegistrar.getService(CyNetworkViewFactory.class);
-		visMapManager = serviceRegistrar.getService(VisualMappingManager.class);
 		netNaming = serviceRegistrar.getService(CyNetworkNaming.class);
-		renderingEngineManager = serviceRegistrar.getService(RenderingEngineManager.class);
 		groupManager = serviceRegistrar.getService(CyGroupManager.class);
 		eventHelper = serviceRegistrar.getService(CyEventHelper.class);
 	}
@@ -171,10 +165,8 @@ abstract class AbstractNetworkFromSelectionTask extends AbstractCreationTask {
 			}
 		}
 		
-		final CreateNetworkViewTask createViewTask = 
-			new CreateNetworkViewTask(networks, sourceViewFactory, viewManager, netManager,
-				                        null, eventHelper, visMapManager, renderingEngineManager, applicationManager, sourceView,
-				                        serviceRegistrar);
+		var createViewTask = new CreateNetworkViewTask(networks, sourceViewFactory, netManager, null,
+				applicationManager, sourceView, serviceRegistrar);
 		insertTasksAfterCurrentTask(createViewTask);
 		/*
 		insertTasksAfterCurrentTask(createViewTask, new AbstractTask() {

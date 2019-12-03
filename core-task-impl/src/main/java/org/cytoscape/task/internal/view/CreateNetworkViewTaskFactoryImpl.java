@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -17,8 +16,6 @@ import org.cytoscape.task.create.CreateNetworkViewTaskFactory;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
 import org.cytoscape.view.model.CyNetworkViewFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
@@ -28,7 +25,7 @@ import org.cytoscape.work.TaskIterator;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -49,30 +46,20 @@ import org.cytoscape.work.TaskIterator;
 public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionTaskFactory implements
 		CreateNetworkViewTaskFactory, TaskFactory {
 
-	private final CyNetworkViewManager netViewMgr;
 	private final CyNetworkManager netMgr;
 	private final CyLayoutAlgorithmManager layoutMgr;
-	private final CyEventHelper eventHelper;
-	private final VisualMappingManager vmm;
-	private final RenderingEngineManager renderingEngineMgr;
 	private final CyApplicationManager appMgr;
 	private final CyServiceRegistrar serviceRegistrar;
 	private final Set<NetworkViewRenderer> viewRenderers;
 
-	public CreateNetworkViewTaskFactoryImpl(final CyNetworkViewManager netViewMgr,
-											final CyNetworkManager netMgr,
-											final CyLayoutAlgorithmManager layoutMgr,
-											final CyEventHelper eventHelper,
-											final VisualMappingManager vmm,
-											final RenderingEngineManager renderingEngineMgr,
-											final CyApplicationManager appMgr,
-											final CyServiceRegistrar serviceRegistrar) {
-		this.netViewMgr = netViewMgr;
+	public CreateNetworkViewTaskFactoryImpl(
+			CyNetworkManager netMgr,
+			CyLayoutAlgorithmManager layoutMgr,
+			CyApplicationManager appMgr,
+			CyServiceRegistrar serviceRegistrar
+	) {
 		this.netMgr = netMgr;
 		this.layoutMgr = layoutMgr;
-		this.eventHelper = eventHelper;
-		this.vmm = vmm;
-		this.renderingEngineMgr = renderingEngineMgr;
 		this.appMgr = appMgr;
 		this.serviceRegistrar = serviceRegistrar;
 		viewRenderers = new HashSet<>();
@@ -83,8 +70,8 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		// Create visualization + layout (optional)
 		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
 
-		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(networks, factory, netViewMgr,
-				netMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, serviceRegistrar));
+		return new TaskIterator(expectedNumTasks,
+				new CreateNetworkViewTask(networks, factory, netMgr, layoutMgr, appMgr, serviceRegistrar));
 	}
 	
 	@Override
@@ -95,8 +82,8 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 		// Create visualization + layout (optional)
 		final int expectedNumTasks = layoutMgr == null ? 1 : 2;
 		
-		return new TaskIterator(expectedNumTasks, new CreateNetworkViewTask(networks, netViewMgr,
-				netMgr, layoutMgr, eventHelper, vmm, renderingEngineMgr, appMgr, viewRenderers, serviceRegistrar));
+		return new TaskIterator(expectedNumTasks,
+				new CreateNetworkViewTask(networks, netMgr, layoutMgr, appMgr, viewRenderers, serviceRegistrar));
 	}
 	
 	@Override
@@ -112,6 +99,8 @@ public class CreateNetworkViewTaskFactoryImpl extends AbstractNetworkCollectionT
 	// TODO delete this method when multiple views per network is completely supported
 	@Override
 	public boolean isReady(Collection<CyNetwork> networks) {
+		var netViewMgr = serviceRegistrar.getService(CyNetworkViewManager.class);
+		
 		for (CyNetwork n : networks) {
 			if (netViewMgr.getNetworkViews(n).isEmpty())
 				return true;

@@ -1,16 +1,37 @@
 package org.cytoscape.task.internal.export.web;
 
 import java.util.Map;
-import java.util.Set;
 
-import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.io.write.CySessionWriterFactory;
-import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.session.CySessionManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.ServiceProperties;
 import org.cytoscape.work.TaskIterator;
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 
@@ -20,78 +41,59 @@ public class ExportAsWebArchiveTaskFactory extends AbstractTaskFactory {
 	private CySessionWriterFactory simpleWriterFactory;
 	private CySessionWriterFactory zippedWriterFactory;
 	
-	private final CyNetworkManager networkManager;
-	private final CyApplicationManager applicationManager;
-	private final CySessionManager sessionManager;
+	private final CyServiceRegistrar serviceRegistrar;
 	
-	
-	public ExportAsWebArchiveTaskFactory(final CyNetworkManager networkManager, final CyApplicationManager applicationManager,
-			final CySessionManager sessionManager) {
-		super();
-		this.networkManager = networkManager;
-		this.applicationManager = applicationManager;
-		this.sessionManager = sessionManager;
+	public ExportAsWebArchiveTaskFactory(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	/**
-	 * 
 	 * Find correct writer for the web archive.
-	 * 
 	 * @param writerFactory
 	 * @param props
 	 */
-	@SuppressWarnings("rawtypes")
-	public void registerFactory(final CySessionWriterFactory writerFactory, final Map props) {
-		final Object id = props.get(ServiceProperties.ID);
-		if(id == null) {
-			return;
-		}
-		
-		if (id.equals("fullWebSessionWriterFactory")) {
-			this.fullWriterFactory = writerFactory;
-		}
+	public void registerFactory(CySessionWriterFactory writerFactory, Map<?, ?> props) {
+		Object id = props.get(ServiceProperties.ID);
 
-		if (id.equals("simpleWebSessionWriterFactory")) {
+		if (id == null)
+			return;
+
+		if (id.equals("fullWebSessionWriterFactory"))
+			this.fullWriterFactory = writerFactory;
+
+		if (id.equals("simpleWebSessionWriterFactory"))
 			this.simpleWriterFactory = writerFactory;
-		}
-		
-		if (id.equals("zippedJsonWriterFactory")) {
+
+		if (id.equals("zippedJsonWriterFactory"))
 			this.zippedWriterFactory = writerFactory;
-		}
 	}
 
-	@SuppressWarnings("rawtypes")
-	public void unregisterFactory(final CySessionWriterFactory writerFactory, final Map props) {
+	public void unregisterFactory(CySessionWriterFactory writerFactory, Map<?, ?> props) {
 	}
 
 	@Override
 	public TaskIterator createTaskIterator() {
-		final Set<CyNetwork> networks = networkManager.getNetworkSet();
+		var networks = serviceRegistrar.getService(CyNetworkManager.class).getNetworkSet();
+		var showWarning = false;
 		
-		boolean showWarning = false;
-		
-		for(final CyNetwork network: networks) {
-			final int nodeCount = network.getNodeCount();
-			final int edgeCount = network.getEdgeCount();
-			
-			if(nodeCount >TH || edgeCount > TH) {
+		for (var net : networks) {
+			final int nodeCount = net.getNodeCount();
+			final int edgeCount = net.getEdgeCount();
+
+			if (nodeCount > TH || edgeCount > TH) {
 				showWarning = true;
 				break;
 			}
 		}
+
+		var exportTask = new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory, zippedWriterFactory,
+				serviceRegistrar);
 		
-		final ExportAsWebArchiveTask exportTask = 
-				new ExportAsWebArchiveTask(fullWriterFactory, simpleWriterFactory, zippedWriterFactory, 
-						applicationManager, sessionManager);
-		
-		if(showWarning) {
-			return new TaskIterator(new ShowWarningTask(exportTask));
-		} else {
-			return new TaskIterator(exportTask);
-		}
+		return showWarning ? new TaskIterator(new ShowWarningTask(exportTask)) : new TaskIterator(exportTask);
 	}
+	
 	@Override
 	public boolean isReady() {
-		return networkManager.getNetworkSet().size() > 0;
+		return serviceRegistrar.getService(CyNetworkManager.class).getNetworkSet().size() > 0;
 	}
 }

@@ -1,12 +1,38 @@
 package org.cytoscape.task.internal.table;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.cytoscape.application.CyUserLog;
+import org.cytoscape.io.read.CyTableReader;
+import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.TaskMonitor;
+import org.cytoscape.work.Tunable;
+import org.cytoscape.work.util.ListMultipleSelection;
+import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,35 +50,13 @@ package org.cytoscape.task.internal.table;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.cytoscape.application.CyUserLog;
-import org.cytoscape.io.read.CyTableReader;
-import org.cytoscape.model.CyColumn;
-import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyNode;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.model.subnetwork.CyRootNetwork;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
-import org.cytoscape.work.AbstractTask;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-import org.cytoscape.work.util.ListMultipleSelection;
-import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 	enum TableType {
-		NODE_ATTR("Node Table", CyNode.class), EDGE_ATTR("Edge Table", CyEdge.class), NETWORK_ATTR("Network Table", CyNetwork.class), GLOBAL("Unassigned Tables", CyTable.class);
+		NODE_ATTR("Node Table", CyNode.class),
+		EDGE_ATTR("Edge Table", CyEdge.class),
+		NETWORK_ATTR("Network Table", CyNetwork.class),
+		GLOBAL("Unassigned Tables", CyTable.class);
 
 		private final String name;
 		private final  Class<? extends CyIdentifiable> type;
@@ -74,13 +78,13 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 
 	private static Logger logger = LoggerFactory.getLogger(CyUserLog.NAME);
 	private static String NO_NETWORKS = "No Networks Found";
-	private final CyNetworkManager networkManager;
-	private final CyRootNetworkManager rootNetworkManager;
+	
 	private final CyTable globalTable;
-	private final  CyTableReader reader;
+	private final CyTableReader reader;
 	private final boolean byReader;
 	private Map<String, CyNetwork> name2NetworkMap;
-
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
 	@Tunable(description = "Import Data To:")
 	public ListSingleSelection<TableType> dataTypeOptions;
@@ -92,116 +96,120 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 	@Tunable(description = "Network List",groups="Network Options",dependsOn="selectedNetworksOnly=true", params="displayState=collapsed")
 	public ListMultipleSelection<String> networkList;
 
-
 	@ProvidesTitle
-	public String getTitle() {	return "Import Data ";	}
+	public String getTitle() {
+		return "Import Data ";
+	}
 
-
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTableReader reader, final CyRootNetworkManager rootNetworkManager ){
+	public MapTableToNetworkTablesTask(CyTableReader reader, CyServiceRegistrar serviceRegistrar) {
 		this.reader = reader;
 		globalTable = null;
 		this.byReader = true;
-		this.networkManager = networkManager;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.rootNetworkManager = rootNetworkManager;
+		this.name2NetworkMap = new HashMap<>();
+		this.serviceRegistrar = serviceRegistrar;
 		
-		initTunable(networkManager);
-
+		initTunable();
 	}
 
-	public MapTableToNetworkTablesTask(final CyNetworkManager networkManager, final CyTable globalTable, final CyRootNetworkManager rootNetworkManager){
-		this.networkManager = networkManager;
+	public MapTableToNetworkTablesTask(CyTable globalTable, CyServiceRegistrar serviceRegistrar) {
 		this.globalTable = globalTable;
 		this.byReader = false;
 		this.reader = null;
-		this.name2NetworkMap = new HashMap<String, CyNetwork>();
-		this.rootNetworkManager = rootNetworkManager;
+		this.name2NetworkMap = new HashMap<>();
+		this.serviceRegistrar = serviceRegistrar;
 
-		initTunable(networkManager);
+		initTunable();
 	}
 
-	private void initTunable(CyNetworkManager networkManage){
-		final List<TableType> options = new ArrayList<TableType>();
-		for(TableType type: TableType.values())
+	private void initTunable() {
+		final List<TableType> options = new ArrayList<>();
+		
+		for (TableType type : TableType.values())
 			options.add(type);
-		dataTypeOptions = new ListSingleSelection<TableType>(options);
+		
+		dataTypeOptions = new ListSingleSelection<>(options);
 		dataTypeOptions.setSelectedValue(TableType.NODE_ATTR);
 
-		for(CyNetwork net: networkManage.getNetworkSet()){
+		var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		
+		for (var net : netManager.getNetworkSet()) {
 			String netName = net.getRow(net).get(CyNetwork.NAME, String.class);
 			name2NetworkMap.put(netName, net);
 		}
-		List<String> names = new ArrayList<String>();
+		
+		List<String> names = new ArrayList<>();
 		names.addAll(name2NetworkMap.keySet());
-		if(names.isEmpty())
-			networkList = new ListMultipleSelection<String>(NO_NETWORKS);
+		
+		if (names.isEmpty())
+			networkList = new ListMultipleSelection<>(NO_NETWORKS);
 		else
-			networkList = new ListMultipleSelection<String>(names);
-
+			networkList = new ListMultipleSelection<>(names);
 	}
 
-
-	public void run(TaskMonitor taskMonitor) throws Exception {	
+	@Override
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Map Table to Network Tables");
 		TableType tableType = dataTypeOptions.getSelectedValue();
-		if (tableType == TableType.GLOBAL )
+		
+		if (tableType == TableType.GLOBAL)
 			return;
 
 		if (!selectedNetworksOnly)
-			mapTableToDefaultAttrs (tableType);
+			mapTableToDefaultAttrs(tableType);
 		else
-			mapTableToLocalAttrs (tableType);		 
+			mapTableToLocalAttrs(tableType);
 	}
-
-
 
 	private void mapTableToLocalAttrs(TableType tableType) {
-		List<CyNetwork> networks = new ArrayList<CyNetwork>();
+		List<CyNetwork> networks = new ArrayList<>();
 
-		if(!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
-			for(String netName: networkList.getSelectedValues())
+		if (!networkList.getSelectedValues().get(0).equals(NO_NETWORKS))
+			for (String netName : networkList.getSelectedValues())
 				networks.add(name2NetworkMap.get(netName));
 
-		for (CyNetwork network: networks){
+		for (CyNetwork network : networks) {
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
+
 			if (targetTable != null)
 				applyMapping(targetTable);
 		}
-
 	}
-
 
 	private void mapTableToDefaultAttrs(TableType tableType) {
-		List<CyRootNetwork> rootNetworkList = new ArrayList<CyRootNetwork>();
-		for (CyNetwork net : networkManager.getNetworkSet())
-			if (! rootNetworkList.contains(rootNetworkManager.getRootNetwork(net)))
-				rootNetworkList.add( rootNetworkManager.getRootNetwork(net));
+		List<CyRootNetwork> rootNetworkList = new ArrayList<>();
+		var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		var rootNetManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+		
+		for (var net : netManager.getNetworkSet())
+			if (!rootNetworkList.contains(rootNetManager.getRootNetwork(net)))
+				rootNetworkList.add(rootNetManager.getRootNetwork(net));
 
-		for (CyRootNetwork root: rootNetworkList ){
+		for (var root : rootNetworkList) {
 			CyTable targetTable = getTable(root, tableType, CyNetwork.DEFAULT_ATTRS);
+
 			if (targetTable != null)
 				applyMapping(targetTable);
 		}
 	}
 
-
-	private CyTable getTable(CyNetwork network, TableType tableType, String namespace){
-		if (tableType == TableType.NODE_ATTR)			return network.getTable(CyNode.class, namespace);
-		if (tableType == TableType.EDGE_ATTR)			return network.getTable(CyEdge.class, namespace);
-		if (tableType == TableType.NETWORK_ATTR)		return network.getTable(CyNetwork.class, namespace);
+	private CyTable getTable(CyNetwork network, TableType tableType, String namespace) {
+		if (tableType == TableType.NODE_ATTR)    return network.getTable(CyNode.class, namespace);
+		if (tableType == TableType.EDGE_ATTR)    return network.getTable(CyEdge.class, namespace);
+		if (tableType == TableType.NETWORK_ATTR) return network.getTable(CyNetwork.class, namespace);
 
 		logger.warn("The selected table type is not valie. \nTable needs to be one of these types: " +TableType.NODE_ATTR +", " + TableType.EDGE_ATTR  + ", "+ TableType.NETWORK_ATTR +" or "+TableType.GLOBAL +".");
 		return null;
 	}
 
-
-	private void applyMapping(CyTable targetTable){
-		if(byReader){
-			if (reader.getTables() != null && reader.getTables().length >0){
-				for(CyTable sourceTable : reader.getTables())
+	private void applyMapping(CyTable targetTable) {
+		if (byReader) {
+			if (reader.getTables() != null && reader.getTables().length > 0) {
+				for (CyTable sourceTable : reader.getTables())
 					mapTable(targetTable, sourceTable);
 			}
-		}else
+		} else {
 			mapTable(targetTable, globalTable);
+		}
 	}
 
 	private void mapTable(final CyTable localTable, final CyTable globalTable) {
@@ -209,11 +217,12 @@ public final class MapTableToNetworkTablesTask extends AbstractTask {
 			throw new IllegalStateException("Local table's primary key should be type String.");
 
 		final CyColumn trgCol = localTable.getColumn(CyRootNetwork.SHARED_NAME);
-		if (trgCol != null){
+		
+		if (trgCol != null) {
 			localTable.addVirtualColumns(globalTable, CyRootNetwork.SHARED_NAME, false);
 			globalTable.setPublic(false);
-		}
-		else
+		} else {
 			logger.warn("Name column in the target table was not found.");
+		}
 	}
 }

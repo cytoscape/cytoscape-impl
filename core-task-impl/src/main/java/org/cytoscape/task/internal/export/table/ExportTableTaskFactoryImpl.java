@@ -1,12 +1,23 @@
 package org.cytoscape.task.internal.export.table;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.AbstractTableTaskFactory;
+import org.cytoscape.task.write.ExportTableTaskFactory;
+import org.cytoscape.work.TaskIterator;
+import org.cytoscape.work.TunableSetter;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,48 +35,31 @@ package org.cytoscape.task.internal.export.table;
  * #L%
  */
 
-import java.io.File;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory implements ExportTableTaskFactory {
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.task.AbstractTableTaskFactory;
-import org.cytoscape.task.write.ExportTableTaskFactory;
-import org.cytoscape.work.TaskIterator;
-import org.cytoscape.work.TunableSetter;
+	CyTable table;
+	
+	private final CyServiceRegistrar serviceRegistrar;
 
-public class ExportTableTaskFactoryImpl extends AbstractTableTaskFactory 
-                                        implements ExportTableTaskFactory {
-
-	private final CyTableWriterManager writerManager;
-	private final CyApplicationManager cyApplicationManager;
-	private final TunableSetter tunableSetter;
-
-	public ExportTableTaskFactoryImpl(final CyTableWriterManager writerManager, final CyApplicationManager cyApplicationManager,
-			final TunableSetter tunableSetter) {
-		this.writerManager = writerManager;
-		this.cyApplicationManager = cyApplicationManager;
-		this.tunableSetter = tunableSetter;
+	public ExportTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(final CyTable table) {
-		return new TaskIterator(2, new CyTableWriter(writerManager, cyApplicationManager, table));
+		return new TaskIterator(2, new CyTableWriter(table, serviceRegistrar));
 	}
-	CyTable table;
+	
 	@Override
 	public TaskIterator createTaskIterator(final CyTable table, final File file) {
 		this.table = table;
-		final Map<String, Object> m = new HashMap<>();
+		
+		Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
 		
-		final CyTableWriter writer = new CyTableWriter(writerManager, cyApplicationManager, table);
+		var writer = new CyTableWriter(table, serviceRegistrar);
 		writer.setDefaultFileFormatUsingFileExt(file);
 		
-		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);
+		return serviceRegistrar.getService(TunableSetter.class).createTaskIterator(new TaskIterator(2, writer), m);
 	}
 }
