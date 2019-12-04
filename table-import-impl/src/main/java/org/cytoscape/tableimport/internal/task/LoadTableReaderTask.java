@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -193,10 +194,6 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		tm.setProgress(0.0);
 		tm.setStatusMessage("Loading table...");
 		
-		if(decimalSeparator == null) {
-			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
-		}
-		
 		List<String> attrNameList = new ArrayList<>();
 		int colCount;
 		String[] attributeNames;
@@ -210,6 +207,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 					workbook == null) {
 				try {
 					workbook = WorkbookFactory.create(isStart);
+					
+					if(decimalSeparator == null) {
+						decimalSeparator = ((DecimalFormat)DecimalFormat.getInstance()).getDecimalFormatSymbols().getDecimalSeparator();
+					}
 				} catch (InvalidFormatException e) {
 					e.printStackTrace();
 					throw new IllegalArgumentException("Could not read Excel file.  Maybe the file is broken?");
@@ -221,6 +222,10 @@ public class LoadTableReaderTask extends AbstractTask implements CyTableReader, 
 		} catch (Exception ioe) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "Unable to read table: "+ioe.getMessage());
 			return;
+		}
+		
+		if(decimalSeparator == null) {
+			decimalSeparator = AbstractMappingParameters.DEF_DECIMAL_SEPARATOR;
 		}
 		
 		if (startLoadRow > 0)
