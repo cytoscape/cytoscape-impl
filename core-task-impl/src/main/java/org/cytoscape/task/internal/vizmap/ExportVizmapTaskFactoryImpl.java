@@ -18,7 +18,7 @@ import org.cytoscape.work.TunableSetter;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2017 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -40,30 +40,30 @@ public class ExportVizmapTaskFactoryImpl extends AbstractTaskFactory implements 
 
 	private final CyServiceRegistrar serviceRegistrar; 
 	
-	public ExportVizmapTaskFactoryImpl(final CyServiceRegistrar serviceRegistrar) {
+	public ExportVizmapTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
 		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
-		final CyApplicationManager cyApplicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		var writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
+		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
 		
-		return new TaskIterator(2, new VizmapWriter(writerManager, cyApplicationManager, serviceRegistrar));
+		return new TaskIterator(2, new VizmapWriter(writerManager, applicationManager, serviceRegistrar));
 	}
 
 	@Override
 	public TaskIterator createTaskIterator(File file) {
 		final Map<String, Object> m = new HashMap<>();
 		m.put("OutputFile", file);
-		
-		final VizmapWriterManager writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
-		final CyApplicationManager cyApplicationManager = serviceRegistrar.getService(CyApplicationManager.class);
-		final VizmapWriter writer = new VizmapWriter(writerManager, cyApplicationManager, serviceRegistrar);
-		writer.setDefaultFileFormatUsingFileExt(file);
-		
-		final TunableSetter tunableSetter = serviceRegistrar.getService(TunableSetter.class);
 
-		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m); 
+		var writerManager = serviceRegistrar.getService(VizmapWriterManager.class);
+		var applicationManager = serviceRegistrar.getService(CyApplicationManager.class);
+		var writer = new VizmapWriter(writerManager, applicationManager, serviceRegistrar);
+		writer.setDefaultFileFormatUsingFileExt(file);
+
+		var tunableSetter = serviceRegistrar.getService(TunableSetter.class);
+
+		return tunableSetter.createTaskIterator(new TaskIterator(2, writer), m);
 	}
 }

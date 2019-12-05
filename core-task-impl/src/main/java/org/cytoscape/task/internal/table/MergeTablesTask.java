@@ -1,29 +1,5 @@
 package org.cytoscape.task.internal.table;
 
-/*
- * #%L
- * Cytoscape Core Task Impl (core-task-impl)
- * $Id:$
- * $HeadURL:$
- * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as 
- * published by the Free Software Foundation, either version 2.1 of the 
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public 
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-2.1.html>.
- * #L%
- */
-
 import static org.cytoscape.work.TunableValidator.ValidationState.OK;
 
 import java.io.IOException;
@@ -50,8 +26,8 @@ import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.task.internal.utils.DataUtils;
-import org.cytoscape.util.json.CyJSONUtil;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
@@ -63,6 +39,31 @@ import org.cytoscape.work.util.ListMultipleSelection;
 import org.cytoscape.work.util.ListSingleSelection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
+/*
+ * #%L
+ * Cytoscape Core Task Impl (core-task-impl)
+ * $Id:$
+ * $HeadURL:$
+ * %%
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as 
+ * published by the Free Software Foundation, either version 2.1 of the 
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public 
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-2.1.html>.
+ * #L%
+ */
 
 public class MergeTablesTask extends AbstractTask implements TunableValidator, ObservableTask {
 	
@@ -101,19 +102,22 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 	public static final String COPY_COLUMNS = "Copy Columns";
 	public static final String LINK_COLUMNS = "Link To Columns";
 	
-	private CyRootNetworkManager rootNetworkManager;
-	private CyTableManager tableMgr;
 	private Map<String, CyNetwork> name2NetworkMap;
 	private Map<String, CyRootNetwork> name2RootMap;
 	private Map<String, String> source2targetColumnMap;
 	private List<Long> tableSUIDs;
 	
+	private final CyServiceRegistrar serviceRegistrar;
+	
 	public ListSingleSelection<CyTable> sourceTable;
 
-	@Tunable(description = "Source Table:", gravity = 0.1, 
-	         groups = { "Source" }, 
-	         longDescription="The name of the table used as the base data in the merge", 
-	         exampleStringValue = "default node table")
+	@Tunable(
+			description = "Source Table:",
+			gravity = 0.1,
+			groups = { "Source" },
+			longDescription = "The name of the table used as the base data in the merge",
+			exampleStringValue = "default node table"
+	)
 	public ListSingleSelection<CyTable> getSourceTable() {
 		return sourceTable;
 	}
@@ -336,35 +340,31 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 		return "Merge Data Table";
 	}
 
-	public MergeTablesTask(final CyTableManager tableMgr, final CyRootNetworkManager rootNetworkManager,
-			final CyNetworkManager networkManager) {
-		init(tableMgr, rootNetworkManager, networkManager);
-	}
-
-	private final void init(final CyTableManager tableMgr, final CyRootNetworkManager rootNetworkManeger,
-			final CyNetworkManager networkManager) {
-		this.rootNetworkManager = rootNetworkManeger;
+	public MergeTablesTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 		this.name2NetworkMap = new HashMap<>();
 		this.name2RootMap = new HashMap<>();
 		this.source2targetColumnMap = new HashMap<>();
-		this.tableSUIDs = new ArrayList<Long>();
-		this.tableMgr = tableMgr;
+		this.tableSUIDs = new ArrayList<>();
 
-		initTunable(tableMgr, networkManager);
+		initTunable();
 	}
 
-	private final void initTunable(final CyTableManager tabelMgr, final CyNetworkManager networkManager) {
+	private final void initTunable() {
 		final List<CyTable> listOfTables = new ArrayList<>();
 		final List<Object> listOfUTables = new ArrayList<>();
+		
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
 
-		for (CyTable tempTable : tabelMgr.getGlobalTables()) {
+		for (CyTable tempTable : tableManager.getGlobalTables()) {
 			if (tempTable.isPublic()) {
 				listOfTables.add(tempTable);
 				listOfUTables.add(tempTable);
 			}
 		}
 
-		final Set<CyNetwork> networkSet = networkManager.getNetworkSet();
+		var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		Set<CyNetwork> networkSet = netManager.getNetworkSet();
 		
 		if (!networkSet.isEmpty()) {
 			whereMergeTable = new ListSingleSelection<>(NETWORK_COLLECTION, NETWORK_SELECTION, UNASSIGNED_TABLE);
@@ -393,8 +393,10 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 			else
 				targetNetworkList = new ListMultipleSelection<>(names);
 
+			var rootNetManager = serviceRegistrar.getService(CyRootNetworkManager.class);
+			
 			for (CyNetwork net : networkSet) {
-				final CyRootNetwork rootNet = rootNetworkManager.getRootNetwork(net);
+				final CyRootNetwork rootNet = rootNetManager.getRootNetwork(net);
 				
 				if (!name2RootMap.containsValue(rootNet))
 					name2RootMap.put(rootNet.getRow(rootNet).get(CyRootNetwork.NAME, String.class), rootNet);
@@ -458,7 +460,9 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 	}
 	
 	@Override
-	public void run(TaskMonitor taskMonitor) throws Exception {
+	public void run(TaskMonitor tm) throws Exception {
+		tm.setTitle("Merge Tables");
+		
 		// If we are here and there no networks loaded, we could only continue
 		// if the merge is on an unassigned table
 		if (!whereMergeTable.getSelectedValue().matches(UNASSIGNED_TABLE)) {
@@ -503,7 +507,7 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 		if (!unassignedTable.getSelectedValue().toString().matches(NO_TABLES)) {
 			CyTable tableChosen = (CyTable) unassignedTable.getSelectedValue();
 			
-			if (!tableChosen.equals(sourceTable))
+			if (!tableChosen.equals(sourceTable.getSelectedValue()))
 				applyMapping(tableChosen);
 		}
 	}
@@ -514,9 +518,10 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 		if (targetNetworkList.getSelectedValues().isEmpty())
 			return;
 
-		if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS))
+		if (!targetNetworkList.getSelectedValues().get(0).equals(NO_NETWORKS)) {
 			for (String netName : targetNetworkList.getSelectedValues())
 				networks.add(name2NetworkMap.get(netName));
+		}
 
 		for (CyNetwork network : networks) {
 			CyTable targetTable = getTable(network, tableType, CyNetwork.LOCAL_ATTRS);
@@ -770,8 +775,9 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 
 	private List<Object> getPublicGlobalTables() {
 		final List<Object> listTables = new ArrayList<>();
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
 
-		for (CyTable tempTable : tableMgr.getGlobalTables()) {
+		for (CyTable tempTable : tableManager.getGlobalTables()) {
 			if (tempTable.isPublic())
 				listTables.add(tempTable);
 		}
@@ -780,7 +786,9 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 	}
 
 	private boolean isTableGlobal(CyTable table) {
-		for (CyTable tempTable : tableMgr.getGlobalTables()) {
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
+		
+		for (CyTable tempTable : tableManager.getGlobalTables()) {
 			if (tempTable.equals(table))
 				return true;
 		}
@@ -801,25 +809,32 @@ public class MergeTablesTask extends AbstractTask implements TunableValidator, O
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public Object getResults(Class requestedType) {
 		if (requestedType.equals(String.class)) {
 			String res = "";
-			for (Long suid: tableSUIDs) {
-				res += suid.toString()+",";
-			}
-			return res.substring(0, res.length()-1);
+			
+			for (Long suid : tableSUIDs)
+				res += suid.toString() + ",";
+			
+			return res.substring(0, res.length() - 1);
 		}
 		if (requestedType.equals(JSONResult.class)) {
 			JSONResult res = () -> {
-				if (tableSUIDs == null || tableSUIDs.size() == 0) return "{}";
+				if (tableSUIDs == null || tableSUIDs.size() == 0)
+					return "{}";
+				
 				String strRes = "{\"tables\":[";
-				for (Long suid: tableSUIDs) {
-					strRes += suid.toString()+",";
-				}
-				return strRes.substring(0, strRes.length()-1)+"]}";
+				
+				for (Long suid : tableSUIDs)
+					strRes += suid.toString() + ",";
+				
+				return strRes.substring(0, strRes.length() - 1) + "]}";
 			};
+			
 			return res;
 		}
+		
 		return tableSUIDs;
 	}
 

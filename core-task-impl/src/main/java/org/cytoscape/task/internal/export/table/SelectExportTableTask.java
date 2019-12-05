@@ -6,12 +6,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableManager;
+import org.cytoscape.service.util.CyServiceRegistrar;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ContainsTunables;
 import org.cytoscape.work.ProvidesTitle;
@@ -30,7 +29,7 @@ import org.cytoscape.work.util.ListSingleSelection;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -48,30 +47,23 @@ import org.cytoscape.work.util.ListSingleSelection;
  * #L%
  */
 
-public class SelectExportTableTask extends AbstractTask implements RequestsUIHelper, TunableValidator{
+public class SelectExportTableTask extends AbstractTask implements RequestsUIHelper, TunableValidator {
 
-	@Tunable(description = "Select a table to export:", gravity = 1.05, longDescription="Specifies the name of the table to export")
+	@Tunable(description = "Select a table to export:", gravity = 1.05, longDescription = "Specifies the name of the table to export")
 	public ListSingleSelection<String> selectTable;
 	
 	@ContainsTunables
-	public CyTableWriter writer = null;
+	public CyTableWriter writer;
 	
 	private TunableUIHelper helper;
 	
-	private final CyTableWriterManager writerManager;
-	private final CyTableManager cyTableManagerServiceRef;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
-	private final CyApplicationManager cyApplicationManagerServiceRef;
-
 	private HashMap<CyTable, CyNetwork> tableNetworkMap = new HashMap<>();
 	private HashMap<String, CyTable> titleTableMap = new HashMap<>();
 	
-	public SelectExportTableTask(final CyTableWriterManager writerManager, final CyTableManager cyTableManagerServiceRef, 
-			final CyNetworkManager cyNetworkManagerServiceRef, final CyApplicationManager cyApplicationManagerServiceRef) {
-		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
-		this.writerManager = writerManager;
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
-		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
+	private final CyServiceRegistrar serviceRegistrar;
+	
+	public SelectExportTableTask(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 
 		populateNetworkTableMap();
 		populateSelectTable();
@@ -79,49 +71,53 @@ public class SelectExportTableTask extends AbstractTask implements RequestsUIHel
 	}
 
 	private void populateSelectTable() {
-		final List<String> options = new ArrayList<>();
+		List<String> options = new ArrayList<>();
+		var tableManager = serviceRegistrar.getService(CyTableManager.class);
 		
-		for (CyTable tbl : cyTableManagerServiceRef.getAllTables(false)) {
+		for (CyTable tbl : tableManager.getAllTables(false)) {
 			String title = tbl.getTitle();
-			options.add(title);			
-			this.titleTableMap.put(title, tbl);
+			options.add(title);
+			titleTableMap.put(title, tbl);
 		}
 		
 		Collections.sort(options);
-		selectTable =  new ListSingleSelection<String>(options);
-		selectTable.addListener(new ListChangeListener<String>(){
+		selectTable = new ListSingleSelection<>(options);
+		selectTable.addListener(new ListChangeListener<String>() {
 			@Override
 			public void selectionChanged(ListSelection<String> source) {
 				updateWriter();
-				if(helper != null)
+				
+				if (helper != null)
 					helper.refresh(SelectExportTableTask.this);
 			}
-
 			@Override
 			public void listChanged(ListSelection<String> source) {
 			}});
 	}
 	
 	private void populateNetworkTableMap() {
-		for (CyNetwork net: cyNetworkManagerServiceRef.getNetworkSet()) {
-			this.tableNetworkMap.put(net.getDefaultNetworkTable(), net);
-			this.tableNetworkMap.put(net.getDefaultNodeTable(), net);
-			this.tableNetworkMap.put(net.getDefaultEdgeTable(), net);
+		var netManager = serviceRegistrar.getService(CyNetworkManager.class);
+		
+		for (CyNetwork net : netManager.getNetworkSet()) {
+			tableNetworkMap.put(net.getDefaultNetworkTable(), net);
+			tableNetworkMap.put(net.getDefaultNodeTable(), net);
+			tableNetworkMap.put(net.getDefaultEdgeTable(), net);
 		}
 	}
 	
 	private void updateWriter() {
-		final String selectedTitle = selectTable.getSelectedValue();		
+		String selectedTitle = selectTable.getSelectedValue();
 		CyTable tbl = titleTableMap.get(selectedTitle);
-		if(tbl != null)
-			writer = new CyTableWriter(writerManager, cyApplicationManagerServiceRef, tbl);
+		
+		if (tbl != null)
+			writer = new CyTableWriter(tbl, serviceRegistrar);
 		else
 			writer = null;
 	}
 
 	@Override
-	public void run(final TaskMonitor tm) throws IOException {
-		this.insertTasksAfterCurrentTask(writer);		
+	public void run(TaskMonitor tm) throws IOException {
+		insertTasksAfterCurrentTask(writer);		
 	}
 	
 	@ProvidesTitle
@@ -136,13 +132,14 @@ public class SelectExportTableTask extends AbstractTask implements RequestsUIHel
 
 	@Override
 	public ValidationState getValidationState(Appendable errMsg) {
-		if(selectTable.getPossibleValues().isEmpty()) {
+		if (selectTable.getPossibleValues().isEmpty()) {
 			try {
 				errMsg.append("No tables exist.");
 			} catch (IOException e) {
 			}
 			return ValidationState.INVALID;
+		} else {
+			return writer.getValidationState(errMsg);
 		}
-		else return writer.getValidationState(errMsg);
 	}
 }

@@ -204,4 +204,8 @@ public class NetworkTransform {
 	public Point getImageCoordinates(Point2D p) {
 		return getImageCoordinates(p.getX(), p.getY());
 	}
+	
+	public float getNodeDistance(int imageUnits) {
+		return (float)(imageUnits / scaleFactor);
+	}
 }

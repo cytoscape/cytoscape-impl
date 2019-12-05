@@ -1,12 +1,28 @@
 package org.cytoscape.task.internal.export.table;
 
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+
+import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.write.CyTableWriterFactory;
+import org.cytoscape.io.write.CyTableWriterManager;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyTable;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,25 +40,10 @@ package org.cytoscape.task.internal.export.table;
  * #L%
  */
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyTableWriterFactory;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyTable;
-import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Tunable;
-
 /**
  * A utility Task implementation specifically for writing {@link org.cytoscape.model.CyTable} objects.
  */
-public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFactory,CyTableWriterManager> {
+public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFactory, CyTableWriterManager> {
 
 	private final CyTable table;
 
@@ -51,26 +52,27 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	 * {@link org.cytoscape.io.write.CyTableWriterFactory} to use to write the file.
 	 * @param table The {@link org.cytoscape.model.CyTable} to be written out. 
  	 */
-	public CyTableWriter(final CyTableWriterManager writerManager, final CyApplicationManager cyApplicationManager,
-			final CyTable table) {
-		super(writerManager, cyApplicationManager);
-		
+	public CyTableWriter(CyTable table, CyServiceRegistrar serviceRegistrar) {
+		super(serviceRegistrar.getService(CyTableWriterManager.class),
+				serviceRegistrar.getService(CyApplicationManager.class));
+
 		if (table == null)
 			throw new NullPointerException("Table is null");
-		
+
 		this.table = table;
-		
+
 		List<String> fileTypes = options.getPossibleValues();
+		
 		for (Iterator<String> i = fileTypes.iterator(); i.hasNext();) {
 			if (i.next().contains(".cytable"))
 				i.remove();
 		}
-		options.setPossibleValues(fileTypes);
 		
-		this.outputFile = getSuggestedFile();
+		options.setPossibleValues(fileTypes);
+		outputFile = getSuggestedFile();
 	}
 	
-	void setDefaultFileFormatUsingFileExt(final File file) {
+	void setDefaultFileFormatUsingFileExt(File file) {
 		String ext = FilenameUtils.getExtension(file.getName());
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
@@ -84,14 +86,19 @@ public final class CyTableWriter extends TunableAbstractCyWriter<CyTableWriterFa
 	}
 
 	@Override
-	protected CyWriter getWriter(final CyFileFilter filter) throws Exception {
+	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
 		return writerManager.getWriter(table, filter, outputStream);
 	}
 
-	@Tunable(description="Save Table as", params="fileCategory=table;input=false", dependsOn="options!=", 
-	         longDescription="The path of the file to export the table to.  Note that the file will be overwritten if it exists.",
-					 exampleStringValue="myfile.csv",
-					 gravity = 1.1)
+	@Tunable(
+			description = "Save Table as",
+			params = "fileCategory=table;input=false",
+			dependsOn = "options!=",
+			longDescription = "The path of the file to export the table to.  Note that the file will be overwritten if it exists.",
+			exampleStringValue = "myfile.csv",
+			gravity = 1.1
+	)
+	@Override
 	public File getOutputFile() {
 		return outputFile;
 	}

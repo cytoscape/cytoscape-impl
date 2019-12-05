@@ -1,12 +1,17 @@
 package org.cytoscape.task.internal.export.table;
 
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
+import org.cytoscape.work.AbstractTaskFactory;
+import org.cytoscape.work.TaskIterator;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,34 +29,16 @@ package org.cytoscape.task.internal.export.table;
  * #L%
  */
 
-
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.io.write.CyTableWriterManager;
-import org.cytoscape.model.CyNetworkManager;
-import org.cytoscape.model.CyTableManager;
-import org.cytoscape.task.write.ExportSelectedTableTaskFactory;
-import org.cytoscape.work.AbstractTaskFactory;
-import org.cytoscape.work.TaskIterator;
-
 public class ExportSelectedTableTaskFactoryImpl extends AbstractTaskFactory implements ExportSelectedTableTaskFactory{
 
-	private final CyTableWriterManager writerManager;
-	private final CyTableManager cyTableManagerServiceRef;
-	private final CyNetworkManager cyNetworkManagerServiceRef;
-	private final CyApplicationManager cyApplicationManagerServiceRef;
+	private final CyServiceRegistrar serviceRegistrar;
 
-	
-	public ExportSelectedTableTaskFactoryImpl(CyTableWriterManager writerManager, CyTableManager cyTableManagerServiceRef, 
-			CyNetworkManager cyNetworkManagerServiceRef, CyApplicationManager cyApplicationManagerServiceRef) {
-		this.writerManager = writerManager;
-		this.cyTableManagerServiceRef = cyTableManagerServiceRef;
-		this.cyNetworkManagerServiceRef = cyNetworkManagerServiceRef;
-		this.cyApplicationManagerServiceRef = cyApplicationManagerServiceRef;
+	public ExportSelectedTableTaskFactoryImpl(CyServiceRegistrar serviceRegistrar) {
+		this.serviceRegistrar = serviceRegistrar;
 	}
 	
 	@Override
 	public TaskIterator createTaskIterator() {
-		return new TaskIterator(new SelectExportTableTask(writerManager, cyTableManagerServiceRef, 
-				cyNetworkManagerServiceRef, cyApplicationManagerServiceRef));
+		return new TaskIterator(new SelectExportTableTask(serviceRegistrar));
 	}
 }

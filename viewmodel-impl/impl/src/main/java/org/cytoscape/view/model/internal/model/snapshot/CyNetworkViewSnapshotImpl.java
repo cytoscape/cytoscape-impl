@@ -13,6 +13,7 @@ import org.cytoscape.view.model.CyNetworkViewSnapshot;
 import org.cytoscape.view.model.SnapshotEdgeInfo;
 import org.cytoscape.view.model.SnapshotNodeInfo;
 import org.cytoscape.view.model.View;
+import org.cytoscape.view.model.VisualLexicon;
 import org.cytoscape.view.model.VisualProperty;
 import org.cytoscape.view.model.internal.model.CyEdgeViewImpl;
 import org.cytoscape.view.model.internal.model.CyNetworkViewImpl;
@@ -66,7 +67,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 			VPStore nodeVPs,
 			VPStore edgeVPs,
 			VPNetworkStore netVPs,
-			boolean isBVL
+			VisualLexicon lexicon
 	) {
 		super(networkView.getSUID());
 		this.networkView = networkView;
@@ -79,7 +80,7 @@ public class CyNetworkViewSnapshotImpl extends CyViewSnapshotBase<CyNetwork> imp
 		this.nodeVPs = nodeVPs;
 		this.edgeVPs = edgeVPs;
 		this.netVPs = netVPs;
-		this.isBVL = isBVL; // is BasicVisualLexicon?
+		this.isBVL = lexicon instanceof BasicVisualLexicon;
 		
 		this.spacialIndex = new SimpleSpacialIndex2DSnapshotImpl(this);
 	}

@@ -1,12 +1,27 @@
 package org.cytoscape.task.internal.export.network;
 
+import java.io.File;
+
+import org.apache.commons.io.FilenameUtils;
+import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.command.StringToModel;
+import org.cytoscape.io.CyFileFilter;
+import org.cytoscape.io.write.CyNetworkViewWriterFactory;
+import org.cytoscape.io.write.CyNetworkViewWriterManager;
+import org.cytoscape.io.write.CyWriter;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.service.util.CyServiceRegistrar;
+import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
+import org.cytoscape.work.ProvidesTitle;
+import org.cytoscape.work.Tunable;
+
 /*
  * #%L
  * Cytoscape Core Task Impl (core-task-impl)
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2013 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -24,55 +39,41 @@ package org.cytoscape.task.internal.export.network;
  * #L%
  */
 
-
-import java.io.File;
-
-import org.apache.commons.io.FilenameUtils;
-import org.cytoscape.application.CyApplicationManager;
-import org.cytoscape.command.StringToModel;
-import org.cytoscape.io.CyFileFilter;
-import org.cytoscape.io.write.CyNetworkViewWriterFactory;
-import org.cytoscape.io.write.CyNetworkViewWriterManager;
-import org.cytoscape.io.write.CyWriter;
-import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.internal.export.TunableAbstractCyWriter;
-import org.cytoscape.work.ProvidesTitle;
-import org.cytoscape.work.Tunable;
-
-
 /**
  * A utility Task implementation specifically for writing a {@link org.cytoscape.model.CyNetwork}.
  */
-public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkViewWriterFactory,CyNetworkViewWriterManager> {
+public final class CyNetworkWriter
+		extends TunableAbstractCyWriter<CyNetworkViewWriterFactory, CyNetworkViewWriterManager> {
 
 	// the network to be written
-	@Tunable(description="The network to be exported", 
-	         longDescription=StringToModel.CY_NETWORK_LONG_DESCRIPTION, 
-	         exampleStringValue=StringToModel.CY_NETWORK_EXAMPLE_STRING, context="nogui")
-	public CyNetwork network = null;
+	@Tunable(
+			description = "The network to be exported",
+			longDescription = StringToModel.CY_NETWORK_LONG_DESCRIPTION,
+			exampleStringValue = StringToModel.CY_NETWORK_EXAMPLE_STRING,
+			context = "nogui"
+	)
+	public CyNetwork network;
 
 	/**
-	 * @param writerManager The {@link org.cytoscape.io.write.CyNetworkViewWriterManager} used to determine which 
-	 * {@link org.cytoscape.io.write.CyNetworkViewWriterFactory} to use to write the file.
 	 * @param network The {@link org.cytoscape.model.CyNetwork} to be written out. 
 	 */
-	public CyNetworkWriter(final CyNetworkViewWriterManager writerManager, final CyApplicationManager cyApplicationManager,
-			final CyNetwork network, final boolean useTunable ) {
-		super(writerManager, cyApplicationManager);
-
+	public CyNetworkWriter(CyNetwork network, boolean useTunable, CyServiceRegistrar serviceRegistrar) {
+		super(
+				serviceRegistrar.getService(CyNetworkViewWriterManager.class),
+				serviceRegistrar.getService(CyApplicationManager.class)
+		);
 		this.network = network;
 
 		// Pick SIF as a default file format
-		for(String fileTypeDesc: this.getFileFilterDescriptions()) {
-			if(fileTypeDesc.contains("SIF")) {
+		for (String fileTypeDesc : this.getFileFilterDescriptions()) {
+			if (fileTypeDesc.contains("SIF")) {
 				this.options.setSelectedValue(fileTypeDesc);
 				break;
 			}
 		}
 
-		if (useTunable) {
+		if (useTunable)
 			return;
-		}
 
 		if (network == null)
 			throw new NullPointerException("Network is null.");
@@ -84,31 +85,35 @@ public final class CyNetworkWriter extends TunableAbstractCyWriter<CyNetworkView
 		String ext = FilenameUtils.getExtension(file.getName());
 		ext = ext.toLowerCase().trim();
 		String searchDesc = "*." + ext;
-		//Use the EXT to determine the default file format
-		for(String fileTypeDesc: this.getFileFilterDescriptions() )
-			if(fileTypeDesc.contains(searchDesc) )
-			{
+		
+		// Use the EXT to determine the default file format
+		for (String fileTypeDesc : this.getFileFilterDescriptions())
+			if (fileTypeDesc.contains(searchDesc)) {
 				options.setSelectedValue(fileTypeDesc);
 				break;
 			}
 	}
 
-	/**
-	 * {@inheritDoc}  
-	 */
 	@Override
-	protected CyWriter getWriter(CyFileFilter filter)  throws Exception{
-		if (network == null) network = cyApplicationManager.getCurrentNetwork();
-		return writerManager.getWriter(network,filter,outputStream);
+	protected CyWriter getWriter(CyFileFilter filter) throws Exception {
+		if (network == null)
+			network = cyApplicationManager.getCurrentNetwork();
+		
+		return writerManager.getWriter(network, filter, outputStream);
 	}
-	
-	@Tunable(description="File to save network to", params="fileCategory=network;input=false", 
-	         required=true,
-	         dependsOn="options!=", gravity = 1.1)
-	public  File getOutputFile() {	
+
+	@Tunable(
+			description = "File to save network to",
+			params = "fileCategory=network;input=false",
+			required = true,
+			dependsOn = "options!=",
+			gravity = 1.1
+	)
+	@Override
+	public File getOutputFile() {
 		return outputFile;
 	}
-	
+
 	@ProvidesTitle
 	public String getTitle() {
 		return "Export Network";

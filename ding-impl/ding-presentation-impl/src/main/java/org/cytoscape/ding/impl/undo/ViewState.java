@@ -37,6 +37,7 @@ import java.util.WeakHashMap;
 
 import org.cytoscape.ding.DVisualLexicon;
 import org.cytoscape.ding.impl.DRenderingEngine;
+import org.cytoscape.ding.impl.DRenderingEngine.UpdateType;
 import org.cytoscape.ding.impl.DingNetworkViewFactory;
 import org.cytoscape.graph.render.stateful.NodeDetails;
 import org.cytoscape.model.CyEdge;
@@ -210,9 +211,7 @@ public class ViewState {
 
 		re.setZoom(scaleFactor);
 		re.setCenter(center.getX(), center.getY());
-		
-		// MKTODO
-		//re.updateView();
+		re.updateView(UpdateType.ALL_FULL);
 
 		if (anchors != null) {
 			for(View<CyEdge> e: anchors.keySet()) {

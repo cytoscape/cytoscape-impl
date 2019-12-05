@@ -1,7 +1,7 @@
 package org.cytoscape.task.internal.view;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -39,7 +39,7 @@ import org.mockito.MockitoAnnotations;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2006 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2006 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -63,8 +63,8 @@ public class CreateNetworkViewTaskTest {
 	private final NetworkViewTestSupport viewSupport = new NetworkViewTestSupport();
 	private CyNetworkViewFactory viewFactory = viewSupport.getNetworkViewFactory();
 
-	@Mock private CyNetworkViewManager networkViewManager;
-	@Mock private CyNetworkManager networkManager;
+	@Mock private CyNetworkViewManager netViewManager;
+	@Mock private CyNetworkManager netManager;
 	@Mock private RenderingEngineManager renderingEngineManager;
 	@Mock private UndoSupport undoSupport;
 	@Mock private TaskMonitor tm;
@@ -79,39 +79,39 @@ public class CreateNetworkViewTaskTest {
 		MockitoAnnotations.initMocks(this);
 		when(vmm.getCurrentVisualStyle()).thenReturn(currentStyle);
 		when(renderingEngineManager.getRenderingEngines(any(View.class))).thenReturn(Collections.EMPTY_LIST);
+		
 		when(serviceRegistrar.getService(UndoSupport.class)).thenReturn(undoSupport);
 		when(serviceRegistrar.getService(CyEventHelper.class)).thenReturn(eventHelper);
 		when(serviceRegistrar.getService(RenderingEngineManager.class)).thenReturn(renderingEngineManager);
 		when(serviceRegistrar.getService(VisualMappingManager.class)).thenReturn(vmm);
 		when(serviceRegistrar.getService(CyApplicationManager.class)).thenReturn(appManager);
+		when(serviceRegistrar.getService(CyNetworkViewManager.class)).thenReturn(netViewManager);
 	}
 	
 	@Test
 	public void testCreateNetworkViewTask() throws Exception {
-		final Set<CyNetwork> networks = new HashSet<>();
+		Set<CyNetwork> networks = new HashSet<>();
 		networks.add(support.getNetwork());
-		final CreateNetworkViewTask task = new CreateNetworkViewTask(networks, viewFactory,
-				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
+		var task = new CreateNetworkViewTask(networks, viewFactory, netManager, null, appManager, serviceRegistrar);
 
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
-		verify(networkViewManager, times(1)).addNetworkView(any(CyNetworkView.class), eq(false));
+		verify(netViewManager, times(1)).addNetworkView(any(CyNetworkView.class), eq(false));
 	}
 
 	@Test
 	public void testShouldCreateMultipleViewsPerNetwork() throws Exception {
-		final Set<CyNetwork> networks = new HashSet<>();
-		final CyNetworkView view = viewSupport.getNetworkView();
+		Set<CyNetwork> networks = new HashSet<>();
+		CyNetworkView view = viewSupport.getNetworkView();
 		networks.add(support.getNetwork());
 		networks.add(view.getModel());
-		when(networkViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
+		when(netViewManager.getNetworkViews(view.getModel())).thenReturn(Arrays.asList(new CyNetworkView[]{ view }));
 		
-		final CreateNetworkViewTask task = new CreateNetworkViewTask(networks, viewFactory,
-				networkViewManager, networkManager, null, eventHelper, vmm, renderingEngineManager, appManager, serviceRegistrar);
-		
+		var task = new CreateNetworkViewTask(networks, viewFactory, netManager, null, appManager, serviceRegistrar);
+
 		task.setTaskIterator(new TaskIterator(task));
 		task.run(tm);
-		verify(networkViewManager, times(2)).addNetworkView(any(CyNetworkView.class), eq(false));
+		verify(netViewManager, times(2)).addNetworkView(any(CyNetworkView.class), eq(false));
 		verify(vmm, times(2)).setVisualStyle(eq(currentStyle), any(CyNetworkView.class));
 	}
 }

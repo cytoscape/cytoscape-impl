@@ -21,7 +21,7 @@ import org.cytoscape.work.json.JSONResult;
  * $Id:$
  * $HeadURL:$
  * %%
- * Copyright (C) 2012 - 2018 The Cytoscape Consortium
+ * Copyright (C) 2012 - 2019 The Cytoscape Consortium
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as 
@@ -57,9 +57,9 @@ public class CollapseGroupTask extends AbstractGroupTask implements ObservableTa
 		this.collapse = collapse;
 	}
 
-	public CollapseGroupTask(CyApplicationManager appMgr, CyGroupManager manager, boolean collapse, CyServiceRegistrar serviceRegistrar) {
+	public CollapseGroupTask(CyGroupManager manager, boolean collapse, CyServiceRegistrar serviceRegistrar) {
 		super(serviceRegistrar);
-		this.net = appMgr.getCurrentNetwork();
+		this.net = serviceRegistrar.getService(CyApplicationManager.class).getCurrentNetwork();
 		this.collapse = collapse;
 	}
 
@@ -67,7 +67,7 @@ public class CollapseGroupTask extends AbstractGroupTask implements ObservableTa
 	public void run(TaskMonitor tm) throws Exception {
 		if (network != null)
 			net = network;
-
+		
 		if (groups == null && groupList == null) {
 			tm.showMessage(TaskMonitor.Level.ERROR, "List of groups must be specified");
 			return;

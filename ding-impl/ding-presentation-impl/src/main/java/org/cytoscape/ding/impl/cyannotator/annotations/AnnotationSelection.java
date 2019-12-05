@@ -73,6 +73,10 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 		}
 	}
 	
+	public int size() {
+		return selectedAnnotations.size();
+	}
+	
 	public boolean contains(DingAnnotation a) {
 		return selectedAnnotations.contains(a);
 	}
@@ -120,6 +124,8 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 	
 	public Point2D getLocation() {
 		Rectangle2D bounds = getBounds();
+		if(bounds == null)
+			return null;
 		return new Point2D.Double(bounds.getX(), bounds.getY());
 	}
 	
@@ -166,6 +172,7 @@ public class AnnotationSelection implements Iterable<DingAnnotation> {
 
 		for(var a : this) {
 			((AbstractAnnotation)a).resizeAnnotationRelative(savedUnion, newOutlineBounds);
+			a.update();
 		}
 		updateBounds();
 	}

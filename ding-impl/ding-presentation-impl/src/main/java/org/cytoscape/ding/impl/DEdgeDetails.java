@@ -449,11 +449,11 @@ public final class DEdgeDetails implements EdgeDetails {
 			};
 		}
 
-		MinLongHeap heap = new MinLongHeap();
 		
 		// Now add "invisible" anchors to edges for the case where multiple edges
 		// exist between two nodes. This has no effect if user specified anchors exist on the edge.
 		while (true) {
+			MinLongHeap heap = new MinLongHeap();
 			// By consistently ordering the source and target nodes, dx and dy will always
 			// be calculated according to the same orientation. This allows the offset
 			// calculation to toggle the edges from side to side without any overlap.
@@ -488,7 +488,7 @@ public final class DEdgeDetails implements EdgeDetails {
 			while (true) {
 				if (edgeView.getSUID() == (otherEdge = otherEdges.nextLong()) || otherEdge == -1)
 					break;
-				if (hasHandles(otherEdgeView))
+				if (!hasHandles(otherEdgeView))
 					i++;
 			}
 

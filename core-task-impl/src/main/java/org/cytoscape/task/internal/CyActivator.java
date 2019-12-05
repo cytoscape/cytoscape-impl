@@ -62,23 +62,17 @@ import java.util.stream.Collectors;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.NetworkViewRenderer;
-import org.cytoscape.event.CyEventHelper;
 import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.group.CyGroupManager;
 import org.cytoscape.io.write.CyNetworkViewWriterManager;
 import org.cytoscape.io.write.CySessionWriterFactory;
-import org.cytoscape.io.write.CyTableWriterManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkFactory;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableManager;
-import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
-import org.cytoscape.session.CyNetworkNaming;
-import org.cytoscape.session.CySessionManager;
 import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewCollectionTaskFactory;
@@ -281,10 +275,6 @@ import org.cytoscape.task.write.SaveSessionAsTaskFactory;
 import org.cytoscape.util.swing.IconManager;
 import org.cytoscape.util.swing.TextIcon;
 import org.cytoscape.view.layout.CyLayoutAlgorithmManager;
-import org.cytoscape.view.model.CyNetworkViewManager;
-import org.cytoscape.view.presentation.RenderingEngineManager;
-import org.cytoscape.view.vizmap.VisualMappingManager;
-import org.cytoscape.work.SynchronousTaskManager;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TunableSetter;
 import org.osgi.framework.BundleContext;
@@ -321,43 +311,23 @@ public class CyActivator extends AbstractCyActivator {
 	private Font iconFont;
 	
 	private CyServiceRegistrar serviceRegistrar;
-	private CyEventHelper eventHelper;
-	private CyNetworkNaming networkNaming;
-	private CyNetworkFactory netFactory;
-	private CyRootNetworkManager rootNetManager;
-	private VisualMappingManager visualMappingManager;
 	private CyNetworkViewWriterManager netViewWriterManager;
 	private CyNetworkManager netManager;
-	private CyNetworkViewManager netViewManager;
 	private CyApplicationManager applicationManager;
-	private CySessionManager sessionManager;
 	private CyTableManager tableManager;
 	private CyLayoutAlgorithmManager layoutAlgManager;
-	private CyTableWriterManager tableWriterManager;
-	private SynchronousTaskManager<?> syncTaskManager;
 	private TunableSetter tunableSetter;
-	private RenderingEngineManager renderingEngineManager;
 	private IconManager iconManager;
 	
 	@Override
 	public void start(BundleContext bc) {
 		serviceRegistrar = getService(bc, CyServiceRegistrar.class);
-		eventHelper = getService(bc, CyEventHelper.class);
-		networkNaming = getService(bc, CyNetworkNaming.class);
-		netFactory = getService(bc, CyNetworkFactory.class);
-		rootNetManager = getService(bc, CyRootNetworkManager.class);
-		visualMappingManager = getService(bc, VisualMappingManager.class);
 		netViewWriterManager = getService(bc, CyNetworkViewWriterManager.class);
 		netManager = getService(bc, CyNetworkManager.class);
-		netViewManager = getService(bc, CyNetworkViewManager.class);
 		applicationManager = getService(bc, CyApplicationManager.class);
-		sessionManager = getService(bc, CySessionManager.class);
 		tableManager = getService(bc, CyTableManager.class);
 		layoutAlgManager = getService(bc, CyLayoutAlgorithmManager.class);
-		tableWriterManager = getService(bc, CyTableWriterManager.class);
-		syncTaskManager = getService(bc, SynchronousTaskManager.class);
 		tunableSetter = getService(bc, TunableSetter.class);
-		renderingEngineManager = getService(bc, RenderingEngineManager.class);
 		iconManager = getService(bc, IconManager.class);
 
 		var groupManager = getService(bc, CyGroupManager.class);
@@ -552,8 +522,8 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, ExportNetworkViewTaskFactory.class, props);
 		}
 		{
-			var factory = new CreateNetworkViewTaskFactoryImpl(netViewManager, netManager, layoutAlgManager,
-					eventHelper, visualMappingManager, renderingEngineManager, applicationManager, serviceRegistrar);
+			var factory = new CreateNetworkViewTaskFactoryImpl(netManager, layoutAlgManager, applicationManager,
+					serviceRegistrar);
 			// UI
 			var props = new Properties();
 			props.setProperty(ID, "createNetworkViewTaskFactory");
@@ -631,7 +601,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// New in 3.2.0: Export to HTML5 archive
-			var factory = new ExportAsWebArchiveTaskFactory(netManager, applicationManager, sessionManager);
+			var factory = new ExportAsWebArchiveTaskFactory(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_NETWORK_AND_VIEW);
@@ -1374,8 +1344,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "create attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Create a new column for edges");
-			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Creates a new edge column.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Creates a new edge column.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, CreateNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 			registerService(bc, factory, TaskFactory.class, props);
@@ -1398,8 +1367,7 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(COMMAND, "get attribute");
 			props.setProperty(COMMAND_NAMESPACE, "edge");
 			props.setProperty(COMMAND_DESCRIPTION, "Get the values from a column in a set of edges");
-			props.setProperty(COMMAND_LONG_DESCRIPTION,
-					"Returns the attributes for the edges passed as parameters.");
+			props.setProperty(COMMAND_LONG_DESCRIPTION, "Returns the attributes for the edges passed as parameters.");
 			props.setProperty(COMMAND_SUPPORTS_JSON, "true");
 			props.setProperty(COMMAND_EXAMPLE_JSON, GetNetworkAttributeTaskFactory.COMMAND_EXAMPLE_JSON);
 
@@ -1576,7 +1544,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// COLLAPSE
-			var factory = new GroupNodeContextTaskFactoryImpl(applicationManager, groupManager, true, serviceRegistrar);
+			var factory = new GroupNodeContextTaskFactoryImpl(groupManager, true, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_GROUP_MENU);
 			props.setProperty(TITLE, "Collapse Group(s)");
@@ -1597,7 +1565,7 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		{
 			// EXPAND
-			var factory = new GroupNodeContextTaskFactoryImpl(applicationManager, groupManager, false, serviceRegistrar);
+			var factory = new GroupNodeContextTaskFactoryImpl(groupManager, false, serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, NODE_GROUP_MENU);
 			props.setProperty(TITLE, "Expand Group(s)");
@@ -1667,8 +1635,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void createTableTaskFactories(BundleContext bc) {
 		{
-			var factory = new ExportSelectedTableTaskFactoryImpl(tableWriterManager, tableManager, netManager,
-					applicationManager);
+			var factory = new ExportSelectedTableTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(PREFERRED_MENU, "File.Export[24.8]");
@@ -1681,11 +1648,11 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, ExportSelectedTableTaskFactory.class, props);
 		}
 		{
-			var factory = new ExportTableTaskFactoryImpl(tableWriterManager, applicationManager, tunableSetter);
+			var factory = new ExportTableTaskFactoryImpl(serviceRegistrar);
 			registerService(bc, factory, ExportTableTaskFactory.class);
 		}
 		{
-			var factory = new MergeTablesTaskFactoryImpl(tableManager, netManager, tunableSetter, rootNetManager);
+			var factory = new MergeTablesTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, "table");
 			props.setProperty(PREFERRED_MENU, "Tools.Merge[2.0]");
@@ -1719,7 +1686,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, MapGlobalToLocalTableTaskFactory.class, props);
 		}
 		{
-			var factory = new MapTableToNetworkTablesTaskFactoryImpl(netManager, tunableSetter, rootNetManager);
+			var factory = new MapTableToNetworkTablesTaskFactoryImpl(serviceRegistrar);
 			registerService(bc, factory, MapTableToNetworkTablesTaskFactory.class);
 		}
 		{
@@ -1751,8 +1718,7 @@ public class CyActivator extends AbstractCyActivator {
 		// ---------- COMMANDS ----------
 		// NAMESPACE: table
 		{
-			var factory = new ExportNoGuiSelectedTableTaskFactoryImpl(tableWriterManager, tableManager,
-					applicationManager, serviceRegistrar);
+			var factory = new ExportNoGuiSelectedTableTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(COMMAND, "export");
 			props.setProperty(COMMAND_NAMESPACE, "table");
@@ -1989,8 +1955,7 @@ public class CyActivator extends AbstractCyActivator {
 
 	private void createNetworkTaskFactories(BundleContext bc, CyGroupManager groupManager, CyGroupFactory groupFactory) {
 		{
-			var factory = new NewEmptyNetworkTaskFactoryImpl(netFactory, netManager, netViewManager, networkNaming,
-					syncTaskManager, visualMappingManager, rootNetManager, applicationManager, serviceRegistrar);
+			var factory = new NewEmptyNetworkTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
 			props.setProperty(MENU_GRAVITY, "4.0");
@@ -2186,7 +2151,7 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, ExportSelectedNetworkTaskFactory.class, props);
 		}
 		{
-			var factory = new ExportNetworkTaskFactoryImpl(netViewWriterManager, applicationManager, tunableSetter);
+			var factory = new ExportNetworkTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ID, "exportNetworkTaskFactory");
 			registerService(bc, factory, NetworkTaskFactory.class, props);

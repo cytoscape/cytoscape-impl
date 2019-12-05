@@ -7,6 +7,7 @@ import org.cytoscape.model.CyTableFactory;
 import org.cytoscape.model.CyTableManager;
 import org.cytoscape.model.events.NetworkAboutToBeDestroyedListener;
 import org.cytoscape.model.events.RowsSetListener;
+import org.cytoscape.model.events.SelectedNodesAndEdgesListener;
 import org.cytoscape.model.subnetwork.CyRootNetworkManager;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.service.util.CyServiceRegistrar;
@@ -49,8 +50,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetworkTableManagerImpl networkTableManager = new CyNetworkTableManagerImpl();
 		CyTableManagerImpl tableManager = new CyTableManagerImpl(networkTableManager, networkManager, serviceRegistrar);
 		CyTableFactoryImpl tableFactory = new CyTableFactoryImpl(tableEventHelper, serviceRegistrar);
-		CyNetworkFactoryImpl networkFactory = new CyNetworkFactoryImpl(tableEventHelper, tableManager,
-				networkTableManager, tableFactory, serviceRegistrar);
+		CyNetworkFactoryImpl networkFactory = new CyNetworkFactoryImpl(tableEventHelper, tableManager, networkTableManager, tableFactory, serviceRegistrar);
 		CyRootNetworkManagerImpl rootNetworkFactory = new CyRootNetworkManagerImpl();
 
 		registerService(bc, networkFactory, CyNetworkFactory.class);
@@ -65,5 +65,6 @@ public class CyActivator extends AbstractCyActivator {
 		
 		SelectionMediator selectionMediator = new SelectionMediator(serviceRegistrar);
 		registerService(bc, selectionMediator, RowsSetListener.class);
+		registerServiceListener(bc, selectionMediator::listenerAdded, selectionMediator::listenerRemoved, SelectedNodesAndEdgesListener.class);
 	}
 }
