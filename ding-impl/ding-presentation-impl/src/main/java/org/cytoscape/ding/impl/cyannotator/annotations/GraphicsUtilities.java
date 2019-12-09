@@ -86,6 +86,8 @@ class GraphicsUtilities {
 			case HEXAGON: return regularPolygon(6, x, y, width, height); // Hexagon
 			case OCTAGON: return regularPolygon(8, x, y, width, height); // Octagon added 3.6
 			case PARALLELOGRAM: return parallelogramShape(x, y, width, height); // Parallelogram added 3.7
+			case DIAMOND: return diamondShape(x, y, width, height); // Diamond added 3.8
+			case V: return vShape(x, y, width, height); // V added 3.8
 			case CUSTOM: return null;
 			default: return rectangleShape(x, y, width, height);
 		}
@@ -422,6 +424,36 @@ class GraphicsUtilities {
 		poly.lineTo(((2.0f * xMax) + x) / 3.0f, y);
 		poly.lineTo(xMax, yMax);
 		poly.lineTo(((2.0f * x) + xMax) / 3.0f, yMax);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape diamondShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double xMax = x + width;
+		double yMax = y + height;
+		double xMid = x + (width/2);
+		double yMid = y + (height/2);
+
+		poly.moveTo(xMid, y);
+		poly.lineTo(xMax, yMid);
+		poly.lineTo(xMid, yMax);
+		poly.lineTo(x, yMid);
+		poly.closePath();
+		return poly;
+	}
+
+	static private Shape vShape(double x, double y, double width, double height) {
+		Path2D poly = new Path2D.Double(Path2D.WIND_EVEN_ODD, 4);
+		double xMax = x + width;
+		double yMax = y + height;
+		double xMid = x + (width/2);
+		double yMid = y + (height/2);
+
+		poly.moveTo(x, y);
+		poly.lineTo(xMid, yMid);
+		poly.lineTo(xMax, y);
+		poly.lineTo(xMid, yMax);
 		poly.closePath();
 		return poly;
 	}
