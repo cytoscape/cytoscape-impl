@@ -15,7 +15,6 @@ import static org.cytoscape.task.internal.utils.IconUtil.FIRST_NEIGHBORS;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HELP;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_HIDE_SELECTED;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_IMPORT_NET;
-import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_NEW_FROM_SELECTED;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_OPEN_FILE;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SAVE;
 import static org.cytoscape.task.internal.utils.IconUtil.LAYERED_SHOW_ALL;
@@ -1994,6 +1993,17 @@ public class CyActivator extends AbstractCyActivator {
 			registerService(bc, factory, CloneNetworkTaskFactory.class, props);
 		}
 		{
+			var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(serviceRegistrar);
+			var props = new Properties();
+			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
+			props.setProperty(ACCELERATOR, "cmd n");
+			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
+			props.setProperty(TITLE, "From Selected Nodes, All Edges");
+			props.setProperty(MENU_GRAVITY, "1.0");
+			registerService(bc, factory, NetworkTaskFactory.class, props);
+			registerService(bc, factory, NewNetworkSelectedNodesOnlyTaskFactory.class, props);
+		}
+		{
 			var factory = new NewNetworkSelectedNodesEdgesTaskFactoryImpl(serviceRegistrar);
 			var props = new Properties();
 			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES_OR_EDGES);
@@ -2001,34 +2011,8 @@ public class CyActivator extends AbstractCyActivator {
 			props.setProperty(MENU_GRAVITY, "2.0");
 			props.setProperty(ACCELERATOR, "cmd shift n");
 			props.setProperty(TITLE, "From Selected Nodes, Selected Edges");
-			// props.setProperty(COMMAND, "create from selected nodes and edges");
-			// props.setProperty(COMMAND_NAMESPACE, "network");
 			registerService(bc, factory, NetworkTaskFactory.class, props);
 			registerService(bc, factory, NewNetworkSelectedNodesAndEdgesTaskFactory.class, props);
-		}
-		{
-			var factory = new NewNetworkSelectedNodesOnlyTaskFactoryImpl(serviceRegistrar);
-			var props = new Properties();
-			
-			TextIcon icon = new TextIcon(LAYERED_NEW_FROM_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
-			String iconId = "cy::NEW_FROM_SELECTED";
-			iconManager.addIcon(iconId, icon);
-			
-			props.setProperty(PREFERRED_MENU, "File.New Network[16]");
-			props.setProperty(LARGE_ICON_ID, iconId);
-			props.setProperty(ACCELERATOR, "cmd n");
-			props.setProperty(ENABLE_FOR, ENABLE_FOR_SELECTED_NODES);
-			props.setProperty(TITLE, "From Selected Nodes, All Edges");
-			props.setProperty(TOOL_BAR_GRAVITY, "10.1");
-			props.setProperty(IN_TOOL_BAR, "true");
-			props.setProperty(MENU_GRAVITY, "1.0");
-			props.setProperty(TOOLTIP, "New Network from Selection (All Edges)");
-			props.setProperty(TOOLTIP_LONG_DESCRIPTION,
-					"Creates a new network (and view) that will contain the selected nodes and all of their edges.");
-			// props.setProperty(COMMAND, "create from selected nodes and all edges");
-			// props.setProperty(COMMAND_NAMESPACE, "network");
-			registerService(bc, factory, NetworkTaskFactory.class, props);
-			registerService(bc, factory, NewNetworkSelectedNodesOnlyTaskFactory.class, props);
 		}
 		{
 			var factory = new DestroyNetworkTaskFactoryImpl(serviceRegistrar);

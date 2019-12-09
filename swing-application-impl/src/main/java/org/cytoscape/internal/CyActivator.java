@@ -5,6 +5,9 @@ import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeTyp
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.GRID;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.HORIZONTAL;
 import static org.cytoscape.application.swing.CyNetworkViewDesktopMgr.ArrangeType.VERTICAL;
+import static org.cytoscape.internal.util.IconUtil.COLORS_3;
+import static org.cytoscape.internal.util.IconUtil.CY_FONT_NAME;
+import static org.cytoscape.internal.util.IconUtil.LAYERED_NEW_FROM_SELECTED;
 import static org.cytoscape.internal.view.util.ViewUtil.invokeOnEDTAndWait;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isAquaLAF;
 import static org.cytoscape.util.swing.LookAndFeelUtil.isMac;
@@ -63,6 +66,7 @@ import org.cytoscape.internal.actions.ExitAction;
 import org.cytoscape.internal.actions.ExportImageAction;
 import org.cytoscape.internal.actions.ExportNetworkAction;
 import org.cytoscape.internal.actions.FullScreenAction;
+import org.cytoscape.internal.actions.NewNetworkFromSelectionAction;
 import org.cytoscape.internal.actions.PreferenceAction;
 import org.cytoscape.internal.actions.PrintAction;
 import org.cytoscape.internal.actions.RecentSessionManager;
@@ -167,6 +171,8 @@ import org.slf4j.LoggerFactory;
 
 public class CyActivator extends AbstractCyActivator {
 	
+	private static int LARGE_ICON_SIZE = 32;
+	
 	private static final String CONTEXT_MENU_FILTER = "(" + ServiceProperties.IN_NETWORK_PANEL_CONTEXT_MENU + "=true)";
 	
 	private static final String HELP_MENU = "Help";
@@ -240,6 +246,8 @@ public class CyActivator extends AbstractCyActivator {
 	private CytoPanelAction cytoPanelSouthWestAction;
 	private CytoPanelAction cytoPanelCommandAction;
 
+	private NewNetworkFromSelectionAction newNetworkFromSelectionAction;
+	
 	private StarterPanelAction starterPanelActionMenu;
 	private StarterPanelAction starterPanelActionToolBar;
 	private DetachedViewToolBarAction detachedViewToolBarAction;
@@ -295,6 +303,7 @@ public class CyActivator extends AbstractCyActivator {
 		registerService(bc, starterPanelActionToolBar, CyAction.class);
 		registerService(bc, detachedViewToolBarAction, CyAction.class);
 		registerService(bc, closeWindowAction, CyAction.class);
+		registerService(bc, newNetworkFromSelectionAction, CyAction.class);
 		
 		registerService(bc, cyDesktopManager, CyNetworkViewDesktopMgr.class);
 		
@@ -573,10 +582,16 @@ public class CyActivator extends AbstractCyActivator {
 		cytoPanelCommandAction = new CytoPanelAction(CytoPanelNameInternal.BOTTOM, cytoscapeDesktop, 1.35f);
 
 		{
-			TextIcon icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),
-					UIManager.getColor("CyColor.complement(+1)"), 32, 32);
+			var iconFont = iconManager.getIconFont(CY_FONT_NAME, 32.0f);
+			var icon = new TextIcon(LAYERED_NEW_FROM_SELECTED, iconFont, COLORS_3, LARGE_ICON_SIZE, LARGE_ICON_SIZE, 1);
 			
-			starterPanelActionToolBar = new StarterPanelAction(Float.MAX_VALUE - 1.0f, icon, cytoscapeDesktop);
+			newNetworkFromSelectionAction = new NewNetworkFromSelectionAction(10.1f, icon, serviceRegistrar);
+		}
+		{
+			var icon = new TextIcon(IconManager.ICON_HOME, iconManager.getIconFont(28.0f),
+					UIManager.getColor("CyColor.complement(+1)"), LARGE_ICON_SIZE, LARGE_ICON_SIZE);
+			
+			starterPanelActionToolBar = new StarterPanelAction(110000000000000.0f, icon, cytoscapeDesktop);
 			starterPanelActionMenu = new StarterPanelAction(1.4f, cytoscapeDesktop);
 		}
 		

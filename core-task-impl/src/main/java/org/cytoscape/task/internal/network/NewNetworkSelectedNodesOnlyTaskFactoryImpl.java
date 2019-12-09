@@ -43,4 +43,12 @@ public class NewNetworkSelectedNodesOnlyTaskFactoryImpl extends AbstractNetworkT
 	public TaskIterator createTaskIterator(CyNetwork network) {
 		return new TaskIterator(3, new NewNetworkSelectedNodesOnlyTask(network, serviceRegistrar));
 	}
+	
+	@Override
+	public boolean isReady(CyNetwork network) {
+		if (!super.isReady(network))
+			return false;
+		
+		return network != null && network.getDefaultNodeTable().countMatchingRows(CyNetwork.SELECTED, true) > 0;
+	}
 }
