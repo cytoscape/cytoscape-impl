@@ -59,12 +59,12 @@ class GraphicsUtilities {
 
 	protected static final ShapeType supportedShapes[] = { ShapeType.RECTANGLE, ShapeType.ROUNDEDRECTANGLE,
 			ShapeType.ELLIPSE, ShapeType.STAR5, ShapeType.TRIANGLE, ShapeType.STAR6, ShapeType.HEXAGON,
-			ShapeType.PENTAGON, ShapeType.OCTAGON, ShapeType.PARALLELOGRAM };
+			ShapeType.PENTAGON, ShapeType.OCTAGON, ShapeType.PARALLELOGRAM,ShapeType.DIAMOND,ShapeType.V };
 
 	protected static final List<String> supportedShapeNames = Arrays.asList(ShapeType.RECTANGLE.shapeName(),
 			ShapeType.ROUNDEDRECTANGLE.shapeName(), ShapeType.ELLIPSE.shapeName(), ShapeType.STAR5.shapeName(),
 			ShapeType.TRIANGLE.shapeName(), ShapeType.STAR6.shapeName(), ShapeType.HEXAGON.shapeName(),
-			ShapeType.PENTAGON.shapeName(), ShapeType.OCTAGON.shapeName(), ShapeType.PARALLELOGRAM.shapeName(),
+			ShapeType.PENTAGON.shapeName(), ShapeType.OCTAGON.shapeName(), ShapeType.PARALLELOGRAM.shapeName(),ShapeType.DIAMOND.shapeName(),ShapeType.V.shapeName(),
 			ShapeType.CUSTOM.shapeName());
 
 	protected static final ArrowType supportedArrows[] = { ArrowType.CIRCLE, ArrowType.CLOSED, ArrowType.CONCAVE,
